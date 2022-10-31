@@ -85,15 +85,18 @@ public class ResourcesFormatHtml implements ResourcesFormatExtension {
 
     HtmlConfiguration htmlConfig = apiData.getExtension(HtmlConfiguration.class).orElse(null);
 
-    return new ResourcesView(
-        apiData,
-        resources,
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        htmlConfig,
-        isNoIndexEnabledForApi(apiData),
-        requestContext.getUriCustomizer(),
-        i18n,
-        requestContext.getLanguage());
+    return new ImmutableResourcesView.Builder()
+        .apiData(apiData)
+        .breadCrumbs(breadCrumbs)
+        .htmlConfig(htmlConfig)
+        .noIndex(isNoIndexEnabledForApi(apiData))
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .links(resources.getLinks())
+        .title(i18n.get("resourcesTitle", requestContext.getLanguage()))
+        .description(i18n.get("resourcesDescription", requestContext.getLanguage()))
+        .language(requestContext.getLanguage())
+        .none(i18n.get("none", requestContext.getLanguage()))
+        .resourceList(resources.getResources())
+        .build();
   }
 }

@@ -134,17 +134,17 @@ public class CollectionPropertiesFormatHtml implements CollectionPropertiesForma
             .getExtension(HtmlConfiguration.class)
             .orElse(null);
 
-    return new CollectionPropertiesView(
-        api.getData(),
-        schemaProperties,
-        type,
-        links,
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        htmlConfig,
-        isNoIndexEnabledForApi(api.getData()),
-        requestContext.getUriCustomizer(),
-        i18n,
-        requestContext.getLanguage());
+    return new ImmutableCollectionPropertiesView.Builder()
+        .apiData(api.getData())
+        .schemaCollectionProperties(schemaProperties)
+        .type(type)
+        .links(links)
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .htmlConfig(htmlConfig)
+        .noIndex(isNoIndexEnabledForApi(api.getData()))
+        .uriCustomizer(requestContext.getUriCustomizer())
+        .i18n(i18n)
+        .language(requestContext.getLanguage())
+        .build();
   }
 }

@@ -27,7 +27,6 @@ import de.ii.ogcapi.html.domain.NavigationDTO;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
-import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -110,23 +109,25 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
 
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
-    OgcApiCollectionsView collectionsView =
-        new OgcApiCollectionsView(
-            api.getData(),
-            collections,
-            api.getSpatialExtent(),
-            breadCrumbs,
-            requestContext.getStaticUrlPrefix(),
-            htmlConfig,
-            isNoIndexEnabledForApi(api.getData()),
-            showCollectionDescriptionsInOverview(api.getData()),
-            i18n,
-            requestContext.getLanguage(),
-            Optional.empty()
-            /* TODO no access to feature providers at this point
-            providers.getFeatureProvider(api.getData()).getData().getDataSourceUrl()
-            */
-            );
+    OgcApiCollectionsView collectionsView = ImmutableOgcApiCollectionsView.builder().build();
+
+    /*OgcApiCollectionsView collectionsView =
+    new OgcApiCollectionsView(
+        api.getData(),
+        collections.getCollections(),
+        api.getSpatialExtent(),
+        breadCrumbs,
+        requestContext.getStaticUrlPrefix(),
+        htmlConfig,
+        isNoIndexEnabledForApi(api.getData()),
+        showCollectionDescriptionsInOverview(api.getData()),
+        i18n,
+        requestContext.getLanguage(),
+        Optional.empty()
+        /* TODO no access to feature providers at this point
+        providers.getFeatureProvider(api.getData()).getData().getDataSourceUrl()
+
+        ); */
 
     return collectionsView;
   }
@@ -164,19 +165,19 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
             .get(ogcApiCollection.getId())
             .getExtension(HtmlConfiguration.class)
             .orElse(null);
-
     OgcApiCollectionView collectionView =
-        new OgcApiCollectionView(
-            api.getData(),
-            ogcApiCollection,
-            api.getSpatialExtent(ogcApiCollection.getId()),
-            breadCrumbs,
-            requestContext.getStaticUrlPrefix(),
-            htmlConfig,
-            isNoIndexEnabledForApi(api.getData()),
-            requestContext.getUriCustomizer(),
-            i18n,
-            requestContext.getLanguage());
+        new ImmutableOgcApiCollectionView.Builder()
+            .apiData(api.getData())
+            .collection(ogcApiCollection)
+            .spatialExtent(api.getSpatialExtent(ogcApiCollection.getId()))
+            .breadCrumbs(breadCrumbs)
+            .urlPrefix(requestContext.getStaticUrlPrefix())
+            .htmlConfig(htmlConfig)
+            .noIndex(isNoIndexEnabledForApi(api.getData()))
+            .uriCustomizer(requestContext.getUriCustomizer())
+            .i18n(i18n)
+            .language(requestContext.getLanguage())
+            .build();
 
     return collectionView;
   }

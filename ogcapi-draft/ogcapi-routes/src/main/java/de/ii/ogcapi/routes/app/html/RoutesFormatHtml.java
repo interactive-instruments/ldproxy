@@ -9,6 +9,7 @@ package de.ii.ogcapi.routes.app.html;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -27,6 +28,7 @@ import de.ii.ogcapi.routes.domain.ImmutableHtmlFormDefaults;
 import de.ii.ogcapi.routes.domain.Routes;
 import de.ii.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
@@ -104,19 +106,39 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
             .flatMap(HtmlForm::getDefaults)
             .orElse(ImmutableHtmlFormDefaults.builder().build());
 
-    RoutesView view =
-        new RoutesView(
-            api.getData(),
-            routes,
-            htmlDefaults,
-            api.getSpatialExtent(),
-            breadCrumbs,
-            requestContext.getStaticUrlPrefix(),
-            htmlConfig,
-            isNoIndexEnabledForApi(api.getData()),
-            i18n,
-            requestContext.getLanguage());
-    return view;
+    return new ImmutableRoutesView.Builder()
+        .apiData(api.getData())
+        .bbox(
+            (BoundingBox)
+                api.getSpatialExtent()
+                    .map(
+                        boundingBox ->
+                            ImmutableMap.of(
+                                "minLng", Double.toString(boundingBox.getXmin()),
+                                "minLat", Double.toString(boundingBox.getYmin()),
+                                "maxLng", Double.toString(boundingBox.getXmax()),
+                                "maxLat", Double.toString(boundingBox.getYmax())))
+                    .orElse(null))
+        .routes(routes)
+        .htmlDefaults(htmlDefaults)
+        .breadCrumbs(breadCrumbs)
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .noIndex(isNoIndexEnabledForApi(api.getData()))
+        .i18n(i18n)
+        .language(requestContext.getLanguage())
+        .links(routes.getLinks())
+        .title(i18n.get("routesTitle", requestContext.getLanguage()))
+        .description(
+            api.getData()
+                    .getExtension(RoutingConfiguration.class)
+                    .map(RoutingConfiguration::supportsObstacles)
+                    .orElse(false)
+                ? String.format(
+                    "%s %s",
+                    i18n.get("routesDescription", requestContext.getLanguage()),
+                    i18n.get("routesDescriptionObstacles", requestContext.getLanguage()))
+                : i18n.get("routesDescription", requestContext.getLanguage()))
+        .build();
   }
 
   @Override

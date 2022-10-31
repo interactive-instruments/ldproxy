@@ -21,11 +21,11 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ogcapi.html.domain.MapClient;
+import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.ogcapi.html.domain.NavigationDTO;
+import de.ii.ogcapi.tiles.domain.ImmutableTileSetsView;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
-import de.ii.ogcapi.tiles.domain.TileSetsView;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -134,22 +134,22 @@ public class MapTileSetsFormatHtml implements TileSetsFormatExtension {
 
     Map<String, TileMatrixSet> tileMatrixSets = tileMatrixSetRepository.getAll();
 
-    return new TileSetsView(
-        api.getData(),
-        tiles,
-        collectionId,
-        api.getSpatialExtent(collectionId),
-        api.getTemporalExtent(collectionId),
-        tileMatrixSets,
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        MapClient.Type.MAP_LIBRE,
-        null,
-        false,
-        htmlConfig.orElseThrow(),
-        isNoIndexEnabledForApi(api.getData()),
-        requestContext.getUriCustomizer(),
-        i18n,
-        requestContext.getLanguage());
+    return new ImmutableTileSetsView.Builder()
+        .apiData(api.getData())
+        .tiles(tiles)
+        .collectionId(collectionId)
+        .temporalExtentToSet(api.getTemporalExtent(collectionId))
+        .tileMatrixSets(tileMatrixSets)
+        .breadCrumbs(breadCrumbs)
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .mapClientType(Type.MAP_LIBRE)
+        .styleUrl(null)
+        .removeZoomLevelConstraints(false)
+        .htmlConfig(htmlConfig.orElseThrow())
+        .noIndex(isNoIndexEnabledForApi(api.getData()))
+        .uriCustomizer(requestContext.getUriCustomizer())
+        .i18n(i18n)
+        .language(requestContext.getLanguage())
+        .build();
   }
 }

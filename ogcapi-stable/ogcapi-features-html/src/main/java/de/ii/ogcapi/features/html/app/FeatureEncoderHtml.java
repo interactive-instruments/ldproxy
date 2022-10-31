@@ -30,6 +30,7 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderHtml.class);
 
+  // Todo @Value.Modifiable
   private final FeatureTransformationContextHtml transformationContext;
 
   public FeatureEncoderHtml(FeatureTransformationContextHtml transformationContext) {
@@ -175,8 +176,8 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
         }
       }
 
-      transformationContext.collectionView().pagination = pagination.build();
-      transformationContext.collectionView().metaPagination = metaPagination.build();
+      transformationContext.collectionView().setPagination(pagination.build());
+      transformationContext.collectionView().setMetaPagination(metaPagination.build());
 
     } else if (transformationContext.isFeatureCollection()) {
       LOGGER.error(
@@ -186,8 +187,8 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
 
   @Override
   public void onFeature(FeatureHtml feature) {
-    if (transformationContext.collectionView().hideMap && feature.hasGeometry()) {
-      transformationContext.collectionView().hideMap = false;
+    if (transformationContext.collectionView().hideMap() && feature.hasGeometry()) {
+      transformationContext.collectionView().setHideMap(false);
     }
 
     transformationContext
@@ -216,11 +217,11 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
     }
 
     if (!transformationContext.isFeatureCollection()) {
-      transformationContext.collectionView().title = feature.getName();
+      transformationContext.collectionView().setTitle(feature.getName());
       transformationContext
               .collectionView()
-              .breadCrumbs
-              .get(transformationContext.collectionView().breadCrumbs.size() - 1)
+              .breadCrumbs()
+              .get(transformationContext.collectionView().breadCrumbs().size() - 1)
               .label =
           feature.getName();
     } else {
@@ -231,7 +232,7 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
       feature.itemType("http://schema.org/Place");
     }
 
-    transformationContext.collectionView().features.add(feature);
+    transformationContext.collectionView().features().add(feature);
   }
 
   @Override

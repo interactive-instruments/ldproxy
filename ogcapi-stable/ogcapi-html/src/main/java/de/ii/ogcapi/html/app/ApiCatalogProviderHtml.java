@@ -93,8 +93,16 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
     // TODO: map in caller
     return Response.ok()
         .entity(
-            new ServiceOverviewView(
-                uri, apiCatalog, getHtmlConfigurationDefaults(), i18n, language))
+            new ImmutableServiceOverviewView.Builder()
+                .htmlConfig(getHtmlConfigurationDefaults())
+                .urlPrefix(apiCatalog.getUrlPrefix())
+                .noIndex(true)
+                .apiData(null)
+                .apiCatalog(apiCatalog)
+                .uri(uri)
+                .i18n(i18n)
+                .language(language.get())
+                .isApiCatalog(false))
         .build();
   }
 }

@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -15,7 +14,6 @@ import com.google.common.collect.Multimap;
 import de.ii.ogcapi.foundation.domain.CollectionExtent;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcResourceMetadata;
 import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
@@ -26,7 +24,6 @@ import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.MapClient.Popup;
 import de.ii.ogcapi.html.domain.MapClient.Source.TYPE;
 import de.ii.ogcapi.html.domain.MapClient.Type;
-import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.html.domain.OgcApiView;
 import de.ii.ogcapi.tiles.domain.TileLayer.GeometryType;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
@@ -42,171 +39,111 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // TODO class needs to be in 'domain', since it is also accessed from MAP_TILES; find better
 // solution
-public class TileSetsView extends OgcApiView {
+
+@Value.Style(builder = "new")
+@Value.Immutable
+public abstract class TileSetsView extends OgcApiView {
   private static final Logger LOGGER = LoggerFactory.getLogger(TileSetsView.class);
 
-  public List<Set<Map.Entry<String, String>>> tileCollections;
-  public List<String> tileMatrixSetIds;
-  public String tilesUrl;
-  public String tileJsonLink;
-  public String tileJsonTitle;
-  public String mapTitle;
-  public String metadataTitle;
-  public String tileMatrixSetTitle;
-  public String tilesetDescription;
-  public String templateTitle;
-  public String howToUse;
-  public String none;
-  public boolean withOlMap;
-  public boolean spatialSearch;
-  public boolean isVector;
-  public Map<String, String> bbox;
-  public Map<String, String> temporalExtent;
-  public final MapClient mapClient;
-  public final String xyzTemplate;
+  public abstract Boolean isVector();
 
-  public TileSetsView(
-      OgcApiDataV2 apiData,
-      TileSets tiles,
-      Optional<String> collectionId,
-      Optional<BoundingBox> spatialExtent,
-      Optional<TemporalExtent> temporalExtent,
-      Map<String, TileMatrixSet> tileMatrixSets,
-      List<NavigationDTO> breadCrumbs,
-      String urlPrefix,
-      MapClient.Type mapClientType,
-      String styleUrl,
-      boolean removeZoomLevelConstraints,
-      HtmlConfiguration htmlConfig,
-      boolean noIndex,
-      URICustomizer uriCustomizer,
-      I18n i18n,
-      Optional<Locale> language) {
-    super(
-        "tiles.mustache",
-        Charsets.UTF_8,
-        apiData,
-        breadCrumbs,
-        htmlConfig,
-        noIndex,
-        urlPrefix,
-        tiles.getLinks(),
-        tiles.getTitle().orElse(apiData.getId()),
-        tiles.getDescription().orElse(""));
-
-    Optional<BoundingBox> finalSpatialExtent =
-        spatialExtent.or(() -> apiData.getDefaultExtent().flatMap(CollectionExtent::getSpatial));
-    this.bbox =
-        finalSpatialExtent
+  @Value.Derived
+  public List<Set<Map.Entry<String, String>>> tileCollections() {
+    return spatialExtent().isPresent()
+        ? tiles().getTilesets().stream()
+            .filter(
+                tms ->
+                    mapClientType().equals(MapClient.Type.OPEN_LAYERS)
+                        || tms.getTileMatrixSetId().equals("WebMercatorQuad"))
             .map(
-                boundingBox ->
-                    ImmutableMap.of(
-                        "minLng", Double.toString(boundingBox.getXmin()),
-                        "minLat", Double.toString(boundingBox.getYmin()),
-                        "maxLng", Double.toString(boundingBox.getXmax()),
-                        "maxLat", Double.toString(boundingBox.getYmax())))
-            .orElse(null);
-    this.tileMatrixSetIds =
-        finalSpatialExtent.isPresent()
-            ? tiles.getTilesets().stream()
-                .map(TileSet::getTileMatrixSetId)
-                .filter(
-                    tileMatrixSetId ->
-                        mapClientType.equals(MapClient.Type.OPEN_LAYERS)
-                            || tileMatrixSetId.equals("WebMercatorQuad"))
-                .collect(Collectors.toList())
-            : ImmutableList.of();
-    this.tileCollections =
-        finalSpatialExtent.isPresent()
-            ? tiles.getTilesets().stream()
-                .filter(
-                    tms ->
-                        mapClientType.equals(MapClient.Type.OPEN_LAYERS)
-                            || tms.getTileMatrixSetId().equals("WebMercatorQuad"))
-                .map(
-                    tms -> {
-                      String tmsId = tms.getTileMatrixSetId();
-                      TileMatrixSet tileMatrixSet = tileMatrixSets.get(tmsId);
-                      if (tileMatrixSet == null) return null;
-                      BoundingBox bbox = tileMatrixSet.getBoundingBox();
-                      String extent =
-                          "["
-                              + bbox.getXmin()
-                              + ","
-                              + bbox.getYmin()
-                              + ","
-                              + bbox.getXmax()
-                              + ","
-                              + bbox.getYmax()
-                              + "]";
-                      int maxLevel = tileMatrixSet.getMaxLevel();
-                      List<TileMatrix> tileMatrixList = tileMatrixSet.getTileMatrices(0, maxLevel);
-                      String sizes =
-                          String.format(
-                              "[%s]",
-                              tileMatrixList.stream()
-                                  .map(
-                                      tileMatrix ->
-                                          String.format(
-                                              "[%d, %d]",
-                                              tileMatrix.getMatrixWidth(),
-                                              tileMatrix.getMatrixHeight()))
-                                  .collect(Collectors.joining(", ")));
-                      double diff = bbox.getXmax() - bbox.getXmin();
-                      String resolutions =
-                          String.format(
-                              "[%s]",
-                              tileMatrixList.stream()
-                                  .map(
-                                      tileMatrix ->
-                                          String.valueOf(
-                                              diff
-                                                  / (tileMatrix.getMatrixWidth()
-                                                      * tileMatrixSet.getTileSize())))
-                                  .collect(Collectors.joining(", ")));
+                tms -> {
+                  String tmsId = tms.getTileMatrixSetId();
+                  TileMatrixSet tileMatrixSet = tileMatrixSets().get(tmsId);
+                  if (tileMatrixSet == null) return null;
+                  BoundingBox bbox = tileMatrixSet.getBoundingBox();
+                  String extent =
+                      "["
+                          + bbox.getXmin()
+                          + ","
+                          + bbox.getYmin()
+                          + ","
+                          + bbox.getXmax()
+                          + ","
+                          + bbox.getYmax()
+                          + "]";
+                  int maxLevel = tileMatrixSet.getMaxLevel();
+                  List<TileMatrix> tileMatrixList = tileMatrixSet.getTileMatrices(0, maxLevel);
+                  String sizes =
+                      String.format(
+                          "[%s]",
+                          tileMatrixList.stream()
+                              .map(
+                                  tileMatrix ->
+                                      String.format(
+                                          "[%d, %d]",
+                                          tileMatrix.getMatrixWidth(),
+                                          tileMatrix.getMatrixHeight()))
+                              .collect(Collectors.joining(", ")));
+                  double diff = bbox.getXmax() - bbox.getXmin();
+                  String resolutions =
+                      String.format(
+                          "[%s]",
+                          tileMatrixList.stream()
+                              .map(
+                                  tileMatrix ->
+                                      String.valueOf(
+                                          diff
+                                              / (tileMatrix.getMatrixWidth()
+                                                  * tileMatrixSet.getTileSize())))
+                              .collect(Collectors.joining(", ")));
 
-                      String level =
-                          tms.getCenterPoint()
-                              .flatMap(TilePoint::getTileMatrix)
-                              .orElse(getDefaultLevel(diff, tileMatrixSet.getMaxLevel()));
-                      String lon =
-                          tms.getCenterPoint().isPresent()
-                                  && tms.getCenterPoint().get().getCoordinates().size() >= 2
-                              ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(0))
-                              : Double.toString(
-                                  finalSpatialExtent.get().getXmax() * 0.5
-                                      + finalSpatialExtent.get().getXmin() * 0.5);
-                      String lat =
-                          tms.getCenterPoint().isPresent()
-                                  && tms.getCenterPoint().get().getCoordinates().size() >= 2
-                              ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(1))
-                              : Double.toString(
-                                  finalSpatialExtent.get().getYmax() * 0.5
-                                      + finalSpatialExtent.get().getYmin() * 0.5);
+                  String level =
+                      tms.getCenterPoint()
+                          .flatMap(TilePoint::getTileMatrix)
+                          .orElse(getDefaultLevel(diff, tileMatrixSet.getMaxLevel()));
+                  String lon =
+                      tms.getCenterPoint().isPresent()
+                              && tms.getCenterPoint().get().getCoordinates().size() >= 2
+                          ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(0))
+                          : Double.toString(
+                              spatialExtent().get().getXmax() * 0.5
+                                  + spatialExtent().get().getXmin() * 0.5);
+                  String lat =
+                      tms.getCenterPoint().isPresent()
+                              && tms.getCenterPoint().get().getCoordinates().size() >= 2
+                          ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(1))
+                          : Double.toString(
+                              spatialExtent().get().getYmax() * 0.5
+                                  + spatialExtent().get().getYmin() * 0.5);
 
-                      return new ImmutableMap.Builder<String, String>()
-                          .put("tileMatrixSet", tmsId)
-                          .put("maxLevel", String.valueOf(maxLevel))
-                          .put("extent", extent)
-                          .put("defaultZoomLevel", level)
-                          .put("defaultCenterLon", lon)
-                          .put("defaultCenterLat", lat)
-                          .put("resolutions", resolutions)
-                          .put("sizes", sizes)
-                          .put("projection", "EPSG:" + tileMatrixSet.getCrs().getCode())
-                          .build()
-                          .entrySet();
-                    })
-                .collect(Collectors.toList())
-            : ImmutableList.of();
+                  return new ImmutableMap.Builder<String, String>()
+                      .put("tileMatrixSet", tmsId)
+                      .put("maxLevel", String.valueOf(maxLevel))
+                      .put("extent", extent)
+                      .put("defaultZoomLevel", level)
+                      .put("defaultCenterLon", lon)
+                      .put("defaultCenterLat", lat)
+                      .put("resolutions", resolutions)
+                      .put("sizes", sizes)
+                      .put("projection", "EPSG:" + tileMatrixSet.getCrs().getCode())
+                      .build()
+                      .entrySet();
+                })
+            .collect(Collectors.toList())
+        : ImmutableList.of();
+  }
+
+  @Value.Derived
+  public String tilesUrl() {
 
     List<Link> tileTemplates =
-        tiles.getTilesets().stream()
+        tiles().getTilesets().stream()
             .map(OgcResourceMetadata::getLinks)
             .flatMap(Collection::stream)
             .filter(link -> Objects.equals(link.getRel(), "item"))
@@ -223,101 +160,231 @@ public class TileSetsView extends OgcApiView {
                         "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
             .findFirst();
     if (tileTemplate.isPresent()) {
-      this.tilesUrl = tileTemplate.get();
-      this.isVector = true;
+      return tileTemplate.get();
     } else {
-      this.tilesUrl =
-          tileTemplates.stream()
-              .filter(link -> link.getType().startsWith("image/"))
-              .map(Link::getHref)
-              .map(
-                  href ->
-                      href.replaceAll(
-                          "/\\w+/\\{tileMatrix}/\\{tileRow}/\\{tileCol}",
-                          "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-              .findFirst()
-              .orElse(null);
-      this.isVector = false;
+      return tileTemplates.stream()
+          .filter(link -> link.getType().startsWith("image/"))
+          .map(Link::getHref)
+          .map(
+              href ->
+                  href.replaceAll(
+                      "/\\w+/\\{tileMatrix}/\\{tileRow}/\\{tileCol}",
+                      "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+          .findFirst()
+          .orElse(null);
     }
+  }
 
-    this.tileJsonLink =
-        tiles.getTilesets().stream()
-            .map(OgcResourceMetadata::getLinks)
-            .flatMap(Collection::stream)
-            .filter(link -> Objects.equals(link.getRel(), "self"))
-            .map(Link::getHref)
-            .findFirst()
-            .map(href -> href.replaceAll("/\\w+$", "/WebMercatorQuad") + "?f=tilejson")
-            .orElse(null);
+  @Value.Derived
+  public String tileJsonLink() {
+    return tiles().getTilesets().stream()
+        .map(OgcResourceMetadata::getLinks)
+        .flatMap(Collection::stream)
+        .filter(link -> Objects.equals(link.getRel(), "self"))
+        .map(Link::getHref)
+        .findFirst()
+        .map(href -> href.replaceAll("/\\w+$", "/WebMercatorQuad") + "?f=tilejson")
+        .orElse(null);
+  }
 
-    this.mapTitle = i18n.get("mapTitle", language);
-    this.templateTitle = i18n.get("templateTitle", language);
-    this.howToUse = i18n.get("howToUseTitle", language);
-    this.metadataTitle = i18n.get("metadataTitle", language);
-    this.tileMatrixSetTitle = i18n.get("tileMatrixSetTitle", language);
-    this.tilesetDescription = i18n.get("tilesetDescriptionTitle", language);
-    this.tileJsonTitle = i18n.get("tileJsonTitle", language);
-    this.none = i18n.get("none", language);
+  public abstract I18n i18n();
 
-    this.withOlMap = true;
-    this.spatialSearch = false;
+  public abstract Optional<Locale> language();
 
+  @Value.Derived
+  public String tileJsonTitle() {
+    return i18n().get("tileJsonTitle", language());
+  }
+
+  @Value.Derived
+  public String mapTitle() {
+    return i18n().get("mapTitle", language());
+  }
+
+  @Value.Derived
+  public String metadataTitle() {
+    return i18n().get("metadataTitle", language());
+  }
+
+  @Value.Derived
+  public String tileMatrixSetTitle() {
+    return i18n().get("tileMatrixSetTitle", language());
+  }
+
+  @Value.Derived
+  public String tilesetDescription() {
+    return i18n().get("tilesetDescriptionTitle", language());
+  }
+
+  @Value.Derived
+  public String templateTitle() {
+    return i18n().get("templateTitle", language());
+  }
+
+  @Value.Derived
+  public String howToUse() {
+    return i18n().get("howToUseTitle", language());
+  }
+
+  @Value.Derived
+  public String none() {
+    return i18n().get("none", language());
+  }
+
+  @Value.Default
+  public boolean withOlMap() {
+    return true;
+  }
+
+  @Value.Default
+  public boolean spatialSearch() {
+    return false;
+  }
+
+  @Value.Derived
+  public Map<String, String> bbox() {
+    return spatialExtent()
+        .map(
+            boundingBox ->
+                ImmutableMap.of(
+                    "minLng", Double.toString(boundingBox.getXmin()),
+                    "minLat", Double.toString(boundingBox.getYmin()),
+                    "maxLng", Double.toString(boundingBox.getXmax()),
+                    "maxLat", Double.toString(boundingBox.getYmax())))
+        .orElse(null);
+  }
+
+  @Value.Derived
+  public Map<String, String> temporalExtent() {
     Long[] interval =
-        temporalExtent.map(te -> new Long[] {te.getStart(), te.getEnd()}).orElse(null);
-    if (interval == null) this.temporalExtent = null;
+        temporalExtentToSet().map(te -> new Long[] {te.getStart(), te.getEnd()}).orElse(null);
+    if (interval == null) return null;
     else if (interval[0] == Long.MIN_VALUE && interval[1] == Long.MAX_VALUE)
-      this.temporalExtent = ImmutableMap.of();
-    else if (interval[0] == Long.MIN_VALUE)
-      this.temporalExtent = ImmutableMap.of("end", interval[1].toString());
-    else if (interval[1] == Long.MAX_VALUE)
-      this.temporalExtent = ImmutableMap.of("start", interval[0].toString());
-    else
-      this.temporalExtent =
-          ImmutableMap.of(
-              "start", interval[0].toString(),
-              "end", interval[1].toString());
+      return ImmutableMap.of();
+    else if (interval[0] == Long.MIN_VALUE) return ImmutableMap.of("end", interval[1].toString());
+    else if (interval[1] == Long.MAX_VALUE) return ImmutableMap.of("start", interval[0].toString());
 
-    this.xyzTemplate =
-        tilesUrl
-            .replace("{tileMatrixSetId}", "WebMercatorQuad")
-            .replace("{tileMatrix}", "{z}")
-            .replace("{tileRow}", "{y}")
-            .replace("{tileCol}", "{x}");
+    return ImmutableMap.of(
+        "start", interval[0].toString(),
+        "end", interval[1].toString());
+  }
 
-    if (tiles.getTilesets().size() >= 1) {
-      if (mapClientType.equals(MapClient.Type.MAP_LIBRE)) {
+  public abstract Optional<TemporalExtent> temporalExtentToSet();
+
+  public abstract Boolean removeZoomLevelConstraints();
+
+  @Value.Derived
+  public MapClient mapClient() {
+    if (tiles().getTilesets().size() >= 1) {
+      if (mapClientType().equals(MapClient.Type.MAP_LIBRE)) {
         Optional<TileSet> tileSet =
-            tiles.getTilesets().stream()
+            tiles().getTilesets().stream()
                 .filter(ts -> ts.getTileMatrixSetId().equals("WebMercatorQuad"))
                 .findAny();
         if (tileSet.isPresent()) {
           Multimap<String, List<String>> layers = getLayers(tileSet.get());
 
-          this.mapClient =
-              getMapClient(
-                  Type.MAP_LIBRE, styleUrl, removeZoomLevelConstraints, htmlConfig, layers);
+          return getMapClient(
+              Type.MAP_LIBRE, styleUrl(), removeZoomLevelConstraints(), htmlConfig(), layers);
         } else {
           LOGGER.error(
               "Configuration error: {} as the client for the HTML representation of tile sets requires that a tile set with the tiling scheme {} exists.",
-              mapClientType,
+              mapClientType(),
               "WebMercatorQuad");
-          this.mapClient = null;
+          return null;
         }
-      } else if (mapClientType.equals(MapClient.Type.OPEN_LAYERS)) {
-        Multimap<String, List<String>> layers = getLayers(tiles.getTilesets().get(0));
+      } else if (mapClientType().equals(MapClient.Type.OPEN_LAYERS)) {
+        Multimap<String, List<String>> layers = getLayers(tiles().getTilesets().get(0));
 
-        this.mapClient =
-            getMapClient(
-                Type.OPEN_LAYERS, styleUrl, removeZoomLevelConstraints, htmlConfig, layers);
+        return getMapClient(
+            Type.OPEN_LAYERS, styleUrl(), removeZoomLevelConstraints(), htmlConfig(), layers);
       } else {
         LOGGER.error(
             "Configuration error: {} is not a supported map client for the HTML representation of tile sets.",
-            mapClientType);
-        this.mapClient = null;
+            mapClientType());
+        return null;
       }
     } else {
-      this.mapClient = null;
+      return null;
     }
+  }
+
+  @Value.Derived
+  public String xyzTemplate() {
+    return tilesUrl()
+        .replace("{tileMatrixSetId}", "WebMercatorQuad")
+        .replace("{tileMatrix}", "{z}")
+        .replace("{tileRow}", "{y}")
+        .replace("{tileCol}", "{x}");
+  }
+
+  public abstract TileSets tiles();
+
+  public abstract Optional<String> collectionId();
+
+  @Value.Derived
+  public Optional<BoundingBox> spatialExtent() {
+    return spatialExtent()
+        .or(() -> apiData().getDefaultExtent().flatMap(CollectionExtent::getSpatial));
+  }
+
+  @Value.Derived
+  public List<String> tileMatrixSetIds() {
+    return spatialExtent().isPresent()
+        ? tiles().getTilesets().stream()
+            .map(TileSet::getTileMatrixSetId)
+            .filter(
+                tileMatrixSetId ->
+                    mapClientType().equals(MapClient.Type.OPEN_LAYERS)
+                        || tileMatrixSetId.equals("WebMercatorQuad"))
+            .collect(Collectors.toList())
+        : ImmutableList.of();
+  }
+
+  public abstract MapClient.Type mapClientType();
+
+  public abstract String styleUrl();
+
+  public abstract URICustomizer uriCustomizer();
+
+  public abstract Map<String, TileMatrixSet> tileMatrixSets();
+
+  /*@Value.Check
+  TileSetsView chek(){
+
+
+    List<Link> tileTemplates =
+        tiles().getTilesets().stream()
+            .map(OgcResourceMetadata::getLinks)
+            .flatMap(Collection::stream)
+            .filter(link -> Objects.equals(link.getRel(), "item"))
+            .collect(Collectors.toUnmodifiableList());
+
+    Optional<String> tileTemplate =
+        tileTemplates.stream()
+            .filter(link -> Objects.equals(link.getType(), "application/vnd.mapbox-vector-tile"))
+            .map(Link::getHref)
+            .map(
+                href ->
+                    href.replaceAll(
+                        "/\\w+/\\{tileMatrix}/\\{tileRow}/\\{tileCol}",
+                        "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
+            .findFirst();
+    if (tileTemplate.isPresent()) {
+      return new ImmutableTileSetsView.Builder()
+          .from(this)
+          .isVector(true)
+          .build();
+    } else {
+      return new ImmutableTileSetsView.Builder()
+          .from(this)
+          .isVector(false)
+          .build(); }
+    return this;
+  }*/
+
+  public TileSetsView() {
+    super("tiles.mustache");
   }
 
   private MapClient getMapClient(
@@ -336,11 +403,11 @@ public class TileSetsView extends OgcApiView {
                 .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
         .data(
             new ImmutableSource.Builder()
-                .type(isVector ? TYPE.vector : TYPE.raster)
-                .url(xyzTemplate)
+                .type(isVector() ? TYPE.vector : TYPE.raster)
+                .url(xyzTemplate())
                 .putAllLayers(layers)
                 .build())
-        .bounds(Optional.ofNullable(bbox))
+        .bounds(Optional.ofNullable(bbox()))
         .popup(Popup.CLICK_PROPERTIES)
         .styleUrl(Optional.ofNullable(styleUrl))
         .removeZoomLevelConstraints(removeZoomLevelConstraints)

@@ -118,15 +118,16 @@ public class StylesFormatHtml implements StylesFormatExtension {
 
     HtmlConfiguration htmlConfig = apiData.getExtension(HtmlConfiguration.class).orElse(null);
 
-    return new StylesView(
-        apiData,
-        styles,
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        htmlConfig,
-        isNoIndexEnabledForApi(apiData),
-        requestContext.getUriCustomizer(),
-        i18n,
-        requestContext.getLanguage());
+    return new ImmutableStylesView.Builder()
+        .apiData(apiData)
+        .styles(styles)
+        .breadCrumbs(breadCrumbs)
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .htmlConfig(htmlConfig)
+        .noIndex(isNoIndexEnabledForApi(apiData))
+        .uriCustomizer(requestContext.getUriCustomizer())
+        .i18n(i18n)
+        .language(requestContext.getLanguage())
+        .build();
   }
 }

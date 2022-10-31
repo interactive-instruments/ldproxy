@@ -7,11 +7,10 @@
  */
 package de.ii.ogcapi.html.domain;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Charsets;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import io.dropwizard.views.View;
-import java.nio.charset.Charset;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -20,39 +19,35 @@ import javax.annotation.Nullable;
 
 public abstract class OgcApiView extends View {
 
-  protected final OgcApiDataV2 apiData;
-  protected final List<NavigationDTO> breadCrumbs;
-  protected final List<Link> links;
-  protected final HtmlConfiguration htmlConfig;
-  protected final String urlPrefix;
-  protected final String title;
-  protected final String description;
-  protected final boolean noIndex;
+  public abstract HtmlConfiguration htmlConfig();
 
-  protected OgcApiView(
-      String templateName,
-      @Nullable Charset charset,
-      @Nullable OgcApiDataV2 apiData,
-      List<NavigationDTO> breadCrumbs,
-      HtmlConfiguration htmlConfig,
-      boolean noIndex,
-      String urlPrefix,
-      @Nullable List<Link> links,
-      @Nullable String title,
-      @Nullable String description) {
-    super(String.format("/templates/%s", templateName), charset);
-    this.apiData = apiData;
-    this.breadCrumbs = Objects.requireNonNullElse(breadCrumbs, ImmutableList.of());
-    this.links = Objects.requireNonNullElse(links, ImmutableList.of());
-    this.htmlConfig = htmlConfig;
-    this.noIndex = noIndex;
-    this.urlPrefix = urlPrefix;
-    this.title = title;
-    this.description = description;
+  public abstract String urlPrefix();
+
+  public abstract boolean noIndex();
+
+  @Nullable
+  public abstract List<NavigationDTO> breadCrumbs();
+
+  @Nullable
+  public abstract List<Link> links();
+
+  // Constructor Variables as new Member
+
+  @Nullable
+  public abstract String title();
+
+  @Nullable
+  public abstract String description();
+
+  @Nullable
+  public abstract OgcApiDataV2 apiData();
+
+  public OgcApiView(String templateName) {
+    super(String.format("/templates/%s", templateName), Charsets.UTF_8);
   }
 
   public List<NavigationDTO> getFormats() {
-    return links.stream()
+    return links().stream()
         .filter(link -> Objects.equals(link.getRel(), "alternate"))
         .sorted(Comparator.comparing(link -> link.getTypeLabel().toUpperCase()))
         .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
@@ -60,47 +55,53 @@ public abstract class OgcApiView extends View {
   }
 
   public List<NavigationDTO> getBreadCrumbs() {
-    return breadCrumbs;
+    return breadCrumbs();
   }
 
   public boolean hasBreadCrumbs() {
-    return breadCrumbs.size() > 1;
+    return breadCrumbs().size() > 1;
   }
 
   public String getBreadCrumbsList() {
     String result = "";
-    for (int i = 0; i < breadCrumbs.size(); i++) {
-      NavigationDTO item = breadCrumbs.get(i);
+    for (int i = 0; i < breadCrumbs().size(); i++) {
+      NavigationDTO item = breadCrumbs().get(i);
       result +=
           "{ \"@type\": \"ListItem\", \"position\": "
               + (i + 1)
               + ", \"name\": \""
               + item.label
               + "\"";
-      if (Objects.nonNull(item.url)) result += ", \"item\": \"" + item.url + "\"";
+      if (Objects.nonNull(item.url)) {
+        result += ", \"item\": \"" + item.url + "\"";
+      }
       result += " }";
-      if (i < breadCrumbs.size() - 1) result += ",\n    ";
+      if (i < breadCrumbs().size() - 1) {
+        result += ",\n    ";
+      }
     }
     return result;
   }
 
   public String getUrlPrefix() {
-    return urlPrefix;
+    return urlPrefix();
   }
 
   public String getTitle() {
-    return title;
+    return title();
   }
 
   public String getDescription() {
-    return description;
+    return description();
   }
 
   public String getAttribution() {
-    if (Objects.nonNull(htmlConfig.getLeafletAttribution()))
-      return htmlConfig.getLeafletAttribution();
-    if (Objects.nonNull(htmlConfig.getOpenLayersAttribution()))
-      return htmlConfig.getOpenLayersAttribution();
-    return htmlConfig.getBasemapAttribution();
+    if (Objects.nonNull(htmlConfig().getLeafletAttribution())) {
+      return htmlConfig().getLeafletAttribution();
+    }
+    if (Objects.nonNull(htmlConfig().getOpenLayersAttribution())) {
+      return htmlConfig().getOpenLayersAttribution();
+    }
+    return htmlConfig().getBasemapAttribution();
   }
 }

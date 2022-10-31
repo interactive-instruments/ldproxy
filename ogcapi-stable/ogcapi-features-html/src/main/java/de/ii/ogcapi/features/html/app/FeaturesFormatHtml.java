@@ -339,7 +339,7 @@ public class FeaturesFormatHtml
     ImmutableFeatureTransformationContextHtml transformationContextHtml =
         ImmutableFeatureTransformationContextHtml.builder()
             .from(transformationContext)
-            .collectionView(featureTypeDataset)
+            .collectionView((ModifiableFeatureCollectionView) featureTypeDataset)
             .codelists(
                 entityRegistry.getEntitiesForType(Codelist.class).stream()
                     .collect(Collectors.toMap(c -> c.getId(), c -> c)))
@@ -351,7 +351,7 @@ public class FeaturesFormatHtml
     return Optional.of(new FeatureEncoderHtml(transformationContextHtml));
   }
 
-  private FeatureCollectionView createFeatureCollectionView(
+  private ModifiableFeatureCollectionView createFeatureCollectionView(
       OgcApi api,
       FeatureTypeConfigurationOgcApi featureType,
       URICustomizer uriCustomizer,
@@ -393,54 +393,46 @@ public class FeaturesFormatHtml
     boolean removeZoomLevelConstraints =
         config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints).orElse(false);
 
-    FeatureCollectionView featureTypeDataset =
-        new FeatureCollectionView(
-            apiData,
-            featureType,
-            api.getSpatialExtent(featureType.getId()),
-            bare ? "featureCollectionBare" : "featureCollection",
-            requestUri,
-            featureType.getId(),
-            featureType.getLabel(),
-            featureType.getDescription().orElse(null),
-            attribution,
-            staticUrlPrefix,
-            htmlConfig.orElse(null),
-            null,
-            noIndex,
-            i18n,
-            language.orElse(Locale.ENGLISH),
-            mapPosition,
-            mapClientType,
-            styleUrl,
-            removeZoomLevelConstraints,
-            filterableFields,
-            geometryProperties);
-
-    featureTypeDataset.temporalExtent = api.getTemporalExtent(featureType.getId()).orElse(null);
-    api.getSpatialExtent(featureType.getId())
-        .ifPresent(
-            bbox ->
-                featureTypeDataset.bbox =
-                    ImmutableMap.of(
-                        "minLng",
-                        Double.toString(bbox.getXmin()),
-                        "minLat",
-                        Double.toString(bbox.getYmin()),
-                        "maxLng",
-                        Double.toString(bbox.getXmax()),
-                        "maxLat",
-                        Double.toString(bbox.getYmax())));
-
-    featureTypeDataset.uriBuilder =
-        uriCustomizer.copy().ensureParameter("f", MEDIA_TYPE.parameter());
-    featureTypeDataset.uriBuilderWithFOnly =
-        uriCustomizer.copy().clearParameters().ensureParameter("f", MEDIA_TYPE.parameter());
-
-    return featureTypeDataset;
+    // Todo should be working after the constructor of FeatureCollectionView is removed
+    // Todo after constructor is gone
+    /**
+     * featureTypeDataset.temporalExtent = api.getTemporalExtent(featureType.getId()).orElse(null);
+     * api.getSpatialExtent(featureType.getId()) .ifPresent( bbox -> featureTypeDataset.bbox =
+     * ImmutableMap.of( "minLng", Double.toString(bbox.getXmin()), "minLat",
+     * Double.toString(bbox.getYmin()), "maxLng", Double.toString(bbox.getXmax()), "maxLat",
+     * Double.toString(bbox.getYmax())));
+     *
+     * <p>featureTypeDataset.uriBuilder = uriCustomizer.copy().ensureParameter("f",
+     * MEDIA_TYPE.parameter()); featureTypeDataset.uriBuilderWithFOnly =
+     * uriCustomizer.copy().clearParameters().ensureParameter("f", MEDIA_TYPE.parameter());
+     */
+    return ModifiableFeatureCollectionView.create()
+        .setApiData(apiData)
+        .setCollectionData(featureType)
+        .setSpatialExtent(api.getSpatialExtent())
+        .setBare(bare)
+        .setUri(requestUri)
+        .setName(featureType.getId())
+        .setTitle(featureType.getLabel())
+        .setDescription(featureType.getDescription().toString())
+        .setAttribution(attribution)
+        .setUrlPrefix(staticUrlPrefix)
+        .setHtmlConfig(htmlConfig.orElse(null))
+        .setPersistentUri(null)
+        .setNoIndex(noIndex)
+        .setI18n(i18n)
+        .setLanguage(language.orElse(Locale.ENGLISH))
+        .setMapPosition(mapPosition)
+        .setMapClientType(mapClientType)
+        .setStyleUrl(styleUrl)
+        .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
+        .setQueryables(filterableFields)
+        .setGeometryProperties(geometryProperties)
+        .setTemporalExtent(
+            Optional.ofNullable(api.getTemporalExtent(featureType.getId()).orElse(null)));
   }
 
-  private FeatureCollectionView createFeatureDetailsView(
+  private ModifiableFeatureCollectionView createFeatureDetailsView(
       OgcApi api,
       FeatureTypeConfigurationOgcApi featureType,
       URICustomizer uriCustomizer,
@@ -496,62 +488,78 @@ public class FeaturesFormatHtml
     boolean removeZoomLevelConstraints =
         config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints).orElse(false);
 
-    FeatureCollectionView featureTypeDataset =
-        new FeatureCollectionView(
-            apiData,
-            featureType,
-            api.getSpatialExtent(featureType.getId()),
-            "featureDetails",
-            requestUri,
-            featureType.getId(),
-            featureType.getLabel(),
-            featureType.getDescription().orElse(null),
-            attribution,
-            staticUrlPrefix,
-            htmlConfig.orElse(null),
-            persistentUri,
-            noIndex,
-            i18n,
-            language.orElse(Locale.ENGLISH),
-            mapPosition,
-            mapClientType,
-            styleUrl,
-            removeZoomLevelConstraints,
-            null,
-            geometryProperties);
-    featureTypeDataset.description = featureType.getDescription().orElse(featureType.getLabel());
-
-    featureTypeDataset.breadCrumbs =
-        new ImmutableList.Builder<NavigationDTO>()
-            .add(
-                new NavigationDTO(
-                    rootTitle,
-                    uriBuilder
-                        .copy()
-                        .removeLastPathSegments(3 + subPathToLandingPage.size())
-                        .toString()))
-            .add(
-                new NavigationDTO(apiLabel, uriBuilder.copy().removeLastPathSegments(3).toString()))
-            .add(
-                new NavigationDTO(
-                    collectionsTitle, uriBuilder.copy().removeLastPathSegments(2).toString()))
-            .add(
-                new NavigationDTO(
-                    featureType.getLabel(), uriBuilder.copy().removeLastPathSegments(1).toString()))
-            .add(new NavigationDTO(itemsTitle, uriBuilder.toString()))
-            .add(new NavigationDTO(featureId))
-            .build();
-
-    featureTypeDataset.formats =
+    List<NavigationDTO> formats =
         links.stream()
             .filter(link -> Objects.equals(link.getRel(), "alternate"))
             .sorted(Comparator.comparing(link -> link.getTypeLabel().toUpperCase()))
             .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
             .collect(Collectors.toList());
 
-    featureTypeDataset.uriBuilder = uriCustomizer.copy();
+    return ModifiableFeatureCollectionView.create()
+        .setApiData(apiData)
+        .setCollectionData(featureType)
+        .setSpatialExtent(api.getSpatialExtent())
+        .setUri(requestUri)
+        .setName(featureType.getId())
+        .setTitle(featureType.getLabel())
+        .setDescription(featureType.getDescription().toString())
+        .setAttribution(attribution)
+        .setUrlPrefix(staticUrlPrefix)
+        .setHtmlConfig(htmlConfig.orElse(null))
+        .setPersistentUri(null)
+        .setNoIndex(noIndex)
+        .setI18n(i18n)
+        .setLanguage(language.orElse(Locale.ENGLISH))
+        .setMapPosition(mapPosition)
+        .setMapClientType(mapClientType)
+        .setStyleUrl(styleUrl)
+        .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
+        .setGeometryProperties(geometryProperties)
+        .setTemporalExtent(
+            Optional.ofNullable(api.getTemporalExtent(featureType.getId()).orElse(null)))
+        .setFormats(formats)
+        .setBreadCrumbs(
+            new ImmutableList.Builder<NavigationDTO>()
+                .add(
+                    new NavigationDTO(
+                        rootTitle,
+                        uriBuilder
+                            .copy()
+                            .removeLastPathSegments(3 + subPathToLandingPage.size())
+                            .toString()))
+                .add(
+                    new NavigationDTO(
+                        apiLabel, uriBuilder.copy().removeLastPathSegments(3).toString()))
+                .add(
+                    new NavigationDTO(
+                        collectionsTitle, uriBuilder.copy().removeLastPathSegments(2).toString()))
+                .add(
+                    new NavigationDTO(
+                        featureType.getLabel(),
+                        uriBuilder.copy().removeLastPathSegments(1).toString()))
+                .add(new NavigationDTO(itemsTitle, uriBuilder.toString()))
+                .add(new NavigationDTO(featureId))
+                .build());
 
-    return featureTypeDataset;
+    /**
+     * featureTypeDataset.description = featureType.getDescription().orElse(featureType.getLabel());
+     *
+     * <p>featureTypeDataset.breadCrumbs = new ImmutableList.Builder<NavigationDTO>() .add( new
+     * NavigationDTO( rootTitle, uriBuilder .copy() .removeLastPathSegments(3 +
+     * subPathToLandingPage.size()) .toString())) .add( new NavigationDTO(apiLabel,
+     * uriBuilder.copy().removeLastPathSegments(3).toString())) .add( new NavigationDTO(
+     * collectionsTitle, uriBuilder.copy().removeLastPathSegments(2).toString())) .add( new
+     * NavigationDTO( featureType.getLabel(),
+     * uriBuilder.copy().removeLastPathSegments(1).toString())) .add(new NavigationDTO(itemsTitle,
+     * uriBuilder.toString())) .add(new NavigationDTO(featureId)) .build();
+     *
+     * <p>/ featureTypeDataset.formats = links.stream() .filter(link ->
+     * Objects.equals(link.getRel(), "alternate")) .sorted(Comparator.comparing(link ->
+     * link.getTypeLabel().toUpperCase())) .map(link -> new NavigationDTO(link.getTypeLabel(),
+     * link.getHref())) .collect(Collectors.toList());
+     *
+     * <p>featureTypeDataset.uriBuilder = uriCustomizer.copy();
+     */
   }
 
   private void addDatasetNavigation(
@@ -569,29 +577,20 @@ public class FeaturesFormatHtml
 
     URICustomizer uriBuilder = uriCustomizer.clearParameters().removePathSegment("items", -1);
 
-    featureCollectionView.breadCrumbs =
-        new ImmutableList.Builder<NavigationDTO>()
-            .add(
-                new NavigationDTO(
-                    rootTitle,
-                    uriBuilder
-                        .copy()
-                        .removeLastPathSegments(2 + subPathToLandingPage.size())
-                        .toString()))
-            .add(
-                new NavigationDTO(apiLabel, uriBuilder.copy().removeLastPathSegments(2).toString()))
-            .add(
-                new NavigationDTO(
-                    collectionsTitle, uriBuilder.copy().removeLastPathSegments(1).toString()))
-            .add(new NavigationDTO(collectionLabel, uriBuilder.toString()))
-            .add(new NavigationDTO(itemsTitle))
-            .build();
-
-    featureCollectionView.formats =
-        links.stream()
-            .filter(link -> Objects.equals(link.getRel(), "alternate"))
-            .sorted(Comparator.comparing(link -> link.getTypeLabel().toUpperCase()))
-            .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
-            .collect(Collectors.toList());
+    // Todo after constructor is deleted
+    /**
+     * featureCollectionView.breadCrumbs = new ImmutableList.Builder<NavigationDTO>() .add( new
+     * NavigationDTO( rootTitle, uriBuilder .copy() .removeLastPathSegments(2 +
+     * subPathToLandingPage.size()) .toString())) .add( new NavigationDTO(apiLabel,
+     * uriBuilder.copy().removeLastPathSegments(2).toString())) .add( new NavigationDTO(
+     * collectionsTitle, uriBuilder.copy().removeLastPathSegments(1).toString())) .add(new
+     * NavigationDTO(collectionLabel, uriBuilder.toString())) .add(new NavigationDTO(itemsTitle))
+     * .build();
+     *
+     * <p>featureCollectionView.formats = links.stream() .filter(link ->
+     * Objects.equals(link.getRel(), "alternate")) .sorted(Comparator.comparing(link ->
+     * link.getTypeLabel().toUpperCase())) .map(link -> new NavigationDTO(link.getTypeLabel(),
+     * link.getHref())) .collect(Collectors.toList());
+     */
   }
 }

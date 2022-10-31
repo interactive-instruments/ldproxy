@@ -89,16 +89,19 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
 
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
-    return new TileMatrixSetsView(
-        api.getData(),
-        tileMatrixSets,
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        htmlConfig,
-        isNoIndexEnabledForApi(api.getData()),
-        requestContext.getUriCustomizer(),
-        i18n,
-        requestContext.getLanguage());
+    return new ImmutableTileMatrixSetView.Builder()
+        .apiData(api.getData())
+        .tileMatrixSet((TileMatrixSetData) tileMatrixSets.getTileMatrixSets())
+        .breadCrumbs(breadCrumbs)
+        .staticUrlPrefix(requestContext.getStaticUrlPrefix())
+        .htmlConfig(htmlConfig)
+        .noIndex(isNoIndexEnabledForApi(api.getData()))
+        .uriCustomizer(requestContext.getUriCustomizer())
+        .i18n(i18n)
+        .language(requestContext.getLanguage())
+        .description(i18n.get("tileMatrixSetsDescription", requestContext.getLanguage()))
+        .links(tileMatrixSets.getLinks())
+        .build();
   }
 
   @Override
@@ -129,16 +132,16 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
             .build();
 
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
-
-    return new TileMatrixSetView(
-        api.getData(),
-        tileMatrixSet,
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        htmlConfig,
-        isNoIndexEnabledForApi(api.getData()),
-        requestContext.getUriCustomizer(),
-        i18n,
-        requestContext.getLanguage());
+    return new ImmutableTileMatrixSetView.Builder()
+        .apiData(api.getData())
+        .tileMatrixSet(tileMatrixSet)
+        .breadCrumbs(breadCrumbs)
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .htmlConfig(htmlConfig)
+        .noIndex(isNoIndexEnabledForApi(api.getData()))
+        .uriCustomizer(requestContext.getUriCustomizer())
+        .i18n(i18n)
+        .language(requestContext.getLanguage())
+        .build();
   }
 }
