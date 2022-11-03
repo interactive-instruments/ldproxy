@@ -7,12 +7,14 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import de.ii.xtraplatform.features.domain.FeatureBase;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -134,12 +136,27 @@ public interface FeatureSfFlat extends FeatureBase<PropertySfFlat, FeatureSchema
   }
 
   @Value.Lazy
-  default boolean hasGeometry() {
-    return getGeometry().isPresent();
-  }
+  default Optional<PropertySfFlat> getGeometry(List<String> properties) {
+    Optional<PropertySfFlat> geometry =
+        properties.stream()
+            .map(
+                p ->
+                    getProperties().stream()
+                        .filter(
+                            property ->
+                                property
+                                    .getSchema()
+                                    .filter(SchemaBase::isSpatial)
+                                    .filter(p2 -> p.equals(p2.getName()))
+                                    .isPresent())
+                        .findFirst())
+            .flatMap(Optional::stream)
+            .findFirst();
 
-  @Value.Lazy
-  default Optional<PropertySfFlat> getGeometry() {
+    if (geometry.isPresent()) {
+      return geometry;
+    }
+
     return getProperties().stream()
         .filter(
             property ->
@@ -152,6 +169,18 @@ public interface FeatureSfFlat extends FeatureBase<PropertySfFlat, FeatureSchema
   }
 
   default Optional<Geometry> getJtsGeometry(GeometryFactory geometryFactory) {
-    return getGeometry().flatMap(geometry -> geometry.getJtsGeometry(geometryFactory));
+    return getGeometry(ImmutableList.of())
+        .flatMap(geometry -> geometry.getJtsGeometry(geometryFactory));
+  }
+
+  default Optional<Geometry> getJtsGeometry(
+      List<String> geometryProperties, GeometryFactory geometryFactory) {
+    return getGeometry(geometryProperties)
+        .flatMap(geometry -> geometry.getJtsGeometry(geometryFactory));
+  }
+
+  default Optional<Geometry> getJtsGeometry(
+      PropertySfFlat geometryProperty, GeometryFactory geometryFactory) {
+    return geometryProperty.getJtsGeometry(geometryFactory);
   }
 }

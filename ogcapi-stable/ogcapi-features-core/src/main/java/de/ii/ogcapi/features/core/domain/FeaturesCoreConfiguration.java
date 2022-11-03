@@ -130,6 +130,16 @@ public interface FeaturesCoreConfiguration
   }
 
   /**
+   * @langEn Name of the property to use for the bbox query parameter. The default value is the
+   *     primary geometry property.
+   * @langDe Name der Eigenschaft, die für den bbox-Query-Parameter verwendet werden soll. Der
+   *     Standardwert ist die primäre Geometrieeigenschaft.
+   * @default `{}`
+   */
+  @Nullable
+  String getBboxProperty();
+
+  /**
    * @langEn Default coordinate reference system, either `CRS84` for datasets with 2D geometries or
    *     `CRS84h` for datasets with 3D geometries.
    * @langDe Setzt das Standard-Koordinatenreferenzsystem, entweder 'CRS84' für einen Datensatz mit

@@ -347,9 +347,28 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     Optional<FeatureSchema> featureSchema = providers.getFeatureSchema(apiData, collectionData);
 
-    featureSchema
-        .flatMap(SchemaBase::getPrimaryGeometry)
-        .ifPresent(geometry -> queryables.put(PARAMETER_BBOX, geometry.getFullPathAsString()));
+    apiData
+        .getExtension(FeaturesCoreConfiguration.class, collectionData.getId())
+        .map(FeaturesCoreConfiguration::getBboxProperty)
+        .ifPresentOrElse(
+            bboxProperty ->
+                featureSchema
+                    .flatMap(
+                        schema ->
+                            schema.getAllNestedProperties().stream()
+                                .filter(
+                                    p ->
+                                        p.getFullPathAsString().equals(bboxProperty)
+                                            && p.isSpatial())
+                                .findFirst())
+                    .ifPresent(
+                        geometry -> queryables.put(PARAMETER_BBOX, geometry.getFullPathAsString())),
+            () ->
+                featureSchema
+                    .flatMap(SchemaBase::getPrimaryGeometry)
+                    .ifPresent(
+                        geometry ->
+                            queryables.put(PARAMETER_BBOX, geometry.getFullPathAsString())));
 
     featureSchema
         .flatMap(SchemaBase::getPrimaryInterval)
