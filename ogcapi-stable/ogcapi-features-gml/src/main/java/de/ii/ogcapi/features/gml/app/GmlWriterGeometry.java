@@ -119,83 +119,80 @@ public class GmlWriterGeometry implements GmlWriter {
         && context.geometryType().isPresent()) {
       FeatureSchema schema = context.schema().orElseThrow();
 
-      // TODO hack, remove after #719 is fixed
-      if (!schema.getName().equals("bbox")) {
-        String elementNameProperty = schema.getName();
-        context.encoding().write("<");
-        context.encoding().write(elementNameProperty);
+      String elementNameProperty = schema.getName();
+      context.encoding().write("<");
+      context.encoding().write(elementNameProperty);
 
-        SimpleFeatureGeometry geometryType = context.geometryType().get();
-        context.encoding().getState().setCurrentGeometryType(geometryType);
+      SimpleFeatureGeometry geometryType = context.geometryType().get();
+      context.encoding().getState().setCurrentGeometryType(geometryType);
 
-        if (geometryType.equals(SimpleFeatureGeometry.MULTI_POLYGON)
-            && schema.getConstraints().flatMap(SchemaConstraints::getComposite).orElse(false)
-            && !context.encoding().getGmlVersion().equals(GML21)) {
-          if (schema.getConstraints().flatMap(SchemaConstraints::getClosed).orElse(false)) {
-            // a solid with an outer shell
-            context.encoding().write("><");
-            context.encoding().write(getGmlElementName(context, SOLID));
-            context.encoding().write(" srsName=\"");
-            context.encoding().write(context.encoding().getTargetCrs().toUriString());
-            context.encoding().write("\"><");
-            context.encoding().write(getGmlElementName(context, EXTERIOR));
-            context.encoding().write("><");
-            context.encoding().write(getGmlElementName(context, COMPOSITE_SURFACE));
-            context.encoding().write(">");
-
-            context
-                .encoding()
-                .pushElement(
-                    elementNameProperty,
-                    getGmlElementName(context, SOLID),
-                    getGmlElementName(context, EXTERIOR),
-                    getGmlElementName(context, COMPOSITE_SURFACE));
-            context.encoding().getState().setCompositeGeometry(true);
-            context.encoding().getState().setClosedGeometry(true);
-          } else {
-            // a composite surface
-            context.encoding().write("><");
-            context.encoding().write(getGmlElementName(context, COMPOSITE_SURFACE));
-            context.encoding().write(" srsName=\"");
-            context.encoding().write(context.encoding().getTargetCrs().toUriString());
-            context.encoding().write("\">");
-
-            context
-                .encoding()
-                .pushElement(elementNameProperty, getGmlElementName(context, COMPOSITE_SURFACE));
-            context.encoding().getState().setCompositeGeometry(true);
-          }
-        } else if (geometryType.equals(SimpleFeatureGeometry.MULTI_LINE_STRING)
-            && schema.getConstraints().flatMap(SchemaConstraints::getComposite).orElse(false)
-            && !context.encoding().getGmlVersion().equals(GML21)) {
-          // a composite curve
+      if (geometryType.equals(SimpleFeatureGeometry.MULTI_POLYGON)
+          && schema.getConstraints().flatMap(SchemaConstraints::getComposite).orElse(false)
+          && !context.encoding().getGmlVersion().equals(GML21)) {
+        if (schema.getConstraints().flatMap(SchemaConstraints::getClosed).orElse(false)) {
+          // a solid with an outer shell
           context.encoding().write("><");
-          context.encoding().write(getGmlElementName(context, COMPOSITE_CURVE));
+          context.encoding().write(getGmlElementName(context, SOLID));
+          context.encoding().write(" srsName=\"");
+          context.encoding().write(context.encoding().getTargetCrs().toUriString());
+          context.encoding().write("\"><");
+          context.encoding().write(getGmlElementName(context, EXTERIOR));
+          context.encoding().write("><");
+          context.encoding().write(getGmlElementName(context, COMPOSITE_SURFACE));
+          context.encoding().write(">");
+
+          context
+              .encoding()
+              .pushElement(
+                  elementNameProperty,
+                  getGmlElementName(context, SOLID),
+                  getGmlElementName(context, EXTERIOR),
+                  getGmlElementName(context, COMPOSITE_SURFACE));
+          context.encoding().getState().setCompositeGeometry(true);
+          context.encoding().getState().setClosedGeometry(true);
+        } else {
+          // a composite surface
+          context.encoding().write("><");
+          context.encoding().write(getGmlElementName(context, COMPOSITE_SURFACE));
           context.encoding().write(" srsName=\"");
           context.encoding().write(context.encoding().getTargetCrs().toUriString());
           context.encoding().write("\">");
 
           context
               .encoding()
-              .pushElement(elementNameProperty, getGmlElementName(context, COMPOSITE_CURVE));
+              .pushElement(elementNameProperty, getGmlElementName(context, COMPOSITE_SURFACE));
           context.encoding().getState().setCompositeGeometry(true);
-        } else {
-          // a regular multi-surface
-          String elementNameObject =
-              Objects.requireNonNull(
-                  GEOMETRY_ELEMENT.get(context.encoding().getGmlVersion()).get(geometryType));
-
-          context.encoding().write("><");
-          context.encoding().write(elementNameObject);
-          context.encoding().write(" srsName=\"");
-          context.encoding().write(context.encoding().getTargetCrs().toUriString());
-          context.encoding().write("\">");
-
-          context.encoding().pushElement(elementNameProperty, elementNameObject);
         }
+      } else if (geometryType.equals(SimpleFeatureGeometry.MULTI_LINE_STRING)
+          && schema.getConstraints().flatMap(SchemaConstraints::getComposite).orElse(false)
+          && !context.encoding().getGmlVersion().equals(GML21)) {
+        // a composite curve
+        context.encoding().write("><");
+        context.encoding().write(getGmlElementName(context, COMPOSITE_CURVE));
+        context.encoding().write(" srsName=\"");
+        context.encoding().write(context.encoding().getTargetCrs().toUriString());
+        context.encoding().write("\">");
 
-        context.encoding().getState().setInGeometry(true);
+        context
+            .encoding()
+            .pushElement(elementNameProperty, getGmlElementName(context, COMPOSITE_CURVE));
+        context.encoding().getState().setCompositeGeometry(true);
+      } else {
+        // a regular multi-surface
+        String elementNameObject =
+            Objects.requireNonNull(
+                GEOMETRY_ELEMENT.get(context.encoding().getGmlVersion()).get(geometryType));
+
+        context.encoding().write("><");
+        context.encoding().write(elementNameObject);
+        context.encoding().write(" srsName=\"");
+        context.encoding().write(context.encoding().getTargetCrs().toUriString());
+        context.encoding().write("\">");
+
+        context.encoding().pushElement(elementNameProperty, elementNameObject);
       }
+
+      context.encoding().getState().setInGeometry(true);
     }
 
     next.accept(context);
