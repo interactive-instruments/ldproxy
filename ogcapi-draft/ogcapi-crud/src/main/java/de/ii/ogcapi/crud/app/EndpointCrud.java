@@ -61,6 +61,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -256,6 +257,31 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
 
         queryParameters =
+            getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.PATCH);
+        headers = getHeaders(extensionRegistry, apiData, path, collectionId, HttpMethods.PATCH);
+        operationSummary = "update a feature in the feature collection '" + collectionId + "'";
+        operationDescription =
+            Optional.of(
+                "The content of the request is a partial feature in one of the supported encodings. The id of updated feature is `{featureId}`.");
+        requestContent =
+            collectionId.startsWith("{")
+                ? getRequestContent(apiData, Optional.empty(), subSubPath, HttpMethods.PATCH)
+                : getRequestContent(
+                    apiData, Optional.of(collectionId), subSubPath, HttpMethods.PATCH);
+        ApiOperation.of(
+                resourcePath,
+                HttpMethods.PATCH,
+                requestContent,
+                queryParameters,
+                headers,
+                operationSummary,
+                operationDescription,
+                Optional.empty(),
+                TAGS)
+            .ifPresent(
+                operation -> resourceBuilder.putOperations(HttpMethods.PATCH.name(), operation));
+
+        queryParameters =
             getQueryParameters(extensionRegistry, apiData, path, collectionId, HttpMethods.DELETE);
         headers = getHeaders(extensionRegistry, apiData, path, collectionId, HttpMethods.DELETE);
         operationSummary = "delete a feature in the feature collection '" + collectionId + "'";
@@ -297,8 +323,6 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
         providers.getFeatureProviderOrThrow(api.getData(), collectionData);
 
     checkTransactional(featureProvider);
-
-    checkAuthorization(api.getData(), optionalUser);
 
     FeaturesCoreConfiguration coreConfiguration =
         collectionData
@@ -350,8 +374,6 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
 
     checkTransactional(featureProvider);
 
-    checkAuthorization(api.getData(), optionalUser);
-
     FeaturesCoreConfiguration coreConfiguration =
         collectionData
             .getExtension(FeaturesCoreConfiguration.class)
@@ -400,6 +422,74 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
   }
 
   @Path("/{collectionId}/items/{featureId}")
+  @PATCH
+  @Consumes("application/geo+json")
+  public Response patchItem(
+      @Auth Optional<User> optionalUser,
+      @PathParam("collectionId") String collectionId,
+      @PathParam("featureId") final String featureId,
+      @HeaderParam("Content-Crs") String crs,
+      @Context OgcApi api,
+      @Context ApiRequestContext apiRequestContext,
+      @Context HttpServletRequest request,
+      InputStream requestBody) {
+
+    FeatureTypeConfigurationOgcApi collectionData =
+        api.getData().getCollections().get(collectionId);
+
+    FeatureProvider2 featureProvider =
+        providers.getFeatureProviderOrThrow(api.getData(), collectionData);
+
+    checkTransactional(featureProvider);
+
+    FeaturesCoreConfiguration coreConfiguration =
+        collectionData
+            .getExtension(FeaturesCoreConfiguration.class)
+            .filter(ExtensionConfiguration::isEnabled)
+            .filter(
+                cfg ->
+                    cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature)
+                        != FeaturesCoreConfiguration.ItemType.unknown)
+            .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
+
+    String featureType = coreConfiguration.getFeatureType().orElse(collectionId);
+
+    // TODO Decide after the open issues for "optimistic locking" have been resolved by the OGC SWG.
+    //      In general, it would be safer to use FeaturesQuery to generate the query, but it seems
+    //      likely that eventually Last-Modified will be used for validation, not ETag.
+    Builder eTagQueryBuilder =
+        ImmutableFeatureQuery.builder()
+            .type(featureType)
+            .filter(In.of(ScalarLiteral.of(featureId)))
+            .returnsSingleFeature(true)
+            .crs(
+                Optional.ofNullable(crs)
+                    .map(s -> s.substring(1, s.length() - 1))
+                    .map(s -> EpsgCrs.fromString(s))
+                    .orElseGet(coreConfiguration::getDefaultEpsgCrs))
+            .schemaScope(Scope.MUTATIONS)
+            .eTag(Type.STRONG);
+
+    FeatureQuery eTagQuery =
+        processCoordinatePrecision(eTagQueryBuilder, coreConfiguration.getCoordinatePrecision())
+            .build();
+
+    QueryInputFeatureReplace queryInput =
+        ImmutableQueryInputFeatureReplace.builder()
+            .from(getGenericQueryInput(api.getData()))
+            .collectionId(collectionId)
+            .featureType(featureType)
+            .featureId(featureId)
+            .query(eTagQuery)
+            .featureProvider(featureProvider)
+            .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
+            .requestBody(requestBody)
+            .build();
+
+    return commandHandler.patchItemResponse(queryInput, apiRequestContext);
+  }
+
+  @Path("/{collectionId}/items/{featureId}")
   @DELETE
   public Response deleteItem(
       @Auth Optional<User> optionalUser,
@@ -413,8 +503,6 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             api.getData(), api.getData().getCollections().get(collectionId));
 
     checkTransactional(featureProvider);
-
-    checkAuthorization(api.getData(), optionalUser);
 
     QueryInputFeatureDelete queryInput =
         ImmutableQueryInputFeatureDelete.builder()

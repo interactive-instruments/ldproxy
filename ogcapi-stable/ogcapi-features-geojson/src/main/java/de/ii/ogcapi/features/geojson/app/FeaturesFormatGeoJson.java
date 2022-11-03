@@ -260,7 +260,8 @@ public class FeaturesFormatGeoJson
     Schema schema = new ObjectSchema();
     String collectionId = path.split("/", 4)[2];
     if ((path.matches("/collections/[^//]+/items/[^//]+/?") && method == HttpMethods.PUT)
-        || (path.matches("/collections/[^//]+/items/?") && method == HttpMethods.POST)) {
+        || (path.matches("/collections/[^//]+/items/?") && method == HttpMethods.POST)
+        || (path.matches("/collections/[^//]+/items/[^//]+/?") && method == HttpMethods.PATCH)) {
 
       if (collectionId.equals("{collectionId}")
           && apiData

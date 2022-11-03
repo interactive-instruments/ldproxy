@@ -250,7 +250,6 @@ public class EndpointStyleMetadataManager extends Endpoint {
       byte[] requestBody) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
     checkPathParameter(
         extensionRegistry, apiData, "/styles/{styleId}/metadata", "styleId", styleId);
 
@@ -286,7 +285,6 @@ public class EndpointStyleMetadataManager extends Endpoint {
       byte[] requestBody) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
     checkPathParameter(
         extensionRegistry, apiData, "/styles/{styleId}/metadata", "styleId", styleId);
 
