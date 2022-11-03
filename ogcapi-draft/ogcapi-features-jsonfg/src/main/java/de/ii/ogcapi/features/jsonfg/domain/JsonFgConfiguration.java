@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.features.jsonfg.domain.ImmutableJsonFgConfiguration.Builder;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -63,7 +64,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true)
 @JsonDeserialize(builder = Builder.class)
-public interface JsonFgConfiguration extends ExtensionConfiguration {
+public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
