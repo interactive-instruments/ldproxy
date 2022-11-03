@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import de.ii.ogcapi.tilematrixsets.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData.Builder;
 import de.ii.ogcapi.tiles.domain.provider.Rule;
 import java.util.List;
