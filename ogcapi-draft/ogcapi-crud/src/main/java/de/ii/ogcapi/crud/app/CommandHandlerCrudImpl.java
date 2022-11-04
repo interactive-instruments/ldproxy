@@ -123,7 +123,12 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
         queryInput
             .getFeatureProvider()
             .transactions()
-            .updateFeature(queryInput.getFeatureType(), queryInput.getFeatureId(), featureTokenSource, crs, true);
+            .updateFeature(
+                queryInput.getFeatureType(),
+                queryInput.getFeatureId(),
+                featureTokenSource,
+                crs,
+                true);
 
     result.getError().ifPresent(QueriesHandler::processStreamError);
 
