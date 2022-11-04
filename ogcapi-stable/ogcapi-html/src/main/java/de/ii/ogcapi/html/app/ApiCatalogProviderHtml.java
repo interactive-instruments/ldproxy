@@ -105,12 +105,14 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
                 .i18n(i18n)
                 .language(language.get())
                 .links(apiCatalog.getLinks())
-                .breadCrumbs( new ImmutableList.Builder<NavigationDTO>()
-                    .add(new NavigationDTO(i18n.get("root", language), true))
-                    .build())
-                .description(apiCatalog.getDescription().orElse(i18n.get("rootDescription", language)))
+                .breadCrumbs(
+                    new ImmutableList.Builder<NavigationDTO>()
+                        .add(new NavigationDTO(i18n.get("root", language), true))
+                        .build())
+                .description(
+                    apiCatalog.getDescription().orElse(i18n.get("rootDescription", language)))
                 .title(apiCatalog.getTitle().orElse(i18n.get("rootTitle", language)))
-                .isApiCatalog(false))
+                .build())
         .build();
   }
 }
