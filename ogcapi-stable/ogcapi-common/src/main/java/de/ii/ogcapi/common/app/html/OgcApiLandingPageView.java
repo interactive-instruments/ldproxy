@@ -33,7 +33,7 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
 
   public abstract LandingPage apiLandingPage();
 
-  public abstract String dataSourceUrl();
+  public abstract Optional<String> dataSourceUrl();
 
   @Value.Derived
   public String mainLinksTitle() {
@@ -61,7 +61,7 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
         .orElse(null);
   }
 
-  public abstract String keywordsWithQuotes();
+  public abstract Optional<String> keywordsWithQuotes();
 
   @Value.Derived
   public boolean spatialSearch() {

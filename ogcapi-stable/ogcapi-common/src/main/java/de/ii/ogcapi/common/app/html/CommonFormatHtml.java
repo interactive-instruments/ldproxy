@@ -103,6 +103,7 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
 
     OgcApiLandingPageView landingPageView =
         new ImmutableOgcApiLandingPageView.Builder()
+            .apiData(api.getData())
             .apiLandingPage(apiLandingPage)
             .urlPrefix(requestContext.getStaticUrlPrefix())
             .htmlConfig(htmlConfig)
