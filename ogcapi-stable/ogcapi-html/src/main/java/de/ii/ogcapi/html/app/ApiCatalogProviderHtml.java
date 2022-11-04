@@ -96,23 +96,23 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
     return Response.ok()
         .entity(
             new ImmutableServiceOverviewView.Builder()
-                .apiData(null)
                 .htmlConfig(getHtmlConfigurationDefaults())
-                .noIndex(getHtmlConfigurationDefaults().getNoIndexEnabled())
                 .urlPrefix(apiCatalog.getUrlPrefix())
-                .links(apiCatalog.getLinks())
-                .description(apiCatalog.getDescription().orElse(i18n.get("rootDescription", language)))
-                .title(apiCatalog.getTitle().orElse(i18n.get("rootTitle", language)))
+                .noIndex(true)
+                .apiData(null)
                 .apiCatalog(apiCatalog)
                 .uri(uri)
                 .i18n(i18n)
                 .language(language.get())
-                .breadCrumbs( new ImmutableList.Builder<NavigationDTO>()
-                    .add(new NavigationDTO(i18n.get("root", Optional.of(language.get())), true))
-                    .build())
-                .isApiCatalog(false))
+                .links(apiCatalog.getLinks())
+                .breadCrumbs(
+                    new ImmutableList.Builder<NavigationDTO>()
+                        .add(new NavigationDTO(i18n.get("root", language), true))
+                        .build())
+                .description(
+                    apiCatalog.getDescription().orElse(i18n.get("rootDescription", language)))
+                .title(apiCatalog.getTitle().orElse(i18n.get("rootTitle", language)))
+                .build())
         .build();
-
-
   }
 }
