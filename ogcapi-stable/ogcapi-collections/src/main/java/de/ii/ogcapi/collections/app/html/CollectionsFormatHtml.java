@@ -27,6 +27,7 @@ import de.ii.ogcapi.html.domain.NavigationDTO;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -109,21 +110,21 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
 
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
-    OgcApiCollectionsView collectionsView = ImmutableOgcApiCollectionsView.builder().build();
 
-    /*OgcApiCollectionsView collectionsView =
-    new OgcApiCollectionsView(
-        api.getData(),
-        collections.getCollections(),
-        api.getSpatialExtent(),
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        htmlConfig,
-        isNoIndexEnabledForApi(api.getData()),
-        showCollectionDescriptionsInOverview(api.getData()),
-        i18n,
-        requestContext.getLanguage(),
-        Optional.empty()
+    OgcApiCollectionsView collectionsView =
+    new ImmutableOgcApiCollectionsView.Builder()
+        .apiData(api.getData())
+        .collections(collections.getCollections())
+            .spatialExtent(api.getSpatialExtent())
+                .breadCrumbs(breadCrumbs)
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .htmlConfig(htmlConfig)
+        .noIndex(isNoIndexEnabledForApi(api.getData()))
+        .showCollectionDescriptions(showCollectionDescriptionsInOverview(api.getData()))
+        .i18n(i18n)
+        .language(requestContext.getLanguage())
+        .dataSourceUrl(Optional.empty())
+        .build();
         /* TODO no access to feature providers at this point
         providers.getFeatureProvider(api.getData()).getData().getDataSourceUrl()
 
@@ -169,6 +170,7 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
         new ImmutableOgcApiCollectionView.Builder()
             .apiData(api.getData())
             .collection(ogcApiCollection)
+            .links(ogcApiCollection.getLinks())
             .spatialExtent(api.getSpatialExtent(ogcApiCollection.getId()))
             .breadCrumbs(breadCrumbs)
             .urlPrefix(requestContext.getStaticUrlPrefix())

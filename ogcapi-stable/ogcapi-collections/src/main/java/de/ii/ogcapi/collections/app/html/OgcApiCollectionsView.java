@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import org.immutables.value.Value;
 
 @Value.Immutable
+@Value.Style(builder = "new")
 public abstract class OgcApiCollectionsView extends OgcApiDatasetView {
 
   abstract Collections collectionsC();

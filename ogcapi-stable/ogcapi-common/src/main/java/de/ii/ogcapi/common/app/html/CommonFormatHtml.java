@@ -27,6 +27,7 @@ import de.ii.ogcapi.html.domain.NavigationDTO;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -104,12 +105,15 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
     OgcApiLandingPageView landingPageView =
         new ImmutableOgcApiLandingPageView.Builder()
             .apiData(api.getData())
+            .breadCrumbs(breadCrumbs)
             .apiLandingPage(apiLandingPage)
             .urlPrefix(requestContext.getStaticUrlPrefix())
+            .links(apiLandingPage.getLinks())
             .htmlConfig(htmlConfig)
             .uriCustomizer(requestContext.getUriCustomizer())
             .noIndex(isNoIndexEnabledForApi(api.getData()))
             .i18n(i18n)
+            .extent(apiLandingPage.getExtent())
             .language(requestContext.getLanguage())
             .build();
 
