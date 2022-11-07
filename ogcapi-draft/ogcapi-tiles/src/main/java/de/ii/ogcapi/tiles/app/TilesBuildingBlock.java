@@ -22,10 +22,13 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tiles.domain.ImmutableMinMax;
+import de.ii.ogcapi.tilematrixsets.domain.ImmutableMinMax;
+import de.ii.ogcapi.tilematrixsets.domain.MinMax;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration;
 import de.ii.ogcapi.tiles.domain.ImmutableTileProviderFeatures;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration.Builder;
-import de.ii.ogcapi.tiles.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
@@ -34,8 +37,6 @@ import de.ii.ogcapi.tiles.domain.TileProviderFeatures;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.provider.Rule;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -59,56 +60,37 @@ import org.sqlite.SQLiteJDBCLoader;
 /**
  * @title Vector Tiles
  * @langEn The *Tiles* module can be activated for any API provided by ldproxy with an SQL feature
- *     provider or with an MBTiles tile provider. It enables the "Tilesets", "Tileset", "Tile",
- *     "Tile Matrix Sets" and "Tile Matrix Set" resources.
+ *     provider or with an MBTiles tile provider. It enables the "Tilesets", "Tileset" and "Tile"
+ *     resources.
  *     <p>The module is based on the draft of [OGC API - Tiles - Part 1:
  *     Core](https://github.com/opengeospatial/OGC-API-Tiles) and the draft of [OGC Two Dimensional
- *     Tile Matrix Set and Tile Set Metadata](https://docs.ogc.org/DRAFTS/17-083r3.html). The
+ *     Tile Matrix Set and Tile Set Metadata](https://docs.ogc.org/DRAFTS/17-083r4.html). The
  *     implementation will change as the draft is further standardized.
  *     <p>The supported tile formats are:
  *     <p>- MVT (Mapbox Vector Tile) - PNG - WebP - JPEG - TIFF
- *     <p>As preconfigured tiling schemes are available:
- *     <p>- [WebMercatorQuad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#62) -
- *     [WorldCRS84Quad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#63) -
- *     [WorldMercatorWGS84Quad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#64) -
- *     AdV_25832 (Tiling scheme of the AdV for Germany) - EU_25832 (Tiling scheme of the BKG, based
- *     on AdV_25832, extended to Europe) - gdi_de_25832 (tile scheme recommended by the GDI-DE)
- *     <p>Additional tile schemas can be configured as JSON files according to the current draft OGC
- *     standard [Two Dimensional Tile Matrix Set and Tile Set Metadata
- *     2.0](https://docs.ogc.org/DRAFTS/17-083r3.html) in the data directory at
- *     `api-resources/tile-matrix-sets/{tileMatrixSetId}.json`.
+ *     <p>The *Tile Matrix Sets* module must be enabled.
  *     <p>The tile cache is located in the ldproxy data directory under the relative path
  *     `cache/tiles/{apiId}`. If the data for an API or tile configuration has been changed, then
  *     the cache directory for the API should be deleted so that the cache is rebuilt with the
  *     updated data or rules.
  * @langDe Das Modul *Tiles* kann für jede über ldproxy bereitgestellte API mit einem
  *     SQL-Feature-Provider oder mit einem MBTiles-Tile-Provider aktiviert werden. Es aktiviert die
- *     Ressourcen "Tilesets", "Tileset", "Tile", "Tile Matrix Sets" und "Tile Matrix Set".
+ *     Ressourcen "Tilesets", "Tileset" und "Tile".
  *     <p>Das Modul basiert auf dem Entwurf von [OGC API - Tiles - Part 1:
  *     Core](https://github.com/opengeospatial/OGC-API-Tiles) und dem Entwurf von [OGC Two
  *     Dimensional Tile Matrix Set and Tile Set
- *     Metadata](https://docs.ogc.org/DRAFTS/17-083r3.html). Die Implementierung wird sich im Zuge
+ *     Metadata](https://docs.ogc.org/DRAFTS/17-083r4.html). Die Implementierung wird sich im Zuge
  *     der weiteren Standardisierung des Entwurfs noch ändern.
  *     <p>Die unterstützten Kachelformate sind:
  *     <p>- MVT (Mapbox Vector Tile) - PNG - WebP - JPEG - TIFF
- *     <p>Als vorkonfigurierte Kachelschemas stehen zur Verfügung:
- *     <p>- [WebMercatorQuad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#62) -
- *     [WorldCRS84Quad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#63) -
- *     [WorldMercatorWGS84Quad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#64) -
- *     AdV_25832 (Kachelschema der AdV für Deutschland) - EU_25832 (Kachelschema des BKG, basierend
- *     auf AdV_25832, erweitert auf Europa) - gdi_de_25832 (von der GDI-DE empfohlenes Kachelschema)
- *     <p>Weitere Kachelschemas können als JSON-Datei gemäß dem aktuellen Entwurf für den
- *     OGC-Standard [Two Dimensional Tile Matrix Set and Tile Set Metadata
- *     2.0](https://docs.ogc.org/DRAFTS/17-083r3.html) im Datenverzeichnis unter
- *     `api-resources/tile-matrix-sets/{tileMatrixSetId}.json` konfiguriert werden.
+ *     <p>Das Modul *Tile Matrix Sets* müssen aktiviert sein.
  *     <p>Der Tile-Cache liegt im ldproxy-Datenverzeichnis unter dem relativen Pfad
  *     `cache/tiles/{apiId}`. Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden,
  *     dann sollte das Cache-Verzeichnis für die API gelöscht werden, damit der Cache mit den
  *     aktualisierten Daten oder Regeln neu aufgebaut wird.
  * @example {@link de.ii.ogcapi.tiles.domain.TilesConfiguration}
  * @propertyTable {@link de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration}
- * @endpointTable {@link de.ii.ogcapi.tiles.infra.EndpointTileMatrixSets}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection}, {@link
+ * @endpointTable {@link de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection}, {@link
  *     de.ii.ogcapi.tiles.infra.EndpointTileSetMultiCollection}, {@link
  *     de.ii.ogcapi.tiles.infra.EndpointTileSetSingleCollection}, {@link
  *     de.ii.ogcapi.tiles.infra.EndpointTileSetsMultiCollection}, {@link
@@ -117,7 +99,6 @@ import org.sqlite.SQLiteJDBCLoader;
  * @queryParameter {@link de.ii.ogcapi.tiles.domain.QueryParameterCollections}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterDatetimeTile}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterFTile}, {@link
- *     de.ii.ogcapi.tiles.domain.QueryParameterFTileMatrixSets}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterFTileSet}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterFTileSets}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterLimitTile},
@@ -234,10 +215,18 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
   @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     // since building block / capability components are currently always enabled,
-    // we need to test, if the TILES module is enabled for the API and stop, if not
+    // we need to test, if the TILES and TILE MATRIX SETS module are enabled for the API and stop,
+    // if not
     OgcApiDataV2 apiData = api.getData();
     if (!apiData
         .getExtension(TilesConfiguration.class)
+        .map(ExtensionConfiguration::isEnabled)
+        .orElse(false)) {
+      return ValidationResult.of();
+    }
+
+    if (!apiData
+        .getExtension(TileMatrixSetsConfiguration.class)
         .map(ExtensionConfiguration::isEnabled)
         .orElse(false)) {
       return ValidationResult.of();

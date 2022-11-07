@@ -12,11 +12,11 @@ import com.google.common.collect.ImmutableMap
 import de.ii.ogcapi.foundation.app.I18nDefault
 import de.ii.ogcapi.foundation.domain.ApiRequestContext
 import de.ii.ogcapi.foundation.domain.OgcApi
+import de.ii.ogcapi.tilematrixsets.domain.ImmutableMinMax
+import de.ii.ogcapi.tilematrixsets.domain.MinMax
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet
 import de.ii.ogcapi.tiles.app.provider.TileCacheImpl
-import de.ii.ogcapi.tiles.domain.ImmutableMinMax
-import de.ii.ogcapi.tiles.domain.MinMax
 import de.ii.ogcapi.tiles.domain.Tile
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory
 import spock.lang.Ignore
 import spock.lang.Specification

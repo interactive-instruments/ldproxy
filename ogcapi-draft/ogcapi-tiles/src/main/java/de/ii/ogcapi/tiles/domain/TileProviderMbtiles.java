@@ -10,6 +10,7 @@ package de.ii.ogcapi.tiles.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.tilematrixsets.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderMbtilesData;
 import java.util.List;
 import java.util.Map;

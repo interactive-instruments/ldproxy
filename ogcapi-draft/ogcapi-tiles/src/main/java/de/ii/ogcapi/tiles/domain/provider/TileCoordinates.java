@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
