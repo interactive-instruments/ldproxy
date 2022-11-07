@@ -10,7 +10,6 @@ package de.ii.ogcapi.tiles.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderTileServerData.Builder;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -37,7 +36,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = Builder.class)
+@JsonDeserialize(builder = ImmutableTileProviderTileServer.Builder.class)
 public abstract class TileProviderTileServer extends TileProvider {
 
   /**

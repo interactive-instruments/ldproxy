@@ -29,6 +29,7 @@ import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptions;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationContext;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData;
+import de.ii.ogcapi.tiles.domain.provider.LayerOptions;
 import de.ii.ogcapi.tiles.domain.provider.Rule;
 import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationContext;
@@ -96,7 +97,7 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
   // TODO
   private final TileProviderFeaturesData data =
       ImmutableTileProviderFeaturesData.builder()
-          .layerDefaults(new ImmutableLayerOptions.Builder().featureProvider("bergbau").build())
+          .layerDefaults(new ImmutableLayerOptions.Builder().featureProvider("vineyards").build())
           .build();
 
   @Inject
@@ -154,13 +155,29 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
 
   @Override
   public FeatureStream getTileSource(TileQuery tileQuery) {
+    String featureProviderId = data.getLayerDefaults().getFeatureProvider().get();
     FeatureProvider2 featureProvider =
         entityRegistry
-            .getEntity(FeatureProvider2.class, data.getLayerDefaults().getFeatureProvider().get())
-            .get();
+            .getEntity(FeatureProvider2.class, featureProviderId)
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        String.format(
+                            "Feature provider with id '%s' not found.", featureProviderId)));
+
+    if (!featureProvider.supportsQueries()) {
+      throw new IllegalStateException("Feature provider has no Queries support.");
+    }
+    if (!featureProvider.supportsCrs()) {
+      throw new IllegalStateException("Feature provider has no CRS support.");
+    }
+
+    EpsgCrs nativeCrs = featureProvider.crs().getNativeCrs();
+
+    FeatureQuery featureQuery = getQuery(tileQuery, data.getLayerDefaults(), nativeCrs);
 
     // TODO:
-    FeatureQuery featureQuery = getQuery(null, null, null, null, null);
+    // FeatureQuery featureQuery = getQuery(null, null, null, null, null);
 
     return featureProvider.queries().getFeatureStream(featureQuery);
   }
@@ -209,6 +226,23 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
     }
   }
 
+  public FeatureQuery getQuery(TileQuery tile, LayerOptions options, EpsgCrs nativeCrs) {
+    String featureType = tile.getLayer();
+
+    ImmutableFeatureQuery.Builder queryBuilder =
+        ImmutableFeatureQuery.builder()
+            .type(featureType)
+            .limit(options.getFeatureLimit())
+            .offset(0)
+            .crs(tile.getTileMatrixSet().getCrs())
+            .maxAllowableOffset(getMaxAllowableOffset(tile, nativeCrs));
+
+    return queryBuilder.build();
+  }
+
+  // TODO: which params are allowed? limit,fields,filter,bbox,datetime,propFilters (only for
+  // ProviderFeatures?)
+  // TODO: first capture in TileQuery as UserOptions?, then transform to FeatureQuery
   public FeatureQuery getQuery(
       Tile tile,
       List<OgcApiQueryParameter> allowedParameters,
@@ -372,6 +406,27 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
     return queryBuilder.build();
   }
 
+  public double getMaxAllowableOffset(TileCoordinates tile, EpsgCrs nativeCrs) {
+    double maxAllowableOffsetTileMatrixSet =
+        tile.getTileMatrixSet()
+            .getMaxAllowableOffset(tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
+    Unit<?> tmsCrsUnit = crsInfo.getUnit(tile.getTileMatrixSet().getCrs());
+    Unit<?> nativeCrsUnit = crsInfo.getUnit(nativeCrs);
+    if (tmsCrsUnit.equals(nativeCrsUnit)) {
+      return maxAllowableOffsetTileMatrixSet;
+    } else if (tmsCrsUnit.equals(Units.DEGREE) && nativeCrsUnit.equals(Units.METRE)) {
+      return maxAllowableOffsetTileMatrixSet * 111333.0;
+    } else if (tmsCrsUnit.equals(Units.METRE) && nativeCrsUnit.equals(Units.DEGREE)) {
+      return maxAllowableOffsetTileMatrixSet / 111333.0;
+    }
+
+    LOGGER.warn(
+        "Tile generation: cannot convert between axis units '{}' and '{}'.",
+        tmsCrsUnit.getName(),
+        nativeCrsUnit.getName());
+    return 0;
+  }
+
   public double getMaxAllowableOffset(Tile tile) {
     double maxAllowableOffsetTileMatrixSet =
         tile.getTileMatrixSet()
@@ -379,11 +434,13 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
     Unit<?> tmsCrsUnit = crsInfo.getUnit(tile.getTileMatrixSet().getCrs());
     EpsgCrs nativeCrs = crsSupport.getStorageCrs(tile.getApiData(), Optional.empty());
     Unit<?> nativeCrsUnit = crsInfo.getUnit(nativeCrs);
-    if (tmsCrsUnit.equals(nativeCrsUnit)) return maxAllowableOffsetTileMatrixSet;
-    else if (tmsCrsUnit.equals(Units.DEGREE) && nativeCrsUnit.equals(Units.METRE))
+    if (tmsCrsUnit.equals(nativeCrsUnit)) {
+      return maxAllowableOffsetTileMatrixSet;
+    } else if (tmsCrsUnit.equals(Units.DEGREE) && nativeCrsUnit.equals(Units.METRE)) {
       return maxAllowableOffsetTileMatrixSet * 111333.0;
-    else if (tmsCrsUnit.equals(Units.METRE) && nativeCrsUnit.equals(Units.DEGREE))
+    } else if (tmsCrsUnit.equals(Units.METRE) && nativeCrsUnit.equals(Units.DEGREE)) {
       return maxAllowableOffsetTileMatrixSet / 111333.0;
+    }
 
     LOGGER.warn(
         "Tile generation: cannot convert between axis units '{}' and '{}'.",

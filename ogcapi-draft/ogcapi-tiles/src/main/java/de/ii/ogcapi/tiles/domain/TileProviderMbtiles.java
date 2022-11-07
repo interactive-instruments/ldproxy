@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.tilematrixsets.domain.MinMax;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderMbtilesData;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -32,7 +31,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonDeserialize(builder = ImmutableTileProviderMbtilesData.Builder.class)
+@JsonDeserialize(builder = ImmutableTileProviderMbtiles.Builder.class)
 public abstract class TileProviderMbtiles extends TileProvider {
 
   /**

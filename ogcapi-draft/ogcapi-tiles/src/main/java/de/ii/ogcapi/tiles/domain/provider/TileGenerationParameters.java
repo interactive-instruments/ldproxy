@@ -14,6 +14,11 @@ import org.immutables.value.Value;
 public interface TileGenerationParameters {
 
   @Value.Default
+  default int getFeatureLimit() {
+    return 100000;
+  }
+
+  @Value.Default
   default double getMinimumSizeInPixel() {
     return 0.5;
   }
