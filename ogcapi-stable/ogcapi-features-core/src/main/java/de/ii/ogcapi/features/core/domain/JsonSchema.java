@@ -49,6 +49,8 @@ public abstract class JsonSchema {
 
   public abstract Optional<String> getDescription();
 
+  public abstract Optional<Object> getDefault();
+
   @JsonIgnore
   @Value.Auxiliary
   public abstract Optional<String> getName();

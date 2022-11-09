@@ -112,7 +112,8 @@ public class FeaturesFormatJsonFg implements FeatureFormatExtension {
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
     String schemaRef = "#/components/schemas/anyObject";
     Schema schema = new ObjectSchema();
-    String collectionId = path.split("/", 4)[2];
+    String collectionId =
+        path.startsWith("/collections") ? path.split("/", 4)[2] : "{collectionId}";
     if (collectionId.equals("{collectionId}")
         && apiData
             .getExtension(CollectionsConfiguration.class)
@@ -142,7 +143,8 @@ public class FeaturesFormatJsonFg implements FeatureFormatExtension {
       OgcApiDataV2 apiData, String path, HttpMethods method) {
     String schemaRef = "#/components/schemas/anyObject";
     Schema schema = new ObjectSchema();
-    String collectionId = path.split("/", 4)[2];
+    String collectionId =
+        path.startsWith("/collections") ? path.split("/", 4)[2] : "{collectionId}";
     if ((path.matches("/collections/[^//]+/items/[^//]+/?") && method == HttpMethods.PUT)
         || (path.matches("/collections/[^//]+/items/?") && method == HttpMethods.POST)) {
 

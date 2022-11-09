@@ -8,6 +8,7 @@
 package de.ii.ogcapi.features.json.fg.app
 
 import com.google.common.collect.ImmutableList
+import com.google.common.collect.ImmutableMap
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson
 import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson
 import de.ii.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson
@@ -45,7 +46,7 @@ class JsonFgWriterSetupUtil {
                         .serviceType("OGC_API")
                         .addExtensions(new ImmutableJsonFgConfiguration.Builder().enabled(true).coordRefSys(true).build())
                         .build())
-                .collectionId("xyz")
+                .featureSchemas(ImmutableMap.of("xyz",Optional.empty()))
                 .outputStream(outputStream)
                 .links(ImmutableList.of())
                 .isFeatureCollection(isCollection)
