@@ -11,8 +11,11 @@ import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.
 
 import de.ii.ogcapi.features.core.app.PathParameterFeatureIdFeatures;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Locale;
@@ -29,6 +32,14 @@ public interface FeatureFormatExtension extends FormatExtension {
   }
 
   ApiMediaType getCollectionMediaType();
+
+  @Override
+  default ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
+    if (method.equals(HttpMethods.GET)) {
+      return getContent(apiData, path);
+    }
+    return null;
+  }
 
   default boolean canPassThroughFeatures() {
     return false;
