@@ -226,9 +226,10 @@ public class FeaturesFormatGeoJson
 
   @Override
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    String schemaRef = "#/components/schemas/anyObject";
-    Schema schema = new ObjectSchema();
-    String collectionId = path.split("/", 4)[2];
+    String schemaRef = "https://geojson.org/schema/FeatureCollection.json";
+    Schema<?> schema = new ObjectSchema(); // TODO
+    String collectionId =
+        path.startsWith("/collections") ? path.split("/", 4)[2] : "{collectionId}";
     if (collectionId.equals("{collectionId}")
         && apiData
             .getExtension(CollectionsConfiguration.class)
@@ -245,10 +246,10 @@ public class FeaturesFormatGeoJson
         schema = schemaGeneratorFeature.getSchema(apiData, collectionId);
       }
     }
-    // TODO example
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schema)
         .schemaRef(schemaRef)
+        .referencedSchemas(ImmutableMap.of())
         .ogcApiMediaType(MEDIA_TYPE)
         .build();
   }
@@ -258,7 +259,8 @@ public class FeaturesFormatGeoJson
       OgcApiDataV2 apiData, String path, HttpMethods method) {
     String schemaRef = "#/components/schemas/anyObject";
     Schema schema = new ObjectSchema();
-    String collectionId = path.split("/", 4)[2];
+    String collectionId =
+        path.startsWith("/collections") ? path.split("/", 4)[2] : "{collectionId}";
     if ((path.matches("/collections/[^//]+/items/[^//]+/?") && method == HttpMethods.PUT)
         || (path.matches("/collections/[^//]+/items/?") && method == HttpMethods.POST)
         || (path.matches("/collections/[^//]+/items/[^//]+/?") && method == HttpMethods.PATCH)) {

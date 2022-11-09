@@ -212,7 +212,21 @@ public class GmlWriterProperties implements GmlWriter {
     context.encoding().write(" xlink:");
     context.encoding().write(schema.getName());
     context.encoding().write("=\"");
-    writeValue(context, value, schema.getType());
+    if (schema.getName().equals("href") && context.encoding().getAllLinksAreLocal()) {
+      String localHref =
+          context.encoding().getIdsIncludeCollectionId()
+              ? String.format(
+                  "#%s%s",
+                  context.encoding().getGmlIdPrefix().orElse(""),
+                  value.substring(value.indexOf("/collections/") + 13).replace("/items/", "."))
+              : String.format(
+                  "#%s%s",
+                  context.encoding().getGmlIdPrefix().orElse(""),
+                  value.substring(value.indexOf("/items/") + 7));
+      writeValue(context, localHref, schema.getType());
+    } else {
+      writeValue(context, value, schema.getType());
+    }
     context.encoding().write("\"");
   }
 
@@ -233,7 +247,15 @@ public class GmlWriterProperties implements GmlWriter {
           .encoding()
           .write(Boolean.parseBoolean(value) || value.equalsIgnoreCase("t") || value.equals("1"));
     } else {
-      context.encoding().write(value);
+      context.encoding().write(escapeText(value));
     }
+  }
+
+  private String escapeText(String text) {
+    return text.replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&apos;");
   }
 }
