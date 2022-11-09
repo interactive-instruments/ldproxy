@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.foundation.infra.json;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -23,6 +24,7 @@ import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -90,6 +92,7 @@ public class ClassSchemaCacheImpl implements ClassSchemaCache {
     this.embeddedSchemaMap.put(byte.class, INTEGER_SCHEMA);
     this.embeddedSchemaMap.put(short.class, INTEGER_SCHEMA);
     this.embeddedSchemaMap.put(BigDecimal.class, NUMBER_SCHEMA);
+    this.embeddedSchemaMap.put(BigInteger.class, NUMBER_SCHEMA);
     this.embeddedSchemaMap.put(double.class, NUMBER_SCHEMA);
     this.embeddedSchemaMap.put(Double.class, NUMBER_SCHEMA);
     this.embeddedSchemaMap.put(float.class, NUMBER_SCHEMA);
@@ -98,6 +101,7 @@ public class ClassSchemaCacheImpl implements ClassSchemaCache {
     this.embeddedSchemaMap.put(boolean.class, BOOLEAN_SCHEMA);
     this.embeddedSchemaMap.put(Boolean.class, BOOLEAN_SCHEMA);
     this.embeddedSchemaMap.put(Object.class, OBJECT_SCHEMA);
+    this.embeddedSchemaMap.put(JsonNode.class, OBJECT_SCHEMA);
 
     // initialize schema map with basic data types
     this.namedSchemaMap = new ConcurrentHashMap<>();
