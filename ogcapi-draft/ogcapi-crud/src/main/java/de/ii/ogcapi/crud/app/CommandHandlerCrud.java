@@ -22,6 +22,8 @@ public interface CommandHandlerCrud {
 
   Response putItemResponse(QueryInputFeatureReplace queryInput, ApiRequestContext requestContext);
 
+  Response patchItemResponse(QueryInputFeatureReplace queryInput, ApiRequestContext requestContext);
+
   Response deleteItemResponse(QueryInputFeatureDelete queryInput, ApiRequestContext requestContext);
 
   @Value.Immutable

@@ -87,6 +87,7 @@ public class FeaturesFormatHtml
           .label("HTML")
           .parameter("html")
           .build();
+
   private final Schema schema = new StringSchema().example("<html>...</html>");
   private static final String schemaRef = "#/components/schemas/htmlSchema";
   private static final WithTransformationsApplied SCHEMA_FLATTENER =
@@ -280,7 +281,7 @@ public class FeaturesFormatHtml
 
       List<String> queryables =
           featuresCoreConfiguration
-              .map(FeaturesCoreConfiguration::getQOrOtherFilterParameters)
+              .map(FeaturesCoreConfiguration::getFilterParameters)
               .orElse(ImmutableList.of());
       Map<String, String> filterableFields =
           transformationContext
