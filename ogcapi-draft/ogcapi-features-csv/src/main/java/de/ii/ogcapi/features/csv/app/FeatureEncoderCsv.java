@@ -42,7 +42,8 @@ public class FeatureEncoderCsv extends FeatureObjectEncoder<PropertySfFlat, Feat
   public FeatureEncoderCsv(FeatureTransformationContextCsv encodingContext) {
     this.collectionId = encodingContext.getCollectionId();
     this.outputStream = encodingContext.getOutputStream();
-    this.fields = encodingContext.getFields();
+    this.fields =
+        encodingContext.getFields().values().stream().findFirst().orElse(ImmutableList.of("*"));
     this.allProperties = fields.contains("*");
     this.featureSchema = encodingContext.getSchema();
     this.transformerStart = System.nanoTime();
