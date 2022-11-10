@@ -159,17 +159,13 @@ public class CityJsonWriterGeometry implements CityJsonWriter {
       EncodingAwareContextCityJson context, Consumer<EncodingAwareContextCityJson> next)
       throws IOException {
 
-    try {
-      if (context.getState().inSection() == Section.WAITING_FOR_SURFACES) {
-        // No surfaces found, close geometry object
-        TokenBuffer buffer = context.getState().getGeometryBuffer().get();
-        buffer.writeEndObject();
-      }
-
-      context.encoding().stopAndFlushGeometry();
-    } catch (com.fasterxml.jackson.core.JsonGenerationException e) {
-      LOGGER.error("{} {}", context.getState().getCurrentId(), context.encoding().getJson());
+    if (context.getState().inSection() == Section.WAITING_FOR_SURFACES) {
+      // No surfaces found, close geometry object
+      TokenBuffer buffer = context.getState().getGeometryBuffer().get();
+      buffer.writeEndObject();
     }
+
+    context.encoding().stopAndFlushGeometry();
 
     next.accept(context);
   }
