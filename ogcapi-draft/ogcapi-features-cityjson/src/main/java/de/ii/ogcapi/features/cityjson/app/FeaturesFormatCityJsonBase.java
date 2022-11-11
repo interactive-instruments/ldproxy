@@ -202,7 +202,8 @@ public abstract class FeaturesFormatCityJsonBase implements FeatureFormatExtensi
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
     String schemaRef = "#/components/schemas/anyObject";
     Schema<?> schema = new ObjectSchema();
-    String collectionId = path.split("/", 4)[2];
+    String collectionId =
+        path.startsWith("/collections") ? path.split("/", 4)[2] : "{collectionId}";
     if (collectionId.equals("{collectionId}")
         && apiData
             .getExtension(CollectionsConfiguration.class)

@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.gml.domain;
 
+import static de.ii.ogcapi.features.gml.domain.GmlConfiguration.GmlVersion.GML32;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -56,11 +58,35 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableGmlConfiguration.Builder.class)
 public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
+  enum GmlVersion {
+    GML21,
+    GML31,
+    GML32
+  }
+
   enum Conformance {
     NONE,
     GMLSF0,
     GMLSF2
   }
+
+  /**
+   * @langEn Selects the GML version to use: `GML32` for GML 3.2, `GML31` for GML 3.1 and `GML21`
+   *     for GML 2.1.
+   * @langDe Bestimmt die zu verwendende GML-Version: `GML32` für GML 3.2, `GML31` für GML 3.1 und
+   *     `GML21` für GML 2.1.
+   * @default `GML32`
+   * @example <code>
+   * ```yaml
+   * - buildingBlock: GML
+   *   enabled: true
+   *   gmlVersion: GML31
+   * ```
+   * </code>
+   * @since v3.3
+   */
+  @Nullable
+  GmlVersion getGmlVersion();
 
   /**
    * @langEn The default `null` declares that the GML support does not meet all requirements of the
@@ -98,6 +124,10 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
 
   @Value.Derived
   default Conformance getConformance() {
+    if (!Objects.requireNonNullElse(getGmlVersion(), GML32).equals(GML32)) {
+      return Conformance.NONE;
+    }
+
     switch (Objects.requireNonNullElse(getGmlSfLevel(), -1)) {
       case 0:
         return Conformance.GMLSF0;
