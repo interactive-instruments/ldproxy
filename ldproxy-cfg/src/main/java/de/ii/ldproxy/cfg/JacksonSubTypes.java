@@ -21,7 +21,7 @@ import de.ii.ogcapi.features.geojson.app.JacksonSubTypeIdsGeoJson;
 import de.ii.ogcapi.features.geojson.ld.app.JacksonSubTypeIdsGeoJsonLd;
 import de.ii.ogcapi.features.gml.app.JacksonSubTypeIdsGml;
 import de.ii.ogcapi.features.html.app.JacksonSubTypeIdsFeaturesHtml;
-import de.ii.ogcapi.features.json.fg.app.JacksonSubTypeIdsJsonFg;
+import de.ii.ogcapi.features.jsonfg.app.JacksonSubTypeIdsJsonFg;
 import de.ii.ogcapi.filter.domain.JacksonSubTypeIdsFilter;
 import de.ii.ogcapi.foundation.domain.JacksonSubTypeIdsFoundation;
 import de.ii.ogcapi.geometry.simplification.app.JacksonSubTypeIdsGeometrySimplification;
