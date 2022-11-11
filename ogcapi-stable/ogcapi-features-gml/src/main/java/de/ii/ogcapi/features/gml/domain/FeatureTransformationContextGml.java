@@ -20,6 +20,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
 import org.immutables.value.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({
   "ConstantConditions",
@@ -28,6 +30,9 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 public abstract class FeatureTransformationContextGml implements FeatureTransformationContext {
+
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(FeatureTransformationContextGml.class);
 
   private static final String XML_ATTRIBUTE_PLACEHOLDER = "_$$_XML_ATTRIBUTE_i_$$_";
   private static final String GML_ID_PLACEHOLDER = "_$$_GML_ID_i_$$_";
@@ -115,6 +120,11 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
           .getPlaceholders()
           .forEach(
               (key, value) -> {
+                // Most placeholders cannot be empty - if they are, there is an error that
+                // should be reported
+                if (!key.startsWith("_$$_XML_ATTRIBUTE_") && value.isEmpty()) {
+                  return;
+                }
                 // variable object elements appear twice - opening and closing tag
                 IntStream.rangeClosed(1, 2)
                     .forEach(
@@ -126,13 +136,18 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
                         });
               });
 
-      if (buffer.lastIndexOf("_$$_") != -1) {
-        throw new IllegalStateException(
-            String.format("GML feature buffer contains unresolved placeholders: %s", buffer));
+      if (buffer.indexOf("_$$_") == -1) {
+        // write buffer
+        getOutputStream().write(buffer.toString().getBytes());
+      } else {
+        if (LOGGER.isErrorEnabled()) {
+          LOGGER.error(
+              "GML feature buffer for a feature contains unresolved placeholders, the feature is ignored: {}",
+              buffer.substring(0, buffer.indexOf("_$$_") + 50));
+        }
       }
 
-      // write buffer and clear the buffer and the placeholder information
-      getOutputStream().write(buffer.toString().getBytes());
+      // clear the buffer and the placeholder information
       getState().unsetPlaceholders();
       buffer.setLength(0);
     }
