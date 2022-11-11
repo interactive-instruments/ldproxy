@@ -120,6 +120,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
             link ->
                 !link.getRel()
                     .replace("http://www\\.opengis\\.net/def/rel/ogc/1\\.0/", "")
+                    .replace("http://www\\.opengis\\.net/def/rel/ogc/0\\.0/", "")
                     .matches("^(?:" + String.join("|", ignoreRels) + ")$"))
         .collect(Collectors.toList());
   }

@@ -96,12 +96,14 @@ public interface ParameterExtension extends ApiExtension {
   default Optional<String> validateSchema(
       OgcApiDataV2 apiData, Optional<String> collectionId, List<String> values) {
     try {
-      String schemaContent = Json.mapper().writeValueAsString(getSchema(apiData, collectionId));
+      Schema<?> schema = getSchema(apiData, collectionId);
+      String schemaContent = Json.mapper().writeValueAsString(schema);
       Optional<String> result1 = Optional.empty();
       List<String> effectiveValues = values;
       if (values.size() == 1) {
         // try non-array variant first
-        result1 = getSchemaValidator().validate(schemaContent, "\"" + values.get(0) + "\"");
+        result1 =
+            getSchemaValidator().validate(schemaContent, getJsonContent(values.get(0), schema));
         if (result1.isEmpty()) {
           return Optional.empty();
         }
@@ -139,7 +141,13 @@ public interface ParameterExtension extends ApiExtension {
 
     return Optional.empty();
   }
-  ;
+
+  private String getJsonContent(String value, Schema<?> schema) {
+    return ("object".equals(schema.getType()) && value.trim().startsWith("{"))
+            || ("array".equals(schema.getType()) && value.trim().startsWith("["))
+        ? value
+        : "\"" + value + "\"";
+  }
 
   default Map<String, String> transformParameters(
       FeatureTypeConfigurationOgcApi featureType,

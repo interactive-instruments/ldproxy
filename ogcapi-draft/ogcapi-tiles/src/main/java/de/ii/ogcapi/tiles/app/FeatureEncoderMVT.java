@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.tiles.app;
 
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeatureSfFlat;
 import de.ii.ogcapi.features.core.domain.ModifiableFeatureSfFlat;
 import de.ii.ogcapi.features.core.domain.ModifiablePropertySfFlat;
@@ -75,7 +76,8 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
     this.affineTransformation = tile.createTransformNativeToTile();
     this.minimumSizeInPixel = tilesConfiguration.getMinimumSizeInPixelDerived();
     this.layerName = Objects.requireNonNullElse(collectionId, "layer");
-    this.properties = encodingContext.getFields();
+    this.properties =
+        encodingContext.getFields().values().stream().findFirst().orElse(ImmutableList.of("*"));
     this.allProperties = properties.contains("*");
     this.tilePrecisionModel =
         new PrecisionModel(

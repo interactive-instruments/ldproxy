@@ -29,7 +29,10 @@ public class DefaultLinksGenerator {
         new ImmutableList.Builder<Link>()
             .add(
                 new ImmutableLink.Builder()
-                    .href(uriBuilder.setParameter("f", mediaType.parameter()).toString())
+                    .href(
+                        alternateMediaTypes.isEmpty()
+                            ? uriBuilder.toString()
+                            : uriBuilder.copy().setParameter("f", mediaType.parameter()).toString())
                     .rel("self")
                     .type(mediaType.type().toString())
                     .title(i18n.get("selfLink", language))
