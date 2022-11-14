@@ -8,55 +8,27 @@
 package de.ii.ogcapi.features.csv.app;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.features.core.domain.FeatureEncoderSfFlat;
 import de.ii.ogcapi.features.core.domain.FeatureSfFlat;
-import de.ii.ogcapi.features.core.domain.ModifiableFeatureSfFlat;
-import de.ii.ogcapi.features.core.domain.ModifiablePropertySfFlat;
-import de.ii.ogcapi.features.core.domain.PropertySfFlat;
-import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.SortedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FeatureEncoderCsv extends FeatureObjectEncoder<PropertySfFlat, FeatureSfFlat> {
+public class FeatureEncoderCsv extends FeatureEncoderSfFlat {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderCsv.class);
 
-  private final String collectionId;
-  private final List<String> fields;
-  private final boolean allProperties;
   private final FeatureSchema featureSchema;
-  private final OutputStream outputStream;
 
-  private final long transformerStart;
-  private long processingStart;
-  private Long featureDuration = 0L;
-  private long written = 0;
   private List<String> headers;
 
   public FeatureEncoderCsv(FeatureTransformationContextCsv encodingContext) {
-    this.collectionId = encodingContext.getCollectionId();
-    this.outputStream = encodingContext.getOutputStream();
-    this.fields =
-        encodingContext.getFields().values().stream().findFirst().orElse(ImmutableList.of("*"));
-    this.allProperties = fields.contains("*");
+    super(encodingContext);
     this.featureSchema = encodingContext.getSchema();
-    this.transformerStart = System.nanoTime();
-  }
-
-  @Override
-  public FeatureSfFlat createFeature() {
-    return ModifiableFeatureSfFlat.create();
-  }
-
-  @Override
-  public PropertySfFlat createProperty() {
-    return ModifiablePropertySfFlat.create();
   }
 
   @Override
@@ -65,10 +37,6 @@ public class FeatureEncoderCsv extends FeatureObjectEncoder<PropertySfFlat, Feat
       LOGGER.trace("Start generating CSV file for collection {}.", collectionId);
     }
     this.processingStart = System.nanoTime();
-
-    if (outputStream instanceof OutputStreamToByteConsumer) {
-      ((OutputStreamToByteConsumer) outputStream).setByteConsumer(this::push);
-    }
 
     headers = getHeaders();
     try {
@@ -91,7 +59,7 @@ public class FeatureEncoderCsv extends FeatureObjectEncoder<PropertySfFlat, Feat
     ImmutableList.Builder<String> columns = ImmutableList.builder();
     for (FeatureSchema schema : featureSchema.getProperties()) {
       if (schema.getType() != SchemaBase.Type.GEOMETRY
-          && (allProperties || fields.contains(schema.getFullPathAsString()))) {
+          && (allProperties || properties.contains(schema.getFullPathAsString()))) {
         columns.add(schema.getName());
       }
     }

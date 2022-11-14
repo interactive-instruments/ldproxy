@@ -13,6 +13,7 @@ import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureSchemaCache;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.core.domain.SchemaCacheSfFlat;
 import de.ii.ogcapi.features.csv.domain.CsvConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -22,10 +23,6 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.xtraplatform.crs.domain.CrsInfo;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
@@ -61,14 +58,12 @@ public class FeaturesFormatCsv implements ConformanceClass, FeatureFormatExtensi
           .build();
 
   private final FeaturesCoreProviders providers;
-  private final CrsInfo crsInfo;
   private final FeatureSchemaCache schemaCache;
 
   @Inject
-  public FeaturesFormatCsv(FeaturesCoreProviders providers, CrsInfo crsInfo) {
+  public FeaturesFormatCsv(FeaturesCoreProviders providers) {
     this.providers = providers;
-    this.crsInfo = crsInfo;
-    this.schemaCache = new SchemaCacheCsv();
+    this.schemaCache = new SchemaCacheSfFlat();
   }
 
   @Override
@@ -114,15 +109,10 @@ public class FeaturesFormatCsv implements ConformanceClass, FeatureFormatExtensi
 
     OgcApiDataV2 apiData = transformationContext.getApiData();
     String collectionId = transformationContext.getCollectionId();
-    FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-    EpsgCrs crs =
-        transformationContext.getCrsTransformer().isPresent()
-            ? transformationContext.getCrsTransformer().get().getTargetCrs()
-            : providers
-                .getFeatureProvider(apiData)
-                .map(FeatureProvider2::getData)
-                .flatMap(FeatureProviderDataV2::getNativeCrs)
-                .orElse(EpsgCrs.of(4326, EpsgCrs.Force.LON_LAT));
+    FeatureTypeConfigurationOgcApi collectionData =
+        apiData.getCollectionData(collectionId).orElseThrow();
+    CsvConfiguration configuration =
+        collectionData.getExtension(CsvConfiguration.class).orElseThrow();
 
     FeatureSchema schema =
         schemaCache.getSchema(
@@ -134,7 +124,9 @@ public class FeaturesFormatCsv implements ConformanceClass, FeatureFormatExtensi
                         .type(SchemaBase.Type.OBJECT)
                         .build()),
             apiData,
-            apiData.getCollectionData(collectionId).orElse(null));
+            collectionData,
+            configuration,
+            configuration);
 
     return Optional.of(
         new FeatureEncoderCsv(

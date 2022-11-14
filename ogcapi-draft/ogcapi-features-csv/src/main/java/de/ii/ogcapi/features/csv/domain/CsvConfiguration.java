@@ -8,28 +8,51 @@
 package de.ii.ogcapi.features.csv.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.ogcapi.features.core.domain.SfFlatConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
-import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
 @JsonDeserialize(builder = ImmutableCsvConfiguration.Builder.class)
-public interface CsvConfiguration extends ExtensionConfiguration, PropertyTransformations {
-
-  /**
-   * @return If the data is flattened and the feature schema includes arrays, {@code
-   *     maxMultiplicity} properties will be created for each array property. If an instance has
-   *     more values in an array, only the first values are included in the data.
-   */
-  @Nullable
-  Integer getMaxMultiplicity();
+public interface CsvConfiguration extends SfFlatConfiguration {
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   @Override
   default Builder getBuilder() {
     return new ImmutableCsvConfiguration.Builder();
+  }
+
+  @Override
+  default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
+    ImmutableCsvConfiguration.Builder builder =
+        ((ImmutableCsvConfiguration.Builder) source.getBuilder())
+            .from(source)
+            .from(this)
+            .transformations(
+                SfFlatConfiguration.super
+                    .mergeInto((PropertyTransformations) source)
+                    .getTransformations());
+
+    return builder.build();
+  }
+
+  @Value.Check
+  default CsvConfiguration alwaysFlatten() {
+    Map<String, List<PropertyTransformation>> transformations = extendWithFlattenIfMissing();
+    if (transformations.isEmpty()) {
+      // a flatten transformation is already set
+      return this;
+    }
+
+    return new ImmutableCsvConfiguration.Builder()
+        .from(this)
+        .transformations(transformations)
+        .build();
   }
 }

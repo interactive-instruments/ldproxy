@@ -18,7 +18,7 @@ import javax.inject.Singleton;
 @AutoBind
 public class CapabilityCsv implements ApiBuildingBlock {
 
-  public static int DEFAULT_MULTIPLICITY = 1;
+  public static int DEFAULT_MULTIPLICITY = 3;
 
   @Inject
   public CapabilityCsv() {}
