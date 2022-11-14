@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.features.flatgeobuf.app;
 
+import com.google.common.collect.ImmutableList;
 import com.google.flatbuffers.FlatBufferBuilder;
 import de.ii.ogcapi.features.core.domain.FeatureSfFlat;
 import de.ii.ogcapi.features.core.domain.ModifiableFeatureSfFlat;
@@ -77,7 +78,8 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
     this.apiData = encodingContext.getApiData();
     this.collectionId = encodingContext.getCollectionId();
     this.outputStream = encodingContext.getOutputStream();
-    this.fields = encodingContext.getFields();
+    this.fields =
+        encodingContext.getFields().values().stream().findFirst().orElse(ImmutableList.of("*"));
     this.allProperties = fields.contains("*");
     this.srid =
         encodingContext

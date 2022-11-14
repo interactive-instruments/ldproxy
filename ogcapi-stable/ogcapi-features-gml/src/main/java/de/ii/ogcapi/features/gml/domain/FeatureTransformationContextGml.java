@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.gml.domain;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ogcapi.features.gml.domain.GmlConfiguration.GmlVersion;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import java.io.IOException;
@@ -19,6 +20,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
 import org.immutables.value.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({
   "ConstantConditions",
@@ -28,9 +31,13 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 public abstract class FeatureTransformationContextGml implements FeatureTransformationContext {
 
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(FeatureTransformationContextGml.class);
+
   private static final String XML_ATTRIBUTE_PLACEHOLDER = "_$$_XML_ATTRIBUTE_i_$$_";
   private static final String GML_ID_PLACEHOLDER = "_$$_GML_ID_i_$$_";
   private static final String OBJECT_ELEMENT_PLACEHOLDER = "_$$_OBJECT_ELEMENT_i_$$_";
+  private static final String SURFACE_MEMBER_PLACEHOLDER = "_$$_SURFACE_MEMBER_i_$$_";
 
   /**
    * Internal string buffer to buffer information. The buffer is flushed for every feature. This
@@ -49,6 +56,8 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
   public ModifiableStateGml getState() {
     return ModifiableStateGml.create();
   }
+
+  public abstract GmlVersion getGmlVersion();
 
   public abstract Map<String, String> getNamespaces();
 
@@ -111,6 +120,11 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
           .getPlaceholders()
           .forEach(
               (key, value) -> {
+                // Most placeholders cannot be empty - if they are, there is an error that
+                // should be reported
+                if (!key.startsWith("_$$_XML_ATTRIBUTE_") && value.isEmpty()) {
+                  return;
+                }
                 // variable object elements appear twice - opening and closing tag
                 IntStream.rangeClosed(1, 2)
                     .forEach(
@@ -122,13 +136,18 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
                         });
               });
 
-      if (buffer.lastIndexOf("_$$_") != -1) {
-        throw new IllegalStateException(
-            String.format("GML feature buffer contains unresolved placeholders: %s", buffer));
+      if (buffer.indexOf("_$$_") == -1) {
+        // write buffer
+        getOutputStream().write(buffer.toString().getBytes());
+      } else {
+        if (LOGGER.isErrorEnabled()) {
+          LOGGER.error(
+              "GML feature buffer for a feature contains unresolved placeholders, the feature is ignored: {}",
+              buffer.substring(0, buffer.indexOf("_$$_") + 50));
+        }
       }
 
-      // write buffer and clear the buffer and the placeholder information
-      getOutputStream().write(buffer.toString().getBytes());
+      // clear the buffer and the placeholder information
       getState().unsetPlaceholders();
       buffer.setLength(0);
     }
@@ -326,6 +345,13 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
     getState().putPlaceholders(GML_ID_PLACEHOLDER.replace("i", String.valueOf(i)), value);
   }
 
+  /** Get the gml:id of the current feature. */
+  @Value.Auxiliary
+  public String getCurrentGmlId() {
+    int i = getState().getObjects().get(0);
+    return getState().getPlaceholders().get(GML_ID_PLACEHOLDER.replace("i", String.valueOf(i)));
+  }
+
   /**
    * The name of a GML object element may depend on some property value. Since GML object elements
    * are nested, we need to maintain a stack with the current GML object elements.
@@ -392,6 +418,62 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
     getState().putPlaceholders(OBJECT_ELEMENT_PLACEHOLDER.replace("i", String.valueOf(i)), value);
   }
 
+  /**
+   * This capability is specific to CityGML LoD2 buildings.
+   *
+   * <p>The gml:ids of the gml:Polygon elements that make up the shell of the LoD 2 solid and that
+   * must be referenced from the gml:Solid geometry will only be known when those polygons are
+   * written as part of the boundary surfaces.
+   *
+   * <p>This method writes a unique placeholder for the gml:surfaceMember elements so that they can
+   * be added later when the polygons are processed.
+   */
+  @Value.Auxiliary
+  public void writeSurfaceMemberPlaceholder() {
+    int i = getState().getLastObject();
+    String surfaceMemberPlaceholder = SURFACE_MEMBER_PLACEHOLDER.replace("i", String.valueOf(i));
+    write(surfaceMemberPlaceholder);
+    getState().putPlaceholders(surfaceMemberPlaceholder, "");
+  }
+
+  /**
+   * This capability is specific to CityGML LoD2 buildings.
+   *
+   * <p>The gml:ids of the gml:Polygon elements that make up the shell of the LoD 2 solid and that
+   * must be referenced from the gml:Solid geometry will only be known when those polygons are
+   * written as part of the boundary surfaces.
+   *
+   * <p>This method adds another gml:surfaceMember element to the placeholder.
+   */
+  public void writeAsSurfaceMemberLink(String elementName, String polygonId) {
+    // get the current object index to determine the placeholder
+    List<Integer> indices = getState().getObjects();
+    int idx = indices.get(0);
+    String surfaceMemberPlaceholder = SURFACE_MEMBER_PLACEHOLDER.replace("i", String.valueOf(idx));
+    String current = getState().getPlaceholders().get(surfaceMemberPlaceholder);
+    if (Objects.isNull(current)) {
+      throw new IllegalStateException(
+          String.format("Placeholder '%s' not set in GML output.", surfaceMemberPlaceholder));
+    }
+    getState()
+        .putPlaceholders(
+            surfaceMemberPlaceholder,
+            current + "<" + elementName + " xlink:href=\"#" + polygonId + "\"/>");
+  }
+
+  @Value.Derived
+  @Value.Auxiliary
+  public String getGmlPrefix() {
+    final GmlVersion v = getGmlVersion();
+    if (v.equals(GmlVersion.GML21)) {
+      return "gml21";
+    }
+    if (v.equals(GmlVersion.GML31)) {
+      return "gml31";
+    }
+    return "gml";
+  }
+
   @Value.Modifiable
   public abstract static class StateGml extends State {
 
@@ -415,6 +497,31 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
     @Value.Default
     public boolean getInGeometry() {
       return false;
+    }
+
+    @Value.Default
+    public boolean getCompositeGeometry() {
+      return false;
+    }
+
+    @Value.Default
+    public boolean getClosedGeometry() {
+      return false;
+    }
+
+    @Value.Default
+    public boolean getDeferredSolidGeometry() {
+      return false;
+    }
+
+    @Value.Default
+    public int getDeferredFeatureId() {
+      return 0;
+    }
+
+    @Value.Default
+    public int getDeferredPolygonId() {
+      return 0;
     }
 
     public abstract Optional<SimpleFeatureGeometry> getCurrentGeometryType();

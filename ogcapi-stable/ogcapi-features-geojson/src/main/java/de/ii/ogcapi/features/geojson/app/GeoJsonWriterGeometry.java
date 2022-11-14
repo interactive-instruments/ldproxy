@@ -117,8 +117,6 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
 
         this.geometryOpen = true;
       }
-    } else {
-      startBufferingIfNecessary(context);
     }
 
     next.accept(context);

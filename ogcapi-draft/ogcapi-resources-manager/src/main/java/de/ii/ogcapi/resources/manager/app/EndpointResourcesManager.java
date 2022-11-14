@@ -210,8 +210,6 @@ public class EndpointResourcesManager extends Endpoint {
       byte[] requestBody)
       throws IOException {
 
-    checkAuthorization(api.getData(), optionalUser);
-
     return getFormats().stream()
         .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
         .findAny()
@@ -237,8 +235,6 @@ public class EndpointResourcesManager extends Endpoint {
       @Auth Optional<User> optionalUser,
       @PathParam("resourceId") String resourceId,
       @Context OgcApi dataset) {
-
-    checkAuthorization(dataset.getData(), optionalUser);
 
     final String datasetId = dataset.getId();
     File apiDir = new File(resourcesStore + File.separator + datasetId);

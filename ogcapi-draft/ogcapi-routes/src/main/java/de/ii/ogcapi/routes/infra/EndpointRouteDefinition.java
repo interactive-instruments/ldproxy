@@ -134,7 +134,6 @@ public class EndpointRouteDefinition extends Endpoint {
       @Context ApiRequestContext requestContext) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
     checkPathParameter(
         extensionRegistry, apiData, "/routes/{routeId}/definition", "routeId", routeId);
 

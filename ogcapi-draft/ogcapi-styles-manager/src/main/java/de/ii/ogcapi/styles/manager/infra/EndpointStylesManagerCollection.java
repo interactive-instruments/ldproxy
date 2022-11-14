@@ -292,7 +292,6 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
       byte[] requestBody) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
     checkPathParameter(
         extensionRegistry,
         apiData,
@@ -332,7 +331,6 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
       byte[] requestBody) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
     checkPathParameter(
         extensionRegistry,
         apiData,
@@ -376,7 +374,6 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
       @Context ApiRequestContext requestContext) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
     checkPathParameter(
         extensionRegistry,
         apiData,
