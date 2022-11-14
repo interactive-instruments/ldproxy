@@ -108,6 +108,10 @@ public abstract class Link {
   @XmlTransient
   @Value.Derived
   public String getTypeLabel() {
+    if ("application/vnd.ogc.fg+json;compatibility=geojson".equals(getType())) {
+      // hide JSON-FG GeoJSON compatibility
+      return "";
+    }
     String mediaType =
         Objects.requireNonNullElse(getType(), "").toLowerCase(Locale.ROOT).split(";")[0];
     if (LABEL_MAP.containsKey(mediaType)) {

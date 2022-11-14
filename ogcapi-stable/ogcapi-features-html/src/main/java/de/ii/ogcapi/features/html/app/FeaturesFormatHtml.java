@@ -545,7 +545,9 @@ public class FeaturesFormatHtml
 
     featureTypeDataset.formats =
         links.stream()
-            .filter(link -> Objects.equals(link.getRel(), "alternate"))
+            .filter(
+                link ->
+                    Objects.equals(link.getRel(), "alternate") && !link.getTypeLabel().isBlank())
             .sorted(Comparator.comparing(link -> link.getTypeLabel().toUpperCase()))
             .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
             .collect(Collectors.toList());
@@ -590,7 +592,9 @@ public class FeaturesFormatHtml
 
     featureCollectionView.formats =
         links.stream()
-            .filter(link -> Objects.equals(link.getRel(), "alternate"))
+            .filter(
+                link ->
+                    Objects.equals(link.getRel(), "alternate") && !link.getTypeLabel().isBlank())
             .sorted(Comparator.comparing(link -> link.getTypeLabel().toUpperCase()))
             .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
             .collect(Collectors.toList());
