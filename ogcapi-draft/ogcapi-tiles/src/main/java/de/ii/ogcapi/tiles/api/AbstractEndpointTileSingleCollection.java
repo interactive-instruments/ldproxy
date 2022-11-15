@@ -105,7 +105,7 @@ public abstract class AbstractEndpointTileSingleCollection extends EndpointSubCo
           .isEmpty()) return false;
       // currently no vector tiles support for WFS backends
       return providers
-          .getFeatureProvider(apiData)
+          .getFeatureProvider(apiData, apiData.getCollections().get(collectionId))
           .map(FeatureProvider2::supportsHighLoad)
           .orElse(false);
     }
@@ -267,7 +267,7 @@ public abstract class AbstractEndpointTileSingleCollection extends EndpointSubCo
                             "The requested media type ''{0}'' is not supported for this resource.",
                             requestContext.getMediaType())));
 
-    Optional<FeatureProvider2> featureProvider = providers.getFeatureProvider(apiData);
+    Optional<FeatureProvider2> featureProvider = providers.getFeatureProvider(apiData, featureType);
 
     // check, if the cache can be used (no query parameters except f)
     boolean useCache =

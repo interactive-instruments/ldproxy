@@ -126,7 +126,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
     return super.isEnabledForApi(apiData, collectionId)
         && providers
-            .getFeatureProvider(apiData)
+            .getFeatureProvider(apiData, apiData.getCollections().get(collectionId))
             .map(FeatureProvider2::supportsTransactions)
             .orElse(false);
   }

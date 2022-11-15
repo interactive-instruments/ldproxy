@@ -241,7 +241,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                 .filterCrs(crs)
                 .nativeCrs(
                     providers
-                        .getFeatureProvider(apiData)
+                        .getFeatureProvider(apiData, collectionData)
                         .map(FeatureProvider2::getData)
                         .flatMap(FeatureProviderDataV2::getNativeCrs))
                 .build();

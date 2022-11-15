@@ -67,7 +67,7 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
       // Tiles are generated on-demand from a data source;
       // currently no vector tiles support for WFS backends
       return providers
-          .getFeatureProvider(apiData)
+          .getFeatureProvider(apiData, apiData.getCollections().get(collectionId))
           .map(FeatureProvider2::supportsHighLoad)
           .orElse(false);
     }
