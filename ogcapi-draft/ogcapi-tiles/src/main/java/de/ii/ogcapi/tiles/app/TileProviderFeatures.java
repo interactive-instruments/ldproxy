@@ -63,7 +63,8 @@ public abstract class TileProviderFeatures extends TileProvider {
    * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
    * @default `FEATURES`
    */
-  public final String getType() {
+  @Value.Derived
+  public String getType() {
     return "FEATURES";
   }
 

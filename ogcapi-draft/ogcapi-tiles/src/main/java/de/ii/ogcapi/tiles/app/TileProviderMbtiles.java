@@ -46,7 +46,8 @@ public abstract class TileProviderMbtiles extends TileProvider {
    * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
    * @default `MBTILES`
    */
-  public final String getType() {
+  @Value.Derived
+  public String getType() {
     return "MBTILES";
   }
 
