@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.features.flatgeobuf.domain;
+package de.ii.ogcapi.features.csv.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.features.core.domain.SfFlatConfiguration;
@@ -18,20 +18,20 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
-@JsonDeserialize(builder = ImmutableFlatgeobufConfiguration.Builder.class)
-public interface FlatgeobufConfiguration extends SfFlatConfiguration {
+@JsonDeserialize(builder = ImmutableCsvConfiguration.Builder.class)
+public interface CsvConfiguration extends SfFlatConfiguration {
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   @Override
   default Builder getBuilder() {
-    return new ImmutableFlatgeobufConfiguration.Builder();
+    return new ImmutableCsvConfiguration.Builder();
   }
 
   @Override
   default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-    ImmutableFlatgeobufConfiguration.Builder builder =
-        ((ImmutableFlatgeobufConfiguration.Builder) source.getBuilder())
+    ImmutableCsvConfiguration.Builder builder =
+        ((ImmutableCsvConfiguration.Builder) source.getBuilder())
             .from(source)
             .from(this)
             .transformations(
@@ -43,14 +43,14 @@ public interface FlatgeobufConfiguration extends SfFlatConfiguration {
   }
 
   @Value.Check
-  default FlatgeobufConfiguration alwaysFlatten() {
+  default CsvConfiguration alwaysFlatten() {
     Map<String, List<PropertyTransformation>> transformations = extendWithFlattenIfMissing();
     if (transformations.isEmpty()) {
       // a flatten transformation is already set
       return this;
     }
 
-    return new ImmutableFlatgeobufConfiguration.Builder()
+    return new ImmutableCsvConfiguration.Builder()
         .from(this)
         .transformations(transformations)
         .build();
