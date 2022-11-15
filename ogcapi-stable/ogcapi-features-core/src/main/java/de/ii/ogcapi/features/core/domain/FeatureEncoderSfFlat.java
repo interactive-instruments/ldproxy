@@ -9,8 +9,6 @@ package de.ii.ogcapi.features.core.domain;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
-import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
-import java.io.OutputStream;
 import java.util.List;
 
 public abstract class FeatureEncoderSfFlat
@@ -30,12 +28,6 @@ public abstract class FeatureEncoderSfFlat
         encodingContext.getFields().values().stream().findFirst().orElse(ImmutableList.of("*"));
     this.allProperties = properties.contains("*");
     this.transformerStart = System.nanoTime();
-
-    // TODO: Is this really necessary? It seems to work also without this code...
-    OutputStream outputStream = encodingContext.getOutputStream();
-    if (outputStream instanceof OutputStreamToByteConsumer) {
-      ((OutputStreamToByteConsumer) outputStream).setByteConsumer(this::push);
-    }
   }
 
   @Override
