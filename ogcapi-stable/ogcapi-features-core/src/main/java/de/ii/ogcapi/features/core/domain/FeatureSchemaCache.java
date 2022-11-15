@@ -7,9 +7,11 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -24,7 +26,9 @@ public abstract class FeatureSchemaCache {
   public final FeatureSchema getSchema(
       FeatureSchema featureSchema,
       OgcApiDataV2 apiData,
-      FeatureTypeConfigurationOgcApi collectionData) {
+      FeatureTypeConfigurationOgcApi collectionData,
+      ExtensionConfiguration configuration,
+      PropertyTransformations transformations) {
     int apiHashCode = apiData.hashCode();
     if (!cache.containsKey(apiHashCode)) {
       cache.put(apiHashCode, new ConcurrentHashMap<>());
@@ -32,12 +36,18 @@ public abstract class FeatureSchemaCache {
     if (!cache.get(apiHashCode).containsKey(collectionData.getId())) {
       cache
           .get(apiHashCode)
-          .put(collectionData.getId(), deriveSchema(featureSchema, apiData, collectionData));
+          .put(
+              collectionData.getId(),
+              deriveSchema(featureSchema, apiData, collectionData, configuration, transformations));
     }
 
     return cache.get(apiHashCode).get(collectionData.getId());
   }
 
   protected abstract FeatureSchema deriveSchema(
-      FeatureSchema schema, OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData);
+      FeatureSchema schema,
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData,
+      ExtensionConfiguration configuration,
+      PropertyTransformations transformations);
 }
