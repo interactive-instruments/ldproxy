@@ -7,13 +7,13 @@
  */
 package de.ii.ogcapi.features.csv.app;
 
-import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ogcapi.features.core.domain.EncodingContextSfFlat;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-public abstract class FeatureTransformationContextCsv implements FeatureTransformationContext {
+public interface EncodingContextCsv extends EncodingContextSfFlat {
 
-  public abstract FeatureSchema getSchema();
+  FeatureSchema getSchema();
 }

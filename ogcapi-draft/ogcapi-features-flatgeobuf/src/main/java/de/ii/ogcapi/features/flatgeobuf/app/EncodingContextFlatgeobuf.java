@@ -7,16 +7,19 @@
  */
 package de.ii.ogcapi.features.flatgeobuf.app;
 
-import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ogcapi.features.core.domain.EncodingContextSfFlat;
+import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-public abstract class FeatureTransformationContextFlatgeobuf
-    implements FeatureTransformationContext {
+public interface EncodingContextFlatgeobuf extends EncodingContextSfFlat {
 
-  public abstract FeatureSchema getSchema();
+  FeatureSchema getSchema();
 
-  public abstract boolean getIs3d();
+  Optional<CrsTransformer> getCrsTransformer();
+
+  boolean getIs3d();
 }

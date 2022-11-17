@@ -7,21 +7,15 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
-import com.google.common.collect.ImmutableList;
-import java.util.List;
+import de.ii.ogcapi.features.core.domain.EncodingContextSfFlat;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public interface TileGenerationContext {
+public interface TileGenerationContext extends EncodingContextSfFlat {
 
   TileCoordinates getCoordinates();
 
   TileGenerationParameters getParameters();
 
-  String getCollectionId(); // TODO: layer
-
-  @Value.Default
-  default List<String> getFields() { // TODO: properties
-    return ImmutableList.of("*");
-  }
+  // String getCollectionId(); // TODO: layer
 }

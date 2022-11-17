@@ -7,10 +7,8 @@
  */
 package de.ii.ogcapi.tiles.app.provider;
 
+import de.ii.ogcapi.features.core.domain.FeatureEncoderSfFlat;
 import de.ii.ogcapi.features.core.domain.FeatureSfFlat;
-import de.ii.ogcapi.features.core.domain.ModifiableFeatureSfFlat;
-import de.ii.ogcapi.features.core.domain.ModifiablePropertySfFlat;
-import de.ii.ogcapi.features.core.domain.PropertySfFlat;
 import de.ii.ogcapi.tiles.domain.ImmutableMvtFeature;
 import de.ii.ogcapi.tiles.domain.MvtFeature;
 import de.ii.ogcapi.tiles.domain.provider.Rule;
@@ -19,7 +17,6 @@ import de.ii.ogcapi.tiles.domain.provider.TileGenerationContext;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationParameters;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -37,19 +34,16 @@ import org.locationtech.jts.geom.util.AffineTransformation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, FeatureSfFlat> {
+public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderMVT.class);
   public static final MediaType FORMAT = new MediaType("application", "vnd.mapbox-vector-tile");
 
   private final TileGenerationParameters parameters;
-  private final String collectionId;
   private final TileCoordinates tile;
   private final VectorTileEncoder tileEncoder;
   private final AffineTransformation affineTransformation;
   private final String layerName;
-  private final List<String> properties;
-  private final boolean allProperties;
   private final PrecisionModel tilePrecisionModel;
   private final GeometryFactory geometryFactoryTile;
   private final GeometryFactory geometryFactoryWorld;
@@ -58,22 +52,16 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
   private final Set<MvtFeature> mergeFeatures;
 
   private long mergeCount = 0;
-  private final long transformerStart = System.nanoTime();
-  private long processingStart;
-  private Long featureStart = null;
   private long featureCount = 0;
-  private long written = 0;
 
   // TODO: TilesConfiguration not available in xtraplatform, but new TileProviderData
-  public FeatureEncoderMVT(TileGenerationContext transformationContext) {
-    this.parameters = transformationContext.getParameters();
-    this.collectionId = transformationContext.getCollectionId();
-    this.tile = transformationContext.getCoordinates();
+  public FeatureEncoderMVT(TileGenerationContext encodingContext) {
+    super(encodingContext);
+    this.parameters = encodingContext.getParameters();
+    this.tile = encodingContext.getCoordinates();
     this.tileEncoder = new VectorTileEncoder(tile.getTileMatrixSet().getTileExtent());
     this.affineTransformation = createTransformNativeToTile();
     this.layerName = Objects.requireNonNullElse(collectionId, "layer");
-    this.properties = transformationContext.getFields();
-    this.allProperties = properties.contains("*");
     this.tilePrecisionModel =
         new PrecisionModel(
             (double) tile.getTileMatrixSet().getTileExtent()
@@ -108,16 +96,6 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
   }
 
   @Override
-  public FeatureSfFlat createFeature() {
-    return ModifiableFeatureSfFlat.create();
-  }
-
-  @Override
-  public PropertySfFlat createProperty() {
-    return ModifiablePropertySfFlat.create();
-  }
-
-  @Override
   public void onStart(ModifiableContext context) {
     if (LOGGER.isTraceEnabled()) {
       LOGGER.trace(
@@ -133,7 +111,7 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
 
   @Override
   public void onFeature(FeatureSfFlat feature) {
-    if (Objects.isNull(featureStart)) featureStart = System.nanoTime();
+    long startFeature = System.nanoTime();
     featureCount++;
 
     Optional<Geometry> featureGeometry = feature.getJtsGeometry(geometryFactoryWorld);
@@ -212,6 +190,7 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
         LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
       }
     }
+    featureDuration += System.nanoTime() - startFeature;
   }
 
   @Override
@@ -265,44 +244,29 @@ public class FeatureEncoderMVT extends FeatureObjectEncoder<PropertySfFlat, Feat
       long transformerDuration = (System.nanoTime() - transformerStart) / 1000000;
       long processingDuration = (System.nanoTime() - processingStart) / 1000000;
       int kiloBytes = mvt.length / 1024;
-      String text;
-      if (Objects.nonNull(featureStart)) {
-        long featureDuration = (System.nanoTime() - featureStart) / 1000000;
-        text =
-            String.format(
-                "Collection %s, tile %s/%d/%d/%d written. Features returned: %d, written: %d, total duration: %dms, processing: %dms, feature post-processing: %dms, average feature post-processing: %dms, merging: %dms, encoding: %dms, size: %dkB.",
-                collectionId,
-                tile.getTileMatrixSet().getId(),
-                tile.getTileLevel(),
-                tile.getTileRow(),
-                tile.getTileCol(),
-                context.metadata().getNumberReturned().orElse(0),
-                written,
-                transformerDuration,
-                processingDuration,
-                featureDuration,
-                featureCount == 0 ? 0 : featureDuration / featureCount,
-                mergerDuration,
-                encoderDuration,
-                kiloBytes);
-      } else {
-        text =
-            String.format(
-                "Collection %s, tile %s/%d/%d/%d written. Features returned: %d, written: %d, total duration: %dms, processing: %dms, encoding: %dms, size: %dkB.",
-                collectionId,
-                tile.getTileMatrixSet().getId(),
-                tile.getTileLevel(),
-                tile.getTileRow(),
-                tile.getTileCol(),
-                context.metadata().getNumberReturned().orElse(0),
-                written,
-                transformerDuration,
-                processingDuration,
-                encoderDuration,
-                kiloBytes);
+      String text =
+          String.format(
+              "Collection %s, tile %s/%d/%d/%d written. Features returned: %d, written: %d, total duration: %dms, processing: %dms, feature post-processing: %dms, average feature post-processing: %dms, merging: %dms, encoding: %dms, size: %dkB.",
+              collectionId,
+              tile.getTileMatrixSet().getId(),
+              tile.getTileLevel(),
+              tile.getTileRow(),
+              tile.getTileCol(),
+              context.metadata().getNumberReturned().orElse(0),
+              written,
+              transformerDuration,
+              processingDuration,
+              featureDuration / 1000000,
+              featureCount == 0 ? 0 : featureDuration / 1000000 / featureCount,
+              mergerDuration,
+              encoderDuration,
+              kiloBytes);
+
+      if (processingDuration > 200 || kiloBytes > 50) {
+        LOGGER.debug(text);
+      } else if (LOGGER.isTraceEnabled()) {
+        LOGGER.trace(text);
       }
-      if (processingDuration > 200 || kiloBytes > 50) LOGGER.debug(text);
-      else LOGGER.trace(text);
     }
   }
 

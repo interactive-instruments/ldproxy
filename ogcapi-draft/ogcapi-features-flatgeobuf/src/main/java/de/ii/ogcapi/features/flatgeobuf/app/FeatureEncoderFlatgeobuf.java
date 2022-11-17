@@ -57,7 +57,7 @@ public class FeatureEncoderFlatgeobuf extends FeatureEncoderSfFlat {
   private final FlatBufferBuilder builder;
   private HeaderMeta headerMeta;
 
-  public FeatureEncoderFlatgeobuf(FeatureTransformationContextFlatgeobuf encodingContext) {
+  public FeatureEncoderFlatgeobuf(EncodingContextFlatgeobuf encodingContext) {
     super(encodingContext);
     this.srid =
         encodingContext
