@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.crs.domain.CrsSupport;
+import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
@@ -241,7 +242,10 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
     for (OgcApiQueryParameter parameter : allowedParameters) {
-      parameter.transformQuery(collectionData, queryBuilder, queryParameters, apiData);
+      if (parameter instanceof FeatureQueryTransformer) {
+        ((FeatureQueryTransformer) parameter)
+            .transformQuery(collectionData, queryBuilder, queryParameters, apiData);
+      }
     }
 
     BoundingBox bbox = tile.getBoundingBox();

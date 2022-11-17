@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ogcapi.crs.domain.CrsSupport;
+import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
@@ -42,7 +43,7 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterCrsFeatures extends ApiExtensionCache
-    implements OgcApiQueryParameter, ConformanceClass {
+    implements OgcApiQueryParameter, ConformanceClass, FeatureQueryTransformer {
 
   public static final String CRS = "crs";
   public static final String CRS84 = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";

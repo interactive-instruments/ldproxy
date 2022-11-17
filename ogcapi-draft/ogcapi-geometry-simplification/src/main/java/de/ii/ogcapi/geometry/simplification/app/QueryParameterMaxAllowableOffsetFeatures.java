@@ -8,6 +8,7 @@
 package de.ii.ogcapi.geometry.simplification.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -34,7 +35,7 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache
-    implements OgcApiQueryParameter {
+    implements OgcApiQueryParameter, FeatureQueryTransformer {
 
   private final SchemaValidator schemaValidator;
 

@@ -8,12 +8,10 @@
 package de.ii.ogcapi.tiles.domain;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
@@ -126,37 +124,5 @@ public class QueryParameterCollections extends ApiExtensionCache
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return TilesConfiguration.class;
-  }
-
-  @Override
-  public Map<String, Object> transformContext(
-      FeatureTypeConfigurationOgcApi featureType,
-      Map<String, Object> context,
-      Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
-    if (!isEnabledForApi(apiData)) return context;
-
-    List<String> availableCollections = getCollectionIds(apiData);
-    List<String> requestedCollections = getCollectionsList(parameters);
-    context.put(
-        "collections",
-        requestedCollections.isEmpty()
-            ? availableCollections
-            : requestedCollections.stream()
-                .filter(availableCollections::contains)
-                .collect(Collectors.toList()));
-
-    return context;
-  }
-
-  private List<String> getCollectionsList(Map<String, String> parameters) {
-    if (parameters.containsKey("collections")) {
-      return Splitter.on(',')
-          .omitEmptyStrings()
-          .trimResults()
-          .splitToList(parameters.get("collections"));
-    } else {
-      return ImmutableList.of();
-    }
   }
 }

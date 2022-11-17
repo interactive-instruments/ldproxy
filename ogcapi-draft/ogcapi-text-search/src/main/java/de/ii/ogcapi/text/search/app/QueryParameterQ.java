@@ -9,6 +9,7 @@ package de.ii.ogcapi.text.search.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
+import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
 import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
@@ -49,7 +50,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterQ extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterQ extends ApiExtensionCache
+    implements OgcApiQueryParameter, FeatureQueryTransformer {
 
   private final Schema<?> baseSchema;
   private final SchemaValidator schemaValidator;

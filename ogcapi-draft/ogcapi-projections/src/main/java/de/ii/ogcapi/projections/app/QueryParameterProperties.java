@@ -10,6 +10,7 @@ package de.ii.ogcapi.projections.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -39,7 +40,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterProperties extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterProperties extends ApiExtensionCache
+    implements OgcApiQueryParameter, FeatureQueryTransformer {
 
   private final SchemaInfo schemaInfo;
   private final SchemaValidator schemaValidator;

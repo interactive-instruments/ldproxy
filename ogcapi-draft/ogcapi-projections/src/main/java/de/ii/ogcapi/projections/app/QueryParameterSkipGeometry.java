@@ -8,6 +8,7 @@
 package de.ii.ogcapi.projections.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -31,7 +32,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterSkipGeometry extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterSkipGeometry extends ApiExtensionCache
+    implements OgcApiQueryParameter, FeatureQueryTransformer {
 
   private static final Schema<?> SCHEMA = new BooleanSchema()._default(false);
   private final SchemaValidator schemaValidator;
