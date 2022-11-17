@@ -15,7 +15,7 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
@@ -34,7 +34,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterLimitTile extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterLimitTile extends ApiExtensionCache
+    implements OgcApiQueryParameter, TileQueryTransformer {
 
   private final SchemaValidator schemaValidator;
 
@@ -131,23 +132,23 @@ public class QueryParameterLimitTile extends ApiExtensionCache implements OgcApi
   }
 
   @Override
-  public ImmutableFeatureQuery.Builder transformQuery(
-      ImmutableFeatureQuery.Builder queryBuilder,
+  public ImmutableTileQuery.Builder transformQuery(
+      ImmutableTileQuery.Builder queryBuilder,
       Map<String, String> parameters,
       OgcApiDataV2 apiData) {
     if (parameters.containsKey(getName())) {
-      queryBuilder.limit(Integer.parseInt(parameters.get(getName())));
+      queryBuilder.userParametersBuilder().limit(Integer.parseInt(parameters.get(getName())));
     }
 
     return queryBuilder;
   }
 
   @Override
-  public ImmutableFeatureQuery.Builder transformQuery(
-      FeatureTypeConfigurationOgcApi featureType,
-      ImmutableFeatureQuery.Builder queryBuilder,
+  public ImmutableTileQuery.Builder transformQuery(
+      ImmutableTileQuery.Builder queryBuilder,
       Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData) {
     return transformQuery(queryBuilder, parameters, apiData);
   }
 

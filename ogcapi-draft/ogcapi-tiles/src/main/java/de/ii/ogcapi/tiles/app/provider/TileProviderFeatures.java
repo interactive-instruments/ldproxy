@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.crs.domain.CrsSupport;
+import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -97,7 +98,7 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
   // TODO
   private final TileProviderFeaturesData data =
       ImmutableTileProviderFeaturesData.builder()
-          .layerDefaults(new ImmutableLayerOptions.Builder().featureProvider("vineyards").build())
+          .layerDefaults(new ImmutableLayerOptions.Builder().featureProvider("bergbau").build())
           .build();
 
   @Inject
@@ -237,12 +238,22 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
             .crs(tile.getTileMatrixSet().getCrs())
             .maxAllowableOffset(getMaxAllowableOffset(tile, nativeCrs));
 
+    tile.userParameters()
+        .ifPresent(
+            userParameters -> {
+              userParameters.getLimit().ifPresent(queryBuilder::limit);
+              queryBuilder.addAllFilters(userParameters.getFilters());
+              if (!userParameters.getFields().isEmpty()) {
+                queryBuilder.addAllFields(userParameters.getFields());
+              }
+            });
+
     return queryBuilder.build();
   }
 
-  // TODO: which params are allowed? limit,fields,filter,bbox,datetime,propFilters (only for
-  // ProviderFeatures?)
+  // TODO: which params are allowed? limit[done],properties,filter,datetime,
   // TODO: first capture in TileQuery as UserOptions?, then transform to FeatureQuery
+  // TODO: introduce QueryParameterSet for filter,filter-lang,filter-crs
   public FeatureQuery getQuery(
       Tile tile,
       List<OgcApiQueryParameter> allowedParameters,
@@ -328,8 +339,12 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
                         || filterableFields.containsKey(entry.getKey()))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
+    // TODO
     for (OgcApiQueryParameter parameter : allowedParameters) {
-      parameter.transformQuery(collectionData, queryBuilder, queryParameters, apiData);
+      if (parameter instanceof FeatureQueryTransformer) {
+        ((FeatureQueryTransformer) parameter)
+            .transformQuery(collectionData, queryBuilder, queryParameters, apiData);
+      }
     }
 
     BoundingBox bbox = tile.getBoundingBox();

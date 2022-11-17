@@ -376,6 +376,8 @@ public abstract class AbstractEndpointTileSingleCollection extends EndpointSubCo
             .tileLevel(level)
             .tileRow(row)
             .tileCol(col)
+            .parameterDefs(allowedParameters)
+            .parameterValues(queryParams)
             .build();
 
     return queryHandler.handle(

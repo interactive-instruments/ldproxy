@@ -24,6 +24,7 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
@@ -38,6 +39,7 @@ import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
+import de.ii.ogcapi.tiles.domain.TileQueryTransformer;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
@@ -465,24 +467,35 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
               requestContext.getMediaType().type()));
     }*/
 
-    TileQuery tileQuery =
+    OgcApiDataV2 apiData = requestContext.getApi().getData();
+    FeatureTypeConfigurationOgcApi collectionData =
+        apiData.getCollections().get(queryInput.getCollectionId());
+    String featureTypeId =
+        collectionData
+            .getExtension(FeaturesCoreConfiguration.class)
+            .map(cfg -> cfg.getFeatureType().orElse(queryInput.getCollectionId()))
+            .orElse(queryInput.getCollectionId());
+
+    ImmutableTileQuery.Builder tileQueryBuilder =
         ImmutableTileQuery.builder()
             .from(queryInput)
             // .outputFormat(queryInput.getOutputFormat())
             .layer(queryInput.getCollectionId()) // TODO: get layer name from cfg
-            // .collectionIds(ImmutableList.of(collectionId))
-            // .temporary(!useCache)
-            // .isDatasetTile(false)
-            .build();
+        // .collectionIds(ImmutableList.of(collectionId))
+        // .temporary(!useCache)
+        // .isDatasetTile(false)
+        ;
 
-    OgcApiDataV2 apiData = requestContext.getApi().getData();
-    String featureTypeId =
-        apiData
-            .getCollections()
-            .get(queryInput.getCollectionId())
-            .getExtension(FeaturesCoreConfiguration.class)
-            .map(cfg -> cfg.getFeatureType().orElse(queryInput.getCollectionId()))
-            .orElse(queryInput.getCollectionId());
+    // TODO
+    for (OgcApiQueryParameter parameter : queryInput.getParameterDefs()) {
+      if (parameter instanceof TileQueryTransformer) {
+        ((TileQueryTransformer) parameter)
+            .transformQuery(
+                tileQueryBuilder, queryInput.getParameterValues(), apiData, collectionData);
+      }
+    }
+
+    TileQuery tileQuery = tileQueryBuilder.build();
 
     // TODO
     if (!(queryInput.getOutputFormat() instanceof TileFormatWithQuerySupportExtension))

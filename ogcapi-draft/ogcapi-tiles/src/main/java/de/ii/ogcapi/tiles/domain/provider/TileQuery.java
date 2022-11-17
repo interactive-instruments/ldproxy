@@ -7,10 +7,26 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
+import de.ii.xtraplatform.cql.domain.Cql2Expression;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Style(deepImmutablesDetection = true)
+@Value.Style(deepImmutablesDetection = true, attributeBuilderDetection = true)
 public interface TileQuery extends TileCoordinates {
   String getLayer();
+
+  Optional<UserGenerationParameters> userParameters();
+
+  @Value.Immutable
+  interface UserGenerationParameters {
+
+    OptionalInt getLimit();
+
+    List<Cql2Expression> getFilters();
+
+    List<String> getFields();
+  }
 }

@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
@@ -88,6 +89,10 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     String getCollectionId();
 
     TileFormatExtension getOutputFormat();
+
+    List<OgcApiQueryParameter> getParameterDefs();
+
+    Map<String, String> getParameterValues();
 
     // TODO
     Optional<FeatureQuery> getQuery();
