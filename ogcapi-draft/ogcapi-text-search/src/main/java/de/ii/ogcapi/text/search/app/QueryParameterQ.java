@@ -138,10 +138,10 @@ public class QueryParameterQ extends ApiExtensionCache
 
   @Override
   public Builder transformQuery(
-      FeatureTypeConfigurationOgcApi featureType,
       Builder queryBuilder,
       Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData) {
 
     if (parameters.containsKey(PARAMETER_Q)) {
       Set<String> qProperties = new HashSet<>();
@@ -150,10 +150,10 @@ public class QueryParameterQ extends ApiExtensionCache
 
       Optional<FeaturesCollectionQueryables> featuresCoreQueryables =
           apiData
-              .getExtension(FeaturesCoreConfiguration.class, featureType.getId())
+              .getExtension(FeaturesCoreConfiguration.class, collectionData.getId())
               .flatMap(FeaturesCoreConfiguration::getQueryables);
       Optional<TextSearchConfiguration> textSearchConfiguration =
-          apiData.getExtension(TextSearchConfiguration.class, featureType.getId());
+          apiData.getExtension(TextSearchConfiguration.class, collectionData.getId());
 
       featuresCoreQueryables.ifPresent(queryables -> qProperties.addAll(queryables.getQ()));
       textSearchConfiguration.ifPresent(cfg -> qProperties.addAll(cfg.getProperties()));

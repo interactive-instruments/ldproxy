@@ -145,7 +145,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     for (OgcApiQueryParameter parameter : allowedParameters) {
       if (parameter instanceof FeatureQueryTransformer) {
         ((FeatureQueryTransformer) parameter)
-            .transformQuery(collectionData, queryBuilder, parameters, apiData);
+            .transformQuery(queryBuilder, parameters, apiData, collectionData);
       }
     }
 
@@ -219,7 +219,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
       if (parameter instanceof FeatureQueryTransformer) {
         ((FeatureQueryTransformer) parameter).transformQuery(queryBuilder, parameters, apiData);
         ((FeatureQueryTransformer) parameter)
-            .transformQuery(collectionData, queryBuilder, parameters, apiData);
+            .transformQuery(queryBuilder, parameters, apiData, collectionData);
       }
     }
 

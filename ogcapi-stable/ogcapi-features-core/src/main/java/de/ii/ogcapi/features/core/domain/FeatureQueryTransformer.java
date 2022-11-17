@@ -11,13 +11,13 @@ import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import java.util.Map;
 
 @AutoMultiBind
 public interface FeatureQueryTransformer {
 
   default ImmutableFeatureQuery.Builder transformQuery(
-      FeatureTypeConfigurationOgcApi featureType,
       ImmutableFeatureQuery.Builder queryBuilder,
       Map<String, String> parameters,
       OgcApiDataV2 apiData) {
@@ -25,9 +25,10 @@ public interface FeatureQueryTransformer {
   }
 
   default ImmutableFeatureQuery.Builder transformQuery(
-      ImmutableFeatureQuery.Builder queryBuilder,
+      Builder queryBuilder,
       Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData) {
     return queryBuilder;
   }
 }

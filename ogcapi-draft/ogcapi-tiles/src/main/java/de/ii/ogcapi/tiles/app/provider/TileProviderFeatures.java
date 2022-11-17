@@ -343,7 +343,7 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
     for (OgcApiQueryParameter parameter : allowedParameters) {
       if (parameter instanceof FeatureQueryTransformer) {
         ((FeatureQueryTransformer) parameter)
-            .transformQuery(collectionData, queryBuilder, queryParameters, apiData);
+            .transformQuery(queryBuilder, queryParameters, apiData, collectionData);
       }
     }
 

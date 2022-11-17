@@ -91,10 +91,10 @@ public class QueryParameterSkipGeometry extends ApiExtensionCache
 
   @Override
   public ImmutableFeatureQuery.Builder transformQuery(
-      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
       ImmutableFeatureQuery.Builder queryBuilder,
       Map<String, String> parameters,
-      OgcApiDataV2 datasetData) {
+      OgcApiDataV2 datasetData,
+      FeatureTypeConfigurationOgcApi featureTypeConfiguration) {
 
     if (!isExtensionEnabled(
         datasetData.getCollections().get(featureTypeConfiguration.getId()),

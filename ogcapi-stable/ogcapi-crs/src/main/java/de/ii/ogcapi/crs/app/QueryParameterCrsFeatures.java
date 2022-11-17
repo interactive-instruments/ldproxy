@@ -123,10 +123,10 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache
 
   @Override
   public ImmutableFeatureQuery.Builder transformQuery(
-      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
       ImmutableFeatureQuery.Builder queryBuilder,
       Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi featureTypeConfiguration) {
 
     if (isEnabledForApi(apiData, featureTypeConfiguration.getId()) && parameters.containsKey(CRS)) {
       EpsgCrs targetCrs;

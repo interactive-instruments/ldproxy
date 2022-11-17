@@ -244,7 +244,7 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
     for (OgcApiQueryParameter parameter : allowedParameters) {
       if (parameter instanceof FeatureQueryTransformer) {
         ((FeatureQueryTransformer) parameter)
-            .transformQuery(collectionData, queryBuilder, queryParameters, apiData);
+            .transformQuery(queryBuilder, queryParameters, apiData, collectionData);
       }
     }
 
