@@ -421,7 +421,10 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
           new ImmutableFeatureTransformationContextTiles.Builder()
               .api(api)
               .apiData(apiData)
-              .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
+              .featureSchemas(
+                  ImmutableMap.of(
+                      collectionId,
+                      Optional.ofNullable(featureProvider.getData().getTypes().get(featureTypeId))))
               .tile(tile)
               .collectionId(collectionId)
               .ogcApiRequest(requestContext)
@@ -432,7 +435,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
               .defaultCrs(queryInput.getDefaultCrs())
               .links(links)
               .isFeatureCollection(true)
-              .fields(query.getFields())
+              .fields(ImmutableMap.of(collectionId, query.getFields()))
               .limit(query.getLimit())
               .offset(0)
               .i18n(i18n)
@@ -603,7 +606,11 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             new ImmutableFeatureTransformationContextTiles.Builder()
                 .api(api)
                 .apiData(apiData)
-                .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
+                .featureSchemas(
+                    ImmutableMap.of(
+                        collectionId,
+                        Optional.ofNullable(
+                            featureProvider.getData().getTypes().get(featureTypeId))))
                 .tile(tile)
                 .collectionId(collectionId)
                 .ogcApiRequest(requestContext)
@@ -614,7 +621,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 .defaultCrs(queryInput.getDefaultCrs())
                 .links(links)
                 .isFeatureCollection(true)
-                .fields(query.getFields())
+                .fields(ImmutableMap.of(collectionId, query.getFields()))
                 .limit(query.getLimit())
                 .offset(0)
                 .i18n(i18n)

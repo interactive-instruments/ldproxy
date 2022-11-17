@@ -15,13 +15,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import de.ii.ogcapi.features.core.domain.SfFlatConfiguration;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.tilematrixsets.domain.ImmutableMinMax;
 import de.ii.ogcapi.tilematrixsets.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.provider.Rule;
-import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.List;
@@ -214,16 +214,13 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
-public interface TilesConfiguration
-    extends ExtensionConfiguration, PropertyTransformations, CachingConfiguration {
+public interface TilesConfiguration extends SfFlatConfiguration, CachingConfiguration {
 
   enum TileCacheType {
     FILES,
     MBTILES,
     NONE
   }
-
-  abstract class Builder extends ExtensionConfiguration.Builder {}
 
   /**
    * @langEn Specifies the data source for the tiles, see [Tile provider objects](#tile-provider).
@@ -588,6 +585,8 @@ public interface TilesConfiguration
             MINIMUM_SIZE_IN_PIXEL));
   }
 
+  abstract class Builder extends ExtensionConfiguration.Builder {}
+
   @Override
   default Builder getBuilder() {
     return new ImmutableTilesConfiguration.Builder();
@@ -601,7 +600,7 @@ public interface TilesConfiguration
             .from(source)
             .from(this)
             .transformations(
-                PropertyTransformations.super
+                SfFlatConfiguration.super
                     .mergeInto((PropertyTransformations) source)
                     .getTransformations());
 
@@ -713,21 +712,15 @@ public interface TilesConfiguration
 
   @Value.Check
   default TilesConfiguration alwaysFlatten() {
-    if (!hasTransformation(
-        PropertyTransformations.WILDCARD,
-        transformation -> transformation.getFlatten().isPresent())) {
-
-      Map<String, List<PropertyTransformation>> transformations =
-          withTransformation(
-              PropertyTransformations.WILDCARD,
-              new ImmutablePropertyTransformation.Builder().flatten(".").build());
-
-      return new ImmutableTilesConfiguration.Builder()
-          .from(this)
-          .transformations(transformations)
-          .build();
+    Map<String, List<PropertyTransformation>> transformations = extendWithFlattenIfMissing();
+    if (transformations.isEmpty()) {
+      // a flatten transformation is already set
+      return this;
     }
 
-    return this;
+    return new ImmutableTilesConfiguration.Builder()
+        .from(this)
+        .transformations(transformations)
+        .build();
   }
 }

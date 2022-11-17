@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.gml.app;
 
+import static de.ii.ogcapi.features.gml.domain.GmlConfiguration.GmlVersion.GML32;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -61,11 +63,15 @@ import javax.ws.rs.core.MediaType;
 public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtension {
 
   private static final String XML = "xml";
+  private static final String GML21 = "gml21";
+  private static final String GML31 = "gml31";
   private static final String GML = "gml";
   private static final String XLINK = "xlink";
   private static final String XSI = "xsi";
   private static final String SF = "sf";
   private static final String WFS = "wfs";
+  private static final String GML21_NS = "http://www.opengis.net/gml";
+  private static final String GML31_NS = "http://www.opengis.net/gml";
   private static final String GML_NS = "http://www.opengis.net/gml/3.2";
   private static final String XLINK_NS = "http://www.w3.org/1999/xlink";
   private static final String XML_NS = "http://www.w3.org/XML/1998/namespace";
@@ -74,16 +80,21 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
   private static final String WFS_NS = "http://www.opengis.net/wfs/2.0";
   private static final Map<String, String> STANDARD_NAMESPACES =
       ImmutableMap.of(
-          GML, GML_NS, XLINK, XLINK_NS, XML, XML_NS, XSI, XSI_NS, SF, SF_NS, WFS, WFS_NS);
+          GML, GML_NS, GML21, GML21_NS, GML31, GML31_NS, XLINK, XLINK_NS, XML, XML_NS, XSI, XSI_NS,
+          SF, SF_NS, WFS, WFS_NS);
 
   private static final String GML_XSD = "http://schemas.opengis.net/gml/3.2.1/gml.xsd";
+  private static final String GML21_XSD = "https://schemas.opengis.net/gml/2.1.2/gml.xsd";
+  private static final String GML31_XSD = "https://schemas.opengis.net/gml/3.1.1/base/gml.xsd";
   private static final String XLINK_XSD = "http://www.w3.org/1999/xlink.xsd";
   private static final String XML_XSD = "http://www.w3.org/2001/xml.xsd";
   private static final String SF_XSD =
       "http://schemas.opengis.net/ogcapi/features/part1/1.0/xml/core-sf.xsd";
   private static final String WFS_XSD = "http://schemas.opengis.net/wfs/2.0/wfs.xsd";
   private static final Map<String, String> STANDARD_SCHEMA_LOCATIONS =
-      ImmutableMap.of(GML, GML_XSD, XLINK, XLINK_XSD, XML, XML_XSD, SF, SF_XSD, WFS, WFS_XSD);
+      ImmutableMap.of(
+          GML, GML_XSD, GML31, GML31_XSD, GML21, GML21_XSD, XLINK, XLINK_XSD, XML, XML_XSD, SF,
+          SF_XSD, WFS, WFS_XSD);
 
   private static final String GML_UPPERCASE = "GML";
   private static final String APPLICATION = "application";
@@ -188,6 +199,7 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
     return Conformance.NONE;
   }
 
+  @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
   private Conformance getConformance(Optional<GmlConfiguration> configuration) {
     return configuration
         .filter(c -> !SF_FEATURE_COLLECTION.equals(c.getFeatureCollectionElementName()))
@@ -337,6 +349,7 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
     ImmutableFeatureTransformationContextGml transformationContextGml =
         ImmutableFeatureTransformationContextGml.builder()
             .from(transformationContext)
+            .gmlVersion(Objects.requireNonNullElse(config.getGmlVersion(), GML32))
             .putAllNamespaces(config.getApplicationNamespaces())
             .putAllNamespaces(STANDARD_NAMESPACES)
             .defaultNamespace(Optional.ofNullable(config.getDefaultNamespace()))
