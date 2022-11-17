@@ -7,6 +7,9 @@
  */
 package de.ii.ogcapi.features.gml.app;
 
+import static de.ii.ogcapi.features.gml.domain.GmlConfiguration.GmlVersion.GML21;
+import static de.ii.ogcapi.features.gml.domain.GmlConfiguration.GmlVersion.GML31;
+import static de.ii.ogcapi.features.gml.domain.GmlConfiguration.GmlVersion.GML32;
 import static de.ii.xtraplatform.base.domain.util.LambdaWithException.consumerMayThrow;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
@@ -94,7 +97,9 @@ public class GmlWriterSkeleton implements GmlWriter {
     String elementName = context.encoding().startGmlObject(context.schema().orElseThrow());
     context.encoding().write("<");
     context.encoding().write(elementName);
-    context.encoding().write(" gml:id=\"");
+    context.encoding().write(" ");
+    context.encoding().write(context.encoding().getGmlPrefix());
+    context.encoding().write(":id=\"");
     context.encoding().writeGmlIdPlaceholder();
     context.encoding().write("\"");
     context.encoding().writeXmlAttPlaceholder();
@@ -165,7 +170,13 @@ public class GmlWriterSkeleton implements GmlWriter {
             .filter(
                 entry ->
                     (!"sf".equals(entry.getKey()) || rootElement.startsWith("sf:"))
-                        && (!"wfs".equals(entry.getKey()) || rootElement.startsWith("wfs:")))
+                        && (!"wfs".equals(entry.getKey()) || rootElement.startsWith("wfs:"))
+                        && (!"gml21".equals(entry.getKey())
+                            || context.encoding().getGmlVersion().equals(GML21))
+                        && (!"gml31".equals(entry.getKey())
+                            || context.encoding().getGmlVersion().equals(GML31))
+                        && (!"gml".equals(entry.getKey())
+                            || context.encoding().getGmlVersion().equals(GML32)))
             .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
     XMLNamespaceNormalizer namespaceNormalizer = new XMLNamespaceNormalizer(effectiveNamespaces);

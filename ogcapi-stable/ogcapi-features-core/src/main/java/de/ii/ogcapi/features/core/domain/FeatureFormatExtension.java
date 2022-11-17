@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.core.domain;
 
 import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.features.core.app.PathParameterFeatureIdFeatures;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -21,6 +22,7 @@ import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Locale;
 import java.util.Optional;
 
+@AutoMultiBind
 public interface FeatureFormatExtension extends FormatExtension {
 
   default String getPathPattern() {

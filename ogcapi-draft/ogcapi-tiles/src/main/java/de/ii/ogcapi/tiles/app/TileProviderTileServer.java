@@ -52,7 +52,8 @@ public abstract class TileProviderTileServer extends TileProvider {
    * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
    * @default `TILESERVER`
    */
-  public final String getType() {
+  @Value.Derived
+  public String getType() {
     return "TILESERVER";
   }
 

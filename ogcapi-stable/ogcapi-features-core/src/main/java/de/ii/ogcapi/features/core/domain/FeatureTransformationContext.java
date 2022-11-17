@@ -55,7 +55,6 @@ public interface FeatureTransformationContext {
 
   OgcApiDataV2 getApiData();
 
-  // TODO defaults for the FeatureQuery case
   @Derived
   default String getCollectionId() {
     return getFeatureSchemas().keySet().stream().findFirst().orElse(null);
