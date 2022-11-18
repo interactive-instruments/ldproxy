@@ -7,23 +7,18 @@
  */
 package de.ii.ogcapi.tiles.app.provider;
 
-import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.crs.domain.CrsSupport;
-import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
-import de.ii.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
@@ -31,9 +26,9 @@ import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptions;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationContext;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData;
 import de.ii.ogcapi.tiles.domain.provider.LayerOptions;
-import de.ii.ogcapi.tiles.domain.provider.Rule;
 import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationContext;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerator;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
@@ -52,18 +47,18 @@ import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.features.domain.FeatureStream.ResultReduced;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
@@ -88,6 +83,8 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
   private static final Map<
           MediaType, Function<TileGenerationContext, ? extends FeatureTokenEncoder<?>>>
       ENCODERS = ImmutableMap.of(FeatureEncoderMVT.FORMAT, FeatureEncoderMVT::new);
+  private static final double BUFFER_DEGREE = 0.00001;
+  private static final double BUFFER_METRE = 10.0;
 
   private final CrsSupport crsSupport;
   private final CrsInfo crsInfo;
@@ -131,12 +128,13 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
 
   // TODO: streaming?
   @Override
-  public byte[] generateTile(TileQuery tileQuery, MediaType mediaType) {
+  public byte[] generateTile(
+      TileQuery tileQuery, MediaType mediaType, Optional<BoundingBox> bounds) {
     if (!ENCODERS.containsKey(mediaType)) {
       throw new IllegalArgumentException(String.format("Encoding not supported: %s", mediaType));
     }
 
-    FeatureStream tileSource = getTileSource(tileQuery);
+    FeatureStream tileSource = getTileSource(tileQuery, bounds);
 
     TileGenerationContext tileGenerationContext =
         new ImmutableTileGenerationContext.Builder()
@@ -155,7 +153,7 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
   }
 
   @Override
-  public FeatureStream getTileSource(TileQuery tileQuery) {
+  public FeatureStream getTileSource(TileQuery tileQuery, Optional<BoundingBox> bounds) {
     String featureProviderId = data.getLayerDefaults().getFeatureProvider().get();
     FeatureProvider2 featureProvider =
         entityRegistry
@@ -174,8 +172,9 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
     }
 
     EpsgCrs nativeCrs = featureProvider.crs().getNativeCrs();
-
-    FeatureQuery featureQuery = getQuery(tileQuery, data.getLayerDefaults(), nativeCrs);
+    Map<String, FeatureSchema> types = featureProvider.getData().getTypes();
+    FeatureQuery featureQuery =
+        getQuery(tileQuery, data.getLayerDefaults(), types, nativeCrs, bounds);
 
     // TODO:
     // FeatureQuery featureQuery = getQuery(null, null, null, null, null);
@@ -227,8 +226,56 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
     }
   }
 
-  public FeatureQuery getQuery(TileQuery tile, LayerOptions options, EpsgCrs nativeCrs) {
+  // TODO: create on startup for all layers
+  @Override
+  public TileGenerationSchema getGenerationSchema(String layer) {
+    String featureProviderId = data.getLayerDefaults().getFeatureProvider().get();
+    FeatureProvider2 featureProvider =
+        entityRegistry
+            .getEntity(FeatureProvider2.class, featureProviderId)
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        String.format(
+                            "Feature provider with id '%s' not found.", featureProviderId)));
+    Map<String, FeatureSchema> featureTypes = featureProvider.getData().getTypes();
+    FeatureSchema featureSchema = featureTypes.get(layer);
+    return new TileGenerationSchema() {
+      @Override
+      public String getSpatialProperty() {
+        return featureSchema.getPrimaryGeometry().orElseThrow().getFullPathAsString();
+      }
+
+      @Override
+      public Optional<String> getTemporalProperty() {
+        return featureSchema
+            .getPrimaryInterval()
+            .map(
+                interval ->
+                    String.format(
+                        "%s%s%s",
+                        interval.first().getFullPathAsString(),
+                        DATETIME_INTERVAL_SEPARATOR,
+                        interval.second().getFullPathAsString()))
+            .or(() -> featureSchema.getPrimaryInstant().map(SchemaBase::getFullPathAsString));
+      }
+
+      @Override
+      public List<String> getProperties() {
+        // TODO
+        return List.of();
+      }
+    };
+  }
+
+  public FeatureQuery getQuery(
+      TileQuery tile,
+      LayerOptions options,
+      Map<String, FeatureSchema> featureTypes,
+      EpsgCrs nativeCrs,
+      Optional<BoundingBox> bounds) {
     String featureType = tile.getLayer();
+    FeatureSchema featureSchema = featureTypes.get(featureType);
 
     ImmutableFeatureQuery.Builder queryBuilder =
         ImmutableFeatureQuery.builder()
@@ -237,6 +284,14 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
             .offset(0)
             .crs(tile.getTileMatrixSet().getCrs())
             .maxAllowableOffset(getMaxAllowableOffset(tile, nativeCrs));
+
+    // TODO: add predefFilter from config
+
+    String spatialProperty = featureSchema.getPrimaryGeometry().orElseThrow().getFullPathAsString();
+    BoundingBox bbox = clip(tile.getBoundingBox(), bounds);
+    Cql2Expression spatialPredicate =
+        SIntersects.of(Property.of(spatialProperty), SpatialLiteral.of(Envelope.of(bbox)));
+    queryBuilder.addFilters(spatialPredicate);
 
     tile.userParameters()
         .ifPresent(
@@ -248,11 +303,12 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
               }
             });
 
+    // TODO: properties from rules if fields still empty
+
     return queryBuilder.build();
   }
 
-  // TODO: which params are allowed? limit[done],properties,filter,datetime,
-  // TODO: first capture in TileQuery as UserOptions?, then transform to FeatureQuery
+  // TODO: which params are allowed? limit[done],properties[done],filter,datetime[done],
   // TODO: introduce QueryParameterSet for filter,filter-lang,filter-crs
   public FeatureQuery getQuery(
       Tile tile,
@@ -264,57 +320,9 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
     String collectionId = tile.getCollectionId();
     String tileMatrixSetId = tile.getTileMatrixSet().getId();
     int level = tile.getTileLevel();
-
-    final Map<String, List<PredefinedFilter>> predefFilters =
-        tilesConfiguration.getFiltersDerived();
-    final String predefFilter =
-        (Objects.nonNull(predefFilters) && predefFilters.containsKey(tileMatrixSetId))
-            ? predefFilters.get(tileMatrixSetId).stream()
-                .filter(
-                    filter ->
-                        filter.getMax() >= level
-                            && filter.getMin() <= level
-                            && filter.getFilter().isPresent())
-                .map(filter -> filter.getFilter().get())
-                .findAny()
-                .orElse(null)
-            : null;
-
-    String featureTypeId =
-        tile.getApiData()
-            .getCollections()
-            .get(collectionId)
-            .getExtension(FeaturesCoreConfiguration.class)
-            .map(cfg -> cfg.getFeatureType().orElse(collectionId))
-            .orElse(collectionId);
-    ImmutableFeatureQuery.Builder queryBuilder =
-        ImmutableFeatureQuery.builder()
-            .type(featureTypeId)
-            .limit(
-                Objects.requireNonNullElse(
-                    tilesConfiguration.getLimitDerived(), TilesBuildingBlock.LIMIT_DEFAULT))
-            .offset(0)
-            .crs(tile.getTileMatrixSet().getCrs())
-            .maxAllowableOffset(getMaxAllowableOffset(tile));
-
-    final Map<String, List<Rule>> rules = tilesConfiguration.getRulesDerived();
-    if (!queryParameters.containsKey("properties")
-        && (Objects.nonNull(rules) && rules.containsKey(tileMatrixSetId))) {
-      List<String> properties =
-          rules.get(tileMatrixSetId).stream()
-              .filter(rule -> rule.getMax() >= level && rule.getMin() <= level)
-              .map(Rule::getProperties)
-              .flatMap(Collection::stream)
-              .collect(Collectors.toList());
-      if (!properties.isEmpty()) {
-        queryParameters =
-            ImmutableMap.<String, String>builder()
-                .putAll(queryParameters)
-                .put("properties", String.join(",", properties))
-                .build();
-      }
-    }
-
+    final String predefFilter = null;
+    String featureTypeId = null;
+    ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder();
     OgcApiDataV2 apiData = tile.getApiData();
     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
 
@@ -323,14 +331,7 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
     final Map<String, String> queryableTypes =
         queryParser.getQueryableTypes(apiData, collectionData);
 
-    Set<String> filterParameters = ImmutableSet.of();
-    for (OgcApiQueryParameter parameter : allowedParameters) {
-      filterParameters =
-          parameter.getFilterParameters(filterParameters, apiData, collectionData.getId());
-      queryParameters = parameter.transformParameters(collectionData, queryParameters, apiData);
-    }
-
-    final Set<String> finalFilterParameters = filterParameters;
+    final Set<String> finalFilterParameters = null;
     final Map<String, String> filters =
         queryParameters.entrySet().stream()
             .filter(
@@ -339,39 +340,8 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
                         || filterableFields.containsKey(entry.getKey()))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    // TODO
-    for (OgcApiQueryParameter parameter : allowedParameters) {
-      if (parameter instanceof FeatureQueryTransformer) {
-        ((FeatureQueryTransformer) parameter)
-            .transformQuery(queryBuilder, queryParameters, apiData, collectionData);
-      }
-    }
+    Cql2Expression spatialPredicate = null;
 
-    BoundingBox bbox = tile.getBoundingBox();
-    // reduce bbox to the area in which there is data (to avoid coordinate transformation issues
-    // with large scale and data that is stored in a regional, projected CRS)
-    final EpsgCrs crs = bbox.getEpsgCrs();
-    final Optional<BoundingBox> dataBbox = tile.getApi().getSpatialExtent(collectionId, crs);
-    if (dataBbox.isPresent()) {
-      bbox =
-          ImmutableList.of(bbox, dataBbox.get()).stream()
-              .map(BoundingBox::toArray)
-              .reduce(
-                  (doubles, doubles2) ->
-                      new double[] {
-                        Math.max(doubles[0], doubles2[0]),
-                        Math.max(doubles[1], doubles2[1]),
-                        Math.min(doubles[2], doubles2[2]),
-                        Math.min(doubles[3], doubles2[3])
-                      })
-              .map(doubles -> BoundingBox.of(doubles[0], doubles[1], doubles[2], doubles[3], crs))
-              .orElse(bbox);
-    }
-
-    Cql2Expression spatialPredicate =
-        SIntersects.of(
-            Property.of(filterableFields.get(PARAMETER_BBOX)),
-            SpatialLiteral.of(Envelope.of(bbox)));
     if (predefFilter != null || !filters.isEmpty()) {
       Optional<Cql2Expression> otherFilter = Optional.empty();
       Optional<Cql2Expression> configFilter = Optional.empty();
@@ -462,5 +432,28 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
         tmsCrsUnit.getName(),
         nativeCrsUnit.getName());
     return 0;
+  }
+
+  /**
+   * Reduce bbox to the area in which there is data to avoid coordinate transformation issues with
+   * large scale and data that is stored in a regional, projected CRS. A small buffer is used to
+   * avoid issues with point features and queries in other CRSs where features on the boundary of
+   * the spatial extent are suddenly no longer included in the result.
+   */
+  private BoundingBox clip(BoundingBox bbox, Optional<BoundingBox> limits) {
+    if (limits.isEmpty()) {
+      return bbox;
+    }
+
+    return BoundingBox.intersect2d(bbox, limits.get(), getBuffer(bbox.getEpsgCrs()));
+  }
+
+  private double getBuffer(EpsgCrs crs) {
+    List<Unit<?>> units = crsInfo.getAxisUnits(crs);
+    if (!units.isEmpty()) {
+      return Units.METRE.equals(units.get(0)) ? BUFFER_METRE : BUFFER_DEGREE;
+    }
+    // fallback to meters
+    return BUFFER_METRE;
   }
 }

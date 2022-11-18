@@ -7,25 +7,17 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
-import java.util.Map;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
+import java.util.Optional;
 
+@AutoMultiBind
 public interface TileQueryTransformer {
 
-  default ImmutableTileQuery.Builder transformQuery(
+  ImmutableTileQuery.Builder transformQuery(
       ImmutableTileQuery.Builder queryBuilder,
-      Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
-    return queryBuilder;
-  }
-
-  default ImmutableTileQuery.Builder transformQuery(
-      ImmutableTileQuery.Builder queryBuilder,
-      Map<String, String> parameters,
-      OgcApiDataV2 apiData,
-      FeatureTypeConfigurationOgcApi collectionData) {
-    return queryBuilder;
-  }
+      QueryParameterSet parameters,
+      Optional<TileGenerationSchema> generationSchema);
 }

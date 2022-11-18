@@ -27,6 +27,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tilematrixsets.domain.MinMax;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
@@ -376,8 +377,8 @@ public abstract class AbstractEndpointTileSingleCollection extends EndpointSubCo
             .tileLevel(level)
             .tileRow(row)
             .tileCol(col)
-            .parameterDefs(allowedParameters)
-            .parameterValues(queryParams)
+            .parameters(
+                QueryParameterSet.of(allowedParameters, queryParams).hydrate(apiData, featureType))
             .build();
 
     return queryHandler.handle(

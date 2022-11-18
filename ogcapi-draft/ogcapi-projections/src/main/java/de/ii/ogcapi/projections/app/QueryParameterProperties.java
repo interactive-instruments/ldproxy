@@ -18,13 +18,19 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
+import de.ii.ogcapi.tiles.domain.TileQueryTransformer;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.inject.Inject;
@@ -41,7 +47,10 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterProperties extends ApiExtensionCache
-    implements OgcApiQueryParameter, FeatureQueryTransformer {
+    implements OgcApiQueryParameter,
+        TypedQueryParameter<List<String>>,
+        FeatureQueryTransformer,
+        TileQueryTransformer {
 
   private final SchemaInfo schemaInfo;
   private final SchemaValidator schemaValidator;
@@ -123,28 +132,44 @@ public class QueryParameterProperties extends ApiExtensionCache
   }
 
   @Override
+  public List<String> parse(String value) {
+    try {
+      return Splitter.on(',').omitEmptyStrings().trimResults().splitToList(value);
+    } catch (Throwable e) {
+      throw new IllegalArgumentException(
+          String.format("Invalid value for query parameter '%s'.", getName()), e);
+    }
+  }
+
+  @Override
   public ImmutableFeatureQuery.Builder transformQuery(
       ImmutableFeatureQuery.Builder queryBuilder,
       Map<String, String> parameters,
       OgcApiDataV2 datasetData,
       FeatureTypeConfigurationOgcApi featureTypeConfiguration) {
-
-    if (!isExtensionEnabled(
-        datasetData.getCollections().get(featureTypeConfiguration.getId()),
-        ProjectionsConfiguration.class)) {
-      return queryBuilder;
-    }
     List<String> propertiesList = getPropertiesList(parameters);
 
     return queryBuilder.fields(propertiesList);
   }
 
+  @Override
+  public ImmutableTileQuery.Builder transformQuery(
+      ImmutableTileQuery.Builder queryBuilder,
+      QueryParameterSet parameters,
+      Optional<TileGenerationSchema> generationSchema) {
+    parameters
+        .getValue(this)
+        .ifPresent(fields -> queryBuilder.userParametersBuilder().fields(fields));
+
+    return queryBuilder;
+  }
+
   private List<String> getPropertiesList(Map<String, String> parameters) {
-    if (parameters.containsKey("properties")) {
+    if (parameters.containsKey(getName())) {
       return Splitter.on(',')
           .omitEmptyStrings()
           .trimResults()
-          .splitToList(parameters.get("properties"));
+          .splitToList(parameters.get(getName()));
     } else {
       return ImmutableList.of("*");
     }

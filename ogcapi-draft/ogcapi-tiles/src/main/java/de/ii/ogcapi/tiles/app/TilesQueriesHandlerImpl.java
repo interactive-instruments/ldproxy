@@ -47,10 +47,12 @@ import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
 import de.ii.ogcapi.tiles.domain.provider.TileResult.Status;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -475,23 +477,29 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             .getExtension(FeaturesCoreConfiguration.class)
             .map(cfg -> cfg.getFeatureType().orElse(queryInput.getCollectionId()))
             .orElse(queryInput.getCollectionId());
+    // TODO: get layer name from cfg
+    String layer = queryInput.getCollectionId();
+    Optional<TileGenerationSchema> generationSchema =
+        tileProvider.supportsGeneration()
+            ? Optional.of(tileProvider.generator().getGenerationSchema(layer))
+            : Optional.empty();
 
     ImmutableTileQuery.Builder tileQueryBuilder =
         ImmutableTileQuery.builder()
             .from(queryInput)
             // .outputFormat(queryInput.getOutputFormat())
-            .layer(queryInput.getCollectionId()) // TODO: get layer name from cfg
+            .layer(layer)
         // .collectionIds(ImmutableList.of(collectionId))
         // .temporary(!useCache)
         // .isDatasetTile(false)
         ;
 
-    // TODO
-    for (OgcApiQueryParameter parameter : queryInput.getParameterDefs()) {
+    // TODO: extract UserGenerationParameters from TileQuery, either pass separately to
+    // generateTiles or introduce TileGenerationQuery or similar
+    for (OgcApiQueryParameter parameter : queryInput.getParameters().getDefinitions()) {
       if (parameter instanceof TileQueryTransformer) {
         ((TileQueryTransformer) parameter)
-            .transformQuery(
-                tileQueryBuilder, queryInput.getParameterValues(), apiData, collectionData);
+            .transformQuery(tileQueryBuilder, queryInput.getParameters(), generationSchema);
       }
     }
 
@@ -523,13 +531,22 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
       if (result.getStatus() == Status.NotFound && tileProvider.supportsGeneration()) {
         if (tileProvider.generator().supports(outputFormat.getMediaType().type())) {
+          Optional<BoundingBox> bounds =
+              requestContext
+                  .getApi()
+                  .getSpatialExtent(
+                      queryInput.getCollectionId(), tileQuery.getBoundingBox().getEpsgCrs());
+
           byte[] bytes =
-              tileProvider.generator().generateTile(tileQuery, outputFormat.getMediaType().type());
+              tileProvider
+                  .generator()
+                  .generateTile(tileQuery, outputFormat.getMediaType().type(), bounds);
 
           return prepareSuccessResponse(requestContext).entity(bytes).build();
         } else if (outputFormat.supportsFeatureQuery()) { // TODO: canEncode
           // TODO: pass encoder into or return FeatureStream?
-          FeatureStream tileSource = tileProvider.generator().getTileSource(tileQuery);
+          FeatureStream tileSource =
+              tileProvider.generator().getTileSource(tileQuery, Optional.empty());
         }
       }
 

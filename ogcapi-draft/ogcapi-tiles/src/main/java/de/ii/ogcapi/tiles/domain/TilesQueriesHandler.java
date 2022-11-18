@@ -7,11 +7,11 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.tilematrixsets.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -90,9 +90,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
 
     TileFormatExtension getOutputFormat();
 
-    List<OgcApiQueryParameter> getParameterDefs();
-
-    Map<String, String> getParameterValues();
+    QueryParameterSet getParameters();
 
     // TODO
     Optional<FeatureQuery> getQuery();
