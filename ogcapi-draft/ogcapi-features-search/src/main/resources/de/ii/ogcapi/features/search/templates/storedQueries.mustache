@@ -1,0 +1,27 @@
+{{> header}}
+
+<div>
+    <h1>{{title}}</h1>
+    <span>{{{description}}}</span>
+    <br/>
+
+    {{#queries}}
+      <br/>
+      <h2><a href="{{baseUrl}}/{{id}}">{{#title}}{{.}}{{/title}}{{^title}}{{id}}{{/title}}</a></h2>
+      <p>{{{description}}}</p>
+      {{#hasParameters}}
+        <p>{{parametersDescription}}</p>
+      {{/hasParameters}}
+      {{#parameterList}}
+        {{> schemaProperty}}
+        <br/>
+      {{/parameterList}}
+    {{/queries}}
+    {{^queries}}
+      <div>{{none}}</div>
+    {{/queries}}
+
+</div>
+
+{{> footer}}
+

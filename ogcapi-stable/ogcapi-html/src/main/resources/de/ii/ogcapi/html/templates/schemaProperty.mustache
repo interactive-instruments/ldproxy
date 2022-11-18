@@ -1,0 +1,38 @@
+<h4>{{id}}{{#title}} ({{.}}){{/title}}</h4>
+{{#description}}<p>{{.}}</p>{{/description}}
+<div class="row my-3">
+  <div class="col-md-3 font-weight-bold">{{typeTitle}}</div>
+  <div class="col-md-9">{{#isArray}}[ {{/isArray}}{{type}}{{#isArray}} ]{{/isArray}}</div>
+</div>
+{{#valueList}}
+  <div class="row my-3">
+    <div class="col-md-3 font-weight-bold">{{enumTitle}}</div>
+    <div class="col-md-9">{{.}}</div>
+  </div>
+{{/valueList}}
+{{#pattern}}
+  <div class="row my-3">
+    <div class="col-md-3 font-weight-bold">{{patternTitle}}</div>
+    <div class="col-md-9">{{.}}</div>
+  </div>
+{{/pattern}}
+{{#min}}
+  <div class="row my-3">
+    <div class="col-md-3 font-weight-bold">{{minTitle}}</div>
+    <div class="col-md-9">{{.}}</div>
+  </div>
+{{/min}}
+{{#max}}
+  <div class="row my-3">
+    <div class="col-md-3 font-weight-bold">{{maxTitle}}</div>
+    <div class="col-md-9">{{.}}</div>
+  </div>
+{{/max}}
+{{#defaultValue}}
+  <div class="row my-3">
+    <div class="col-md-3 font-weight-bold">{{defaultTitle}}</div>
+    <div class="col-md-9">{{.}}</div>
+  </div>
+{{/defaultValue}}
+
+
