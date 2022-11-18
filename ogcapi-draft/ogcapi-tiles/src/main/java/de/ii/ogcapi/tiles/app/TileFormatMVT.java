@@ -77,6 +77,8 @@ import org.slf4j.LoggerFactory;
 public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TileFormatMVT.class);
+  private static final double BUFFER_DEGREE = 0.00001;
+  private static final double BUFFER_METRE = 10.0;
 
   public static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
@@ -259,19 +261,32 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
               .map(BoundingBox::toArray)
               .reduce(
                   (doubles, doubles2) -> {
+                    // TODO This is copied from FilterQueryImpl where we need the same
+                    //      logic. It would be better to do this only in one place.
+                    // We are using the spatial extent of the data to avoid
+                    // coordinate transformation errors when a tile
+                    // is completely outside of the domain of a projected CRS
+                    // in which the data is stored. Using the minimal bounding
+                    // box can lead to surprising results in particular with
+                    // point features and queries in other CRSs where features
+                    // on the boundary of the spatial extent are suddenly no
+                    // longer included in the result. For the purpose of the
+                    // filter, we do not need the minimal bounding rectangle,
+                    // but we can use a small buffer to avoid those issues.
+                    double buffer = getBuffer(crs);
                     if (doubles2.length == 4) {
                       return new double[] {
-                        Math.max(doubles[0], doubles2[0]),
-                        Math.max(doubles[1], doubles2[1]),
-                        Math.min(doubles[2], doubles2[2]),
-                        Math.min(doubles[3], doubles2[3])
+                        Math.max(doubles[0], doubles2[0] - buffer),
+                        Math.max(doubles[1], doubles2[1] - buffer),
+                        Math.min(doubles[2], doubles2[2] + buffer),
+                        Math.min(doubles[3], doubles2[3] + buffer)
                       };
                     } else if (doubles2.length == 6) {
                       return new double[] {
-                        Math.max(doubles[0], doubles2[0]),
-                        Math.max(doubles[1], doubles2[1]),
-                        Math.min(doubles[2], doubles2[3]),
-                        Math.min(doubles[3], doubles2[4])
+                        Math.max(doubles[0], doubles2[0] - buffer),
+                        Math.max(doubles[1], doubles2[1] - buffer),
+                        Math.min(doubles[2], doubles2[3] + buffer),
+                        Math.min(doubles[3], doubles2[4] + buffer)
                       };
                     }
                     return new double[] {doubles[0], doubles[1], doubles[2], doubles[3]};
@@ -456,5 +471,14 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
    */
   public byte[] getEmptyTile(Tile tile) {
     return new VectorTileEncoder(tile.getTileMatrixSet().getTileExtent()).encode();
+  }
+
+  private double getBuffer(EpsgCrs crs) {
+    List<Unit<?>> units = crsInfo.getAxisUnits(crs);
+    if (!units.isEmpty()) {
+      return Units.METRE.equals(units.get(0)) ? BUFFER_METRE : BUFFER_DEGREE;
+    }
+    // fallback to meters
+    return BUFFER_METRE;
   }
 }
