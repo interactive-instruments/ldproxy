@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -59,5 +60,13 @@ public interface QueryParameterSet {
         .typedValues(typedValues)
         .filterKeys(filterKeys)
         .build();
+  }
+
+  default <U> void forEach(Class<U> clazz, Consumer<U> consumer) {
+    for (OgcApiQueryParameter parameter : getDefinitions()) {
+      if (clazz.isInstance(parameter)) {
+        consumer.accept(clazz.cast(parameter));
+      }
+    }
   }
 }

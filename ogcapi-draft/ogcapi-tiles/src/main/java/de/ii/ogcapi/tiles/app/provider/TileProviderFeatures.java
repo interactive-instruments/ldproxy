@@ -20,6 +20,7 @@ import de.ii.ogcapi.tiles.domain.provider.LayerOptions;
 import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationContext;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationUserParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerator;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
@@ -104,13 +105,13 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
 
   // TODO: streaming?
   @Override
-  public byte[] generateTile(
-      TileQuery tileQuery, MediaType mediaType, Optional<BoundingBox> bounds) {
-    if (!ENCODERS.containsKey(mediaType)) {
-      throw new IllegalArgumentException(String.format("Encoding not supported: %s", mediaType));
+  public byte[] generateTile(TileQuery tileQuery) {
+    if (!ENCODERS.containsKey(tileQuery.getMediaType())) {
+      throw new IllegalArgumentException(
+          String.format("Encoding not supported: %s", tileQuery.getMediaType()));
     }
 
-    FeatureStream tileSource = getTileSource(tileQuery, bounds);
+    FeatureStream tileSource = getTileSource(tileQuery);
 
     TileGenerationContext tileGenerationContext =
         new ImmutableTileGenerationContext.Builder()
@@ -121,7 +122,8 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
             // .limit(query.getLimit())
             .build();
 
-    FeatureTokenEncoder<?> encoder = ENCODERS.get(mediaType).apply(tileGenerationContext);
+    FeatureTokenEncoder<?> encoder =
+        ENCODERS.get(tileQuery.getMediaType()).apply(tileGenerationContext);
 
     ResultReduced<byte[]> resultReduced = generateTile(tileSource, encoder, tileQuery, Map.of());
 
@@ -129,7 +131,7 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
   }
 
   @Override
-  public FeatureStream getTileSource(TileQuery tileQuery, Optional<BoundingBox> bounds) {
+  public FeatureStream getTileSource(TileQuery tileQuery) {
     String featureProviderId = data.getLayerDefaults().getFeatureProvider().get();
     FeatureProvider2 featureProvider =
         entityRegistry
@@ -150,7 +152,13 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
     EpsgCrs nativeCrs = featureProvider.crs().getNativeCrs();
     Map<String, FeatureSchema> types = featureProvider.getData().getTypes();
     FeatureQuery featureQuery =
-        getFeatureQuery(tileQuery, data.getLayerDefaults(), types, nativeCrs, bounds);
+        getFeatureQuery(
+            tileQuery,
+            data.getLayerDefaults(),
+            types,
+            nativeCrs,
+            tileQuery.getLimitsForGeneration(),
+            tileQuery.getUserParametersForGeneration());
 
     return featureProvider.queries().getFeatureStream(featureQuery);
   }
@@ -246,7 +254,8 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
       LayerOptions options,
       Map<String, FeatureSchema> featureTypes,
       EpsgCrs nativeCrs,
-      Optional<BoundingBox> bounds) {
+      Optional<BoundingBox> bounds,
+      Optional<TileGenerationUserParameters> userParameters) {
     String featureType = tile.getLayer();
     FeatureSchema featureSchema = featureTypes.get(featureType);
 
@@ -266,15 +275,13 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
         SIntersects.of(Property.of(spatialProperty), SpatialLiteral.of(Envelope.of(bbox)));
     queryBuilder.addFilters(spatialPredicate);
 
-    tile.userParameters()
-        .ifPresent(
-            userParameters -> {
-              userParameters.getLimit().ifPresent(queryBuilder::limit);
-              queryBuilder.addAllFilters(userParameters.getFilters());
-              if (!userParameters.getFields().isEmpty()) {
-                queryBuilder.addAllFields(userParameters.getFields());
-              }
-            });
+    if (userParameters.isPresent()) {
+      userParameters.get().getLimit().ifPresent(queryBuilder::limit);
+      queryBuilder.addAllFilters(userParameters.get().getFilters());
+      if (!userParameters.get().getFields().isEmpty()) {
+        queryBuilder.addAllFields(userParameters.get().getFields());
+      }
+    }
 
     // TODO: properties from rules if fields still empty
 

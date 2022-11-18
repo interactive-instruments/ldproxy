@@ -21,8 +21,8 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
-import de.ii.ogcapi.tiles.domain.TileQueryTransformer;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
+import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationUserParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.ArraySchema;
@@ -50,7 +50,7 @@ public class QueryParameterProperties extends ApiExtensionCache
     implements OgcApiQueryParameter,
         TypedQueryParameter<List<String>>,
         FeatureQueryTransformer,
-        TileQueryTransformer {
+        TileGenerationUserParameter {
 
   private final SchemaInfo schemaInfo;
   private final SchemaValidator schemaValidator;
@@ -153,15 +153,11 @@ public class QueryParameterProperties extends ApiExtensionCache
   }
 
   @Override
-  public ImmutableTileQuery.Builder transformQuery(
-      ImmutableTileQuery.Builder queryBuilder,
+  public void applyTo(
+      ImmutableTileGenerationUserParameters.Builder userParametersBuilder,
       QueryParameterSet parameters,
       Optional<TileGenerationSchema> generationSchema) {
-    parameters
-        .getValue(this)
-        .ifPresent(fields -> queryBuilder.userParametersBuilder().fields(fields));
-
-    return queryBuilder;
+    parameters.getValue(this).ifPresent(userParametersBuilder::fields);
   }
 
   private List<String> getPropertiesList(Map<String, String> parameters) {

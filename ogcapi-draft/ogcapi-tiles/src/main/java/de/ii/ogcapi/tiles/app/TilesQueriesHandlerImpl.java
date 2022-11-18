@@ -25,7 +25,6 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
@@ -40,20 +39,21 @@ import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
-import de.ii.ogcapi.tiles.domain.TileQueryTransformer;
+import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationUserParameters;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationUserParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
 import de.ii.ogcapi.tiles.domain.provider.TileResult.Status;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -485,50 +485,52 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             .orElse(queryInput.getCollectionId());
     // TODO: get layer name from cfg
     String layer = queryInput.getCollectionId();
-    final Map<String, String> queryableTypes =
-        featuresQuery.getQueryableTypes(apiData, collectionData);
-    Optional<TileGenerationSchema> generationSchema =
-        tileProvider.supportsGeneration()
-            ? Optional.of(tileProvider.generator().getGenerationSchema(layer, queryableTypes))
-            : Optional.empty();
+    TileFormatExtension outputFormat = queryInput.getOutputFormat();
 
     ImmutableTileQuery.Builder tileQueryBuilder =
         ImmutableTileQuery.builder()
             .from(queryInput)
             // .outputFormat(queryInput.getOutputFormat())
             .layer(layer)
+            .mediaType(outputFormat.getMediaType().type())
+            .limitsForGeneration(
+                requestContext
+                    .getApi()
+                    .getSpatialExtent(
+                        queryInput.getCollectionId(), queryInput.getBoundingBox().getEpsgCrs()))
         // .collectionIds(ImmutableList.of(collectionId))
         // .temporary(!useCache)
         // .isDatasetTile(false)
         ;
-
-    // TODO: extract UserGenerationParameters from TileQuery, either pass separately to
-    // generateTiles or introduce TileGenerationQuery or similar
-    for (OgcApiQueryParameter parameter : queryInput.getParameters().getDefinitions()) {
-      if (parameter instanceof TileQueryTransformer) {
-        ((TileQueryTransformer) parameter)
-            .transformQuery(tileQueryBuilder, queryInput.getParameters(), generationSchema);
-      }
+    // TODO: only enable parameters with TileGenerationUserParameter if
+    // tileProvider.supportsGeneration
+    // TODO: TilesProviders along the line of FeaturesCoreProviders
+    Map<String, String> queryableTypes = featuresQuery.getQueryableTypes(apiData, collectionData);
+    Optional<TileGenerationSchema> generationSchema =
+        tileProvider.supportsGeneration()
+            ? Optional.of(tileProvider.generator().getGenerationSchema(layer, queryableTypes))
+            : Optional.empty();
+    ImmutableTileGenerationUserParameters.Builder userParametersBuilder =
+        new ImmutableTileGenerationUserParameters.Builder();
+    queryInput
+        .getParameters()
+        .forEach(
+            TileGenerationUserParameter.class,
+            parameter ->
+                parameter.applyTo(
+                    userParametersBuilder, queryInput.getParameters(), generationSchema));
+    TileGenerationUserParameters userParameters = userParametersBuilder.build();
+    if (!userParameters.isEmpty()) {
+      tileQueryBuilder.userParametersForGeneration(userParameters);
     }
-
     TileQuery tileQuery = tileQueryBuilder.build();
-
-    // TODO
-    if (!(queryInput.getOutputFormat() instanceof TileFormatWithQuerySupportExtension))
-      throw new RuntimeException(
-          String.format(
-              "Unexpected tile format without query support. Found: %s",
-              queryInput.getOutputFormat().getClass().getSimpleName()));
-    TileFormatWithQuerySupportExtension outputFormat =
-        (TileFormatWithQuerySupportExtension) queryInput.getOutputFormat();
 
     TileResult result = tileProvider.getTile(tileQuery);
 
+    // TODO: already thrown in Endpoint? might be good to double check
     if (result.getStatus() == Status.OutOfBounds) {
       throw new NotFoundException();
     }
-
-    // TODO: adjust and use getTileStreamResponse
 
     try {
       if (result.isAvailable()) {
@@ -539,23 +541,20 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
       if (result.getStatus() == Status.NotFound && tileProvider.supportsGeneration()) {
         if (tileProvider.generator().supports(outputFormat.getMediaType().type())) {
-          Optional<BoundingBox> bounds =
-              requestContext
-                  .getApi()
-                  .getSpatialExtent(
-                      queryInput.getCollectionId(), tileQuery.getBoundingBox().getEpsgCrs());
 
-          byte[] bytes =
-              tileProvider
-                  .generator()
-                  .generateTile(tileQuery, outputFormat.getMediaType().type(), bounds);
+          byte[] bytes = tileProvider.generator().generateTile(tileQuery);
 
           return prepareSuccessResponse(requestContext).entity(bytes).build();
         } else if (outputFormat.supportsFeatureQuery()) { // TODO: canEncode
           // TODO: pass encoder into or return FeatureStream?
-          FeatureStream tileSource =
-              tileProvider.generator().getTileSource(tileQuery, Optional.empty());
+          FeatureStream tileSource = tileProvider.generator().getTileSource(tileQuery);
         }
+
+        // TODO: MbTiles throws NotFound on missing format, right?
+        throw new RuntimeException(
+            String.format(
+                "Unexpected tile format without query support. Found: %s",
+                queryInput.getOutputFormat().getClass().getSimpleName()));
       }
 
     } catch (Throwable e) {

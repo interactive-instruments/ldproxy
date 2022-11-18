@@ -7,20 +7,18 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
-import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.features.domain.FeatureStream;
 import java.util.Map;
-import java.util.Optional;
 import javax.ws.rs.core.MediaType;
 
 public interface TileGenerator {
 
   boolean supports(MediaType mediaType);
 
-  byte[] generateTile(TileQuery tileQuery, MediaType mediaType, Optional<BoundingBox> bounds);
+  byte[] generateTile(TileQuery tileQuery);
 
   // TODO: TileStream, TileEncoder, TileQuery
-  FeatureStream getTileSource(TileQuery tileQuery, Optional<BoundingBox> bounds);
+  FeatureStream getTileSource(TileQuery tileQuery);
 
   // TODO: create on startup for all layers
   TileGenerationSchema getGenerationSchema(String layer, Map<String, String> queryables);

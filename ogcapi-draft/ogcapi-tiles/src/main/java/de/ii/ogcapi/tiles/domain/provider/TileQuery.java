@@ -7,26 +7,20 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
-import de.ii.xtraplatform.cql.domain.Cql2Expression;
-import java.util.List;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.util.Optional;
-import java.util.OptionalInt;
+import javax.ws.rs.core.MediaType;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Style(deepImmutablesDetection = true, attributeBuilderDetection = true)
+@Value.Style(deepImmutablesDetection = true)
 public interface TileQuery extends TileCoordinates {
   String getLayer();
 
-  Optional<UserGenerationParameters> userParameters();
+  MediaType getMediaType();
 
-  @Value.Immutable
-  interface UserGenerationParameters {
+  Optional<BoundingBox> getLimitsForGeneration();
 
-    OptionalInt getLimit();
-
-    List<Cql2Expression> getFilters();
-
-    List<String> getFields();
-  }
+  // TODO: is there really a practical use case for these or should we drop them altogether?
+  Optional<TileGenerationUserParameters> getUserParametersForGeneration();
 }

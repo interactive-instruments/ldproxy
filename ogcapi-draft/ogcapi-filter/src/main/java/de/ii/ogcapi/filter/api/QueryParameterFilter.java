@@ -23,8 +23,8 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-import de.ii.ogcapi.tiles.domain.TileQueryTransformer;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
+import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationUserParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql.Format;
@@ -62,7 +62,7 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterFilter extends ApiExtensionCache
-    implements OgcApiQueryParameter, ItemTypeSpecificConformanceClass, TileQueryTransformer {
+    implements OgcApiQueryParameter, ItemTypeSpecificConformanceClass, TileGenerationUserParameter {
 
   private final FeaturesCoreProviders providers;
   private final SchemaValidator schemaValidator;
@@ -243,8 +243,8 @@ public class QueryParameterFilter extends ApiExtensionCache
   }
 
   @Override
-  public ImmutableTileQuery.Builder transformQuery(
-      ImmutableTileQuery.Builder queryBuilder,
+  public void applyTo(
+      ImmutableTileGenerationUserParameters.Builder userParametersBuilder,
       QueryParameterSet parameters,
       Optional<TileGenerationSchema> generationSchema) {
     if (parameters.getValues().containsKey(getName()) && generationSchema.isPresent()) {
@@ -269,10 +269,8 @@ public class QueryParameterFilter extends ApiExtensionCache
               filterCrs,
               generationSchema.get().getProperties());
 
-      queryBuilder.userParametersBuilder().addFilters(filter);
+      userParametersBuilder.addFilters(filter);
     }
-
-    return queryBuilder;
   }
 
   private Cql2Expression parseFilter(

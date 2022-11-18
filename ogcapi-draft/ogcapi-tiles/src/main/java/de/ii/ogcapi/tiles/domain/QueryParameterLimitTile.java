@@ -17,7 +17,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationUserParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -38,7 +38,7 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterLimitTile extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<Integer>, TileQueryTransformer {
+    implements OgcApiQueryParameter, TypedQueryParameter<Integer>, TileGenerationUserParameter {
 
   private final SchemaValidator schemaValidator;
 
@@ -145,13 +145,11 @@ public class QueryParameterLimitTile extends ApiExtensionCache
   }
 
   @Override
-  public ImmutableTileQuery.Builder transformQuery(
-      ImmutableTileQuery.Builder queryBuilder,
+  public void applyTo(
+      ImmutableTileGenerationUserParameters.Builder userParametersBuilder,
       QueryParameterSet parameters,
       Optional<TileGenerationSchema> generationSchema) {
-    parameters.getValue(this).ifPresent(limit -> queryBuilder.userParametersBuilder().limit(limit));
-
-    return queryBuilder;
+    parameters.getValue(this).ifPresent(userParametersBuilder::limit);
   }
 
   @Override

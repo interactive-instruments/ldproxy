@@ -9,15 +9,15 @@ package de.ii.ogcapi.tiles.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationUserParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import java.util.Optional;
 
 @AutoMultiBind
-public interface TileQueryTransformer {
+public interface TileGenerationUserParameter {
 
-  ImmutableTileQuery.Builder transformQuery(
-      ImmutableTileQuery.Builder queryBuilder,
+  void applyTo(
+      ImmutableTileGenerationUserParameters.Builder userParametersBuilder,
       QueryParameterSet parameters,
       Optional<TileGenerationSchema> generationSchema);
 }

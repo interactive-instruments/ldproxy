@@ -19,7 +19,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery.Builder;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationUserParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.xtraplatform.cql.domain.Interval;
 import de.ii.xtraplatform.cql.domain.Property;
@@ -39,7 +39,7 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
-    implements TypedQueryParameter<TemporalLiteral>, TileQueryTransformer {
+    implements TypedQueryParameter<TemporalLiteral>, TileGenerationUserParameter {
 
   @Inject
   QueryParameterDatetimeTile(SchemaValidator schemaValidator) {
@@ -84,8 +84,8 @@ public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
   }
 
   @Override
-  public Builder transformQuery(
-      Builder queryBuilder,
+  public void applyTo(
+      ImmutableTileGenerationUserParameters.Builder userParametersBuilder,
       QueryParameterSet parameters,
       Optional<TileGenerationSchema> generationSchema) {
     parameters
@@ -97,11 +97,8 @@ public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
                       .flatMap(TileGenerationSchema::getTemporalProperty)
                       .map(temporalProperty -> toFilter(temporalProperty, temporalLiteral));
 
-              temporalFilter.ifPresent(
-                  filter -> queryBuilder.userParametersBuilder().addFilters(filter));
+              temporalFilter.ifPresent(userParametersBuilder::addFilters);
             });
-
-    return queryBuilder;
   }
 
   private static TIntersects toFilter(String property, TemporalLiteral literal) {
