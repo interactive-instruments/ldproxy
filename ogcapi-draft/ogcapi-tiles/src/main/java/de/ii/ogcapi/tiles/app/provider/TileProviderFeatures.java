@@ -11,17 +11,8 @@ import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETI
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import de.ii.ogcapi.crs.domain.CrsSupport;
-import de.ii.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
-import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TileCache;
-import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptions;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationContext;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData;
@@ -35,8 +26,6 @@ import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
 import de.ii.xtraplatform.base.domain.LogContext;
-import de.ii.xtraplatform.cql.domain.And;
-import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
 import de.ii.xtraplatform.cql.domain.Property;
@@ -60,16 +49,13 @@ import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletionException;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.measure.Unit;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import org.apache.http.NameValuePair;
 import org.kortforsyningen.proj.Units;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,11 +72,8 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
   private static final double BUFFER_DEGREE = 0.00001;
   private static final double BUFFER_METRE = 10.0;
 
-  private final CrsSupport crsSupport;
   private final CrsInfo crsInfo;
   private final TileCache tileCache;
-  // TODO
-  private final FeaturesQuery queryParser;
   private final EntityRegistry entityRegistry;
   // TODO
   private final TileProviderFeaturesData data =
@@ -99,16 +82,9 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
           .build();
 
   @Inject
-  public TileProviderFeatures(
-      CrsSupport crsSupport,
-      CrsInfo crsInfo,
-      TileCache tileCache,
-      FeaturesQuery queryParser,
-      EntityRegistry entityRegistry) {
-    this.crsSupport = crsSupport;
+  public TileProviderFeatures(CrsInfo crsInfo, TileCache tileCache, EntityRegistry entityRegistry) {
     this.crsInfo = crsInfo;
     this.tileCache = tileCache;
-    this.queryParser = queryParser;
     this.entityRegistry = entityRegistry;
   }
 
@@ -174,10 +150,7 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
     EpsgCrs nativeCrs = featureProvider.crs().getNativeCrs();
     Map<String, FeatureSchema> types = featureProvider.getData().getTypes();
     FeatureQuery featureQuery =
-        getQuery(tileQuery, data.getLayerDefaults(), types, nativeCrs, bounds);
-
-    // TODO:
-    // FeatureQuery featureQuery = getQuery(null, null, null, null, null);
+        getFeatureQuery(tileQuery, data.getLayerDefaults(), types, nativeCrs, bounds);
 
     return featureProvider.queries().getFeatureStream(featureQuery);
   }
@@ -228,7 +201,7 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
 
   // TODO: create on startup for all layers
   @Override
-  public TileGenerationSchema getGenerationSchema(String layer) {
+  public TileGenerationSchema getGenerationSchema(String layer, Map<String, String> queryables) {
     String featureProviderId = data.getLayerDefaults().getFeatureProvider().get();
     FeatureProvider2 featureProvider =
         entityRegistry
@@ -260,15 +233,15 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
             .or(() -> featureSchema.getPrimaryInstant().map(SchemaBase::getFullPathAsString));
       }
 
+      // TODO
       @Override
-      public List<String> getProperties() {
-        // TODO
-        return List.of();
+      public Map<String, String> getProperties() {
+        return queryables;
       }
     };
   }
 
-  public FeatureQuery getQuery(
+  private FeatureQuery getFeatureQuery(
       TileQuery tile,
       LayerOptions options,
       Map<String, FeatureSchema> featureTypes,
@@ -308,116 +281,11 @@ public class TileProviderFeatures implements TileProvider, TileGenerator {
     return queryBuilder.build();
   }
 
-  // TODO: which params are allowed? limit[done],properties[done],filter,datetime[done],
-  // TODO: introduce QueryParameterSet for filter,filter-lang,filter-crs
-  public FeatureQuery getQuery(
-      Tile tile,
-      List<OgcApiQueryParameter> allowedParameters,
-      Map<String, String> queryParameters,
-      TilesConfiguration tilesConfiguration,
-      URICustomizer uriCustomizer) {
-
-    String collectionId = tile.getCollectionId();
-    String tileMatrixSetId = tile.getTileMatrixSet().getId();
-    int level = tile.getTileLevel();
-    final String predefFilter = null;
-    String featureTypeId = null;
-    ImmutableFeatureQuery.Builder queryBuilder = ImmutableFeatureQuery.builder();
-    OgcApiDataV2 apiData = tile.getApiData();
-    FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-
-    final Map<String, String> filterableFields =
-        queryParser.getFilterableFields(apiData, collectionData);
-    final Map<String, String> queryableTypes =
-        queryParser.getQueryableTypes(apiData, collectionData);
-
-    final Set<String> finalFilterParameters = null;
-    final Map<String, String> filters =
-        queryParameters.entrySet().stream()
-            .filter(
-                entry ->
-                    finalFilterParameters.contains(entry.getKey())
-                        || filterableFields.containsKey(entry.getKey()))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-    Cql2Expression spatialPredicate = null;
-
-    if (predefFilter != null || !filters.isEmpty()) {
-      Optional<Cql2Expression> otherFilter = Optional.empty();
-      Optional<Cql2Expression> configFilter = Optional.empty();
-      if (!filters.isEmpty()) {
-        Optional<String> filterLang =
-            uriCustomizer.getQueryParams().stream()
-                .filter(param -> "filter-lang".equals(param.getName()))
-                .map(NameValuePair::getValue)
-                .findFirst();
-        Cql.Format cqlFormat = Cql.Format.TEXT;
-        if (filterLang.isPresent() && "cql2-json".equals(filterLang.get())) {
-          cqlFormat = Cql.Format.JSON;
-        }
-        otherFilter =
-            queryParser.getFilterFromQuery(
-                filters, filterableFields, ImmutableSet.of("filter"), queryableTypes, cqlFormat);
-      }
-      if (predefFilter != null) {
-        configFilter =
-            queryParser.getFilterFromQuery(
-                ImmutableMap.of("filter", predefFilter),
-                filterableFields,
-                ImmutableSet.of("filter"),
-                queryableTypes,
-                Cql.Format.TEXT);
-      }
-      Cql2Expression combinedFilter;
-      if (otherFilter.isPresent() && configFilter.isPresent()) {
-        combinedFilter = And.of(otherFilter.get(), configFilter.get(), spatialPredicate);
-      } else if (otherFilter.isPresent()) {
-        combinedFilter = And.of(otherFilter.get(), spatialPredicate);
-      } else if (configFilter.isPresent()) {
-        combinedFilter = And.of(configFilter.get(), spatialPredicate);
-      } else {
-        combinedFilter = spatialPredicate;
-      }
-
-      if (LOGGER.isDebugEnabled()) {
-        LOGGER.trace("Filter: {}", combinedFilter);
-      }
-
-      queryBuilder.filter(combinedFilter);
-    } else {
-      queryBuilder.filter(spatialPredicate);
-    }
-
-    return queryBuilder.build();
-  }
-
   public double getMaxAllowableOffset(TileCoordinates tile, EpsgCrs nativeCrs) {
     double maxAllowableOffsetTileMatrixSet =
         tile.getTileMatrixSet()
             .getMaxAllowableOffset(tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
     Unit<?> tmsCrsUnit = crsInfo.getUnit(tile.getTileMatrixSet().getCrs());
-    Unit<?> nativeCrsUnit = crsInfo.getUnit(nativeCrs);
-    if (tmsCrsUnit.equals(nativeCrsUnit)) {
-      return maxAllowableOffsetTileMatrixSet;
-    } else if (tmsCrsUnit.equals(Units.DEGREE) && nativeCrsUnit.equals(Units.METRE)) {
-      return maxAllowableOffsetTileMatrixSet * 111333.0;
-    } else if (tmsCrsUnit.equals(Units.METRE) && nativeCrsUnit.equals(Units.DEGREE)) {
-      return maxAllowableOffsetTileMatrixSet / 111333.0;
-    }
-
-    LOGGER.warn(
-        "Tile generation: cannot convert between axis units '{}' and '{}'.",
-        tmsCrsUnit.getName(),
-        nativeCrsUnit.getName());
-    return 0;
-  }
-
-  public double getMaxAllowableOffset(Tile tile) {
-    double maxAllowableOffsetTileMatrixSet =
-        tile.getTileMatrixSet()
-            .getMaxAllowableOffset(tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
-    Unit<?> tmsCrsUnit = crsInfo.getUnit(tile.getTileMatrixSet().getCrs());
-    EpsgCrs nativeCrs = crsSupport.getStorageCrs(tile.getApiData(), Optional.empty());
     Unit<?> nativeCrsUnit = crsInfo.getUnit(nativeCrs);
     if (tmsCrsUnit.equals(nativeCrsUnit)) {
       return maxAllowableOffsetTileMatrixSet;

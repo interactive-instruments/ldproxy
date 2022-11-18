@@ -21,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -47,7 +48,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterFilterCrs extends ApiExtensionCache
+    implements OgcApiQueryParameter, TypedQueryParameter<EpsgCrs> {
 
   public static final String FILTER_CRS = "filter-crs";
   public static final String CRS84 = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
@@ -97,6 +99,16 @@ public class QueryParameterFilterCrs extends ApiExtensionCache implements OgcApi
   @Override
   public String getDescription() {
     return "Specify which of the supported CRSs to use to encode geometric values in a filter expression (parameter 'filter'). Default is WGS84 longitude/latitude.";
+  }
+
+  @Override
+  public EpsgCrs parse(String value) {
+    try {
+      return EpsgCrs.fromString(value);
+    } catch (Throwable e) {
+      throw new IllegalArgumentException(
+          String.format("Invalid value for query parameter '%s'.", getName()), e);
+    }
   }
 
   private ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =

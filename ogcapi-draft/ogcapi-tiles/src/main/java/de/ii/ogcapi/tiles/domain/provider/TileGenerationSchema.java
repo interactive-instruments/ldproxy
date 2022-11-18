@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface TileGenerationSchema {
@@ -16,5 +16,5 @@ public interface TileGenerationSchema {
 
   Optional<String> getTemporalProperty();
 
-  List<String> getProperties();
+  Map<String, String> getProperties();
 }

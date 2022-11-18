@@ -9,6 +9,7 @@ package de.ii.ogcapi.tiles.domain.provider;
 
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.features.domain.FeatureStream;
+import java.util.Map;
 import java.util.Optional;
 import javax.ws.rs.core.MediaType;
 
@@ -22,5 +23,5 @@ public interface TileGenerator {
   FeatureStream getTileSource(TileQuery tileQuery, Optional<BoundingBox> bounds);
 
   // TODO: create on startup for all layers
-  TileGenerationSchema getGenerationSchema(String layer);
+  TileGenerationSchema getGenerationSchema(String layer, Map<String, String> queryables);
 }

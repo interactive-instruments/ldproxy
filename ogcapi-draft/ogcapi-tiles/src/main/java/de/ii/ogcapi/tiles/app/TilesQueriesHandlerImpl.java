@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteStreams;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
@@ -99,6 +100,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
   private final StaticTileProviderStore staticTileProviderStore;
   private final FeaturesCoreProviders providers;
   private final TileMatrixSetRepository tileMatrixSetRepository;
+  // TODO
+  private final FeaturesQuery featuresQuery;
+  // TODO
   private final TileProvider tileProvider;
 
   @Inject
@@ -112,6 +116,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       StaticTileProviderStore staticTileProviderStore,
       FeaturesCoreProviders providers,
       TileMatrixSetRepository tileMatrixSetRepository,
+      FeaturesQuery featuresQuery,
       TileProvider tileProvider) {
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
@@ -122,6 +127,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     this.staticTileProviderStore = staticTileProviderStore;
     this.providers = providers;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
+    this.featuresQuery = featuresQuery;
     this.tileProvider = tileProvider;
 
     this.queryHandlers =
@@ -479,9 +485,11 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             .orElse(queryInput.getCollectionId());
     // TODO: get layer name from cfg
     String layer = queryInput.getCollectionId();
+    final Map<String, String> queryableTypes =
+        featuresQuery.getQueryableTypes(apiData, collectionData);
     Optional<TileGenerationSchema> generationSchema =
         tileProvider.supportsGeneration()
-            ? Optional.of(tileProvider.generator().getGenerationSchema(layer))
+            ? Optional.of(tileProvider.generator().getGenerationSchema(layer, queryableTypes))
             : Optional.empty();
 
     ImmutableTileQuery.Builder tileQueryBuilder =
