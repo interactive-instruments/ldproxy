@@ -37,6 +37,7 @@ import org.immutables.value.Value;
 })
 public interface TileProviderData extends EntityData {
 
+  String ENTITY_TYPE = "providers";
   String PROVIDER_TYPE = "TILE";
 
   @Value.Derived

@@ -9,6 +9,7 @@ package de.ii.ogcapi.tiles.domain.provider;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData.Builder;
+import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import java.util.Map;
 import java.util.Objects;
 import org.immutables.value.Value;
@@ -22,11 +23,12 @@ import org.immutables.value.Value;
  *     API bereitgestellten Features im Gebiet der Kachel abgeleitet.
  */
 @Value.Immutable
-@Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = Builder.class)
 public interface TileProviderFeaturesData extends TileProviderData, WithCaches {
 
   String PROVIDER_SUBTYPE = "FEATURES";
+  String ENTITY_SUBTYPE =
+      String.format("%s/%s", TileProviderData.PROVIDER_TYPE, PROVIDER_SUBTYPE).toLowerCase();
 
   /**
    * @langEn Fixed value, identifies the tile provider type.
@@ -38,8 +40,9 @@ public interface TileProviderFeaturesData extends TileProviderData, WithCaches {
     return PROVIDER_SUBTYPE;
   }
 
+  // TODO: error when using interface
   @Value.Default
-  default LayerOptionsFeaturesDefault getLayerDefaults() {
+  default ImmutableLayerOptionsFeaturesDefault getLayerDefaults() {
     return new ImmutableLayerOptionsFeaturesDefault.Builder().build();
   }
 
@@ -51,7 +54,7 @@ public interface TileProviderFeaturesData extends TileProviderData, WithCaches {
     if (Objects.isNull(source) || !(source instanceof TileProviderFeaturesData)) return this;
 
     Builder builder =
-        ImmutableTileProviderFeaturesData.builder()
+        new ImmutableTileProviderFeaturesData.Builder()
             .from((TileProviderFeaturesData) source)
             .from(this);
 
@@ -114,4 +117,6 @@ public interface TileProviderFeaturesData extends TileProviderData, WithCaches {
     */
     return builder.build();
   }
+
+  abstract class Builder implements EntityDataBuilder<TileProviderFeaturesData> {}
 }

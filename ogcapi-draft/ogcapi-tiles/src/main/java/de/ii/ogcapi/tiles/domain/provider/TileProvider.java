@@ -7,8 +7,14 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
-// @AutoMultiBind
-public interface TileProvider {
+import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
+
+public interface TileProvider extends PersistentEntity {
+
+  @Override
+  default String getType() {
+    return TileProviderData.ENTITY_TYPE;
+  }
 
   TileResult getTile(TileQuery tileQuery);
 

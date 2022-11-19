@@ -123,7 +123,8 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
   @Override
   public FeatureStream getTileSource(TileQuery tileQuery) {
     // TODO: for layer, TilesProviders
-    String featureProviderId = data.getLayerDefaults().getFeatureProvider().orElse(data.getId());
+    String featureProviderId =
+        data.getLayerDefaults().getFeatureProvider().orElse(data.getId().replace("-tiles", ""));
     FeatureProvider2 featureProvider =
         entityRegistry
             .getEntity(FeatureProvider2.class, featureProviderId)
@@ -201,7 +202,8 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
   // TODO: create on startup for all layers
   @Override
   public TileGenerationSchema getGenerationSchema(String layer, Map<String, String> queryables) {
-    String featureProviderId = data.getLayerDefaults().getFeatureProvider().orElse(data.getId());
+    String featureProviderId =
+        data.getLayerDefaults().getFeatureProvider().orElse(data.getId().replace("-tiles", ""));
     FeatureProvider2 featureProvider =
         entityRegistry
             .getEntity(FeatureProvider2.class, featureProviderId)

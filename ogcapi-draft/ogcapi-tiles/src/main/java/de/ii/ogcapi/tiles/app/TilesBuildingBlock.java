@@ -26,7 +26,6 @@ import de.ii.ogcapi.tilematrixsets.domain.ImmutableMinMax;
 import de.ii.ogcapi.tilematrixsets.domain.MinMax;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration;
 import de.ii.ogcapi.tiles.domain.ImmutableTileProviderFeatures;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration.Builder;
 import de.ii.ogcapi.tiles.domain.PredefinedFilter;
@@ -36,10 +35,18 @@ import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ogcapi.tiles.domain.TileProviderFeatures;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.provider.Cache.Storage;
+import de.ii.ogcapi.tiles.domain.provider.Cache.Type;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableCache;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsFeatures;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsFeaturesDefault;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData;
 import de.ii.ogcapi.tiles.domain.provider.Rule;
+import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.store.domain.entities.EntityFactories;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -119,6 +126,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
   private final SchemaInfo schemaInfo;
   private final TileMatrixSetRepository tileMatrixSetRepository;
   private final TileCache tileCache;
+  private final EntityFactories entityFactories;
 
   @Inject
   public TilesBuildingBlock(
@@ -127,13 +135,15 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
       FeaturesCoreProviders providers,
       SchemaInfo schemaInfo,
       TileMatrixSetRepository tileMatrixSetRepository,
-      TileCache tileCache) {
+      TileCache tileCache,
+      EntityFactories entityFactories) {
     this.extensionRegistry = extensionRegistry;
     this.queryParser = queryParser;
     this.providers = providers;
     this.schemaInfo = schemaInfo;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
     this.tileCache = tileCache;
+    this.entityFactories = entityFactories;
   }
 
   @Override
@@ -218,19 +228,29 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     // we need to test, if the TILES and TILE MATRIX SETS module are enabled for the API and stop,
     // if not
     OgcApiDataV2 apiData = api.getData();
-    if (!apiData
-        .getExtension(TilesConfiguration.class)
-        .map(ExtensionConfiguration::isEnabled)
-        .orElse(false)) {
-      return ValidationResult.of();
-    }
 
-    if (!apiData
+    // TODO
+    /*if (!apiData
         .getExtension(TileMatrixSetsConfiguration.class)
         .map(ExtensionConfiguration::isEnabled)
         .orElse(false)) {
       return ValidationResult.of();
+    }*/
+
+    Optional<TilesConfiguration> tilesConfiguration =
+        apiData.getExtension(TilesConfiguration.class).filter(ExtensionConfiguration::isEnabled);
+
+    if (tilesConfiguration.isEmpty()) {
+      return ValidationResult.of();
     }
+
+    // TODO
+    TileProviderFeaturesData tileProviderFeaturesData =
+        getTileProviderData(tilesConfiguration.get());
+    entityFactories
+        .get(TileProviderFeaturesData.class)
+        .createInstance(tileProviderFeaturesData)
+        .join();
 
     try {
       SQLiteJDBCLoader.initialize();
@@ -542,6 +562,29 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     }
 
     return builder.build();
+  }
+
+  // TODO
+  private TileProviderFeaturesData getTileProviderData(TilesConfiguration tilesConfiguration) {
+    return new ImmutableTileProviderFeaturesData.Builder()
+        .id("bergbau-tiles")
+        .addCaches(
+            new ImmutableCache.Builder()
+                .type(Type.DYNAMIC)
+                .storage(Storage.FILES)
+                .putLevels("WebMercatorQuad", new ImmutableMinMax.Builder().min(2).max(8).build())
+                .build())
+        .layerDefaults(
+            new ImmutableLayerOptionsFeaturesDefault.Builder()
+                .putLevels("WebMercatorQuad", new ImmutableMinMax.Builder().min(2).max(20).build())
+                .build())
+        .putLayers(
+            "managementrestrictionorregulationzone",
+            new ImmutableLayerOptionsFeatures.Builder()
+                .id("managementrestrictionorregulationzone")
+                .putLevels("WebMercatorQuad", new ImmutableMinMax.Builder().min(2).max(20).build())
+                .build())
+        .build();
   }
 
   private FeatureChangeListener onFeatureChange(OgcApi api) {

@@ -100,8 +100,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
   private final TileMatrixSetRepository tileMatrixSetRepository;
   // TODO
   private final FeaturesQuery featuresQuery;
-  // TODO
-  private final TileProvider tileProvider;
 
   @Inject
   public TilesQueriesHandlerImpl(
@@ -114,8 +112,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       StaticTileProviderStore staticTileProviderStore,
       FeaturesCoreProviders providers,
       TileMatrixSetRepository tileMatrixSetRepository,
-      FeaturesQuery featuresQuery,
-      TileProvider tileProvider) {
+      FeaturesQuery featuresQuery) {
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
     this.entityRegistry = entityRegistry;
@@ -126,7 +123,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     this.providers = providers;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
     this.featuresQuery = featuresQuery;
-    this.tileProvider = tileProvider;
 
     this.queryHandlers =
         ImmutableMap.<Query, QueryHandler<? extends QueryInput>>builder()
@@ -484,6 +480,16 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     // TODO: get layer name from cfg
     String layer = queryInput.getCollectionId();
     TileFormatExtension outputFormat = queryInput.getOutputFormat();
+
+    // TODO: from cfg
+    String tileProviderId = String.format("%s-tiles", apiData.getId());
+    TileProvider tileProvider =
+        entityRegistry
+            .getEntity(TileProvider.class, tileProviderId)
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        String.format("Tile provider with id '%s' not found.", tileProviderId)));
 
     ImmutableTileQuery.Builder tileQueryBuilder =
         ImmutableTileQuery.builder()
