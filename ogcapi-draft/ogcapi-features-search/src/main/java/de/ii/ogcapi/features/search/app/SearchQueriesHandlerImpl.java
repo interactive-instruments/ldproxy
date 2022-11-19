@@ -83,6 +83,7 @@ import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.web.domain.ETag;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -410,6 +411,24 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                           q.getParametersAsNodes().entrySet().stream()
                               .collect(
                                   Collectors.toUnmodifiableMap(Entry::getKey, Entry::getValue)))
+                      .formats(
+                          extensionRegistry
+                              .getExtensionsForType(FeatureFormatExtension.class)
+                              .stream()
+                              .filter(
+                                  outputFormatExtension ->
+                                      outputFormatExtension.isEnabledForApi(apiData))
+                              .filter(
+                                  f ->
+                                      Objects.nonNull(
+                                          f.getContent(
+                                              apiData, String.format("/search/%s", queryId))))
+                              .map(
+                                  f ->
+                                      new AbstractMap.SimpleImmutableEntry<>(
+                                          f.getMediaType().label(), f.getMediaType().parameter()))
+                              .sorted(Map.Entry.comparingByKey())
+                              .collect(Collectors.toUnmodifiableList()))
                       .build());
             });
 
@@ -522,8 +541,6 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
     QueryExpression query =
         queryInput.getQuery().resolveParameters(requestContext.getParameters(), schemaValidator);
 
-    String queryId = queryInput.getQuery().getId().orElse("search");
-
     FeatureFormatExtension outputFormat =
         api.getOutputFormat(
                 FeatureFormatExtension.class,
@@ -620,7 +637,9 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
         api,
         requestContext,
         queryInput,
-        queryId,
+        query.getId().orElseThrow(),
+        query.getTitle(),
+        query.getDescription(),
         finalQueryBuilder.build(),
         queryInput.getAllLinksAreLocal(),
         collectionIds,
@@ -706,6 +725,8 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       ApiRequestContext requestContext,
       QueryInput queryInput,
       String queryId,
+      Optional<String> queryTitle,
+      Optional<String> queryDescription,
       MultiFeatureQuery query,
       boolean allLinksAreLocal,
       List<String> collectionIds,
@@ -774,7 +795,10 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
             .showsFeatureSelfLink(showsFeatureSelfLink)
             .fields(fields)
             .allLinksAreLocal(allLinksAreLocal)
-            .idsIncludeCollectionId(collectionIds.size() > 1);
+            .idsIncludeCollectionId(collectionIds.size() > 1)
+            .queryId(queryId)
+            .queryTitle(queryTitle)
+            .queryDescription(queryDescription);
 
     FeatureStream featureStream;
     FeatureTokenEncoder<?> encoder;

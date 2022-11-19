@@ -5,9 +5,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.features.html.app;
+package de.ii.ogcapi.features.html.domain;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.features.html.app.FeatureHtml;
+import de.ii.ogcapi.features.html.app.ModifiableFeatureHtml;
+import de.ii.ogcapi.features.html.app.ModifiablePropertyHtml;
+import de.ii.ogcapi.features.html.app.PropertyHtml;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
@@ -68,27 +72,40 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
       LOGGER.debug("page {}", transformationContext.getPage());
       LOGGER.debug("pages {}", pages);
 
+      boolean includeLimit = !transformationContext.isStoredQuery();
+
       ImmutableList.Builder<NavigationDTO> pagination = new ImmutableList.Builder<>();
       ImmutableList.Builder<NavigationDTO> metaPagination = new ImmutableList.Builder<>();
       if (transformationContext.getPage() > 1) {
         pagination
             .add(
                 new NavigationDTO(
-                    "«", String.format("limit=%d&offset=%d", transformationContext.getLimit(), 0)))
+                    "«",
+                    includeLimit
+                        ? String.format("limit=%d&offset=%d", transformationContext.getLimit(), 0)
+                        : String.format("offset=%d", 0)))
             .add(
                 new NavigationDTO(
                     "‹",
-                    String.format(
-                        "limit=%d&offset=%d",
-                        transformationContext.getLimit(),
-                        transformationContext.getOffset() - transformationContext.getLimit())));
+                    includeLimit
+                        ? String.format(
+                            "limit=%d&offset=%d",
+                            transformationContext.getLimit(),
+                            transformationContext.getOffset() - transformationContext.getLimit())
+                        : String.format(
+                            "offset=%d",
+                            transformationContext.getOffset() - transformationContext.getLimit())));
         metaPagination.add(
             new NavigationDTO(
                 "prev",
-                String.format(
-                    "limit=%d&offset=%d",
-                    transformationContext.getLimit(),
-                    transformationContext.getOffset() - transformationContext.getLimit())));
+                includeLimit
+                    ? String.format(
+                        "limit=%d&offset=%d",
+                        transformationContext.getLimit(),
+                        transformationContext.getOffset() - transformationContext.getLimit())
+                    : String.format(
+                        "offset=%d",
+                        transformationContext.getOffset() - transformationContext.getLimit())));
       } else {
         pagination.add(new NavigationDTO("«")).add(new NavigationDTO("‹"));
       }
@@ -106,10 +123,12 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
             pagination.add(
                 new NavigationDTO(
                     String.valueOf(i),
-                    String.format(
-                        "limit=%d&offset=%d",
-                        transformationContext.getLimit(),
-                        (i - 1) * transformationContext.getLimit())));
+                    includeLimit
+                        ? String.format(
+                            "limit=%d&offset=%d",
+                            transformationContext.getLimit(),
+                            (i - 1) * transformationContext.getLimit())
+                        : String.format("&offset=%d", (i - 1) * transformationContext.getLimit())));
           }
         }
 
@@ -118,24 +137,36 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
               .add(
                   new NavigationDTO(
                       "›",
-                      String.format(
-                          "limit=%d&offset=%d",
-                          transformationContext.getLimit(),
-                          transformationContext.getOffset() + transformationContext.getLimit())))
+                      includeLimit
+                          ? String.format(
+                              "limit=%d&offset=%d",
+                              transformationContext.getLimit(),
+                              transformationContext.getOffset() + transformationContext.getLimit())
+                          : String.format(
+                              "offset=%d",
+                              transformationContext.getOffset()
+                                  + transformationContext.getLimit())))
               .add(
                   new NavigationDTO(
                       "»",
-                      String.format(
-                          "limit=%d&offset=%d",
-                          transformationContext.getLimit(),
-                          (pages - 1) * transformationContext.getLimit())));
+                      includeLimit
+                          ? String.format(
+                              "limit=%d&offset=%d",
+                              transformationContext.getLimit(),
+                              (pages - 1) * transformationContext.getLimit())
+                          : String.format(
+                              "offset=%d", (pages - 1) * transformationContext.getLimit())));
           metaPagination.add(
               new NavigationDTO(
                   "next",
-                  String.format(
-                      "limit=%d&offset=%d",
-                      transformationContext.getLimit(),
-                      transformationContext.getOffset() + transformationContext.getLimit())));
+                  includeLimit
+                      ? String.format(
+                          "limit=%d&offset=%d",
+                          transformationContext.getLimit(),
+                          transformationContext.getOffset() + transformationContext.getLimit())
+                      : String.format(
+                          "offset=%d",
+                          transformationContext.getOffset() + transformationContext.getLimit())));
         } else {
           pagination.add(new NavigationDTO("›")).add(new NavigationDTO("»"));
         }
@@ -159,17 +190,25 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
           pagination.add(
               new NavigationDTO(
                   "›",
-                  String.format(
-                      "limit=%d&offset=%d",
-                      transformationContext.getLimit(),
-                      transformationContext.getOffset() + transformationContext.getLimit())));
+                  includeLimit
+                      ? String.format(
+                          "limit=%d&offset=%d",
+                          transformationContext.getLimit(),
+                          transformationContext.getOffset() + transformationContext.getLimit())
+                      : String.format(
+                          "offset=%d",
+                          transformationContext.getOffset() + transformationContext.getLimit())));
           metaPagination.add(
               new NavigationDTO(
                   "next",
-                  String.format(
-                      "limit=%d&offset=%d",
-                      transformationContext.getLimit(),
-                      transformationContext.getOffset() + transformationContext.getLimit())));
+                  includeLimit
+                      ? String.format(
+                          "limit=%d&offset=%d",
+                          transformationContext.getLimit(),
+                          transformationContext.getOffset() + transformationContext.getLimit())
+                      : String.format(
+                          "offset=%d",
+                          transformationContext.getOffset() + transformationContext.getLimit())));
         } else {
           pagination.add(new NavigationDTO("›"));
         }

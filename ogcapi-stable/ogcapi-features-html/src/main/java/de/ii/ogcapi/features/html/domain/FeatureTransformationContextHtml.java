@@ -5,10 +5,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.features.html.app;
+package de.ii.ogcapi.features.html.domain;
 
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
-import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.web.domain.MustacheRenderer;
 import java.util.Objects;
@@ -21,7 +20,7 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 public interface FeatureTransformationContextHtml extends FeatureTransformationContext {
 
-  FeatureCollectionView collectionView();
+  FeatureCollectionBaseView collectionView();
 
   MustacheRenderer mustacheRenderer();
 

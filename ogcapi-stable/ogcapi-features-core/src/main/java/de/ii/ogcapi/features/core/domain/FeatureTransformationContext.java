@@ -137,6 +137,17 @@ public interface FeatureTransformationContext {
     return false;
   }
 
+  Optional<String> getQueryId();
+
+  @Value.Derived
+  default boolean isStoredQuery() {
+    return getQueryId().isPresent();
+  }
+
+  Optional<String> getQueryTitle();
+
+  Optional<String> getQueryDescription();
+
   @Nullable
   State getState();
 

@@ -8,27 +8,24 @@
 package de.ii.ogcapi.features.html.app;
 
 import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-import static de.ii.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi.DEFAULT_FLATTENING_SEPARATOR;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
+import de.ii.ogcapi.features.html.domain.FeatureEncoderHtml;
+import de.ii.ogcapi.features.html.domain.FeaturesFormatBaseHtml;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
-import de.ii.ogcapi.foundation.domain.ApiMediaType;
-import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ogcapi.features.html.domain.ImmutableFeatureTransformationContextHtml;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -39,10 +36,7 @@ import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
-import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
-import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -50,8 +44,6 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
 import de.ii.xtraplatform.web.domain.MustacheRenderer;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
@@ -69,39 +61,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 
 @Singleton
 @AutoBind
-public class FeaturesFormatHtml
-    implements ItemTypeSpecificConformanceClass, FeatureFormatExtension {
-
-  static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(MediaType.TEXT_HTML_TYPE)
-          .label("HTML")
-          .parameter("html")
-          .build();
-  public static final ApiMediaType COLLECTION_MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(MediaType.TEXT_HTML_TYPE)
-          .label("HTML")
-          .parameter("html")
-          .build();
+public class FeaturesFormatHtml extends FeaturesFormatBaseHtml
+    implements ItemTypeSpecificConformanceClass {
 
   // TODO temporarily change default pattern, need to update HTML output for SEARCH module
   @Override
   public String getPathPattern() {
     return "^/?collections/" + COLLECTION_ID_PATTERN + "/items(?:/" + "[^/ ]+" + ")?$";
   }
-
-  private final Schema schema = new StringSchema().example("<html>...</html>");
-  private static final String schemaRef = "#/components/schemas/htmlSchema";
-  private static final WithTransformationsApplied SCHEMA_FLATTENER =
-      new WithTransformationsApplied(
-          ImmutableMap.of(
-              PropertyTransformations.WILDCARD,
-              new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
 
   private final EntityRegistry entityRegistry;
   private final I18n i18n;
@@ -137,16 +107,6 @@ public class FeaturesFormatHtml
       builder.add("http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/html");
 
     return builder.build();
-  }
-
-  @Override
-  public ApiMediaType getCollectionMediaType() {
-    return COLLECTION_MEDIA_TYPE;
-  }
-
-  @Override
-  public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
   }
 
   @Override
@@ -212,47 +172,8 @@ public class FeaturesFormatHtml
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (!path.matches(getPathPattern())) {
-      return null; // TODO
-    }
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(schema)
-        .schemaRef(schemaRef)
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
-  }
-
-  @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return FeaturesHtmlConfiguration.class;
-  }
-
-  private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
-    return apiData
-        .getExtension(HtmlConfiguration.class)
-        .map(HtmlConfiguration::getNoIndexEnabled)
-        .orElse(true);
-  }
-
-  private FeaturesHtmlConfiguration.POSITION getMapPosition(
-      OgcApiDataV2 apiData, String collectionId) {
-    return apiData
-        .getExtension(FeaturesHtmlConfiguration.class, collectionId)
-        .map(FeaturesHtmlConfiguration::getMapPosition)
-        .orElse(FeaturesHtmlConfiguration.POSITION.AUTO);
-  }
-
-  private List<String> getGeometryProperties(OgcApiDataV2 apiData, String collectionId) {
-    return apiData
-        .getExtension(FeaturesHtmlConfiguration.class, collectionId)
-        .map(FeaturesHtmlConfiguration::getGeometryProperties)
-        .orElse(ImmutableList.of());
-  }
-
-  @Override
-  public boolean canEncodeFeatures() {
-    return true;
   }
 
   @Override
@@ -406,8 +327,6 @@ public class FeaturesFormatHtml
 
     FeatureCollectionView featureTypeDataset =
         new FeatureCollectionView(
-            apiData,
-            featureType,
             api.getSpatialExtent(featureType.getId()),
             bare ? "featureCollectionBare" : "featureCollection",
             requestUri,
@@ -419,8 +338,6 @@ public class FeaturesFormatHtml
             htmlConfig.orElse(null),
             null,
             noIndex,
-            i18n,
-            language.orElse(Locale.ENGLISH),
             mapPosition,
             mapClientType,
             styleUrl,
@@ -509,8 +426,6 @@ public class FeaturesFormatHtml
 
     FeatureCollectionView featureTypeDataset =
         new FeatureCollectionView(
-            apiData,
-            featureType,
             api.getSpatialExtent(featureType.getId()),
             "featureDetails",
             requestUri,
@@ -522,8 +437,6 @@ public class FeaturesFormatHtml
             htmlConfig.orElse(null),
             persistentUri,
             noIndex,
-            i18n,
-            language.orElse(Locale.ENGLISH),
             mapPosition,
             mapClientType,
             styleUrl,
