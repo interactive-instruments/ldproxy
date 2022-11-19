@@ -15,22 +15,25 @@ import org.immutables.value.Value;
 @Value.Immutable
 public interface TileResult {
 
-  static TileResult notFound() {
-    return new ImmutableTileResult.Builder().status(Status.NotFound).build();
-  }
-
-  static TileResult outOfBounds() {
-    return new ImmutableTileResult.Builder().status(Status.OutOfBounds).build();
-  }
-
-  static TileResult found(InputStream content) {
-    return new ImmutableTileResult.Builder().status(Status.Found).content(content).build();
-  }
-
   enum Status {
     Found,
     NotFound,
     OutOfBounds
+  }
+
+  TileResult NOT_FOUND = new ImmutableTileResult.Builder().status(Status.NotFound).build();
+  TileResult OUT_OF_BOUNDS = new ImmutableTileResult.Builder().status(Status.OutOfBounds).build();
+
+  static TileResult notFound() {
+    return NOT_FOUND;
+  }
+
+  static TileResult outOfBounds() {
+    return OUT_OF_BOUNDS;
+  }
+
+  static TileResult found(InputStream content) {
+    return new ImmutableTileResult.Builder().status(Status.Found).content(content).build();
   }
 
   Status getStatus();
@@ -39,7 +42,12 @@ public interface TileResult {
 
   @Value.Derived
   default boolean isAvailable() {
-    return getStatus() == Status.Found;
+    return getStatus() == Status.Found && getContent().isPresent();
+  }
+
+  @Value.Derived
+  default boolean isNotFound() {
+    return getStatus() == Status.NotFound;
   }
 
   @Value.Check

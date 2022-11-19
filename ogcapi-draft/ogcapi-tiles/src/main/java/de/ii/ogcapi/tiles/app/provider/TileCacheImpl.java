@@ -73,7 +73,7 @@ import org.slf4j.LoggerFactory;
 public class TileCacheImpl implements TileCache {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TileCacheImpl.class);
-  private static final String TILES_DIR_NAME = "tiles";
+  static final String TILES_DIR_NAME = "tiles";
   private static final String TMP_DIR_NAME = "__tmp__";
   private static final long TEN_MINUTES = 10 * 60 * 1000;
   private final Path cacheStore;

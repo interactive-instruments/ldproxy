@@ -10,8 +10,6 @@ package de.ii.ogcapi.tiles.domain.provider;
 // @AutoMultiBind
 public interface TileProvider {
 
-  // TODO: internal chain of PartialTileProvider, cache1 -> cache2 -> generator
-
   TileResult getTile(TileQuery tileQuery);
 
   // TODO: generation? source? dynamic?

@@ -55,7 +55,6 @@ import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
 import de.ii.ogcapi.tiles.domain.provider.TileResult.Status;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.web.domain.ETag;
 import de.ii.xtraplatform.web.domain.LastModified;
@@ -532,33 +531,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       throw new NotFoundException();
     }
 
-    try {
-      if (result.isAvailable()) {
-        return prepareSuccessResponse(requestContext)
-            .entity(result.getContent().get().readAllBytes())
-            .build();
-      }
-
-      if (result.getStatus() == Status.NotFound && tileProvider.supportsGeneration()) {
-        if (tileProvider.generator().supports(outputFormat.getMediaType().type())) {
-
-          byte[] bytes = tileProvider.generator().generateTile(tileQuery);
-
-          return prepareSuccessResponse(requestContext).entity(bytes).build();
-        } else if (outputFormat.supportsFeatureQuery()) { // TODO: canEncode
-          // TODO: pass encoder into or return FeatureStream?
-          FeatureStream tileSource = tileProvider.generator().getTileSource(tileQuery);
-        }
-
-        // TODO: MbTiles throws NotFound on missing format, right?
-        throw new RuntimeException(
-            String.format(
-                "Unexpected tile format without query support. Found: %s",
-                queryInput.getOutputFormat().getClass().getSimpleName()));
-      }
-
-    } catch (Throwable e) {
-      boolean br = true;
+    if (result.isAvailable()) {
+      return prepareSuccessResponse(requestContext).entity(result.getContent().get()).build();
     }
 
     // TODO: empty tile
