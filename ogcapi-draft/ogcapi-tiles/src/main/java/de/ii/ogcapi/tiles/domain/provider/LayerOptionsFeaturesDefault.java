@@ -11,6 +11,6 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public interface LayerOptions extends TileGenerationParameters {
+public interface LayerOptionsFeaturesDefault extends LayerOptionsCommonDefault {
   Optional<String> getFeatureProvider();
 }

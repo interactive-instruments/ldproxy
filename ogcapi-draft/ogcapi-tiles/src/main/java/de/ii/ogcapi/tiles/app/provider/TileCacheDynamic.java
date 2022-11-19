@@ -164,18 +164,18 @@ public class TileCacheDynamic implements ChainedTileProvider {
 
   private final TileStore tileStore;
   private final ChainedTileProvider delegate;
-  private final Range<Integer> levels;
+  private final Map<String, Range<Integer>> tmsRanges;
 
   public TileCacheDynamic(
-      TileStore tileStore, ChainedTileProvider delegate, Range<Integer> levels) {
+      TileStore tileStore, ChainedTileProvider delegate, Map<String, Range<Integer>> tmsRanges) {
     this.tileStore = tileStore;
     this.delegate = delegate;
-    this.levels = levels;
+    this.tmsRanges = tmsRanges;
   }
 
   @Override
-  public Range<Integer> getLevels() {
-    return levels;
+  public Map<String, Range<Integer>> getTmsRanges() {
+    return tmsRanges;
   }
 
   @Override
@@ -184,20 +184,20 @@ public class TileCacheDynamic implements ChainedTileProvider {
   }
 
   @Override
-  public TileResult getTile(TileQuery tileQuery) throws IOException {
-    if (shouldCache(tileQuery)) {
-      return tileStore.get(tileQuery);
+  public TileResult getTile(TileQuery tile) throws IOException {
+    if (shouldCache(tile)) {
+      return tileStore.get(tile);
     }
     return TileResult.notFound();
   }
 
   @Override
-  public TileResult processDelegateResult(TileQuery tileQuery, TileResult tileResult)
+  public TileResult processDelegateResult(TileQuery tile, TileResult tileResult)
       throws IOException {
-    if (shouldCache(tileQuery) && tileResult.isAvailable()) {
-      tileStore.put(tileQuery, tileResult.getContent().get());
+    if (shouldCache(tile) && tileResult.isAvailable()) {
+      tileStore.put(tile, tileResult.getContent().get());
 
-      return tileStore.get(tileQuery);
+      return tileStore.get(tile);
     }
 
     return tileResult;

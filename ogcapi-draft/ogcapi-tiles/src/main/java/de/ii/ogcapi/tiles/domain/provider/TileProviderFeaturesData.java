@@ -9,6 +9,7 @@ package de.ii.ogcapi.tiles.domain.provider;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData.Builder;
+import java.util.Map;
 import java.util.Objects;
 import org.immutables.value.Value;
 
@@ -23,21 +24,27 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = Builder.class)
-public interface TileProviderFeaturesData extends TileProviderData {
+public interface TileProviderFeaturesData extends TileProviderData, WithCaches {
+
+  String PROVIDER_SUBTYPE = "FEATURES";
 
   /**
    * @langEn Fixed value, identifies the tile provider type.
    * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
    * @default `FEATURES`
    */
-  default String getType() {
-    return "FEATURES";
+  @Override
+  default String getTileProviderType() {
+    return PROVIDER_SUBTYPE;
   }
 
   @Value.Default
-  default LayerOptions getLayerDefaults() {
-    return new ImmutableLayerOptions.Builder().build();
+  default LayerOptionsFeaturesDefault getLayerDefaults() {
+    return new ImmutableLayerOptionsFeaturesDefault.Builder().build();
   }
+
+  // TODO: Buildable, merge defaults into layers
+  Map<String, LayerOptionsFeatures> getLayers();
 
   @Override
   default TileProviderData mergeInto(TileProviderData source) {

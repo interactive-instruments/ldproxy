@@ -18,27 +18,28 @@ public interface TileResult {
   enum Status {
     Found,
     NotFound,
-    OutOfBounds
+    Error
   }
 
   TileResult NOT_FOUND = new ImmutableTileResult.Builder().status(Status.NotFound).build();
-  TileResult OUT_OF_BOUNDS = new ImmutableTileResult.Builder().status(Status.OutOfBounds).build();
 
   static TileResult notFound() {
     return NOT_FOUND;
-  }
-
-  static TileResult outOfBounds() {
-    return OUT_OF_BOUNDS;
   }
 
   static TileResult found(InputStream content) {
     return new ImmutableTileResult.Builder().status(Status.Found).content(content).build();
   }
 
+  static TileResult error(String message) {
+    return new ImmutableTileResult.Builder().status(Status.Error).error(message).build();
+  }
+
   Status getStatus();
 
   Optional<InputStream> getContent();
+
+  Optional<String> getError();
 
   @Value.Derived
   default boolean isAvailable() {
@@ -50,10 +51,17 @@ public interface TileResult {
     return getStatus() == Status.NotFound;
   }
 
+  @Value.Derived
+  default boolean isError() {
+    return getStatus() == Status.Error && getError().isPresent();
+  }
+
   @Value.Check
   default void check() {
     if (getStatus() == Status.Found) {
-      Preconditions.checkState(getContent().isPresent(), "content is required for status 'found'");
+      Preconditions.checkState(getContent().isPresent(), "content is required for status 'Found'");
+    } else if (getStatus() == Status.Error) {
+      Preconditions.checkState(getError().isPresent(), "error is required for status 'Error'");
     }
   }
 }

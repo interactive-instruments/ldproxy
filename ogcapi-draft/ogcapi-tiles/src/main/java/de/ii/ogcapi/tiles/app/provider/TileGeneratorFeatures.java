@@ -14,7 +14,7 @@ import com.google.common.collect.Range;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationContext;
-import de.ii.ogcapi.tiles.domain.provider.LayerOptions;
+import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeaturesDefault;
 import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationContext;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
@@ -78,13 +78,14 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
   }
 
   @Override
-  public Range<Integer> getLevels() {
-    return Range.all();
+  public Map<String, Range<Integer>> getTmsRanges() {
+    // TODO: combination of defaults and all layers
+    return data.getLayerDefaults().getTmsRanges();
   }
 
   @Override
-  public TileResult getTile(TileQuery tileQuery) {
-    return TileResult.found(new ByteArrayInputStream(generateTile(tileQuery)));
+  public TileResult getTile(TileQuery tile) {
+    return TileResult.found(new ByteArrayInputStream(generateTile(tile)));
   }
 
   @Override
@@ -121,7 +122,8 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
 
   @Override
   public FeatureStream getTileSource(TileQuery tileQuery) {
-    String featureProviderId = data.getLayerDefaults().getFeatureProvider().get();
+    // TODO: for layer, TilesProviders
+    String featureProviderId = data.getLayerDefaults().getFeatureProvider().orElse(data.getId());
     FeatureProvider2 featureProvider =
         entityRegistry
             .getEntity(FeatureProvider2.class, featureProviderId)
@@ -199,7 +201,7 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
   // TODO: create on startup for all layers
   @Override
   public TileGenerationSchema getGenerationSchema(String layer, Map<String, String> queryables) {
-    String featureProviderId = data.getLayerDefaults().getFeatureProvider().get();
+    String featureProviderId = data.getLayerDefaults().getFeatureProvider().orElse(data.getId());
     FeatureProvider2 featureProvider =
         entityRegistry
             .getEntity(FeatureProvider2.class, featureProviderId)
@@ -240,7 +242,7 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
 
   private FeatureQuery getFeatureQuery(
       TileQuery tile,
-      LayerOptions options,
+      LayerOptionsFeaturesDefault options,
       Map<String, FeatureSchema> featureTypes,
       EpsgCrs nativeCrs,
       Optional<BoundingBox> bounds,

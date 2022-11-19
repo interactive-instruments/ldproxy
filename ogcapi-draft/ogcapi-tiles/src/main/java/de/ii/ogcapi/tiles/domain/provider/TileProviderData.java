@@ -7,8 +7,12 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import de.ii.xtraplatform.store.domain.entities.EntityData;
+import java.util.Optional;
+import org.immutables.value.Value;
 
 /**
  * # Tile-Provider-Objects
@@ -31,7 +35,24 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   @JsonSubTypes.Type(value = TileProviderMbtilesData.class, name = "MBTILES"),
   @JsonSubTypes.Type(value = TileProviderTileServerData.class, name = "TILESERVER")
 })
-public interface TileProviderData {
+public interface TileProviderData extends EntityData {
+
+  String PROVIDER_TYPE = "TILE";
+
+  @Value.Derived
+  default String getProviderType() {
+    return PROVIDER_TYPE;
+  }
+
+  String getTileProviderType();
+
+  @JsonIgnore
+  @Value.Derived
+  @Override
+  default Optional<String> getEntitySubType() {
+    return Optional.of(
+        String.format("%s/%s", getProviderType(), getTileProviderType()).toLowerCase());
+  }
 
   TileProviderData mergeInto(TileProviderData tileProvider);
 }

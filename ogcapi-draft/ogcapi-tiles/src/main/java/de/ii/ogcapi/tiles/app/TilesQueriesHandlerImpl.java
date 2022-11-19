@@ -53,7 +53,6 @@ import de.ii.ogcapi.tiles.domain.provider.TileGenerationUserParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
-import de.ii.ogcapi.tiles.domain.provider.TileResult.Status;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.web.domain.ETag;
@@ -527,8 +526,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     TileResult result = tileProvider.getTile(tileQuery);
 
     // TODO: already thrown in Endpoint? might be good to double check
-    if (result.getStatus() == Status.OutOfBounds) {
-      throw new NotFoundException();
+    if (result.isError()) {
+      throw new NotFoundException(result.getError().get());
     }
 
     if (result.isAvailable()) {

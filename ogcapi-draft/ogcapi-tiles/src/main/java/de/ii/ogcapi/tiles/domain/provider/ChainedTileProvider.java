@@ -9,23 +9,58 @@ package de.ii.ogcapi.tiles.domain.provider;
 
 import com.google.common.collect.Range;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public interface ChainedTileProvider {
+  Logger LOGGER = LoggerFactory.getLogger(ChainedTileProvider.class);
 
-  Range<Integer> getLevels();
+  Map<String, Range<Integer>> getTmsRanges();
 
-  TileResult getTile(TileQuery tileQuery) throws IOException;
+  TileResult getTile(TileQuery tile) throws IOException;
 
-  default TileResult get(TileQuery tileQuery) throws IOException {
-    TileResult tileResult = canProvide(tileQuery) ? getTile(tileQuery) : TileResult.notFound();
+  default TileResult get(TileQuery tile) {
+    TileResult tileResult = TileResult.notFound();
+
+    if (canProvide(tile)) {
+      try {
+        tileResult = getTile(tile);
+      } catch (IOException e) {
+        LOGGER.warn(
+            "Failed to retrieve tile {}/{}/{}/{} for layer '{}'. Reason: {}",
+            tile.getTileMatrixSet().getId(),
+            tile.getTileLevel(),
+            tile.getTileRow(),
+            tile.getTileCol(),
+            tile.getLayer(),
+            e.getMessage());
+      }
+    }
 
     if (tileResult.isNotFound() && getDelegate().isPresent()) {
-      TileResult delegateResult = getDelegate().get().get(tileQuery);
+      TileResult delegateResult = getDelegate().get().get(tile);
 
-      return canProvide(tileQuery)
-          ? processDelegateResult(tileQuery, delegateResult)
-          : delegateResult;
+      if (!canProvide(tile)) {
+        return delegateResult;
+      }
+
+      try {
+        return processDelegateResult(tile, delegateResult);
+      } catch (IOException e) {
+        LOGGER.warn(
+            "Failed to retrieve tile {}/{}/{}/{} for layer '{}'. Reason: {}",
+            tile.getTileMatrixSet().getId(),
+            tile.getTileLevel(),
+            tile.getTileRow(),
+            tile.getTileCol(),
+            tile.getLayer(),
+            e.getMessage());
+      }
+
+      // delegateResult might be corrupt, recreate
+      return getDelegate().get().get(tile);
     }
 
     return tileResult;
@@ -35,12 +70,13 @@ public interface ChainedTileProvider {
     return Optional.empty();
   }
 
-  default TileResult processDelegateResult(TileQuery tileQuery, TileResult tileResult)
+  default TileResult processDelegateResult(TileQuery tile, TileResult tileResult)
       throws IOException {
     return tileResult;
   }
 
   default boolean canProvide(TileQuery tile) {
-    return getLevels().contains(tile.getTileLevel());
+    return getTmsRanges().containsKey(tile.getTileMatrixSet().getId())
+        && getTmsRanges().get(tile.getTileMatrixSet().getId()).contains(tile.getTileLevel());
   }
 }

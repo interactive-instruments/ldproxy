@@ -12,11 +12,16 @@ import static de.ii.ogcapi.tiles.app.provider.TileCacheImpl.TILES_DIR_NAME;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.Range;
+import de.ii.ogcapi.tilematrixsets.domain.ImmutableMinMax;
 import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.FileStoreFs;
 import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.TileStoreFiles;
-import de.ii.ogcapi.tiles.domain.TileCache;
+import de.ii.ogcapi.tiles.domain.provider.Cache;
+import de.ii.ogcapi.tiles.domain.provider.Cache.Storage;
+import de.ii.ogcapi.tiles.domain.provider.Cache.Type;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptions;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableCache;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsFeatures;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsFeaturesDefault;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerator;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
@@ -26,8 +31,9 @@ import de.ii.ogcapi.tiles.domain.provider.TileResult;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
-import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Map;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.slf4j.Logger;
@@ -45,42 +51,62 @@ public class TileProviderFeatures implements TileProvider {
   // TODO
   private final TileProviderFeaturesData data =
       ImmutableTileProviderFeaturesData.builder()
-          .layerDefaults(new ImmutableLayerOptions.Builder().featureProvider("bergbau").build())
+          .id("bergbau")
+          .addCaches(
+              new ImmutableCache.Builder()
+                  .type(Type.DYNAMIC)
+                  .storage(Storage.FILES)
+                  .putLevels("WebMercatorQuad", new ImmutableMinMax.Builder().min(2).max(8).build())
+                  .build())
+          .layerDefaults(
+              new ImmutableLayerOptionsFeaturesDefault.Builder()
+                  .putLevels(
+                      "WebMercatorQuad", new ImmutableMinMax.Builder().min(2).max(20).build())
+                  .build())
+          .putLayers(
+              "managementrestrictionorregulationzone",
+              new ImmutableLayerOptionsFeatures.Builder()
+                  .id("managementrestrictionorregulationzone")
+                  .putLevels(
+                      "WebMercatorQuad", new ImmutableMinMax.Builder().min(2).max(20).build())
+                  .build())
           .build();
 
+  // TODO: next steps seeding + factory
   @Inject
   public TileProviderFeatures(
-      CrsInfo crsInfo, TileCache tileCache, EntityRegistry entityRegistry, AppContext appContext) {
+      CrsInfo crsInfo, EntityRegistry entityRegistry, AppContext appContext) {
     this.tileGenerator = new TileGeneratorFeatures(data, crsInfo, entityRegistry);
 
-    Path cacheDir =
-        appContext.getDataDir().resolve(CACHE_DIR).resolve(TILES_DIR_NAME).resolve("bergbau");
-    FileStoreFs fileStore = new FileStoreFs(cacheDir);
-    TileStoreFiles tileStore = new TileStoreFiles(fileStore);
-    TileCacheDynamic tileCacheDynamic =
-        new TileCacheDynamic(tileStore, tileGenerator, Range.closed(2, 8));
+    ChainedTileProvider current = tileGenerator;
+    Path cacheRootDir =
+        appContext.getDataDir().resolve(CACHE_DIR).resolve(TILES_DIR_NAME).resolve(data.getId());
 
-    this.providerChain = tileCacheDynamic;
+    for (int i = 0; i < data.getCaches().size(); i++) {
+      Cache cache = data.getCaches().get(i);
+      Path cacheDir = cacheRootDir.resolve(String.format("cache_%d", i));
+
+      if (cache.getType() == Type.DYNAMIC) {
+        if (cache.getStorage() == Storage.FILES) {
+          FileStoreFs fileStore = new FileStoreFs(cacheDir);
+          TileStoreFiles tileStore = new TileStoreFiles(fileStore);
+          current = new TileCacheDynamic(tileStore, current, cache.getTmsRanges());
+        }
+      }
+    }
+
+    this.providerChain = current;
   }
 
   @Override
   public TileResult getTile(TileQuery tile) {
-    // TODO: check out of bounds
-    try {
-      return providerChain.get(tile);
-    } catch (IOException e) {
-      LOGGER.warn(
-          "Failed to retrieve tile {}/{}/{}/{} for layer '{}'. Reason: {}",
-          tile.getTileMatrixSet().getId(),
-          tile.getTileLevel(),
-          tile.getTileRow(),
-          tile.getTileCol(),
-          tile.getLayer(),
-          e.getMessage());
+    Optional<TileResult> error = validate(tile);
+
+    if (error.isPresent()) {
+      return error.get();
     }
 
-    // TODO: .error
-    return TileResult.notFound();
+    return providerChain.get(tile);
   }
 
   @Override
@@ -91,5 +117,30 @@ public class TileProviderFeatures implements TileProvider {
   @Override
   public TileGenerator generator() {
     return tileGenerator;
+  }
+
+  private Optional<TileResult> validate(TileQuery tile) {
+    if (!data.getLayers().containsKey(tile.getLayer())) {
+      return Optional.of(
+          TileResult.error(String.format("Layer '%s' is not supported.", tile.getLayer())));
+    }
+
+    Map<String, Range<Integer>> tmsRanges = data.getLayers().get(tile.getLayer()).getTmsRanges();
+
+    if (!tmsRanges.containsKey(tile.getTileMatrixSet().getId())) {
+      return Optional.of(
+          TileResult.error(
+              String.format(
+                  "Tile matrix set '%s' is not supported.", tile.getTileMatrixSet().getId())));
+    }
+
+    if (!tmsRanges.get(tile.getTileMatrixSet().getId()).contains(tile.getTileLevel())) {
+      return Optional.of(
+          TileResult.error("The requested tile is outside the zoom levels for this tile set."));
+    }
+
+    // TODO: out of bounds, LimitsGenerator
+
+    return Optional.empty();
   }
 }
