@@ -29,8 +29,12 @@ public class StoredQueriesView extends OgcApiView {
   public String minTitle;
   public String maxTitle;
   public String defaultTitle;
+  public String valueTitle;
+  public String formatTitle;
+  public String executeQueryButton;
   public String none;
   public String baseUrl;
+  public boolean isForm;
 
   public StoredQueriesView(
       OgcApiDataV2 apiData,
@@ -62,7 +66,11 @@ public class StoredQueriesView extends OgcApiView {
     this.minTitle = i18n.get("minTitle", language);
     this.maxTitle = i18n.get("maxTitle", language);
     this.defaultTitle = i18n.get("defaultTitle", language);
+    this.valueTitle = i18n.get("valueTitle", language);
+    this.formatTitle = i18n.get("formatTitle", language);
+    this.executeQueryButton = i18n.get("executeQueryButton", language);
     this.none = i18n.get("none", language);
     this.baseUrl = uriCustomizer.copy().clearParameters().toString();
+    this.isForm = true;
   }
 }

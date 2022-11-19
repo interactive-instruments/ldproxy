@@ -18,6 +18,7 @@ import de.ii.ogcapi.foundation.domain.PageRepresentationWithId;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -42,6 +43,9 @@ public abstract class StoredQuery extends PageRepresentationWithId {
   public abstract Map<String, JsonNode> getParameters();
 
   @JsonIgnore
+  public abstract List<Entry<String, String>> getFormats();
+
+  @JsonIgnore
   @Value.Derived
   public List<CollectionProperty> getParameterList() {
     ImmutableList.Builder<CollectionProperty> builder = ImmutableList.builder();
@@ -55,7 +59,19 @@ public abstract class StoredQuery extends PageRepresentationWithId {
 
   @JsonIgnore
   @Value.Derived
+  public String getObjectId() {
+    return getId();
+  }
+
+  @JsonIgnore
+  @Value.Derived
   public boolean hasParameters() {
     return !getParameters().isEmpty();
+  }
+
+  @JsonIgnore
+  @Value.Derived
+  public boolean hasParametersWithoutDefault() {
+    return getParameterList().stream().anyMatch(param -> param.getDefaultValue().isEmpty());
   }
 }

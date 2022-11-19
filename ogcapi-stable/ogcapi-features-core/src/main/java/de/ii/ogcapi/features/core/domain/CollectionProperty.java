@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -24,6 +25,15 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ImmutableCollectionProperty.class)
 public abstract class CollectionProperty {
 
+  private static final String STRING = "String";
+  private static final String NUMBER = "Number";
+  private static final String INTEGER = "Integer";
+  private static final String BOOLEAN = "Boolean";
+  private static final String TIMESTAMP = "Timestamp";
+  private static final String DATE = "Date";
+  private static final String URI = "URI";
+  private static final String OBJECT = "Object";
+
   public static CollectionProperty of(String name, ObjectNode schema) {
     ImmutableCollectionProperty.Builder builder = ImmutableCollectionProperty.builder().id(name);
     if (schema.has("title")) {
@@ -38,11 +48,9 @@ public abstract class CollectionProperty {
         builder.defaultValue(defaultValue.textValue());
       } else if (defaultValue.isArray()) {
         Iterable<JsonNode> iterable = defaultValue::elements;
-        builder.defaultValue(
-            StreamSupport.stream(iterable.spliterator(), false)
-                .map(element -> element.isTextual() ? element.textValue() : element.toString())
-                .collect(Collectors.joining("; ")));
-
+        StreamSupport.stream(iterable.spliterator(), false)
+            .map(element -> element.isTextual() ? element.textValue() : element.toString())
+            .forEach(element -> builder.addDefaultValues(element));
       } else {
         builder.defaultValue(defaultValue.toString());
       }
@@ -61,16 +69,22 @@ public abstract class CollectionProperty {
       if (schema.has("format")) {
         String format = schema.get("format").textValue();
         if ("date-time".equals(format)) {
-          builder.type("Timestamp");
+          builder.type(TIMESTAMP);
         } else if ("date".equals(format)) {
-          builder.type("Date");
+          builder.type(DATE);
         } else if ("uri".equals(format)) {
-          builder.type("URI");
+          builder.type(URI);
         } else {
-          builder.type("String");
+          builder.type(STRING);
         }
       } else {
-        builder.type("String");
+        builder.type(STRING);
+      }
+      if (schema.has("minLength")) {
+        builder.minLength(schema.get("minLength").numberValue());
+      }
+      if (schema.has("maxLength")) {
+        builder.maxLength(schema.get("maxLength").numberValue());
       }
       if (schema.has("pattern")) {
         builder.pattern(schema.get("pattern").textValue());
@@ -82,20 +96,20 @@ public abstract class CollectionProperty {
         }
       }
     } else if ("number".equals(type)) {
-      builder.type("Number");
-      if (schema.has("min")) {
-        builder.min(String.valueOf(schema.get("min").numberValue()));
+      builder.type(NUMBER);
+      if (schema.has("minimum")) {
+        builder.minimum(schema.get("minimum").numberValue());
       }
-      if (schema.has("max")) {
-        builder.max(String.valueOf(schema.get("max").numberValue()));
+      if (schema.has("maximum")) {
+        builder.maximum(schema.get("maximum").numberValue());
       }
     } else if ("integer".equals(type)) {
-      builder.type("Integer");
-      if (schema.has("min")) {
-        builder.min(String.valueOf(schema.get("min").numberValue()));
+      builder.type(INTEGER);
+      if (schema.has("minimum")) {
+        builder.minimum(schema.get("minimum").numberValue());
       }
-      if (schema.has("max")) {
-        builder.max(String.valueOf(schema.get("max").numberValue()));
+      if (schema.has("maximum")) {
+        builder.maximum(schema.get("maximum").numberValue());
       }
       if (schema.has("enum")) {
         Iterator<JsonNode> enums = schema.get("enum").elements();
@@ -104,11 +118,11 @@ public abstract class CollectionProperty {
         }
       }
     } else if ("boolean".equals(type)) {
-      builder.type("Boolean");
+      builder.type(BOOLEAN);
     } else if ("object".equals(type)) {
-      builder.type("Object");
+      builder.type(OBJECT);
     } else {
-      builder.type("String");
+      builder.type(STRING);
     }
     return builder.build();
   }
@@ -116,6 +130,48 @@ public abstract class CollectionProperty {
   public abstract String getId();
 
   public abstract String getType();
+
+  @JsonIgnore
+  @Value.Derived
+  public boolean isInteger() {
+    return INTEGER.equals(getType());
+  }
+
+  @JsonIgnore
+  @Value.Derived
+  public boolean isNumber() {
+    return NUMBER.equals(getType());
+  }
+
+  @JsonIgnore
+  @Value.Derived
+  public boolean isBoolean() {
+    return BOOLEAN.equals(getType());
+  }
+
+  @JsonIgnore
+  @Value.Derived
+  public boolean isUri() {
+    return URI.equals(getType());
+  }
+
+  @JsonIgnore
+  @Value.Derived
+  public boolean isDate() {
+    return DATE.equals(getType());
+  }
+
+  @JsonIgnore
+  @Value.Derived
+  public boolean isTimestamp() {
+    return TIMESTAMP.equals(getType());
+  }
+
+  @JsonIgnore
+  @Value.Derived
+  public boolean isString() {
+    return STRING.equals(getType());
+  }
 
   public abstract boolean isArray();
 
@@ -127,16 +183,44 @@ public abstract class CollectionProperty {
 
   public abstract Optional<String> getPattern();
 
-  public abstract Optional<Object> getMin();
+  public abstract Optional<Number> getMinLength();
 
-  public abstract Optional<Object> getMax();
+  public abstract Optional<Number> getMaxLength();
+
+  public abstract Optional<Number> getMinimum();
+
+  public abstract Optional<Number> getMaximum();
 
   public abstract List<String> getValues();
 
+  @JsonIgnore
   @Value.Derived
   public Optional<String> getValueList() {
     return !getValues().isEmpty() ? Optional.of(String.join("; ", getValues())) : Optional.empty();
   }
 
+  @JsonIgnore
+  @Value.Derived
+  public List<String> getValuesAsOptions() {
+    return getValues().stream()
+        .map(
+            value ->
+                String.format(
+                    "<option%s>%s</option>",
+                    getDefaultValues().contains(value) || getDefaultValue().orElse("").equals(value)
+                        ? " selected"
+                        : "",
+                    value))
+        .collect(Collectors.toUnmodifiableList());
+  }
+
+  @JsonIgnore
+  @Value.Derived
+  public boolean hasValues() {
+    return !getValues().isEmpty();
+  }
+
   public abstract Optional<String> getDefaultValue();
+
+  public abstract List<String> getDefaultValues();
 }
