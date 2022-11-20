@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.InternalServerErrorException;
@@ -129,10 +130,25 @@ public interface QueriesHandler<T extends QueryIdentifier> {
     if (Objects.nonNull(links)) {
 
       // skip URI templates in the header as these are not RFC 8288 links
-      links.stream()
-          .filter(link -> link.getTemplated() == null || !link.getTemplated())
-          .sorted(Link.COMPARATOR_LINKS)
-          .forEachOrdered(link -> response.links(link.getLink()));
+      List<javax.ws.rs.core.Link> headerLinks =
+          links.stream()
+              .filter(link -> link.getTemplated() == null || !link.getTemplated())
+              .sorted(Link.COMPARATOR_LINKS)
+              .map(Link::getLink)
+              .collect(Collectors.toUnmodifiableList());
+
+      // only add links, if the Link strings are not larger than the limit, if one is provided
+      Optional<Integer> optionalLimit =
+          requestContext
+              .getApi()
+              .getData()
+              .getExtension(FoundationConfiguration.class)
+              .map(FoundationConfiguration::getLinkHeaderLengthLimit);
+      if (optionalLimit.isEmpty()
+          || headerLinks.stream().map(l -> l.toString().length()).mapToInt(Integer::intValue).sum()
+              <= optionalLimit.get()) {
+        headerLinks.forEach(response::links);
+      }
     }
 
     if (Objects.nonNull(crs)) {
