@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
+import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.LIMIT_DEFAULT;
 import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.MINIMUM_SIZE_IN_PIXEL;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -481,13 +482,14 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
-  @Nullable
   default Integer getLimitDerived() {
     return Objects.nonNull(getLimit())
         ? getLimit()
-        : getTileProvider() instanceof TileProviderFeatures
-            ? ((TileProviderFeatures) getTileProvider()).getLimit()
-            : null;
+        : Objects.requireNonNullElse(
+            getTileProvider() instanceof TileProviderFeatures
+                ? ((TileProviderFeatures) getTileProvider()).getLimit()
+                : null,
+            LIMIT_DEFAULT);
   }
 
   /**

@@ -7,12 +7,22 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
 public interface LayerOptionsFeatures extends LayerOptionsCommon {
+  String COMBINE_ALL = "*";
+
   Optional<String> getFeatureProvider();
 
   Optional<String> getFeatureType();
+
+  List<String> getCombine();
+
+  Map<String, List<LevelFilter>> getFilters();
+
+  // TODO: check
 }

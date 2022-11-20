@@ -14,7 +14,7 @@ import com.google.common.collect.Range;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationContext;
-import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeaturesDefault;
+import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures;
 import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationContext;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
@@ -26,8 +26,10 @@ import de.ii.ogcapi.tiles.domain.provider.TileResult;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
+import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.SIntersects;
+import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.cql.domain.SpatialLiteral;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
@@ -122,9 +124,16 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
 
   @Override
   public FeatureStream getTileSource(TileQuery tileQuery) {
-    // TODO: for layer, TilesProviders
+    // TODO: merge defaults into layers
+    LayerOptionsFeatures layer = data.getLayers().get(tileQuery.getLayer());
+
+    if (!layer.getCombine().isEmpty()) {
+      throw new IllegalStateException("TODO");
+    }
+
+    // TODO: from TilesProviders
     String featureProviderId =
-        data.getLayerDefaults().getFeatureProvider().orElse(data.getId().replace("-tiles", ""));
+        layer.getFeatureProvider().orElse(data.getId().replace("-tiles", ""));
     FeatureProvider2 featureProvider =
         entityRegistry
             .getEntity(FeatureProvider2.class, featureProviderId)
@@ -146,7 +155,7 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
     FeatureQuery featureQuery =
         getFeatureQuery(
             tileQuery,
-            data.getLayerDefaults(),
+            layer,
             types,
             nativeCrs,
             tileQuery.getLimitsForGeneration(),
@@ -244,23 +253,32 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
 
   private FeatureQuery getFeatureQuery(
       TileQuery tile,
-      LayerOptionsFeaturesDefault options,
+      LayerOptionsFeatures layer,
       Map<String, FeatureSchema> featureTypes,
       EpsgCrs nativeCrs,
       Optional<BoundingBox> bounds,
       Optional<TileGenerationUserParameters> userParameters) {
-    String featureType = tile.getLayer();
+    String featureType = layer.getFeatureType().orElse(layer.getId());
+    // TODO: from TilesProviders with orThrow
     FeatureSchema featureSchema = featureTypes.get(featureType);
 
     ImmutableFeatureQuery.Builder queryBuilder =
         ImmutableFeatureQuery.builder()
             .type(featureType)
-            .limit(options.getFeatureLimit())
+            .limit(layer.getFeatureLimit())
             .offset(0)
             .crs(tile.getTileMatrixSet().getCrs())
             .maxAllowableOffset(getMaxAllowableOffset(tile, nativeCrs));
 
-    // TODO: add predefFilter from config
+    if (layer.getFilters().containsKey(tile.getTileMatrixSet().getId())) {
+      layer.getFilters().get(tile.getTileMatrixSet().getId()).stream()
+          .filter(levelFilter -> levelFilter.matches(tile.getTileLevel()))
+          .forEach(
+              filter -> {
+                // TODO: parse filter, preferrably in hydration or provider startup
+                queryBuilder.addFilters(Like.of("name", ScalarLiteral.of("K%")));
+              });
+    }
 
     String spatialProperty = featureSchema.getPrimaryGeometry().orElseThrow().getFullPathAsString();
     BoundingBox bbox = clip(tile.getBoundingBox(), bounds);

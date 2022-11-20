@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.tiles.app;
 
+import static de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures.COMBINE_ALL;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -40,9 +42,13 @@ import de.ii.ogcapi.tiles.domain.provider.Cache.Type;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableCache;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsFeatures;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsFeaturesDefault;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableLevelFilter;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData;
+import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures;
+import de.ii.ogcapi.tiles.domain.provider.LevelFilter;
 import de.ii.ogcapi.tiles.domain.provider.Rule;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -52,6 +58,7 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -229,7 +236,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     // if not
     OgcApiDataV2 apiData = api.getData();
 
-    // TODO
+    // TODO: enable in hydrator???
     /*if (!apiData
         .getExtension(TileMatrixSetsConfiguration.class)
         .map(ExtensionConfiguration::isEnabled)
@@ -245,12 +252,14 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     }
 
     // TODO
-    TileProviderFeaturesData tileProviderFeaturesData =
-        getTileProviderData(tilesConfiguration.get());
-    entityFactories
-        .get(TileProviderFeaturesData.class)
-        .createInstance(tileProviderFeaturesData)
-        .join();
+    Optional<TileProviderFeaturesData> tileProviderFeaturesData = getTileProviderData(apiData);
+    if (tileProviderFeaturesData.isPresent()) {
+      entityFactories
+          .get(TileProviderFeaturesData.class)
+          .createInstance(tileProviderFeaturesData.get())
+          .join();
+      LogContext.put(LogContext.CONTEXT.SERVICE, apiData.getId());
+    }
 
     try {
       SQLiteJDBCLoader.initialize();
@@ -564,27 +573,127 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     return builder.build();
   }
 
-  // TODO
-  private TileProviderFeaturesData getTileProviderData(TilesConfiguration tilesConfiguration) {
-    return new ImmutableTileProviderFeaturesData.Builder()
-        .id("bergbau-tiles")
-        .addCaches(
-            new ImmutableCache.Builder()
-                .type(Type.DYNAMIC)
-                .storage(Storage.FILES)
-                .putLevels("WebMercatorQuad", new ImmutableMinMax.Builder().min(2).max(8).build())
-                .build())
-        .layerDefaults(
-            new ImmutableLayerOptionsFeaturesDefault.Builder()
-                .putLevels("WebMercatorQuad", new ImmutableMinMax.Builder().min(2).max(20).build())
-                .build())
-        .putLayers(
-            "managementrestrictionorregulationzone",
-            new ImmutableLayerOptionsFeatures.Builder()
-                .id("managementrestrictionorregulationzone")
-                .putLevels("WebMercatorQuad", new ImmutableMinMax.Builder().min(2).max(20).build())
-                .build())
+  private Optional<TileProviderFeaturesData> getTileProviderData(OgcApiDataV2 apiData) {
+    if (!Objects.equals(apiData.getId(), "bergbau")) {
+      return Optional.empty();
+    }
+
+    Optional<FeaturesCoreConfiguration> featuresCore =
+        apiData.getExtension(FeaturesCoreConfiguration.class);
+
+    Map<String, FeatureTypeConfigurationOgcApi> collections =
+        apiData.getCollections().entrySet().stream()
+            .filter(
+                entry ->
+                    entry
+                        .getValue()
+                        .getExtension(TilesConfiguration.class)
+                        .filter(TilesConfiguration::isEnabled)
+                        .filter(TilesConfiguration::isSingleCollectionEnabled)
+                        .isPresent())
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+    // TODO: seeding*, zoomLevelCache
+    return apiData
+        .getExtension(TilesConfiguration.class)
+        .filter(ExtensionConfiguration::isEnabled)
+        .map(
+            tilesConfiguration ->
+                new ImmutableTileProviderFeaturesData.Builder()
+                    .id(String.format("%s-tiles", apiData.getId()))
+                    .addCaches(
+                        new ImmutableCache.Builder()
+                            .type(Type.DYNAMIC)
+                            .storage(Storage.FILES)
+                            .putAllLevels(
+                                tilesConfiguration
+                                    .getZoomLevelsDerived()) // TODO: per collection/layer?
+                            .build())
+                    .layerDefaults(
+                        new ImmutableLayerOptionsFeaturesDefault.Builder()
+                            .featureProvider(
+                                featuresCore.flatMap(FeaturesCoreConfiguration::getFeatureProvider))
+                            .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
+                            .putAllRules(
+                                tilesConfiguration
+                                    .getRulesDerived()) // TODO: transformations, are there default
+                            // rules?
+                            .featureLimit(tilesConfiguration.getLimitDerived())
+                            .minimumSizeInPixel(tilesConfiguration.getMinimumSizeInPixelDerived())
+                            .ignoreInvalidGeometries(
+                                tilesConfiguration.isIgnoreInvalidGeometriesDerived())
+                            .build())
+                    .putAllLayers(
+                        tilesConfiguration.isMultiCollectionEnabled()
+                            ? Map.of(
+                                "all",
+                                new ImmutableLayerOptionsFeatures.Builder()
+                                    .id("all")
+                                    .addCombine(COMBINE_ALL)
+                                    .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
+                                    .build())
+                            : Map.of())
+                    .putAllLayers(
+                        collections.entrySet().stream()
+                            .map(
+                                entry ->
+                                    new SimpleImmutableEntry<>(
+                                        entry.getKey(),
+                                        entry
+                                            .getValue()
+                                            .getExtension(TilesConfiguration.class)
+                                            .get()))
+                            .map(
+                                entry ->
+                                    new SimpleImmutableEntry<>(
+                                        entry.getKey(),
+                                        getLayer(entry.getKey(), entry.getValue(), collections)))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
+                    .build());
+  }
+
+  private static LayerOptionsFeatures getLayer(
+      String id, TilesConfiguration cfg, Map<String, FeatureTypeConfigurationOgcApi> collections) {
+    return new ImmutableLayerOptionsFeatures.Builder()
+        .id(id)
+        .featureProvider(
+            collections
+                .get(id)
+                .getExtension(FeaturesCoreConfiguration.class)
+                .flatMap(FeaturesCoreConfiguration::getFeatureProvider))
+        .featureType(
+            collections
+                .get(id)
+                .getExtension(FeaturesCoreConfiguration.class)
+                .flatMap(FeaturesCoreConfiguration::getFeatureType))
+        .putAllLevels(cfg.getZoomLevelsDerived())
+        .putAllRules(cfg.getRulesDerived()) // TODO: transformations
+        .putAllFilters(getLevelFilters(cfg.getFiltersDerived()))
+        .featureLimit(cfg.getLimitDerived())
+        .minimumSizeInPixel(cfg.getMinimumSizeInPixelDerived())
+        .ignoreInvalidGeometries(cfg.isIgnoreInvalidGeometriesDerived())
         .build();
+  }
+
+  private static Map<String, List<LevelFilter>> getLevelFilters(
+      Map<String, List<PredefinedFilter>> filters) {
+    return filters.entrySet().stream()
+        .map(
+            entry2 ->
+                new SimpleImmutableEntry<>(
+                    entry2.getKey(),
+                    entry2.getValue().stream()
+                        .filter(pf -> pf.getFilter().isPresent())
+                        .map(
+                            pf ->
+                                (LevelFilter)
+                                    new ImmutableLevelFilter.Builder()
+                                        .min(pf.getMin())
+                                        .max(pf.getMax())
+                                        .filter(pf.getFilter().get())
+                                        .build())
+                        .collect(Collectors.toList())))
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   private FeatureChangeListener onFeatureChange(OgcApi api) {

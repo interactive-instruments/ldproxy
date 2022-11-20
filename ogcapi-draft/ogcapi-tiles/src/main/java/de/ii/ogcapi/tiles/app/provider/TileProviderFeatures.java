@@ -42,7 +42,7 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
   private final TileGeneratorFeatures tileGenerator;
   private final ChainedTileProvider providerChain;
 
-  // TODO: next steps seeding + entity built 3 times
+  // TODO: next steps seeding + cfg transformer (use existing cache)
   @AssistedInject
   public TileProviderFeatures(
       CrsInfo crsInfo,
@@ -75,6 +75,11 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
     }
 
     this.providerChain = current;
+  }
+
+  @Override
+  protected boolean onStartup() throws InterruptedException {
+    return super.onStartup();
   }
 
   @Override

@@ -198,6 +198,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     Polygongeometrie verwendet. Der Wert 0.1 entspricht 10%.
    * @default 0.1
    */
+  // TODO: remove
   @Deprecated
   public abstract Optional<Double> getMaxRelativeAreaChangeInPolygonRepair();
 
@@ -213,6 +214,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     Kachelkoordinatensystem.
    * @default 1.0
    */
+  // TODO: remove
   @Deprecated
   public abstract Optional<Double> getMaxAbsoluteAreaChangeInPolygonRepair();
 
