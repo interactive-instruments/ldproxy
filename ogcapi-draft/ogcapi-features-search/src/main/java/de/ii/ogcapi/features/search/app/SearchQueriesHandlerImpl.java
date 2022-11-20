@@ -50,6 +50,7 @@ import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql.Format;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
+import de.ii.xtraplatform.cql.domain.CqlParseException;
 import de.ii.xtraplatform.cql.domain.Or;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -668,8 +669,9 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
         try {
           String jsonFilter = new ObjectMapper().writeValueAsString(filter);
           cqlFilter = Optional.ofNullable(cql.read(jsonFilter, Format.JSON));
-        } catch (JsonProcessingException e) {
-          throw new IllegalArgumentException("The CQL2 JSON Filter '%s' is invalid.", e);
+        } catch (JsonProcessingException | CqlParseException e) {
+          throw new IllegalArgumentException(
+              String.format("The CQL2 JSON Filter '%s' is invalid.", filter), e);
         }
       }
       if (!globalFilter.isEmpty()) {
@@ -680,14 +682,15 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
             cqlFilter =
                 cqlFilter.map(
                     f ->
-                        FilterOperator.OR.equals(filterOperator)
+                        FilterOperator.OR.equals(filterOperator.orElse(FilterOperator.AND))
                             ? Or.of(f, cql.read(jsonFilter, Format.JSON))
                             : And.of(f, cql.read(jsonFilter, Format.JSON)));
           } else {
             cqlFilter = Optional.ofNullable(cql.read(jsonFilter, Format.JSON));
           }
-        } catch (JsonProcessingException e) {
-          throw new IllegalArgumentException("The CQL2 JSON Filter '%s' is invalid.", e);
+        } catch (JsonProcessingException | CqlParseException e) {
+          throw new IllegalArgumentException(
+              String.format("The global CQL2 JSON Filter '%s' is invalid.", globalFilter), e);
         }
       }
 

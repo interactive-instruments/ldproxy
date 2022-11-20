@@ -16,7 +16,6 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.FormatNotSupportedException;
 import de.ii.xtraplatform.base.domain.LogContext;
-import de.ii.xtraplatform.cql.domain.CqlParseException;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import java.util.Objects;
 import java.util.Optional;
@@ -104,8 +103,7 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
       return processException((InternalServerErrorException) exception, exceptionFormat, msgCause);
     } else if (exception instanceof WebApplicationException) {
       return processException((WebApplicationException) exception, exceptionFormat, msg);
-    } else if (exception instanceof IllegalArgumentException
-        || exception instanceof CqlParseException) {
+    } else if (exception instanceof IllegalArgumentException) {
       return processException(
           exceptionFormat, msgCause.isEmpty() ? msg : String.format("%s: %s", msg, msgCause));
     }
