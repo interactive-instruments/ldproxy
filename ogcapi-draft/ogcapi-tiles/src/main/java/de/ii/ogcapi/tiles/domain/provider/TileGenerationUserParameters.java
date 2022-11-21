@@ -21,8 +21,13 @@ public interface TileGenerationUserParameters {
 
   List<String> getFields();
 
+  List<String> getLayers();
+
   @Value.Derived
   default boolean isEmpty() {
-    return getLimit().isEmpty() && getFilters().isEmpty() && getFields().isEmpty();
+    return getLimit().isEmpty()
+        && getFilters().isEmpty()
+        && getFields().isEmpty()
+        && getLayers().isEmpty();
   }
 }

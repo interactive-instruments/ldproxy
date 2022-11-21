@@ -47,7 +47,6 @@ import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
-import java.io.ByteArrayInputStream;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -91,7 +90,7 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
 
   @Override
   public TileResult getTile(TileQuery tile) {
-    return TileResult.found(new ByteArrayInputStream(generateTile(tile)));
+    return TileResult.found(generateTile(tile));
   }
 
   @Override

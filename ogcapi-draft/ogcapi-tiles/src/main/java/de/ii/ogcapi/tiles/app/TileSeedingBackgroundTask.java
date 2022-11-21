@@ -695,7 +695,8 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
         TileMatrixSet tileMatrixSet = getTileMatrixSetById(entry.getKey());
         MinMax zoomLevels = entry.getValue();
         List<TileMatrixSetLimits> allLimits =
-            limitsGenerator.getTileMatrixSetLimits(api, tileMatrixSet, zoomLevels);
+            limitsGenerator.getTileMatrixSetLimits(
+                api, tileMatrixSet, zoomLevels, Optional.empty());
 
         for (TileMatrixSetLimits limits : allLimits) {
           int level = Integer.parseInt(limits.getTileMatrix());

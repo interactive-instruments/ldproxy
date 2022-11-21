@@ -102,7 +102,7 @@ public class QueryParameterFilterCrs extends ApiExtensionCache
   }
 
   @Override
-  public EpsgCrs parse(String value) {
+  public EpsgCrs parse(String value, OgcApiDataV2 apiData) {
     try {
       return EpsgCrs.fromString(value);
     } catch (Throwable e) {

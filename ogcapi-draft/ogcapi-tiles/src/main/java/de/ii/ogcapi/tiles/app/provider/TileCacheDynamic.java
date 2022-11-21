@@ -12,6 +12,7 @@ import com.google.common.collect.Range;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -134,7 +135,7 @@ public class TileCacheDynamic implements ChainedTileProvider {
         return TileResult.notFound();
       }
 
-      return TileResult.found(content.get());
+      return TileResult.found(content.get().readAllBytes());
     }
 
     @Override
@@ -195,7 +196,7 @@ public class TileCacheDynamic implements ChainedTileProvider {
   public TileResult processDelegateResult(TileQuery tile, TileResult tileResult)
       throws IOException {
     if (shouldCache(tile) && tileResult.isAvailable()) {
-      tileStore.put(tile, tileResult.getContent().get());
+      tileStore.put(tile, new ByteArrayInputStream(tileResult.getContent().get()));
 
       return tileStore.get(tile);
     }

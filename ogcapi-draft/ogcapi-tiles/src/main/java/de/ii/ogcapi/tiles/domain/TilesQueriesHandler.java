@@ -86,7 +86,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     // TODO
     Optional<Tile> getTile();
 
-    String getCollectionId();
+    Optional<String> getCollectionId();
 
     TileFormatExtension getOutputFormat();
 

@@ -5,14 +5,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.foundation.domain;
+package de.ii.ogcapi.tiles.domain.provider;
 
-import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 
-@AutoMultiBind
-public interface TypedQueryParameter<T> {
+public interface TileEncoder {
 
-  String getName();
+  byte[] empty(TileMatrixSet tms);
 
-  T parse(String value, OgcApiDataV2 apiData);
+  byte[] combine(TileMatrixSet tms);
 }

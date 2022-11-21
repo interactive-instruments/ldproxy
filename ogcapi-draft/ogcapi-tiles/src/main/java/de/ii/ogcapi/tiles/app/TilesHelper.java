@@ -117,10 +117,7 @@ public class TilesHelper {
     if (Objects.isNull(zoomLevels)) builder.tileMatrixSetLimits(ImmutableList.of());
     else
       builder.tileMatrixSetLimits(
-          collectionId.isPresent()
-              ? limitsGenerator.getCollectionTileMatrixSetLimits(
-                  api, collectionId.get(), tileMatrixSet, zoomLevels)
-              : limitsGenerator.getTileMatrixSetLimits(api, tileMatrixSet, zoomLevels));
+          limitsGenerator.getTileMatrixSetLimits(api, tileMatrixSet, zoomLevels, collectionId));
 
     try {
       BoundingBox boundingBox =

@@ -8,6 +8,7 @@
 package de.ii.ogcapi.tiles.domain;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
@@ -15,7 +16,11 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationUserParameters;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -38,7 +43,10 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterCollections extends ApiExtensionCache
-    implements OgcApiQueryParameter, ConformanceClass {
+    implements OgcApiQueryParameter,
+        ConformanceClass,
+        TypedQueryParameter<List<String>>,
+        TileGenerationUserParameter {
 
   private final SchemaValidator schemaValidator;
 
@@ -124,5 +132,26 @@ public class QueryParameterCollections extends ApiExtensionCache
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return TilesConfiguration.class;
+  }
+
+  @Override
+  public List<String> parse(String value, OgcApiDataV2 apiData) {
+    try {
+      List<String> collections = getCollectionIds(apiData);
+      return Splitter.on(',').omitEmptyStrings().trimResults().splitToList(value).stream()
+          .filter(collections::contains)
+          .collect(ImmutableList.toImmutableList());
+    } catch (Throwable e) {
+      throw new IllegalArgumentException(
+          String.format("Invalid value for query parameter '%s'.", getName()), e);
+    }
+  }
+
+  @Override
+  public void applyTo(
+      ImmutableTileGenerationUserParameters.Builder userParametersBuilder,
+      QueryParameterSet parameters,
+      Optional<TileGenerationSchema> generationSchema) {
+    parameters.getValue(this).ifPresent(userParametersBuilder::addAllLayers);
   }
 }

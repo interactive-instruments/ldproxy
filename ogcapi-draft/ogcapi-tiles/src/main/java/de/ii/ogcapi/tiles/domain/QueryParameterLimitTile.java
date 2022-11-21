@@ -135,7 +135,7 @@ public class QueryParameterLimitTile extends ApiExtensionCache
   }
 
   @Override
-  public Integer parse(String value) {
+  public Integer parse(String value, OgcApiDataV2 apiData) {
     try {
       return Integer.parseInt(value);
     } catch (Throwable e) {

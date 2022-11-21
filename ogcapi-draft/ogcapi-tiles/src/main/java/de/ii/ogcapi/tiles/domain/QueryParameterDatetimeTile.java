@@ -71,7 +71,7 @@ public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
   }
 
   @Override
-  public TemporalLiteral parse(String value) {
+  public TemporalLiteral parse(String value, OgcApiDataV2 apiData) {
     try {
       if (value.contains(DATETIME_INTERVAL_SEPARATOR)) {
         return TemporalLiteral.of(Splitter.on(DATETIME_INTERVAL_SEPARATOR).splitToList(value));

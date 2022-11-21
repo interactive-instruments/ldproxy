@@ -140,10 +140,10 @@ public class EndpointMapTileMultiCollection extends AbstractEndpointTileMultiCol
         requestContext,
         uriInfo,
         "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+        Optional.empty(),
         tileMatrixSetId,
         tileMatrix,
         tileRow,
-        tileCol,
-        tileProvider);
+        tileCol);
   }
 }

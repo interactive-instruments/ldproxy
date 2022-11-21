@@ -31,6 +31,7 @@ import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -146,11 +147,10 @@ public class EndpointMapTileSingleCollection extends AbstractEndpointTileSingleC
         requestContext,
         uriInfo,
         "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
-        collectionId,
+        Optional.of(collectionId),
         tileMatrixSetId,
         tileMatrix,
         tileRow,
-        tileCol,
-        tileProvider);
+        tileCol);
   }
 }

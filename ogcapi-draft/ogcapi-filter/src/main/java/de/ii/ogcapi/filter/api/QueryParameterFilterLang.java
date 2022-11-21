@@ -101,7 +101,7 @@ public class QueryParameterFilterLang extends ApiExtensionCache
   }
 
   @Override
-  public Cql.Format parse(String value) {
+  public Cql.Format parse(String value, OgcApiDataV2 apiData) {
     return Objects.equals(value, FILTER_LANG_CQL2_JSON) ? Cql.Format.JSON : Cql.Format.TEXT;
   }
 

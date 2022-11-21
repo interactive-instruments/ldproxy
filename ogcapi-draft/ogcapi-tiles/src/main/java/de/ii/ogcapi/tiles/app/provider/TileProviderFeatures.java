@@ -10,6 +10,7 @@ package de.ii.ogcapi.tiles.app.provider;
 import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.CACHE_DIR;
 import static de.ii.ogcapi.tiles.app.provider.TileCacheImpl.TILES_DIR_NAME;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
@@ -19,6 +20,7 @@ import de.ii.ogcapi.tiles.domain.provider.Cache;
 import de.ii.ogcapi.tiles.domain.provider.Cache.Storage;
 import de.ii.ogcapi.tiles.domain.provider.Cache.Type;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
+import de.ii.ogcapi.tiles.domain.provider.TileEncoder;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerator;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
@@ -32,6 +34,7 @@ import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +42,12 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
     implements TileProvider {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TileProviderFeatures.class);
+  private static final Map<MediaType, TileEncoder> ENCODERS =
+      ImmutableMap.of(FeatureEncoderMVT.FORMAT, new TileEncoderMvt());
 
   private final TileGeneratorFeatures tileGenerator;
   private final ChainedTileProvider providerChain;
 
-  // TODO: next steps seeding + cfg transformer (use existing cache)
   @AssistedInject
   public TileProviderFeatures(
       CrsInfo crsInfo,
@@ -92,7 +96,13 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
       return error.get();
     }
 
-    return providerChain.get(tile);
+    TileResult result = providerChain.get(tile);
+
+    if (result.isNotFound() && ENCODERS.containsKey(tile.getMediaType())) {
+      return TileResult.notFound(ENCODERS.get(tile.getMediaType()).empty(tile.getTileMatrixSet()));
+    }
+
+    return result;
   }
 
   @Override

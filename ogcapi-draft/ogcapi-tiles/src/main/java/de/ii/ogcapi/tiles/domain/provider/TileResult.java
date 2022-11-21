@@ -8,7 +8,6 @@
 package de.ii.ogcapi.tiles.domain.provider;
 
 import com.google.common.base.Preconditions;
-import java.io.InputStream;
 import java.util.Optional;
 import org.immutables.value.Value;
 
@@ -27,7 +26,11 @@ public interface TileResult {
     return NOT_FOUND;
   }
 
-  static TileResult found(InputStream content) {
+  static TileResult notFound(byte[] content) {
+    return new ImmutableTileResult.Builder().status(Status.NotFound).content(content).build();
+  }
+
+  static TileResult found(byte[] content) {
     return new ImmutableTileResult.Builder().status(Status.Found).content(content).build();
   }
 
@@ -37,13 +40,13 @@ public interface TileResult {
 
   Status getStatus();
 
-  Optional<InputStream> getContent();
+  Optional<byte[]> getContent();
 
   Optional<String> getError();
 
   @Value.Derived
   default boolean isAvailable() {
-    return getStatus() == Status.Found && getContent().isPresent();
+    return getContent().isPresent();
   }
 
   @Value.Derived

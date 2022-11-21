@@ -36,21 +36,24 @@ public interface QueryParameterSet {
   }
 
   default QueryParameterSet hydrate(
-      OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData) {
+      OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> collectionData) {
     Map<String, String> values = new LinkedHashMap<>(getValues());
     Map<String, Object> typedValues = new LinkedHashMap<>();
     Set<String> filterKeys = ImmutableSet.of();
 
     for (OgcApiQueryParameter parameter : getDefinitions()) {
-      values = parameter.transformParameters(collectionData, values, apiData);
-      filterKeys = parameter.getFilterParameters(filterKeys, apiData, collectionData.getId());
+      if (collectionData.isPresent()) {
+        values = parameter.transformParameters(collectionData.get(), values, apiData);
+        filterKeys =
+            parameter.getFilterParameters(filterKeys, apiData, collectionData.get().getId());
+      }
     }
 
     for (OgcApiQueryParameter parameter : getDefinitions()) {
       if (parameter instanceof TypedQueryParameter<?> && values.containsKey(parameter.getName())) {
         typedValues.put(
             parameter.getName(),
-            ((TypedQueryParameter<?>) parameter).parse(values.get(parameter.getName())));
+            ((TypedQueryParameter<?>) parameter).parse(values.get(parameter.getName()), apiData));
       }
     }
 

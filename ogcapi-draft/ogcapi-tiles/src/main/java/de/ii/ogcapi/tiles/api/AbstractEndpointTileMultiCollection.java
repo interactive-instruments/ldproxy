@@ -7,61 +7,36 @@
  */
 package de.ii.ogcapi.tiles.api;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
-import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.Endpoint;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
-import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.QueryInput;
-import de.ii.ogcapi.tilematrixsets.domain.MinMax;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
-import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileStream.Builder;
-import de.ii.ogcapi.tiles.domain.ImmutableTile;
 import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
-import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ogcapi.tiles.domain.TileProvider;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection;
-import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
-import de.ii.xtraplatform.features.domain.SchemaBase;
-import java.io.IOException;
-import java.io.InputStream;
-import java.text.MessageFormat;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import javax.ws.rs.NotAcceptableException;
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.ServerErrorException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
+public abstract class AbstractEndpointTileMultiCollection
+    extends AbstractEndpointTileSingleCollection {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileMultiCollection.class);
 
@@ -80,7 +55,15 @@ public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
       TileCache cache,
       StaticTileProviderStore staticTileProviderStore,
       TileMatrixSetRepository tileMatrixSetRepository) {
-    super(extensionRegistry);
+    super(
+        providers,
+        extensionRegistry,
+        queryHandler,
+        crsTransformerFactory,
+        limitsGenerator,
+        cache,
+        staticTileProviderStore,
+        tileMatrixSetRepository);
     this.providers = providers;
     this.queryHandler = queryHandler;
     this.limitsGenerator = limitsGenerator;
@@ -155,7 +138,7 @@ public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
 
     return definitionBuilder.build();
   }
-
+  /*
   protected Response getTile(
       OgcApi api,
       ApiRequestContext requestContext,
@@ -204,7 +187,9 @@ public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
                 () -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
 
     TileMatrixSetLimits tileLimits =
-        limitsGenerator.getTileMatrixSetLimits(api, tileMatrixSet, zoomLevels).stream()
+        limitsGenerator
+            .getTileMatrixSetLimits(api, tileMatrixSet, zoomLevels, Optional.empty())
+            .stream()
             .filter(limits -> limits.getTileMatrix().equals(tileMatrix))
             .findAny()
             .orElse(null);
@@ -349,5 +334,5 @@ public abstract class AbstractEndpointTileMultiCollection extends Endpoint {
       query = TilesQueriesHandler.Query.SINGLE_LAYER_TILE;
 
     return queryHandler.handle(query, queryInput, requestContext);
-  }
+  }*/
 }

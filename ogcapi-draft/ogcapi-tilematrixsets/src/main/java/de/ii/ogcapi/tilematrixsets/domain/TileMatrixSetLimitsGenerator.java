@@ -10,14 +10,18 @@ package de.ii.ogcapi.tilematrixsets.domain;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.util.List;
+import java.util.Optional;
 
 public interface TileMatrixSetLimitsGenerator {
 
-  List<TileMatrixSetLimits> getCollectionTileMatrixSetLimits(
-      OgcApi api, String collectionId, TileMatrixSet tileMatrixSet, MinMax tileMatrixRange);
-
   List<TileMatrixSetLimits> getTileMatrixSetLimits(
-      OgcApi api, TileMatrixSet tileMatrixSet, MinMax tileMatrixRange);
+      OgcApi api,
+      TileMatrixSet tileMatrixSet,
+      MinMax tileMatrixRange,
+      Optional<String> collectionId);
+
+  TileMatrixSetLimits getTileMatrixSetLimits(
+      OgcApi api, TileMatrixSet tileMatrixSet, int tileMatrix, Optional<String> collectionId);
 
   List<TileMatrixSetLimits> getTileMatrixSetLimits(
       BoundingBox boundingBox, TileMatrixSet tileMatrixSet, MinMax tileMatrixRange);

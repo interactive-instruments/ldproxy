@@ -132,7 +132,7 @@ public class QueryParameterProperties extends ApiExtensionCache
   }
 
   @Override
-  public List<String> parse(String value) {
+  public List<String> parse(String value, OgcApiDataV2 apiData) {
     try {
       return Splitter.on(',').omitEmptyStrings().trimResults().splitToList(value);
     } catch (Throwable e) {
