@@ -30,7 +30,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
   enum Query implements QueryIdentifier {
     TILE_SETS,
     TILE_SET,
-    SINGLE_LAYER_TILE,
+    TILE,
     MULTI_LAYER_TILE,
     TILE_STREAM,
     EMPTY_TILE,

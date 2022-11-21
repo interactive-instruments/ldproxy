@@ -335,8 +335,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
                   outputFormat.getExtension()));
 
           try {
-            queryHandler.handle(
-                TilesQueriesHandler.Query.SINGLE_LAYER_TILE, queryInput, requestContext);
+            queryHandler.handle(TilesQueriesHandler.Query.TILE, queryInput, requestContext);
           } catch (Throwable e) {
             LOGGER.warn(
                 "{}: processing failed -> {}, {}/{}/{}/{}, {} | {}",

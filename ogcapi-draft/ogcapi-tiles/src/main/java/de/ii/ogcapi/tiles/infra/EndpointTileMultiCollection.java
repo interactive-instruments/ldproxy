@@ -9,26 +9,23 @@ package de.ii.ogcapi.tiles.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
+import de.ii.ogcapi.foundation.domain.Endpoint;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
-import de.ii.ogcapi.tiles.api.AbstractEndpointTileMultiCollection;
-import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
-import de.ii.ogcapi.tiles.domain.TileCache;
+import de.ii.ogcapi.tiles.api.EndpointTileMixin;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ogcapi.tiles.domain.TileProvider;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -41,8 +38,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @langEn Access multi-layer tiles
@@ -55,35 +50,34 @@ import org.slf4j.LoggerFactory;
 /** Handle responses under '/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'. */
 @Singleton
 @AutoBind
-public class EndpointTileMultiCollection extends AbstractEndpointTileMultiCollection
-    implements ConformanceClass {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileMultiCollection.class);
+public class EndpointTileMultiCollection extends Endpoint
+    implements ConformanceClass, EndpointTileMixin {
 
   private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
 
-  private final FeaturesCoreProviders providers;
+  private final TilesQueriesHandler queryHandler;
+  private final TileMatrixSetLimitsGenerator limitsGenerator;
+  private final TileMatrixSetRepository tileMatrixSetRepository;
 
   @Inject
   EndpointTileMultiCollection(
-      FeaturesCoreProviders providers,
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
-      CrsTransformerFactory crsTransformerFactory,
       TileMatrixSetLimitsGenerator limitsGenerator,
-      TileCache cache,
-      StaticTileProviderStore staticTileProviderStore,
       TileMatrixSetRepository tileMatrixSetRepository) {
-    super(
-        providers,
-        extensionRegistry,
-        queryHandler,
-        crsTransformerFactory,
-        limitsGenerator,
-        cache,
-        staticTileProviderStore,
-        tileMatrixSetRepository);
-    this.providers = providers;
+    super(extensionRegistry);
+    this.queryHandler = queryHandler;
+    this.limitsGenerator = limitsGenerator;
+    this.tileMatrixSetRepository = tileMatrixSetRepository;
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(TilesConfiguration.class)
+        .filter(TilesConfiguration::isEnabled)
+        .filter(TilesConfiguration::isMultiCollectionEnabled)
+        .isPresent();
   }
 
   @Override
@@ -105,7 +99,9 @@ public class EndpointTileMultiCollection extends AbstractEndpointTileMultiCollec
 
   @Override
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-    return computeDefinition(
+    return computeDefinitionMulti(
+        extensionRegistry,
+        this,
         apiData,
         "tiles",
         ApiEndpointDefinition.SORT_PRIORITY_TILE,
@@ -124,21 +120,22 @@ public class EndpointTileMultiCollection extends AbstractEndpointTileMultiCollec
       @Context UriInfo uriInfo,
       @Context ApiRequestContext requestContext)
       throws CrsTransformationException, IOException, NotFoundException {
+    QueryInput queryInput =
+        getQueryInputTile(
+            extensionRegistry,
+            this,
+            limitsGenerator,
+            tileMatrixSetRepository,
+            api,
+            requestContext,
+            uriInfo,
+            "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+            Optional.empty(),
+            tileMatrixSetId,
+            tileMatrix,
+            tileRow,
+            tileCol);
 
-    TileProvider tileProvider =
-        api.getData()
-            .getExtension(TilesConfiguration.class)
-            .map(TilesConfiguration::getTileProvider)
-            .orElseThrow();
-    return super.getTile(
-        api,
-        requestContext,
-        uriInfo,
-        "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
-        Optional.empty(),
-        tileMatrixSetId,
-        tileMatrix,
-        tileRow,
-        tileCol);
+    return queryHandler.handle(TilesQueriesHandler.Query.TILE, queryInput, requestContext);
   }
 }

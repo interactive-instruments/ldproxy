@@ -132,7 +132,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 Query.TILE_SET,
                 QueryHandler.with(QueryInputTileSet.class, this::getTileSetResponse))
             .put(
-                Query.SINGLE_LAYER_TILE,
+                Query.TILE,
                 QueryHandler.with(
                     QueryInputTileSingleLayer.class, this::getSingleLayerTileResponse))
             .put(

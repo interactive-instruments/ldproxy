@@ -13,5 +13,5 @@ public interface TileEncoder {
 
   byte[] empty(TileMatrixSet tms);
 
-  byte[] combine(TileMatrixSet tms);
+  byte[] combine(TileQuery tile);
 }

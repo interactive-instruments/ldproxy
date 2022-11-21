@@ -89,6 +89,12 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
   }
 
   @Override
+  public boolean canProvide(TileQuery tile) {
+    return ChainedTileProvider.super.canProvide(tile)
+        && data.getLayers().get(tile.getLayer()).getCombine().isEmpty();
+  }
+
+  @Override
   public TileResult getTile(TileQuery tile) {
     return TileResult.found(generateTile(tile));
   }
@@ -129,10 +135,6 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
   public FeatureStream getTileSource(TileQuery tileQuery) {
     // TODO: merge defaults into layers
     LayerOptionsFeatures layer = data.getLayers().get(tileQuery.getLayer());
-
-    if (!layer.getCombine().isEmpty()) {
-      throw new IllegalStateException("TODO");
-    }
 
     // TODO: from TilesProviders
     String featureProviderId =

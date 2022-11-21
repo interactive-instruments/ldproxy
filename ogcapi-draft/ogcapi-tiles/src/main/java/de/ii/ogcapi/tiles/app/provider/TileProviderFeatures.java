@@ -34,6 +34,7 @@ import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,8 +43,8 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
     implements TileProvider {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TileProviderFeatures.class);
-  private static final Map<MediaType, TileEncoder> ENCODERS =
-      ImmutableMap.of(FeatureEncoderMVT.FORMAT, new TileEncoderMvt());
+  private static final Map<MediaType, Function<TileProviderFeaturesData, TileEncoder>> ENCODERS =
+      ImmutableMap.of(FeatureEncoderMVT.FORMAT, TileEncoderMvt::new);
 
   private final TileGeneratorFeatures tileGenerator;
   private final ChainedTileProvider providerChain;
@@ -99,7 +100,8 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
     TileResult result = providerChain.get(tile);
 
     if (result.isNotFound() && ENCODERS.containsKey(tile.getMediaType())) {
-      return TileResult.notFound(ENCODERS.get(tile.getMediaType()).empty(tile.getTileMatrixSet()));
+      return TileResult.notFound(
+          ENCODERS.get(tile.getMediaType()).apply(getData()).empty(tile.getTileMatrixSet()));
     }
 
     return result;
