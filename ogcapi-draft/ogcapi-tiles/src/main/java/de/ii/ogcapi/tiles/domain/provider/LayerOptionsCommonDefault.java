@@ -7,4 +7,4 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
-public interface LayerOptionsCommonDefault extends TileGenerationParameters, WithLevels {}
+public interface LayerOptionsCommonDefault extends TileGenerationParameters, WithTmsLevels {}

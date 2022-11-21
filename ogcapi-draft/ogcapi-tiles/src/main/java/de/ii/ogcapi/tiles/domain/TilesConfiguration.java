@@ -22,7 +22,8 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.tilematrixsets.domain.ImmutableMinMax;
 import de.ii.ogcapi.tilematrixsets.domain.MinMax;
-import de.ii.ogcapi.tiles.domain.provider.Rule;
+import de.ii.ogcapi.tiles.domain.provider.LevelFilter;
+import de.ii.ogcapi.tiles.domain.provider.LevelTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.List;
@@ -517,12 +518,12 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
    * @default `{}`
    */
   @Deprecated
-  Map<String, List<PredefinedFilter>> getFilters();
+  Map<String, List<LevelFilter>> getFilters();
 
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
-  default Map<String, List<PredefinedFilter>> getFiltersDerived() {
+  default Map<String, List<LevelFilter>> getFiltersDerived() {
     return !getFilters().isEmpty()
         ? getFilters()
         : getTileProvider() instanceof TileProviderFeatures
@@ -536,12 +537,12 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
    * @default `{}`
    */
   @Deprecated
-  Map<String, List<Rule>> getRules();
+  Map<String, List<LevelTransformation>> getRules();
 
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
-  default Map<String, List<Rule>> getRulesDerived() {
+  default Map<String, List<LevelTransformation>> getRulesDerived() {
     return !getRules().isEmpty()
         ? getRules()
         : getTileProvider() instanceof TileProviderFeatures
@@ -659,14 +660,14 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
       getZoomLevelsCache().forEach(mergedZoomLevelsCache::put);
     builder.zoomLevelsCache(mergedZoomLevelsCache);
 
-    Map<String, List<Rule>> mergedRules =
+    Map<String, List<LevelTransformation>> mergedRules =
         Objects.nonNull(src.getRules())
             ? Maps.newLinkedHashMap(src.getRules())
             : Maps.newLinkedHashMap();
     if (Objects.nonNull(getRules())) getRules().forEach(mergedRules::put);
     builder.rules(mergedRules);
 
-    Map<String, List<PredefinedFilter>> mergedFilters =
+    Map<String, List<LevelFilter>> mergedFilters =
         Objects.nonNull(src.getFilters())
             ? Maps.newLinkedHashMap(src.getFilters())
             : Maps.newLinkedHashMap();

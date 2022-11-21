@@ -13,6 +13,7 @@ import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderData;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
 import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureProviderCommonData;
 import de.ii.xtraplatform.store.domain.entities.AbstractEntityFactory;
@@ -41,6 +42,7 @@ public class TileProviderFeaturesFactory
       CrsInfo crsInfo,
       EntityRegistry entityRegistry,
       AppContext appContext,
+      Cql cql,
       TileProviderFeaturesFactoryAssisted factoryAssisted) {
     super(factoryAssisted);
   }

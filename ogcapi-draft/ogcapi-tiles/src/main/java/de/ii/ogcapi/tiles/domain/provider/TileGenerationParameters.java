@@ -28,5 +28,5 @@ public interface TileGenerationParameters {
     return false;
   }
 
-  Map<String, List<Rule>> getRules();
+  Map<String, List<LevelTransformation>> getTransformations();
 }

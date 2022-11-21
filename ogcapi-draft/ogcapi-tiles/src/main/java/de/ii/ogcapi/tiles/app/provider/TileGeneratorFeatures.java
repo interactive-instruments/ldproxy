@@ -15,6 +15,7 @@ import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationContext;
 import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures;
+import de.ii.ogcapi.tiles.domain.provider.LevelTransformation;
 import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationContext;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
@@ -24,12 +25,12 @@ import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
 import de.ii.xtraplatform.base.domain.LogContext;
+import de.ii.xtraplatform.cql.domain.Cql;
+import de.ii.xtraplatform.cql.domain.Cql.Format;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
-import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.SIntersects;
-import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.cql.domain.SpatialLiteral;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
@@ -47,6 +48,7 @@ import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
 import java.io.ByteArrayInputStream;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,12 +73,14 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
   private final CrsInfo crsInfo;
   private final EntityRegistry entityRegistry;
   private final TileProviderFeaturesData data;
+  private final Cql cql;
 
   public TileGeneratorFeatures(
-      TileProviderFeaturesData data, CrsInfo crsInfo, EntityRegistry entityRegistry) {
+      TileProviderFeaturesData data, CrsInfo crsInfo, EntityRegistry entityRegistry, Cql cql) {
     this.data = data;
     this.crsInfo = crsInfo;
     this.entityRegistry = entityRegistry;
+    this.cql = cql;
   }
 
   @Override
@@ -273,11 +277,8 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
     if (layer.getFilters().containsKey(tile.getTileMatrixSet().getId())) {
       layer.getFilters().get(tile.getTileMatrixSet().getId()).stream()
           .filter(levelFilter -> levelFilter.matches(tile.getTileLevel()))
-          .forEach(
-              filter -> {
-                // TODO: parse filter, preferrably in hydration or provider startup
-                queryBuilder.addFilters(Like.of("name", ScalarLiteral.of("K%")));
-              });
+          // TODO: parse and validate filter, preferably in hydration or provider startup
+          .forEach(filter -> queryBuilder.addFilters(cql.read(filter.getFilter(), Format.TEXT)));
     }
 
     String spatialProperty = featureSchema.getPrimaryGeometry().orElseThrow().getFullPathAsString();
@@ -294,7 +295,14 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
       }
     }
 
-    // TODO: properties from rules if fields still empty
+    if ((userParameters.isEmpty() || userParameters.get().getFields().isEmpty())
+        && layer.getTransformations().containsKey(tile.getTileMatrixSet().getId())) {
+      layer.getTransformations().get(tile.getTileMatrixSet().getId()).stream()
+          .filter(rule -> rule.matches(tile.getTileLevel()))
+          .map(LevelTransformation::getProperties)
+          .flatMap(Collection::stream)
+          .forEach(queryBuilder::addFields);
+    }
 
     return queryBuilder.build();
   }

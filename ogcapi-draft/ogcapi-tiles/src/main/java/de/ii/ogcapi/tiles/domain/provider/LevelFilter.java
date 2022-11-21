@@ -7,26 +7,26 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.Range;
+import de.ii.xtraplatform.cql.domain.Cql2Expression;
+import java.util.Objects;
+import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableLevelFilter.Builder.class)
-public interface LevelFilter {
-  int getMin();
-
-  int getMax();
+public interface LevelFilter extends WithLevels {
 
   String getFilter();
 
-  @Value.Derived
-  default Range<Integer> getRange() {
-    return Range.closed(getMin(), getMax());
-  }
+  @JsonIgnore
+  @Nullable
+  Cql2Expression getCqlFilter();
 
-  default boolean matches(int level) {
-    return getRange().contains(level);
+  @Value.Derived
+  default boolean isParsed() {
+    return Objects.nonNull(getCqlFilter());
   }
 }

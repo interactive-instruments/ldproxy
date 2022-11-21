@@ -25,6 +25,7 @@ import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
 import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.store.domain.entities.AbstractPersistentEntity;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -48,10 +49,11 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
       CrsInfo crsInfo,
       EntityRegistry entityRegistry,
       AppContext appContext,
+      Cql cql,
       @Assisted TileProviderFeaturesData data) {
     super(data);
 
-    this.tileGenerator = new TileGeneratorFeatures(data, crsInfo, entityRegistry);
+    this.tileGenerator = new TileGeneratorFeatures(data, crsInfo, entityRegistry, cql);
 
     ChainedTileProvider current = tileGenerator;
     Path cacheRootDir =

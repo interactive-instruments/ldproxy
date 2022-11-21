@@ -30,7 +30,6 @@ import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
 import de.ii.ogcapi.tiles.domain.ImmutableTileProviderFeatures;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration.Builder;
-import de.ii.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
@@ -42,11 +41,10 @@ import de.ii.ogcapi.tiles.domain.provider.Cache.Type;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableCache;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsFeatures;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsFeaturesDefault;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableLevelFilter;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData;
 import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures;
 import de.ii.ogcapi.tiles.domain.provider.LevelFilter;
-import de.ii.ogcapi.tiles.domain.provider.Rule;
+import de.ii.ogcapi.tiles.domain.provider.LevelTransformation;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.cql.domain.Cql;
@@ -471,9 +469,9 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                   limit, collectionId));
         }
 
-        final Map<String, List<PredefinedFilter>> filters = config.getFiltersDerived();
+        final Map<String, List<LevelFilter>> filters = config.getFiltersDerived();
         if (Objects.nonNull(filters)) {
-          for (Map.Entry<String, List<PredefinedFilter>> entry2 : filters.entrySet()) {
+          for (Map.Entry<String, List<LevelFilter>> entry2 : filters.entrySet()) {
             String tileMatrixSetId = entry2.getKey();
             MinMax zoomLevelsCfg = getZoomLevels(apiData, config, tileMatrixSetId);
             if (Objects.isNull(zoomLevelsCfg)) {
@@ -482,7 +480,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                       "The filters in the TILES module of collection ''{0}'' references a tile matrix set ''{0}'' that is not configured for this API.",
                       collectionId, tileMatrixSetId));
             } else {
-              for (PredefinedFilter filter : entry2.getValue()) {
+              for (LevelFilter filter : entry2.getValue()) {
                 if (zoomLevelsCfg.getMin() > filter.getMin()) {
                   builder.addStrictErrors(
                       MessageFormat.format(
@@ -495,37 +493,35 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                           "A filter in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' is specified to end at level ''{2}'', but the maximum level is ''{3}''.",
                           collectionId, tileMatrixSetId, filter.getMax(), zoomLevelsCfg.getMax()));
                 }
-                if (filter.getFilter().isPresent()) {
-                  // try to convert the filter to CQL2-text
-                  String expression = filter.getFilter().get();
-                  FeatureTypeConfigurationOgcApi collectionData =
-                      apiData.getCollections().get(collectionId);
-                  final Map<String, String> filterableFields =
-                      queryParser.getFilterableFields(apiData, collectionData);
-                  final Map<String, String> queryableTypes =
-                      queryParser.getQueryableTypes(apiData, collectionData);
-                  try {
-                    queryParser.getFilterFromQuery(
-                        ImmutableMap.of("filter", expression),
-                        filterableFields,
-                        ImmutableSet.of("filter"),
-                        queryableTypes,
-                        Cql.Format.TEXT);
-                  } catch (Exception e) {
-                    builder.addErrors(
-                        MessageFormat.format(
-                            "A filter ''{0}'' in the TILES module of collection ''{1}'' for tile matrix set ''{2}'' is invalid. Reason: {3}",
-                            expression, collectionId, tileMatrixSetId, e.getMessage()));
-                  }
+                // try to convert the filter to CQL2-text
+                String expression = filter.getFilter();
+                FeatureTypeConfigurationOgcApi collectionData =
+                    apiData.getCollections().get(collectionId);
+                final Map<String, String> filterableFields =
+                    queryParser.getFilterableFields(apiData, collectionData);
+                final Map<String, String> queryableTypes =
+                    queryParser.getQueryableTypes(apiData, collectionData);
+                try {
+                  queryParser.getFilterFromQuery(
+                      ImmutableMap.of("filter", expression),
+                      filterableFields,
+                      ImmutableSet.of("filter"),
+                      queryableTypes,
+                      Cql.Format.TEXT);
+                } catch (Exception e) {
+                  builder.addErrors(
+                      MessageFormat.format(
+                          "A filter ''{0}'' in the TILES module of collection ''{1}'' for tile matrix set ''{2}'' is invalid. Reason: {3}",
+                          expression, collectionId, tileMatrixSetId, e.getMessage()));
                 }
               }
             }
           }
         }
 
-        final Map<String, List<Rule>> rules = config.getRulesDerived();
+        final Map<String, List<LevelTransformation>> rules = config.getRulesDerived();
         if (Objects.nonNull(rules)) {
-          for (Map.Entry<String, List<Rule>> entry2 : rules.entrySet()) {
+          for (Map.Entry<String, List<LevelTransformation>> entry2 : rules.entrySet()) {
             String tileMatrixSetId = entry2.getKey();
             MinMax zoomLevelsCfg = getZoomLevels(apiData, config, tileMatrixSetId);
             if (Objects.isNull(zoomLevelsCfg)) {
@@ -534,7 +530,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                       "The rules in the TILES module of collection ''{0}'' references a tile matrix set ''{0}'' that is not configured for this API.",
                       collectionId, tileMatrixSetId));
             } else {
-              for (Rule rule : entry2.getValue()) {
+              for (LevelTransformation rule : entry2.getValue()) {
                 if (zoomLevelsCfg.getMin() > rule.getMin()) {
                   builder.addStrictErrors(
                       MessageFormat.format(
@@ -614,10 +610,9 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                             .featureProvider(
                                 featuresCore.flatMap(FeaturesCoreConfiguration::getFeatureProvider))
                             .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
-                            .putAllRules(
+                            .putAllTransformations(
                                 tilesConfiguration
-                                    .getRulesDerived()) // TODO: transformations, are there default
-                            // rules?
+                                    .getRulesDerived()) // TODO: are there default rules?
                             .featureLimit(tilesConfiguration.getLimitDerived())
                             .minimumSizeInPixel(tilesConfiguration.getMinimumSizeInPixelDerived())
                             .ignoreInvalidGeometries(
@@ -667,33 +662,12 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                 .getExtension(FeaturesCoreConfiguration.class)
                 .flatMap(FeaturesCoreConfiguration::getFeatureType))
         .putAllLevels(cfg.getZoomLevelsDerived())
-        .putAllRules(cfg.getRulesDerived()) // TODO: transformations
-        .putAllFilters(getLevelFilters(cfg.getFiltersDerived()))
+        .putAllTransformations(cfg.getRulesDerived())
+        .putAllFilters(cfg.getFiltersDerived())
         .featureLimit(cfg.getLimitDerived())
         .minimumSizeInPixel(cfg.getMinimumSizeInPixelDerived())
         .ignoreInvalidGeometries(cfg.isIgnoreInvalidGeometriesDerived())
         .build();
-  }
-
-  private static Map<String, List<LevelFilter>> getLevelFilters(
-      Map<String, List<PredefinedFilter>> filters) {
-    return filters.entrySet().stream()
-        .map(
-            entry2 ->
-                new SimpleImmutableEntry<>(
-                    entry2.getKey(),
-                    entry2.getValue().stream()
-                        .filter(pf -> pf.getFilter().isPresent())
-                        .map(
-                            pf ->
-                                (LevelFilter)
-                                    new ImmutableLevelFilter.Builder()
-                                        .min(pf.getMin())
-                                        .max(pf.getMax())
-                                        .filter(pf.getFilter().get())
-                                        .build())
-                        .collect(Collectors.toList())))
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   private FeatureChangeListener onFeatureChange(OgcApi api) {

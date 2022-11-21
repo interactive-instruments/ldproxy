@@ -12,7 +12,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import de.ii.ogcapi.tilematrixsets.domain.MinMax;
-import de.ii.ogcapi.tiles.domain.provider.Rule;
+import de.ii.ogcapi.tiles.domain.provider.LevelFilter;
+import de.ii.ogcapi.tiles.domain.provider.LevelTransformation;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -94,7 +95,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     Beispiel unten.
    * @default `{}`
    */
-  public abstract Map<String, List<PredefinedFilter>> getFilters();
+  public abstract Map<String, List<LevelFilter>> getFilters();
 
   /**
    * @langEn Rules to postprocess the selected features for a certain zoom level. Supported
@@ -110,7 +111,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     in den verschmolzenen Features identisch sind.
    * @default `{}`
    */
-  public abstract Map<String, List<Rule>> getRules();
+  public abstract Map<String, List<LevelTransformation>> getRules();
 
   /**
    * @langEn Longitude and latitude that a map with the tiles should be centered on by default.
@@ -286,14 +287,14 @@ public abstract class TileProviderFeatures extends TileProvider {
       getZoomLevelsCache().forEach(mergedZoomLevelsCache::put);
     builder.zoomLevelsCache(mergedZoomLevelsCache);
 
-    Map<String, List<Rule>> mergedRules =
+    Map<String, List<LevelTransformation>> mergedRules =
         Objects.nonNull(src.getRules())
             ? Maps.newLinkedHashMap(src.getRules())
             : Maps.newLinkedHashMap();
     if (Objects.nonNull(getRules())) getRules().forEach(mergedRules::put);
     builder.rules(mergedRules);
 
-    Map<String, List<PredefinedFilter>> mergedFilters =
+    Map<String, List<LevelFilter>> mergedFilters =
         Objects.nonNull(src.getFilters())
             ? Maps.newLinkedHashMap(src.getFilters())
             : Maps.newLinkedHashMap();

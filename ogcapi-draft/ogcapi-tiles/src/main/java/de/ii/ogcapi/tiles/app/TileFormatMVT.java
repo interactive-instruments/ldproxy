@@ -27,14 +27,14 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tiles.app.provider.FeatureEncoderMVT;
-import de.ii.ogcapi.tiles.domain.PredefinedFilter;
 import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ogcapi.tiles.domain.provider.Rule;
+import de.ii.ogcapi.tiles.domain.provider.LevelFilter;
+import de.ii.ogcapi.tiles.domain.provider.LevelTransformation;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationContext;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
@@ -169,17 +169,12 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
     String tileMatrixSetId = tile.getTileMatrixSet().getId();
     int level = tile.getTileLevel();
 
-    final Map<String, List<PredefinedFilter>> predefFilters =
-        tilesConfiguration.getFiltersDerived();
+    final Map<String, List<LevelFilter>> predefFilters = tilesConfiguration.getFiltersDerived();
     final String predefFilter =
         (Objects.nonNull(predefFilters) && predefFilters.containsKey(tileMatrixSetId))
             ? predefFilters.get(tileMatrixSetId).stream()
-                .filter(
-                    filter ->
-                        filter.getMax() >= level
-                            && filter.getMin() <= level
-                            && filter.getFilter().isPresent())
-                .map(filter -> filter.getFilter().get())
+                .filter(filter -> filter.matches(level))
+                .map(LevelFilter::getFilter)
                 .findAny()
                 .orElse(null)
             : null;
@@ -201,13 +196,13 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
             .crs(tile.getTileMatrixSet().getCrs())
             .maxAllowableOffset(getMaxAllowableOffset(tile));
 
-    final Map<String, List<Rule>> rules = tilesConfiguration.getRulesDerived();
+    final Map<String, List<LevelTransformation>> rules = tilesConfiguration.getRulesDerived();
     if (!queryParameters.containsKey("properties")
         && (Objects.nonNull(rules) && rules.containsKey(tileMatrixSetId))) {
       List<String> properties =
           rules.get(tileMatrixSetId).stream()
               .filter(rule -> rule.getMax() >= level && rule.getMin() <= level)
-              .map(Rule::getProperties)
+              .map(LevelTransformation::getProperties)
               .flatMap(Collection::stream)
               .collect(Collectors.toList());
       if (!properties.isEmpty()) {

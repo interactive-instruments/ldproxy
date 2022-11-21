@@ -11,7 +11,7 @@ import de.ii.ogcapi.features.core.domain.FeatureEncoderSfFlat;
 import de.ii.ogcapi.features.core.domain.FeatureSfFlat;
 import de.ii.ogcapi.tiles.domain.ImmutableMvtFeature;
 import de.ii.ogcapi.tiles.domain.MvtFeature;
-import de.ii.ogcapi.tiles.domain.provider.Rule;
+import de.ii.ogcapi.tiles.domain.provider.LevelTransformation;
 import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationContext;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationParameters;
@@ -79,7 +79,7 @@ public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
     coords[4] = coords[0];
     this.clipGeometry = geometryFactoryTile.createPolygon(coords);
 
-    final Map<String, List<Rule>> rules = parameters.getRules();
+    final Map<String, List<LevelTransformation>> rules = parameters.getTransformations();
     this.groupBy =
         (Objects.nonNull(rules) && rules.containsKey(tile.getTileMatrixSet().getId()))
             ? rules.get(tile.getTileMatrixSet().getId()).stream()
@@ -88,7 +88,7 @@ public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
                         rule.getMax() >= tile.getTileLevel()
                             && rule.getMin() <= tile.getTileLevel()
                             && rule.getMerge().orElse(false))
-                .map(Rule::getGroupBy)
+                .map(LevelTransformation::getGroupBy)
                 .findAny()
                 .orElse(null)
             : null;
