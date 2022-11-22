@@ -402,8 +402,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   @JsonIgnore
   default boolean isSingleCollectionEnabled() {
     return Objects.equals(getSingleCollectionEnabled(), true)
-        || (Objects.nonNull(getTileProvider()) && getTileProvider().isSingleCollectionEnabled())
-        || isEnabled();
+        || (Objects.nonNull(getTileProvider()) && getTileProvider().isSingleCollectionEnabled());
   }
 
   /**
@@ -420,8 +419,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   @JsonIgnore
   default boolean isMultiCollectionEnabled() {
     return Objects.equals(getMultiCollectionEnabled(), true)
-        || (Objects.nonNull(getTileProvider()) && getTileProvider().isMultiCollectionEnabled())
-        || isEnabled();
+        || (Objects.nonNull(getTileProvider()) && getTileProvider().isMultiCollectionEnabled());
   }
 
   /**

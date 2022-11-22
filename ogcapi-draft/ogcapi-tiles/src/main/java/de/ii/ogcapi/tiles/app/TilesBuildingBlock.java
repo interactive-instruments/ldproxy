@@ -615,9 +615,9 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                     .putAllLayers(
                         tilesConfiguration.isMultiCollectionEnabled()
                             ? Map.of(
-                                "all",
+                                DATASET_TILES,
                                 new ImmutableLayerOptionsFeatures.Builder()
-                                    .id("all")
+                                    .id(DATASET_TILES)
                                     .addCombine(COMBINE_ALL)
                                     .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
                                     .build())

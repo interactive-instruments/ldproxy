@@ -31,9 +31,8 @@ public class TileEncoders implements ChainedTileProvider {
   }
 
   @Override
-  public Map<String, Range<Integer>> getTmsRanges() {
-    // TODO: combination of defaults and all layers
-    return data.getLayerDefaults().getTmsRanges();
+  public Map<String, Map<String, Range<Integer>>> getTmsRanges() {
+    return data.getTmsRanges();
   }
 
   @Override

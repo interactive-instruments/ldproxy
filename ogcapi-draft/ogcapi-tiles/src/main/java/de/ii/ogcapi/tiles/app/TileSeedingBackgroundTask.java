@@ -7,52 +7,45 @@
  */
 package de.ii.ogcapi.tiles.app;
 
+import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiBackgroundTask;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.ParameterExtension;
-import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tilematrixsets.domain.MinMax;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
-import de.ii.ogcapi.tiles.domain.ImmutableTile;
 import de.ii.ogcapi.tiles.domain.SeedingOptions;
-import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TileCache;
+import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
-import de.ii.xtraplatform.base.domain.LogContext;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
+import de.ii.ogcapi.tiles.domain.provider.TileProvider;
+import de.ii.ogcapi.tiles.domain.provider.TileQuery;
+import de.ii.ogcapi.tiles.domain.provider.TileResult;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.services.domain.TaskContext;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.sql.SQLException;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -76,6 +69,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
   private final TileCache tileCache;
   private final URI servicesUri;
   private final FeaturesCoreProviders providers;
+  private final TilesProviders tilesProviders;
   private final TilesQueriesHandler queryHandler;
   private final TileMatrixSetRepository tileMatrixSetRepository;
 
@@ -87,6 +81,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
       TileCache tileCache,
       ServicesContext servicesContext,
       FeaturesCoreProviders providers,
+      TilesProviders tilesProviders,
       TilesQueriesHandler queryHandler,
       TileMatrixSetRepository tileMatrixSetRepository) {
     this.crsTransformerFactory = crsTransformerFactory;
@@ -95,6 +90,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
     this.tileCache = tileCache;
     this.servicesUri = servicesContext.getUri();
     this.providers = providers;
+    this.tilesProviders = tilesProviders;
     this.queryHandler = queryHandler;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
   }
@@ -200,8 +196,8 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
       }
     }
 
-    List<TileFormatWithQuerySupportExtension> outputFormats =
-        extensionRegistry.getExtensionsForType(TileFormatWithQuerySupportExtension.class);
+    List<TileFormatExtension> outputFormats =
+        extensionRegistry.getExtensionsForType(TileFormatExtension.class);
 
     try {
       // first seed the multi-layer tiles, which also generates the necessary single-layer tiles
@@ -229,74 +225,45 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
   }
 
   private void seedSingleLayerTiles(
-      OgcApi api, List<TileFormatWithQuerySupportExtension> outputFormats, TaskContext taskContext)
+      OgcApi api, List<TileFormatExtension> outputFormats, TaskContext taskContext)
       throws IOException {
     OgcApiDataV2 apiData = api.getData();
-    // isEnabled checks that we have a feature provider
-    FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
     Map<String, Map<String, MinMax>> seedingMap = getSeedingConfig(apiData);
 
-    long numberOfTiles = getNumberOfTiles2(api, outputFormats, seedingMap, taskContext);
+    // TODO: isEnabled should check that we have a tile provider
+    // TODO: different tile provider per collection
+    TileProvider tileProvider = tilesProviders.getTileProviderOrThrow(apiData);
+    List<TileFormatExtension> seedingFormats =
+        outputFormats.stream()
+            .filter(format -> tileProvider.generator().supports(format.getMediaType().type()))
+            .collect(Collectors.toList());
+
+    long numberOfTiles = getNumberOfTiles2(api, seedingFormats, seedingMap, taskContext);
     final double[] currentTile = {0.0};
 
     walkCollectionsAndTiles(
         api,
-        outputFormats,
+        seedingFormats,
         seedingMap,
         taskContext,
         (api1, collectionId, outputFormat, tileMatrixSet, level, row, col) -> {
-          TilesConfiguration tilesConfiguration =
-              getTilesConfiguration(apiData, collectionId).get();
-          Tile tile =
-              new ImmutableTile.Builder()
-                  .collectionIds(ImmutableList.of(collectionId))
-                  .tileMatrixSet(tileMatrixSet)
-                  .tileLevel(level)
-                  .tileRow(row)
-                  .tileCol(col)
-                  .api(api)
-                  .apiData(apiData)
-                  .temporary(false)
-                  .isDatasetTile(false)
-                  .featureProvider(featureProvider)
-                  .outputFormat(outputFormat)
-                  .build();
-          try {
-            if (tileCache.tileExists(tile)) {
-              // already there, nothing to create, but advance progress
-              currentTile[0] += 1;
-              return true;
-            }
-          } catch (Exception e) {
-            LOGGER.warn(
-                "Failed to retrieve tile {}/{}/{}/{} for collection {} from the cache. Reason: {}",
-                tile.getTileMatrixSet().getId(),
-                tile.getTileLevel(),
-                tile.getTileRow(),
-                tile.getTileCol(),
-                collectionId,
-                e.getMessage());
+          // skip collections without layer
+          if (!tileProvider.getData().getLayers().containsKey(collectionId)) {
+            return true;
           }
 
-          URI uri;
-          String uriString =
-              String.format(
-                  "%s/%s/collections/%s/tiles/%s/%s/%s/%s",
-                  servicesUri,
-                  apiData.getId(),
-                  collectionId,
-                  tileMatrixSet.getId(),
-                  level,
-                  row,
-                  col);
-          try {
-            uri = new URI(uriString);
-          } catch (URISyntaxException e) {
-            LOGGER.error("Stopping seeding. Invalid request URI during seeding: " + uriString);
-            return false;
-          }
+          URI uri =
+              URI.create(
+                  String.format(
+                      "%s/%s/collections/%s/tiles/%s/%s/%s/%s",
+                      servicesUri,
+                      apiData.getId(),
+                      collectionId,
+                      tileMatrixSet.getId(),
+                      level,
+                      row,
+                      col));
 
-          URICustomizer uriCustomizer = new URICustomizer(uri);
           ApiRequestContext requestContext =
               new ImmutableRequestContext.Builder()
                   .api(api)
@@ -304,24 +271,32 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
                   .mediaType(outputFormat.getMediaType())
                   .build();
 
-          FeatureQuery query =
-              outputFormat.getQuery(
-                  tile, ImmutableList.of(), ImmutableMap.of(), tilesConfiguration, uriCustomizer);
+          TileQuery tileQuery =
+              ImmutableTileQuery.builder()
+                  .layer(collectionId)
+                  .mediaType(outputFormat.getMediaType().type())
+                  .tileMatrixSet(tileMatrixSet)
+                  .level(level)
+                  .row(row)
+                  .col(col)
+                  .build();
+          ImmutableTileQuery.Builder tileQueryBuilder =
+              ImmutableTileQuery.builder().from(tileQuery);
+          tileQueryBuilder
+              .generationParametersBuilder()
+              .clipBoundingBox(
+                  api1.getSpatialExtent(collectionId, tileQuery.getBoundingBox().getEpsgCrs()))
+              .propertyTransformations(
+                  api1.getData()
+                      .getCollectionData(collectionId)
+                      .flatMap(cd -> cd.getExtension(FeaturesCoreConfiguration.class))
+                      .map(
+                          pt ->
+                              pt.withSubstitutions(
+                                  FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
+                                      requestContext.getApiUri()))));
 
-          FeaturesCoreConfiguration coreConfiguration =
-              apiData.getExtension(FeaturesCoreConfiguration.class).get();
-
-          // skip collections without spatial queryable
-          if (coreConfiguration.getQueryables().isEmpty()
-              || coreConfiguration.getQueryables().get().getSpatial().isEmpty()) return true;
-
-          // TODO
-          /*QueryInputTile queryInput =
-          new ImmutableQueryInputTile.Builder()
-              .tile(tile)
-              .query(query)
-              .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
-              .build();*/
+          TileQuery tile = tileQueryBuilder.build();
 
           taskContext.setStatusMessage(
               String.format(
@@ -333,9 +308,9 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
                   col,
                   outputFormat.getExtension()));
 
-          try {
-            // TODO queryHandler.handle(TilesQueriesHandler.Query.TILE, queryInput, requestContext);
-          } catch (Throwable e) {
+          TileResult result = tileProvider.getTile(tile);
+
+          if (result.isError()) {
             LOGGER.warn(
                 "{}: processing failed -> {}, {}/{}/{}/{}, {} | {}",
                 getLabel(),
@@ -345,9 +320,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
                 row,
                 col,
                 outputFormat.getExtension(),
-                e.getMessage());
-            if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE))
-              LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
+                result.getError().get());
           }
 
           currentTile[0] += 1;
@@ -358,120 +331,44 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
   }
 
   private void seedMultiLayerTiles(
-      OgcApi api, List<TileFormatWithQuerySupportExtension> outputFormats, TaskContext taskContext)
+      OgcApi api, List<TileFormatExtension> outputFormats, TaskContext taskContext)
       throws IOException {
     OgcApiDataV2 apiData = api.getData();
-    // isEnabled checks that we have a feature provider
-    FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
-    Map<String, MinMax> multiLayerTilesSeeding = ImmutableMap.of();
-    Optional<TilesConfiguration> tilesConfiguration =
+    Map<String, MinMax> seedingConfig =
         apiData
             .getExtension(TilesConfiguration.class)
-            .filter(TilesConfiguration::isMultiCollectionEnabled);
+            .filter(TilesConfiguration::isMultiCollectionEnabled)
+            .map(TilesConfiguration::getEffectiveSeeding)
+            .orElse(Map.of());
 
-    if (tilesConfiguration.isPresent()) {
-      Map<String, MinMax> seedingConfig = tilesConfiguration.get().getEffectiveSeeding();
-      if (seedingConfig != null && !seedingConfig.isEmpty()) multiLayerTilesSeeding = seedingConfig;
-    }
-
-    List<TileFormatWithQuerySupportExtension> multiLayerFormats =
+    // TODO: isEnabled should check that we have a tile provider
+    // TODO: different tile provider per collection
+    TileProvider tileProvider = tilesProviders.getTileProviderOrThrow(apiData);
+    List<TileFormatExtension> seedingFormats =
         outputFormats.stream()
-            .filter(TileFormatWithQuerySupportExtension::canMultiLayer)
+            .filter(format -> tileProvider.generator().supports(format.getMediaType().type()))
             .collect(Collectors.toList());
 
-    long numberOfTiles =
-        getNumberOfTiles(api, multiLayerFormats, multiLayerTilesSeeding, taskContext);
+    long numberOfTiles = getNumberOfTiles(api, seedingFormats, seedingConfig, taskContext);
     final double[] currentTile = {0.0};
 
     walkTiles(
         api,
-        "multi-layer",
-        multiLayerFormats,
-        multiLayerTilesSeeding,
+        DATASET_TILES,
+        seedingFormats,
+        seedingConfig,
         taskContext,
         (api1, layerName, outputFormat, tileMatrixSet, level, row, col) -> {
-          List<String> collectionIds =
-              apiData.getCollections().values().stream()
-                  .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
-                  // skip collections without spatial queryable
-                  .filter(
-                      collection -> {
-                        Optional<FeaturesCoreConfiguration> featuresConfiguration =
-                            collection.getExtension(FeaturesCoreConfiguration.class);
-                        return featuresConfiguration.isPresent()
-                            && featuresConfiguration.get().getQueryables().isPresent()
-                            && !featuresConfiguration
-                                .get()
-                                .getQueryables()
-                                .get()
-                                .getSpatial()
-                                .isEmpty();
-                      })
-                  .filter(
-                      collection -> {
-                        Optional<TilesConfiguration> layerConfiguration =
-                            collection.getExtension(TilesConfiguration.class);
-                        if (layerConfiguration.isEmpty()
-                            || !layerConfiguration.get().isEnabled()
-                            || !layerConfiguration.get().isMultiCollectionEnabled()) return false;
-                        MinMax levels =
-                            layerConfiguration
-                                .get()
-                                .getZoomLevelsDerived()
-                                .get(tileMatrixSet.getId());
-                        return !Objects.nonNull(levels)
-                            || (levels.getMax() >= level && levels.getMin() <= level);
-                      })
-                  .map(FeatureTypeConfiguration::getId)
-                  .collect(Collectors.toList());
-
-          if (collectionIds.isEmpty()) {
-            // nothing to generate, still advance progress
-            currentTile[0] += 1;
+          // skip collections without layer
+          if (!tileProvider.getData().getLayers().containsKey(DATASET_TILES)) {
             return true;
           }
 
-          Tile multiLayerTile =
-              new ImmutableTile.Builder()
-                  .collectionIds(collectionIds)
-                  .tileMatrixSet(tileMatrixSet)
-                  .tileLevel(level)
-                  .tileRow(row)
-                  .tileCol(col)
-                  .api(api)
-                  .apiData(apiData)
-                  .temporary(false)
-                  .isDatasetTile(true)
-                  .featureProvider(featureProvider)
-                  .outputFormat(outputFormat)
-                  .build();
-          try {
-            if (tileCache.tileExists(multiLayerTile)) {
-              // already there, nothing to create, but still count for progress
-              currentTile[0] += 1;
-              return true;
-            }
-          } catch (Exception e) {
-            LOGGER.warn(
-                "Failed to retrieve multi-collection tile {}/{}/{}/{} from the cache. Reason: {}",
-                multiLayerTile.getTileMatrixSet().getId(),
-                multiLayerTile.getTileLevel(),
-                multiLayerTile.getTileRow(),
-                multiLayerTile.getTileCol(),
-                e.getMessage());
-          }
-
-          URI uri;
-          String uriString =
-              String.format(
-                  "%s/%s/tiles/%s/%s/%s/%s",
-                  servicesUri, apiData.getId(), tileMatrixSet.getId(), level, row, col);
-          try {
-            uri = new URI(uriString);
-          } catch (URISyntaxException e) {
-            LOGGER.error("Stopping seeding. Invalid request URI during seeding: " + uriString);
-            return false;
-          }
+          URI uri =
+              URI.create(
+                  String.format(
+                      "%s/%s/tiles/%s/%s/%s/%s",
+                      servicesUri, apiData.getId(), tileMatrixSet.getId(), level, row, col));
 
           ApiRequestContext requestContext =
               new ImmutableRequestContext.Builder()
@@ -480,85 +377,39 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
                   .mediaType(outputFormat.getMediaType())
                   .build();
 
-          Map<String, Tile> singleLayerTileMap =
-              collectionIds.stream()
-                  .collect(
-                      ImmutableMap.toImmutableMap(
-                          collectionId -> collectionId,
-                          collectionId ->
-                              new ImmutableTile.Builder()
-                                  .from(multiLayerTile)
-                                  .collectionIds(ImmutableList.of(collectionId))
-                                  .isDatasetTile(false)
-                                  .build()));
+          TileQuery tileQuery =
+              ImmutableTileQuery.builder()
+                  .layer(layerName)
+                  .mediaType(outputFormat.getMediaType().type())
+                  .tileMatrixSet(tileMatrixSet)
+                  .level(level)
+                  .row(row)
+                  .col(col)
+                  .build();
+          ImmutableTileQuery.Builder tileQueryBuilder =
+              ImmutableTileQuery.builder().from(tileQuery);
+          tileQueryBuilder
+              .generationParametersBuilder()
+              .clipBoundingBox(api1.getSpatialExtent(tileQuery.getBoundingBox().getEpsgCrs()))
+              .propertyTransformations(
+                  api1.getData()
+                      .getExtension(FeaturesCoreConfiguration.class)
+                      .map(
+                          pt ->
+                              pt.withSubstitutions(
+                                  FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
+                                      requestContext.getApiUri()))));
 
-          Map<String, FeatureQuery> queryMap =
-              collectionIds.stream()
-                  .collect(
-                      ImmutableMap.toImmutableMap(
-                          collectionId -> collectionId,
-                          collectionId -> {
-                            String featureTypeId =
-                                apiData
-                                    .getCollections()
-                                    .get(collectionId)
-                                    .getExtension(FeaturesCoreConfiguration.class)
-                                    .map(cfg -> cfg.getFeatureType().orElse(collectionId))
-                                    .orElse(collectionId);
-                            List<OgcApiQueryParameter> allowedParameters =
-                                extensionRegistry
-                                    .getExtensionsForType(OgcApiQueryParameter.class)
-                                    .stream()
-                                    .filter(
-                                        param ->
-                                            param.isApplicable(
-                                                apiData,
-                                                "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
-                                                collectionId,
-                                                HttpMethods.GET))
-                                    .sorted(Comparator.comparing(ParameterExtension::getName))
-                                    .collect(ImmutableList.toImmutableList());
-                            TilesConfiguration layerConfiguration =
-                                apiData
-                                    .getCollections()
-                                    .get(collectionId)
-                                    .getExtension(TilesConfiguration.class)
-                                    .orElse(tilesConfiguration.get());
-                            FeatureQuery query =
-                                outputFormat.getQuery(
-                                    singleLayerTileMap.get(collectionId),
-                                    allowedParameters,
-                                    ImmutableMap.of(),
-                                    layerConfiguration,
-                                    requestContext.getUriCustomizer());
-                            return ImmutableFeatureQuery.builder()
-                                .from(query)
-                                .type(featureTypeId)
-                                .build();
-                          }));
-
-          FeaturesCoreConfiguration coreConfiguration =
-              apiData.getExtension(FeaturesCoreConfiguration.class).get();
-
-          // TODO
-          /*TilesQueriesHandler.QueryInputTileMultiLayer queryInput =
-          new ImmutableQueryInputTileMultiLayer.Builder()
-              .tile(multiLayerTile)
-              .singleLayerTileMap(singleLayerTileMap)
-              .queryMap(queryMap)
-              .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
-              .build();*/
+          TileQuery tile = tileQueryBuilder.build();
 
           taskContext.setStatusMessage(
               String.format(
                   "currently processing -> %s, %s/%s/%s/%s, %s",
                   layerName, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension()));
 
-          // TODO
-          try {
-            // queryHandler.handle(
-            //    TilesQueriesHandler.Query.MULTI_LAYER_TILE, queryInput, requestContext);
-          } catch (Throwable e) {
+          TileResult result = tileProvider.getTile(tile);
+
+          if (result.isError()) {
             LOGGER.warn(
                 "{}: processing failed -> {}, {}/{}/{}/{}, {} | {}",
                 getLabel(),
@@ -568,9 +419,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
                 row,
                 col,
                 outputFormat.getExtension(),
-                e.getMessage());
-            if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE))
-              LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
+                result.getError().get());
           }
 
           currentTile[0] += 1;
@@ -605,7 +454,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
 
   private long getNumberOfTiles2(
       OgcApi api,
-      List<TileFormatWithQuerySupportExtension> outputFormats,
+      List<TileFormatExtension> outputFormats,
       Map<String, Map<String, MinMax>> seeding,
       TaskContext taskContext) {
     final long[] numberOfTiles = {0};
@@ -629,7 +478,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
 
   private long getNumberOfTiles(
       OgcApi api,
-      List<TileFormatWithQuerySupportExtension> outputFormats,
+      List<TileFormatExtension> outputFormats,
       Map<String, MinMax> seeding,
       TaskContext taskContext) {
     final long[] numberOfTiles = {0};
@@ -656,7 +505,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
     boolean visit(
         OgcApi api,
         String collectionId,
-        TileFormatWithQuerySupportExtension outputFormat,
+        TileFormatExtension outputFormat,
         TileMatrixSet tileMatrixSet,
         int level,
         int row,
@@ -666,7 +515,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
 
   private void walkCollectionsAndTiles(
       OgcApi api,
-      List<TileFormatWithQuerySupportExtension> outputFormats,
+      List<TileFormatExtension> outputFormats,
       Map<String, Map<String, MinMax>> seeding,
       TaskContext taskContext,
       TileWalker tileWalker)
@@ -685,12 +534,12 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
   private void walkTiles(
       OgcApi api,
       String collectionId,
-      List<TileFormatWithQuerySupportExtension> outputFormats,
+      List<TileFormatExtension> outputFormats,
       Map<String, MinMax> seeding,
       TaskContext taskContext,
       TileWalker tileWalker)
       throws IOException {
-    for (TileFormatWithQuerySupportExtension outputFormat : outputFormats) {
+    for (TileFormatExtension outputFormat : outputFormats) {
       for (Map.Entry<String, MinMax> entry : seeding.entrySet()) {
         TileMatrixSet tileMatrixSet = getTileMatrixSetById(entry.getKey());
         MinMax zoomLevels = entry.getValue();

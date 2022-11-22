@@ -12,6 +12,9 @@ import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 public interface TileProvider extends PersistentEntity {
 
   @Override
+  TileProviderData getData();
+
+  @Override
   default String getType() {
     return TileProviderData.ENTITY_TYPE;
   }

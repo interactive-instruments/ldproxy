@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import de.ii.xtraplatform.store.domain.entities.EntityData;
+import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
 
@@ -54,6 +55,8 @@ public interface TileProviderData extends EntityData {
     return Optional.of(
         String.format("%s/%s", getProviderType(), getTileProviderType()).toLowerCase());
   }
+
+  Map<String, ? extends LayerOptionsCommon> getLayers();
 
   TileProviderData mergeInto(TileProviderData tileProvider);
 }

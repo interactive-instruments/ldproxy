@@ -7,9 +7,14 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Range;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData.Builder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import org.immutables.value.Value;
@@ -47,7 +52,23 @@ public interface TileProviderFeaturesData extends TileProviderData, WithCaches {
   }
 
   // TODO: Buildable, merge defaults into layers
+  @Override
   Map<String, LayerOptionsFeatures> getLayers();
+
+  @JsonIgnore
+  @Value.Lazy
+  default Map<String, Map<String, Range<Integer>>> getTmsRanges() {
+    return getLayers().entrySet().stream()
+        .map(
+            entry -> {
+              LinkedHashMap<String, Range<Integer>> ranges =
+                  new LinkedHashMap<>(getLayerDefaults().getTmsRanges());
+              ranges.putAll(entry.getValue().getTmsRanges());
+
+              return new SimpleImmutableEntry<>(entry.getKey(), ranges);
+            })
+        .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
 
   @Override
   default TileProviderData mergeInto(TileProviderData source) {

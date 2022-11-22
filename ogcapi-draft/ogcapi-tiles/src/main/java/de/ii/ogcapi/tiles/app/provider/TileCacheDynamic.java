@@ -165,17 +165,19 @@ public class TileCacheDynamic implements ChainedTileProvider {
 
   private final TileStore tileStore;
   private final ChainedTileProvider delegate;
-  private final Map<String, Range<Integer>> tmsRanges;
+  private final Map<String, Map<String, Range<Integer>>> tmsRanges;
 
   public TileCacheDynamic(
-      TileStore tileStore, ChainedTileProvider delegate, Map<String, Range<Integer>> tmsRanges) {
+      TileStore tileStore,
+      ChainedTileProvider delegate,
+      Map<String, Map<String, Range<Integer>>> tmsRanges) {
     this.tileStore = tileStore;
     this.delegate = delegate;
     this.tmsRanges = tmsRanges;
   }
 
   @Override
-  public Map<String, Range<Integer>> getTmsRanges() {
+  public Map<String, Map<String, Range<Integer>>> getTmsRanges() {
     return tmsRanges;
   }
 

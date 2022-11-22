@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 public interface ChainedTileProvider {
   Logger LOGGER = LoggerFactory.getLogger(ChainedTileProvider.class);
 
-  Map<String, Range<Integer>> getTmsRanges();
+  Map<String, Map<String, Range<Integer>>> getTmsRanges();
 
   TileResult getTile(TileQuery tile) throws IOException;
 
@@ -76,7 +76,11 @@ public interface ChainedTileProvider {
   }
 
   default boolean canProvide(TileQuery tile) {
-    return getTmsRanges().containsKey(tile.getTileMatrixSet().getId())
-        && getTmsRanges().get(tile.getTileMatrixSet().getId()).contains(tile.getLevel());
+    return getTmsRanges().containsKey(tile.getLayer())
+        && getTmsRanges().get(tile.getLayer()).containsKey(tile.getTileMatrixSet().getId())
+        && getTmsRanges()
+            .get(tile.getLayer())
+            .get(tile.getTileMatrixSet().getId())
+            .contains(tile.getLevel());
   }
 }

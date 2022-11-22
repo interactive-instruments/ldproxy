@@ -44,6 +44,7 @@ import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationParametersTransient;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
@@ -95,6 +96,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
   private final TileCache tileCache;
   private final StaticTileProviderStore staticTileProviderStore;
   private final FeaturesCoreProviders providers;
+  private final TilesProviders tilesProviders;
   private final TileMatrixSetRepository tileMatrixSetRepository;
   // TODO
   private final FeaturesQuery featuresQuery;
@@ -109,6 +111,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       TileCache tileCache,
       StaticTileProviderStore staticTileProviderStore,
       FeaturesCoreProviders providers,
+      TilesProviders tilesProviders,
       TileMatrixSetRepository tileMatrixSetRepository,
       FeaturesQuery featuresQuery) {
     this.i18n = i18n;
@@ -119,6 +122,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     this.tileCache = tileCache;
     this.staticTileProviderStore = staticTileProviderStore;
     this.providers = providers;
+    this.tilesProviders = tilesProviders;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
     this.featuresQuery = featuresQuery;
 
@@ -355,15 +359,12 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
   }
 
   private Response getTileResponse(QueryInputTile queryInput, ApiRequestContext requestContext) {
-    // TODO: from cfg
-    String tileProviderId = String.format("%s-tiles", requestContext.getApi().getId());
     TileProvider tileProvider =
-        entityRegistry
-            .getEntity(TileProvider.class, tileProviderId)
-            .orElseThrow(
-                () ->
-                    new IllegalStateException(
-                        String.format("Tile provider with id '%s' not found.", tileProviderId)));
+        tilesProviders.getTileProviderOrThrow(
+            requestContext.getApi().getData(),
+            queryInput
+                .getCollectionId()
+                .flatMap(id -> requestContext.getApi().getData().getCollectionData(id)));
 
     TileQuery tileQuery = getTileQuery(queryInput, requestContext, tileProvider);
 

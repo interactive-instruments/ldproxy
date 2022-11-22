@@ -85,7 +85,8 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
           FileStoreFs fileStore = new FileStoreFs(cacheDir);
           TileStoreFiles tileStore = new TileStoreFiles(fileStore);
           tileStores.add(tileStore);
-          current = new TileCacheDynamic(tileStore, current, cache.getTmsRanges());
+          // TODO: cacheLevels
+          current = new TileCacheDynamic(tileStore, current, data.getTmsRanges());
         }
       }
     }
@@ -100,7 +101,8 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
 
       if (cache.getType() == Type.DYNAMIC) {
         if (cache.getStorage() == Storage.FILES) {
-          current = new TileCacheDynamic(tileStores.get(i), current, cache.getTmsRanges());
+          // TODO: cacheLevels
+          current = new TileCacheDynamic(tileStores.get(i), current, data.getTmsRanges());
         }
       }
     }
