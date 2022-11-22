@@ -13,7 +13,7 @@ import java.util.OptionalInt;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public interface TileGenerationUserParameters {
+public interface TileGenerationParametersTransient {
 
   OptionalInt getLimit();
 

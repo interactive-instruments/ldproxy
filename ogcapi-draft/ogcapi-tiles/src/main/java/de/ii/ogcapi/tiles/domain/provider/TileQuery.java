@@ -7,20 +7,25 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
-import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.util.Optional;
 import javax.ws.rs.core.MediaType;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Style(deepImmutablesDetection = true)
+@Value.Style(deepImmutablesDetection = true, attributeBuilderDetection = true)
 public interface TileQuery extends TileCoordinates {
   String getLayer();
 
   MediaType getMediaType();
 
-  Optional<BoundingBox> getLimitsForGeneration();
+  Optional<TileGenerationParameters> getGenerationParameters();
 
   // TODO: is there really a practical use case for these or should we drop them altogether?
-  Optional<TileGenerationUserParameters> getUserParametersForGeneration();
+  Optional<TileGenerationParametersTransient> getGenerationParametersTransient();
+
+  @Value.Derived
+  default boolean isTransient() {
+    return getGenerationParametersTransient().isPresent()
+        && !getGenerationParametersTransient().get().isEmpty();
+  }
 }

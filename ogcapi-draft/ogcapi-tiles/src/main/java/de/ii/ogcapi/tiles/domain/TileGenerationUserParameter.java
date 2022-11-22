@@ -9,7 +9,7 @@ package de.ii.ogcapi.tiles.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationUserParameters;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationParametersTransient;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import java.util.Optional;
 
@@ -17,7 +17,7 @@ import java.util.Optional;
 public interface TileGenerationUserParameter {
 
   void applyTo(
-      ImmutableTileGenerationUserParameters.Builder userParametersBuilder,
+      ImmutableTileGenerationParametersTransient.Builder userParametersBuilder,
       QueryParameterSet parameters,
       Optional<TileGenerationSchema> generationSchema);
 }

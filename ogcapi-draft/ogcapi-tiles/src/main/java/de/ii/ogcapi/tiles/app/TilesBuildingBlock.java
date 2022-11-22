@@ -570,10 +570,6 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
   }
 
   private Optional<TileProviderFeaturesData> getTileProviderData(OgcApiDataV2 apiData) {
-    if (!Objects.equals(apiData.getId(), "bergbau")) {
-      return Optional.empty();
-    }
-
     Optional<FeaturesCoreConfiguration> featuresCore =
         apiData.getExtension(FeaturesCoreConfiguration.class);
 
@@ -610,9 +606,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                             .featureProvider(
                                 featuresCore.flatMap(FeaturesCoreConfiguration::getFeatureProvider))
                             .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
-                            .putAllTransformations(
-                                tilesConfiguration
-                                    .getRulesDerived()) // TODO: are there default rules?
+                            .putAllTransformations(tilesConfiguration.getRulesDerived())
                             .featureLimit(tilesConfiguration.getLimitDerived())
                             .minimumSizeInPixel(tilesConfiguration.getMinimumSizeInPixelDerived())
                             .ignoreInvalidGeometries(

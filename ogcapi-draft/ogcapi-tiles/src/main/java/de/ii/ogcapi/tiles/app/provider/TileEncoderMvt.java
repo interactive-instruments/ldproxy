@@ -12,7 +12,7 @@ import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
 import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures;
 import de.ii.ogcapi.tiles.domain.provider.TileEncoder;
-import de.ii.ogcapi.tiles.domain.provider.TileGenerationUserParameters;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationParametersTransient;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
@@ -41,7 +41,7 @@ public class TileEncoderMvt implements TileEncoder {
       throws IOException {
     LayerOptionsFeatures combinedLayer = data.getLayers().get(tile.getLayer());
     List<String> subLayers =
-        getSubLayers(data, combinedLayer, tile.getUserParametersForGeneration());
+        getSubLayers(data, combinedLayer, tile.getGenerationParametersTransient());
     VectorTileEncoder encoder = new VectorTileEncoder(tile.getTileMatrixSet().getTileExtent());
     VectorTileDecoder decoder = new VectorTileDecoder();
 
@@ -72,7 +72,7 @@ public class TileEncoderMvt implements TileEncoder {
   private List<String> getSubLayers(
       TileProviderFeaturesData data,
       LayerOptionsFeatures combinedLayer,
-      Optional<TileGenerationUserParameters> userParameters) {
+      Optional<TileGenerationParametersTransient> userParameters) {
     return combinedLayer.getCombine().stream()
         .flatMap(
             layer -> {

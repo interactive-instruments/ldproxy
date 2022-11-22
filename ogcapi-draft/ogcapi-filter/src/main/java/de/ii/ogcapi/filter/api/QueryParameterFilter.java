@@ -24,7 +24,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationUserParameters;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationParametersTransient;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql.Format;
@@ -244,7 +244,7 @@ public class QueryParameterFilter extends ApiExtensionCache
 
   @Override
   public void applyTo(
-      ImmutableTileGenerationUserParameters.Builder userParametersBuilder,
+      ImmutableTileGenerationParametersTransient.Builder userParametersBuilder,
       QueryParameterSet parameters,
       Optional<TileGenerationSchema> generationSchema) {
     if (parameters.getValues().containsKey(getName()) && generationSchema.isPresent()) {

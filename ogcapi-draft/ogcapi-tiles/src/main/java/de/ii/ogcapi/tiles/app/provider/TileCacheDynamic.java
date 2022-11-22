@@ -157,9 +157,9 @@ public class TileCacheDynamic implements ChainedTileProvider {
       return Path.of(
           tile.getLayer(),
           tile.getTileMatrixSet().getId(),
-          String.valueOf(tile.getTileLevel()),
-          String.valueOf(tile.getTileRow()),
-          String.format("%d.%s", tile.getTileCol(), EXTENSIONS.get(tile.getMediaType())));
+          String.valueOf(tile.getLevel()),
+          String.valueOf(tile.getRow()),
+          String.format("%d.%s", tile.getCol(), EXTENSIONS.get(tile.getMediaType())));
     }
   }
 
@@ -205,6 +205,6 @@ public class TileCacheDynamic implements ChainedTileProvider {
   }
 
   private boolean shouldCache(TileQuery tileQuery) {
-    return tileQuery.getUserParametersForGeneration().isEmpty();
+    return !tileQuery.isTransient();
   }
 }

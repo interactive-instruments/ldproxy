@@ -19,15 +19,15 @@ import org.immutables.value.Value;
 public interface TileCoordinates {
   TileMatrixSet getTileMatrixSet();
 
-  int getTileLevel();
+  int getLevel();
 
-  int getTileRow();
+  int getRow();
 
-  int getTileCol();
+  int getCol();
 
   @Value.Lazy
   default BoundingBox getBoundingBox() {
-    return getTileMatrixSet().getTileBoundingBox(getTileLevel(), getTileCol(), getTileRow());
+    return getTileMatrixSet().getTileBoundingBox(getLevel(), getCol(), getRow());
   }
 
   default BoundingBox getBoundingBox(EpsgCrs crs, CrsTransformerFactory crsTransformerFactory)

@@ -19,7 +19,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationUserParameters;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationParametersTransient;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.xtraplatform.cql.domain.Interval;
 import de.ii.xtraplatform.cql.domain.Property;
@@ -85,7 +85,7 @@ public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
 
   @Override
   public void applyTo(
-      ImmutableTileGenerationUserParameters.Builder userParametersBuilder,
+      ImmutableTileGenerationParametersTransient.Builder userParametersBuilder,
       QueryParameterSet parameters,
       Optional<TileGenerationSchema> generationSchema) {
     parameters

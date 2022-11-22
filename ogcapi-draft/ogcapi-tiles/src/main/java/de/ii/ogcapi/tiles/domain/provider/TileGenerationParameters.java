@@ -7,26 +7,20 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
-import java.util.List;
-import java.util.Map;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import java.util.Optional;
 import org.immutables.value.Value;
 
+@Value.Immutable
 public interface TileGenerationParameters {
 
-  @Value.Default
-  default int getFeatureLimit() {
-    return 100000;
-  }
+  Optional<BoundingBox> getClipBoundingBox();
 
-  @Value.Default
-  default double getMinimumSizeInPixel() {
-    return 0.5;
-  }
+  Optional<PropertyTransformations> getPropertyTransformations();
 
-  @Value.Default
-  default boolean getIgnoreInvalidGeometries() {
-    return false;
+  @Value.Derived
+  default boolean isEmpty() {
+    return getClipBoundingBox().isEmpty() && getPropertyTransformations().isEmpty();
   }
-
-  Map<String, List<LevelTransformation>> getTransformations();
 }

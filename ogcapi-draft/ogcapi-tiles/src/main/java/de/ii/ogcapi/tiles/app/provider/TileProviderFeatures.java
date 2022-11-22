@@ -13,6 +13,7 @@ import static de.ii.ogcapi.tiles.app.provider.TileCacheImpl.TILES_DIR_NAME;
 import com.google.common.collect.Range;
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.FileStoreFs;
 import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.TileStore;
 import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.TileStoreFiles;
@@ -21,6 +22,7 @@ import de.ii.ogcapi.tiles.domain.provider.Cache.Storage;
 import de.ii.ogcapi.tiles.domain.provider.Cache.Type;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
 import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerator;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
@@ -28,6 +30,7 @@ import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.cql.domain.Cql;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.store.domain.entities.AbstractPersistentEntity;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -71,7 +74,11 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
 
     for (int i = 0; i < data.getCaches().size(); i++) {
       Cache cache = data.getCaches().get(i);
-      Path cacheDir = cacheRootDir.resolve(String.format("cache_%d", i));
+      // TODO: stay backwards compatible? or move to new dir?
+      Path cacheDir =
+          data.getCaches().size() == 1
+              ? cacheRootDir
+              : cacheRootDir.resolve(String.format("cache_%d", i));
 
       if (cache.getType() == Type.DYNAMIC) {
         if (cache.getStorage() == Storage.FILES) {
@@ -153,12 +160,22 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
                   "Tile matrix set '%s' is not supported.", tile.getTileMatrixSet().getId())));
     }
 
-    if (!tmsRanges.get(tile.getTileMatrixSet().getId()).contains(tile.getTileLevel())) {
+    if (!tmsRanges.get(tile.getTileMatrixSet().getId()).contains(tile.getLevel())) {
       return Optional.of(
           TileResult.error("The requested tile is outside the zoom levels for this tile set."));
     }
 
-    // TODO: out of bounds, LimitsGenerator
+    BoundingBox boundingBox =
+        tile.getGenerationParameters()
+            .flatMap(TileGenerationParameters::getClipBoundingBox)
+            .orElse(tile.getTileMatrixSet().getBoundingBox());
+    TileMatrixSetLimits limits = tile.getTileMatrixSet().getLimits(tile.getLevel(), boundingBox);
+
+    if (!limits.contains(tile.getRow(), tile.getCol())) {
+      return Optional.of(
+          TileResult.error(
+              "The requested tile is outside of the limits for this zoom level and tile set."));
+    }
 
     return Optional.empty();
   }

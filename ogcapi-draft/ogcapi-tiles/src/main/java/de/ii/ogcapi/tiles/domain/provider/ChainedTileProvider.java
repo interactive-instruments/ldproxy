@@ -31,9 +31,9 @@ public interface ChainedTileProvider {
         LOGGER.warn(
             "Failed to retrieve tile {}/{}/{}/{} for layer '{}'. Reason: {}",
             tile.getTileMatrixSet().getId(),
-            tile.getTileLevel(),
-            tile.getTileRow(),
-            tile.getTileCol(),
+            tile.getLevel(),
+            tile.getRow(),
+            tile.getCol(),
             tile.getLayer(),
             e.getMessage());
       }
@@ -52,9 +52,9 @@ public interface ChainedTileProvider {
         LOGGER.warn(
             "Failed to retrieve tile {}/{}/{}/{} for layer '{}'. Reason: {}",
             tile.getTileMatrixSet().getId(),
-            tile.getTileLevel(),
-            tile.getTileRow(),
-            tile.getTileCol(),
+            tile.getLevel(),
+            tile.getRow(),
+            tile.getCol(),
             tile.getLayer(),
             e.getMessage());
       }
@@ -77,6 +77,6 @@ public interface ChainedTileProvider {
 
   default boolean canProvide(TileQuery tile) {
     return getTmsRanges().containsKey(tile.getTileMatrixSet().getId())
-        && getTmsRanges().get(tile.getTileMatrixSet().getId()).contains(tile.getTileLevel());
+        && getTmsRanges().get(tile.getTileMatrixSet().getId()).contains(tile.getLevel());
   }
 }

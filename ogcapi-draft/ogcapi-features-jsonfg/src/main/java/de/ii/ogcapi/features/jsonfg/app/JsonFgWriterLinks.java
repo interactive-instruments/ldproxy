@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.jsonfg.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
@@ -88,7 +89,8 @@ public class JsonFgWriterLinks implements GeoJsonWriter {
               .filter(Objects::nonNull)
               .collect(ImmutableList.toImmutableList());
       currentMap.clear();
-      currentMap.put("serviceUrl", context.encoding().getServiceUrl());
+      currentMap.putAll(
+          FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(context.encoding().getServiceUrl()));
     }
 
     // next chain for extensions

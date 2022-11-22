@@ -264,9 +264,9 @@ public interface EndpointTileMixin {
         .collectionId(collectionId)
         .outputFormat(outputFormat)
         .tileMatrixSet(tileMatrixSet)
-        .tileLevel(level)
-        .tileRow(row)
-        .tileCol(col)
+        .level(level)
+        .row(row)
+        .col(col)
         .parameters(
             QueryParameterSet.of(parameterDefinitions, parameterValues)
                 .evaluate(apiData, collectionData))

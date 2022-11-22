@@ -9,6 +9,7 @@ package de.ii.ogcapi.tiles.app.provider;
 
 import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
@@ -18,8 +19,9 @@ import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures;
 import de.ii.ogcapi.tiles.domain.provider.LevelTransformation;
 import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationContext;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationParameters;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationParametersTransient;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
-import de.ii.ogcapi.tiles.domain.provider.TileGenerationUserParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerator;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
@@ -43,6 +45,7 @@ import de.ii.xtraplatform.features.domain.FeatureStream.ResultReduced;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
@@ -66,6 +69,14 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
   private static final Map<
           MediaType, Function<TileGenerationContext, ? extends FeatureTokenEncoder<?>>>
       ENCODERS = ImmutableMap.of(FeatureEncoderMVT.FORMAT, FeatureEncoderMVT::new);
+  private static final Map<MediaType, PropertyTransformations> TRANSFORMATIONS =
+      ImmutableMap.of(
+          FeatureEncoderMVT.FORMAT,
+          () ->
+              ImmutableMap.of(
+                  PropertyTransformations.WILDCARD,
+                  ImmutableList.of(
+                      new ImmutablePropertyTransformation.Builder().flatten(".").build())));
   private static final double BUFFER_DEGREE = 0.00001;
   private static final double BUFFER_METRE = 10.0;
 
@@ -126,7 +137,17 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
     FeatureTokenEncoder<?> encoder =
         ENCODERS.get(tileQuery.getMediaType()).apply(tileGenerationContext);
 
-    ResultReduced<byte[]> resultReduced = generateTile(tileSource, encoder, tileQuery, Map.of());
+    LayerOptionsFeatures layer = data.getLayers().get(tileQuery.getLayer());
+    String featureType = layer.getFeatureType().orElse(layer.getId());
+    PropertyTransformations propertyTransformations =
+        tileQuery
+            .getGenerationParameters()
+            .flatMap(TileGenerationParameters::getPropertyTransformations)
+            .map(pt -> pt.mergeInto(TRANSFORMATIONS.get(tileQuery.getMediaType())))
+            .orElse(TRANSFORMATIONS.get(tileQuery.getMediaType()));
+
+    ResultReduced<byte[]> resultReduced =
+        generateTile(tileSource, encoder, tileQuery, Map.of(featureType, propertyTransformations));
 
     return resultReduced.reduced();
   }
@@ -163,8 +184,10 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
             layer,
             types,
             nativeCrs,
-            tileQuery.getLimitsForGeneration(),
-            tileQuery.getUserParametersForGeneration());
+            tileQuery
+                .getGenerationParameters()
+                .flatMap(TileGenerationParameters::getClipBoundingBox),
+            tileQuery.getGenerationParametersTransient());
 
     return featureProvider.queries().getFeatureStream(featureQuery);
   }
@@ -193,9 +216,9 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
               e,
               msg,
               tile.getTileMatrixSet().getId(),
-              tile.getTileLevel(),
-              tile.getTileRow(),
-              tile.getTileCol(),
+              tile.getLevel(),
+              tile.getRow(),
+              tile.getCol(),
               "TODO",
               "TODO");
         }
@@ -262,7 +285,7 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
       Map<String, FeatureSchema> featureTypes,
       EpsgCrs nativeCrs,
       Optional<BoundingBox> bounds,
-      Optional<TileGenerationUserParameters> userParameters) {
+      Optional<TileGenerationParametersTransient> userParameters) {
     String featureType = layer.getFeatureType().orElse(layer.getId());
     // TODO: from TilesProviders with orThrow
     FeatureSchema featureSchema = featureTypes.get(featureType);
@@ -277,7 +300,7 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
 
     if (layer.getFilters().containsKey(tile.getTileMatrixSet().getId())) {
       layer.getFilters().get(tile.getTileMatrixSet().getId()).stream()
-          .filter(levelFilter -> levelFilter.matches(tile.getTileLevel()))
+          .filter(levelFilter -> levelFilter.matches(tile.getLevel()))
           // TODO: parse and validate filter, preferably in hydration or provider startup
           .forEach(filter -> queryBuilder.addFilters(cql.read(filter.getFilter(), Format.TEXT)));
     }
@@ -299,7 +322,7 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
     if ((userParameters.isEmpty() || userParameters.get().getFields().isEmpty())
         && layer.getTransformations().containsKey(tile.getTileMatrixSet().getId())) {
       layer.getTransformations().get(tile.getTileMatrixSet().getId()).stream()
-          .filter(rule -> rule.matches(tile.getTileLevel()))
+          .filter(rule -> rule.matches(tile.getLevel()))
           .map(LevelTransformation::getProperties)
           .flatMap(Collection::stream)
           .forEach(queryBuilder::addFields);
@@ -311,7 +334,7 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
   public double getMaxAllowableOffset(TileCoordinates tile, EpsgCrs nativeCrs) {
     double maxAllowableOffsetTileMatrixSet =
         tile.getTileMatrixSet()
-            .getMaxAllowableOffset(tile.getTileLevel(), tile.getTileRow(), tile.getTileCol());
+            .getMaxAllowableOffset(tile.getLevel(), tile.getRow(), tile.getCol());
     Unit<?> tmsCrsUnit = crsInfo.getUnit(tile.getTileMatrixSet().getCrs());
     Unit<?> nativeCrsUnit = crsInfo.getUnit(nativeCrs);
     if (tmsCrsUnit.equals(nativeCrsUnit)) {

@@ -14,7 +14,7 @@ import de.ii.ogcapi.tiles.domain.MvtFeature;
 import de.ii.ogcapi.tiles.domain.provider.LevelTransformation;
 import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationContext;
-import de.ii.ogcapi.tiles.domain.provider.TileGenerationParameters;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationOptions;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.util.HashSet;
@@ -39,7 +39,7 @@ public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderMVT.class);
   public static final MediaType FORMAT = new MediaType("application", "vnd.mapbox-vector-tile");
 
-  private final TileGenerationParameters parameters;
+  private final TileGenerationOptions parameters;
   private final TileCoordinates tile;
   private final VectorTileEncoder tileEncoder;
   private final AffineTransformation affineTransformation;
@@ -85,8 +85,8 @@ public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
             ? rules.get(tile.getTileMatrixSet().getId()).stream()
                 .filter(
                     rule ->
-                        rule.getMax() >= tile.getTileLevel()
-                            && rule.getMin() <= tile.getTileLevel()
+                        rule.getMax() >= tile.getLevel()
+                            && rule.getMin() <= tile.getLevel()
                             && rule.getMerge().orElse(false))
                 .map(LevelTransformation::getGroupBy)
                 .findAny()
@@ -102,9 +102,9 @@ public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
           "Start generating tile for collection {}, tile {}/{}/{}/{}.",
           collectionId,
           tile.getTileMatrixSet().getId(),
-          tile.getTileLevel(),
-          tile.getTileRow(),
-          tile.getTileCol());
+          tile.getLevel(),
+          tile.getRow(),
+          tile.getCol());
     }
     this.processingStart = System.nanoTime();
   }
@@ -150,9 +150,9 @@ public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
             feature.getIdValue(),
             collectionId,
             tile.getTileMatrixSet().getId(),
-            tile.getTileLevel(),
-            tile.getTileRow(),
-            tile.getTileCol(),
+            tile.getLevel(),
+            tile.getRow(),
+            tile.getCol(),
             featureGeometry.get().getArea());
         if (parameters.getIgnoreInvalidGeometries()) {
           return;
@@ -182,9 +182,9 @@ public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
           "Error while processing feature {} in tile {}/{}/{}/{} in collection {}. The feature is skipped.",
           feature.getIdValue(),
           tile.getTileMatrixSet().getId(),
-          tile.getTileLevel(),
-          tile.getTileRow(),
-          tile.getTileCol(),
+          tile.getLevel(),
+          tile.getRow(),
+          tile.getCol(),
           collectionId);
       if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
         LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
@@ -208,9 +208,9 @@ public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
                   "Collection %s, tile %s/%d/%d/%d",
                   collectionId,
                   tile.getTileMatrixSet().getId(),
-                  tile.getTileLevel(),
-                  tile.getTileRow(),
-                  tile.getTileCol()));
+                  tile.getLevel(),
+                  tile.getRow(),
+                  tile.getCol()));
       merger
           .merge(mergeFeatures)
           .forEach(
@@ -222,9 +222,9 @@ public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
                       "A merged feature in collection {} has an invalid tile geometry in tile {}/{}/{}/{}. Properties: {}",
                       collectionId,
                       tile.getTileMatrixSet().getId(),
-                      tile.getTileLevel(),
-                      tile.getTileRow(),
-                      tile.getTileCol(),
+                      tile.getLevel(),
+                      tile.getRow(),
+                      tile.getCol(),
                       mergedFeature.getProperties());
                   if (parameters.getIgnoreInvalidGeometries()) return;
                 }
@@ -249,9 +249,9 @@ public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
               "Collection %s, tile %s/%d/%d/%d written. Features returned: %d, written: %d, total duration: %dms, processing: %dms, feature post-processing: %dms, average feature post-processing: %dms, merging: %dms, encoding: %dms, size: %dkB.",
               collectionId,
               tile.getTileMatrixSet().getId(),
-              tile.getTileLevel(),
-              tile.getTileRow(),
-              tile.getTileCol(),
+              tile.getLevel(),
+              tile.getRow(),
+              tile.getCol(),
               context.metadata().getNumberReturned().orElse(0),
               written,
               transformerDuration,

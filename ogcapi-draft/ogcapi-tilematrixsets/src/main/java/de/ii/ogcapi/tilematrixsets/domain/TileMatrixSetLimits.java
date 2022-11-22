@@ -26,6 +26,13 @@ public abstract class TileMatrixSetLimits {
 
   public abstract Integer getMaxTileCol();
 
+  public boolean contains(int row, int col) {
+    return getMaxTileCol() >= col
+        && getMinTileCol() <= col
+        && getMaxTileRow() >= row
+        && getMinTileRow() <= row;
+  }
+
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<TileMatrixSetLimits> FUNNEL =
       (from, into) -> {
