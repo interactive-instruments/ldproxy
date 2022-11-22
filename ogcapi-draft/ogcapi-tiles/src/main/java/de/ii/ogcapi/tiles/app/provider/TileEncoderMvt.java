@@ -7,41 +7,28 @@
  */
 package de.ii.ogcapi.tiles.app.provider;
 
-import com.google.common.collect.Range;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
 import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures;
 import de.ii.ogcapi.tiles.domain.provider.TileEncoder;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationUserParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import no.ecc.vectortile.VectorTileDecoder;
 import no.ecc.vectortile.VectorTileEncoder;
 
-public class TileEncoderMvt implements TileEncoder, ChainedTileProvider {
-  private final TileProviderFeaturesData data;
+public class TileEncoderMvt implements TileEncoder {
 
-  public TileEncoderMvt(TileProviderFeaturesData data) {
-    this.data = data;
-  }
-
-  @Override
-  public Map<String, Range<Integer>> getTmsRanges() {
-    // TODO: combination of defaults and all layers
-    return data.getLayerDefaults().getTmsRanges();
-  }
-
-  @Override
-  public boolean canProvide(TileQuery tile) {
-    return ChainedTileProvider.super.canProvide(tile)
-        && !data.getLayers().get(tile.getLayer()).getCombine().isEmpty();
-  }
-
-  @Override
-  public TileResult getTile(TileQuery tile) throws IOException {
-    return TileResult.found(combine(tile));
-  }
+  public TileEncoderMvt() {}
 
   @Override
   public byte[] empty(TileMatrixSet tms) {
@@ -49,11 +36,59 @@ public class TileEncoderMvt implements TileEncoder, ChainedTileProvider {
   }
 
   @Override
-  public byte[] combine(TileQuery tile) {
-    LayerOptionsFeatures layer = data.getLayers().get(tile.getLayer());
+  public byte[] combine(
+      TileQuery tile, TileProviderFeaturesData data, ChainedTileProvider tileProvider)
+      throws IOException {
+    LayerOptionsFeatures combinedLayer = data.getLayers().get(tile.getLayer());
+    List<String> subLayers =
+        getSubLayers(data, combinedLayer, tile.getUserParametersForGeneration());
+    VectorTileEncoder encoder = new VectorTileEncoder(tile.getTileMatrixSet().getTileExtent());
+    VectorTileDecoder decoder = new VectorTileDecoder();
 
-    // TODO: has to be above and beyond the cache at the same time
+    for (String subLayer : subLayers) {
+      TileQuery tileQuery = ImmutableTileQuery.builder().from(tile).layer(subLayer).build();
+      TileResult subTile = tileProvider.get(tileQuery);
 
-    return new byte[0];
+      if (subTile.isError()) {
+        // TODO
+      }
+
+      if (subTile.isAvailable()) {
+        decoder
+            .decode(subTile.getContent().get())
+            .forEach(
+                feature ->
+                    encoder.addFeature(
+                        feature.getLayerName(),
+                        feature.getAttributes(),
+                        feature.getGeometry(),
+                        feature.getId()));
+      }
+    }
+
+    return encoder.encode();
+  }
+
+  private List<String> getSubLayers(
+      TileProviderFeaturesData data,
+      LayerOptionsFeatures combinedLayer,
+      Optional<TileGenerationUserParameters> userParameters) {
+    return combinedLayer.getCombine().stream()
+        .flatMap(
+            layer -> {
+              if (Objects.equals(layer, LayerOptionsFeatures.COMBINE_ALL)) {
+                return data.getLayers().entrySet().stream()
+                    .filter(entry -> !entry.getValue().isCombined())
+                    .map(Entry::getKey);
+              }
+              return Stream.of(layer);
+            })
+        .filter(
+            layer ->
+                userParameters.isEmpty()
+                    || userParameters.get().getLayers().isEmpty()
+                    || userParameters.get().getLayers().contains(layer))
+        .distinct()
+        .collect(Collectors.toList());
   }
 }

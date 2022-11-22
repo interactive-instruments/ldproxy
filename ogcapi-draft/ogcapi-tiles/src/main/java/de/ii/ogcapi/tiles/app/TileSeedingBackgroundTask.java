@@ -29,8 +29,6 @@ import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
-import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileMultiLayer;
-import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSingleLayer;
 import de.ii.ogcapi.tiles.domain.ImmutableTile;
 import de.ii.ogcapi.tiles.domain.SeedingOptions;
 import de.ii.ogcapi.tiles.domain.Tile;
@@ -317,12 +315,13 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
           if (coreConfiguration.getQueryables().isEmpty()
               || coreConfiguration.getQueryables().get().getSpatial().isEmpty()) return true;
 
-          TilesQueriesHandler.QueryInputTileSingleLayer queryInput =
-              new ImmutableQueryInputTileSingleLayer.Builder()
-                  .tile(tile)
-                  .query(query)
-                  .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
-                  .build();
+          // TODO
+          /*QueryInputTile queryInput =
+          new ImmutableQueryInputTile.Builder()
+              .tile(tile)
+              .query(query)
+              .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
+              .build();*/
 
           taskContext.setStatusMessage(
               String.format(
@@ -335,7 +334,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
                   outputFormat.getExtension()));
 
           try {
-            queryHandler.handle(TilesQueriesHandler.Query.TILE, queryInput, requestContext);
+            // TODO queryHandler.handle(TilesQueriesHandler.Query.TILE, queryInput, requestContext);
           } catch (Throwable e) {
             LOGGER.warn(
                 "{}: processing failed -> {}, {}/{}/{}/{}, {} | {}",
@@ -541,22 +540,24 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
           FeaturesCoreConfiguration coreConfiguration =
               apiData.getExtension(FeaturesCoreConfiguration.class).get();
 
-          TilesQueriesHandler.QueryInputTileMultiLayer queryInput =
-              new ImmutableQueryInputTileMultiLayer.Builder()
-                  .tile(multiLayerTile)
-                  .singleLayerTileMap(singleLayerTileMap)
-                  .queryMap(queryMap)
-                  .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
-                  .build();
+          // TODO
+          /*TilesQueriesHandler.QueryInputTileMultiLayer queryInput =
+          new ImmutableQueryInputTileMultiLayer.Builder()
+              .tile(multiLayerTile)
+              .singleLayerTileMap(singleLayerTileMap)
+              .queryMap(queryMap)
+              .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
+              .build();*/
 
           taskContext.setStatusMessage(
               String.format(
                   "currently processing -> %s, %s/%s/%s/%s, %s",
                   layerName, tileMatrixSet.getId(), level, row, col, outputFormat.getExtension()));
 
+          // TODO
           try {
-            queryHandler.handle(
-                TilesQueriesHandler.Query.MULTI_LAYER_TILE, queryInput, requestContext);
+            // queryHandler.handle(
+            //    TilesQueriesHandler.Query.MULTI_LAYER_TILE, queryInput, requestContext);
           } catch (Throwable e) {
             LOGGER.warn(
                 "{}: processing failed -> {}, {}/{}/{}/{}, {} | {}",

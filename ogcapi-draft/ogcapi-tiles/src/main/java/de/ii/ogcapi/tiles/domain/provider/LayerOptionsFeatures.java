@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,6 +24,12 @@ public interface LayerOptionsFeatures extends LayerOptionsCommon {
   List<String> getCombine();
 
   Map<String, List<LevelFilter>> getFilters();
+
+  @JsonIgnore
+  @Value.Derived
+  default boolean isCombined() {
+    return !getCombine().isEmpty();
+  }
 
   // TODO: check
 }

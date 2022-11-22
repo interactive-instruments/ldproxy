@@ -35,7 +35,7 @@ public interface QueryParameterSet {
     return Optional.ofNullable((U) getTypedValues().get(parameter.getName()));
   }
 
-  default QueryParameterSet hydrate(
+  default QueryParameterSet evaluate(
       OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> collectionData) {
     Map<String, String> values = new LinkedHashMap<>(getValues());
     Map<String, Object> typedValues = new LinkedHashMap<>();

@@ -14,9 +14,6 @@ import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.tilematrixsets.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureQuery;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,25 +28,6 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     TILE_SETS,
     TILE_SET,
     TILE,
-    MULTI_LAYER_TILE,
-    TILE_STREAM,
-    EMPTY_TILE,
-    MBTILES_TILE,
-    TILESERVER_TILE
-  }
-
-  @Value.Immutable
-  interface QueryInputTileEmpty extends QueryInput {
-
-    Tile getTile();
-  }
-
-  @Value.Immutable
-  interface QueryInputTileStream extends QueryInput {
-
-    Tile getTile();
-
-    InputStream getTileContent();
   }
 
   @Value.Immutable
@@ -69,34 +47,13 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
   }
 
   @Value.Immutable
-  interface QueryInputTileMultiLayer extends QueryInput {
-
-    Tile getTile();
-
-    Map<String, Tile> getSingleLayerTileMap();
-
-    Map<String, FeatureQuery> getQueryMap();
-
-    EpsgCrs getDefaultCrs();
-  }
-
-  @Value.Immutable
-  interface QueryInputTileSingleLayer extends QueryInput, TileCoordinates {
-
-    // TODO
-    Optional<Tile> getTile();
+  interface QueryInputTile extends QueryInput, TileCoordinates {
 
     Optional<String> getCollectionId();
 
     TileFormatExtension getOutputFormat();
 
     QueryParameterSet getParameters();
-
-    // TODO
-    Optional<FeatureQuery> getQuery();
-
-    // TODO
-    Optional<EpsgCrs> getDefaultCrs();
   }
 
   @Value.Immutable

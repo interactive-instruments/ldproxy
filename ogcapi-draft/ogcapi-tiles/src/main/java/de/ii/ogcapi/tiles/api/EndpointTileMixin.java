@@ -31,7 +31,7 @@ import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
-import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSingleLayer;
+import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTile;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
@@ -259,7 +259,7 @@ public interface EndpointTileMixin {
                             "The requested media type ''{0}'' is not supported for this resource.",
                             requestContext.getMediaType())));
 
-    return new ImmutableQueryInputTileSingleLayer.Builder()
+    return new ImmutableQueryInputTile.Builder()
         .from(endpoint.getGenericQueryInput(apiData))
         .collectionId(collectionId)
         .outputFormat(outputFormat)
@@ -269,7 +269,7 @@ public interface EndpointTileMixin {
         .tileCol(col)
         .parameters(
             QueryParameterSet.of(parameterDefinitions, parameterValues)
-                .hydrate(apiData, collectionData))
+                .evaluate(apiData, collectionData))
         .build();
   }
 }

@@ -10,17 +10,17 @@ package de.ii.ogcapi.tiles.app.provider;
 import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.CACHE_DIR;
 import static de.ii.ogcapi.tiles.app.provider.TileCacheImpl.TILES_DIR_NAME;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
 import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.FileStoreFs;
+import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.TileStore;
 import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.TileStoreFiles;
 import de.ii.ogcapi.tiles.domain.provider.Cache;
 import de.ii.ogcapi.tiles.domain.provider.Cache.Storage;
 import de.ii.ogcapi.tiles.domain.provider.Cache.Type;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
-import de.ii.ogcapi.tiles.domain.provider.TileEncoder;
+import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerator;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
@@ -32,10 +32,10 @@ import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.store.domain.entities.AbstractPersistentEntity;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,11 +43,11 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
     implements TileProvider {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TileProviderFeatures.class);
-  private static final Map<MediaType, Function<TileProviderFeaturesData, TileEncoder>> ENCODERS =
-      ImmutableMap.of(FeatureEncoderMVT.FORMAT, TileEncoderMvt::new);
 
   private final TileGeneratorFeatures tileGenerator;
-  private final ChainedTileProvider providerChain;
+  private final TileEncoders tileEncoders;
+  private final ChainedTileProvider generatorProviderChain;
+  private final ChainedTileProvider combinerProviderChain;
 
   @AssistedInject
   public TileProviderFeatures(
@@ -61,6 +61,7 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
     this.tileGenerator = new TileGeneratorFeatures(data, crsInfo, entityRegistry, cql);
 
     ChainedTileProvider current = tileGenerator;
+    List<TileStore> tileStores = new ArrayList<>();
     Path cacheRootDir =
         appContext
             .getDataDir()
@@ -76,12 +77,28 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
         if (cache.getStorage() == Storage.FILES) {
           FileStoreFs fileStore = new FileStoreFs(cacheDir);
           TileStoreFiles tileStore = new TileStoreFiles(fileStore);
+          tileStores.add(tileStore);
           current = new TileCacheDynamic(tileStore, current, cache.getTmsRanges());
         }
       }
     }
 
-    this.providerChain = current;
+    this.generatorProviderChain = current;
+
+    this.tileEncoders = new TileEncoders(data, generatorProviderChain);
+    current = tileEncoders;
+
+    for (int i = 0; i < data.getCaches().size(); i++) {
+      Cache cache = data.getCaches().get(i);
+
+      if (cache.getType() == Type.DYNAMIC) {
+        if (cache.getStorage() == Storage.FILES) {
+          current = new TileCacheDynamic(tileStores.get(i), current, cache.getTmsRanges());
+        }
+      }
+    }
+
+    this.combinerProviderChain = current;
   }
 
   @Override
@@ -97,11 +114,14 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
       return error.get();
     }
 
-    TileResult result = providerChain.get(tile);
+    LayerOptionsFeatures layer = getData().getLayers().get(tile.getLayer());
+    TileResult result =
+        layer.getCombine().isEmpty()
+            ? generatorProviderChain.get(tile)
+            : combinerProviderChain.get(tile);
 
-    if (result.isNotFound() && ENCODERS.containsKey(tile.getMediaType())) {
-      return TileResult.notFound(
-          ENCODERS.get(tile.getMediaType()).apply(getData()).empty(tile.getTileMatrixSet()));
+    if (result.isNotFound() && tileEncoders.canEncode(tile.getMediaType())) {
+      return TileResult.notFound(tileEncoders.empty(tile.getMediaType(), tile.getTileMatrixSet()));
     }
 
     return result;
@@ -145,6 +165,6 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
 
   @Override
   public String getType() {
-    return null;
+    return TileProviderFeaturesData.PROVIDER_TYPE;
   }
 }

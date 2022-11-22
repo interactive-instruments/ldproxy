@@ -8,10 +8,12 @@
 package de.ii.ogcapi.tiles.domain.provider;
 
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
+import java.io.IOException;
 
 public interface TileEncoder {
 
   byte[] empty(TileMatrixSet tms);
 
-  byte[] combine(TileQuery tile);
+  byte[] combine(TileQuery tile, TileProviderFeaturesData data, ChainedTileProvider tileProvider)
+      throws IOException;
 }
