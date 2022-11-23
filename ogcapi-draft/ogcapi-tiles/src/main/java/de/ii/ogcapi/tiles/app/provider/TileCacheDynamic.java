@@ -7,8 +7,12 @@
  */
 package de.ii.ogcapi.tiles.app.provider;
 
+import static de.ii.xtraplatform.base.domain.util.LambdaWithException.consumerMayThrow;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
@@ -19,13 +23,20 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiPredicate;
+import java.util.stream.Stream;
 import javax.ws.rs.core.MediaType;
 
 public class TileCacheDynamic implements ChainedTileProvider {
 
   /** abstraction over fs */
   interface FileStore {
+
+    interface FileAttributes {
+      boolean isRegularFile();
+    }
 
     boolean has(Path path);
 
@@ -36,6 +47,8 @@ public class TileCacheDynamic implements ChainedTileProvider {
     void put(Path path, InputStream content) throws IOException;
 
     void delete(Path path) throws IOException;
+
+    Stream<Path> walk(int maxDepth, BiPredicate<Path, FileAttributes> matcher) throws IOException;
   }
 
   static class FileStoreFs implements FileStore {
@@ -90,6 +103,16 @@ public class TileCacheDynamic implements ChainedTileProvider {
       Files.delete(full(path));
     }
 
+    @Override
+    public Stream<Path> walk(int maxDepth, BiPredicate<Path, FileAttributes> matcher)
+        throws IOException {
+      return Files.find(
+          rootDir,
+          maxDepth,
+          ((path1, basicFileAttributes) ->
+              matcher.test(rootDir.relativize(path1), basicFileAttributes::isRegularFile)));
+    }
+
     private Path full(Path path) {
       return rootDir.resolve(path);
     }
@@ -109,6 +132,9 @@ public class TileCacheDynamic implements ChainedTileProvider {
     void put(TileQuery tile, InputStream content) throws IOException;
 
     void delete(TileQuery tile) throws IOException;
+
+    void delete(String layer, TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits)
+        throws IOException;
   }
 
   static class TileStoreFiles implements TileStore {
@@ -153,13 +179,76 @@ public class TileCacheDynamic implements ChainedTileProvider {
       fileStore.delete(path(tile));
     }
 
-    private Path path(TileQuery tile) {
+    @Override
+    public void delete(String layer, TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits)
+        throws IOException {
+      try (Stream<Path> matchingFiles =
+          fileStore.walk(
+              5,
+              (path, fileAttributes) ->
+                  fileAttributes.isRegularFile()
+                      && shouldDeleteTileFile(path, layer, tileMatrixSet.getId(), limits))) {
+
+        try {
+          matchingFiles.forEach(consumerMayThrow(fileStore::delete));
+        } catch (RuntimeException e) {
+          if (e.getCause() instanceof IOException) {
+            throw (IOException) e.getCause();
+          }
+          throw e;
+        }
+      }
+    }
+
+    private static Path path(TileQuery tile) {
       return Path.of(
           tile.getLayer(),
           tile.getTileMatrixSet().getId(),
           String.valueOf(tile.getLevel()),
           String.valueOf(tile.getRow()),
           String.format("%d.%s", tile.getCol(), EXTENSIONS.get(tile.getMediaType())));
+    }
+
+    @SuppressWarnings("UnstableApiUsage")
+    private static boolean shouldDeleteTileFile(
+        Path tilePath, String layer, String tileMatrixSet, TileMatrixSetLimits tmsLimits) {
+      if (tilePath.getNameCount() < 5) {
+        return false;
+      }
+
+      String layerSegment = tilePath.getName(0).toString();
+
+      if (!Objects.equals(layer, layerSegment)) {
+        return false;
+      }
+
+      String tmsId = tilePath.getName(1).toString();
+
+      if (!Objects.equals(tileMatrixSet, tmsId)) {
+        return false;
+      }
+
+      String level = tilePath.getName(2).toString();
+
+      if (!Objects.equals(tmsLimits.getTileMatrix(), level)) {
+        return false;
+      }
+
+      int row = Integer.parseInt(tilePath.getName(3).toString());
+
+      if (row < tmsLimits.getMinTileRow() || row > tmsLimits.getMaxTileRow()) {
+        return false;
+      }
+
+      String file = tilePath.getName(4).toString();
+
+      int col = Integer.parseInt(com.google.common.io.Files.getNameWithoutExtension(file));
+
+      if (col < tmsLimits.getMinTileCol() || col > tmsLimits.getMaxTileCol()) {
+        return false;
+      }
+
+      return true;
     }
   }
 

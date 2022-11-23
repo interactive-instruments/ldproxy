@@ -36,7 +36,6 @@ import de.ii.ogcapi.tiles.domain.ImmutableTileSets;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSets.Builder;
 import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ogcapi.tiles.domain.Tile;
-import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
 import de.ii.ogcapi.tiles.domain.TileSet;
@@ -93,7 +92,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
   private final EntityRegistry entityRegistry;
   private final ExtensionRegistry extensionRegistry;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
-  private final TileCache tileCache;
   private final StaticTileProviderStore staticTileProviderStore;
   private final FeaturesCoreProviders providers;
   private final TilesProviders tilesProviders;
@@ -108,7 +106,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       EntityRegistry entityRegistry,
       ExtensionRegistry extensionRegistry,
       TileMatrixSetLimitsGenerator limitsGenerator,
-      TileCache tileCache,
       StaticTileProviderStore staticTileProviderStore,
       FeaturesCoreProviders providers,
       TilesProviders tilesProviders,
@@ -119,7 +116,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     this.entityRegistry = entityRegistry;
     this.extensionRegistry = extensionRegistry;
     this.limitsGenerator = limitsGenerator;
-    this.tileCache = tileCache;
     this.staticTileProviderStore = staticTileProviderStore;
     this.providers = providers;
     this.tilesProviders = tilesProviders;

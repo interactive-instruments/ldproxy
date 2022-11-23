@@ -26,23 +26,19 @@ import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
 import de.ii.ogcapi.tiles.domain.SeedingOptions;
-import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
-import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.services.domain.TaskContext;
 import java.io.IOException;
 import java.net.URI;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,35 +59,26 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TileSeedingBackgroundTask.class);
 
-  private final CrsTransformerFactory crsTransformerFactory;
   private final ExtensionRegistry extensionRegistry;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
-  private final TileCache tileCache;
   private final URI servicesUri;
   private final FeaturesCoreProviders providers;
   private final TilesProviders tilesProviders;
-  private final TilesQueriesHandler queryHandler;
   private final TileMatrixSetRepository tileMatrixSetRepository;
 
   @Inject
   public TileSeedingBackgroundTask(
-      CrsTransformerFactory crsTransformerFactory,
       ExtensionRegistry extensionRegistry,
       TileMatrixSetLimitsGenerator limitsGenerator,
-      TileCache tileCache,
       ServicesContext servicesContext,
       FeaturesCoreProviders providers,
       TilesProviders tilesProviders,
-      TilesQueriesHandler queryHandler,
       TileMatrixSetRepository tileMatrixSetRepository) {
-    this.crsTransformerFactory = crsTransformerFactory;
     this.extensionRegistry = extensionRegistry;
     this.limitsGenerator = limitsGenerator;
-    this.tileCache = tileCache;
     this.servicesUri = servicesContext.getUri();
     this.providers = providers;
     this.tilesProviders = tilesProviders;
-    this.queryHandler = queryHandler;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
   }
 
@@ -187,13 +174,9 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
   @Override
   public void run(OgcApi api, TaskContext taskContext) {
     if (shouldPurge(api) && taskContext.isFirstPartial()) {
-      try {
-        taskContext.setStatusMessage("purging cache");
-        tileCache.deleteTiles(api, Optional.empty(), Optional.empty(), Optional.empty());
-        taskContext.setStatusMessage("purged cache successfully");
-      } catch (IOException | SQLException e) {
-        LOGGER.debug("{}: purging failed | {}", getLabel(), e.getMessage());
-      }
+      taskContext.setStatusMessage("purging cache");
+      tilesProviders.deleteTiles(api, Optional.empty(), Optional.empty(), Optional.empty());
+      taskContext.setStatusMessage("purged cache successfully");
     }
 
     List<TileFormatExtension> outputFormats =

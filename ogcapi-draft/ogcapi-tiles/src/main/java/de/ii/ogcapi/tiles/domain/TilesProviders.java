@@ -8,8 +8,10 @@
 package de.ii.ogcapi.tiles.domain;
 
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.util.Optional;
 
 public interface TilesProviders {
@@ -48,4 +50,10 @@ public interface TilesProviders {
         ? getTileProviderOrThrow(apiData, collectionData.get())
         : getTileProviderOrThrow(apiData);
   }
+
+  void deleteTiles(
+      OgcApi api,
+      Optional<String> collectionId,
+      Optional<String> tileMatrixSetId,
+      Optional<BoundingBox> boundingBox);
 }

@@ -25,10 +25,8 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tiles.app.provider.FeatureEncoderMVT;
 import de.ii.ogcapi.tiles.domain.Tile;
-import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
@@ -45,27 +43,21 @@ import de.ii.xtraplatform.cql.domain.SIntersects;
 import de.ii.xtraplatform.cql.domain.SpatialLiteral;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.measure.Unit;
 import javax.ws.rs.core.MediaType;
-import no.ecc.vectortile.VectorTileDecoder;
 import no.ecc.vectortile.VectorTileEncoder;
 import org.apache.http.NameValuePair;
 import org.kortforsyningen.proj.Units;
@@ -87,22 +79,13 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
           .parameter("mvt")
           .build();
 
-  private final CrsTransformerFactory crsTransformerFactory;
   private final FeaturesQuery queryParser;
-  private final TileCache tileCache;
   private final CrsSupport crsSupport;
   private final CrsInfo crsInfo;
 
   @Inject
-  public TileFormatMVT(
-      CrsTransformerFactory crsTransformerFactory,
-      FeaturesQuery queryParser,
-      TileCache tileCache,
-      CrsSupport crsSupport,
-      CrsInfo crsInfo) {
-    this.crsTransformerFactory = crsTransformerFactory;
+  public TileFormatMVT(FeaturesQuery queryParser, CrsSupport crsSupport, CrsInfo crsInfo) {
     this.queryParser = queryParser;
-    this.tileCache = tileCache;
     this.crsSupport = crsSupport;
     this.crsInfo = crsInfo;
   }
@@ -341,100 +324,6 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
     }
 
     return queryBuilder.build();
-  }
-
-  @Override
-  public MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(
-      TileMatrixSet tileMatrixSet,
-      Map<String, Tile> singleLayerTileMap,
-      Map<String, ByteArrayOutputStream> singleLayerByteArrayMap)
-      throws IOException {
-    VectorTileEncoder encoder = new VectorTileEncoder(tileMatrixSet.getTileExtent());
-    VectorTileDecoder decoder = new VectorTileDecoder();
-    Set<String> processedCollections = new TreeSet<>();
-    int count = 0;
-    while (count++ <= 3) {
-      for (String collectionId : singleLayerTileMap.keySet()) {
-        if (!processedCollections.contains(collectionId)) {
-          Tile singleLayerTile = singleLayerTileMap.get(collectionId);
-          ByteArrayOutputStream tileBytes = singleLayerByteArrayMap.get(collectionId);
-          if (Objects.nonNull(tileBytes) && tileBytes.size() > 0) {
-            try {
-              List<VectorTileDecoder.Feature> features =
-                  decoder.decode(tileBytes.toByteArray()).asList();
-              features.forEach(
-                  feature ->
-                      encoder.addFeature(
-                          feature.getLayerName(),
-                          feature.getAttributes(),
-                          feature.getGeometry(),
-                          feature.getId()));
-              processedCollections.add(collectionId);
-            } catch (IOException e) {
-              // maybe the file is still generated, try to wait once before giving up
-              String msg =
-                  "Failure to access the single-layer tile {}/{}/{}/{} in dataset '{}', layer '{}', format '{}'. Trying again ...";
-              LOGGER.warn(
-                  msg,
-                  tileMatrixSet.getId(),
-                  singleLayerTile.getTileLevel(),
-                  singleLayerTile.getTileRow(),
-                  singleLayerTile.getTileCol(),
-                  singleLayerTile.getApiData().getId(),
-                  collectionId,
-                  getExtension());
-            } catch (IllegalArgumentException e) {
-              // another problem generating the tile, remove the problematic tile file from the
-              // cache
-              try {
-                tileCache.deleteTile(singleLayerTile);
-              } catch (SQLException throwables) {
-                // ignore
-              }
-              throw new RuntimeException(
-                  String.format(
-                      "Failure to process the single-layer tile %s/%d/%d/%d in dataset '%s', layer '%s', format '%s'.",
-                      tileMatrixSet.getId(),
-                      singleLayerTile.getTileLevel(),
-                      singleLayerTile.getTileRow(),
-                      singleLayerTile.getTileCol(),
-                      singleLayerTile.getApiData().getId(),
-                      collectionId,
-                      getExtension()),
-                  e);
-            }
-          } else {
-            try {
-              if (tileCache.tileIsEmpty(singleLayerTile).orElse(false)) {
-                // an empty tile, so we are done for this collection
-                processedCollections.add(collectionId);
-              }
-            } catch (Exception e) {
-              LOGGER.warn(
-                  "Failed to retrieve tile {}/{}/{}/{} for collection {} from the cache. Reason: {}",
-                  singleLayerTile.getTileMatrixSet().getId(),
-                  singleLayerTile.getTileLevel(),
-                  singleLayerTile.getTileRow(),
-                  singleLayerTile.getTileCol(),
-                  collectionId,
-                  e.getMessage());
-            }
-          }
-        }
-      }
-      if (processedCollections.size() == singleLayerTileMap.size()) break;
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException ex) {
-        // ignore and just continue
-      }
-    }
-
-    MultiLayerTileContent result = new MultiLayerTileContent();
-    result.byteArray = encoder.encode();
-    result.isComplete = processedCollections.size() == singleLayerTileMap.size();
-
-    return result;
   }
 
   @Override

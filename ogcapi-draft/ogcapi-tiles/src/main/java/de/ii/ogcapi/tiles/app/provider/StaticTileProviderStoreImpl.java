@@ -14,9 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
-import de.ii.ogcapi.tiles.app.mbtiles.MbtilesMetadata;
-import de.ii.ogcapi.tiles.app.mbtiles.MbtilesMetadata.MbtilesFormat;
-import de.ii.ogcapi.tiles.app.mbtiles.MbtilesTileset;
+import de.ii.ogcapi.tiles.app.provider.MbtilesMetadata.MbtilesFormat;
 import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TileProviderMbtiles;
@@ -37,7 +35,6 @@ import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.NotFoundException;
 
 /** Access tiles in Mbtiles files. */
 @Singleton
@@ -123,9 +120,10 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
     return store.resolve(apiData.getId()).resolve(filename);
   }
 
+  // TODO
   @Override
   public InputStream getTile(Path tileProvider, Tile tile) {
-    String key =
+    /*String key =
         String.join(
             "/",
             tile.getApiData().getId(),
@@ -144,7 +142,8 @@ public class StaticTileProviderStoreImpl implements StaticTileProviderStore {
               tileProvider.toString(),
               tile.getOutputFormat().getExtension()),
           e);
-    }
+    }*/
+    return null;
   }
 
   @Override

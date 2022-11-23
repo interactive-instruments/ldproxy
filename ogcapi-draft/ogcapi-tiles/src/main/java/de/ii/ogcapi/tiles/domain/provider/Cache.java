@@ -20,7 +20,8 @@ public interface Cache extends WithTmsLevels {
   }
 
   enum Storage {
-    FILES
+    FILES,
+    MBTILES
   }
 
   Type getType();

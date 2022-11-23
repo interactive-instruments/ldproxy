@@ -30,12 +30,14 @@ import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
 import de.ii.ogcapi.tiles.domain.ImmutableTileProviderFeatures;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration.Builder;
-import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ogcapi.tiles.domain.TileProviderFeatures;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesConfiguration.TileCacheType;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
+import de.ii.ogcapi.tiles.domain.provider.Cache;
 import de.ii.ogcapi.tiles.domain.provider.Cache.Storage;
 import de.ii.ogcapi.tiles.domain.provider.Cache.Type;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableCache;
@@ -130,7 +132,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
   private final FeaturesQuery queryParser;
   private final SchemaInfo schemaInfo;
   private final TileMatrixSetRepository tileMatrixSetRepository;
-  private final TileCache tileCache;
+  private final TilesProviders tilesProviders;
   private final EntityFactories entityFactories;
 
   @Inject
@@ -140,14 +142,14 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
       FeaturesCoreProviders providers,
       SchemaInfo schemaInfo,
       TileMatrixSetRepository tileMatrixSetRepository,
-      TileCache tileCache,
+      TilesProviders tilesProviders,
       EntityFactories entityFactories) {
     this.extensionRegistry = extensionRegistry;
     this.queryParser = queryParser;
     this.providers = providers;
     this.schemaInfo = schemaInfo;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
-    this.tileCache = tileCache;
+    this.tilesProviders = tilesProviders;
     this.entityFactories = entityFactories;
   }
 
@@ -593,14 +595,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
             tilesConfiguration ->
                 new ImmutableTileProviderFeaturesData.Builder()
                     .id(String.format("%s-tiles", apiData.getId()))
-                    .addCaches(
-                        new ImmutableCache.Builder()
-                            .type(Type.DYNAMIC)
-                            .storage(Storage.FILES)
-                            .putAllLevels(
-                                tilesConfiguration
-                                    .getZoomLevelsDerived()) // TODO: per collection/layer?
-                            .build())
+                    .addAllCaches(getCaches(tilesConfiguration))
                     .layerDefaults(
                         new ImmutableLayerOptionsFeaturesDefault.Builder()
                             .featureProvider(
@@ -641,6 +636,29 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                     .build());
   }
 
+  private static List<Cache> getCaches(TilesConfiguration tilesConfiguration) {
+
+    if (Objects.equals(tilesConfiguration.getCache(), TileCacheType.FILES)) {
+      return List.of(
+          new ImmutableCache.Builder()
+              .type(Type.DYNAMIC)
+              .storage(Storage.FILES)
+              .putAllLevels(
+                  tilesConfiguration.getZoomLevelsDerived()) // TODO: per collection/layer?
+              .build());
+    } else if (Objects.equals(tilesConfiguration.getCache(), TileCacheType.MBTILES)) {
+      return List.of(
+          new ImmutableCache.Builder()
+              .type(Type.DYNAMIC)
+              .storage(Storage.MBTILES)
+              .putAllLevels(
+                  tilesConfiguration.getZoomLevelsDerived()) // TODO: per collection/layer?
+              .build());
+    }
+
+    return List.of();
+  }
+
   private static LayerOptionsFeatures getLayer(
       String id, TilesConfiguration cfg, Map<String, FeatureTypeConfigurationOgcApi> collections) {
     return new ImmutableLayerOptionsFeatures.Builder()
@@ -676,7 +694,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
               .ifPresent(
                   bbox -> {
                     try {
-                      tileCache.deleteTiles(
+                      tilesProviders.deleteTiles(
                           api, Optional.of(collectionId), Optional.empty(), Optional.of(bbox));
                     } catch (Exception e) {
                       if (LOGGER.isErrorEnabled()) {

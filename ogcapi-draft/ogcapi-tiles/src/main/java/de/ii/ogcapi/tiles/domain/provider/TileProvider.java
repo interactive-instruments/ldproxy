@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 
 public interface TileProvider extends PersistentEntity {
@@ -20,6 +22,9 @@ public interface TileProvider extends PersistentEntity {
   }
 
   TileResult getTile(TileQuery tileQuery);
+
+  // TODO: TileRange?
+  void deleteFromCache(String layer, TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits);
 
   // TODO: generation? source? dynamic?
   default boolean supportsGeneration() {

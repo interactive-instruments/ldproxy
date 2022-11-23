@@ -8,11 +8,11 @@
 package de.ii.ogcapi.tiles.app.provider;
 
 import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.CACHE_DIR;
-import static de.ii.ogcapi.tiles.app.provider.TileCacheImpl.TILES_DIR_NAME;
 
 import com.google.common.collect.Range;
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.FileStoreFs;
 import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.TileStore;
@@ -23,6 +23,7 @@ import de.ii.ogcapi.tiles.domain.provider.Cache.Type;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
 import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationParameters;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerator;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
@@ -34,11 +35,17 @@ import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.store.domain.entities.AbstractPersistentEntity;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,11 +53,13 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
     implements TileProvider {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TileProviderFeatures.class);
+  private static final String TILES_DIR_NAME = "tiles";
 
   private final TileGeneratorFeatures tileGenerator;
   private final TileEncoders tileEncoders;
   private final ChainedTileProvider generatorProviderChain;
   private final ChainedTileProvider combinerProviderChain;
+  private final List<TileCacheDynamic.TileStore> tileCaches;
 
   @AssistedInject
   public TileProviderFeatures(
@@ -62,9 +71,9 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
     super(data);
 
     this.tileGenerator = new TileGeneratorFeatures(data, crsInfo, entityRegistry, cql);
+    this.tileCaches = new ArrayList<>();
 
     ChainedTileProvider current = tileGenerator;
-    List<TileStore> tileStores = new ArrayList<>();
     Path cacheRootDir =
         appContext
             .getDataDir()
@@ -83,8 +92,15 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
       if (cache.getType() == Type.DYNAMIC) {
         if (cache.getStorage() == Storage.FILES) {
           FileStoreFs fileStore = new FileStoreFs(cacheDir);
-          TileStoreFiles tileStore = new TileStoreFiles(fileStore);
-          tileStores.add(tileStore);
+          TileStore tileStore = new TileStoreFiles(fileStore);
+          tileCaches.add(tileStore);
+          // TODO: cacheLevels
+          current = new TileCacheDynamic(tileStore, current, data.getTmsRanges());
+        } else if (cache.getStorage() == Storage.MBTILES) {
+          TileStore tileStore =
+              new TileStoreMbTiles(
+                  data.getId(), cacheDir, getTileSchemas(tileGenerator, data.getLayers()));
+          tileCaches.add(tileStore);
           // TODO: cacheLevels
           current = new TileCacheDynamic(tileStore, current, data.getTmsRanges());
         }
@@ -100,14 +116,44 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
       Cache cache = data.getCaches().get(i);
 
       if (cache.getType() == Type.DYNAMIC) {
-        if (cache.getStorage() == Storage.FILES) {
-          // TODO: cacheLevels
-          current = new TileCacheDynamic(tileStores.get(i), current, data.getTmsRanges());
-        }
+        // TODO: cacheLevels
+        current = new TileCacheDynamic(tileCaches.get(i), current, data.getTmsRanges());
       }
     }
 
     this.combinerProviderChain = current;
+  }
+
+  private static Map<String, Map<String, TileGenerationSchema>> getTileSchemas(
+      TileGeneratorFeatures tileGenerator, Map<String, LayerOptionsFeatures> layers) {
+    return layers.values().stream()
+        .map(
+            layer -> {
+              Map<String, TileGenerationSchema> schemas =
+                  layer.isCombined()
+                      ? layer.getCombine().stream()
+                          .flatMap(
+                              subLayer -> {
+                                if (Objects.equals(subLayer, LayerOptionsFeatures.COMBINE_ALL)) {
+                                  return layers.entrySet().stream()
+                                      .filter(entry -> !entry.getValue().isCombined())
+                                      .map(Entry::getKey);
+                                }
+                                return Stream.of(subLayer);
+                              })
+                          .map(
+                              subLayer ->
+                                  new SimpleImmutableEntry<>(
+                                      subLayer,
+                                      tileGenerator.getGenerationSchema(subLayer, Map.of())))
+                          .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
+                      : Map.of(
+                          layer.getId(),
+                          tileGenerator.getGenerationSchema(layer.getId(), Map.of()));
+
+              return new SimpleImmutableEntry<>(layer.getId(), schemas);
+            })
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   @Override
@@ -134,6 +180,19 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
     }
 
     return result;
+  }
+
+  // TODO: add to TileCacheDynamic, use canProvide + clip limits
+  @Override
+  public void deleteFromCache(
+      String layer, TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits) {
+    for (TileStore cache : tileCaches) {
+      try {
+        cache.delete(layer, tileMatrixSet, limits);
+      } catch (IOException e) {
+
+      }
+    }
   }
 
   @Override
