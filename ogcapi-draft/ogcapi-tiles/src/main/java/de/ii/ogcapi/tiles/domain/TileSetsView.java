@@ -66,7 +66,6 @@ public class TileSetsView extends OgcApiView {
   public boolean spatialSearch;
   public boolean isVector;
   public Map<String, String> bbox;
-  public Map<String, String> temporalExtent;
   public final MapClient mapClient;
   public final String xyzTemplate;
 
@@ -261,21 +260,6 @@ public class TileSetsView extends OgcApiView {
 
     this.withOlMap = true;
     this.spatialSearch = false;
-
-    Long[] interval =
-        temporalExtent.map(te -> new Long[] {te.getStart(), te.getEnd()}).orElse(null);
-    if (interval == null) this.temporalExtent = null;
-    else if (interval[0] == Long.MIN_VALUE && interval[1] == Long.MAX_VALUE)
-      this.temporalExtent = ImmutableMap.of();
-    else if (interval[0] == Long.MIN_VALUE)
-      this.temporalExtent = ImmutableMap.of("end", interval[1].toString());
-    else if (interval[1] == Long.MAX_VALUE)
-      this.temporalExtent = ImmutableMap.of("start", interval[0].toString());
-    else
-      this.temporalExtent =
-          ImmutableMap.of(
-              "start", interval[0].toString(),
-              "end", interval[1].toString());
 
     this.xyzTemplate =
         tilesUrl
