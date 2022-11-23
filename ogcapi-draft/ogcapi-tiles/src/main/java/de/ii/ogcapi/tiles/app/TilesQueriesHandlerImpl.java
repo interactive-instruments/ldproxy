@@ -371,7 +371,14 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     TileResult result = tileProvider.getTile(tileQuery);
 
     if (!result.isAvailable()) {
-      throw result.getError().map(NotFoundException::new).orElseGet(NotFoundException::new);
+      if (result.isOutsideLimits()) {
+        throw result.getError().map(NotFoundException::new).orElseGet(NotFoundException::new);
+      } else {
+        throw result
+            .getError()
+            .map(IllegalStateException::new)
+            .orElseGet(IllegalStateException::new);
+      }
     }
 
     byte[] content = result.getContent().get();
@@ -379,6 +386,12 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, null, eTag);
 
     if (Objects.nonNull(response)) {
+      // TODO add support for empty/full for Features and MBTiles caches
+      if (result.isEmpty()) {
+        response.header("OATiles-hint", "empty");
+      } else if (result.isFull()) {
+        response.header("OATiles-hint", "full");
+      }
       return response.build();
     }
 
@@ -415,7 +428,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     Optional<FeatureTypeConfigurationOgcApi> collectionData =
         queryInput.getCollectionId().flatMap(apiData::getCollectionData);
     // TODO: get layer name from cfg
-    String layer = queryInput.getCollectionId().orElse("all");
+    String layer = queryInput.getCollectionId().orElse("__all__");
     TileFormatExtension outputFormat = queryInput.getOutputFormat();
 
     ImmutableTileQuery.Builder tileQueryBuilder =

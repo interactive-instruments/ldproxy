@@ -164,7 +164,8 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
 
     if (!tmsRanges.get(tile.getTileMatrixSet().getId()).contains(tile.getLevel())) {
       return Optional.of(
-          TileResult.error("The requested tile is outside the zoom levels for this tile set."));
+          TileResult.outsideLimits(
+              "The requested tile is outside the zoom levels for this tile set."));
     }
 
     BoundingBox boundingBox =
@@ -175,7 +176,7 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
 
     if (!limits.contains(tile.getRow(), tile.getCol())) {
       return Optional.of(
-          TileResult.error(
+          TileResult.outsideLimits(
               "The requested tile is outside of the limits for this zoom level and tile set."));
     }
 
