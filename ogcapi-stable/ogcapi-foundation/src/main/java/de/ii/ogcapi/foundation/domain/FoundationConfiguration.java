@@ -88,19 +88,6 @@ public interface FoundationConfiguration extends ExtensionConfiguration {
   Boolean getIncludeLinkHeader();
 
   /**
-   * @langEn Return the Link HTTP headers only if the size of the Link is not larger than the limit.
-   *     The value is in bytes, e.g. 2048 would be 2 kB. Large HTTP headers increase the size of the
-   *     response and may cause an exception in Dropwizard.
-   * @langDe Steuert, dass die Link-HTTP-Header nur zurückgegeben werden, wenn die Länge der Links
-   *     nicht größer als das Limit in Bytes ist (2048 wären 2 kB). Große HTTP-Header können die
-   *     Größe der Antwort unverhältnismäßig erhöhen und die können zu einer Dropwizard-Exception
-   *     führen.
-   * @default `null`
-   */
-  @Nullable
-  Integer getLinkHeaderLengthLimit();
-
-  /**
    * @langEn Title for resource *API Catalog*.
    * @langDe Titel für die API-Catalog-Ressource in diesem Deployment.
    * @default "API Overview"
