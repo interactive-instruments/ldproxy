@@ -31,22 +31,6 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
   }
 
   @Value.Immutable
-  interface QueryInputTileMbtilesTile extends QueryInput {
-
-    Tile getTile();
-
-    TileProviderMbtiles getProvider();
-  }
-
-  @Value.Immutable
-  interface QueryInputTileTileServerTile extends QueryInput {
-
-    Tile getTile();
-
-    TileProviderTileServer getProvider();
-  }
-
-  @Value.Immutable
   interface QueryInputTile extends QueryInput, TileCoordinates {
 
     Optional<String> getCollectionId();
