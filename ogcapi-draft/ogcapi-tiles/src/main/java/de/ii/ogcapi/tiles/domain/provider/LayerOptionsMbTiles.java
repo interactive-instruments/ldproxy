@@ -7,11 +7,10 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
-import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public interface LayerOptionsFeaturesDefault
-    extends LayerOptionsCommonDefault, TileGenerationOptions {
-  Optional<String> getFeatureProvider();
+public interface LayerOptionsMbTiles extends LayerOptionsCommon {
+
+  String getSource();
 }

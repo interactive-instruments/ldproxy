@@ -24,7 +24,8 @@ public interface TileProvider extends PersistentEntity {
   TileResult getTile(TileQuery tileQuery);
 
   // TODO: TileRange?
-  void deleteFromCache(String layer, TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits);
+  default void deleteFromCache(
+      String layer, TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits) {}
 
   // TODO: generation? source? dynamic?
   default boolean supportsGeneration() {

@@ -98,8 +98,8 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
           current = new TileCacheDynamic(tileStore, current, data.getTmsRanges());
         } else if (cache.getStorage() == Storage.MBTILES) {
           TileStore tileStore =
-              new TileStoreMbTiles(
-                  data.getId(), cacheDir, getTileSchemas(tileGenerator, data.getLayers()));
+              TileStoreMbTiles.readWrite(
+                  cacheDir, data.getId(), getTileSchemas(tileGenerator, data.getLayers()));
           tileCaches.add(tileStore);
           // TODO: cacheLevels
           current = new TileCacheDynamic(tileStore, current, data.getTmsRanges());
@@ -171,9 +171,7 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
 
     LayerOptionsFeatures layer = getData().getLayers().get(tile.getLayer());
     TileResult result =
-        layer.getCombine().isEmpty()
-            ? generatorProviderChain.get(tile)
-            : combinerProviderChain.get(tile);
+        layer.isCombined() ? combinerProviderChain.get(tile) : generatorProviderChain.get(tile);
 
     if (result.isNotFound() && tileEncoders.canEncode(tile.getMediaType())) {
       return TileResult.notFound(tileEncoders.empty(tile.getMediaType(), tile.getTileMatrixSet()));

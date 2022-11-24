@@ -14,7 +14,7 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public interface LayerOptionsFeatures extends LayerOptionsCommon {
+public interface LayerOptionsFeatures extends LayerOptionsCommon, TileGenerationOptions {
   String COMBINE_ALL = "*";
 
   Optional<String> getFeatureProvider();

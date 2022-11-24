@@ -10,6 +10,7 @@ package de.ii.ogcapi.tiles.app.provider;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.TileStore;
+import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.TileStoreReadOnly;
 import de.ii.ogcapi.tiles.domain.ImmutableFields;
 import de.ii.ogcapi.tiles.domain.ImmutableVectorLayer;
 import de.ii.ogcapi.tiles.domain.VectorLayer;
@@ -23,6 +24,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,17 +32,38 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class TileStoreMbTiles implements TileStore {
+
+  static TileStoreReadOnly readOnly(Map<String, Path> tileSetSources) {
+    Map<String, MbtilesTileset> tileSets =
+        tileSetSources.entrySet().stream()
+            .map(
+                entry ->
+                    new SimpleImmutableEntry<>(
+                        entry.getKey(), new MbtilesTileset(entry.getValue())))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+    return new TileStoreMbTiles("", null, tileSets, Map.of());
+  }
+
+  static TileStore readWrite(
+      Path rootDir, String providerId, Map<String, Map<String, TileGenerationSchema>> tileSchemas) {
+    return new TileStoreMbTiles(providerId, rootDir, new ConcurrentHashMap<>(), tileSchemas);
+  }
+
   private final String providerId;
   private final Path rootDir;
   private final Map<String, Map<String, TileGenerationSchema>> tileSchemas;
   private final Map<String, MbtilesTileset> tileSets;
 
-  public TileStoreMbTiles(
-      String providerId, Path rootDir, Map<String, Map<String, TileGenerationSchema>> tileSchemas) {
+  private TileStoreMbTiles(
+      String providerId,
+      Path rootDir,
+      Map<String, MbtilesTileset> tileSets,
+      Map<String, Map<String, TileGenerationSchema>> tileSchemas) {
     this.providerId = providerId;
     this.rootDir = rootDir;
     this.tileSchemas = tileSchemas;
-    this.tileSets = new ConcurrentHashMap<>();
+    this.tileSets = tileSets;
   }
 
   @Override

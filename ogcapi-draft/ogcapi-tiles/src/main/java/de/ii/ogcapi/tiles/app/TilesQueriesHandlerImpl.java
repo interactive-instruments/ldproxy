@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.tiles.app;
 
+import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -411,7 +413,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     Optional<FeatureTypeConfigurationOgcApi> collectionData =
         queryInput.getCollectionId().flatMap(apiData::getCollectionData);
     // TODO: get layer name from cfg
-    String layer = queryInput.getCollectionId().orElse("all");
+    String layer = queryInput.getCollectionId().orElse(DATASET_TILES);
     TileFormatExtension outputFormat = queryInput.getOutputFormat();
 
     ImmutableTileQuery.Builder tileQueryBuilder =
