@@ -28,9 +28,11 @@ import de.ii.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.ogcapi.foundation.domain.RequestInjectableContext;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.auth.domain.User.PolicyDecision;
+import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.services.domain.ServiceEndpoint;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import io.dropwizard.auth.Auth;
+import io.dropwizard.jetty.HttpConnectorFactory;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.List;
@@ -73,9 +75,11 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
   private final URI servicesUri;
   private final ContentNegotiationMediaType contentNegotiationMediaType;
   private final ContentNegotiationLanguage contentNegotiationLanguage;
+  private final int maxResponseLinkHeaderSize;
 
   @Inject
   ApiRequestDispatcher(
+      AppContext appContext,
       ExtensionRegistry extensionRegistry,
       RequestInjectableContext ogcApiInjectableContext,
       ServicesContext servicesContext,
@@ -86,6 +90,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     this.servicesUri = servicesContext.getUri();
     this.contentNegotiationMediaType = contentNegotiationMediaType;
     this.contentNegotiationLanguage = contentNegotiationLanguage;
+    this.maxResponseLinkHeaderSize = getMaxResponseHeaderSize(appContext) / 4;
   }
 
   @Override
@@ -140,6 +145,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
             .alternateMediaTypes(getAlternateMediaTypes(selectedMediaType, supportedMediaTypes))
             .language(selectedLanguage)
             .api(service)
+            .maxResponseLinkHeaderSize(maxResponseLinkHeaderSize)
             .build();
 
     ogcApiInjectableContext.inject(requestContext, apiRequestContext);
@@ -359,5 +365,13 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
 
   private Optional<URI> getExternalUri() {
     return Optional.of(servicesUri);
+  }
+
+  private static int getMaxResponseHeaderSize(AppContext appContext) {
+    HttpConnectorFactory httpConnectorFactory =
+        (HttpConnectorFactory)
+            appContext.getConfiguration().getServerFactory().getApplicationConnectors().get(0);
+
+    return (int) httpConnectorFactory.getMaxResponseHeaderSize().toBytes();
   }
 }

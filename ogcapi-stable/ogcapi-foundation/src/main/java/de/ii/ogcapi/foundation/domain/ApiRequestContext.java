@@ -12,6 +12,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import javax.ws.rs.core.Request;
+import org.immutables.value.Value;
 
 public interface ApiRequestContext {
   ApiMediaType getMediaType();
@@ -29,4 +30,9 @@ public interface ApiRequestContext {
   Map<String, String> getParameters();
 
   Optional<Request> getRequest();
+
+  @Value.Default
+  default int getMaxResponseLinkHeaderSize() {
+    return 2048;
+  }
 }
