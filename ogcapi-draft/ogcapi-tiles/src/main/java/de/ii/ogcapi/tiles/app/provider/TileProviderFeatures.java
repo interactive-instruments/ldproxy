@@ -9,7 +9,6 @@ package de.ii.ogcapi.tiles.app.provider;
 
 import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.CACHE_DIR;
 
-import com.google.common.collect.Range;
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
@@ -22,7 +21,6 @@ import de.ii.ogcapi.tiles.domain.provider.Cache.Storage;
 import de.ii.ogcapi.tiles.domain.provider.Cache.Type;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
 import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures;
-import de.ii.ogcapi.tiles.domain.provider.TileGenerationParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerator;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
@@ -31,7 +29,6 @@ import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.cql.domain.Cql;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.store.domain.entities.AbstractPersistentEntity;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -201,43 +198,6 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
   @Override
   public TileGenerator generator() {
     return tileGenerator;
-  }
-
-  private Optional<TileResult> validate(TileQuery tile) {
-    if (!getData().getLayers().containsKey(tile.getLayer())) {
-      return Optional.of(
-          TileResult.error(String.format("Layer '%s' is not supported.", tile.getLayer())));
-    }
-
-    Map<String, Range<Integer>> tmsRanges =
-        getData().getLayers().get(tile.getLayer()).getTmsRanges();
-
-    if (!tmsRanges.containsKey(tile.getTileMatrixSet().getId())) {
-      return Optional.of(
-          TileResult.error(
-              String.format(
-                  "Tile matrix set '%s' is not supported.", tile.getTileMatrixSet().getId())));
-    }
-
-    if (!tmsRanges.get(tile.getTileMatrixSet().getId()).contains(tile.getLevel())) {
-      return Optional.of(
-          TileResult.outsideLimits(
-              "The requested tile is outside the zoom levels for this tile set."));
-    }
-
-    BoundingBox boundingBox =
-        tile.getGenerationParameters()
-            .flatMap(TileGenerationParameters::getClipBoundingBox)
-            .orElse(tile.getTileMatrixSet().getBoundingBox());
-    TileMatrixSetLimits limits = tile.getTileMatrixSet().getLimits(tile.getLevel(), boundingBox);
-
-    if (!limits.contains(tile.getRow(), tile.getCol())) {
-      return Optional.of(
-          TileResult.outsideLimits(
-              "The requested tile is outside of the limits for this zoom level and tile set."));
-    }
-
-    return Optional.empty();
   }
 
   @Override

@@ -13,13 +13,11 @@ import dagger.assisted.AssistedInject;
 import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.TileStoreReadOnly;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderMbtilesData;
+import de.ii.ogcapi.tiles.domain.provider.TileProviderHttpData;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
-import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.store.domain.entities.AbstractPersistentEntity;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,30 +26,26 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TileProviderMbTiles extends AbstractPersistentEntity<TileProviderMbtilesData>
+public class TileProviderHttp extends AbstractPersistentEntity<TileProviderHttpData>
     implements TileProvider {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(TileProviderMbTiles.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(TileProviderHttp.class);
   private final ChainedTileProvider providerChain;
 
   @AssistedInject
-  public TileProviderMbTiles(AppContext appContext, @Assisted TileProviderMbtilesData data) {
+  public TileProviderHttp(@Assisted TileProviderHttpData data) {
     super(data);
 
-    Map<String, Path> layerSources =
+    Map<String, String> layerSources =
         data.getLayers().entrySet().stream()
             .map(
                 entry -> {
-                  Path source = Path.of(entry.getValue().getSource());
-
-                  // TODO: different TMSs?
                   return new SimpleImmutableEntry<>(
-                      String.join("/", entry.getKey(), "WebMercatorQuad"),
-                      source.isAbsolute() ? source : appContext.getDataDir().resolve(source));
+                      entry.getKey(), entry.getValue().getUrlTemplate());
                 })
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
-    TileStoreReadOnly tileStore = TileStoreMbTiles.readOnly(layerSources);
+    TileStoreReadOnly tileStore = new TileStoreHttp(layerSources);
 
     this.providerChain =
         new ChainedTileProvider() {
@@ -90,6 +84,6 @@ public class TileProviderMbTiles extends AbstractPersistentEntity<TileProviderMb
 
   @Override
   public String getType() {
-    return TileProviderMbtilesData.PROVIDER_TYPE;
+    return TileProviderHttpData.PROVIDER_TYPE;
   }
 }

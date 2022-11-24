@@ -46,18 +46,20 @@ import de.ii.ogcapi.tiles.domain.provider.Cache.Type;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableCache;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsFeatures;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsFeaturesDefault;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsHttp;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsHttpDefault;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsMbTiles;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsMbTilesDefault;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderHttpData;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderMbtilesData;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderTileServerData;
 import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures;
 import de.ii.ogcapi.tiles.domain.provider.LevelFilter;
 import de.ii.ogcapi.tiles.domain.provider.LevelTransformation;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderData;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
+import de.ii.ogcapi.tiles.domain.provider.TileProviderHttpData;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderMbtilesData;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderTileServerData;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.base.domain.util.Tuple;
 import de.ii.xtraplatform.cql.domain.Cql;
@@ -624,8 +626,12 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         && tiles.get().getTileProvider() instanceof TileProviderTileServer) {
       return Optional.of(
           Tuple.of(
-              TileProviderTileServerData.class,
-              getTileServerData(apiData.getId(), tiles.get(), featuresCore, collections)));
+              TileProviderHttpData.class,
+              getTileServerData(
+                  apiData.getId(),
+                  tiles.get(),
+                  (TileProviderTileServer) tiles.get().getTileProvider(),
+                  collections)));
     }
 
     return Optional.of(
@@ -690,12 +696,56 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         .build();
   }
 
-  private static TileProviderTileServerData getTileServerData(
+  private static TileProviderHttpData getTileServerData(
       String apiId,
       TilesConfiguration tilesConfiguration,
-      Optional<FeaturesCoreConfiguration> featuresCore,
+      TileProviderTileServer tileProviderTileServer,
       Map<String, FeatureTypeConfigurationOgcApi> collections) {
-    return new ImmutableTileProviderTileServerData.Builder().build();
+    return new ImmutableTileProviderHttpData.Builder()
+        .id(String.format("%s-tiles", apiId))
+        .layerDefaults(
+            new ImmutableLayerOptionsHttpDefault.Builder()
+                .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
+                .build())
+        .putAllLayers(
+            tilesConfiguration.isMultiCollectionEnabled()
+                ? Map.of(
+                    DATASET_TILES,
+                    new ImmutableLayerOptionsHttp.Builder()
+                        .id(DATASET_TILES)
+                        .urlTemplate(
+                            tileProviderTileServer
+                                .getUrlTemplate()
+                                .replaceAll("\\{", "{{")
+                                .replaceAll("}", "}}"))
+                        .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
+                        .build())
+                : Map.of())
+        .putAllLayers(
+            collections.entrySet().stream()
+                .map(
+                    entry ->
+                        new SimpleImmutableEntry<>(
+                            entry.getKey(),
+                            entry.getValue().getExtension(TilesConfiguration.class).get()))
+                .filter(
+                    entry ->
+                        Objects.nonNull(tileProviderTileServer.getUrlTemplateSingleCollection()))
+                .map(
+                    entry ->
+                        new SimpleImmutableEntry<>(
+                            entry.getKey(),
+                            new ImmutableLayerOptionsHttp.Builder()
+                                .id(entry.getKey())
+                                .urlTemplate(
+                                    tileProviderTileServer
+                                        .getUrlTemplateSingleCollection()
+                                        .replaceAll("\\{", "{{")
+                                        .replaceAll("}", "}}"))
+                                .putAllLevels(entry.getValue().getZoomLevelsDerived())
+                                .build()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
+        .build();
   }
 
   private static TileProviderFeaturesData getFeaturesData(

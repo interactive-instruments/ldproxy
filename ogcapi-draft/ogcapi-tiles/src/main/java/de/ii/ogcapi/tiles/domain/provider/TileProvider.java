@@ -7,9 +7,13 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
+import com.google.common.collect.Range;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
+import java.util.Map;
+import java.util.Optional;
 
 public interface TileProvider extends PersistentEntity {
 
@@ -37,5 +41,41 @@ public interface TileProvider extends PersistentEntity {
       throw new UnsupportedOperationException("Generation not supported");
     }
     return (TileGenerator) this;
+  }
+
+  default Optional<TileResult> validate(TileQuery tile) {
+    if (!getData().getLayers().containsKey(tile.getLayer())) {
+      return Optional.of(
+          TileResult.error(String.format("Layer '%s' is not supported.", tile.getLayer())));
+    }
+
+    Map<String, Range<Integer>> tmsRanges =
+        getData().getLayers().get(tile.getLayer()).getTmsRanges();
+
+    if (!tmsRanges.containsKey(tile.getTileMatrixSet().getId())) {
+      return Optional.of(
+          TileResult.error(
+              String.format(
+                  "Tile matrix set '%s' is not supported.", tile.getTileMatrixSet().getId())));
+    }
+
+    if (!tmsRanges.get(tile.getTileMatrixSet().getId()).contains(tile.getLevel())) {
+      return Optional.of(
+          TileResult.error("The requested tile is outside the zoom levels for this tile set."));
+    }
+
+    BoundingBox boundingBox =
+        tile.getGenerationParameters()
+            .flatMap(TileGenerationParameters::getClipBoundingBox)
+            .orElse(tile.getTileMatrixSet().getBoundingBox());
+    TileMatrixSetLimits limits = tile.getTileMatrixSet().getLimits(tile.getLevel(), boundingBox);
+
+    if (!limits.contains(tile.getRow(), tile.getCol())) {
+      return Optional.of(
+          TileResult.error(
+              "The requested tile is outside of the limits for this zoom level and tile set."));
+    }
+
+    return Optional.empty();
   }
 }
