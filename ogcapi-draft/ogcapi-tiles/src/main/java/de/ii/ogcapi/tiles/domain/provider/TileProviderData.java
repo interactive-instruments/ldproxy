@@ -8,8 +8,6 @@
 package de.ii.ogcapi.tiles.domain.provider;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
 import de.ii.xtraplatform.store.domain.entities.EntityData;
@@ -31,15 +29,6 @@ import org.immutables.value.Value;
  *     Kacheln eines Tileset im Kachelschema "WebMercatorQuad" liegen in einem MBTiles-Archiv vor. -
  *     `TILESERVER`: Die Kacheln werden von einer TileServer-GL-Instanz abgerufen.
  */
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "type")
-@JsonSubTypes({
-  @JsonSubTypes.Type(value = TileProviderFeaturesData.class, name = "FEATURES"),
-  @JsonSubTypes.Type(value = TileProviderMbtilesData.class, name = "MBTILES"),
-  @JsonSubTypes.Type(value = TileProviderTileServerData.class, name = "TILESERVER")
-})
 public interface TileProviderData extends EntityData {
 
   String ENTITY_TYPE = "providers";

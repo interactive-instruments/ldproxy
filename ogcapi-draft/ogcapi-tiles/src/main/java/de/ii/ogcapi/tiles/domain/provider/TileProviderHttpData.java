@@ -8,10 +8,9 @@
 package de.ii.ogcapi.tiles.domain.provider;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderTileServerData.Builder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
+import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
@@ -34,46 +33,41 @@ import org.immutables.value.Value;
  *     zukünftigen Versionen ändern.
  */
 @Value.Immutable
-@JsonDeserialize(builder = Builder.class)
-public interface TileProviderTileServerData extends TileProviderData {
+@JsonDeserialize(builder = ImmutableTileProviderHttpData.Builder.class)
+public interface TileProviderHttpData extends TileProviderData {
+
+  String PROVIDER_SUBTYPE = "HTTP";
+  String ENTITY_SUBTYPE =
+      String.format("%s/%s", TileProviderData.PROVIDER_TYPE, PROVIDER_SUBTYPE).toLowerCase();
 
   /**
    * @langEn Fixed value, identifies the tile provider type.
    * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
-   * @default `TILESERVER`
+   * @default `HTTP`
    */
-  default String getType() {
-    return "TILESERVER";
+  @Override
+  default String getTileProviderType() {
+    return PROVIDER_SUBTYPE;
   }
 
-  // TODO add optional support for multiple styles once the specification is stable
+  @Value.Default
+  @Override
+  default ImmutableLayerOptionsHttpDefault getLayerDefaults() {
+    return new ImmutableLayerOptionsHttpDefault.Builder().build();
+  }
 
-  /**
-   * @langEn URL template for accessing tiles. Parameters to use are `{tileMatrix}`, `{tileRow}`,
-   *     `{tileCol}` and `{fileExtension}`.
-   * @langDe URL-Template für den Zugriff auf Kacheln. Zu verwenden sind die Parameter
-   *     `{tileMatrix}`, `{tileRow}`, `{tileCol}` und `{fileExtension}`.
-   * @default `null`
-   */
-  @Nullable
-  public abstract String getUrlTemplate();
-
-  /**
-   * @langEn URL template for accessing tiles for a collection.
-   * @langDe URL-Template für den Zugriff auf Kacheln für eine Collection.
-   * @default `null`
-   */
-  @Nullable
-  public abstract String getUrlTemplateSingleCollection();
+  // TODO: Buildable, merge defaults into layers
+  @Override
+  Map<String, LayerOptionsHttp> getLayers();
 
   @Override
   default TileProviderData mergeInto(TileProviderData source) {
-    if (Objects.isNull(source) || !(source instanceof TileProviderTileServerData)) return this;
+    if (Objects.isNull(source) || !(source instanceof TileProviderHttpData)) return this;
 
-    TileProviderTileServerData src = (TileProviderTileServerData) source;
+    TileProviderHttpData src = (TileProviderHttpData) source;
 
-    ImmutableTileProviderTileServerData.Builder builder =
-        new ImmutableTileProviderTileServerData.Builder().from(src).from(this);
+    ImmutableTileProviderHttpData.Builder builder =
+        new ImmutableTileProviderHttpData.Builder().from(src).from(this);
 
     /*List<String> tileEncodings =
         Objects.nonNull(src.getTileEncodings())
@@ -91,5 +85,5 @@ public interface TileProviderTileServerData extends TileProviderData {
     return builder.build();
   }
 
-  abstract class Builder implements EntityDataBuilder<TileProviderTileServerData> {}
+  abstract class Builder implements EntityDataBuilder<TileProviderHttpData> {}
 }
