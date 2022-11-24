@@ -10,6 +10,7 @@ package de.ii.ogcapi.tiles.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 import de.ii.ogcapi.tilematrixsets.domain.MinMax;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +106,13 @@ public abstract class TileProviderMbtiles extends TileProvider {
 
     if (!getCenter().isEmpty()) builder.center(getCenter());
     else if (!src.getCenter().isEmpty()) builder.center(src.getCenter());
+
+    Map<String, MinMax> mergedZoomLevels =
+        Objects.nonNull(src.getZoomLevels())
+            ? Maps.newLinkedHashMap(src.getZoomLevels())
+            : Maps.newLinkedHashMap();
+    if (Objects.nonNull(getZoomLevels())) getZoomLevels().forEach(mergedZoomLevels::put);
+    builder.zoomLevels(mergedZoomLevels);
 
     return builder.build();
   }
