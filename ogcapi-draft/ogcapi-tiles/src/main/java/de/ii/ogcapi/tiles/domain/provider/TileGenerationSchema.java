@@ -7,12 +7,15 @@
  */
 package de.ii.ogcapi.tiles.domain.provider;
 
+import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import java.util.Map;
 import java.util.Optional;
 
 public interface TileGenerationSchema {
 
   String getSpatialProperty();
+
+  Optional<SimpleFeatureGeometry> getGeometryType();
 
   Optional<String> getTemporalProperty();
 

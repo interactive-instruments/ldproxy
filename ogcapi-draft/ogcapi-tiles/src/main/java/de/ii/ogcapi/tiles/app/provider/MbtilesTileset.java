@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.app.mbtiles;
+package de.ii.ogcapi.tiles.app.provider;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +15,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
-import de.ii.ogcapi.tiles.domain.Tile;
+import de.ii.ogcapi.tiles.app.provider.ImmutableMbtilesMetadata.Builder;
+import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
+import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.xtraplatform.base.domain.LogContext;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -204,7 +206,7 @@ public class MbtilesTileset {
   }
 
   public MbtilesMetadata getMetadata() throws SQLException, IOException {
-    ImmutableMbtilesMetadata.Builder builder = ImmutableMbtilesMetadata.builder();
+    Builder builder = ImmutableMbtilesMetadata.builder();
     Connection connection = getConnection(true);
     ResultSet rs = SqlHelper.executeQuery(connection, "SELECT name, value FROM metadata");
     while (rs.next()) {
@@ -293,12 +295,12 @@ public class MbtilesTileset {
     return builder.build();
   }
 
-  public Optional<InputStream> getTile(Tile tile) throws SQLException, IOException {
+  public Optional<InputStream> getTile(TileQuery tile) throws SQLException, IOException {
     Optional<InputStream> result = Optional.empty();
-    int level = tile.getTileLevel();
-    int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
-    int col = tile.getTileCol();
-    boolean gzip = tile.getOutputFormat().getGzippedInMbtiles();
+    int level = tile.getLevel();
+    int row = tile.getTileMatrixSet().getTmsRow(level, tile.getRow());
+    int col = tile.getCol();
+    boolean gzip = Objects.equals(tile.getMediaType(), FeatureEncoderMVT.FORMAT);
     Connection connection = getConnection(true);
     String sql =
         String.format(
@@ -316,32 +318,29 @@ public class MbtilesTileset {
     return result;
   }
 
-  public Optional<Boolean> tileIsEmpty(Tile tile) throws SQLException, IOException {
+  public Optional<Boolean> tileIsEmpty(TileCoordinates tile) throws SQLException, IOException {
     Optional<Boolean> result = Optional.empty();
     Connection connection = getConnection(true);
-    int level = tile.getTileLevel();
-    int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
-    int col = tile.getTileCol();
+    int level = tile.getLevel();
+    int row = tile.getTileMatrixSet().getTmsRow(level, tile.getRow());
+    int col = tile.getCol();
     String sql =
         String.format(
             "SELECT tile_id FROM tile_map WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d",
             level, row, col);
     ResultSet rs = SqlHelper.executeQuery(connection, sql);
     if (rs.next()) {
-      result =
-          Optional.of(
-              rs.getInt("tile_id") == EMPTY_TILE_ID
-                  && tile.getOutputFormat().getSupportsEmptyTile());
+      result = Optional.of(rs.getInt("tile_id") == EMPTY_TILE_ID);
     }
     releaseConnection(connection);
     return result;
   }
 
-  public boolean tileExists(Tile tile) throws SQLException, IOException {
+  public boolean tileExists(TileCoordinates tile) throws SQLException, IOException {
     Connection connection = getConnection(true);
-    int level = tile.getTileLevel();
-    int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
-    int col = tile.getTileCol();
+    int level = tile.getLevel();
+    int row = tile.getTileMatrixSet().getTmsRow(level, tile.getRow());
+    int col = tile.getCol();
     String sql =
         String.format(
             "SELECT tile_data FROM tiles WHERE zoom_level=%d AND tile_row=%d AND tile_column=%d",
@@ -351,17 +350,17 @@ public class MbtilesTileset {
     return exists;
   }
 
-  public void writeTile(Tile tile, byte[] content) throws SQLException, IOException {
-    int level = tile.getTileLevel();
-    int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
-    int col = tile.getTileCol();
-    boolean gzip = tile.getOutputFormat().getGzippedInMbtiles();
-    boolean supportsEmtpyTile = tile.getOutputFormat().getSupportsEmptyTile();
+  public void writeTile(TileQuery tile, byte[] content) throws SQLException, IOException {
+    int level = tile.getLevel();
+    int row = tile.getTileMatrixSet().getTmsRow(level, tile.getRow());
+    int col = tile.getCol();
+    boolean gzip = Objects.equals(tile.getMediaType(), FeatureEncoderMVT.FORMAT);
+    boolean supportsEmtpyTile = Objects.equals(tile.getMediaType(), FeatureEncoderMVT.FORMAT);
     LOGGER.trace(
         "Write tile {}/{}/{}/{} to MBTiles cache {}.",
         tile.getTileMatrixSet().getId(),
         level,
-        tile.getTileRow(),
+        tile.getRow(),
         col,
         tilesetPath);
     Connection connection = null;
@@ -432,16 +431,16 @@ public class MbtilesTileset {
     }
   }
 
-  public void deleteTile(Tile tile) throws SQLException, IOException {
-    boolean supportsEmtpyTile = tile.getOutputFormat().getSupportsEmptyTile();
-    int level = tile.getTileLevel();
-    int row = tile.getTileMatrixSet().getTmsRow(level, tile.getTileRow());
-    int col = tile.getTileCol();
+  public void deleteTile(TileQuery tile) throws SQLException, IOException {
+    boolean supportsEmtpyTile = Objects.equals(tile.getMediaType(), FeatureEncoderMVT.FORMAT);
+    int level = tile.getLevel();
+    int row = tile.getTileMatrixSet().getTmsRow(level, tile.getRow());
+    int col = tile.getCol();
     LOGGER.trace(
         "Delete tile {}/{}/{}/{} from MBTiles cache {}.",
         tile.getTileMatrixSet().getId(),
         level,
-        tile.getTileRow(),
+        tile.getRow(),
         col,
         tilesetPath);
     Connection connection = null;

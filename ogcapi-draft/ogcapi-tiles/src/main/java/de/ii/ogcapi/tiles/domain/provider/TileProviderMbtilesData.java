@@ -8,8 +8,9 @@
 package de.ii.ogcapi.tiles.domain.provider;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
+import java.util.Map;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
@@ -25,26 +26,33 @@ import org.immutables.value.Value;
  *     MBTiles-Datei. Unterstützt wird nur das Kachelschema "WebMercatorQuad".
  */
 @Value.Immutable
-@Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableTileProviderMbtilesData.Builder.class)
 public interface TileProviderMbtilesData extends TileProviderData {
+
+  String PROVIDER_SUBTYPE = "MBTILES";
+  String ENTITY_SUBTYPE =
+      String.format("%s/%s", TileProviderData.PROVIDER_TYPE, PROVIDER_SUBTYPE).toLowerCase();
 
   /**
    * @langEn Fixed value, identifies the tile provider type.
    * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
    * @default `MBTILES`
    */
-  default String getType() {
-    return "MBTILES";
+  @Override
+  default String getTileProviderType() {
+    return PROVIDER_SUBTYPE;
   }
 
-  /**
-   * @langEn Filename of the MBTiles file in the `api-resources/tiles/{apiId}` directory.
-   * @langDe Dateiname der MBTiles-Datei im Verzeichnis `api-resources/tiles/{apiId}`.
-   * @default `null`
-   */
-  @Nullable
-  public abstract String getFilename();
+  // TODO: error when using interface
+  @Value.Default
+  @Override
+  default ImmutableLayerOptionsMbTilesDefault getLayerDefaults() {
+    return new ImmutableLayerOptionsMbTilesDefault.Builder().build();
+  }
+
+  // TODO: Buildable, merge defaults into layers
+  @Override
+  Map<String, LayerOptionsMbTiles> getLayers();
 
   @Override
   default TileProviderData mergeInto(TileProviderData source) {
@@ -53,11 +61,13 @@ public interface TileProviderMbtilesData extends TileProviderData {
     TileProviderMbtilesData src = (TileProviderMbtilesData) source;
 
     ImmutableTileProviderMbtilesData.Builder builder =
-        ImmutableTileProviderMbtilesData.builder().from(src).from(this);
+        new ImmutableTileProviderMbtilesData.Builder().from(src).from(this);
 
     // if (!getCenter().isEmpty()) builder.center(getCenter());
     // else if (!src.getCenter().isEmpty()) builder.center(src.getCenter());
 
     return builder.build();
   }
+
+  abstract class Builder implements EntityDataBuilder<TileProviderMbtilesData> {}
 }

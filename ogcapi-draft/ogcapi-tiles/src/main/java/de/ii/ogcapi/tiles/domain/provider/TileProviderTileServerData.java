@@ -9,6 +9,7 @@ package de.ii.ogcapi.tiles.domain.provider;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderTileServerData.Builder;
+import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
@@ -33,7 +34,6 @@ import org.immutables.value.Value;
  *     zukünftigen Versionen ändern.
  */
 @Value.Immutable
-@Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = Builder.class)
 public interface TileProviderTileServerData extends TileProviderData {
 
@@ -72,7 +72,8 @@ public interface TileProviderTileServerData extends TileProviderData {
 
     TileProviderTileServerData src = (TileProviderTileServerData) source;
 
-    Builder builder = ImmutableTileProviderTileServerData.builder().from(src).from(this);
+    ImmutableTileProviderTileServerData.Builder builder =
+        new ImmutableTileProviderTileServerData.Builder().from(src).from(this);
 
     /*List<String> tileEncodings =
         Objects.nonNull(src.getTileEncodings())
@@ -89,4 +90,6 @@ public interface TileProviderTileServerData extends TileProviderData {
 
     return builder.build();
   }
+
+  abstract class Builder implements EntityDataBuilder<TileProviderTileServerData> {}
 }

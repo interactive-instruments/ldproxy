@@ -10,7 +10,11 @@ package de.ii.ogcapi.tiles.domain.provider;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Range;
 import de.ii.xtraplatform.store.domain.entities.EntityData;
+import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
@@ -56,7 +60,25 @@ public interface TileProviderData extends EntityData {
         String.format("%s/%s", getProviderType(), getTileProviderType()).toLowerCase());
   }
 
+  LayerOptionsCommonDefault getLayerDefaults();
+
+  // TODO: Buildable, merge defaults into layers
   Map<String, ? extends LayerOptionsCommon> getLayers();
+
+  @JsonIgnore
+  @Value.Lazy
+  default Map<String, Map<String, Range<Integer>>> getTmsRanges() {
+    return getLayers().entrySet().stream()
+        .map(
+            entry -> {
+              LinkedHashMap<String, Range<Integer>> ranges =
+                  new LinkedHashMap<>(getLayerDefaults().getTmsRanges());
+              ranges.putAll(entry.getValue().getTmsRanges());
+
+              return new SimpleImmutableEntry<>(entry.getKey(), ranges);
+            })
+        .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
 
   TileProviderData mergeInto(TileProviderData tileProvider);
 }

@@ -47,6 +47,7 @@ import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
@@ -254,6 +255,11 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
       @Override
       public String getSpatialProperty() {
         return featureSchema.getPrimaryGeometry().orElseThrow().getFullPathAsString();
+      }
+
+      @Override
+      public Optional<SimpleFeatureGeometry> getGeometryType() {
+        return featureSchema.getPrimaryGeometry().orElseThrow().getGeometryType();
       }
 
       @Override

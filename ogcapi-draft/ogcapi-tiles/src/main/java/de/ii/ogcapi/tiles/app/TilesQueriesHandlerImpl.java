@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.tiles.app;
 
+import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -36,7 +38,6 @@ import de.ii.ogcapi.tiles.domain.ImmutableTileSets;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSets.Builder;
 import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ogcapi.tiles.domain.Tile;
-import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
 import de.ii.ogcapi.tiles.domain.TileSet;
@@ -93,7 +94,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
   private final EntityRegistry entityRegistry;
   private final ExtensionRegistry extensionRegistry;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
-  private final TileCache tileCache;
   private final StaticTileProviderStore staticTileProviderStore;
   private final FeaturesCoreProviders providers;
   private final TilesProviders tilesProviders;
@@ -108,7 +108,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       EntityRegistry entityRegistry,
       ExtensionRegistry extensionRegistry,
       TileMatrixSetLimitsGenerator limitsGenerator,
-      TileCache tileCache,
       StaticTileProviderStore staticTileProviderStore,
       FeaturesCoreProviders providers,
       TilesProviders tilesProviders,
@@ -119,7 +118,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     this.entityRegistry = entityRegistry;
     this.extensionRegistry = extensionRegistry;
     this.limitsGenerator = limitsGenerator;
-    this.tileCache = tileCache;
     this.staticTileProviderStore = staticTileProviderStore;
     this.providers = providers;
     this.tilesProviders = tilesProviders;
@@ -428,7 +426,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     Optional<FeatureTypeConfigurationOgcApi> collectionData =
         queryInput.getCollectionId().flatMap(apiData::getCollectionData);
     // TODO: get layer name from cfg
-    String layer = queryInput.getCollectionId().orElse("__all__");
+    String layer = queryInput.getCollectionId().orElse(DATASET_TILES);
     TileFormatExtension outputFormat = queryInput.getOutputFormat();
 
     ImmutableTileQuery.Builder tileQueryBuilder =
