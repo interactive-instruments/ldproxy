@@ -24,6 +24,8 @@ public abstract class JsonSchemaNumber extends JsonSchema {
 
   public abstract Optional<Double> getMaximum();
 
+  public abstract Optional<String> getUnit();
+
   public abstract static class Builder extends JsonSchema.Builder {}
 
   @SuppressWarnings("UnstableApiUsage")
@@ -32,5 +34,6 @@ public abstract class JsonSchemaNumber extends JsonSchema {
         into.putString(from.getType(), StandardCharsets.UTF_8);
         from.getMinimum().ifPresent(val -> into.putDouble(val));
         from.getMaximum().ifPresent(val -> into.putDouble(val));
+        from.getUnit().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
       };
 }

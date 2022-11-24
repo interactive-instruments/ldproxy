@@ -97,7 +97,7 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
 
   @Override
   protected Schema<?> getSchemaForLiteralType(
-      Type type, Optional<String> label, Optional<String> description) {
+      Type type, Optional<String> label, Optional<String> description, Optional<String> unit) {
     Schema<?> valueSchema;
     switch (type) {
       case INTEGER:
