@@ -9,6 +9,7 @@ package de.ii.ogcapi.text.search.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
+import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
 import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
@@ -49,7 +50,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterQ extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterQ extends ApiExtensionCache
+    implements OgcApiQueryParameter, FeatureQueryTransformer {
 
   private final Schema<?> baseSchema;
   private final SchemaValidator schemaValidator;
@@ -136,10 +138,10 @@ public class QueryParameterQ extends ApiExtensionCache implements OgcApiQueryPar
 
   @Override
   public Builder transformQuery(
-      FeatureTypeConfigurationOgcApi featureType,
       Builder queryBuilder,
       Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData) {
 
     if (parameters.containsKey(PARAMETER_Q)) {
       Set<String> qProperties = new HashSet<>();
@@ -148,10 +150,10 @@ public class QueryParameterQ extends ApiExtensionCache implements OgcApiQueryPar
 
       Optional<FeaturesCollectionQueryables> featuresCoreQueryables =
           apiData
-              .getExtension(FeaturesCoreConfiguration.class, featureType.getId())
+              .getExtension(FeaturesCoreConfiguration.class, collectionData.getId())
               .flatMap(FeaturesCoreConfiguration::getQueryables);
       Optional<TextSearchConfiguration> textSearchConfiguration =
-          apiData.getExtension(TextSearchConfiguration.class, featureType.getId());
+          apiData.getExtension(TextSearchConfiguration.class, collectionData.getId());
 
       featuresCoreQueryables.ifPresent(queryables -> qProperties.addAll(queryables.getQ()));
       textSearchConfiguration.ifPresent(cfg -> qProperties.addAll(cfg.getProperties()));

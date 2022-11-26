@@ -130,7 +130,7 @@ public class FeaturesFormatCsv implements ConformanceClass, FeatureFormatExtensi
 
     return Optional.of(
         new FeatureEncoderCsv(
-            ImmutableFeatureTransformationContextCsv.builder()
+            ImmutableEncodingContextCsv.builder()
                 .from(transformationContext)
                 .schema(schema)
                 .build()));

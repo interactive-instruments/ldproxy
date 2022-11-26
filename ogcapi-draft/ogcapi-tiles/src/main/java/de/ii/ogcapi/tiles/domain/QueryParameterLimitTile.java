@@ -14,8 +14,11 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationParametersTransient;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
@@ -34,7 +37,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterLimitTile extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterLimitTile extends ApiExtensionCache
+    implements OgcApiQueryParameter, TypedQueryParameter<Integer>, TileGenerationUserParameter {
 
   private final SchemaValidator schemaValidator;
 
@@ -131,24 +135,21 @@ public class QueryParameterLimitTile extends ApiExtensionCache implements OgcApi
   }
 
   @Override
-  public ImmutableFeatureQuery.Builder transformQuery(
-      ImmutableFeatureQuery.Builder queryBuilder,
-      Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
-    if (parameters.containsKey(getName())) {
-      queryBuilder.limit(Integer.parseInt(parameters.get(getName())));
+  public Integer parse(String value, OgcApiDataV2 apiData) {
+    try {
+      return Integer.parseInt(value);
+    } catch (Throwable e) {
+      throw new IllegalArgumentException(
+          String.format("Invalid value for query parameter '%s'.", getName()), e);
     }
-
-    return queryBuilder;
   }
 
   @Override
-  public ImmutableFeatureQuery.Builder transformQuery(
-      FeatureTypeConfigurationOgcApi featureType,
-      ImmutableFeatureQuery.Builder queryBuilder,
-      Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
-    return transformQuery(queryBuilder, parameters, apiData);
+  public void applyTo(
+      ImmutableTileGenerationParametersTransient.Builder userParametersBuilder,
+      QueryParameterSet parameters,
+      Optional<TileGenerationSchema> generationSchema) {
+    parameters.getValue(this).ifPresent(userParametersBuilder::limit);
   }
 
   @Override

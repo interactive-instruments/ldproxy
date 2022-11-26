@@ -106,7 +106,7 @@ public abstract class Endpoint implements EndpointExtension {
    */
   public abstract List<? extends FormatExtension> getFormats();
 
-  protected Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters) {
+  public Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters) {
     return toFlatMap(queryParameters, false);
   }
 
@@ -126,7 +126,7 @@ public abstract class Endpoint implements EndpointExtension {
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
-  protected Map<MediaType, ApiMediaTypeContent> getContent(OgcApiDataV2 apiData, String path) {
+  public Map<MediaType, ApiMediaTypeContent> getContent(OgcApiDataV2 apiData, String path) {
     return getFormats().stream()
         .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
         .map(f -> f.getContent(apiData, path))
@@ -143,7 +143,7 @@ public abstract class Endpoint implements EndpointExtension {
         .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
   }
 
-  protected QueryInput getGenericQueryInput(OgcApiDataV2 apiData) {
+  public QueryInput getGenericQueryInput(OgcApiDataV2 apiData) {
     ImmutableQueryInputGeneric.Builder queryInputBuilder =
         new ImmutableQueryInputGeneric.Builder()
             .includeLinkHeader(
