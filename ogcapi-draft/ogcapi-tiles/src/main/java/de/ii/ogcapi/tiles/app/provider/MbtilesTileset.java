@@ -8,7 +8,10 @@
 package de.ii.ogcapi.tiles.app.provider;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -16,6 +19,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tiles.app.provider.ImmutableMbtilesMetadata.Builder;
+import de.ii.ogcapi.tiles.domain.ImmutableVectorLayer;
 import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.xtraplatform.base.domain.LogContext;
@@ -29,8 +33,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.Semaphore;
@@ -53,13 +59,14 @@ public class MbtilesTileset {
 
   public MbtilesTileset(Path tilesetPath) {
     if (!Files.exists(tilesetPath)) {
-      throw new RuntimeException(String.format("Mbtiles file does not exist: %s", tilesetPath));
+      throw new IllegalStateException(
+          String.format("Mbtiles file does not exist: %s", tilesetPath));
     }
     this.tilesetPath = tilesetPath;
     try {
       this.metadata = getMetadata();
     } catch (SQLException | IOException e) {
-      throw new RuntimeException(
+      throw new IllegalStateException(
           String.format("Could not read from Mbtiles file: %s", tilesetPath), e);
     }
   }
@@ -150,13 +157,13 @@ public class MbtilesTileset {
         GZIPOutputStream gzipStream = new GZIPOutputStream(mvt);
         gzipStream.close();
         statement.setBytes(2, mvt.toByteArray());
-        statement.execute();
+        statement.executeUpdate();
         statement.close();
       }
 
       SqlHelper.execute(connection, "COMMIT");
     } catch (Exception e) {
-      throw new RuntimeException(
+      throw new IllegalStateException(
           String.format("Could not create new Mbtiles file: %s", tilesetPath), e);
     }
   }
@@ -173,7 +180,7 @@ public class MbtilesTileset {
         if (aquireMutexOnCreate)
           LOGGER.trace("getConnection: Trying to aquite mutex: '{}'.", aquired);
         if (aquireMutexOnCreate && !aquired)
-          throw new RuntimeException(
+          throw new IllegalStateException(
               String.format("Could not aquire mutex to create MBTiles file: %s", tilesetPath));
         // now that we have the mutex, check again, if the file exists, it may have been
         // created by a parallel request
@@ -285,8 +292,37 @@ public class MbtilesTileset {
               builder.version(Float.parseFloat(value));
             }
             break;
-          case "vector_layers":
-            // TODO vector_layers
+          case "json":
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+              ArrayNode layers = (ArrayNode) mapper.readTree(value).get("vector_layers");
+              for (JsonNode node : layers) {
+                ObjectNode layer = (ObjectNode) node;
+                ImmutableVectorLayer.Builder builder2 =
+                    ImmutableVectorLayer.builder().id(layer.get("id").asText());
+                if (layer.has("description")) {
+                  builder2.description(layer.get("description").asText());
+                }
+                if (layer.has("minzoom")) {
+                  builder2.minzoom(layer.get("minzoom").asDouble());
+                }
+                if (layer.has("maxzoom")) {
+                  builder2.minzoom(layer.get("maxzoom").asDouble());
+                }
+                ObjectNode fields = (ObjectNode) layer.get("fields");
+                for (Iterator<Entry<String, JsonNode>> it = fields.fields(); it.hasNext(); ) {
+                  Entry<String, JsonNode> field = it.next();
+                  builder2.putFields(field.getKey(), field.getValue().textValue());
+                }
+                builder.addVectorLayers(builder2.build());
+              }
+            } catch (IOException e) {
+              if (LOGGER.isErrorEnabled()) {
+                LOGGER.error(
+                    "Could not parse Vector Layers object from MBTiles metadata, the vector layers are ignored: {}",
+                    e.getMessage());
+              }
+            }
             break;
         }
       }
@@ -369,7 +405,7 @@ public class MbtilesTileset {
       aquired = mutex.tryAcquire(5, TimeUnit.SECONDS);
       LOGGER.trace("writeTile: Trying to aquite mutex: '{}'.", aquired);
       if (!aquired)
-        throw new RuntimeException(
+        throw new IllegalStateException(
             String.format("Could not aquire mutex to create MBTiles file: %s", tilesetPath));
       connection = getConnection(false);
       // do we have an old blob?
@@ -398,7 +434,7 @@ public class MbtilesTileset {
           mvt.write(content);
         }
         statement.setBytes(1, mvt.toByteArray());
-        statement.execute();
+        statement.executeUpdate();
         statement.close();
         rs = SqlHelper.executeQuery(connection, "SELECT last_insert_rowid()");
         tile_id = rs.getInt(1);
@@ -413,13 +449,24 @@ public class MbtilesTileset {
       statement.setInt(2, level);
       statement.setInt(3, row);
       statement.setInt(4, col);
-      statement.execute();
+      statement.executeUpdate();
       statement.close();
       // finally remove any old blob
       if (Objects.nonNull(old_tile_id) && (old_tile_id != EMPTY_TILE_ID || !supportsEmtpyTile)) {
         SqlHelper.execute(
             connection, String.format("DELETE FROM tile_map WHERE tile_id = %d", old_tile_id));
       }
+    } catch (SQLException e) {
+      throw new IllegalStateException(
+          String.format(
+              "Failed to write tile %s/%d/%d/%d for layer '%s'. Reason: %s",
+              tile.getTileMatrixSet().getId(),
+              tile.getLevel(),
+              tile.getRow(),
+              tile.getCol(),
+              tile.getLayer(),
+              e.getMessage()),
+          e);
     } catch (InterruptedException e) {
       LOGGER.debug("writeTile: Thread has been interrupted.");
     } finally {
@@ -449,7 +496,7 @@ public class MbtilesTileset {
       aquired = mutex.tryAcquire(5, TimeUnit.SECONDS);
       LOGGER.trace("deleteTile: Trying to aquite mutex: '{}'.", aquired);
       if (!aquired)
-        throw new RuntimeException(
+        throw new IllegalStateException(
             String.format("Could not aquire mutex to create MBTiles file: %s", tilesetPath));
       connection = getConnection(false);
       String sql =
@@ -491,7 +538,7 @@ public class MbtilesTileset {
       aquired = mutex.tryAcquire(5, TimeUnit.SECONDS);
       LOGGER.trace("deleteTiles: Trying to aquite mutex: '{}'.", aquired);
       if (!aquired)
-        throw new RuntimeException(
+        throw new IllegalStateException(
             String.format("Could not aquire mutex to create MBTiles file: %s", tilesetPath));
       connection = getConnection(false);
       String sqlFrom =
