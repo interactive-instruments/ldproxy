@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 public class SqlHelper {
@@ -20,8 +21,9 @@ public class SqlHelper {
     try {
       Class.forName("org.sqlite.JDBC");
       return DriverManager.getConnection("jdbc:sqlite:" + mbtilesFile.getAbsolutePath());
-    } catch (Exception e) {
-      throw new RuntimeException("Connection to Mbtiles database could not be established.", e);
+    } catch (SQLException | ClassNotFoundException e) {
+      throw new IllegalStateException(
+          "Connection to Mbtiles database could not be established.", e);
     }
   }
 
@@ -29,8 +31,8 @@ public class SqlHelper {
     try {
       Statement statement = connection.createStatement();
       return statement.executeQuery(sql);
-    } catch (Exception e) {
-      throw new RuntimeException(String.format("Query execution failed: %s", sql), e);
+    } catch (SQLException e) {
+      throw new IllegalStateException(String.format("Query execution failed: %s", sql), e);
     }
   }
 
@@ -39,8 +41,8 @@ public class SqlHelper {
       Statement statement = connection.createStatement();
       statement.execute(sql);
       statement.close();
-    } catch (Exception e) {
-      throw new RuntimeException(String.format("Statement execution failed: %s", sql), e);
+    } catch (SQLException e) {
+      throw new IllegalStateException(String.format("Statement execution failed: %s", sql), e);
     }
   }
 
@@ -57,8 +59,8 @@ public class SqlHelper {
       else statement.setString(2, value.toString());
       statement.execute();
       statement.close();
-    } catch (Exception e) {
-      throw new RuntimeException(
+    } catch (SQLException e) {
+      throw new IllegalStateException(
           String.format("Could not add metadata: %s=%s", name, value.toString()), e);
     }
   }
