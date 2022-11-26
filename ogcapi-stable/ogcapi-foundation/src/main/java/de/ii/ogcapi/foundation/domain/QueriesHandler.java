@@ -137,16 +137,9 @@ public interface QueriesHandler<T extends QueryIdentifier> {
               .map(Link::getLink)
               .collect(Collectors.toUnmodifiableList());
 
-      // only add links, if the Link strings are not larger than the limit, if one is provided
-      Optional<Integer> optionalLimit =
-          requestContext
-              .getApi()
-              .getData()
-              .getExtension(FoundationConfiguration.class)
-              .map(FoundationConfiguration::getLinkHeaderLengthLimit);
-      if (optionalLimit.isEmpty()
-          || headerLinks.stream().map(l -> l.toString().length()).mapToInt(Integer::intValue).sum()
-              <= optionalLimit.get()) {
+      // only add links, if the Link strings are not larger than the limit
+      if (headerLinks.stream().map(l -> l.toString().length()).mapToInt(Integer::intValue).sum()
+          <= requestContext.getMaxResponseLinkHeaderSize()) {
         headerLinks.forEach(response::links);
       }
     }

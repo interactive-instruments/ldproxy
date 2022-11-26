@@ -419,11 +419,12 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
         if (collectionId.isPresent())
           throw new NotAcceptableException(
               MessageFormat.format(
-                  "The style ''{0}'' is not available in the requested format for collection ''{1}''.",
-                  styleId, collectionId.get()));
+                  "The style ''{0}'' is not available in the requested format ''{{1}}'' for collection ''{2}''.",
+                  styleId, styleFormat.getMediaType().label(), collectionId.get()));
         throw new NotAcceptableException(
             MessageFormat.format(
-                "The style ''{0}'' is not available in the requested format.", styleId));
+                "The style ''{0}'' is not available in the requested format ''{1}''.",
+                styleId, styleFormat.getMediaType().label()));
       }
 
       if (collectionId.isPresent())
