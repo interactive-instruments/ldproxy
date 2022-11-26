@@ -8,9 +8,11 @@
 package de.ii.ogcapi.tilematrixsets.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.Lists;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import java.util.List;
+import java.util.Objects;
 import org.immutables.value.Value;
 
 /**
@@ -46,6 +48,21 @@ public interface TileMatrixSetsConfiguration extends ExtensionConfiguration, Cac
         ((ImmutableTileMatrixSetsConfiguration.Builder) source.getBuilder())
             .from(source)
             .from(this);
+
+    TileMatrixSetsConfiguration src = (TileMatrixSetsConfiguration) source;
+
+    List<String> includes =
+        Objects.nonNull(src.getIncludePredefined())
+            ? Lists.newArrayList(src.getIncludePredefined())
+            : Lists.newArrayList();
+    getIncludePredefined()
+        .forEach(
+            include -> {
+              if (!includes.contains(include)) {
+                includes.add(include);
+              }
+            });
+    builder.includePredefined(includes);
 
     return builder.build();
   }

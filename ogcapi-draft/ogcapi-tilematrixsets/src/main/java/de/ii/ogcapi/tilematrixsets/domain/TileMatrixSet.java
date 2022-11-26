@@ -47,7 +47,7 @@ public interface TileMatrixSet {
       inputStream =
           Resources.asByteSource(
                   Resources.getResource(
-                      TileMatrixSetImpl.class, "/tileMatrixSets/" + tileMatrixSetId + ".json"))
+                      TileMatrixSetImpl.class, "/tilematrixsets/" + tileMatrixSetId + ".json"))
               .openStream();
     } catch (IllegalArgumentException e) {
       LOGGER.debug("Tile matrix set '{}' not found: {}", tileMatrixSetId, e.getMessage());
