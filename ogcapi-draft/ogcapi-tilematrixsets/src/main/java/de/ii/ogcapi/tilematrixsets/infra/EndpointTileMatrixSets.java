@@ -10,7 +10,6 @@ package de.ii.ogcapi.tilematrixsets.infra;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -64,7 +63,6 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileMatrixSets.class);
   private static final List<String> TAGS = ImmutableList.of("Discover and fetch tiling schemes");
 
-  private final FeaturesCoreProviders providers;
   private final TileMatrixSetsQueriesHandler queryHandler;
   private final TileMatrixSetRepository tileMatrixSetRepository;
 
@@ -72,12 +70,10 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
   EndpointTileMatrixSets(
       ExtensionRegistry extensionRegistry,
       TileMatrixSetsQueriesHandler queryHandler,
-      FeaturesCoreProviders providers,
       TileMatrixSetRepository tileMatrixSetRepository) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
-    this.providers = providers;
   }
 
   @Override

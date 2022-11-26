@@ -29,7 +29,6 @@ import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TilesBoundingBox;
-import de.ii.ogcapi.tiles.domain.ImmutableFields;
 import de.ii.ogcapi.tiles.domain.ImmutableTileLayer;
 import de.ii.ogcapi.tiles.domain.ImmutableTilePoint;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSet;
@@ -366,9 +365,7 @@ public class TilesHelper {
             featureTypeApi -> {
               String featureTypeId =
                   apiData
-                      .getCollections()
-                      .get(featureTypeApi.getId())
-                      .getExtension(FeaturesCoreConfiguration.class)
+                      .getExtension(FeaturesCoreConfiguration.class, featureTypeApi.getId())
                       .map(cfg -> cfg.getFeatureType().orElse(featureTypeApi.getId()))
                       .orElse(featureTypeApi.getId());
               Optional<GeoJsonConfiguration> geoJsonConfiguration =
@@ -380,6 +377,10 @@ public class TilesHelper {
                       .getFeatureProvider(apiData, featureTypeApi)
                       .map(provider -> provider.getData().getTypes().get(featureTypeId));
               if (featureType.isEmpty()) return null;
+              ImmutableVectorLayer.Builder builder =
+                  ImmutableVectorLayer.builder()
+                      .id(featureTypeApi.getId())
+                      .description(featureTypeApi.getDescription().orElse(""));
               List<FeatureSchema> properties =
                   flatten
                       ? featureType.get().getAllNestedProperties()
@@ -397,7 +398,6 @@ public class TilesHelper {
                                       name.replace("[]", ""), name))
                           .collect(
                               ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-              ImmutableFields.Builder fieldsBuilder = new ImmutableFields.Builder();
               AtomicReference<String> geometryType = new AtomicReference<>("unknown");
               properties.forEach(
                   property -> {
@@ -406,30 +406,16 @@ public class TilesHelper {
                         !flatten || property.isObject()
                             ? property.getName()
                             : propertyNameMap.get(String.join(".", property.getFullPath()));
-                    if (flatten && propertyName != null)
+                    if (flatten && propertyName != null) {
                       propertyName = propertyName.replace("[]", ".1");
+                    }
                     switch (propType) {
                       case FLOAT:
                       case INTEGER:
                       case STRING:
                       case BOOLEAN:
                       case DATETIME:
-                        fieldsBuilder.putAdditionalProperties(propertyName, getType(propType));
-                        break;
-                      case OBJECT:
-                      case OBJECT_ARRAY:
-                        if (!flatten) {
-                          if (property.getObjectType().orElse("").equals("Link")) {
-                            fieldsBuilder.putAdditionalProperties(propertyName, "link");
-                            break;
-                          }
-                          fieldsBuilder.putAdditionalProperties(propertyName, "object");
-                        }
-                        break;
-                      case VALUE_ARRAY:
-                        fieldsBuilder.putAdditionalProperties(
-                            propertyName,
-                            getType(property.getValueType().orElse(SchemaBase.Type.UNKNOWN)));
+                        builder.putFields(propertyName, getType(propType));
                         break;
                       case GEOMETRY:
                         switch (property.getGeometryType().orElse(SimpleFeatureGeometry.ANY)) {
@@ -453,19 +439,18 @@ public class TilesHelper {
                             break;
                         }
                         break;
+                      case OBJECT:
+                      case OBJECT_ARRAY:
+                      case VALUE_ARRAY:
                       case UNKNOWN:
                       default:
-                        fieldsBuilder.putAdditionalProperties(propertyName, "unknown");
+                        // Fallback in MBTiles
+                        builder.putFields(propertyName, "String");
                         break;
                     }
                   });
+              builder.geometryType(geometryType.get());
 
-              ImmutableVectorLayer.Builder builder =
-                  ImmutableVectorLayer.builder()
-                      .id(featureTypeApi.getId())
-                      .description(featureTypeApi.getDescription().orElse(""))
-                      .geometryType(geometryType.get())
-                      .fields(fieldsBuilder.build());
               apiData
                   .getExtension(TilesConfiguration.class, featureTypeApi.getId())
                   .map(config -> config.getZoomLevelsDerived().get(tileMatrixSetId))

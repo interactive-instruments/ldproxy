@@ -231,7 +231,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
    * @default `{ "type": "FEATURES", ... }`
    */
   @Nullable
-  TileProvider getTileProvider(); // TODO add TileServer support
+  TileProvider getTileProvider();
 
   /**
    * @langEn Controls which formats are supported for the tileset resources. Available are [OGC

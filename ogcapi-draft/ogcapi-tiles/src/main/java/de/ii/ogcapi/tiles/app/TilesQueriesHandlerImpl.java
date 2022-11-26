@@ -10,13 +10,10 @@ package de.ii.ogcapi.tiles.app;
 import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.ByteStreams;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -36,8 +33,6 @@ import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSets;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSets.Builder;
-import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
-import de.ii.ogcapi.tiles.domain.Tile;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
 import de.ii.ogcapi.tiles.domain.TileSet;
@@ -57,9 +52,6 @@ import de.ii.ogcapi.tiles.domain.provider.TileResult;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.web.domain.ETag;
-import de.ii.xtraplatform.web.domain.LastModified;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.Date;
@@ -73,12 +65,9 @@ import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +83,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
   private final EntityRegistry entityRegistry;
   private final ExtensionRegistry extensionRegistry;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
-  private final StaticTileProviderStore staticTileProviderStore;
   private final FeaturesCoreProviders providers;
   private final TilesProviders tilesProviders;
   private final TileMatrixSetRepository tileMatrixSetRepository;
@@ -108,7 +96,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       EntityRegistry entityRegistry,
       ExtensionRegistry extensionRegistry,
       TileMatrixSetLimitsGenerator limitsGenerator,
-      StaticTileProviderStore staticTileProviderStore,
       FeaturesCoreProviders providers,
       TilesProviders tilesProviders,
       TileMatrixSetRepository tileMatrixSetRepository,
@@ -118,7 +105,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     this.entityRegistry = entityRegistry;
     this.extensionRegistry = extensionRegistry;
     this.limitsGenerator = limitsGenerator;
-    this.staticTileProviderStore = staticTileProviderStore;
     this.providers = providers;
     this.tilesProviders = tilesProviders;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
@@ -369,7 +355,14 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     TileResult result = tileProvider.getTile(tileQuery);
 
     if (!result.isAvailable()) {
-      throw result.getError().map(NotFoundException::new).orElseGet(NotFoundException::new);
+      if (result.isOutsideLimits()) {
+        throw result.getError().map(NotFoundException::new).orElseGet(NotFoundException::new);
+      } else {
+        throw result
+            .getError()
+            .map(IllegalStateException::new)
+            .orElseGet(IllegalStateException::new);
+      }
     }
 
     byte[] content = result.getContent().get();
@@ -377,6 +370,12 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, null, eTag);
 
     if (Objects.nonNull(response)) {
+      // TODO add support for empty/full for Features and MBTiles caches
+      if (result.isEmpty()) {
+        response.header("OATiles-hint", "empty");
+      } else if (result.isFull()) {
+        response.header("OATiles-hint", "full");
+      }
       return response.build();
     }
 
@@ -459,121 +458,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       tileQueryBuilder.generationParametersTransient(userParameters);
     }
     return tileQueryBuilder.build();
-  }
-
-  private Response getMbtilesTileResponse(
-      QueryInputTileMbtilesTile queryInput, ApiRequestContext requestContext) {
-
-    String mbtilesFilename = queryInput.getProvider().getFilename();
-
-    java.nio.file.Path provider =
-        staticTileProviderStore.getTileProvider(queryInput.getTile().getApiData(), mbtilesFilename);
-
-    if (!provider.toFile().exists())
-      throw new RuntimeException(String.format("Mbtiles file '%s' does not exist", provider));
-
-    StreamingOutput streamingOutput =
-        outputStream ->
-            ByteStreams.copy(
-                staticTileProviderStore.getTile(provider, queryInput.getTile()), outputStream);
-
-    List<Link> links =
-        new DefaultLinksGenerator()
-            .generateLinks(
-                requestContext.getUriCustomizer(),
-                requestContext.getMediaType(),
-                ImmutableList.of(),
-                i18n,
-                requestContext.getLanguage());
-
-    Date lastModified = LastModified.from(provider);
-    EntityTag etag = ETag.from(staticTileProviderStore.getTile(provider, queryInput.getTile()));
-    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
-
-    Tile tile = queryInput.getTile();
-    return prepareSuccessResponse(
-            requestContext,
-            queryInput.getIncludeLinkHeader() ? links : null,
-            HeaderCaching.of(lastModified, etag, queryInput),
-            null,
-            HeaderContentDisposition.of(
-                String.format(
-                    "%s_%d_%d_%d.%s",
-                    tile.getTileMatrixSet().getId(),
-                    tile.getTileLevel(),
-                    tile.getTileRow(),
-                    tile.getTileCol(),
-                    tile.getOutputFormat().getMediaType().fileExtension())))
-        .entity(streamingOutput)
-        .build();
-  }
-
-  private Response getTileServerTileResponse(
-      QueryInputTileTileServerTile queryInput, ApiRequestContext requestContext) {
-
-    Tile tile = queryInput.getTile();
-
-    final String urlTemplate =
-        tile.isDatasetTile()
-            ? queryInput.getProvider().getUrlTemplate()
-            : queryInput.getProvider().getUrlTemplateSingleCollection();
-
-    if (Objects.isNull(urlTemplate))
-      throw new IllegalStateException(
-          "The MAP_TILES configuration is invalid, no 'urlTemplate' was found.");
-
-    ApiMediaType mediaType = tile.getOutputFormat().getMediaType();
-    WebTarget client =
-        ClientBuilder.newClient()
-            .target(urlTemplate)
-            .resolveTemplate("tileMatrix", tile.getTileLevel())
-            .resolveTemplate("tileRow", tile.getTileRow())
-            .resolveTemplate("tileCol", tile.getTileCol())
-            .resolveTemplate("fileExtension", mediaType.fileExtension());
-    if (Objects.nonNull(tile.getCollectionId()))
-      client = client.resolveTemplate("collectionId", tile.getCollectionId());
-    Response response = client.request(mediaType.type()).get();
-
-    // unsuccessful? just forward the error response
-    if (response.getStatus() != 200) return response;
-
-    List<Link> links =
-        new DefaultLinksGenerator()
-            .generateLinks(
-                requestContext.getUriCustomizer(),
-                requestContext.getMediaType(),
-                ImmutableList.of(),
-                i18n,
-                requestContext.getLanguage());
-
-    byte[] content;
-    try {
-      content = response.readEntity(InputStream.class).readAllBytes();
-    } catch (IOException e) {
-      throw new RuntimeException("Could not read map tile from TileServer.", e);
-    }
-    Date lastModified = null;
-    EntityTag etag = ETag.from(content);
-    Response.ResponseBuilder responseBuilder =
-        evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(responseBuilder)) return responseBuilder.build();
-
-    return prepareSuccessResponse(
-            requestContext,
-            queryInput.getIncludeLinkHeader() ? links : null,
-            HeaderCaching.of(lastModified, etag, queryInput),
-            null,
-            HeaderContentDisposition.of(
-                String.format(
-                    "%s_%d_%d_%d.%s",
-                    tile.getTileMatrixSet().getId(),
-                    tile.getTileLevel(),
-                    tile.getTileRow(),
-                    tile.getTileCol(),
-                    tile.getOutputFormat().getMediaType().fileExtension())))
-        .entity(content)
-        .build();
   }
 
   private TileMatrixSet getTileMatrixSetById(String tileMatrixSetId) {

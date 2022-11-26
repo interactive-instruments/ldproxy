@@ -8,6 +8,7 @@
 package de.ii.ogcapi.tiles.domain.provider;
 
 import com.google.common.collect.Range;
+import de.ii.xtraplatform.base.domain.LogContext;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
@@ -36,6 +37,9 @@ public interface ChainedTileProvider {
             tile.getCol(),
             tile.getLayer(),
             e.getMessage());
+        if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+          LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
+        }
       }
     }
 
@@ -57,6 +61,9 @@ public interface ChainedTileProvider {
             tile.getCol(),
             tile.getLayer(),
             e.getMessage());
+        if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+          LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
+        }
       }
 
       // delegateResult might be corrupt, recreate

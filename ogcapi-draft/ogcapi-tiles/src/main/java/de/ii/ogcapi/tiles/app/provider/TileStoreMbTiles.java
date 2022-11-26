@@ -11,12 +11,12 @@ import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.TileStore;
 import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.TileStoreReadOnly;
-import de.ii.ogcapi.tiles.domain.ImmutableFields;
 import de.ii.ogcapi.tiles.domain.ImmutableVectorLayer;
 import de.ii.ogcapi.tiles.domain.VectorLayer;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,8 +30,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TileStoreMbTiles implements TileStore {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(TileStoreMbTiles.class);
 
   static TileStoreReadOnly readOnly(Map<String, Path> tileSetSources) {
     Map<String, MbtilesTileset> tileSets =
@@ -71,6 +75,19 @@ public class TileStoreMbTiles implements TileStore {
     try {
       return tileSets.containsKey(key(tile)) && tileSets.get(key(tile)).tileExists(tile);
     } catch (SQLException | IOException e) {
+      if (LOGGER.isWarnEnabled()) {
+        LOGGER.warn(
+            "Failed to check existence of tile {}/{}/{}/{} for layer '{}'. Reason: {}",
+            tile.getTileMatrixSet().getId(),
+            tile.getLevel(),
+            tile.getRow(),
+            tile.getCol(),
+            tile.getLayer(),
+            e.getMessage());
+        if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+          LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
+        }
+      }
     }
     return false;
   }
@@ -101,6 +118,19 @@ public class TileStoreMbTiles implements TileStore {
         return tileSets.get(key(tile)).tileIsEmpty(tile);
       }
     } catch (SQLException e) {
+      if (LOGGER.isWarnEnabled()) {
+        LOGGER.warn(
+            "Failed to retrieve tile {}/{}/{}/{} for layer '{}'. Reason: {}",
+            tile.getTileMatrixSet().getId(),
+            tile.getLevel(),
+            tile.getRow(),
+            tile.getCol(),
+            tile.getLayer(),
+            e.getMessage());
+        if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+          LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
+        }
+      }
     }
     return Optional.empty();
   }
@@ -108,8 +138,8 @@ public class TileStoreMbTiles implements TileStore {
   @Override
   public void put(TileQuery tile, InputStream content) throws IOException {
     try {
-      if (!tileSets.containsKey(key(tile))) {
-        synchronized (tileSets) {
+      synchronized (tileSets) {
+        if (!tileSets.containsKey(key(tile))) {
           tileSets.put(
               key(tile),
               createTileSet(
@@ -122,6 +152,19 @@ public class TileStoreMbTiles implements TileStore {
       tileSets.get(key(tile)).writeTile(tile, content.readAllBytes());
 
     } catch (SQLException e) {
+      if (LOGGER.isWarnEnabled()) {
+        LOGGER.warn(
+            "Failed to write tile {}/{}/{}/{} for layer '{}'. Reason: {}",
+            tile.getTileMatrixSet().getId(),
+            tile.getLevel(),
+            tile.getRow(),
+            tile.getCol(),
+            tile.getLayer(),
+            e.getMessage());
+        if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+          LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
+        }
+      }
     }
   }
 
@@ -132,6 +175,19 @@ public class TileStoreMbTiles implements TileStore {
         tileSets.get(key(tile)).deleteTile(tile);
       }
     } catch (SQLException e) {
+      if (LOGGER.isWarnEnabled()) {
+        LOGGER.warn(
+            "Failed to delete tile {}/{}/{}/{} for layer '{}'. Reason: {}",
+            tile.getTileMatrixSet().getId(),
+            tile.getLevel(),
+            tile.getRow(),
+            tile.getCol(),
+            tile.getLayer(),
+            e.getMessage());
+        if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+          LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
+        }
+      }
     }
   }
 
@@ -143,6 +199,21 @@ public class TileStoreMbTiles implements TileStore {
         tileSets.get(key(layer, tileMatrixSet)).deleteTiles(tileMatrixSet, limits);
       }
     } catch (SQLException e) {
+      if (LOGGER.isWarnEnabled()) {
+        LOGGER.warn(
+            "Failed to delete tiles {}/{}/{}-{}/{}-{} for layer '{}'. Reason: {}",
+            tileMatrixSet,
+            limits.getTileMatrix(),
+            limits.getMinTileRow(),
+            limits.getMaxTileRow(),
+            limits.getMinTileCol(),
+            limits.getMaxTileCol(),
+            layer,
+            e.getMessage());
+        if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+          LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
+        }
+      }
     }
   }
 
@@ -156,12 +227,7 @@ public class TileStoreMbTiles implements TileStore {
   private VectorLayer getVectorLayer(String subLayer, TileGenerationSchema generationSchema) {
 
     ImmutableVectorLayer.Builder builder =
-        ImmutableVectorLayer.builder()
-            .id(subLayer)
-            .fields(
-                new ImmutableFields.Builder()
-                    .additionalProperties(generationSchema.getProperties())
-                    .build());
+        ImmutableVectorLayer.builder().id(subLayer).fields(generationSchema.getProperties());
 
     switch (generationSchema.getGeometryType().orElse(SimpleFeatureGeometry.ANY)) {
       case POINT:
@@ -206,10 +272,8 @@ public class TileStoreMbTiles implements TileStore {
     try {
       return new MbtilesTileset(path, md);
     } catch (FileAlreadyExistsException e) {
-      // The file could have been created by a parallel thread
-      // LOGGER.debug("MBTiles file '{}' already exists.", path);
-      // reuse the existing file
-      return new MbtilesTileset(path);
+      throw new IllegalStateException(
+          "A MBTiles file already exists. It must have been created by a parallel thread, which should not occur. MBTiles file creation must be synchronized.");
     }
   }
 

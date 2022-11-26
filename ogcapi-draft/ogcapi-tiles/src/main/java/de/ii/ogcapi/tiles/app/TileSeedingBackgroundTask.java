@@ -195,10 +195,8 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
       }
     } catch (Throwable e) {
       // in general, this should only happen on shutdown (as we cannot influence shutdown order,
-      // exceptions
-      // during seeding on shutdown are currently inevitable), but for other situations we still add
-      // the error
-      // to the log
+      // exceptions during seeding on shutdown are currently inevitable), but for other situations
+      // we still add the error to the log
       if (!taskContext.isStopped()) {
         throw new RuntimeException(
             "An error occurred during seeding. Note that this may be a side-effect of a server shutdown.",

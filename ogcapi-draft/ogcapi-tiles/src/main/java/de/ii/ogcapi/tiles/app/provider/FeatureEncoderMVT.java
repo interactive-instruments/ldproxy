@@ -246,7 +246,7 @@ public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
       int kiloBytes = mvt.length / 1024;
       String text =
           String.format(
-              "Collection %s, tile %s/%d/%d/%d written. Features returned: %d, written: %d, total duration: %dms, processing: %dms, feature post-processing: %dms, average feature post-processing: %dms, merging: %dms, encoding: %dms, size: %dkB.",
+              "Collection %s, tile %s/%d/%d/%d written. Features returned: %d, written: %d, total duration: %dms, processing: %dms, feature processing: %dms, merging: %dms, encoding: %dms, size: %dkB.",
               collectionId,
               tile.getTileMatrixSet().getId(),
               tile.getLevel(),
@@ -257,12 +257,11 @@ public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
               transformerDuration,
               processingDuration,
               featureDuration / 1000000,
-              featureCount == 0 ? 0 : featureDuration / 1000000 / featureCount,
               mergerDuration,
               encoderDuration,
               kiloBytes);
 
-      if (processingDuration > 200 || kiloBytes > 50) {
+      if (processingDuration > 1000 || kiloBytes > 250) {
         LOGGER.debug(text);
       } else if (LOGGER.isTraceEnabled()) {
         LOGGER.trace(text);

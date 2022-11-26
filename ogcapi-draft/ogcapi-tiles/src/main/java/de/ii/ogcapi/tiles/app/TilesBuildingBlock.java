@@ -29,6 +29,7 @@ import de.ii.ogcapi.tilematrixsets.domain.ImmutableMinMax;
 import de.ii.ogcapi.tilematrixsets.domain.MinMax;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration;
 import de.ii.ogcapi.tiles.domain.ImmutableTileProviderFeatures;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration.Builder;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
@@ -251,13 +252,13 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     // if not
     OgcApiDataV2 apiData = api.getData();
 
-    // TODO: enable in hydrator???
-    /*if (!apiData
+    // TODO currently not yet really required, since Tiles always enables Tile Matrix Sets
+    if (!apiData
         .getExtension(TileMatrixSetsConfiguration.class)
         .map(ExtensionConfiguration::isEnabled)
         .orElse(false)) {
       return ValidationResult.of();
-    }*/
+    }
 
     Optional<TilesConfiguration> tilesConfiguration =
         apiData.getExtension(TilesConfiguration.class).filter(ExtensionConfiguration::isEnabled);
