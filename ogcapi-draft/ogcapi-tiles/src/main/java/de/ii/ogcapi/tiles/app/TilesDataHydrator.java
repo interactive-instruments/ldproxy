@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.tiles.app;
 
+import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -18,11 +20,19 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataHydratorExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tilematrixsets.domain.ImmutableMinMax;
 import de.ii.ogcapi.tilematrixsets.domain.MinMax;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
+import de.ii.ogcapi.tiles.app.provider.MbtilesMetadata;
+import de.ii.ogcapi.tiles.app.provider.MbtilesMetadata.MbtilesFormat;
+import de.ii.ogcapi.tiles.app.provider.MbtilesTileset;
 import de.ii.ogcapi.tiles.domain.ImmutableTileProviderMbtiles;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration;
-import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
 import de.ii.ogcapi.tiles.domain.TileProviderMbtiles;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
+import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
@@ -39,12 +49,15 @@ import org.slf4j.LoggerFactory;
 public class TilesDataHydrator implements OgcApiDataHydratorExtension {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TilesDataHydrator.class);
+  private static final String TILES_DIR_NAME = "tiles";
 
-  private final StaticTileProviderStore staticTileProviderStore;
+  private final AppContext appContext;
+  private final TileMatrixSetRepository tileMatrixSetRepository;
 
   @Inject
-  public TilesDataHydrator(StaticTileProviderStore staticTileProviderStore) {
-    this.staticTileProviderStore = staticTileProviderStore;
+  public TilesDataHydrator(AppContext appContext, TileMatrixSetRepository tileMatrixSetRepository) {
+    this.appContext = appContext;
+    this.tileMatrixSetRepository = tileMatrixSetRepository;
   }
 
   @Override
@@ -59,6 +72,8 @@ public class TilesDataHydrator implements OgcApiDataHydratorExtension {
 
   @Override
   public OgcApiDataV2 getHydratedData(OgcApiDataV2 apiData) {
+
+    // TODO change to new TileProvider logic
 
     // get Tiles configurations to derive metadata from Mbtiles tile providers
 
@@ -137,39 +152,82 @@ public class TilesDataHydrator implements OgcApiDataHydratorExtension {
   }
 
   private TilesConfiguration process(OgcApiDataV2 apiData, TilesConfiguration config) {
-    if (Objects.nonNull(config.getTileProvider())
-        && config.getTileProvider() instanceof TileProviderMbtiles) {
-      try {
-        TileProviderMbtiles tileProvider = (TileProviderMbtiles) config.getTileProvider();
-        String filename = tileProvider.getFilename();
-        Optional<Integer> minzoom = staticTileProviderStore.getMinzoom(apiData, filename);
-        Optional<Integer> maxzoom = staticTileProviderStore.getMaxzoom(apiData, filename);
-        Optional<Integer> defzoom = staticTileProviderStore.getDefaultzoom(apiData, filename);
-        Map<String, MinMax> zoomLevels =
-            ImmutableMap.of(
-                "WebMercatorQuad",
-                new ImmutableMinMax.Builder()
-                    .min(minzoom.orElse(0))
-                    .max(maxzoom.orElse(24))
-                    .getDefault(defzoom)
-                    .build());
-        String format = staticTileProviderStore.getFormat(apiData, filename);
-        List<Double> center = staticTileProviderStore.getCenter(apiData, filename);
-        config =
-            new ImmutableTilesConfiguration.Builder()
-                .from(config)
-                .tileProvider(
-                    ImmutableTileProviderMbtiles.builder()
-                        .from(tileProvider)
-                        .zoomLevels(zoomLevels)
-                        .tileEncoding(format)
-                        .center(center)
-                        .build())
-                .build();
-      } catch (Exception e) {
-        throw new RuntimeException("Could not derive metadata from Mbtiles tile provider.", e);
+    if (config.getTileProvider() instanceof TileProviderMbtiles) {
+      TileProviderMbtiles tileProvider = (TileProviderMbtiles) config.getTileProvider();
+      if (Objects.nonNull(tileProvider.getFilename())) {
+        try {
+          String tileMatrixSetId = tileProvider.getTileMatrixSetId();
+          TileMatrixSet tileMatrixSet =
+              tileMatrixSetRepository
+                  .get(tileMatrixSetId)
+                  .orElseThrow(
+                      () ->
+                          new IllegalStateException(
+                              String.format("Unknown tile matrix set: '%s'.", tileMatrixSetId)));
+          Path mbtilesFile =
+              appContext
+                  .getDataDir()
+                  .resolve(API_RESOURCES_DIR)
+                  .resolve(TILES_DIR_NAME)
+                  .resolve(apiData.getId())
+                  .resolve(tileProvider.getFilename());
+          MbtilesMetadata metadata = new MbtilesTileset(mbtilesFile).getMetadata();
+          int minzoom = metadata.getMinzoom().orElse(tileMatrixSet.getMinLevel());
+          int maxzoom = metadata.getMaxzoom().orElse(tileMatrixSet.getMaxLevel());
+          Optional<Integer> defzoom =
+              metadata.getCenter().size() == 3
+                  ? Optional.of(Math.round(metadata.getCenter().get(2).floatValue()))
+                  : Optional.empty();
+          List<Double> center =
+              metadata.getCenter().size() >= 2
+                  ? ImmutableList.of(
+                      metadata.getCenter().get(0).doubleValue(),
+                      metadata.getCenter().get(1).doubleValue())
+                  : ImmutableList.of();
+          Map<String, MinMax> zoomLevels =
+              ImmutableMap.of(
+                  tileMatrixSetId,
+                  new ImmutableMinMax.Builder()
+                      .min(minzoom)
+                      .max(maxzoom)
+                      .getDefault(defzoom)
+                      .build());
+          List<Double> bbox = metadata.getBounds();
+          Optional<BoundingBox> bounds =
+              bbox.size() == 4
+                  ? Optional.of(
+                      BoundingBox.of(
+                          bbox.get(0), bbox.get(1), bbox.get(2), bbox.get(3), OgcCrs.CRS84))
+                  : Optional.empty();
+          String format = getFormat(metadata.getFormat());
+          config =
+              new ImmutableTilesConfiguration.Builder()
+                  .from(config)
+                  .tileProvider(
+                      ImmutableTileProviderMbtiles.builder()
+                          .from(tileProvider)
+                          .zoomLevels(zoomLevels)
+                          .tileEncoding(format)
+                          .center(center)
+                          .bounds(bounds)
+                          .build())
+                  .build();
+        } catch (Exception e) {
+          throw new RuntimeException("Could not derive metadata from Mbtiles tile provider.", e);
+        }
       }
     }
     return config;
+  }
+
+  private String getFormat(MbtilesFormat format) {
+    if (format == MbtilesMetadata.MbtilesFormat.pbf) return "MVT";
+    else if (format == MbtilesMetadata.MbtilesFormat.jpg) return "JPEG";
+    else if (format == MbtilesMetadata.MbtilesFormat.png) return "PNG";
+    else if (format == MbtilesMetadata.MbtilesFormat.webp) return "WEBP";
+    else if (format == MbtilesMetadata.MbtilesFormat.tiff) return "TIFF";
+
+    throw new UnsupportedOperationException(
+        String.format("Mbtiles format '%s' is currently not supported.", format));
   }
 }

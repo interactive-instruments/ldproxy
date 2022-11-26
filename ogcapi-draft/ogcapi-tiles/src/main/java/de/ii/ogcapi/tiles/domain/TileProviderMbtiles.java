@@ -12,9 +12,11 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import de.ii.ogcapi.tilematrixsets.domain.MinMax;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -53,6 +55,16 @@ public abstract class TileProviderMbtiles extends TileProvider {
   @Nullable
   public abstract String getFilename();
 
+  /**
+   * @langEn Tiling scheme used in the MBTiles file.
+   * @langDe Kachelschema, das in der MBTiles-Datei verwendet wird.
+   * @default `WebMercatorQuad`
+   */
+  @Value.Default
+  public String getTileMatrixSetId() {
+    return "WebMercatorQuad";
+  }
+
   @JsonIgnore
   public abstract Map<String, MinMax> getZoomLevels();
 
@@ -71,6 +83,9 @@ public abstract class TileProviderMbtiles extends TileProvider {
 
   @JsonIgnore
   public abstract List<Double> getCenter();
+
+  @JsonIgnore
+  public abstract Optional<BoundingBox> getBounds();
 
   @Override
   @JsonIgnore
