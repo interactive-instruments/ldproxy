@@ -111,98 +111,98 @@ public class TileSetsView extends OgcApiView {
                         "maxLat", Double.toString(boundingBox.getYmax())))
             .orElse(null);
     this.tileMatrixSetIds =
-        finalSpatialExtent.isPresent()
-            ? tiles.getTilesets().stream()
-                .map(TileSet::getTileMatrixSetId)
-                .filter(
-                    tileMatrixSetId ->
-                        mapClientType.equals(MapClient.Type.OPEN_LAYERS)
-                            || tileMatrixSetId.equals("WebMercatorQuad"))
-                .collect(Collectors.toList())
-            : ImmutableList.of();
+        tiles.getTilesets().stream()
+            .map(TileSet::getTileMatrixSetId)
+            .filter(
+                tileMatrixSetId ->
+                    mapClientType.equals(MapClient.Type.OPEN_LAYERS)
+                        || tileMatrixSetId.equals("WebMercatorQuad"))
+            .collect(Collectors.toList());
     this.tileCollections =
-        finalSpatialExtent.isPresent()
-            ? tiles.getTilesets().stream()
-                .filter(
-                    tms ->
-                        mapClientType.equals(MapClient.Type.OPEN_LAYERS)
-                            || tms.getTileMatrixSetId().equals("WebMercatorQuad"))
-                .map(
-                    tms -> {
-                      String tmsId = tms.getTileMatrixSetId();
-                      TileMatrixSet tileMatrixSet = tileMatrixSets.get(tmsId);
-                      if (tileMatrixSet == null) return null;
-                      BoundingBox bbox = tileMatrixSet.getBoundingBox();
-                      String extent =
-                          "["
-                              + bbox.getXmin()
-                              + ","
-                              + bbox.getYmin()
-                              + ","
-                              + bbox.getXmax()
-                              + ","
-                              + bbox.getYmax()
-                              + "]";
-                      int maxLevel = tileMatrixSet.getMaxLevel();
-                      List<TileMatrix> tileMatrixList = tileMatrixSet.getTileMatrices(0, maxLevel);
-                      String sizes =
-                          String.format(
-                              "[%s]",
-                              tileMatrixList.stream()
-                                  .map(
-                                      tileMatrix ->
-                                          String.format(
-                                              "[%d, %d]",
-                                              tileMatrix.getMatrixWidth(),
-                                              tileMatrix.getMatrixHeight()))
-                                  .collect(Collectors.joining(", ")));
-                      double diff = bbox.getXmax() - bbox.getXmin();
-                      String resolutions =
-                          String.format(
-                              "[%s]",
-                              tileMatrixList.stream()
-                                  .map(
-                                      tileMatrix ->
-                                          String.valueOf(
-                                              diff
-                                                  / (tileMatrix.getMatrixWidth()
-                                                      * tileMatrixSet.getTileSize())))
-                                  .collect(Collectors.joining(", ")));
+        tiles.getTilesets().stream()
+            .filter(
+                ts ->
+                    mapClientType.equals(MapClient.Type.OPEN_LAYERS)
+                        || ts.getTileMatrixSetId().equals("WebMercatorQuad"))
+            .map(
+                ts -> {
+                  String tmsId = ts.getTileMatrixSetId();
+                  TileMatrixSet tileMatrixSet = tileMatrixSets.get(tmsId);
+                  if (tileMatrixSet == null) return null;
+                  BoundingBox bbox = tileMatrixSet.getBoundingBox();
+                  String extent =
+                      "["
+                          + bbox.getXmin()
+                          + ","
+                          + bbox.getYmin()
+                          + ","
+                          + bbox.getXmax()
+                          + ","
+                          + bbox.getYmax()
+                          + "]";
+                  int maxLevel = tileMatrixSet.getMaxLevel();
+                  List<TileMatrix> tileMatrixList = tileMatrixSet.getTileMatrices(0, maxLevel);
+                  String sizes =
+                      String.format(
+                          "[%s]",
+                          tileMatrixList.stream()
+                              .map(
+                                  tileMatrix ->
+                                      String.format(
+                                          "[%d, %d]",
+                                          tileMatrix.getMatrixWidth(),
+                                          tileMatrix.getMatrixHeight()))
+                              .collect(Collectors.joining(", ")));
+                  double diff = bbox.getXmax() - bbox.getXmin();
+                  String resolutions =
+                      String.format(
+                          "[%s]",
+                          tileMatrixList.stream()
+                              .map(
+                                  tileMatrix ->
+                                      String.valueOf(
+                                          diff
+                                              / (tileMatrix.getMatrixWidth()
+                                                  * tileMatrixSet.getTileSize())))
+                              .collect(Collectors.joining(", ")));
 
-                      String level =
-                          tms.getCenterPoint()
-                              .flatMap(TilePoint::getTileMatrix)
-                              .orElse(getDefaultLevel(diff, tileMatrixSet.getMaxLevel()));
-                      String lon =
-                          tms.getCenterPoint().isPresent()
-                                  && tms.getCenterPoint().get().getCoordinates().size() >= 2
-                              ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(0))
-                              : Double.toString(
+                  String level =
+                      ts.getCenterPoint()
+                          .flatMap(TilePoint::getTileMatrix)
+                          .orElse(getDefaultLevel(diff, tileMatrixSet.getMaxLevel()));
+                  String lon =
+                      ts.getCenterPoint().isPresent()
+                              && ts.getCenterPoint().get().getCoordinates().size() >= 2
+                          ? Double.toString(ts.getCenterPoint().get().getCoordinates().get(0))
+                          : finalSpatialExtent.isPresent()
+                              ? Double.toString(
                                   finalSpatialExtent.get().getXmax() * 0.5
-                                      + finalSpatialExtent.get().getXmin() * 0.5);
-                      String lat =
-                          tms.getCenterPoint().isPresent()
-                                  && tms.getCenterPoint().get().getCoordinates().size() >= 2
-                              ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(1))
-                              : Double.toString(
+                                      + finalSpatialExtent.get().getXmin() * 0.5)
+                              : "0.0";
+                  String lat =
+                      ts.getCenterPoint().isPresent()
+                              && ts.getCenterPoint().get().getCoordinates().size() >= 2
+                          ? Double.toString(ts.getCenterPoint().get().getCoordinates().get(1))
+                          : finalSpatialExtent.isPresent()
+                              ? Double.toString(
                                   finalSpatialExtent.get().getYmax() * 0.5
-                                      + finalSpatialExtent.get().getYmin() * 0.5);
+                                      + finalSpatialExtent.get().getYmin() * 0.5)
+                              : "0.0";
 
-                      return new ImmutableMap.Builder<String, String>()
-                          .put("tileMatrixSet", tmsId)
-                          .put("maxLevel", String.valueOf(maxLevel))
-                          .put("extent", extent)
-                          .put("defaultZoomLevel", level)
-                          .put("defaultCenterLon", lon)
-                          .put("defaultCenterLat", lat)
-                          .put("resolutions", resolutions)
-                          .put("sizes", sizes)
-                          .put("projection", "EPSG:" + tileMatrixSet.getCrs().getCode())
-                          .build()
-                          .entrySet();
-                    })
-                .collect(Collectors.toList())
-            : ImmutableList.of();
+                  return new ImmutableMap.Builder<String, String>()
+                      .put("tileMatrixSet", tmsId)
+                      .put("maxLevel", String.valueOf(maxLevel))
+                      .put("extent", extent)
+                      .put("defaultZoomLevel", level)
+                      .put("defaultCenterLon", lon)
+                      .put("defaultCenterLat", lat)
+                      .put("resolutions", resolutions)
+                      .put("sizes", sizes)
+                      .put("projection", "EPSG:" + tileMatrixSet.getCrs().getCode())
+                      .build()
+                      .entrySet();
+                })
+            .collect(Collectors.toList());
 
     List<Link> tileTemplates =
         tiles.getTilesets().stream()
