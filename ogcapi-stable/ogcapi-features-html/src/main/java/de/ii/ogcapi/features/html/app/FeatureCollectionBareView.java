@@ -8,7 +8,6 @@
 package de.ii.ogcapi.features.html.app;
 
 import org.immutables.value.Value;
-import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Modifiable;
 
 @Value.Immutable

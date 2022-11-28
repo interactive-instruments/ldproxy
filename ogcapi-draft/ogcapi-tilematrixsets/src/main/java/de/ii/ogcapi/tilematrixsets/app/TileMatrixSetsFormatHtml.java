@@ -89,7 +89,7 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
 
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
-    return new ImmutableTileMatrixSetView.Builder()
+    return ImmutableTileMatrixSetView.builder()
         .apiData(api.getData())
         .tileMatrixSet((TileMatrixSetData) tileMatrixSets.getTileMatrixSets())
         .breadCrumbs(breadCrumbs)
@@ -132,7 +132,7 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
             .build();
 
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
-    return new ImmutableTileMatrixSetView.Builder()
+    return ImmutableTileMatrixSetView.builder()
         .apiData(api.getData())
         .tileMatrixSet(tileMatrixSet)
         .breadCrumbs(breadCrumbs)

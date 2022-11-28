@@ -64,7 +64,8 @@ public abstract class OgcApiView extends View {
 
   public List<NavigationDTO> getProcessedFormats() {
     return links().stream()
-        .filter(link -> Objects.equals(link.getRel(), "alternate") && !link.getTypeLabel().isBlank())
+        .filter(
+            link -> Objects.equals(link.getRel(), "alternate") && !link.getTypeLabel().isBlank())
         .sorted(Comparator.comparing(link -> link.getTypeLabel().toUpperCase()))
         .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
         .collect(Collectors.toList());

@@ -486,10 +486,9 @@ public class FeaturesFormatHtml
           ModifiableFeatureCollectionView.create().from(modifiableFeatureCollectionBareView);
     }
 
-    if(!bare){
+    if (!bare) {
       modifiableFeatureCollectionView.setTemplateName("featureCollection.mustache");
-    }
-    else{
+    } else {
       modifiableFeatureCollectionView.setTemplateName("featureCollectionBare.mustache");
     }
 

@@ -15,7 +15,6 @@ import de.ii.ogcapi.foundation.domain.CollectionExtent;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcResourceMetadata;
-import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.ImmutableMapClient;
@@ -25,10 +24,10 @@ import de.ii.ogcapi.html.domain.MapClient.Popup;
 import de.ii.ogcapi.html.domain.MapClient.Source.TYPE;
 import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.ogcapi.html.domain.OgcApiView;
-import de.ii.ogcapi.tiles.domain.TileLayer.GeometryType;
-import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrix;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
+import de.ii.ogcapi.tiles.domain.TileLayer.GeometryType;
+import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
@@ -39,10 +38,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import javax.annotation.Nullable;
 
 // TODO class needs to be in 'domain', since it is also accessed from MAP_TILES; find better
 // solution
@@ -107,7 +106,7 @@ public abstract class TileSetsView extends OgcApiView {
   }
 
   @Value.Derived
-  public Boolean isVector(){
+  public Boolean isVector() {
     if (tileTemplate().isPresent()) {
       return true;
     } else {
@@ -119,91 +118,91 @@ public abstract class TileSetsView extends OgcApiView {
   public List<Set<Map.Entry<String, String>>> tileCollections() {
     return spatialExtent().isPresent()
         ? tiles().getTilesets().stream()
-        .filter(
-            tms ->
-                mapClientType().equals(MapClient.Type.OPEN_LAYERS)
-                    || tms.getTileMatrixSetId().equals("WebMercatorQuad"))
-        .map(
-            tms -> {
-              String tmsId = tms.getTileMatrixSetId();
-              TileMatrixSet tileMatrixSet = tileMatrixSets().get(tmsId);
-              if (tileMatrixSet == null) return null;
-              BoundingBox bbox = tileMatrixSet.getBoundingBox();
-              String extent =
-                  "["
-                      + bbox.getXmin()
-                      + ","
-                      + bbox.getYmin()
-                      + ","
-                      + bbox.getXmax()
-                      + ","
-                      + bbox.getYmax()
-                      + "]";
-              int maxLevel = tileMatrixSet.getMaxLevel();
-              List<TileMatrix> tileMatrixList = tileMatrixSet.getTileMatrices(0, maxLevel);
-              String sizes =
-                  String.format(
-                      "[%s]",
-                      tileMatrixList.stream()
-                          .map(
-                              tileMatrix ->
-                                  String.format(
-                                      "[%d, %d]",
-                                      tileMatrix.getMatrixWidth(),
-                                      tileMatrix.getMatrixHeight()))
-                          .collect(Collectors.joining(", ")));
-              double diff = bbox.getXmax() - bbox.getXmin();
-              String resolutions =
-                  String.format(
-                      "[%s]",
-                      tileMatrixList.stream()
-                          .map(
-                              tileMatrix ->
-                                  String.valueOf(
-                                      diff
-                                          / (tileMatrix.getMatrixWidth()
-                                          * tileMatrixSet.getTileSize())))
-                          .collect(Collectors.joining(", ")));
+            .filter(
+                tms ->
+                    mapClientType().equals(MapClient.Type.OPEN_LAYERS)
+                        || tms.getTileMatrixSetId().equals("WebMercatorQuad"))
+            .map(
+                tms -> {
+                  String tmsId = tms.getTileMatrixSetId();
+                  TileMatrixSet tileMatrixSet = tileMatrixSets().get(tmsId);
+                  if (tileMatrixSet == null) return null;
+                  BoundingBox bbox = tileMatrixSet.getBoundingBox();
+                  String extent =
+                      "["
+                          + bbox.getXmin()
+                          + ","
+                          + bbox.getYmin()
+                          + ","
+                          + bbox.getXmax()
+                          + ","
+                          + bbox.getYmax()
+                          + "]";
+                  int maxLevel = tileMatrixSet.getMaxLevel();
+                  List<TileMatrix> tileMatrixList = tileMatrixSet.getTileMatrices(0, maxLevel);
+                  String sizes =
+                      String.format(
+                          "[%s]",
+                          tileMatrixList.stream()
+                              .map(
+                                  tileMatrix ->
+                                      String.format(
+                                          "[%d, %d]",
+                                          tileMatrix.getMatrixWidth(),
+                                          tileMatrix.getMatrixHeight()))
+                              .collect(Collectors.joining(", ")));
+                  double diff = bbox.getXmax() - bbox.getXmin();
+                  String resolutions =
+                      String.format(
+                          "[%s]",
+                          tileMatrixList.stream()
+                              .map(
+                                  tileMatrix ->
+                                      String.valueOf(
+                                          diff
+                                              / (tileMatrix.getMatrixWidth()
+                                                  * tileMatrixSet.getTileSize())))
+                              .collect(Collectors.joining(", ")));
 
-              String level =
-                  tms.getCenterPoint()
-                      .flatMap(TilePoint::getTileMatrix)
-                      .orElse(getDefaultLevel(diff, tileMatrixSet.getMaxLevel()));
-              String lon =
-                  tms.getCenterPoint().isPresent()
-                      && tms.getCenterPoint().get().getCoordinates().size() >= 2
-                      ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(0))
-                      : Double.toString(
-                          spatialExtent().get().getXmax() * 0.5
-                              + spatialExtent().get().getXmin() * 0.5);
-              String lat =
-                  tms.getCenterPoint().isPresent()
-                      && tms.getCenterPoint().get().getCoordinates().size() >= 2
-                      ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(1))
-                      : Double.toString(
-                          spatialExtent().get().getYmax() * 0.5
-                              + spatialExtent().get().getYmin() * 0.5);
+                  String level =
+                      tms.getCenterPoint()
+                          .flatMap(TilePoint::getTileMatrix)
+                          .orElse(getDefaultLevel(diff, tileMatrixSet.getMaxLevel()));
+                  String lon =
+                      tms.getCenterPoint().isPresent()
+                              && tms.getCenterPoint().get().getCoordinates().size() >= 2
+                          ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(0))
+                          : Double.toString(
+                              spatialExtent().get().getXmax() * 0.5
+                                  + spatialExtent().get().getXmin() * 0.5);
+                  String lat =
+                      tms.getCenterPoint().isPresent()
+                              && tms.getCenterPoint().get().getCoordinates().size() >= 2
+                          ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(1))
+                          : Double.toString(
+                              spatialExtent().get().getYmax() * 0.5
+                                  + spatialExtent().get().getYmin() * 0.5);
 
-              return new ImmutableMap.Builder<String, String>()
-                  .put("tileMatrixSet", tmsId)
-                  .put("maxLevel", String.valueOf(maxLevel))
-                  .put("extent", extent)
-                  .put("defaultZoomLevel", level)
-                  .put("defaultCenterLon", lon)
-                  .put("defaultCenterLat", lat)
-                  .put("resolutions", resolutions)
-                  .put("sizes", sizes)
-                  .put("projection", "EPSG:" + tileMatrixSet.getCrs().getCode())
-                  .build()
-                  .entrySet();
-            })
-        .collect(Collectors.toList())
+                  return new ImmutableMap.Builder<String, String>()
+                      .put("tileMatrixSet", tmsId)
+                      .put("maxLevel", String.valueOf(maxLevel))
+                      .put("extent", extent)
+                      .put("defaultZoomLevel", level)
+                      .put("defaultCenterLon", lon)
+                      .put("defaultCenterLat", lat)
+                      .put("resolutions", resolutions)
+                      .put("sizes", sizes)
+                      .put("projection", "EPSG:" + tileMatrixSet.getCrs().getCode())
+                      .build()
+                      .entrySet();
+                })
+            .collect(Collectors.toList())
         : ImmutableList.of();
   }
 
   @Value.Derived
-  public List<Link> tileTemplates(){
-    return  tiles().getTilesets().stream()
+  public List<Link> tileTemplates() {
+    return tiles().getTilesets().stream()
         .map(OgcResourceMetadata::getLinks)
         .flatMap(Collection::stream)
         .filter(link -> Objects.equals(link.getRel(), "item"))
@@ -211,8 +210,8 @@ public abstract class TileSetsView extends OgcApiView {
   }
 
   @Value.Derived
-  public Optional<String>tileTemplate(){
-    return  tileTemplates().stream()
+  public Optional<String> tileTemplate() {
+    return tileTemplates().stream()
         .filter(link -> Objects.equals(link.getType(), "application/vnd.mapbox-vector-tile"))
         .map(Link::getHref)
         .map(
@@ -222,6 +221,7 @@ public abstract class TileSetsView extends OgcApiView {
                     "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
         .findFirst();
   }
+
   @Value.Derived
   public String tilesUrl() {
     if (tileTemplate().isPresent()) {
@@ -317,6 +317,7 @@ public abstract class TileSetsView extends OgcApiView {
   public abstract Optional<String> collectionId();
 
   public abstract Optional<BoundingBox> unprocessedSpatialExtent();
+
   @Value.Derived
   public Optional<BoundingBox> spatialExtent() {
     return unprocessedSpatialExtent()

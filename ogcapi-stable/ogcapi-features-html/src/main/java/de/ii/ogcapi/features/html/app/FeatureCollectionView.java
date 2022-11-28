@@ -65,7 +65,6 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
     super("featureCollection.mustache");
   }
 
-
   public abstract String templateName();
 
   public abstract Optional<FeatureTypeConfigurationOgcApi> collectionData();
@@ -110,38 +109,36 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
 
   @Nullable
   @Value.Derived
-  public MapClient mapClient(){
+  public MapClient mapClient() {
     if (mapClientType().equals(MapClient.Type.MAP_LIBRE)) {
-      return
-          new ImmutableMapClient.Builder()
-              .backgroundUrl(
-                  Optional.ofNullable(htmlConfig().getLeafletUrl())
-                      .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
-              .attribution(getProcessedAttribution())
-              .bounds(Optional.ofNullable(bbox()))
-              .data(
-                  new ImmutableSource.Builder()
-                      .type(TYPE.geojson)
-                      .url(uriBuilder().removeParameters("f").ensureParameter("f", "json").toString())
-                      .build())
-              .popup(Popup.HOVER_ID)
-              .styleUrl(Optional.ofNullable(styleUrl()))
-              .removeZoomLevelConstraints(removeZoomLevelConstraints())
-              .build();
+      return new ImmutableMapClient.Builder()
+          .backgroundUrl(
+              Optional.ofNullable(htmlConfig().getLeafletUrl())
+                  .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
+          .attribution(getProcessedAttribution())
+          .bounds(Optional.ofNullable(bbox()))
+          .data(
+              new ImmutableSource.Builder()
+                  .type(TYPE.geojson)
+                  .url(uriBuilder().removeParameters("f").ensureParameter("f", "json").toString())
+                  .build())
+          .popup(Popup.HOVER_ID)
+          .styleUrl(Optional.ofNullable(styleUrl()))
+          .removeZoomLevelConstraints(removeZoomLevelConstraints())
+          .build();
     } else if (mapClientType().equals(MapClient.Type.CESIUM)) {
-      return
-          new ImmutableMapClient.Builder()
-              .type(mapClientType())
-              .backgroundUrl(
-                  Optional.ofNullable(htmlConfig().getLeafletUrl())
-                      .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl()))
-                      .map(
-                          url ->
-                              url.replace("{z}", "{TileMatrix}")
-                                  .replace("{y}", "{TileRow}")
-                                  .replace("{x}", "{TileCol}")))
-              .attribution(getProcessedAttribution())
-              .build();
+      return new ImmutableMapClient.Builder()
+          .type(mapClientType())
+          .backgroundUrl(
+              Optional.ofNullable(htmlConfig().getLeafletUrl())
+                  .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl()))
+                  .map(
+                      url ->
+                          url.replace("{z}", "{TileMatrix}")
+                              .replace("{y}", "{TileRow}")
+                              .replace("{x}", "{TileCol}")))
+          .attribution(getProcessedAttribution())
+          .build();
     } else {
       LOGGER.error(
           "Configuration error: {} is not a supported map client for the HTML representation of features.",
@@ -364,7 +361,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
     boolean hasPrevLink =
         Objects.nonNull(metaPagination())
             && metaPagination().stream()
-            .anyMatch(navigationDTO -> "prev".equals(navigationDTO.label));
+                .anyMatch(navigationDTO -> "prev".equals(navigationDTO.label));
 
     return !hasOtherParams && (!isCollection() || !hasPrevLink)
         ? Optional.of(canonicalUri.toString())
