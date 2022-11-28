@@ -8,6 +8,7 @@
 package de.ii.ogcapi.html.domain;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import io.dropwizard.views.View;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import org.immutables.value.Value;
 
 public abstract class OgcApiView extends View {
 
@@ -28,8 +30,10 @@ public abstract class OgcApiView extends View {
   @Nullable
   public abstract List<NavigationDTO> breadCrumbs();
 
-  @Nullable
-  public abstract List<Link> links();
+  @Value.Default
+  public List<Link> links() {
+    return ImmutableList.of();
+  }
 
   // Constructor Variables as new Member
 
@@ -46,7 +50,19 @@ public abstract class OgcApiView extends View {
     super(String.format("/templates/%s", templateName), Charsets.UTF_8);
   }
 
-  public List<NavigationDTO> getFormats() {
+  public String getUrlPrefix() {
+    return urlPrefix();
+  }
+
+  public String getTitle() {
+    return title();
+  }
+
+  public String getDescription() {
+    return description();
+  }
+
+  public List<NavigationDTO> getProcessedFormats() {
     return links().stream()
         .filter(link -> Objects.equals(link.getRel(), "alternate"))
         .sorted(Comparator.comparing(link -> link.getTypeLabel().toUpperCase()))
@@ -54,15 +70,18 @@ public abstract class OgcApiView extends View {
         .collect(Collectors.toList());
   }
 
-  public List<NavigationDTO> getBreadCrumbs() {
+  public List<NavigationDTO> getProcessedBreadCrumbs() {
     return breadCrumbs();
   }
 
   public boolean hasBreadCrumbs() {
-    return breadCrumbs().size() > 1;
+    if (breadCrumbs() != null) {
+      return breadCrumbs().size() > 1;
+    }
+    return false;
   }
 
-  public String getBreadCrumbsList() {
+  public String getProcessedBreadCrumbsList() {
     String result = "";
     for (int i = 0; i < breadCrumbs().size(); i++) {
       NavigationDTO item = breadCrumbs().get(i);
@@ -83,19 +102,7 @@ public abstract class OgcApiView extends View {
     return result;
   }
 
-  public String getUrlPrefix() {
-    return urlPrefix();
-  }
-
-  public String getTitle() {
-    return title();
-  }
-
-  public String getDescription() {
-    return description();
-  }
-
-  public String getAttribution() {
+  public String getProcessedAttribution() {
     if (Objects.nonNull(htmlConfig().getLeafletAttribution())) {
       return htmlConfig().getLeafletAttribution();
     }

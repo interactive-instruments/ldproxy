@@ -27,7 +27,6 @@ import de.ii.ogcapi.html.domain.NavigationDTO;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
-import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -113,6 +112,8 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
             .uriCustomizer(requestContext.getUriCustomizer())
             .noIndex(isNoIndexEnabledForApi(api.getData()))
             .i18n(i18n)
+            .title(apiLandingPage.getTitle().orElse(api.getData().getId()))
+            .description(apiLandingPage.getDescription().orElse(null))
             .extent(apiLandingPage.getExtent())
             .language(requestContext.getLanguage())
             .build();
@@ -150,7 +151,6 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
     OgcApiConformanceDeclarationView ogcApiConformanceDeclarationView =
         new ImmutableOgcApiConformanceDeclarationView.Builder()
             .conformanceDeclaration(conformanceDeclaration)
-            .apiData(null)
             .urlPrefix(requestContext.getStaticUrlPrefix())
             .htmlConfig(htmlConfig)
             .noIndex(isNoIndexEnabledForApi(api.getData()))
@@ -171,11 +171,5 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
             .build();
 
     return ogcApiConformanceDeclarationView;
-
-    /*
-     ,
-       ,
-
-    */
   }
 }

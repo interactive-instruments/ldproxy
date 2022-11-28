@@ -3,7 +3,7 @@
 <div>
     <h1>{{title}}</h1>
     <p>{{{description}}}</p>
-    {{#hasTags}}<div>{{tagsTitle}}: <code><a href="?tags=">&#x274c;</a></code> {{#allTags}}<code><a href="?tags={{.}}">{{.}}</a></code> {{/allTags}}</div>{{/hasTags}}
+    {{#hasTags}}<div>{{tagsTitle}}: <code><a href="?tags=">&#x274c;</a></code> {{#getProcessedAllTags}}<code><a href="?tags={{.}}">{{.}}</a></code> {{/getProcessedAllTags}}</div>{{/hasTags}}
     <br/>
     <br/>
 

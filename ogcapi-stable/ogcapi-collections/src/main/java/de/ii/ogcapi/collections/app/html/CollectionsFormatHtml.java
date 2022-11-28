@@ -110,25 +110,28 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
 
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
-
     OgcApiCollectionsView collectionsView =
-    new ImmutableOgcApiCollectionsView.Builder()
-        .apiData(api.getData())
-        .collections(collections.getCollections())
+        new ImmutableOgcApiCollectionsView.Builder()
+            .apiData(api.getData())
+            .breadCrumbs(breadCrumbs)
+            .htmlConfig(htmlConfig)
+            .noIndex(isNoIndexEnabledForApi(api.getData()))
+            .urlPrefix(requestContext.getStaticUrlPrefix())
+            .links(collections.getLinks())
+            .title(collections.getTitle().get())
+            .description(collections.getDescription().get())
+            .i18n(i18n)
+            .language(requestContext.getLanguage())
+            .collections(collections.getCollections())
             .spatialExtent(api.getSpatialExtent())
-                .breadCrumbs(breadCrumbs)
-        .urlPrefix(requestContext.getStaticUrlPrefix())
-        .htmlConfig(htmlConfig)
-        .noIndex(isNoIndexEnabledForApi(api.getData()))
-        .showCollectionDescriptions(showCollectionDescriptionsInOverview(api.getData()))
-        .i18n(i18n)
-        .language(requestContext.getLanguage())
-        .dataSourceUrl(Optional.empty())
-        .build();
-        /* TODO no access to feature providers at this point
-        providers.getFeatureProvider(api.getData()).getData().getDataSourceUrl()
+            .showCollectionDescriptions(showCollectionDescriptionsInOverview(api.getData()))
+            .crs(collections.getCrs())
+            .dataSourceUrl(Optional.empty())
+            .build();
+    /* TODO no access to feature providers at this point
+    providers.getFeatureProvider(api.getData()).getData().getDataSourceUrl()
 
-        ); */
+    ); */
 
     return collectionsView;
   }
@@ -166,19 +169,23 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
             .get(ogcApiCollection.getId())
             .getExtension(HtmlConfiguration.class)
             .orElse(null);
+
     OgcApiCollectionView collectionView =
         new ImmutableOgcApiCollectionView.Builder()
             .apiData(api.getData())
-            .collection(ogcApiCollection)
-            .links(ogcApiCollection.getLinks())
-            .spatialExtent(api.getSpatialExtent(ogcApiCollection.getId()))
             .breadCrumbs(breadCrumbs)
-            .urlPrefix(requestContext.getStaticUrlPrefix())
             .htmlConfig(htmlConfig)
             .noIndex(isNoIndexEnabledForApi(api.getData()))
+            .urlPrefix(requestContext.getStaticUrlPrefix())
+            .links(ogcApiCollection.getLinks())
+            .title(ogcApiCollection.getTitle().orElse(ogcApiCollection.getId()))
+            .description(ogcApiCollection.getDescription().orElse(null))
             .uriCustomizer(requestContext.getUriCustomizer())
-            .i18n(i18n)
+            .extent(ogcApiCollection.getExtent())
             .language(requestContext.getLanguage())
+            .collection(ogcApiCollection)
+            .i18n(i18n)
+            .hasGeometry(api.getSpatialExtent(ogcApiCollection.getId()).isPresent())
             .build();
 
     return collectionView;

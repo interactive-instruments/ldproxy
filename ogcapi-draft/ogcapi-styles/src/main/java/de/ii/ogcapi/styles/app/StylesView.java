@@ -45,7 +45,7 @@ public abstract class StylesView extends OgcApiView {
     i18n.get("stylesDescription", language));*/
   }
 
-  public List<StyleEntry> getStyles() {
+  public List<StyleEntry> getProcessedStyles() {
     return styleEntries();
   }
 }

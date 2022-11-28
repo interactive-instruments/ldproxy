@@ -15,7 +15,6 @@ import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.html.domain.ImmutableMapClient;
 import de.ii.ogcapi.html.domain.ImmutableStyle;
 import de.ii.ogcapi.html.domain.MapClient;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -32,14 +31,7 @@ public abstract class OgcApiCollectionView extends OgcApiDatasetView {
 
   public abstract OgcApiCollection collection();
 
-  public abstract Optional<BoundingBox> spatialExtent();
-
   public abstract I18n i18n();
-
-  @Value.Derived
-  public String itemType() {
-    return i18n().get(collection().getItemType().orElse("feature"), language());
-  }
 
   @Value.Derived
   public Optional<Long> itemCount() {
@@ -56,10 +48,7 @@ public abstract class OgcApiCollectionView extends OgcApiDatasetView {
     return collection().getCrs();
   }
 
-  @Value.Derived
-  public boolean hasGeometry() {
-    return spatialExtent().isPresent();
-  }
+  public abstract boolean hasGeometry();
 
   @Value.Derived
   public String storageCrs() {
@@ -83,11 +72,19 @@ public abstract class OgcApiCollectionView extends OgcApiDatasetView {
   }
 
   @Value.Derived
+  public String itemType() {
+    return i18n().get(collection().getItemType().orElse("feature"), language());
+  }
+
+  @Value.Derived
   public String itemTypeTitle() {
     return i18n().get("itemTypeTitle", language());
   }
 
-  public abstract Optional<String> itemCountTitle();
+  @Value.Derived
+  public String itemCountTitle() {
+    return i18n().get("itemCountTitle", language());
+  }
 
   @Value.Derived
   public String dataTitle() {
@@ -173,7 +170,7 @@ public abstract class OgcApiCollectionView extends OgcApiDatasetView {
         .attribution(
             Optional.ofNullable(htmlConfig().getLeafletAttribution())
                 .or(() -> Optional.ofNullable(htmlConfig().getBasemapAttribution())))
-        .bounds(Optional.ofNullable(this.getBbox()))
+        .bounds(Optional.ofNullable(this.getProcessedBbox()))
         .drawBounds(true)
         .isInteractive(false)
         .defaultStyle(new ImmutableStyle.Builder().color("red").build())
@@ -186,38 +183,38 @@ public abstract class OgcApiCollectionView extends OgcApiDatasetView {
   }
 
   public boolean hasMetadata() {
-    return !getMetadataLinks().isEmpty();
+    return !getProcessedMetadataLinks().isEmpty();
   }
 
-  public List<Link> getMetadataLinks() {
-    return getLinks().stream()
+  public List<Link> getProcessedMetadataLinks() {
+    return getProcessedLinks().stream()
         .filter(link -> link.getRel().matches("^(?:describedby)$"))
         .collect(Collectors.toList());
   }
 
   public boolean hasLicense() {
-    return !getLicenseLinks().isEmpty();
+    return !getProcessedLicenseLinks().isEmpty();
   }
 
-  public List<Link> getLicenseLinks() {
-    return getLinks().stream()
+  public List<Link> getProcessedLicenseLinks() {
+    return getProcessedLinks().stream()
         .filter(link -> link.getRel().matches("^(?:license)$"))
         .collect(Collectors.toUnmodifiableList());
   }
 
   public boolean hasDownload() {
-    return !getDownloadLinks().isEmpty();
+    return !getProcessedDownloadLinks().isEmpty();
   }
 
-  public List<Link> getDownloadLinks() {
-    return getLinks().stream()
+  public List<Link> getProcessedDownloadLinks() {
+    return getProcessedLinks().stream()
         .filter(link -> link.getRel().matches("^(?:enclosure)$"))
         .collect(Collectors.toUnmodifiableList());
   }
 
   @Override
-  public List<Link> getDistributionLinks() {
-    return getLinks().stream()
+  public List<Link> getProcessedDistributionLinks() {
+    return getProcessedLinks().stream()
         .filter(
             link ->
                 Objects.equals(link.getRel(), "items")
@@ -226,33 +223,35 @@ public abstract class OgcApiCollectionView extends OgcApiDatasetView {
         .collect(Collectors.toUnmodifiableList());
   }
 
-  public List<Link> getTiles() {
-    return getLinks().stream()
+  public List<Link> getProcessedTiles() {
+    return getProcessedLinks().stream()
         .filter(
             link -> link.getRel().startsWith("http://www.opengis.net/def/rel/ogc/1.0/tilesets-"))
         .collect(Collectors.toUnmodifiableList());
   }
 
-  public Optional<Link> getStyles() {
-    return getLinks().stream()
+  public Optional<Link> getProcessedStyles() {
+    return getProcessedLinks().stream()
         .filter(
             link -> Objects.equals(link.getRel(), "http://www.opengis.net/def/rel/ogc/1.0/styles"))
         .findFirst();
   }
 
-  public Optional<Link> getMap() {
-    return getLinks().stream().filter(link -> Objects.equals(link.getRel(), "ldp-map")).findFirst();
+  public Optional<Link> getProcessedMap() {
+    return getProcessedLinks().stream()
+        .filter(link -> Objects.equals(link.getRel(), "ldp-map"))
+        .findFirst();
   }
 
-  public OgcApiCollection getCollection() {
+  public OgcApiCollection getProcessedCollection() {
     return collection();
   }
 
-  public Optional<String> getSchemaOrgDataset() {
+  public Optional<String> getProcessedSchemaOrgDataset() {
     // for cases with a single collection, that collection is not reported as a sub-dataset
     return apiData().getCollections().size() > 1
         ? Optional.of(
-            getSchemaOrgDataset(
+            getProcessedSchemaOrgDataset(
                 apiData(),
                 Optional.of(apiData().getCollections().get(collection().getId())),
                 uriCustomizer()

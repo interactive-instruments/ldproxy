@@ -271,13 +271,13 @@ public abstract class RoutesView extends OgcApiView {
   }
 
   @Override
-  public String getAttribution() {
+  public String getProcessedAttribution() {
     Optional<String> datasetAttribution =
         apiData().getMetadata().flatMap(ApiMetadata::getAttribution);
-    if (datasetAttribution.isEmpty()) return super.getAttribution();
+    if (datasetAttribution.isEmpty()) return super.getProcessedAttribution();
 
     return apiData().getMetadata().flatMap(ApiMetadata::getAttribution).get()
         + " | "
-        + super.getAttribution();
+        + super.getProcessedAttribution();
   }
 }

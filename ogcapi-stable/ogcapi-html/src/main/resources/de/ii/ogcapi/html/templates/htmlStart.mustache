@@ -16,8 +16,8 @@
 <meta name="keywords" content="{{.}}">
 {{/keywords}}
 
-{{#canonicalUrl}}<link rel="canonical" href="{{.}}"/>{{/canonicalUrl}}
-{{#metaPagination}}{{#url}}<link rel="{{label}}" href="{{path}}{{#queryWithout}}limit,offset{{/queryWithout}}{{.}}"/>{{/url}}{{/metaPagination}}
+{{#ProcessedCanonicalUrl}}<link rel="canonical" href="{{.}}"/>{{/ProcessedCanonicalUrl}}
+{{#metaPagination}}{{#url}}<link rel="{{label}}" href="{{path}}{{#getQueryWithoutPage}}limit,offset{{/getQueryWithoutPage}}{{.}}"/>{{/url}}{{/metaPagination}}
 
 {{> style-common}}
 

@@ -29,7 +29,7 @@ public abstract class OgcApiConformanceDeclarationView extends OgcApiView {
     super("conformanceDeclaration.mustache");
   }
 
-  public List<String> getClasses() {
+  public List<String> getProcessedClasses() {
     return conformanceDeclaration().getConformsTo().stream().sorted().collect(Collectors.toList());
   }
 }

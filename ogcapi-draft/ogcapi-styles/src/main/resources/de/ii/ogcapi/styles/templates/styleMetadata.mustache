@@ -61,14 +61,14 @@
         </div>
         {{/pointOfContact}}
 
-        {{#thumbnail}}
+        {{#ProcessedThumbnail}}
             <div class="row my-3">
                 <div class="col-md-2 font-weight-bold">{{thumbnailTitle}}</div>
                 <div class="col-md-10">
                     <img src="{{href}}" alt="{{title}}"/>
                 </div>
             </div>
-        {{/thumbnail}}
+        {{/ProcessedThumbnail}}
 
         {{#dates}}
             <div class="row my-3">
@@ -89,14 +89,14 @@
             <div class="col-md-2 font-weight-bold">{{additionalLinksTitle}}</div>
             <div class="col-md-10">
                 <ul class="list-unstyled">
-                    {{#additionalLinks}}
+                    {{#ProcessedAdditionalLinks}}
                         <li>
                             <a href="{{href}}">{{title}}</a>
                         </li>
-                    {{/additionalLinks}}
-                    {{^additionalLinks}}
+                    {{/ProcessedAdditionalLinks}}
+                    {{^ProcessedAdditionalLinks}}
                         <li>{{none}}</li>
-                    {{/additionalLinks}}
+                    {{/ProcessedAdditionalLinks}}
                 </ul>
             </div>
         </div>

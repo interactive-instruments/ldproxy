@@ -150,38 +150,22 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
         .attribution(
             Optional.ofNullable(htmlConfig().getLeafletAttribution())
                 .or(() -> Optional.ofNullable(htmlConfig().getBasemapAttribution())))
-        .bounds(Optional.ofNullable(this.getBbox()))
+        .bounds(Optional.ofNullable(this.getProcessedBbox()))
         .drawBounds(true)
         .isInteractive(false)
         .defaultStyle(new ImmutableStyle.Builder().color("red").build())
         .build();
   }
-  ;
 
   public OgcApiLandingPageView() {
     super("landingPage.mustache");
-    /* super(
-    "landingPage.mustache",
-    Charsets.UTF_8,
-    apiData,
-    breadCrumbs,
-    htmlConfig,
-    noIndex,
-    urlPrefix,
-    apiLandingPage.getLinks(),
-    apiLandingPage.getTitle().orElse(apiData.getId()),
-    apiLandingPage.getDescription().orElse(null),
-    uriCustomizer,
-    apiLandingPage.getExtent(),
-    language);*/
   }
 
-  public List<Link> getDistributionLinks() {
+  public List<Link> getProcessedDistributionLinks() {
     return distributionLinks();
   }
-  ;
 
-  public Optional<Link> getData() {
+  public Optional<Link> getProcessedData() {
     return links().stream()
         .filter(
             link ->
@@ -190,54 +174,54 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
         .findFirst();
   }
 
-  public List<Link> getTiles() {
+  public List<Link> getProcessedTiles() {
     return links().stream()
         .filter(
             link -> link.getRel().startsWith("http://www.opengis.net/def/rel/ogc/1.0/tilesets-"))
         .collect(Collectors.toUnmodifiableList());
   }
 
-  public Optional<Link> getStyles() {
+  public Optional<Link> getProcessedStyles() {
     return links().stream()
         .filter(
             link -> Objects.equals(link.getRel(), "http://www.opengis.net/def/rel/ogc/1.0/styles"))
         .findFirst();
   }
 
-  public Optional<Link> getRoutes() {
+  public Optional<Link> getProcessedRoutes() {
     return links().stream()
         .filter(
             link -> Objects.equals(link.getRel(), "http://www.opengis.net/def/rel/ogc/1.0/routes"))
         .findFirst();
   }
 
-  public Optional<Link> getMap() {
+  public Optional<Link> getProcessedMap() {
     return links().stream().filter(link -> Objects.equals(link.getRel(), "ldp-map")).findFirst();
   }
 
-  public Optional<Link> getApiDefinition() {
+  public Optional<Link> getProcessedApiDefinition() {
     return links().stream()
         .filter(link -> Objects.equals(link.getRel(), "service-desc"))
         .findFirst();
   }
 
-  public Optional<Link> getApiDocumentation() {
+  public Optional<Link> getProcessedApiDocumentation() {
     return links().stream()
         .filter(link -> Objects.equals(link.getRel(), "service-doc"))
         .findFirst();
   }
 
-  public Optional<ExternalDocumentation> getExternalDocs() {
+  public Optional<ExternalDocumentation> getProcessedExternalDocsProcessedExternalDocs() {
     return apiLandingPage().getExternalDocs();
   }
 
-  public Optional<String> getSchemaOrgDataset() {
+  public Optional<String> getProcessedSchemaOrgDataset() {
     return Optional.of(
-        getSchemaOrgDataset(apiData(), Optional.empty(), uriCustomizer().copy(), false));
+        getProcessedSchemaOrgDataset(apiData(), Optional.empty(), uriCustomizer().copy(), false));
   }
 
-  public boolean getContactInfo() {
-    return getMetadata()
+  public boolean getProcessedContactInfo() {
+    return getProcessedMetadata()
         .filter(
             md ->
                 md.getContactEmail().isPresent()

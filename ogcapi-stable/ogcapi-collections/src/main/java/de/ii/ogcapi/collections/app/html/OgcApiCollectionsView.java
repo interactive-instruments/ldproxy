@@ -8,15 +8,15 @@
 package de.ii.ogcapi.collections.app.html;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.collections.domain.Collections;
 import de.ii.ogcapi.collections.domain.OgcApiCollection;
-import de.ii.ogcapi.common.domain.OgcApiDatasetView;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.html.domain.OgcApiView;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,11 +24,11 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
-public abstract class OgcApiCollectionsView extends OgcApiDatasetView {
+public abstract class OgcApiCollectionsView extends OgcApiView {
 
-  abstract Collections collectionsC();
+  public abstract List<OgcApiCollection> collections();
 
-  abstract List<OgcApiCollection> collections();
+  public abstract Optional<Locale> language();
 
   abstract Optional<BoundingBox> spatialExtent();
 
@@ -38,16 +38,11 @@ public abstract class OgcApiCollectionsView extends OgcApiDatasetView {
 
   abstract Optional<String> dataSourceUrl();
 
-  @Value.Derived
-  boolean hasGeometry() {
-    return spatialExtent().isPresent();
-  }
+  abstract Optional<String> keywords();
 
-  abstract String keywords();
+  public abstract List<String> crs();
 
-  abstract List<String> crs();
-
-  abstract ApiMetadata metadata();
+  abstract Optional<ApiMetadata> metadata();
 
   @Value.Derived
   String collectionsTitle() {
@@ -66,7 +61,7 @@ public abstract class OgcApiCollectionsView extends OgcApiDatasetView {
 
   @Value.Derived
   String licenseTitle() {
-    return i18n().get("icenseTitle", language());
+    return i18n().get("licenseTitle", language());
   }
 
   @Value.Derived
@@ -81,7 +76,7 @@ public abstract class OgcApiCollectionsView extends OgcApiDatasetView {
 
   @Value.Derived
   String expertInformationTitle() {
-    return i18n().get("additionalLinksTitle", language());
+    return i18n().get("expertInformationTitle", language());
   }
 
   @Value.Derived
@@ -94,48 +89,56 @@ public abstract class OgcApiCollectionsView extends OgcApiDatasetView {
     return i18n().get("moreInformation", language());
   }
 
+  @Value.Derived
+  boolean hasGeometry() {
+    return spatialExtent().isPresent();
+  }
+
+  @Value.Derived
+  public boolean hasDownload() {
+    return !getProcessedDownloadLinks().isEmpty();
+  }
+
+  @Value.Derived
+  public boolean hasLicense() {
+    return !getProcessedLicenseLinks().isEmpty();
+  }
+
+  @Value.Derived
+  public boolean hasMetadata() {
+    return !getProcessedMetadataLinks().isEmpty();
+  }
+
   public OgcApiCollectionsView() {
     super("collections.mustache");
   }
 
-  public List<Link> getLinks() {
+  public List<Link> getProcessedLinks() {
     return links().stream()
         .filter(
             link -> !link.getRel().matches("^(?:self|alternate|describedby|license|enclosure)$"))
         .collect(Collectors.toList());
   }
 
-  public boolean hasMetadata() {
-    return !getMetadataLinks().isEmpty();
-  }
-
-  public List<Link> getMetadataLinks() {
+  public List<Link> getProcessedMetadataLinks() {
     return links().stream()
         .filter(link -> link.getRel().matches("^(?:describedby)$"))
         .collect(Collectors.toList());
   }
 
-  public boolean hasLicense() {
-    return !getLicenseLinks().isEmpty();
-  }
-
-  public List<Link> getLicenseLinks() {
+  public List<Link> getProcessedLicenseLinks() {
     return links().stream()
         .filter(link -> link.getRel().matches("^(?:license)$"))
         .collect(Collectors.toList());
   }
 
-  public boolean hasDownload() {
-    return !getDownloadLinks().isEmpty();
-  }
-
-  public List<Link> getDownloadLinks() {
+  public List<Link> getProcessedDownloadLinks() {
     return links().stream()
         .filter(link -> link.getRel().matches("^(?:enclosure)$"))
         .collect(Collectors.toList());
   }
 
-  public List<Map<String, String>> getCollections() {
+  public List<Map<String, String>> getProcessedCollections() {
 
     Comparator<OgcApiCollection> byTitle =
         Comparator.comparing(collection -> collection.getTitle().orElse(collection.getId()));

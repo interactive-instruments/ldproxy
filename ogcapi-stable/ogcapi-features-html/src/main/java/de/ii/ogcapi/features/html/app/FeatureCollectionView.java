@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.features.html.app;
 
+import com.github.mustachejava.util.DecoratedCollection;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.common.domain.OgcApiDatasetView;
@@ -14,7 +15,7 @@ import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ogcapi.html.domain.DatasetView;
 import de.ii.ogcapi.html.domain.ImmutableMapClient;
 import de.ii.ogcapi.html.domain.ImmutableSource;
 import de.ii.ogcapi.html.domain.MapClient;
@@ -56,33 +57,29 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCollectionView.class);
 
-  FeatureCollectionView() {
-    super("");
+  FeatureCollectionView(String templateName) {
+    super(templateName);
   }
+
+  FeatureCollectionView() {
+    super("featureCollection.mustache");
+  }
+
 
   public abstract Optional<FeatureTypeConfigurationOgcApi> collectionData();
 
-  public abstract Optional<BoundingBox> spatialExtent();
-
   public abstract String name();
-
-  public abstract String title();
-
-  public abstract String description();
 
   public abstract String attribution();
 
-  public abstract String urlPrefix();
+  public abstract List<NavigationDTO> formats();
 
-  public abstract HtmlConfiguration htmlConfig();
-
-  public abstract boolean noIndex();
+  public abstract Optional<Boolean> bare();
 
   public abstract I18n i18n();
 
   public abstract Optional<Locale> language();
 
-  @Nullable
   public abstract Type mapClientType();
 
   @Nullable
@@ -96,23 +93,62 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
 
   public abstract URI uri();
 
-  public abstract Optional<List<NavigationDTO>> pagination();
+  @Nullable
+  public abstract List<NavigationDTO> pagination();
 
   public abstract List<NavigationDTO> metaPagination();
+
+  public abstract POSITION mapPosition();
+
+  public abstract Set<Map.Entry<String, String>> filterFields();
+
+  public abstract Optional<BoundingBox> spatialExtent();
+
+  public abstract URICustomizer uriBuilderWithFOnly();
+
+  public abstract MapClient mapCLient();
+
+  @Nullable
+  public abstract Object data();
+
+  @Nullable
+  public abstract String url();
+
+  @Nullable
+  public abstract String version();
+
+  @Nullable
+  public abstract String license();
+
+  @Nullable
+  public abstract String metadataUrl();
+
+  @Value.Default
+  public List<String> keywords() {
+    return new ArrayList<>();
+  }
+
+  @Value.Default
+  public List<DatasetView> featureTypes() {
+    return new ArrayList<>();
+  }
+
+  @Nullable
+  public abstract String persistentUri();
+
+  @Nullable
+  public abstract Boolean spatialSearch();
 
   @Value.Default
   public List<FeatureHtml> features() {
     return new ArrayList<>();
   }
-  ;
 
   @Value.Default
   public boolean hideMap() {
     return true;
   }
-  ; // set to "hide"; change to "false" when we see a geometry
-
-  public abstract Set<Map.Entry<String, String>> filterFields();
+  // set to "hide"; change to "false" when we see a geometry
 
   @Value.Derived
   public Map<String, String> bbox() {
@@ -129,40 +165,27 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
 
   @Value.Derived
   public URICustomizer uriBuilder() {
-    return new URICustomizer(this.uri());
+    return new URICustomizer(uri());
   }
-
-  public abstract URICustomizer uriBuilderWithFOnly();
-
-  public abstract Optional<Boolean> bare();
 
   @Value.Derived
   public boolean isCollection() {
     return !"featureDetails".equals(getTemplateName());
   }
-  ;
-
-  public abstract String persistentUri();
-
-  public abstract boolean spatialSearch();
 
   @Value.Derived
   public boolean schemaOrgFeatures() {
     return (Objects.nonNull(htmlConfig())
         && Objects.equals(htmlConfig().getSchemaOrgEnabled(), true));
   }
-  ;
 
-  public abstract POSITION mapPosition();
-
-  @Value.Derived
-  public MapClient mapClient() {
+  public MapClient GetProcessedMapClient() {
     if (mapClientType().equals(MapClient.Type.MAP_LIBRE)) {
       return new ImmutableMapClient.Builder()
           .backgroundUrl(
               Optional.ofNullable(htmlConfig().getLeafletUrl())
                   .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
-          .attribution(getAttribution())
+          .attribution(getProcessedAttribution())
           .bounds(Optional.ofNullable(bbox()))
           .data(
               new ImmutableSource.Builder()
@@ -184,7 +207,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
                           url.replace("{z}", "{TileMatrix}")
                               .replace("{y}", "{TileRow}")
                               .replace("{x}", "{TileCol}")))
-          .attribution(getAttribution())
+          .attribution(getProcessedAttribution())
           .build();
     } else {
       LOGGER.error(
@@ -194,7 +217,6 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
     }
   }
 
-  @Value.Derived
   public FilterEditor filterEditor() {
     if (Objects.nonNull(queryables())) {
       return new ImmutableFilterEditor.Builder()
@@ -208,7 +230,6 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
       return null;
     }
   }
-  ;
 
   @Value.Derived
   public CesiumData cesiumData() {
@@ -262,13 +283,13 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
     return path;
   }
 
-  public boolean isMapTop() {
+  public boolean isProcessedMapTop() {
     return mapPosition() == POSITION.TOP
         || (mapPosition() == POSITION.AUTO
             && (features().isEmpty() || features().stream().anyMatch(FeatureHtml::hasObjects)));
   }
 
-  public boolean isMapRight() {
+  public boolean isProcessedMapRight() {
     return mapPosition() == POSITION.RIGHT
         || (mapPosition() == POSITION.AUTO
             && !features().isEmpty()
@@ -276,8 +297,13 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
   }
 
   @Override
-  public String getAttribution() {
-    String basemapAttribution = super.getAttribution();
+  public List<NavigationDTO> getProcessedFormats() {
+    return formats();
+  }
+
+  @Override
+  public String getProcessedAttribution() {
+    String basemapAttribution = super.getProcessedAttribution();
     if (Objects.nonNull(attribution())) {
       if (Objects.nonNull(basemapAttribution))
         return String.join(" | ", attribution(), basemapAttribution);
@@ -286,7 +312,8 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
     return basemapAttribution;
   }
 
-  public Optional<String> getCanonicalUrl() {
+  @Override
+  public Optional<String> getProcessedCanonicalUrl() {
     if (!isCollection() && persistentUri() != null) return Optional.of(persistentUri());
 
     URICustomizer canonicalUri = uriBuilder().copy().ensureNoTrailingSlash().clearParameters();
@@ -302,7 +329,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
         : Optional.empty();
   }
 
-  public Optional<String> getPersistentUri() throws URISyntaxException {
+  public Optional<String> getProcessedPersistentUri() throws URISyntaxException {
     if (!isCollection() && persistentUri() != null) return Optional.of(persistentUri());
 
     return Optional.empty();
@@ -317,7 +344,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
     return '?' + URLEncodedUtils.format(query, '&', Charset.forName("utf-8")) + '&';
   }
 
-  public Function<String, String> getCurrentUrlWithSegment() {
+  public Function<String, String> getProcessedCurrentUrlWithSegment() {
     return segment ->
         uriBuilderWithFOnly()
             .copy()
@@ -326,7 +353,11 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
             .toString();
   }
 
-  public Function<String, String> getQueryWithout() {
+  public DecoratedCollection<String> getKeywordsDecorated() {
+    return new DecoratedCollection<>(keywords());
+  }
+
+  public Function<String, String> getProcessedQueryWithout() {
     return without -> {
       List<String> ignore = Splitter.on(',').trimResults().omitEmptyStrings().splitToList(without);
 
@@ -339,7 +370,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
     };
   }
 
-  public Function<String, String> getCurrentUrlWithSegmentClearParams() {
+  public Function<String, String> getProcessedCurrentUrlWithSegmentClearParams() {
     return segment ->
         uriBuilder()
             .copy()
@@ -357,5 +388,19 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
   public String RawQuery() {
 
     return "?" + (uri().getRawQuery() != null ? uri().getRawQuery() + "&" : "");
+  }
+
+  public String getQuery() {
+
+    return "?" + (uri().getQuery() != null ? uri().getQuery() + "&" : "");
+  }
+
+  public String getRawQuery() {
+
+    return "?" + (uri().getRawQuery() != null ? uri().getRawQuery() + "&" : "");
+  }
+
+  public Object getData() {
+    return data();
   }
 }

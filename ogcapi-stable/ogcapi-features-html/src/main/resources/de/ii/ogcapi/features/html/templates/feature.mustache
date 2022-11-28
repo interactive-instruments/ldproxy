@@ -1,7 +1,7 @@
 <div>
     {{#inCollection}}
-        <h4 class="mt-3 mb-1"><a href="{{#currentUrlWithSegment}}{{idValue}}{{/currentUrlWithSegment}}{{additionalParams}}"><span>{{name}}</span></a></h4>
-        <span class="d-none">{{#currentUrlWithSegmentClearParams}}{{idValue}}{{/currentUrlWithSegmentClearParams}}</span>
+        <h4 class="mt-3 mb-1"><a href="{{#ProcessedCurrentUrlWithSegment}}{{idValue}}{{/ProcessedCurrentUrlWithSegment}}{{additionalParams}}"><span>{{name}}</span></a></h4>
+        <span class="d-none">{{#ProcessedCurrentUrlWithSegmentClearParams}}{{idValue}}{{/ProcessedCurrentUrlWithSegmentClearParams}}</span>
     {{/inCollection}}
     {{^inCollection}}
         <h1>{{name}}</h1>
@@ -9,7 +9,7 @@
     {{#properties}}
         {{> property}}
     {{/properties}}
-    {{#links}}
+    {{#ProcessedLinks}}
         <dl class="dl-horizontal dl-horizontal-no-space">
             <dt>{{name}}</dt>
         <dd>
@@ -22,5 +22,5 @@
                 </ul>
         </dd>
         </dl>
-    {{/links}}
+    {{/ProcessedLinks}}
 </div>

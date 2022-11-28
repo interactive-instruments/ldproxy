@@ -29,9 +29,7 @@ import org.slf4j.LoggerFactory;
 public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, FeatureHtml> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderHtml.class);
-
-  // Todo @Value.Modifiable
-  private final FeatureTransformationContextHtml transformationContext;
+  private FeatureTransformationContextHtml transformationContext;
 
   public FeatureEncoderHtml(FeatureTransformationContextHtml transformationContext) {
     this.transformationContext = transformationContext;
@@ -240,10 +238,11 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
 
     // TODO: FeatureTokenEncoderBytes.getOutputStream
     OutputStreamWriter writer = new OutputStreamWriter(new OutputStreamToByteConsumer(this::push));
-
+    FeatureCollectionView featureCollectionView =
+        transformationContext.collectionView().toImmutable();
     try {
       ((MustacheRenderer) transformationContext.mustacheRenderer())
-          .render(transformationContext.collectionView(), writer);
+          .render(featureCollectionView, writer);
       writer.flush();
     } catch (IOException e) {
       throw new IllegalStateException(e);

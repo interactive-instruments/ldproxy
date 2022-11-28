@@ -96,22 +96,27 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
     return Response.ok()
         .entity(
             new ImmutableServiceOverviewView.Builder()
-                .htmlConfig(getHtmlConfigurationDefaults())
-                .urlPrefix(apiCatalog.getUrlPrefix())
-                .noIndex(true)
-                .apiData(null)
-                .apiCatalog(apiCatalog)
                 .uri(uri)
+                .apiCatalog(apiCatalog)
+                .htmlConfig(getHtmlConfigurationDefaults())
                 .i18n(i18n)
                 .language(language.get())
-                .links(apiCatalog.getLinks())
+                .apiData(null)
                 .breadCrumbs(
                     new ImmutableList.Builder<NavigationDTO>()
-                        .add(new NavigationDTO(i18n.get("root", language), true))
+                        .add(new NavigationDTO(i18n.get("root", Optional.of(language.get())), true))
                         .build())
+                .noIndex(getHtmlConfigurationDefaults().getNoIndexEnabled())
+                .urlPrefix(apiCatalog.getUrlPrefix())
+                .links(apiCatalog.getLinks())
+                .title(
+                    apiCatalog
+                        .getTitle()
+                        .orElse(i18n.get("rootTitle", Optional.of(language.get()))))
                 .description(
-                    apiCatalog.getDescription().orElse(i18n.get("rootDescription", language)))
-                .title(apiCatalog.getTitle().orElse(i18n.get("rootTitle", language)))
+                    apiCatalog
+                        .getDescription()
+                        .orElse(i18n.get("rootDescription", Optional.of(language.get()))))
                 .build())
         .build();
   }

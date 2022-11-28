@@ -164,8 +164,11 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
         .apiData(api.getData())
         .tiles(tiles)
         .collectionId(collectionId)
+        .unprocessedSpatialExtent(api.getSpatialExtent(collectionId))
+        .unprocessedTemporalExtent(api.getTemporalExtent(collectionId))
         .tileMatrixSets(tileMatrixSets)
         .breadCrumbs(breadCrumbs)
+        .links(tiles.getLinks())
         .urlPrefix(requestContext.getStaticUrlPrefix())
         .mapClientType(mapClientType)
         .styleUrl(styleUrl)
@@ -174,6 +177,8 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
         .noIndex(isNoIndexEnabledForApi(api.getData()))
         .uriCustomizer(requestContext.getUriCustomizer())
         .i18n(i18n)
+        .description(tiles.getDescription().orElse(null))
+        .title(tiles.getTitle().orElse(null))
         .language(requestContext.getLanguage())
         .build();
   }
