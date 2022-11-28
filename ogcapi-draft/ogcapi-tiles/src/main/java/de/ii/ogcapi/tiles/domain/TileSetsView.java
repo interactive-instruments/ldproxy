@@ -17,8 +17,6 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcResourceMetadata;
-import de.ii.ogcapi.foundation.domain.TemporalExtent;
-import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.ImmutableMapClient;
 import de.ii.ogcapi.html.domain.ImmutableSource;
@@ -33,6 +31,7 @@ import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.TileLayer.GeometryType;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.List;
@@ -72,9 +71,6 @@ public class TileSetsView extends OgcApiView {
   public TileSetsView(
       OgcApiDataV2 apiData,
       TileSets tiles,
-      Optional<String> collectionId,
-      Optional<BoundingBox> spatialExtent,
-      Optional<TemporalExtent> temporalExtent,
       Map<String, TileMatrixSet> tileMatrixSets,
       List<NavigationDTO> breadCrumbs,
       String urlPrefix,
@@ -83,7 +79,6 @@ public class TileSetsView extends OgcApiView {
       boolean removeZoomLevelConstraints,
       HtmlConfiguration htmlConfig,
       boolean noIndex,
-      URICustomizer uriCustomizer,
       I18n i18n,
       Optional<Locale> language) {
     super(
@@ -98,10 +93,26 @@ public class TileSetsView extends OgcApiView {
         tiles.getTitle().orElse(apiData.getId()),
         tiles.getDescription().orElse(""));
 
-    Optional<BoundingBox> finalSpatialExtent =
-        spatialExtent.or(() -> apiData.getDefaultExtent().flatMap(CollectionExtent::getSpatial));
+    // the center of all tilesets is the same, the only difference is the tiling scheme
+    final Optional<TilePoint> center =
+        tiles.getTilesets().stream().findAny().flatMap(TileSet::getCenterPoint);
+
+    Optional<BoundingBox> spatialExtent =
+        tiles.getTilesets().stream()
+            .map(TileSet::getBoundingBox)
+            // the bbox of all tilesets is the same, the only difference is the tiling scheme
+            .findAny()
+            .map(
+                tBbox ->
+                    BoundingBox.of(
+                        tBbox.getLowerLeft()[0].doubleValue(),
+                        tBbox.getLowerLeft()[1].doubleValue(),
+                        tBbox.getUpperRight()[0].doubleValue(),
+                        tBbox.getUpperRight()[1].doubleValue(),
+                        OgcCrs.CRS84))
+            .or(() -> apiData.getDefaultExtent().flatMap(CollectionExtent::getSpatial));
     this.bbox =
-        finalSpatialExtent
+        spatialExtent
             .map(
                 boundingBox ->
                     ImmutableMap.of(
@@ -174,19 +185,19 @@ public class TileSetsView extends OgcApiView {
                       ts.getCenterPoint().isPresent()
                               && ts.getCenterPoint().get().getCoordinates().size() >= 2
                           ? Double.toString(ts.getCenterPoint().get().getCoordinates().get(0))
-                          : finalSpatialExtent.isPresent()
+                          : spatialExtent.isPresent()
                               ? Double.toString(
-                                  finalSpatialExtent.get().getXmax() * 0.5
-                                      + finalSpatialExtent.get().getXmin() * 0.5)
+                                  spatialExtent.get().getXmax() * 0.5
+                                      + spatialExtent.get().getXmin() * 0.5)
                               : "0.0";
                   String lat =
                       ts.getCenterPoint().isPresent()
                               && ts.getCenterPoint().get().getCoordinates().size() >= 2
                           ? Double.toString(ts.getCenterPoint().get().getCoordinates().get(1))
-                          : finalSpatialExtent.isPresent()
+                          : spatialExtent.isPresent()
                               ? Double.toString(
-                                  finalSpatialExtent.get().getYmax() * 0.5
-                                      + finalSpatialExtent.get().getYmin() * 0.5)
+                                  spatialExtent.get().getYmax() * 0.5
+                                      + spatialExtent.get().getYmin() * 0.5)
                               : "0.0";
 
                   return new ImmutableMap.Builder<String, String>()
@@ -279,7 +290,7 @@ public class TileSetsView extends OgcApiView {
 
           this.mapClient =
               getMapClient(
-                  Type.MAP_LIBRE, styleUrl, removeZoomLevelConstraints, htmlConfig, layers);
+                  Type.MAP_LIBRE, styleUrl, removeZoomLevelConstraints, center, htmlConfig, layers);
         } else {
           LOGGER.error(
               "Configuration error: {} as the client for the HTML representation of tile sets requires that a tile set with the tiling scheme {} exists.",
@@ -292,7 +303,7 @@ public class TileSetsView extends OgcApiView {
 
         this.mapClient =
             getMapClient(
-                Type.OPEN_LAYERS, styleUrl, removeZoomLevelConstraints, htmlConfig, layers);
+                Type.OPEN_LAYERS, styleUrl, removeZoomLevelConstraints, center, htmlConfig, layers);
       } else {
         LOGGER.error(
             "Configuration error: {} is not a supported map client for the HTML representation of tile sets.",
@@ -308,6 +319,7 @@ public class TileSetsView extends OgcApiView {
       Type type,
       String styleUrl,
       boolean removeZoomLevelConstraints,
+      Optional<TilePoint> center,
       HtmlConfiguration htmlConfig,
       Multimap<String, List<String>> layers) {
     return new ImmutableMapClient.Builder()
@@ -328,6 +340,8 @@ public class TileSetsView extends OgcApiView {
         .popup(Popup.CLICK_PROPERTIES)
         .styleUrl(Optional.ofNullable(styleUrl))
         .removeZoomLevelConstraints(removeZoomLevelConstraints)
+        .center(center.map(TilePoint::getCoordinates).orElse(ImmutableList.of()))
+        .zoom(center.flatMap(TilePoint::getTileMatrix).map(Double::parseDouble))
         .build();
   }
 
