@@ -15,6 +15,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -25,7 +26,11 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
+import org.glassfish.jersey.internal.util.collection.Ref;
+import org.glassfish.jersey.internal.util.collection.Refs;
 import org.glassfish.jersey.message.internal.QualitySourceMediaType;
+import org.glassfish.jersey.message.internal.VariantSelector;
+import org.glassfish.jersey.server.ContainerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,10 +139,28 @@ public class ContentNegotiationMediaTypeImpl implements ContentNegotiationMediaT
     MediaType[] supportedMediaTypesArray =
         supportedMediaTypes.stream().flatMap(this::toTypes).distinct().toArray(MediaType[]::new);
 
-    Variant variant = null;
+    MediaType selected = null;
     try {
       if (supportedMediaTypesArray.length > 0) {
-        variant = request.selectVariant(Variant.mediaTypes(supportedMediaTypesArray).build());
+        final List<Variant> variants = Variant.mediaTypes(supportedMediaTypesArray).build();
+        if (request instanceof ContainerRequest) {
+          final List<MediaType> acceptableMediaTypes =
+              ((ContainerRequest) request).getAcceptableMediaTypes();
+          final Ref<String> varyValueRef = Refs.emptyRef();
+          List<Variant> compatibleVariants =
+              VariantSelector.selectVariants((ContainerRequest) request, variants, varyValueRef);
+          selected =
+              ApiMediaType.negotiateMediaType(
+                  acceptableMediaTypes,
+                  compatibleVariants.stream()
+                      .map(Variant::getMediaType)
+                      .collect(Collectors.toUnmodifiableList()));
+        } else {
+          Variant variant = request.selectVariant(variants);
+          if (Objects.nonNull(variant)) {
+            selected = variant.getMediaType();
+          }
+        }
       }
     } catch (Exception ex) {
       if (LOGGER.isWarnEnabled()) {
@@ -148,14 +171,12 @@ public class ContentNegotiationMediaTypeImpl implements ContentNegotiationMediaT
       return supportedMediaTypes.stream().findAny();
     }
 
-    return Optional.ofNullable(variant)
-        .map(Variant::getMediaType)
-        .flatMap(mediaType -> findMatchingOgcApiMediaType(mediaType, supportedMediaTypes));
+    return findMatchingOgcApiMediaType(selected, supportedMediaTypes);
   }
 
   private Optional<ApiMediaType> findMatchingOgcApiMediaType(
       MediaType mediaType, Set<ApiMediaType> supportedMediaTypes) {
-    return supportedMediaTypes.stream().filter(type -> type.matches(mediaType)).findFirst();
+    return supportedMediaTypes.stream().filter(type -> type.type().equals(mediaType)).findFirst();
   }
 
   private Stream<MediaType> toTypes(ApiMediaType apiMediaType) {

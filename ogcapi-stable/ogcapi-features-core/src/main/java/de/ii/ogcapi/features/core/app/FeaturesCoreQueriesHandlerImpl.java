@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureLinksGenerator;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesLinksGenerator;
 import de.ii.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
@@ -134,7 +135,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                             "The requested media type ''{0}'' is not supported for this resource.",
                             requestContext.getMediaType())));
 
-    return getItemsResponse(
+    return getResponse(
         api,
         requestContext,
         collectionId,
@@ -179,7 +180,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
     }
 
-    return getItemsResponse(
+    return getResponse(
         api,
         requestContext,
         collectionId,
@@ -196,7 +197,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         queryInput.getDefaultCrs());
   }
 
-  private Response getItemsResponse(
+  private Response getResponse(
       OgcApi api,
       ApiRequestContext requestContext,
       String collectionId,
@@ -260,8 +261,10 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         new ImmutableFeatureTransformationContextGeneric.Builder()
             .api(api)
             .apiData(api.getData())
-            .featureSchema(featureProvider.getData().getTypes().get(featureTypeId))
-            .collectionId(collectionId)
+            .featureSchemas(
+                ImmutableMap.of(
+                    collectionId,
+                    Optional.ofNullable(featureProvider.getData().getTypes().get(featureTypeId))))
             .ogcApiRequest(requestContext)
             .crsTransformer(crsTransformer)
             .codelists(
@@ -273,7 +276,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             .isFeatureCollection(Objects.isNull(featureId))
             .isHitsOnly(query.hitsOnly())
             .isPropertyOnly(query.propertyOnly())
-            .fields(query.getFields())
+            .fields(ImmutableMap.of(collectionId, query.getFields()))
             .limit(query.getLimit())
             .offset(query.getOffset())
             .maxAllowableOffset(query.getMaxAllowableOffset())
@@ -314,8 +317,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                       ImmutableMap.of(
                           featureTypeId,
                           pt.withSubstitutions(
-                              ImmutableMap.of(
-                                  "serviceUrl", transformationContextGeneric.getServiceUrl()))))
+                              FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
+                                  transformationContextGeneric.getServiceUrl()))))
               .orElse(ImmutableMap.of());
     } else {
       throw new NotAcceptableException(

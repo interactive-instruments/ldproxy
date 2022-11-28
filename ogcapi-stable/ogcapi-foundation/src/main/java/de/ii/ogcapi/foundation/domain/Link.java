@@ -9,6 +9,7 @@ package de.ii.ogcapi.foundation.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMap;
 import java.util.Comparator;
@@ -40,6 +41,7 @@ public abstract class Link {
           .put("application/json", "JSON")
           .put("application/ld+json", "JSON-LD")
           .put("text/html", "HTML")
+          .put("text/csv", "CSV")
           .put("application/flatgeobuf", "FlatGeobuf")
           .put("application/gml+xml", "GML")
           .put("application/xml", "XML")
@@ -79,6 +81,11 @@ public abstract class Link {
   @XmlAttribute
   public abstract Boolean getTemplated();
 
+  @Nullable
+  @XmlTransient
+  @JsonProperty("var-base")
+  public abstract String getVarBase();
+
   @JsonIgnore
   @XmlTransient
   public javax.ws.rs.core.Link getLink() {
@@ -101,6 +108,10 @@ public abstract class Link {
   @XmlTransient
   @Value.Derived
   public String getTypeLabel() {
+    if ("application/vnd.ogc.fg+json;compatibility=geojson".equals(getType())) {
+      // hide JSON-FG GeoJSON compatibility
+      return "";
+    }
     String mediaType =
         Objects.requireNonNullElse(getType(), "").toLowerCase(Locale.ROOT).split(";")[0];
     if (LABEL_MAP.containsKey(mediaType)) {

@@ -10,7 +10,6 @@ package de.ii.ogcapi.features.core.app;
 import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
 import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_BBOX;
 import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_DATETIME;
-import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_Q;
 import static de.ii.xtraplatform.cql.domain.In.ID_PLACEHOLDER;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
@@ -18,6 +17,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
 import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -143,7 +143,10 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             .eTag(withEtag);
 
     for (OgcApiQueryParameter parameter : allowedParameters) {
-      parameter.transformQuery(collectionData, queryBuilder, parameters, apiData);
+      if (parameter instanceof FeatureQueryTransformer) {
+        ((FeatureQueryTransformer) parameter)
+            .transformQuery(queryBuilder, parameters, apiData, collectionData);
+      }
     }
 
     return processCoordinatePrecision(queryBuilder, coordinatePrecision).build();
@@ -163,12 +166,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     final OgcApiDataV2 apiData = api.getData();
     final Map<String, String> filterableFields = getFilterableFields(apiData, collectionData);
     final Map<String, String> queryableTypes = getQueryableTypes(apiData, collectionData);
-
-    final List<String> qFields =
-        collectionData
-            .getExtension(FeaturesCoreConfiguration.class)
-            .map(FeaturesCoreConfiguration::getQProperties)
-            .orElse(ImmutableList.of());
 
     Set<String> filterParameters = ImmutableSet.of();
     for (OgcApiQueryParameter parameter : allowedParameters) {
@@ -219,8 +216,11 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             .hitsOnly(hitsOnly);
 
     for (OgcApiQueryParameter parameter : allowedParameters) {
-      parameter.transformQuery(queryBuilder, parameters, apiData);
-      parameter.transformQuery(collectionData, queryBuilder, parameters, apiData);
+      if (parameter instanceof FeatureQueryTransformer) {
+        ((FeatureQueryTransformer) parameter).transformQuery(queryBuilder, parameters, apiData);
+        ((FeatureQueryTransformer) parameter)
+            .transformQuery(queryBuilder, parameters, apiData, collectionData);
+      }
     }
 
     if (!filters.isEmpty()) {
@@ -286,7 +286,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
               filters,
               filterableFields,
               filterParameters,
-              qFields,
               queryableTypes,
               cqlFormat,
               crs,
@@ -337,7 +336,9 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             .hitsOnly(false);
 
     for (OgcApiQueryParameter parameter : allowedParameters) {
-      parameter.transformQuery(queryBuilder, parameters, apiData);
+      if (parameter instanceof FeatureQueryTransformer) {
+        ((FeatureQueryTransformer) parameter).transformQuery(queryBuilder, parameters, apiData);
+      }
     }
 
     return processCoordinatePrecision(queryBuilder, coordinatePrecision).build();
@@ -431,7 +432,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
           filtersFromQuery,
           filterableFields,
           filterParameters,
-          ImmutableList.of(),
           queryableTypes,
           cqlFormat,
           OgcCrs.CRS84,
@@ -456,9 +456,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
       } else if (filterableFields.containsKey(filterKey)) {
         String filterValue = query.get(filterKey);
         filters.put(filterKey, filterValue);
-      } else if (filterKey.equals(PARAMETER_Q)) {
-        String filterValue = query.get(filterKey);
-        filters.put(filterKey, filterValue);
       }
     }
 
@@ -469,7 +466,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
       Map<String, String> filters,
       Map<String, String> filterableFields,
       Set<String> filterParameters,
-      List<String> qFields,
       Map<String, String> queryableTypes,
       Cql.Format cqlFormat,
       EpsgCrs crs,
@@ -510,9 +506,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                     return timeToCql(filterableFields.get(filter.getKey()), filter.getValue())
                         .orElse(null);
                   }
-                  if (filter.getKey().equals(PARAMETER_Q)) {
-                    return qToCql(qFields, filter.getValue()).orElse(null);
-                  }
                   if (filterParameters.contains(filter.getKey())) {
                     Cql2Expression cqlPredicate;
                     try {
@@ -531,7 +524,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                               "The parameter '%s' is invalid. Unknown or forbidden properties used: %s.",
                               filter.getKey(), String.join(", ", invalidProperties)));
                     }
-
                     // will throw an error
                     cql.checkTypes(cqlPredicate, queryableTypes);
 

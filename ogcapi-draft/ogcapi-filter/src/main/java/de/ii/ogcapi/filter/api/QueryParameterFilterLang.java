@@ -17,10 +17,13 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
+import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -42,7 +45,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterFilterLang extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterFilterLang extends ApiExtensionCache
+    implements OgcApiQueryParameter, TypedQueryParameter<Cql.Format> {
 
   private static final String FILTER_LANG_CQL2_TEXT = "cql2-text";
   private static final String FILTER_LANG_CQL2_JSON = "cql2-json";
@@ -94,6 +98,11 @@ public class QueryParameterFilterLang extends ApiExtensionCache implements OgcAp
                         "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
                     || definitionPath.equals(
                         "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
+  }
+
+  @Override
+  public Cql.Format parse(String value, OgcApiDataV2 apiData) {
+    return Objects.equals(value, FILTER_LANG_CQL2_JSON) ? Cql.Format.JSON : Cql.Format.TEXT;
   }
 
   private final Schema<String> schema =

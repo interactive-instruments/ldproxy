@@ -27,8 +27,8 @@ import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.ogcapi.html.domain.OgcApiView;
 import de.ii.ogcapi.tiles.domain.TileLayer.GeometryType;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrix;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrix;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
@@ -264,23 +264,6 @@ public abstract class TileSetsView extends OgcApiView {
                     "maxLat", Double.toString(boundingBox.getYmax())))
         .orElse(null);
   }
-
-  @Value.Derived
-  public Map<String, String> temporalExtent() {
-    Long[] interval =
-        unprocessedTemporalExtent().map(te -> new Long[] {te.getStart(), te.getEnd()}).orElse(null);
-    if (interval == null) return null;
-    else if (interval[0] == Long.MIN_VALUE && interval[1] == Long.MAX_VALUE)
-      return ImmutableMap.of();
-    else if (interval[0] == Long.MIN_VALUE) return ImmutableMap.of("end", interval[1].toString());
-    else if (interval[1] == Long.MAX_VALUE) return ImmutableMap.of("start", interval[0].toString());
-
-    return ImmutableMap.of(
-        "start", interval[0].toString(),
-        "end", interval[1].toString());
-  }
-
-  public abstract Optional<TemporalExtent> unprocessedTemporalExtent();
 
   public abstract Boolean removeZoomLevelConstraints();
 

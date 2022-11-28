@@ -10,15 +10,7 @@ package de.ii.ogcapi.tiles.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.QueryInput;
-import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.tiles.app.TileProviderFeatures;
-import de.ii.ogcapi.tiles.app.TileProviderMbtiles;
-import de.ii.ogcapi.tiles.app.TileProviderTileServer;
 import java.util.List;
-import java.util.Map;
 import org.immutables.value.Value;
 
 /**
@@ -69,12 +61,4 @@ public abstract class TileProvider {
   public abstract List<String> getTileEncodings();
 
   public abstract TileProvider mergeInto(TileProvider tileProvider);
-
-  public abstract QueryInput getQueryInput(
-      OgcApiDataV2 apiData,
-      URICustomizer uriCustomizer,
-      Map<String, String> queryParameters,
-      List<OgcApiQueryParameter> allowedParameters,
-      QueryInput genericInput,
-      Tile tile);
 }

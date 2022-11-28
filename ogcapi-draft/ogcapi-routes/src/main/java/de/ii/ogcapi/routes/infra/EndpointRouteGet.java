@@ -138,7 +138,6 @@ public class EndpointRouteGet extends Endpoint implements ConformanceClass {
       @Context ApiRequestContext requestContext) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkAuthorization(apiData, optionalUser);
     checkPathParameter(extensionRegistry, apiData, "/routes/{routeId}", "routeId", routeId);
 
     QueryHandlerRoutes.QueryInputRoute queryInput =

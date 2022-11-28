@@ -24,6 +24,8 @@ import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSetsView;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;

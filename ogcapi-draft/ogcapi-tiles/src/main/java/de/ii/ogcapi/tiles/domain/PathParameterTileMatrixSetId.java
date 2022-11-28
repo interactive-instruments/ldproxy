@@ -14,7 +14,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
@@ -93,6 +93,11 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
   }
 
   @Override
+  public String getId() {
+    return "tileMatrixSetIdTiles";
+  }
+
+  @Override
   public String getName() {
     return "tileMatrixSetId";
   }
@@ -117,8 +122,7 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
   @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
     return isEnabledForApi(apiData)
-        && (definitionPath.startsWith("/tileMatrixSets/{tileMatrixSetId}")
-            || definitionPath.startsWith("/collections/{collectionId}/tiles/{tileMatrixSetId}")
+        && (definitionPath.startsWith("/collections/{collectionId}/tiles/{tileMatrixSetId}")
             || definitionPath.startsWith("/tiles/{tileMatrixSetId}"));
   }
 

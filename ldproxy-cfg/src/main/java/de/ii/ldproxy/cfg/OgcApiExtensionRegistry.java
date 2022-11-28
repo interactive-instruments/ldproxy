@@ -22,7 +22,7 @@ import de.ii.ogcapi.features.geojson.app.GeoJsonBuildingBlock;
 import de.ii.ogcapi.features.geojson.ld.app.GeoJsonLdBuildingBlock;
 import de.ii.ogcapi.features.gml.app.GmlBuildingBlock;
 import de.ii.ogcapi.features.html.app.FeaturesHtmlBuildingBlock;
-import de.ii.ogcapi.features.json.fg.app.JsonFgBuildingBlock;
+import de.ii.ogcapi.features.jsonfg.app.JsonFgBuildingBlock;
 import de.ii.ogcapi.filter.app.FilterBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ApiExtension;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -64,7 +64,7 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
             .add(new StylesBuildingBlock(this)) // TODO: StyleFormatExtensions
             .add(
                 new TilesBuildingBlock(
-                    this, null, null, null, null,
+                    this, null, null, null, null, null,
                     null)) // TODO: TileFormatWithQuerySupportExtension,
             // TileSetFormatExtension
             .add(new CrudBuildingBlock())

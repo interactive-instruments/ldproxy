@@ -12,12 +12,10 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationContext;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,16 +34,10 @@ public interface TileFromFeatureQuery {
     public boolean isComplete;
   }
 
-  MultiLayerTileContent combineSingleLayerTilesToMultiLayerTile(
-      TileMatrixSet tileMatrixSet,
-      Map<String, Tile> singleLayerTileMap,
-      Map<String, ByteArrayOutputStream> singleLayerByteArrayMap)
-      throws IOException;
-
   double getMaxAllowableOffset(Tile tile);
 
   default Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
-      FeatureTransformationContextTiles transformationContext) {
+      TileGenerationContext transformationContext) {
     return Optional.empty();
   }
 

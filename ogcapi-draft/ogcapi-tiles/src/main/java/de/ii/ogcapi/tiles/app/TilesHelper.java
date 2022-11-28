@@ -23,29 +23,26 @@ import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.tiles.domain.ImmutableFields;
+import de.ii.ogcapi.tilematrixsets.domain.ImmutableTilesBoundingBox;
+import de.ii.ogcapi.tilematrixsets.domain.MinMax;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
+import de.ii.ogcapi.tilematrixsets.domain.TilesBoundingBox;
 import de.ii.ogcapi.tiles.domain.ImmutableTileLayer;
 import de.ii.ogcapi.tiles.domain.ImmutableTilePoint;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSet;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSet.Builder;
 import de.ii.ogcapi.tiles.domain.ImmutableVectorLayer;
-import de.ii.ogcapi.tiles.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.TileLayer;
 import de.ii.ogcapi.tiles.domain.TilePoint;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.VectorLayer;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.ImmutableTilesBoundingBox;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimits;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TilesBoundingBox;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
-import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
@@ -55,7 +52,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.AbstractMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -120,10 +116,7 @@ public class TilesHelper {
     if (Objects.isNull(zoomLevels)) builder.tileMatrixSetLimits(ImmutableList.of());
     else
       builder.tileMatrixSetLimits(
-          collectionId.isPresent()
-              ? limitsGenerator.getCollectionTileMatrixSetLimits(
-                  api, collectionId.get(), tileMatrixSet, zoomLevels)
-              : limitsGenerator.getTileMatrixSetLimits(api, tileMatrixSet, zoomLevels));
+          limitsGenerator.getTileMatrixSetLimits(api, tileMatrixSet, zoomLevels, collectionId));
 
     try {
       BoundingBox boundingBox =
@@ -264,54 +257,6 @@ public class TilesHelper {
     return builder.build();
   }
 
-  // TODO: move to TileSet as @Value.Lazy
-  /**
-   * convert a bounding box to a bounding box in another CRS
-   *
-   * @param bbox the bounding box in some CRS
-   * @param targetCrs the target CRS
-   * @param crsTransformerFactory the factory for CRS transformations
-   * @return the converted bounding box
-   */
-  public static Optional<BoundingBox> getBoundingBoxInTargetCrs(
-      BoundingBox bbox, EpsgCrs targetCrs, CrsTransformerFactory crsTransformerFactory) {
-    EpsgCrs sourceCrs = bbox.getEpsgCrs();
-    if (sourceCrs.getCode() == targetCrs.getCode()
-        && sourceCrs.getForceAxisOrder() == targetCrs.getForceAxisOrder()) return Optional.of(bbox);
-
-    Optional<CrsTransformer> transformer =
-        crsTransformerFactory.getTransformer(sourceCrs, targetCrs, true);
-    if (transformer.isPresent()) {
-      try {
-        return Optional.ofNullable(transformer.get().transformBoundingBox(bbox));
-      } catch (CrsTransformationException e) {
-        LOGGER.error(
-            String.format(
-                Locale.US,
-                "Cannot convert bounding box (%f, %f, %f, %f) from %s to %s. Reason: %s",
-                bbox.getXmin(),
-                bbox.getYmin(),
-                bbox.getXmax(),
-                bbox.getYmax(),
-                sourceCrs,
-                targetCrs,
-                e.getMessage()));
-        return Optional.empty();
-      }
-    }
-    LOGGER.error(
-        String.format(
-            Locale.US,
-            "Cannot convert bounding box (%f, %f, %f, %f) from %s to %s. Reason: no applicable transformer found.",
-            bbox.getXmin(),
-            bbox.getYmin(),
-            bbox.getXmax(),
-            bbox.getYmax(),
-            sourceCrs,
-            targetCrs));
-    return Optional.empty();
-  }
-
   /**
    * derive the bbox as a sequence left, bottom, right, upper
    *
@@ -420,9 +365,7 @@ public class TilesHelper {
             featureTypeApi -> {
               String featureTypeId =
                   apiData
-                      .getCollections()
-                      .get(featureTypeApi.getId())
-                      .getExtension(FeaturesCoreConfiguration.class)
+                      .getExtension(FeaturesCoreConfiguration.class, featureTypeApi.getId())
                       .map(cfg -> cfg.getFeatureType().orElse(featureTypeApi.getId()))
                       .orElse(featureTypeApi.getId());
               Optional<GeoJsonConfiguration> geoJsonConfiguration =
@@ -434,6 +377,10 @@ public class TilesHelper {
                       .getFeatureProvider(apiData, featureTypeApi)
                       .map(provider -> provider.getData().getTypes().get(featureTypeId));
               if (featureType.isEmpty()) return null;
+              ImmutableVectorLayer.Builder builder =
+                  ImmutableVectorLayer.builder()
+                      .id(featureTypeApi.getId())
+                      .description(featureTypeApi.getDescription().orElse(""));
               List<FeatureSchema> properties =
                   flatten
                       ? featureType.get().getAllNestedProperties()
@@ -451,7 +398,6 @@ public class TilesHelper {
                                       name.replace("[]", ""), name))
                           .collect(
                               ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-              ImmutableFields.Builder fieldsBuilder = new ImmutableFields.Builder();
               AtomicReference<String> geometryType = new AtomicReference<>("unknown");
               properties.forEach(
                   property -> {
@@ -460,30 +406,16 @@ public class TilesHelper {
                         !flatten || property.isObject()
                             ? property.getName()
                             : propertyNameMap.get(String.join(".", property.getFullPath()));
-                    if (flatten && propertyName != null)
+                    if (flatten && propertyName != null) {
                       propertyName = propertyName.replace("[]", ".1");
+                    }
                     switch (propType) {
                       case FLOAT:
                       case INTEGER:
                       case STRING:
                       case BOOLEAN:
                       case DATETIME:
-                        fieldsBuilder.putAdditionalProperties(propertyName, getType(propType));
-                        break;
-                      case OBJECT:
-                      case OBJECT_ARRAY:
-                        if (!flatten) {
-                          if (property.getObjectType().orElse("").equals("Link")) {
-                            fieldsBuilder.putAdditionalProperties(propertyName, "link");
-                            break;
-                          }
-                          fieldsBuilder.putAdditionalProperties(propertyName, "object");
-                        }
-                        break;
-                      case VALUE_ARRAY:
-                        fieldsBuilder.putAdditionalProperties(
-                            propertyName,
-                            getType(property.getValueType().orElse(SchemaBase.Type.UNKNOWN)));
+                        builder.putFields(propertyName, getType(propType));
                         break;
                       case GEOMETRY:
                         switch (property.getGeometryType().orElse(SimpleFeatureGeometry.ANY)) {
@@ -507,19 +439,18 @@ public class TilesHelper {
                             break;
                         }
                         break;
+                      case OBJECT:
+                      case OBJECT_ARRAY:
+                      case VALUE_ARRAY:
                       case UNKNOWN:
                       default:
-                        fieldsBuilder.putAdditionalProperties(propertyName, "unknown");
+                        // Fallback in MBTiles
+                        builder.putFields(propertyName, "String");
                         break;
                     }
                   });
+              builder.geometryType(geometryType.get());
 
-              ImmutableVectorLayer.Builder builder =
-                  ImmutableVectorLayer.builder()
-                      .id(featureTypeApi.getId())
-                      .description(featureTypeApi.getDescription().orElse(""))
-                      .geometryType(geometryType.get())
-                      .fields(fieldsBuilder.build());
               apiData
                   .getExtension(TilesConfiguration.class, featureTypeApi.getId())
                   .map(config -> config.getZoomLevelsDerived().get(tileMatrixSetId))
