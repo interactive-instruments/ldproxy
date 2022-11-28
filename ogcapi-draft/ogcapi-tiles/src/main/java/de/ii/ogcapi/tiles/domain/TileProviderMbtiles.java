@@ -87,6 +87,9 @@ public abstract class TileProviderMbtiles extends TileProvider {
   @JsonIgnore
   public abstract Optional<BoundingBox> getBounds();
 
+  @JsonIgnore
+  public abstract List<VectorLayer> getVectorLayers();
+
   @Override
   @JsonIgnore
   @Value.Default
