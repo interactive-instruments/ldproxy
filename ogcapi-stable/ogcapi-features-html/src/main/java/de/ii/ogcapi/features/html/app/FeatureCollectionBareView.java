@@ -16,10 +16,6 @@ import org.immutables.value.Value.Modifiable;
 @Modifiable
 public abstract class FeatureCollectionBareView extends FeatureCollectionView {
 
-  @Derived
-  public String templateName(){
-    return "featureCollectionBare.mustache";
-  }
   FeatureCollectionBareView() {
     super("featureCollectionBare.mustache");
   }

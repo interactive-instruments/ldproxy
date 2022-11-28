@@ -16,10 +16,7 @@ import org.immutables.value.Value.Modifiable;
 @Modifiable
 public abstract class FeatureCollectionFeatureCollectionView extends FeatureCollectionView{
 
-  @Derived
-  public String templateName(){
-    return "featureCollsaasdaection.mustache";
-  }
+
   FeatureCollectionFeatureCollectionView() {
     super("featureCollection.mustache");
   }

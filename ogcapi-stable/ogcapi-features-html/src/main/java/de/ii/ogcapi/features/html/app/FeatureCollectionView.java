@@ -66,6 +66,8 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
   }
 
 
+  public abstract String templateName();
+
   public abstract Optional<FeatureTypeConfigurationOgcApi> collectionData();
 
   public abstract String name();
@@ -106,7 +108,47 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
 
   public abstract URICustomizer uriBuilderWithFOnly();
 
-  public abstract MapClient mapCLient();
+  @Nullable
+  @Value.Derived
+  public MapClient mapClient(){
+    if (mapClientType().equals(MapClient.Type.MAP_LIBRE)) {
+      return
+          new ImmutableMapClient.Builder()
+              .backgroundUrl(
+                  Optional.ofNullable(htmlConfig().getLeafletUrl())
+                      .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
+              .attribution(getProcessedAttribution())
+              .bounds(Optional.ofNullable(bbox()))
+              .data(
+                  new ImmutableSource.Builder()
+                      .type(TYPE.geojson)
+                      .url(uriBuilder().removeParameters("f").ensureParameter("f", "json").toString())
+                      .build())
+              .popup(Popup.HOVER_ID)
+              .styleUrl(Optional.ofNullable(styleUrl()))
+              .removeZoomLevelConstraints(removeZoomLevelConstraints())
+              .build();
+    } else if (mapClientType().equals(MapClient.Type.CESIUM)) {
+      return
+          new ImmutableMapClient.Builder()
+              .type(mapClientType())
+              .backgroundUrl(
+                  Optional.ofNullable(htmlConfig().getLeafletUrl())
+                      .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl()))
+                      .map(
+                          url ->
+                              url.replace("{z}", "{TileMatrix}")
+                                  .replace("{y}", "{TileRow}")
+                                  .replace("{x}", "{TileCol}")))
+              .attribution(getProcessedAttribution())
+              .build();
+    } else {
+      LOGGER.error(
+          "Configuration error: {} is not a supported map client for the HTML representation of features.",
+          mapClientType());
+      return null;
+    }
+  }
 
   @Nullable
   public abstract Object data();
@@ -313,7 +355,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
   }
 
   @Override
-  public Optional<String> getProcessedCanonicalUrl() {
+  public Optional<String> getProcessedCanonicalUrl() throws URISyntaxException {
     if (!isCollection() && persistentUri() != null) return Optional.of(persistentUri());
 
     URICustomizer canonicalUri = uriBuilder().copy().ensureNoTrailingSlash().clearParameters();
@@ -322,7 +364,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
     boolean hasPrevLink =
         Objects.nonNull(metaPagination())
             && metaPagination().stream()
-                .anyMatch(navigationDTO -> "prev".equals(navigationDTO.label));
+            .anyMatch(navigationDTO -> "prev".equals(navigationDTO.label));
 
     return !hasOtherParams && (!isCollection() || !hasPrevLink)
         ? Optional.of(canonicalUri.toString())

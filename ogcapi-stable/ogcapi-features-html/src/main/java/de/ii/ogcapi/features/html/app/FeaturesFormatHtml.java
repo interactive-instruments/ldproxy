@@ -433,6 +433,7 @@ public class FeaturesFormatHtml
                   .setQueryables(filterableFields)
                   .setGeometryProperties(geometryProperties)
                   .setUriCustomizer(uriCustomizer)
+                  .setTemplateName("featureCollection.mustache")
                   // Todo Derived
                   .setUriBuilderWithFOnly(
                       uriCustomizer
@@ -441,9 +442,6 @@ public class FeaturesFormatHtml
                           .ensureParameter("f", MEDIA_TYPE.parameter()))
                   .setTemporalExtent(
                       Optional.ofNullable(api.getTemporalExtent(featureType.getId()).orElse(null)));
-
-      modifiableFeatureCollectionFeatureCollectionView.setMapCLient(
-          modifiableFeatureCollectionFeatureCollectionView.GetProcessedMapClient());
 
       modifiableFeatureCollectionView =
           ModifiableFeatureCollectionView.create()
@@ -473,6 +471,7 @@ public class FeaturesFormatHtml
               .setQueryables(filterableFields)
               .setGeometryProperties(geometryProperties)
               .setUriCustomizer(uriCustomizer)
+              .setTemplateName("featureCollectionBare.mustache")
               // Todo Derived
               .setUriBuilderWithFOnly(
                   uriCustomizer
@@ -484,6 +483,13 @@ public class FeaturesFormatHtml
 
       modifiableFeatureCollectionView =
           ModifiableFeatureCollectionView.create().from(modifiableFeatureCollectionBareView);
+    }
+
+    if(!bare){
+      modifiableFeatureCollectionView.setTemplateName("featureCollection.mustache");
+    }
+    else{
+      modifiableFeatureCollectionView.setTemplateName("featureCollectionBare.mustache");
     }
 
     return modifiableFeatureCollectionView;
@@ -575,6 +581,7 @@ public class FeaturesFormatHtml
             .setStyleUrl(String.valueOf(styleUrl))
             .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
             .setGeometryProperties(geometryProperties)
+            .setTemplateName("featureDetails.mustache")
             .setTemporalExtent(
                 Optional.ofNullable(api.getTemporalExtent(featureType.getId()).orElse(null)))
             .setFormats(formats)
@@ -607,6 +614,7 @@ public class FeaturesFormatHtml
     ModifiableFeatureCollectionView modifiableFeatureCollectionView = // Todo hier interface
         ModifiableFeatureCollectionView.create().from(modifiableFeatureCollectionDetailsView);
 
+    modifiableFeatureCollectionView.setTemplateName("featureDetails.mustache");
     return modifiableFeatureCollectionView;
 
     /**

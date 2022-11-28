@@ -23,6 +23,7 @@ import de.ii.ogcapi.html.domain.OgcApiView;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
+import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
@@ -112,7 +113,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
     return apiData().getMetadata();
   }
 
-  public Optional<String> getProcessedCanonicalUrl() {
+  public Optional<String> getProcessedCanonicalUrl() throws URISyntaxException {
     return links().stream()
         .filter(link -> Objects.equals(link.getRel(), "self"))
         .map(Link::getHref)
