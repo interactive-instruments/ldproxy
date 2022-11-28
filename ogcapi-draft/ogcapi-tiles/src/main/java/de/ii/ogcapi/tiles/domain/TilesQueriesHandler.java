@@ -7,17 +7,13 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import de.ii.ogcapi.features.core.domain.processing.FeatureProcessChain;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
-import de.ii.ogcapi.tiles.app.TileProviderMbtiles;
-import de.ii.ogcapi.tiles.app.TileProviderTileServer;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureQuery;
-import java.io.InputStream;
-import java.io.OutputStream;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
+import de.ii.ogcapi.tilematrixsets.domain.MinMax;
+import de.ii.ogcapi.tiles.domain.provider.TileCoordinates;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,78 +27,17 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
   enum Query implements QueryIdentifier {
     TILE_SETS,
     TILE_SET,
-    SINGLE_LAYER_TILE,
-    MULTI_LAYER_TILE,
-    TILE_STREAM,
-    EMPTY_TILE,
-    MBTILES_TILE,
-    TILESERVER_TILE
+    TILE,
   }
 
   @Value.Immutable
-  interface QueryInputTileEmpty extends QueryInput {
+  interface QueryInputTile extends QueryInput, TileCoordinates {
 
-    Tile getTile();
-  }
+    Optional<String> getCollectionId();
 
-  @Value.Immutable
-  interface QueryInputTileStream extends QueryInput {
+    TileFormatExtension getOutputFormat();
 
-    Tile getTile();
-
-    InputStream getTileContent();
-  }
-
-  @Value.Immutable
-  interface QueryInputTileMbtilesTile extends QueryInput {
-
-    Tile getTile();
-
-    TileProviderMbtiles getProvider();
-  }
-
-  @Value.Immutable
-  interface QueryInputTileTileServerTile extends QueryInput {
-
-    Tile getTile();
-
-    TileProviderTileServer getProvider();
-  }
-
-  @Value.Immutable
-  interface QueryInputTileMultiLayer extends QueryInput {
-
-    Tile getTile();
-
-    Map<String, Tile> getSingleLayerTileMap();
-
-    Map<String, FeatureQuery> getQueryMap();
-
-    EpsgCrs getDefaultCrs();
-
-    // the processing
-    Optional<OutputStream> getOutputStream();
-
-    Optional<FeatureProcessChain> getProcesses();
-
-    Map<String, Object> getProcessingParameters();
-  }
-
-  @Value.Immutable
-  interface QueryInputTileSingleLayer extends QueryInput {
-
-    Tile getTile();
-
-    FeatureQuery getQuery();
-
-    EpsgCrs getDefaultCrs();
-
-    // the processing
-    Optional<OutputStream> getOutputStream();
-
-    Optional<FeatureProcessChain> getProcesses();
-
-    Map<String, Object> getProcessingParameters();
+    QueryParameterSet getParameters();
   }
 
   @Value.Immutable

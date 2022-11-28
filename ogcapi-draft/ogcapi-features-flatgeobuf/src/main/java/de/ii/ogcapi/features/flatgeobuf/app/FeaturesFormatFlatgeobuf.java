@@ -143,9 +143,10 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
 
     return Optional.of(
         new FeatureEncoderFlatgeobuf(
-            ImmutableFeatureTransformationContextFlatgeobuf.builder()
+            ImmutableEncodingContextFlatgeobuf.builder()
                 .from(transformationContext)
                 .schema(schema)
+                .crsTransformer(transformationContext.getCrsTransformer())
                 .is3d(crsInfo.is3d(crs))
                 .build()));
   }

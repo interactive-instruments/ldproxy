@@ -53,7 +53,7 @@ public abstract class EndpointSubCollection extends Endpoint {
         && configuration.getEnabled();
   }
 
-  protected Map<MediaType, ApiMediaTypeContent> getContent(
+  public Map<MediaType, ApiMediaTypeContent> getContent(
       OgcApiDataV2 apiData, Optional<String> collectionId, String subSubPath, HttpMethods method) {
     return getFormats().stream()
         .filter(

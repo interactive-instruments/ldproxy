@@ -10,7 +10,6 @@ package de.ii.ogcapi.foundation.domain;
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.base.Splitter;
 import de.ii.xtraplatform.base.domain.LogContext;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -154,28 +153,5 @@ public interface ParameterExtension extends ApiExtension {
       Map<String, String> parameters,
       OgcApiDataV2 apiData) {
     return parameters;
-  }
-
-  default ImmutableFeatureQuery.Builder transformQuery(
-      FeatureTypeConfigurationOgcApi featureType,
-      ImmutableFeatureQuery.Builder queryBuilder,
-      Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
-    return queryBuilder;
-  }
-
-  default ImmutableFeatureQuery.Builder transformQuery(
-      ImmutableFeatureQuery.Builder queryBuilder,
-      Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
-    return queryBuilder;
-  }
-
-  default Map<String, Object> transformContext(
-      FeatureTypeConfigurationOgcApi featureType,
-      Map<String, Object> context,
-      Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
-    return context;
   }
 }

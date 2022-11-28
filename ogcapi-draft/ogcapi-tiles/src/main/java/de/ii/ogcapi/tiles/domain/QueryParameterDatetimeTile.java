@@ -7,13 +7,26 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAMETER_DATETIME;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.base.Splitter;
 import de.ii.ogcapi.features.core.domain.AbstractQueryParameterDatetime;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationParametersTransient;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
+import de.ii.xtraplatform.cql.domain.Interval;
+import de.ii.xtraplatform.cql.domain.Property;
+import de.ii.xtraplatform.cql.domain.TIntersects;
+import de.ii.xtraplatform.cql.domain.TemporalLiteral;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -25,7 +38,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime {
+public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
+    implements TypedQueryParameter<TemporalLiteral>, TileGenerationUserParameter {
 
   @Inject
   QueryParameterDatetimeTile(SchemaValidator schemaValidator) {
@@ -54,5 +68,50 @@ public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime {
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return TilesConfiguration.class;
+  }
+
+  @Override
+  public TemporalLiteral parse(String value, OgcApiDataV2 apiData) {
+    try {
+      if (value.contains(DATETIME_INTERVAL_SEPARATOR)) {
+        return TemporalLiteral.of(Splitter.on(DATETIME_INTERVAL_SEPARATOR).splitToList(value));
+      }
+      return TemporalLiteral.of(value);
+    } catch (Throwable e) {
+      throw new IllegalArgumentException(
+          "Invalid value for query parameter '" + PARAMETER_DATETIME + "'.", e);
+    }
+  }
+
+  @Override
+  public void applyTo(
+      ImmutableTileGenerationParametersTransient.Builder userParametersBuilder,
+      QueryParameterSet parameters,
+      Optional<TileGenerationSchema> generationSchema) {
+    parameters
+        .getValue(this)
+        .ifPresent(
+            temporalLiteral -> {
+              Optional<TIntersects> temporalFilter =
+                  generationSchema
+                      .flatMap(TileGenerationSchema::getTemporalProperty)
+                      .map(temporalProperty -> toFilter(temporalProperty, temporalLiteral));
+
+              temporalFilter.ifPresent(userParametersBuilder::addFilters);
+            });
+  }
+
+  private static TIntersects toFilter(String property, TemporalLiteral literal) {
+    if (property.contains(DATETIME_INTERVAL_SEPARATOR)) {
+      Interval interval =
+          Interval.of(
+              Splitter.on(DATETIME_INTERVAL_SEPARATOR).splitToList(property).stream()
+                  .map(Property::of)
+                  .collect(Collectors.toList()));
+
+      return TIntersects.of(interval, literal);
+    }
+
+    return TIntersects.of(Property.of(property), literal);
   }
 }
