@@ -242,6 +242,7 @@ public class TilesDataHydrator implements OgcApiDataHydratorExtension {
                           .tileEncoding(format)
                           .center(center)
                           .bounds(bounds)
+                          .vectorLayers(metadata.getVectorLayers())
                           .build())
                   .build();
         } catch (Exception e) {

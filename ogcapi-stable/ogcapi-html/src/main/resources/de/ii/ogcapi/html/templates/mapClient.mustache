@@ -11,6 +11,12 @@
       {{#removeZoomLevelConstraints}}
         removeZoomLevelConstraints: {{.}},
       {{/removeZoomLevelConstraints}}
+      {{#useBounds}}
+        {{#bounds}}
+          bounds: [[{{minLng}},{{minLat}}],[{{maxLng}},{{maxLat}}]],
+          drawBounds: {{drawBounds}},
+        {{/bounds}}
+      {{/useBounds}}
     {{/styleUrl}}
     {{^styleUrl}}
       {{#backgroundUrl}}
@@ -19,13 +25,17 @@
       {{#attribution}}
         attribution: '{{{.}}}',
       {{/attribution}}
-      //center: [{{centerLon}},{{centerLat}}],
-      //zoom: {{zoom}},
+      {{#zoom}}
+        zoom: {{.}},
+        center: {{center}},
+      {{/zoom}}
+      {{^zoom}}
+        {{#bounds}}
+          bounds: [[{{minLng}},{{minLat}}],[{{maxLng}},{{maxLat}}]],
+          drawBounds: {{drawBounds}},
+        {{/bounds}}
+      {{/zoom}}
     {{/styleUrl}}
-    {{#bounds}}
-      bounds: [[{{minLng}},{{minLat}}],[{{maxLng}},{{maxLat}}]],
-      drawBounds: {{drawBounds}},
-    {{/bounds}}
     {{#data}}
      {{#isData}}
       dataUrl:  {{{url}}},

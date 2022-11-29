@@ -64,6 +64,7 @@ import de.ii.ogcapi.tiles.domain.provider.TileProviderMbtilesData;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.base.domain.util.Tuple;
 import de.ii.xtraplatform.cql.domain.Cql;
+import de.ii.xtraplatform.features.domain.DatasetChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.EntityFactories;
@@ -289,7 +290,10 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     providers
         .getFeatureProvider(apiData)
         .ifPresent(
-            provider -> provider.getFeatureChangeHandler().addListener(onFeatureChange(api)));
+            provider -> {
+              provider.getChangeHandler().addListener(onDatasetChange(api));
+              provider.getChangeHandler().addListener(onFeatureChange(api));
+            });
 
     if (apiValidation == MODE.NONE) {
       return ValidationResult.of();
@@ -840,6 +844,27 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         .build();
   }
 
+  // TODO: only when enabled in configuration?
+  private DatasetChangeListener onDatasetChange(OgcApi api) {
+    return change -> {
+      for (String featureType : change.getFeatureTypes()) {
+        String collectionId = getCollectionId(api.getData().getCollections().values(), featureType);
+
+        try {
+          tilesProviders.deleteTiles(
+              api, Optional.of(collectionId), Optional.empty(), Optional.empty());
+        } catch (Exception e) {
+          if (LOGGER.isErrorEnabled()) {
+            LOGGER.error(
+                "Error while deleting tiles from the tile cache after a dataset change.", e);
+          }
+        }
+        ;
+      }
+    };
+  }
+
+  // TODO: seeding not triggered?
   private FeatureChangeListener onFeatureChange(OgcApi api) {
     return change -> {
       String collectionId =
