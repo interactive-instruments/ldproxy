@@ -851,7 +851,8 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         String collectionId = getCollectionId(api.getData().getCollections().values(), featureType);
 
         try {
-          tilesProviders.deleteTiles(api, Optional.of(collectionId), Optional.empty(), Optional.empty());
+          tilesProviders.deleteTiles(
+              api, Optional.of(collectionId), Optional.empty(), Optional.empty());
         } catch (Exception e) {
           if (LOGGER.isErrorEnabled()) {
             LOGGER.error(
