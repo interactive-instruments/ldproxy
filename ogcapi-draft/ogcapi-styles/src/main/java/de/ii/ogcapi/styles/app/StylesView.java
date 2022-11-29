@@ -21,8 +21,6 @@ import org.immutables.value.Value;
 public abstract class StylesView extends OgcApiView {
   public abstract Styles styles();
 
-  public abstract String staticUrlPrefix();
-
   public abstract URICustomizer uriCustomizer();
 
   public abstract I18n i18n();
@@ -41,8 +39,6 @@ public abstract class StylesView extends OgcApiView {
 
   public StylesView() {
     super("styles.mustache");
-    /*i18n.get("stylesTitle", language),
-    i18n.get("stylesDescription", language));*/
   }
 
   public List<StyleEntry> getProcessedStyles() {

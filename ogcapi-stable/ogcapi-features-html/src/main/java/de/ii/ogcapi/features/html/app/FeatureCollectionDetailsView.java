@@ -8,14 +8,12 @@
 package de.ii.ogcapi.features.html.app;
 
 import org.immutables.value.Value;
-import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Modifiable;
 
 @Value.Immutable
 @Value.Style(builder = "new")
 @Modifiable
 public abstract class FeatureCollectionDetailsView extends FeatureCollectionView {
-
 
   FeatureCollectionDetailsView() {
     super("featureDetails.mustache");

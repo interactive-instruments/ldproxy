@@ -121,12 +121,14 @@ public class StylesFormatHtml implements StylesFormatExtension {
     return new ImmutableStylesView.Builder()
         .apiData(apiData)
         .styles(styles)
-        .breadCrumbs(breadCrumbs)
         .urlPrefix(requestContext.getStaticUrlPrefix())
+        .breadCrumbs(breadCrumbs)
         .htmlConfig(htmlConfig)
         .noIndex(isNoIndexEnabledForApi(apiData))
         .uriCustomizer(requestContext.getUriCustomizer())
         .i18n(i18n)
+        .description(apiData.getDescription().orElse(null))
+        .title(apiData.getLabel())
         .language(requestContext.getLanguage())
         .build();
   }
