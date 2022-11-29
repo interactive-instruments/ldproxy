@@ -29,9 +29,12 @@ import de.ii.xtraplatform.features.domain.ImmutableFeatureChange;
 import de.ii.xtraplatform.features.domain.Tuple;
 import de.ii.xtraplatform.features.json.domain.FeatureTokenDecoderGeoJson;
 import de.ii.xtraplatform.streams.domain.Reactive.Source;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -70,7 +73,8 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     EpsgCrs crs = queryInput.getCrs().orElseGet(queryInput::getDefaultCrs);
 
     FeatureTokenSource featureTokenSource =
-        getFeatureSource(requestContext.getMediaType(), queryInput.getRequestBody());
+        getFeatureSource(
+            requestContext.getMediaType(), queryInput.getRequestBody(), Optional.empty());
 
     FeatureTransactions.MutationResult result =
         queryInput
@@ -110,14 +114,16 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
     EpsgCrs crs = queryInput.getQuery().getCrs().orElseGet(queryInput::getDefaultCrs);
 
-    EntityTag eTag = getETag(queryInput, requestContext, crs);
+    Response feature = getFeatureWithETag(queryInput, requestContext, crs);
+    EntityTag eTag = feature.getEntityTag();
 
     Response.ResponseBuilder response =
         queriesHandler.evaluatePreconditions(requestContext, null, eTag);
     if (Objects.nonNull(response)) return response.build();
 
     FeatureTokenSource featureTokenSource =
-        getFeatureSource(requestContext.getMediaType(), queryInput.getRequestBody());
+        getFeatureSource(
+            requestContext.getMediaType(), queryInput.getRequestBody(), Optional.empty());
 
     FeatureTransactions.MutationResult result =
         queryInput
@@ -128,7 +134,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
                 queryInput.getFeatureId(),
                 featureTokenSource,
                 crs,
-                true);
+                false);
 
     result.getError().ifPresent(QueriesHandler::processStreamError);
 
@@ -143,7 +149,51 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     return Response.noContent().build();
   }
 
-  private EntityTag getETag(
+  @Override
+  public Response patchItemResponse(
+      QueryInputFeatureReplace queryInput, ApiRequestContext requestContext) {
+
+    EpsgCrs crs = queryInput.getQuery().getCrs().orElseGet(queryInput::getDefaultCrs);
+
+    Response feature = getFeatureWithETag(queryInput, requestContext, crs);
+    EntityTag eTag = feature.getEntityTag();
+
+    Response.ResponseBuilder response =
+        queriesHandler.evaluatePreconditions(requestContext, null, eTag);
+    if (Objects.nonNull(response)) return response.build();
+
+    byte[] prev = (byte[]) feature.getEntity();
+    InputStream merged =
+        new SequenceInputStream(new ByteArrayInputStream(prev), queryInput.getRequestBody());
+    LOGGER.debug("PREV {}", new String(prev, StandardCharsets.UTF_8));
+
+    FeatureTokenSource mergedSource =
+        getFeatureSource(
+            requestContext.getMediaType(),
+            merged,
+            Optional.of(FeatureTransactions.PATCH_NULL_VALUE));
+
+    FeatureTransactions.MutationResult result =
+        queryInput
+            .getFeatureProvider()
+            .transactions()
+            .updateFeature(
+                queryInput.getFeatureType(), queryInput.getFeatureId(), mergedSource, crs, true);
+
+    result.getError().ifPresent(QueriesHandler::processStreamError);
+
+    handleChange(
+        queryInput.getFeatureProvider(),
+        queryInput.getCollectionId(),
+        result.getIds(),
+        result.getSpatialExtent(),
+        convertTemporalExtent(result.getTemporalExtent()),
+        Action.UPDATE);
+
+    return Response.noContent().build();
+  }
+
+  private Response getFeatureWithETag(
       QueryInputFeatureReplace queryInput, ApiRequestContext requestContext, EpsgCrs crs) {
     try {
       if (formats == null) {
@@ -177,9 +227,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
                       .collect(Collectors.toUnmodifiableSet()))
               .build();
 
-      Response response = queriesHandler.handle(Query.FEATURE, queryInput, requestContextGeoJson);
-
-      return response.getEntityTag();
+      return queriesHandler.handle(Query.FEATURE, queryInput, requestContextGeoJson);
     } catch (URISyntaxException e) {
       return null;
     }
@@ -242,9 +290,10 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
   // TODO: to InputFormat extension matching the mediaType
   private static FeatureTokenSource getFeatureSource(
-      ApiMediaType mediaType, InputStream requestBody) {
+      ApiMediaType mediaType, InputStream requestBody, Optional<String> nullValue) {
 
-    FeatureTokenDecoderGeoJson featureTokenDecoderGeoJson = new FeatureTokenDecoderGeoJson();
+    FeatureTokenDecoderGeoJson featureTokenDecoderGeoJson =
+        new FeatureTokenDecoderGeoJson(nullValue);
 
     return Source.inputStream(requestBody).via(featureTokenDecoderGeoJson);
   }

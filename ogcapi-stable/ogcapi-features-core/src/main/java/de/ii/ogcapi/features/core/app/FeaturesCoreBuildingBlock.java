@@ -73,8 +73,7 @@ import org.slf4j.LoggerFactory;
  *     de.ii.ogcapi.features.core.app.QueryParameterDatetime}, {@link
  *     de.ii.ogcapi.features.core.app.QueryParameterFFeatures}, {@link
  *     de.ii.ogcapi.features.core.app.QueryParameterLimitFeatures}, {@link
- *     de.ii.ogcapi.features.core.app.QueryParameterOffsetFeatures}, {@link
- *     de.ii.ogcapi.features.core.app.QueryParameterQ}
+ *     de.ii.ogcapi.features.core.app.QueryParameterOffsetFeatures}
  */
 @Singleton
 @AutoBind
@@ -203,15 +202,6 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
       switch (change.getAction()) {
         case CREATE:
           api.updateItemCount(collectionId, (long) change.getFeatureIds().size());
-          change
-              .getBoundingBox()
-              .flatMap(this::transformToCrs84)
-              .ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
-          change
-              .getInterval()
-              .ifPresent(
-                  interval -> api.updateTemporalExtent(collectionId, TemporalExtent.of(interval)));
-          break;
         case UPDATE:
           change
               .getBoundingBox()

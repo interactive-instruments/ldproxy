@@ -42,53 +42,11 @@ public class TilesLinkGenerator extends DefaultLinksGenerator {
                         .copy()
                         .removeLastPathSegment("collections")
                         .ensureNoTrailingSlash()
-                        .ensureLastPathSegment("tileMatrixSets")
-                        .removeParameters("f")
-                        .toString())
-                .rel("http://www.opengis.net/def/rel/ogc/1.0/tiling-schemes")
-                .title(i18n.get("tileMatrixSetsLink", language))
-                .build())
-        .add(
-            new ImmutableLink.Builder()
-                .href(
-                    uriBuilder
-                        .copy()
-                        .removeLastPathSegment("collections")
-                        .ensureNoTrailingSlash()
                         .ensureLastPathSegment("tiles")
                         .removeParameters("f")
                         .toString())
                 .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-" + dataType.toString())
                 .title(i18n.get("tilesLink", language))
-                .build())
-        .build();
-  }
-
-  /**
-   * generates the links on the page /{apiId}/tileMatrixSets
-   *
-   * @param uriBuilder the URI, split in host, path and query
-   * @param tileMatrixSetId the id of the tiling Scheme
-   * @param i18n module to get linguistic text
-   * @param language the requested language (optional)
-   * @return a list with links
-   */
-  public List<Link> generateTileMatrixSetsLinks(
-      URICustomizer uriBuilder, String tileMatrixSetId, I18n i18n, Optional<Locale> language) {
-
-    return ImmutableList.<Link>builder()
-        .add(
-            new ImmutableLink.Builder()
-                .href(
-                    uriBuilder
-                        .copy()
-                        .ensureLastPathSegment(tileMatrixSetId)
-                        .removeParameters("f")
-                        .toString())
-                .rel("self")
-                .title(
-                    i18n.get("tileMatrixSetLink", language)
-                        .replace("{{tileMatrixSetId}}", tileMatrixSetId))
                 .build())
         .build();
   }

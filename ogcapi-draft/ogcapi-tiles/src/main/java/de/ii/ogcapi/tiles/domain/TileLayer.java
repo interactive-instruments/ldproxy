@@ -12,7 +12,7 @@ import com.google.common.hash.Funnel;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
 import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.foundation.domain.OgcResourceMetadata;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TilesBoundingBox;
+import de.ii.ogcapi.tilematrixsets.domain.TilesBoundingBox;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.immutables.value.Value;

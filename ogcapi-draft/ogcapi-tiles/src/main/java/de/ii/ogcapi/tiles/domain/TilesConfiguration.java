@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
+import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.LIMIT_DEFAULT;
 import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.MINIMUM_SIZE_IN_PIXEL;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -15,13 +16,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import de.ii.ogcapi.features.core.domain.SfFlatConfiguration;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
-import de.ii.ogcapi.tiles.app.TileProviderFeatures;
-import de.ii.ogcapi.tiles.app.TileProviderMbtiles;
-import de.ii.ogcapi.tiles.app.TileProviderTileServer;
-import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
+import de.ii.ogcapi.tilematrixsets.domain.ImmutableMinMax;
+import de.ii.ogcapi.tilematrixsets.domain.MinMax;
+import de.ii.ogcapi.tiles.domain.provider.LevelFilter;
+import de.ii.ogcapi.tiles.domain.provider.LevelTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.List;
@@ -214,16 +216,13 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
-public interface TilesConfiguration
-    extends ExtensionConfiguration, PropertyTransformations, CachingConfiguration {
+public interface TilesConfiguration extends SfFlatConfiguration, CachingConfiguration {
 
   enum TileCacheType {
     FILES,
     MBTILES,
     NONE
   }
-
-  abstract class Builder extends ExtensionConfiguration.Builder {}
 
   /**
    * @langEn Specifies the data source for the tiles, see [Tile provider objects](#tile-provider).
@@ -232,7 +231,7 @@ public interface TilesConfiguration
    * @default `{ "type": "FEATURES", ... }`
    */
   @Nullable
-  TileProvider getTileProvider(); // TODO add TileServer support
+  TileProvider getTileProvider();
 
   /**
    * @langEn Controls which formats are supported for the tileset resources. Available are [OGC
@@ -403,8 +402,7 @@ public interface TilesConfiguration
   @JsonIgnore
   default boolean isSingleCollectionEnabled() {
     return Objects.equals(getSingleCollectionEnabled(), true)
-        || (Objects.nonNull(getTileProvider()) && getTileProvider().isSingleCollectionEnabled())
-        || isEnabled();
+        || (Objects.nonNull(getTileProvider()) && getTileProvider().isSingleCollectionEnabled());
   }
 
   /**
@@ -421,8 +419,7 @@ public interface TilesConfiguration
   @JsonIgnore
   default boolean isMultiCollectionEnabled() {
     return Objects.equals(getMultiCollectionEnabled(), true)
-        || (Objects.nonNull(getTileProvider()) && getTileProvider().isMultiCollectionEnabled())
-        || isEnabled();
+        || (Objects.nonNull(getTileProvider()) && getTileProvider().isMultiCollectionEnabled());
   }
 
   /**
@@ -484,13 +481,14 @@ public interface TilesConfiguration
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
-  @Nullable
   default Integer getLimitDerived() {
     return Objects.nonNull(getLimit())
         ? getLimit()
-        : getTileProvider() instanceof TileProviderFeatures
-            ? ((TileProviderFeatures) getTileProvider()).getLimit()
-            : null;
+        : Objects.requireNonNullElse(
+            getTileProvider() instanceof TileProviderFeatures
+                ? ((TileProviderFeatures) getTileProvider()).getLimit()
+                : null,
+            LIMIT_DEFAULT);
   }
 
   /**
@@ -518,12 +516,12 @@ public interface TilesConfiguration
    * @default `{}`
    */
   @Deprecated
-  Map<String, List<PredefinedFilter>> getFilters();
+  Map<String, List<LevelFilter>> getFilters();
 
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
-  default Map<String, List<PredefinedFilter>> getFiltersDerived() {
+  default Map<String, List<LevelFilter>> getFiltersDerived() {
     return !getFilters().isEmpty()
         ? getFilters()
         : getTileProvider() instanceof TileProviderFeatures
@@ -537,12 +535,12 @@ public interface TilesConfiguration
    * @default `{}`
    */
   @Deprecated
-  Map<String, List<Rule>> getRules();
+  Map<String, List<LevelTransformation>> getRules();
 
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
-  default Map<String, List<Rule>> getRulesDerived() {
+  default Map<String, List<LevelTransformation>> getRulesDerived() {
     return !getRules().isEmpty()
         ? getRules()
         : getTileProvider() instanceof TileProviderFeatures
@@ -588,6 +586,8 @@ public interface TilesConfiguration
             MINIMUM_SIZE_IN_PIXEL));
   }
 
+  abstract class Builder extends ExtensionConfiguration.Builder {}
+
   @Override
   default Builder getBuilder() {
     return new ImmutableTilesConfiguration.Builder();
@@ -601,7 +601,7 @@ public interface TilesConfiguration
             .from(source)
             .from(this)
             .transformations(
-                PropertyTransformations.super
+                SfFlatConfiguration.super
                     .mergeInto((PropertyTransformations) source)
                     .getTransformations());
 
@@ -658,14 +658,14 @@ public interface TilesConfiguration
       getZoomLevelsCache().forEach(mergedZoomLevelsCache::put);
     builder.zoomLevelsCache(mergedZoomLevelsCache);
 
-    Map<String, List<Rule>> mergedRules =
+    Map<String, List<LevelTransformation>> mergedRules =
         Objects.nonNull(src.getRules())
             ? Maps.newLinkedHashMap(src.getRules())
             : Maps.newLinkedHashMap();
     if (Objects.nonNull(getRules())) getRules().forEach(mergedRules::put);
     builder.rules(mergedRules);
 
-    Map<String, List<PredefinedFilter>> mergedFilters =
+    Map<String, List<LevelFilter>> mergedFilters =
         Objects.nonNull(src.getFilters())
             ? Maps.newLinkedHashMap(src.getFilters())
             : Maps.newLinkedHashMap();
@@ -713,21 +713,15 @@ public interface TilesConfiguration
 
   @Value.Check
   default TilesConfiguration alwaysFlatten() {
-    if (!hasTransformation(
-        PropertyTransformations.WILDCARD,
-        transformation -> transformation.getFlatten().isPresent())) {
-
-      Map<String, List<PropertyTransformation>> transformations =
-          withTransformation(
-              PropertyTransformations.WILDCARD,
-              new ImmutablePropertyTransformation.Builder().flatten(".").build());
-
-      return new ImmutableTilesConfiguration.Builder()
-          .from(this)
-          .transformations(transformations)
-          .build();
+    Map<String, List<PropertyTransformation>> transformations = extendWithFlattenIfMissing();
+    if (transformations.isEmpty()) {
+      // a flatten transformation is already set
+      return this;
     }
 
-    return this;
+    return new ImmutableTilesConfiguration.Builder()
+        .from(this)
+        .transformations(transformations)
+        .build();
   }
 }

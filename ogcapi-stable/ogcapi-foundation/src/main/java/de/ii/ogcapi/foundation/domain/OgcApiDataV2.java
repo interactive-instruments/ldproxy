@@ -162,6 +162,8 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
 
   public abstract Optional<Caching> getDefaultCaching();
 
+  public abstract Optional<ApiSecurity> getAccessControl();
+
   @Value.Default
   public MODE getApiValidation() {
     return MODE.NONE;
@@ -213,13 +215,13 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
       return new ImmutableOgcApiDataV2.Builder().from(this).extensions(distinctExtensions).build();
     }
 
-    boolean collectionsHaveMissingParentExtensions =
+    boolean shouldUpdateParentExtensions =
         getCollections().values().stream()
             .anyMatch(
                 collection ->
-                    collection.getParentExtensions().size() < getMergedExtensions().size());
+                    !Objects.equals(collection.getParentExtensions(), distinctExtensions));
 
-    if (collectionsHaveMissingParentExtensions) {
+    if (shouldUpdateParentExtensions) {
       Map<String, FeatureTypeConfigurationOgcApi> mergedCollections =
           new LinkedHashMap<>(getCollections());
 

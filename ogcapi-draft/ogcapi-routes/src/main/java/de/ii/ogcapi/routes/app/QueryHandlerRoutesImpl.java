@@ -250,8 +250,11 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         ImmutableFeatureTransformationContextRoutes.builder()
             .api(api)
             .apiData(api.getData())
-            .featureSchema(featureProvider.getData().getTypes().get(queryInput.getFeatureTypeId()))
-            .collectionId("not_applicable")
+            .featureSchemas(
+                ImmutableMap.of(
+                    "not_applicable",
+                    Optional.ofNullable(
+                        featureProvider.getData().getTypes().get(queryInput.getFeatureTypeId()))))
             .ogcApiRequest(requestContext)
             .crsTransformer(crsTransformer)
             .codelists(
@@ -264,7 +267,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             .isFeatureCollection(true)
             .isHitsOnly(query.hitsOnly())
             .isPropertyOnly(query.propertyOnly())
-            .fields(query.getFields())
+            .fields(ImmutableMap.of("not_applicable", query.getFields()))
             .limit(query.getLimit())
             .offset(query.getOffset())
             .maxAllowableOffset(query.getMaxAllowableOffset())

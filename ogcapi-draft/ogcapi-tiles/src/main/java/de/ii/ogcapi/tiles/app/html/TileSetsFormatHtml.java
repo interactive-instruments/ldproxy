@@ -23,12 +23,12 @@ import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.NavigationDTO;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSetsView;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.net.URI;
@@ -70,12 +70,13 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
 
   @Override
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.equals("/tiles") || path.equals("/collections/{collectionId}/tiles"))
+    if (path.equals("/tiles") || path.equals("/collections/{collectionId}/tiles")) {
       return new ImmutableApiMediaTypeContent.Builder()
           .schema(new StringSchema().example("<html>...</html>"))
           .schemaRef("#/components/schemas/htmlSchema")
           .ogcApiMediaType(MEDIA_TYPE)
           .build();
+    }
 
     return null;
   }
@@ -165,7 +166,6 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
         .tiles(tiles)
         .collectionId(collectionId)
         .unprocessedSpatialExtent(api.getSpatialExtent(collectionId))
-        .unprocessedTemporalExtent(api.getTemporalExtent(collectionId))
         .tileMatrixSets(tileMatrixSets)
         .breadCrumbs(breadCrumbs)
         .links(tiles.getLinks())

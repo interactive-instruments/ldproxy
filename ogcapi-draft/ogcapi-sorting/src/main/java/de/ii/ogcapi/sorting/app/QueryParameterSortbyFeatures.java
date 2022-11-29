@@ -10,6 +10,7 @@ package de.ii.ogcapi.sorting.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
@@ -49,7 +50,7 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterSortbyFeatures extends ApiExtensionCache
-    implements OgcApiQueryParameter, ItemTypeSpecificConformanceClass {
+    implements OgcApiQueryParameter, ItemTypeSpecificConformanceClass, FeatureQueryTransformer {
 
   static final Splitter KEYS_SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings();
   private final SchemaValidator schemaValidator;
@@ -187,10 +188,10 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
 
   @Override
   public ImmutableFeatureQuery.Builder transformQuery(
-      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
       ImmutableFeatureQuery.Builder queryBuilder,
       Map<String, String> parameters,
-      OgcApiDataV2 datasetData) {
+      OgcApiDataV2 datasetData,
+      FeatureTypeConfigurationOgcApi featureTypeConfiguration) {
     if (!isExtensionEnabled(
         datasetData.getCollections().get(featureTypeConfiguration.getId()),
         SortingConfiguration.class)) {
