@@ -65,7 +65,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
   }
 
   @Value.Derived
-  Optional<BoundingBox> bbox() {
+  public Optional<BoundingBox> bbox() {
     return extent()
         .flatMap(OgcApiExtent::getSpatial)
         .map(OgcApiExtentSpatial::getBbox)

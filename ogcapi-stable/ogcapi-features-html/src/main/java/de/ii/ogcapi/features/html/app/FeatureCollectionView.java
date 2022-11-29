@@ -118,7 +118,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
               Optional.ofNullable(htmlConfig().getLeafletUrl())
                   .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
           .attribution(getProcessedAttribution())
-          .bounds(Optional.ofNullable(bbox()))
+          .bounds(Optional.ofNullable(mapBbox()))
           .data(
               new ImmutableSource.Builder()
                   .type(TYPE.geojson)
@@ -192,8 +192,9 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
   }
   // set to "hide"; change to "false" when we see a geometry
 
+  @Nullable
   @Value.Derived
-  public Map<String, String> bbox() {
+  public Map<String, String> mapBbox() {
     return spatialExtent()
         .map(
             boundingBox ->
@@ -228,7 +229,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
               Optional.ofNullable(htmlConfig().getLeafletUrl())
                   .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
           .attribution(getProcessedAttribution())
-          .bounds(Optional.ofNullable(bbox()))
+          .bounds(Optional.ofNullable(mapBbox()))
           .data(
               new ImmutableSource.Builder()
                   .type(TYPE.geojson)
