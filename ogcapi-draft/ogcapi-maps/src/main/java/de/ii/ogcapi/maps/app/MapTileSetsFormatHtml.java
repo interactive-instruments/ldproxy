@@ -137,9 +137,6 @@ public class MapTileSetsFormatHtml implements TileSetsFormatExtension {
     return new TileSetsView(
         api.getData(),
         tiles,
-        collectionId,
-        api.getSpatialExtent(collectionId),
-        api.getTemporalExtent(collectionId),
         tileMatrixSets,
         breadCrumbs,
         requestContext.getStaticUrlPrefix(),
@@ -148,7 +145,6 @@ public class MapTileSetsFormatHtml implements TileSetsFormatExtension {
         false,
         htmlConfig.orElseThrow(),
         isNoIndexEnabledForApi(api.getData()),
-        requestContext.getUriCustomizer(),
         i18n,
         requestContext.getLanguage());
   }

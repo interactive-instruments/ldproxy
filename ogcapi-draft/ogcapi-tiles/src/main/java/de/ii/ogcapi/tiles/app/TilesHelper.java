@@ -11,7 +11,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaBoolean;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaNumber;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaString;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
@@ -36,6 +39,8 @@ import de.ii.ogcapi.tiles.domain.ImmutableTileSet.Builder;
 import de.ii.ogcapi.tiles.domain.ImmutableVectorLayer;
 import de.ii.ogcapi.tiles.domain.TileLayer;
 import de.ii.ogcapi.tiles.domain.TilePoint;
+import de.ii.ogcapi.tiles.domain.TileProviderFeatures;
+import de.ii.ogcapi.tiles.domain.TileProviderMbtiles;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.VectorLayer;
@@ -120,8 +125,17 @@ public class TilesHelper {
 
     try {
       BoundingBox boundingBox =
-          api.getSpatialExtent(collectionId)
-              .orElse(tileMatrixSet.getBoundingBoxCrs84(crsTransformerFactory));
+          // TODO get information from TileProviderData, instead of TilesConfiguration
+          (collectionId.isPresent()
+                  ? apiData.getExtension(TilesConfiguration.class, collectionId.get())
+                  : apiData.getExtension(TilesConfiguration.class))
+              .map(TilesConfiguration::getTileProvider)
+              .filter(c -> c instanceof TileProviderMbtiles)
+              // if present, the bbox is in CRS84
+              .flatMap(c -> ((TileProviderMbtiles) c).getBounds())
+              .orElse(
+                  api.getSpatialExtent(collectionId)
+                      .orElse(tileMatrixSet.getBoundingBoxCrs84(crsTransformerFactory)));
       builder.boundingBox(
           ImmutableTilesBoundingBox.builder()
               .lowerLeft(
@@ -133,7 +147,12 @@ public class TilesHelper {
               .crs(OgcCrs.CRS84.toUriString())
               .build());
     } catch (CrsTransformationException e) {
-      // ignore, just skip the boundingBox
+      builder.boundingBox(
+          ImmutableTilesBoundingBox.builder()
+              .lowerLeft(BigDecimal.valueOf(-180), BigDecimal.valueOf(-90))
+              .upperRight(BigDecimal.valueOf(180), BigDecimal.valueOf(90))
+              .crs(OgcCrs.CRS84.toUriString())
+              .build());
     }
 
     if ((Objects.nonNull(zoomLevels) && zoomLevels.getDefault().isPresent()) || !center.isEmpty()) {
@@ -144,112 +163,183 @@ public class TilesHelper {
       builder.centerPoint(builder2.build());
     }
 
-    // prepare a map with the JSON schemas of the feature collections used in the style
-    JsonSchemaCache schemas =
-        new SchemaCacheTileSet(() -> entityRegistry.getEntitiesForType(Codelist.class));
+    // TODO get information from TileProviderData, instead of TilesConfiguration
+    (collectionId.isPresent()
+            ? apiData.getExtension(TilesConfiguration.class, collectionId.get())
+            : apiData.getExtension(TilesConfiguration.class))
+        .map(TilesConfiguration::getTileProvider)
+        .ifPresent(
+            tileProvider -> {
+              if (tileProvider instanceof TileProviderFeatures) {
+                // prepare a map with the JSON schemas of the feature collections used in the style
+                JsonSchemaCache schemas =
+                    new SchemaCacheTileSet(() -> entityRegistry.getEntitiesForType(Codelist.class));
 
-    Map<String, JsonSchemaDocument> schemaMap =
-        collectionId.isPresent()
-            ? apiData
-                .getCollectionData(collectionId.get())
-                .filter(
-                    collectionData -> {
-                      Optional<TilesConfiguration> config =
-                          collectionData.getExtension(TilesConfiguration.class);
-                      return collectionData.getEnabled()
-                          && config.isPresent()
-                          && config.get().isEnabled();
-                    })
-                .map(
-                    collectionData -> {
-                      Optional<FeatureSchema> schema =
-                          providers.getFeatureSchema(apiData, collectionData);
-                      if (schema.isPresent())
-                        return ImmutableMap.of(
-                            collectionId.get(),
-                            schemas.getSchema(
-                                schema.get(), apiData, collectionData, Optional.empty()));
-                      return null;
-                    })
-                .filter(Objects::nonNull)
-                .orElse(ImmutableMap.of())
-            : apiData.getCollections().entrySet().stream()
-                .filter(
-                    entry -> {
-                      Optional<TilesConfiguration> config =
-                          entry.getValue().getExtension(TilesConfiguration.class);
-                      return entry.getValue().getEnabled()
-                          && config.isPresent()
-                          && config.get().isMultiCollectionEnabled();
-                    })
-                .map(
-                    entry -> {
-                      Optional<FeatureSchema> schema =
-                          providers.getFeatureSchema(apiData, entry.getValue());
-                      if (schema.isPresent())
-                        return new AbstractMap.SimpleImmutableEntry<>(
-                            entry.getKey(),
-                            schemas.getSchema(
-                                schema.get(), apiData, entry.getValue(), Optional.empty()));
-                      return null;
-                    })
-                .filter(Objects::nonNull)
-                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+                Map<String, JsonSchemaDocument> schemaMap =
+                    collectionId.isPresent()
+                        ? apiData
+                            .getCollectionData(collectionId.get())
+                            .filter(
+                                collectionData -> {
+                                  Optional<TilesConfiguration> config =
+                                      collectionData.getExtension(TilesConfiguration.class);
+                                  return collectionData.getEnabled()
+                                      && config.isPresent()
+                                      && config.get().isEnabled();
+                                })
+                            .map(
+                                collectionData -> {
+                                  Optional<FeatureSchema> schema =
+                                      providers.getFeatureSchema(apiData, collectionData);
+                                  if (schema.isPresent())
+                                    return ImmutableMap.of(
+                                        collectionId.get(),
+                                        schemas.getSchema(
+                                            schema.get(),
+                                            apiData,
+                                            collectionData,
+                                            Optional.empty()));
+                                  return null;
+                                })
+                            .filter(Objects::nonNull)
+                            .orElse(ImmutableMap.of())
+                        : apiData.getCollections().entrySet().stream()
+                            .filter(
+                                entry -> {
+                                  Optional<TilesConfiguration> config =
+                                      entry.getValue().getExtension(TilesConfiguration.class);
+                                  return entry.getValue().getEnabled()
+                                      && config.isPresent()
+                                      && config.get().isMultiCollectionEnabled();
+                                })
+                            .map(
+                                entry -> {
+                                  Optional<FeatureSchema> schema =
+                                      providers.getFeatureSchema(apiData, entry.getValue());
+                                  if (schema.isPresent())
+                                    return new AbstractMap.SimpleImmutableEntry<>(
+                                        entry.getKey(),
+                                        schemas.getSchema(
+                                            schema.get(),
+                                            apiData,
+                                            entry.getValue(),
+                                            Optional.empty()));
+                                  return null;
+                                })
+                            .filter(Objects::nonNull)
+                            .collect(
+                                ImmutableMap.toImmutableMap(
+                                    Map.Entry::getKey, Map.Entry::getValue));
 
-    // TODO: replace with SchemaDeriverTileLayers
-    schemaMap.entrySet().stream()
-        .forEach(
-            entry -> {
-              String collectionId2 = entry.getKey();
-              FeatureTypeConfigurationOgcApi collectionData =
-                  apiData.getCollections().get(collectionId2);
+                // TODO: replace with SchemaDeriverTileLayers
+                schemaMap.entrySet().stream()
+                    .forEach(
+                        entry -> {
+                          String collectionId2 = entry.getKey();
+                          FeatureTypeConfigurationOgcApi collectionData =
+                              apiData.getCollections().get(collectionId2);
 
-              JsonSchemaDocument schema = entry.getValue();
-              ImmutableTileLayer.Builder builder2 =
-                  ImmutableTileLayer.builder()
-                      .id(collectionId2)
-                      .title(collectionData.getLabel())
-                      .description(collectionData.getDescription())
-                      .dataType(dataType);
+                          JsonSchemaDocument schema = entry.getValue();
+                          ImmutableTileLayer.Builder builder2 =
+                              ImmutableTileLayer.builder()
+                                  .id(collectionId2)
+                                  .title(collectionData.getLabel())
+                                  .description(collectionData.getDescription())
+                                  .dataType(dataType);
 
-              collectionData
-                  .getExtension(TilesConfiguration.class)
-                  .map(config -> config.getZoomLevelsDerived().get(tileMatrixSet.getId()))
-                  .ifPresent(
-                      minmax ->
-                          builder2
-                              .minTileMatrix(String.valueOf(minmax.getMin()))
-                              .maxTileMatrix(String.valueOf(minmax.getMax())));
+                          collectionData
+                              .getExtension(TilesConfiguration.class)
+                              .map(
+                                  config ->
+                                      config.getZoomLevelsDerived().get(tileMatrixSet.getId()))
+                              .ifPresent(
+                                  minmax ->
+                                      builder2
+                                          .minTileMatrix(String.valueOf(minmax.getMin()))
+                                          .maxTileMatrix(String.valueOf(minmax.getMax())));
 
-              final JsonSchema geometry = schema.getProperties().get("geometry");
-              if (Objects.nonNull(geometry)) {
-                String geomAsString = geometry.toString();
-                boolean point =
-                    geomAsString.contains("GeoJSON Point")
-                        || geomAsString.contains("GeoJSON MultiPoint");
-                boolean line =
-                    geomAsString.contains("GeoJSON LineString")
-                        || geomAsString.contains("GeoJSON MultiLineString");
-                boolean polygon =
-                    geomAsString.contains("GeoJSON Polygon")
-                        || geomAsString.contains("GeoJSON MultiPolygon");
-                if (point && !line && !polygon)
-                  builder2.geometryType(TileLayer.GeometryType.points);
-                else if (!point && line && !polygon)
-                  builder2.geometryType(TileLayer.GeometryType.lines);
-                else if (!point && !line && polygon)
-                  builder2.geometryType(TileLayer.GeometryType.polygons);
+                          final JsonSchema geometry = schema.getProperties().get("geometry");
+                          if (Objects.nonNull(geometry)) {
+                            String geomAsString = geometry.toString();
+                            boolean point =
+                                geomAsString.contains("GeoJSON Point")
+                                    || geomAsString.contains("GeoJSON MultiPoint");
+                            boolean line =
+                                geomAsString.contains("GeoJSON LineString")
+                                    || geomAsString.contains("GeoJSON MultiLineString");
+                            boolean polygon =
+                                geomAsString.contains("GeoJSON Polygon")
+                                    || geomAsString.contains("GeoJSON MultiPolygon");
+                            if (point && !line && !polygon)
+                              builder2.geometryType(TileLayer.GeometryType.points);
+                            else if (!point && line && !polygon)
+                              builder2.geometryType(TileLayer.GeometryType.lines);
+                            else if (!point && !line && polygon)
+                              builder2.geometryType(TileLayer.GeometryType.polygons);
+                          }
+
+                          final JsonSchemaObject properties =
+                              (JsonSchemaObject) schema.getProperties().get("properties");
+                          builder2.propertiesSchema(
+                              ImmutableJsonSchemaObject.builder()
+                                  .required(properties.getRequired())
+                                  .properties(properties.getProperties())
+                                  .patternProperties(properties.getPatternProperties())
+                                  .build());
+                          builder.addLayers(builder2.build());
+                        });
+
+              } else if (tileProvider instanceof TileProviderMbtiles) {
+                ((TileProviderMbtiles) tileProvider)
+                    .getVectorLayers()
+                    .forEach(
+                        vectorLayer -> {
+                          ImmutableTileLayer.Builder builder2 =
+                              ImmutableTileLayer.builder()
+                                  .id(vectorLayer.getId())
+                                  .title(vectorLayer.getId())
+                                  .description(vectorLayer.getDescription())
+                                  .dataType(dataType);
+                          vectorLayer
+                              .getMinzoom()
+                              .ifPresent(zoom -> builder2.minTileMatrix(String.valueOf(zoom)));
+                          vectorLayer
+                              .getMaxzoom()
+                              .ifPresent(zoom -> builder2.maxTileMatrix(String.valueOf(zoom)));
+                          if ("points".equals(vectorLayer.getGeometryType().orElse("")))
+                            builder2.geometryType(TileLayer.GeometryType.points);
+                          else if ("lines".equals(vectorLayer.getGeometryType().orElse("")))
+                            builder2.geometryType(TileLayer.GeometryType.lines);
+                          else if ("points".equals(vectorLayer.getGeometryType().orElse("")))
+                            builder2.geometryType(TileLayer.GeometryType.polygons);
+
+                          if (!vectorLayer.getFields().isEmpty()) {
+                            builder2.propertiesSchema(
+                                ImmutableJsonSchemaObject.builder()
+                                    .properties(
+                                        vectorLayer.getFields().entrySet().stream()
+                                            .collect(
+                                                Collectors.toUnmodifiableMap(
+                                                    entry -> entry.getKey(),
+                                                    entry -> {
+                                                      if ("number"
+                                                          .equalsIgnoreCase(entry.getValue())) {
+                                                        return ImmutableJsonSchemaNumber.builder()
+                                                            .build();
+                                                      } else if ("boolean"
+                                                          .equalsIgnoreCase(entry.getValue())) {
+                                                        return ImmutableJsonSchemaBoolean.builder()
+                                                            .build();
+                                                      }
+                                                      return ImmutableJsonSchemaString.builder()
+                                                          .build();
+                                                    })))
+                                    .build());
+                          }
+
+                          builder.addLayers(builder2.build());
+                        });
               }
-
-              final JsonSchemaObject properties =
-                  (JsonSchemaObject) schema.getProperties().get("properties");
-              builder2.propertiesSchema(
-                  ImmutableJsonSchemaObject.builder()
-                      .required(properties.getRequired())
-                      .properties(properties.getProperties())
-                      .patternProperties(properties.getPatternProperties())
-                      .build());
-              builder.addLayers(builder2.build());
             });
 
     builder.links(links);

@@ -130,6 +130,7 @@ public class FeatureCollectionView extends DatasetView {
               .popup(Popup.HOVER_ID)
               .styleUrl(Optional.ofNullable(styleUrl))
               .removeZoomLevelConstraints(removeZoomLevelConstraints)
+              .useBounds(true)
               .build();
     } else if (mapClientType.equals(MapClient.Type.CESIUM)) {
       this.mapClient =
