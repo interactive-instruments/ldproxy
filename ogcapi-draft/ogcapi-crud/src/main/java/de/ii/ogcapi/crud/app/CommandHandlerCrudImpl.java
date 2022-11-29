@@ -271,7 +271,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
             .boundingBox(bbox)
             .interval(interval)
             .build();
-    featureProvider.getFeatureChangeHandler().handle(change);
+    featureProvider.getChangeHandler().handle(change);
   }
 
   private Optional<Interval> convertTemporalExtent(Optional<Tuple<Long, Long>> interval) {
