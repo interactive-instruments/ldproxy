@@ -89,17 +89,18 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
 
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
-    return ImmutableTileMatrixSetView.builder()
+    return ImmutableTileMatrixSetsView.builder()
         .apiData(api.getData())
-        .tileMatrixSet((TileMatrixSetData) tileMatrixSets.getTileMatrixSets())
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .tileMatrixSets(tileMatrixSets.getTileMatrixSets())
         .breadCrumbs(breadCrumbs)
-        .staticUrlPrefix(requestContext.getStaticUrlPrefix())
         .htmlConfig(htmlConfig)
         .noIndex(isNoIndexEnabledForApi(api.getData()))
         .uriCustomizer(requestContext.getUriCustomizer())
         .i18n(i18n)
-        .language(requestContext.getLanguage())
+        .language(requestContext.getLanguage().orElse(null))
         .description(i18n.get("tileMatrixSetsDescription", requestContext.getLanguage()))
+        .title(i18n.get("tileMatrixSetsTitle", requestContext.getLanguage()))
         .links(tileMatrixSets.getLinks())
         .build();
   }
@@ -136,6 +137,7 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
         .apiData(api.getData())
         .tileMatrixSet(tileMatrixSet)
         .breadCrumbs(breadCrumbs)
+        .links(tileMatrixSet.getLinks())
         .urlPrefix(requestContext.getStaticUrlPrefix())
         .htmlConfig(htmlConfig)
         .noIndex(isNoIndexEnabledForApi(api.getData()))

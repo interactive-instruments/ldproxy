@@ -25,8 +25,6 @@ public abstract class TileMatrixSetsView extends OgcApiView {
     return i18n().get("none", Optional.ofNullable(language()));
   }
 
-  public abstract String staticUrlPrefix();
-
   public abstract URICustomizer uriCustomizer();
 
   public abstract I18n i18n();
