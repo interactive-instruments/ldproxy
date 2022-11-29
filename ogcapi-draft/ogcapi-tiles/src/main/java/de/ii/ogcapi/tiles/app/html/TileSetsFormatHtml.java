@@ -165,7 +165,6 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
         .apiData(api.getData())
         .tiles(tiles)
         .collectionId(collectionId)
-        .unprocessedSpatialExtent(api.getSpatialExtent(collectionId))
         .tileMatrixSets(tileMatrixSets)
         .breadCrumbs(breadCrumbs)
         .links(tiles.getLinks())

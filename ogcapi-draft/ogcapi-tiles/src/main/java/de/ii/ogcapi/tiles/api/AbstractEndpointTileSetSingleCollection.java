@@ -77,7 +77,7 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
           .isEmpty()) return false;
       // currently no vector tiles support for WFS backends
       return providers
-          .getFeatureProvider(apiData)
+          .getFeatureProvider(apiData, apiData.getCollections().get(collectionId))
           .map(FeatureProvider2::supportsHighLoad)
           .orElse(false);
     }

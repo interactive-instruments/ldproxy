@@ -29,6 +29,7 @@ import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tiles.domain.TileLayer.GeometryType;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.List;
@@ -116,88 +117,89 @@ public abstract class TileSetsView extends OgcApiView {
 
   @Value.Derived
   public List<Set<Map.Entry<String, String>>> tileCollections() {
-    return spatialExtent().isPresent()
-        ? tiles().getTilesets().stream()
-            .filter(
-                tms ->
-                    mapClientType().equals(MapClient.Type.OPEN_LAYERS)
-                        || tms.getTileMatrixSetId().equals("WebMercatorQuad"))
-            .map(
-                tms -> {
-                  String tmsId = tms.getTileMatrixSetId();
-                  TileMatrixSet tileMatrixSet = tileMatrixSets().get(tmsId);
-                  if (tileMatrixSet == null) return null;
-                  BoundingBox bbox = tileMatrixSet.getBoundingBox();
-                  String extent =
-                      "["
-                          + bbox.getXmin()
-                          + ","
-                          + bbox.getYmin()
-                          + ","
-                          + bbox.getXmax()
-                          + ","
-                          + bbox.getYmax()
-                          + "]";
-                  int maxLevel = tileMatrixSet.getMaxLevel();
-                  List<TileMatrix> tileMatrixList = tileMatrixSet.getTileMatrices(0, maxLevel);
-                  String sizes =
-                      String.format(
-                          "[%s]",
-                          tileMatrixList.stream()
-                              .map(
-                                  tileMatrix ->
-                                      String.format(
-                                          "[%d, %d]",
-                                          tileMatrix.getMatrixWidth(),
-                                          tileMatrix.getMatrixHeight()))
-                              .collect(Collectors.joining(", ")));
-                  double diff = bbox.getXmax() - bbox.getXmin();
-                  String resolutions =
-                      String.format(
-                          "[%s]",
-                          tileMatrixList.stream()
-                              .map(
-                                  tileMatrix ->
-                                      String.valueOf(
-                                          diff
-                                              / (tileMatrix.getMatrixWidth()
-                                                  * tileMatrixSet.getTileSize())))
-                              .collect(Collectors.joining(", ")));
+    return tiles().getTilesets().stream()
+        .filter(
+            tms ->
+                mapClientType().equals(MapClient.Type.OPEN_LAYERS)
+                    || tms.getTileMatrixSetId().equals("WebMercatorQuad"))
+        .map(
+            tms -> {
+              String tmsId = tms.getTileMatrixSetId();
+              TileMatrixSet tileMatrixSet = tileMatrixSets().get(tmsId);
+              if (tileMatrixSet == null) return null;
+              BoundingBox bbox = tileMatrixSet.getBoundingBox();
+              String extent =
+                  "["
+                      + bbox.getXmin()
+                      + ","
+                      + bbox.getYmin()
+                      + ","
+                      + bbox.getXmax()
+                      + ","
+                      + bbox.getYmax()
+                      + "]";
+              int maxLevel = tileMatrixSet.getMaxLevel();
+              List<TileMatrix> tileMatrixList = tileMatrixSet.getTileMatrices(0, maxLevel);
+              String sizes =
+                  String.format(
+                      "[%s]",
+                      tileMatrixList.stream()
+                          .map(
+                              tileMatrix ->
+                                  String.format(
+                                      "[%d, %d]",
+                                      tileMatrix.getMatrixWidth(), tileMatrix.getMatrixHeight()))
+                          .collect(Collectors.joining(", ")));
+              double diff = bbox.getXmax() - bbox.getXmin();
+              String resolutions =
+                  String.format(
+                      "[%s]",
+                      tileMatrixList.stream()
+                          .map(
+                              tileMatrix ->
+                                  String.valueOf(
+                                      diff
+                                          / (tileMatrix.getMatrixWidth()
+                                              * tileMatrixSet.getTileSize())))
+                          .collect(Collectors.joining(", ")));
 
-                  String level =
-                      tms.getCenterPoint()
-                          .flatMap(TilePoint::getTileMatrix)
-                          .orElse(getDefaultLevel(diff, tileMatrixSet.getMaxLevel()));
-                  String lon =
-                      tms.getCenterPoint().isPresent()
-                              && tms.getCenterPoint().get().getCoordinates().size() >= 2
-                          ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(0))
-                          : Double.toString(
+              String level =
+                  tms.getCenterPoint()
+                      .flatMap(TilePoint::getTileMatrix)
+                      .orElse(getDefaultLevel(diff, tileMatrixSet.getMaxLevel()));
+              String lon =
+                  tms.getCenterPoint().isPresent()
+                          && tms.getCenterPoint().get().getCoordinates().size() >= 2
+                      ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(0))
+                      : spatialExtent().isPresent()
+                          ? Double.toString(
                               spatialExtent().get().getXmax() * 0.5
-                                  + spatialExtent().get().getXmin() * 0.5);
-                  String lat =
-                      tms.getCenterPoint().isPresent()
-                              && tms.getCenterPoint().get().getCoordinates().size() >= 2
-                          ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(1))
-                          : Double.toString(
+                                  + spatialExtent().get().getXmin() * 0.5)
+                          : "0.0";
+              String lat =
+                  tms.getCenterPoint().isPresent()
+                          && tms.getCenterPoint().get().getCoordinates().size() >= 2
+                      ? Double.toString(tms.getCenterPoint().get().getCoordinates().get(1))
+                      : spatialExtent().isPresent()
+                          ? Double.toString(
                               spatialExtent().get().getYmax() * 0.5
-                                  + spatialExtent().get().getYmin() * 0.5);
+                                  + spatialExtent().get().getYmin() * 0.5)
+                          : "0.0";
 
-                  return new ImmutableMap.Builder<String, String>()
-                      .put("tileMatrixSet", tmsId)
-                      .put("maxLevel", String.valueOf(maxLevel))
-                      .put("extent", extent)
-                      .put("defaultZoomLevel", level)
-                      .put("defaultCenterLon", lon)
-                      .put("defaultCenterLat", lat)
-                      .put("resolutions", resolutions)
-                      .put("sizes", sizes)
-                      .put("projection", "EPSG:" + tileMatrixSet.getCrs().getCode())
-                      .build()
-                      .entrySet();
-                })
-            .collect(Collectors.toList())
-        : ImmutableList.of();
+              return new ImmutableMap.Builder<String, String>()
+                  .put("tileMatrixSet", tmsId)
+                  .put("maxLevel", String.valueOf(maxLevel))
+                  .put("extent", extent)
+                  .put("defaultZoomLevel", level)
+                  .put("defaultCenterLon", lon)
+                  .put("defaultCenterLat", lat)
+                  .put("resolutions", resolutions)
+                  .put("sizes", sizes)
+                  .put("projection", "EPSG:" + tileMatrixSet.getCrs().getCode())
+                  .build()
+                  .entrySet();
+            })
+        .collect(Collectors.toList());
   }
 
   @Value.Derived
@@ -279,7 +281,12 @@ public abstract class TileSetsView extends OgcApiView {
           Multimap<String, List<String>> layers = getLayers(tileSet.get());
 
           return getMapClient(
-              Type.MAP_LIBRE, styleUrl(), removeZoomLevelConstraints(), htmlConfig(), layers);
+              Type.MAP_LIBRE,
+              styleUrl(),
+              removeZoomLevelConstraints(),
+              center(),
+              htmlConfig(),
+              layers);
         } else {
           LOGGER.error(
               "Configuration error: {} as the client for the HTML representation of tile sets requires that a tile set with the tiling scheme {} exists.",
@@ -291,7 +298,12 @@ public abstract class TileSetsView extends OgcApiView {
         Multimap<String, List<String>> layers = getLayers(tiles().getTilesets().get(0));
 
         return getMapClient(
-            Type.OPEN_LAYERS, styleUrl(), removeZoomLevelConstraints(), htmlConfig(), layers);
+            Type.OPEN_LAYERS,
+            styleUrl(),
+            removeZoomLevelConstraints(),
+            center(),
+            htmlConfig(),
+            layers);
       } else {
         LOGGER.error(
             "Configuration error: {} is not a supported map client for the HTML representation of tile sets.",
@@ -316,25 +328,38 @@ public abstract class TileSetsView extends OgcApiView {
 
   public abstract Optional<String> collectionId();
 
-  public abstract Optional<BoundingBox> unprocessedSpatialExtent();
+  @Value.Derived
+  public Optional<TilePoint> center() {
+    // the center of all tilesets is the same, the only difference is the tiling scheme
+    return tiles().getTilesets().stream().findAny().flatMap(TileSet::getCenterPoint);
+  }
 
   @Value.Derived
   public Optional<BoundingBox> spatialExtent() {
-    return unprocessedSpatialExtent()
+    return tiles().getTilesets().stream()
+        .map(TileSet::getBoundingBox)
+        // the bbox of all tilesets is the same, the only difference is the tiling scheme
+        .findAny()
+        .map(
+            tBbox ->
+                BoundingBox.of(
+                    tBbox.getLowerLeft()[0].doubleValue(),
+                    tBbox.getLowerLeft()[1].doubleValue(),
+                    tBbox.getUpperRight()[0].doubleValue(),
+                    tBbox.getUpperRight()[1].doubleValue(),
+                    OgcCrs.CRS84))
         .or(() -> apiData().getDefaultExtent().flatMap(CollectionExtent::getSpatial));
   }
 
   @Value.Derived
   public List<String> tileMatrixSetIds() {
-    return spatialExtent().isPresent()
-        ? tiles().getTilesets().stream()
-            .map(TileSet::getTileMatrixSetId)
-            .filter(
-                tileMatrixSetId ->
-                    mapClientType().equals(MapClient.Type.OPEN_LAYERS)
-                        || tileMatrixSetId.equals("WebMercatorQuad"))
-            .collect(Collectors.toList())
-        : ImmutableList.of();
+    return tiles().getTilesets().stream()
+        .map(TileSet::getTileMatrixSetId)
+        .filter(
+            tileMatrixSetId ->
+                mapClientType().equals(MapClient.Type.OPEN_LAYERS)
+                    || tileMatrixSetId.equals("WebMercatorQuad"))
+        .collect(Collectors.toList());
   }
 
   public abstract MapClient.Type mapClientType();
@@ -388,6 +413,7 @@ public abstract class TileSetsView extends OgcApiView {
       Type type,
       String styleUrl,
       boolean removeZoomLevelConstraints,
+      Optional<TilePoint> center,
       HtmlConfiguration htmlConfig,
       Multimap<String, List<String>> layers) {
     return new ImmutableMapClient.Builder()
@@ -408,6 +434,8 @@ public abstract class TileSetsView extends OgcApiView {
         .popup(Popup.CLICK_PROPERTIES)
         .styleUrl(Optional.ofNullable(styleUrl))
         .removeZoomLevelConstraints(removeZoomLevelConstraints)
+        .center(center.map(TilePoint::getCoordinates).orElse(ImmutableList.of()))
+        .zoom(center.flatMap(TilePoint::getTileMatrix).map(Double::parseDouble))
         .build();
   }
 

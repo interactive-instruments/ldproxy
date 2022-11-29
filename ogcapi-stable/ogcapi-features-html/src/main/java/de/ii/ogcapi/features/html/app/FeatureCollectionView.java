@@ -125,6 +125,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
           .popup(Popup.HOVER_ID)
           .styleUrl(Optional.ofNullable(styleUrl()))
           .removeZoomLevelConstraints(removeZoomLevelConstraints())
+          .useBounds(true)
           .build();
     } else if (mapClientType().equals(MapClient.Type.CESIUM)) {
       return new ImmutableMapClient.Builder()

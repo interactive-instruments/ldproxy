@@ -315,7 +315,8 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
                             ((WithConnectionInfo<?>)
                                     providers
                                         .getFeatureProviderOrThrow(
-                                            transformationContext.getApiData())
+                                            transformationContext.getApiData(),
+                                            transformationContext.getCollection().get())
                                         .getData())
                                 .getConnectionInfo())
                         .getNamespaces())

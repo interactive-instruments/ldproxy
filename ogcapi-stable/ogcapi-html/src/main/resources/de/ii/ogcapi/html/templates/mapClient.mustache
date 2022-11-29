@@ -11,21 +11,31 @@
       {{#removeZoomLevelConstraints}}
         removeZoomLevelConstraints: {{.}},
       {{/removeZoomLevelConstraints}}
+      {{#useBounds}}
+        {{#bounds}}
+          bounds: [[{{minLng}},{{minLat}}],[{{maxLng}},{{maxLat}}]],
+          drawBounds: {{drawBounds}},
+        {{/bounds}}
+      {{/useBounds}}
     {{/styleUrl}}
     {{^styleUrl}}
       {{#backgroundUrl}}
         backgroundUrl: '{{{.}}}',
       {{/backgroundUrl}}
-      {{#ProcessedAttribution}}
+      {{#processedAttribution}}
         attribution: '{{{.}}}',
-      {{/ProcessedAttribution}}
-      //center: [{{centerLon}},{{centerLat}}],
-      //zoom: {{zoom}},
+      {{/processedAttribution}}
+      {{#zoom}}
+        zoom: {{.}},
+        center: {{center}},
+      {{/zoom}}
+      {{^zoom}}
+        {{#bounds}}
+          bounds: [[{{minLng}},{{minLat}}],[{{maxLng}},{{maxLat}}]],
+          drawBounds: {{drawBounds}},
+        {{/bounds}}
+      {{/zoom}}
     {{/styleUrl}}
-    {{#bounds}}
-      bounds: [[{{minLng}},{{minLat}}],[{{maxLng}},{{maxLat}}]],
-      drawBounds: {{drawBounds}},
-    {{/bounds}}
     {{#data}}
      {{#isData}}
       dataUrl:  {{{url}}},
