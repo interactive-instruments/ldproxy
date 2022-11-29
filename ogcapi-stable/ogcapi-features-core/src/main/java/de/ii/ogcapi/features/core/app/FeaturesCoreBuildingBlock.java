@@ -221,15 +221,6 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
       switch (change.getAction()) {
         case CREATE:
           api.updateItemCount(collectionId, (long) change.getFeatureIds().size());
-          change
-              .getBoundingBox()
-              .flatMap(this::transformToCrs84)
-              .ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
-          change
-              .getInterval()
-              .ifPresent(
-                  interval -> api.updateTemporalExtent(collectionId, TemporalExtent.of(interval)));
-          break;
         case UPDATE:
           change
               .getBoundingBox()

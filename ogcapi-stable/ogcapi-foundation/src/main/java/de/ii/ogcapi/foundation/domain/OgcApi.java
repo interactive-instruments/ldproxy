@@ -57,6 +57,12 @@ public interface OgcApi extends Service {
    */
   Optional<BoundingBox> getSpatialExtent(String collectionId, EpsgCrs targetCrs);
 
+  default Optional<BoundingBox> getSpatialExtent(Optional<String> collectionId, EpsgCrs targetCrs) {
+    return collectionId.isPresent()
+        ? getSpatialExtent(collectionId.get(), targetCrs)
+        : getSpatialExtent(targetCrs);
+  }
+
   /**
    * Update spatial extent of a collection in the dataset.
    *

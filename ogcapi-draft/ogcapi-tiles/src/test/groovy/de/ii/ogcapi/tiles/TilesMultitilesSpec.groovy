@@ -8,7 +8,7 @@
 package de.ii.ogcapi.tiles
 
 
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet
 import spock.lang.Ignore
 import spock.lang.Specification
 

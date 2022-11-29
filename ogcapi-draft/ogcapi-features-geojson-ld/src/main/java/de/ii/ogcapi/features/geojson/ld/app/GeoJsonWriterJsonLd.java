@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.geojson.ld.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
@@ -127,10 +128,13 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
       if (currentSchema.isId()) {
 
         Map<String, String> substitutions =
-            ImmutableMap.of(
-                "featureId", currentValue,
-                "serviceUrl", context.encoding().getServiceUrl(),
-                "collectionId", context.encoding().getCollectionId());
+            FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS_PLUS.apply(
+                context.encoding().getServiceUrl(),
+                ImmutableMap.of(
+                    "featureId",
+                    currentValue,
+                    "collectionId",
+                    context.encoding().getCollectionId()));
 
         Optional<String> jsonLdId =
             context

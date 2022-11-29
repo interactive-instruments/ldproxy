@@ -2,5 +2,6 @@
 maturity = 'EXPERIMENTAL'
 
 dependencies {
+    provided project(":ogcapi-tilematrixsets")
     provided project(":ogcapi-tiles")
 }

@@ -10,6 +10,7 @@ package de.ii.ogcapi.routes.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.crs.domain.CrsSupport;
+import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -32,7 +33,8 @@ import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
-public class QueryParameterCrsRoutes extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterCrsRoutes extends ApiExtensionCache
+    implements OgcApiQueryParameter, FeatureQueryTransformer {
 
   public static final String CRS = "crs";
 

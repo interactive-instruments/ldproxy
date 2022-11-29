@@ -13,6 +13,7 @@ import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureSchemaCache;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.core.domain.SchemaCacheSfFlat;
 import de.ii.ogcapi.features.flatgeobuf.domain.FlatgeobufConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -68,7 +69,7 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
   public FeaturesFormatFlatgeobuf(FeaturesCoreProviders providers, CrsInfo crsInfo) {
     this.providers = providers;
     this.crsInfo = crsInfo;
-    this.schemaCache = new SchemaCacheFlatgeobuf();
+    this.schemaCache = new SchemaCacheSfFlat();
   }
 
   @Override
@@ -123,6 +124,8 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
                 .map(FeatureProvider2::getData)
                 .flatMap(FeatureProviderDataV2::getNativeCrs)
                 .orElse(EpsgCrs.of(4326, EpsgCrs.Force.LON_LAT));
+    FlatgeobufConfiguration configuration =
+        collectionData.getExtension(FlatgeobufConfiguration.class).orElseThrow();
 
     FeatureSchema schema =
         schemaCache.getSchema(
@@ -134,13 +137,16 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
                         .type(SchemaBase.Type.OBJECT)
                         .build()),
             apiData,
-            apiData.getCollectionData(collectionId).orElse(null));
+            apiData.getCollectionData(collectionId).orElse(null),
+            configuration,
+            configuration);
 
     return Optional.of(
         new FeatureEncoderFlatgeobuf(
-            ImmutableFeatureTransformationContextFlatgeobuf.builder()
+            ImmutableEncodingContextFlatgeobuf.builder()
                 .from(transformationContext)
                 .schema(schema)
+                .crsTransformer(transformationContext.getCrsTransformer())
                 .is3d(crsInfo.is3d(crs))
                 .build()));
   }

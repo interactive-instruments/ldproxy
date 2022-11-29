@@ -27,7 +27,7 @@ public abstract class VectorLayer {
   public abstract String getId();
 
   @JsonProperty("fields")
-  public abstract Fields getFields();
+  public abstract Map<String, String> getFields();
 
   @JsonProperty("description")
   public abstract Optional<String> getDescription();
@@ -36,10 +36,10 @@ public abstract class VectorLayer {
   public abstract Optional<String> getGeometryType();
 
   @JsonProperty("maxzoom")
-  public abstract Optional<Integer> getMaxzoom();
+  public abstract Optional<Number> getMaxzoom();
 
   @JsonProperty("minzoom")
-  public abstract Optional<Integer> getMinzoom();
+  public abstract Optional<Number> getMinzoom();
 
   @JsonAnyGetter
   public abstract Map<String, Object> getAdditionalProperties();

@@ -7,25 +7,18 @@
  */
 package de.ii.ogcapi.features.flatgeobuf.app;
 
-import com.google.common.collect.ImmutableList;
 import com.google.flatbuffers.FlatBufferBuilder;
+import de.ii.ogcapi.features.core.domain.FeatureEncoderSfFlat;
 import de.ii.ogcapi.features.core.domain.FeatureSfFlat;
-import de.ii.ogcapi.features.core.domain.ModifiableFeatureSfFlat;
-import de.ii.ogcapi.features.core.domain.ModifiablePropertySfFlat;
-import de.ii.ogcapi.features.core.domain.PropertySfFlat;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
-import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -53,34 +46,19 @@ import org.wololo.flatgeobuf.generated.ColumnType;
 import org.wololo.flatgeobuf.generated.Feature;
 import org.wololo.flatgeobuf.generated.GeometryType;
 
-public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFlat, FeatureSfFlat> {
+public class FeatureEncoderFlatgeobuf extends FeatureEncoderSfFlat {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderFlatgeobuf.class);
 
-  private final OgcApiDataV2 apiData;
-  private final String collectionId;
-  private final List<String> fields;
-  private final boolean allProperties;
+  private final FeatureSchema featureSchema;
   private final GeometryFactory geometryFactory;
   private final int srid;
   private final boolean is3d;
-  private final FeatureSchema featureSchema;
-  private final OutputStream outputStream;
   private final FlatBufferBuilder builder;
   private HeaderMeta headerMeta;
 
-  private final long transformerStart;
-  private long processingStart;
-  private Long featureDuration = 0L;
-  private long written = 0;
-
-  public FeatureEncoderFlatgeobuf(FeatureTransformationContextFlatgeobuf encodingContext) {
-    this.apiData = encodingContext.getApiData();
-    this.collectionId = encodingContext.getCollectionId();
-    this.outputStream = encodingContext.getOutputStream();
-    this.fields =
-        encodingContext.getFields().values().stream().findFirst().orElse(ImmutableList.of("*"));
-    this.allProperties = fields.contains("*");
+  public FeatureEncoderFlatgeobuf(EncodingContextFlatgeobuf encodingContext) {
+    super(encodingContext);
     this.srid =
         encodingContext
             .getCrsTransformer()
@@ -91,17 +69,6 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
     this.featureSchema = encodingContext.getSchema();
     this.geometryFactory = new GeometryFactory();
     this.builder = new FlatBufferBuilder(16 * 1024); // 16kB
-    this.transformerStart = System.nanoTime();
-  }
-
-  @Override
-  public FeatureSfFlat createFeature() {
-    return ModifiableFeatureSfFlat.create();
-  }
-
-  @Override
-  public PropertySfFlat createProperty() {
-    return ModifiablePropertySfFlat.create();
   }
 
   @Override
@@ -110,10 +77,6 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
       LOGGER.trace("Start generating Flatgeobuf file for collection {}.", collectionId);
     }
     this.processingStart = System.nanoTime();
-
-    if (outputStream instanceof OutputStreamToByteConsumer) {
-      ((OutputStreamToByteConsumer) outputStream).setByteConsumer(this::push);
-    }
 
     try {
       push(Constants.MAGIC_BYTES);
@@ -253,7 +216,7 @@ public class FeatureEncoderFlatgeobuf extends FeatureObjectEncoder<PropertySfFla
     ColumnMeta column = new ColumnMeta();
     column.name = name;
 
-    if (!allProperties && !fields.contains(schema.getFullPathAsString())) return null;
+    if (!allProperties && !properties.contains(schema.getFullPathAsString())) return null;
 
     switch (schema.getType()) {
       case BOOLEAN:
