@@ -71,6 +71,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
 
   public abstract String name();
 
+  @Nullable
   public abstract String attribution();
 
   public abstract List<NavigationDTO> formats();
@@ -92,6 +93,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
 
   public abstract List<String> geometryProperties();
 
+  @Nullable
   public abstract URI uri();
 
   @Nullable

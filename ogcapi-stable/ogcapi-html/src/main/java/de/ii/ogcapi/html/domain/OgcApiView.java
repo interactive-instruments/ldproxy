@@ -21,6 +21,7 @@ import org.immutables.value.Value;
 
 public abstract class OgcApiView extends View {
 
+  @Nullable
   public abstract HtmlConfiguration htmlConfig();
 
   public abstract String urlPrefix();
