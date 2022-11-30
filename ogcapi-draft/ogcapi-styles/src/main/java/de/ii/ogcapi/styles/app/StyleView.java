@@ -9,69 +9,51 @@ package de.ii.ogcapi.styles.app;
 
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.html.domain.ImmutableMapClient;
 import de.ii.ogcapi.html.domain.MapClient;
-import de.ii.ogcapi.html.domain.MapClient.Popup;
+import de.ii.ogcapi.html.domain.OgcApiView;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.services.domain.GenericView;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import org.immutables.value.Value;
 
-public class StyleView extends GenericView {
-  public final String title;
-  public final String styleUrl;
-  public final String layerIds;
-  public final Map<String, String> bbox;
-  public final MapClient mapClient;
-  public final String urlPrefix;
+@Value.Immutable
+public abstract class StyleView extends OgcApiView {
+  public abstract String styleUrl();
 
-  public StyleView(
-      String styleUrl,
-      OgcApiDataV2 apiData,
-      Optional<BoundingBox> spatialExtent,
-      String styleId,
-      boolean popup,
-      boolean layerControl,
-      Map<String, Collection<String>> layerMap,
-      String urlPrefix) {
-    super("/templates/style", null);
-    this.title = "Style " + styleId;
-    this.styleUrl = styleUrl;
-    this.layerIds =
-        "{"
-            + layerMap.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .map(
-                    entry ->
-                        "\""
-                            + entry.getKey()
-                            + "\": [ \""
-                            + String.join("\", \"", entry.getValue())
-                            + "\" ]")
-                .collect(Collectors.joining(", "))
-            + "}";
+  public abstract String layerIds();
 
-    this.bbox =
-        spatialExtent
-            .map(
-                bbox ->
-                    ImmutableMap.of(
-                        "minLng", Double.toString(bbox.getXmin()),
-                        "minLat", Double.toString(bbox.getYmin()),
-                        "maxLng", Double.toString(bbox.getXmax()),
-                        "maxLat", Double.toString(bbox.getYmax())))
-            .orElse(null);
+  public Map<String, String> bbox() {
+    return spatialExtent()
+        .map(
+            bbox ->
+                ImmutableMap.of(
+                    "minLng", Double.toString(bbox.getXmin()),
+                    "minLat", Double.toString(bbox.getYmin()),
+                    "maxLng", Double.toString(bbox.getXmax()),
+                    "maxLat", Double.toString(bbox.getYmax())))
+        .orElse(null);
+  }
 
-    this.mapClient =
-        new ImmutableMapClient.Builder()
-            .styleUrl(styleUrl)
-            .popup(popup ? Optional.of(Popup.CLICK_PROPERTIES) : Optional.empty())
-            .savePosition(true)
-            .layerGroupControl(layerControl ? Optional.of(layerMap.entrySet()) : Optional.empty())
-            .build();
+  public abstract MapClient mapClient();
 
-    this.urlPrefix = urlPrefix;
+  public abstract OgcApiDataV2 apiData();
+
+  public abstract Optional<BoundingBox> spatialExtent();
+
+  public abstract String styleId();
+
+  public abstract boolean popup();
+
+  public abstract boolean layerControl();
+
+  public abstract Map<String, Collection<String>> layerMap();
+
+  public Map<String, String> getProcessedBbox() {
+    return bbox();
+  }
+
+  public StyleView() {
+    super("/templates/style.template");
   }
 }
