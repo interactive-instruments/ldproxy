@@ -116,7 +116,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                             ImmutableTileMatrixSetLinks.builder()
                                 .id(tileMatrixSet.getId())
                                 .title(tileMatrixSet.getTileMatrixSetData().getTitle())
-                                .tileMatrixSetURI(tileMatrixSet.getURI().map(URI::toString))
+                                .uri(tileMatrixSet.getURI().map(URI::toString))
                                 .links(
                                     linkGenerator.generateTileMatrixSetsLinks(
                                         requestContext.getUriCustomizer(),
