@@ -26,8 +26,6 @@ public abstract class StyleMetadataView extends OgcApiView {
 
   public abstract StyleMetadata metadata();
 
-  public abstract String staticUrlPrefix();
-
   public abstract URICustomizer uriCustomizer();
 
   public abstract I18n i18n();
