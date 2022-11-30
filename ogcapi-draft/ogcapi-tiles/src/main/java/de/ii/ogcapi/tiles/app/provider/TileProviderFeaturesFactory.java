@@ -16,6 +16,7 @@ import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureProviderCommonData;
+import de.ii.xtraplatform.store.domain.BlobStore;
 import de.ii.xtraplatform.store.domain.entities.AbstractEntityFactory;
 import de.ii.xtraplatform.store.domain.entities.EntityData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
@@ -43,6 +44,7 @@ public class TileProviderFeaturesFactory
       EntityRegistry entityRegistry,
       AppContext appContext,
       Cql cql,
+      BlobStore blobStore,
       TileProviderFeaturesFactoryAssisted factoryAssisted) {
     super(factoryAssisted);
   }

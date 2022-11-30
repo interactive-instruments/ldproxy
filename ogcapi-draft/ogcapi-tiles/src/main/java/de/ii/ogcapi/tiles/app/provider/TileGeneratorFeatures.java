@@ -159,7 +159,7 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
 
     // TODO: from TilesProviders
     String featureProviderId =
-        layer.getFeatureProvider().orElse(data.getId().replace("-tiles", ""));
+        layer.getFeatureProvider().orElse(TileProviderFeatures.clean(data.getId()));
     FeatureProvider2 featureProvider =
         entityRegistry
             .getEntity(FeatureProvider2.class, featureProviderId)
@@ -240,7 +240,9 @@ public class TileGeneratorFeatures implements TileGenerator, ChainedTileProvider
   @Override
   public TileGenerationSchema getGenerationSchema(String layer, Map<String, String> queryables) {
     String featureProviderId =
-        data.getLayerDefaults().getFeatureProvider().orElse(data.getId().replace("-tiles", ""));
+        data.getLayerDefaults()
+            .getFeatureProvider()
+            .orElse(TileProviderFeatures.clean(data.getId()));
     FeatureProvider2 featureProvider =
         entityRegistry
             .getEntity(FeatureProvider2.class, featureProviderId)

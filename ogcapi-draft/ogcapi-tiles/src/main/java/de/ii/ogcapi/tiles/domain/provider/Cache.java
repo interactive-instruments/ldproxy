@@ -20,7 +20,7 @@ public interface Cache extends WithTmsLevels {
   }
 
   enum Storage {
-    FILES,
+    PLAIN,
     MBTILES
   }
 

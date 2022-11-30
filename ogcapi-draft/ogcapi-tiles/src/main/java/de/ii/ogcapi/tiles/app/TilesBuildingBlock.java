@@ -804,7 +804,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
       return List.of(
           new ImmutableCache.Builder()
               .type(Type.DYNAMIC)
-              .storage(Storage.FILES)
+              .storage(Storage.PLAIN)
               .putAllLevels(
                   tilesConfiguration.getZoomLevelsDerived()) // TODO: per collection/layer?
               .build());

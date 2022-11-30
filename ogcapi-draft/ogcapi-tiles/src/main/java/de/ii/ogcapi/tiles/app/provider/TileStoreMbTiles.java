@@ -9,19 +9,19 @@ package de.ii.ogcapi.tiles.app.provider;
 
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
-import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.TileStore;
-import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.TileStoreReadOnly;
 import de.ii.ogcapi.tiles.domain.ImmutableVectorLayer;
 import de.ii.ogcapi.tiles.domain.VectorLayer;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
+import de.ii.ogcapi.tiles.domain.provider.TileStore;
+import de.ii.ogcapi.tiles.domain.provider.TileStoreReadOnly;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
+import de.ii.xtraplatform.store.domain.BlobStore;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.AbstractMap.SimpleImmutableEntry;
@@ -50,22 +50,24 @@ public class TileStoreMbTiles implements TileStore {
   }
 
   static TileStore readWrite(
-      Path rootDir, String providerId, Map<String, Map<String, TileGenerationSchema>> tileSchemas) {
-    return new TileStoreMbTiles(providerId, rootDir, new ConcurrentHashMap<>(), tileSchemas);
+      BlobStore rootStore,
+      String providerId,
+      Map<String, Map<String, TileGenerationSchema>> tileSchemas) {
+    return new TileStoreMbTiles(providerId, rootStore, new ConcurrentHashMap<>(), tileSchemas);
   }
 
   private final String providerId;
-  private final Path rootDir;
+  private final BlobStore rootStore;
   private final Map<String, Map<String, TileGenerationSchema>> tileSchemas;
   private final Map<String, MbtilesTileset> tileSets;
 
   private TileStoreMbTiles(
       String providerId,
-      Path rootDir,
+      BlobStore rootStore,
       Map<String, MbtilesTileset> tileSets,
       Map<String, Map<String, TileGenerationSchema>> tileSchemas) {
     this.providerId = providerId;
-    this.rootDir = rootDir;
+    this.rootStore = rootStore;
     this.tileSchemas = tileSchemas;
     this.tileSets = tileSets;
   }
@@ -257,10 +259,16 @@ public class TileStoreMbTiles implements TileStore {
   private MbtilesTileset createTileSet(
       String name, String layer, TileMatrixSet tileMatrixSet, List<VectorLayer> vectorLayers)
       throws IOException {
-    Path path = rootDir.resolve(layer).resolve(tileMatrixSet.getId() + ".mbtiles");
+    Path relPath = Path.of(layer).resolve(tileMatrixSet.getId() + ".mbtiles");
+    Optional<Path> filePath = rootStore.path(relPath, true);
 
-    if (Files.exists(path)) {
-      return new MbtilesTileset(path);
+    if (filePath.isEmpty()) {
+      throw new IllegalStateException(
+          "Could not create MBTiles file. Make sure you have a writable localizable source defined in cfg.yml.");
+    }
+
+    if (rootStore.has(relPath)) {
+      return new MbtilesTileset(filePath.get());
     }
 
     MbtilesMetadata md =
@@ -270,7 +278,7 @@ public class TileStoreMbTiles implements TileStore {
             .vectorLayers(vectorLayers)
             .build();
     try {
-      return new MbtilesTileset(path, md);
+      return new MbtilesTileset(filePath.get(), md);
     } catch (FileAlreadyExistsException e) {
       throw new IllegalStateException(
           "A MBTiles file already exists. It must have been created by a parallel thread, which should not occur. MBTiles file creation must be synchronized.");

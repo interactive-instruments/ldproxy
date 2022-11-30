@@ -8,9 +8,9 @@
 package de.ii.ogcapi.tiles.app.provider;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.tiles.app.provider.TileCacheDynamic.TileStoreReadOnly;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
+import de.ii.ogcapi.tiles.domain.provider.TileStoreReadOnly;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
 import java.io.IOException;
 import java.io.InputStream;
