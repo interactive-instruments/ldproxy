@@ -10,8 +10,8 @@ package de.ii.ogcapi.tiles.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
 import de.ii.ogcapi.foundation.domain.OgcApi;
-import de.ii.ogcapi.tiles.domain.TileCache;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.xtraplatform.base.domain.AppConfiguration;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -46,17 +46,17 @@ public class PurgeTileCacheTask extends Task implements DropwizardPlugin {
 
   private final EntityRegistry entityRegistry;
   private final TileMatrixSetRepository tileMatrixSetRepository;
-  private final TileCache tileCache;
+  private final TilesProviders tilesProviders;
 
   @Inject
   protected PurgeTileCacheTask(
       EntityRegistry entityRegistry,
       TileMatrixSetRepository tileMatrixSetRepository,
-      TileCache tileCache) {
+      TilesProviders tilesProviders) {
     super("purge-tile-cache");
     this.entityRegistry = entityRegistry;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
-    this.tileCache = tileCache;
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -125,7 +125,7 @@ public class PurgeTileCacheTask extends Task implements DropwizardPlugin {
 
     try (MDC.MDCCloseable closeable =
         LogContext.putCloseable(LogContext.CONTEXT.SERVICE, apiId.get())) {
-      tileCache.deleteTiles(ogcApi.get(), collectionId, tileMatrixSetId, boundingBox);
+      tilesProviders.deleteTiles(ogcApi.get(), collectionId, tileMatrixSetId, boundingBox);
     }
   }
 

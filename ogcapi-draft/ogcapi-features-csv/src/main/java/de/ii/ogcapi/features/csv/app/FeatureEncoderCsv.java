@@ -26,7 +26,7 @@ public class FeatureEncoderCsv extends FeatureEncoderSfFlat {
 
   private List<String> headers;
 
-  public FeatureEncoderCsv(FeatureTransformationContextCsv encodingContext) {
+  public FeatureEncoderCsv(EncodingContextCsv encodingContext) {
     super(encodingContext);
     this.featureSchema = encodingContext.getSchema();
   }

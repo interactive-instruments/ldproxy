@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureLinksGenerator;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesLinksGenerator;
 import de.ii.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
@@ -316,8 +317,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                       ImmutableMap.of(
                           featureTypeId,
                           pt.withSubstitutions(
-                              ImmutableMap.of(
-                                  "serviceUrl", transformationContextGeneric.getServiceUrl()))))
+                              FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
+                                  transformationContextGeneric.getServiceUrl()))))
               .orElse(ImmutableMap.of());
     } else {
       throw new NotAcceptableException(
