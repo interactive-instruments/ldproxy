@@ -137,8 +137,6 @@ public abstract class CollectionPropertiesView extends OgcApiView {
 
   public abstract CollectionPropertiesType type();
 
-  public abstract String staticUrlPrefix();
-
   public abstract URICustomizer uriCustomizer();
 
   public abstract I18n i18n();
@@ -148,12 +146,5 @@ public abstract class CollectionPropertiesView extends OgcApiView {
   // Todo Delete after the View class problem is solved
   public CollectionPropertiesView() {
     super("collectionProperties.mustache");
-
-    // TODO maybe with check
-    /*
-    i18n.get(type + "Title", language),
-       i18n.get(type + "Description", language));
-    */
-
   }
 }
