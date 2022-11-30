@@ -42,8 +42,6 @@ public abstract class TileSet extends OgcResourceMetadata {
 
   public abstract Optional<String> getTileMatrixSetURI();
 
-  public abstract Optional<String> getTileMatrixSetDefinition();
-
   public abstract List<TileMatrixSetLimits> getTileMatrixSetLimits();
 
   public abstract TilesBoundingBox getBoundingBox();
@@ -69,8 +67,6 @@ public abstract class TileSet extends OgcResourceMetadata {
         into.putString(from.getTileMatrixSetId(), StandardCharsets.UTF_8);
         from.getTileMatrixSet().ifPresent(val -> TileMatrixSetData.FUNNEL.funnel(val, into));
         from.getTileMatrixSetURI().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getTileMatrixSetDefinition()
-            .ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
         TilesBoundingBox.FUNNEL.funnel(from.getBoundingBox(), into);
         from.getCenterPoint().ifPresent(val -> TilePoint.FUNNEL.funnel(val, into));
         from.getTileMatrixSetLimits().stream()

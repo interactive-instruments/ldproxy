@@ -18,6 +18,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ogcapi.tiles.api.AbstractEndpointTileSetSingleCollection;
+import de.ii.ogcapi.tiles.api.EndpointTileMixin;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import java.util.List;
 import javax.inject.Inject;
@@ -72,6 +73,8 @@ public class EndpointMapTileSetSingleCollection extends AbstractEndpointTileSetS
         ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_SET_COLLECTION,
         "/collections/{collectionId}",
         "/map/tiles/{tileMatrixSetId}",
+        getOperationId(
+            "getTileSet", EndpointTileMixin.COLLECTION_ID_PLACEHOLDER, "collection", "map"),
         TAGS);
   }
 

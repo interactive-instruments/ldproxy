@@ -24,6 +24,7 @@ public interface ApiMediaType {
 
   enum CompatibilityLevel {
     PARAMETERS,
+    STRICT_SUBTYPES,
     SUBTYPES,
     TYPES
   }
@@ -65,6 +66,7 @@ public interface ApiMediaType {
 
     if (level == CompatibilityLevel.TYPES
         || level == CompatibilityLevel.SUBTYPES
+        || level == CompatibilityLevel.STRICT_SUBTYPES
         || level == CompatibilityLevel.PARAMETERS) {
       result =
           accepted.getType().equals(MEDIA_TYPE_WILDCARD)
@@ -73,12 +75,23 @@ public interface ApiMediaType {
     }
 
     if (result
-        && (level == CompatibilityLevel.SUBTYPES || level == CompatibilityLevel.PARAMETERS)) {
+        && (level == CompatibilityLevel.SUBTYPES
+            || level == CompatibilityLevel.STRICT_SUBTYPES
+            || level == CompatibilityLevel.PARAMETERS)) {
       result =
           accepted.getSubtype().equals(MEDIA_TYPE_WILDCARD)
               || provided.getSubtype().equals(MEDIA_TYPE_WILDCARD)
               || accepted.getSubtype().equalsIgnoreCase(provided.getSubtype())
               || provided.getSubtype().endsWith("+" + accepted.getSubtype());
+    }
+
+    if (result
+        && (level == CompatibilityLevel.STRICT_SUBTYPES
+            || level == CompatibilityLevel.PARAMETERS)) {
+      result =
+          accepted.getSubtype().equals(MEDIA_TYPE_WILDCARD)
+              || provided.getSubtype().equals(MEDIA_TYPE_WILDCARD)
+              || accepted.getSubtype().equalsIgnoreCase(provided.getSubtype());
     }
 
     if (result && level == CompatibilityLevel.PARAMETERS) {

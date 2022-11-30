@@ -236,4 +236,9 @@ public abstract class Endpoint implements EndpointExtension {
       return MediaType.WILDCARD_TYPE;
     }
   }
+
+  protected Optional<String> getOperationId(String name, String... prefixes) {
+    return Optional.of(
+        prefixes.length > 0 ? String.format("%s.%s", String.join(".", prefixes), name) : name);
+  }
 }

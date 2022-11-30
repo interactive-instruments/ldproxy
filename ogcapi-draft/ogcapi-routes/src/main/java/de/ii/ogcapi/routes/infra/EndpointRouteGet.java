@@ -115,6 +115,7 @@ public class EndpointRouteGet extends Endpoint implements ConformanceClass {
               operationSummary,
               operationDescription,
               Optional.empty(),
+              getOperationId("getRoute"),
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
       definitionBuilder.putResources(path, resourceBuilder.build());

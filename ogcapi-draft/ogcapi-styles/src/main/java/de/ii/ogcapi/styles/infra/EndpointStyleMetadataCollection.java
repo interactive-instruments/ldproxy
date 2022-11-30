@@ -127,6 +127,7 @@ public class EndpointStyleMetadataCollection extends EndpointSubCollection {
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("getStyleMetadata", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));

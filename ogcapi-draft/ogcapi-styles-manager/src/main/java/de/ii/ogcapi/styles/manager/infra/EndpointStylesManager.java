@@ -160,6 +160,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
             operationSummary,
             operationDescription,
             Optional.empty(),
+            getOperationId("createStyle"),
             TAGS)
         .ifPresent(
             operation -> resourceBuilderCreate.putOperations(HttpMethods.POST.name(), operation));
@@ -193,6 +194,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
             operationSummary,
             operationDescription,
             Optional.empty(),
+            getOperationId("replaceStyle"),
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
     queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
@@ -212,6 +214,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
             operationSummary,
             operationDescription,
             Optional.empty(),
+            getOperationId("deleteStyle"),
             TAGS)
         .ifPresent(
             operation -> resourceBuilderCreate.putOperations(HttpMethods.DELETE.name(), operation));

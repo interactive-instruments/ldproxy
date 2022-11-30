@@ -165,6 +165,7 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("replaceStyleMetadata", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
@@ -274,6 +275,7 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("updateStyleMetadata", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PATCH.name(), operation));
