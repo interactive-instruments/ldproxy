@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -50,6 +51,7 @@ public abstract class OgcApiCollectionView extends OgcApiDatasetView {
 
   public abstract boolean hasGeometry();
 
+  @Nullable
   @Value.Derived
   public String storageCrs() {
     return collection().getStorageCrs().orElse(null);
