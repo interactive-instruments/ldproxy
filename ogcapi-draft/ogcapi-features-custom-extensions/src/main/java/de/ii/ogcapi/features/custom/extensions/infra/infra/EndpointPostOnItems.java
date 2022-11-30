@@ -162,6 +162,7 @@ public class EndpointPostOnItems extends EndpointSubCollection {
                         get.getSummary(),
                         get.getDescription(),
                         Optional.empty(),
+                        getOperationId("queryItems", collectionId),
                         TAGS)
                     .ifPresent(operation -> builder.putOperations("POST", operation));
                 definitionBuilder.putResources(entry.getKey(), builder.build());

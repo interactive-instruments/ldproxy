@@ -82,7 +82,7 @@ public class EndpointTileMultiCollection extends Endpoint
 
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/core");
+    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core");
   }
 
   @Override
@@ -106,6 +106,15 @@ public class EndpointTileMultiCollection extends Endpoint
         "tiles",
         ApiEndpointDefinition.SORT_PRIORITY_TILE,
         "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+        getOperationId(
+            "getTile",
+            "dataset",
+            apiData
+                    .getExtension(TilesConfiguration.class)
+                    .map(c -> c.getTileEncodingsDerived().contains("MVT"))
+                    .orElse(false)
+                ? "vector"
+                : "map"),
         TAGS);
   }
 

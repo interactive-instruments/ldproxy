@@ -109,15 +109,6 @@ public class TilesHelper {
       builder.tileMatrixSetURI(tileMatrixSet.getURI().get().toString());
     else builder.tileMatrixSet(tileMatrixSet.getTileMatrixSetData());
 
-    uriCustomizer.ifPresent(
-        uriCustomizer1 ->
-            builder.tileMatrixSetDefinition(
-                uriCustomizer1
-                    .removeLastPathSegments(collectionId.isPresent() ? 3 : 1)
-                    .clearParameters()
-                    .ensureLastPathSegments("tileMatrixSets", tileMatrixSet.getId())
-                    .toString()));
-
     if (Objects.isNull(zoomLevels)) builder.tileMatrixSetLimits(ImmutableList.of());
     else
       builder.tileMatrixSetLimits(

@@ -139,6 +139,7 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("getQueryables", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));

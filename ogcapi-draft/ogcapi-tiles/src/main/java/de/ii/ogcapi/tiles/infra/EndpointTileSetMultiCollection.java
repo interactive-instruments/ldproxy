@@ -57,7 +57,7 @@ public class EndpointTileSetMultiCollection extends AbstractEndpointTileSetMulti
 
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tileset");
+    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tileset");
   }
 
   @Override
@@ -79,6 +79,12 @@ public class EndpointTileSetMultiCollection extends AbstractEndpointTileSetMulti
         "tiles",
         ApiEndpointDefinition.SORT_PRIORITY_TILE_SET,
         "/tiles/{tileMatrixSetId}",
+        apiData
+                .getExtension(TilesConfiguration.class)
+                .map(c -> c.getTileEncodingsDerived().contains("MVT"))
+                .orElse(false)
+            ? "vector"
+            : "map",
         TAGS);
   }
 

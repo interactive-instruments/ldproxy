@@ -123,6 +123,7 @@ public class EndpointResource extends Endpoint {
               operationSummary,
               operationDescription,
               Optional.empty(),
+              getOperationId("getResource"),
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
       definitionBuilder.putResources(path, resourceBuilder.build());

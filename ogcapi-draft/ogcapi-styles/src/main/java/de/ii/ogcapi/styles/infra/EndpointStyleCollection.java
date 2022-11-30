@@ -159,6 +159,7 @@ public class EndpointStyleCollection extends EndpointSubCollection {
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("getStyle", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));

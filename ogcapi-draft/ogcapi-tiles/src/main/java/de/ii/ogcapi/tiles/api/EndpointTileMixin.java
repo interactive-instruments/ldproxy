@@ -52,6 +52,8 @@ import org.slf4j.LoggerFactory;
 public interface EndpointTileMixin {
 
   Logger LOGGER = LoggerFactory.getLogger(EndpointTileMixin.class);
+  String COLLECTION_ID_PLACEHOLDER = "__collectionId__";
+  String DATA_TYPE_PLACEHOLDER = "__dataType__";
 
   default ApiEndpointDefinition computeDefinitionSingle(
       ExtensionRegistry extensionRegistry,
@@ -61,6 +63,7 @@ public interface EndpointTileMixin {
       int sortPriority,
       String basePath,
       String subSubPath,
+      Optional<String> operationIdWithPlaceholders,
       List<String> tags) {
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
@@ -101,6 +104,30 @@ public interface EndpointTileMixin {
                 ? endpoint.getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET)
                 : endpoint.getContent(
                     apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+        Optional<String> operationId =
+            collectionId.startsWith("{")
+                ? operationIdWithPlaceholders.map(
+                    id ->
+                        id.replace(COLLECTION_ID_PLACEHOLDER + ".", "")
+                            .replace(
+                                DATA_TYPE_PLACEHOLDER,
+                                apiData
+                                        .getExtension(TilesConfiguration.class)
+                                        .map(c -> c.getTileEncodingsDerived().contains("MVT"))
+                                        .orElse(false)
+                                    ? "vector"
+                                    : "map"))
+                : operationIdWithPlaceholders.map(
+                    id ->
+                        id.replace(COLLECTION_ID_PLACEHOLDER, collectionId)
+                            .replace(
+                                DATA_TYPE_PLACEHOLDER,
+                                apiData
+                                        .getExtension(TilesConfiguration.class, collectionId)
+                                        .map(c -> c.getTileEncodingsDerived().contains("MVT"))
+                                        .orElse(false)
+                                    ? "vector"
+                                    : "map"));
         ApiOperation.getResource(
                 apiData,
                 resourcePath,
@@ -111,6 +138,7 @@ public interface EndpointTileMixin {
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                operationId,
                 tags)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
@@ -128,6 +156,7 @@ public interface EndpointTileMixin {
       String apiEntrypoint,
       int sortPriority,
       String path,
+      Optional<String> operationIdWithPlaceholders,
       List<String> tags) {
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
@@ -146,6 +175,17 @@ public interface EndpointTileMixin {
                 + "The tile has one layer per collection with all selected features in the bounding box of the tile with the requested properties.");
     ImmutableOgcApiResourceData.Builder resourceBuilder =
         new ImmutableOgcApiResourceData.Builder().path(path).pathParameters(pathParameters);
+    Optional<String> operationId =
+        operationIdWithPlaceholders.map(
+            id ->
+                id.replace(
+                    "__dataType__",
+                    apiData
+                            .getExtension(TilesConfiguration.class)
+                            .map(c -> c.getTileEncodingsDerived().contains("MVT"))
+                            .orElse(false)
+                        ? "vector"
+                        : "map"));
     ApiOperation.getResource(
             apiData,
             path,
@@ -156,6 +196,7 @@ public interface EndpointTileMixin {
             operationSummary,
             operationDescription,
             Optional.empty(),
+            operationId,
             tags)
         .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());

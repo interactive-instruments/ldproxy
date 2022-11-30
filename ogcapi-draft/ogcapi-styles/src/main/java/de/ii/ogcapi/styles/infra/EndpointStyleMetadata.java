@@ -121,6 +121,7 @@ public class EndpointStyleMetadata extends Endpoint {
               operationSummary,
               operationDescription,
               Optional.empty(),
+              getOperationId("getStyleMetadata"),
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
       definitionBuilder.putResources(path, resourceBuilder.build());
