@@ -21,7 +21,6 @@ import de.ii.ogcapi.routes.domain.RouteDefinitionInfo;
 import de.ii.ogcapi.routes.domain.Routes;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ogcapi.routes.domain.RoutingFlag;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -39,7 +38,7 @@ public abstract class RoutesView extends OgcApiView {
 
   public abstract HtmlFormDefaults htmlDefaults();
 
-  public abstract Optional<BoundingBox> bbox();
+  public abstract Map<String, String> bbox();
 
   public abstract I18n i18n();
 

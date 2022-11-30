@@ -28,7 +28,6 @@ import de.ii.ogcapi.routes.domain.ImmutableHtmlFormDefaults;
 import de.ii.ogcapi.routes.domain.Routes;
 import de.ii.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
@@ -109,16 +108,15 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
     return new ImmutableRoutesView.Builder()
         .apiData(api.getData())
         .bbox(
-            (BoundingBox)
-                api.getSpatialExtent()
-                    .map(
-                        boundingBox ->
-                            ImmutableMap.of(
-                                "minLng", Double.toString(boundingBox.getXmin()),
-                                "minLat", Double.toString(boundingBox.getYmin()),
-                                "maxLng", Double.toString(boundingBox.getXmax()),
-                                "maxLat", Double.toString(boundingBox.getYmax())))
-                    .orElse(null))
+            api.getSpatialExtent()
+                .map(
+                    boundingBox ->
+                        ImmutableMap.of(
+                            "minLng", Double.toString(boundingBox.getXmin()),
+                            "minLat", Double.toString(boundingBox.getYmin()),
+                            "maxLng", Double.toString(boundingBox.getXmax()),
+                            "maxLat", Double.toString(boundingBox.getYmax())))
+                .orElse(null))
         .routes(routes)
         .htmlDefaults(htmlDefaults)
         .breadCrumbs(breadCrumbs)
