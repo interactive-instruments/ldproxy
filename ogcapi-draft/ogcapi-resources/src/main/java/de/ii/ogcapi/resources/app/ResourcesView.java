@@ -23,8 +23,6 @@ public abstract class ResourcesView extends OgcApiView {
 
   public abstract Resources resources();
 
-  public abstract String staticUrlPrefix();
-
   public abstract Optional<Locale> language();
 
   public abstract List<Resource> resourceList();

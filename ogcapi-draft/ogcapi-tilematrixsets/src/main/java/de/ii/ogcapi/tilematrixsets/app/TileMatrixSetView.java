@@ -20,8 +20,6 @@ public abstract class TileMatrixSetView extends OgcApiView {
 
   public abstract TileMatrixSetData tileMatrixSet();
 
-  public abstract String staticUrlPrefix();
-
   public abstract URICustomizer uriCustomizer();
 
   public abstract I18n i18n();
@@ -90,15 +88,5 @@ public abstract class TileMatrixSetView extends OgcApiView {
 
   public TileMatrixSetView() {
     super("tileMatrixSet.mustache");
-    /* Charsets.UTF_8,
-    apiData,
-    breadCrumbs,
-    htmlConfig,
-    noIndex,
-    staticUrlPrefix,
-    tileMatrixSet.getLinks(),
-    null,
-    null);*/
-
   }
 }
