@@ -803,10 +803,9 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     if (Objects.equals(tilesConfiguration.getCache(), TileCacheType.FILES)) {
       return List.of(
           new ImmutableCache.Builder()
-              .type(Type.DYNAMIC)
+              .type(Type.IMMUTABLE)
               .storage(Storage.PLAIN)
-              .putAllLevels(
-                  tilesConfiguration.getZoomLevelsDerived()) // TODO: per collection/layer?
+              .putAllLevels(tilesConfiguration.getSeedingDerived()) // TODO: per collection/layer?
               .build());
     } else if (Objects.equals(tilesConfiguration.getCache(), TileCacheType.MBTILES)) {
       return List.of(

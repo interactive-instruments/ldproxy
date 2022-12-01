@@ -30,7 +30,9 @@ import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationParameters.Builder;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
@@ -40,12 +42,14 @@ import de.ii.xtraplatform.services.domain.TaskContext;
 import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -184,10 +188,10 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
 
     try {
       // first seed the multi-layer tiles, which also generates the necessary single-layer tiles
-      if (!taskContext.isStopped()) seedMultiLayerTiles(api, outputFormats, taskContext);
+      // if (!taskContext.isStopped()) seedMultiLayerTiles(api, outputFormats, taskContext);
 
       // add any additional single-layer tiles
-      if (!taskContext.isStopped()) seedSingleLayerTiles(api, outputFormats, taskContext);
+      if (!taskContext.isStopped()) seedCollectionLayers(api, outputFormats, taskContext);
 
     } catch (IOException e) {
       if (!taskContext.isStopped()) {
@@ -203,6 +207,65 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
             e);
       }
     }
+  }
+
+  private void seedCollectionLayers(
+      OgcApi api, List<TileFormatExtension> outputFormats, TaskContext taskContext)
+      throws IOException {
+    OgcApiDataV2 apiData = api.getData();
+
+    // TODO: isEnabled should check that we have a tile provider
+    // TODO: different tile provider per collection
+    TileProvider tileProvider = tilesProviders.getTileProviderOrThrow(apiData);
+
+    if (!tileProvider.supportsSeeding()) {
+      LOGGER.debug("Tile provider '{}' does not support seeding", tileProvider.getId());
+      return;
+    }
+
+    List<MediaType> seedingFormats =
+        outputFormats.stream()
+            .filter(format -> tileProvider.generator().supports(format.getMediaType().type()))
+            .map(format -> format.getMediaType().type())
+            .collect(Collectors.toList());
+
+    Map<String, TileGenerationParameters> layers = new LinkedHashMap<>();
+
+    for (String collectionId : apiData.getCollections().keySet()) {
+      Optional<TilesConfiguration> tilesConfiguration =
+          getTilesConfiguration(api.getData(), collectionId);
+      if (tilesConfiguration.isPresent()) {
+        URI uri =
+            URI.create(
+                String.format(
+                    "%s/%s/collections/%s/tiles", servicesUri, apiData.getId(), collectionId));
+
+        ApiRequestContext requestContext =
+            new ImmutableRequestContext.Builder()
+                .api(api)
+                .requestUri(uri)
+                .mediaType(outputFormats.get(0).getMediaType())
+                .build();
+
+        TileGenerationParameters generationParameters =
+            new Builder()
+                .clipBoundingBox(api.getSpatialExtent(collectionId))
+                .propertyTransformations(
+                    api.getData()
+                        .getCollectionData(collectionId)
+                        .flatMap(cd -> cd.getExtension(FeaturesCoreConfiguration.class))
+                        .map(
+                            pt ->
+                                pt.withSubstitutions(
+                                    FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
+                                        requestContext.getApiUri()))))
+                .build();
+
+        layers.put(collectionId, generationParameters);
+      }
+    }
+
+    tileProvider.seeding().seed(layers, seedingFormats, taskContext);
   }
 
   private void seedSingleLayerTiles(

@@ -43,6 +43,17 @@ public interface TileProvider extends PersistentEntity {
     return (TileGenerator) this;
   }
 
+  default boolean supportsSeeding() {
+    return this instanceof TileSeeding;
+  }
+
+  default TileSeeding seeding() {
+    if (!supportsGeneration()) {
+      throw new UnsupportedOperationException("Seeding not supported");
+    }
+    return (TileSeeding) this;
+  }
+
   default Optional<TileResult> validate(TileQuery tile) {
     if (!getData().getLayers().containsKey(tile.getLayer())) {
       return Optional.of(

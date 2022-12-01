@@ -16,16 +16,19 @@ import de.ii.ogcapi.tiles.domain.provider.Cache.Storage;
 import de.ii.ogcapi.tiles.domain.provider.Cache.Type;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
 import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerator;
 import de.ii.ogcapi.tiles.domain.provider.TileProvider;
 import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
+import de.ii.ogcapi.tiles.domain.provider.TileSeeding;
 import de.ii.ogcapi.tiles.domain.provider.TileStore;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
+import de.ii.xtraplatform.services.domain.TaskContext;
 import de.ii.xtraplatform.store.domain.BlobStore;
 import de.ii.xtraplatform.store.domain.entities.AbstractPersistentEntity;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -39,11 +42,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderFeaturesData>
-    implements TileProvider {
+    implements TileProvider, TileSeeding {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TileProviderFeatures.class);
   private static final String TILES_DIR_NAME = "tiles";
@@ -52,7 +56,8 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
   private final TileEncoders tileEncoders;
   private final ChainedTileProvider generatorProviderChain;
   private final ChainedTileProvider combinerProviderChain;
-  private final List<TileStore> tileCaches;
+  private final List<TileStore> tileStores;
+  private final List<ChainedTileProvider> tileCaches;
 
   @AssistedInject
   public TileProviderFeatures(
@@ -61,10 +66,12 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
       AppContext appContext,
       Cql cql,
       BlobStore blobStore,
+      TileWalker tileWalker,
       @Assisted TileProviderFeaturesData data) {
     super(data);
 
     this.tileGenerator = new TileGeneratorFeatures(data, crsInfo, entityRegistry, cql);
+    this.tileStores = new ArrayList<>();
     this.tileCaches = new ArrayList<>();
 
     BlobStore tilesStore = blobStore.with(TILES_DIR_NAME, clean(data.getId()));
@@ -72,9 +79,11 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
 
     for (int i = 0; i < data.getCaches().size(); i++) {
       Cache cache = data.getCaches().get(i);
-      // TODO: stay backwards compatible? or move to new dir?
+      // TODO: stay backwards compatible? or move to new dir? or cleanup old in routine?
       BlobStore cacheStore =
-          data.getCaches().size() == 1 ? tilesStore : tilesStore.with(String.format("cache_%d", i));
+          data.getCaches().size() == 1 && cache.getType() == Type.DYNAMIC
+              ? tilesStore
+              : tilesStore.with(String.format("cache_%s", cache.getType().getSuffix()));
 
       if (cache.getType() == Type.DYNAMIC) {
         TileStore tileStore =
@@ -83,9 +92,26 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
                     cacheStore, data.getId(), getTileSchemas(tileGenerator, data.getLayers()))
                 : new TileStorePlain(cacheStore);
 
-        tileCaches.add(tileStore);
+        tileStores.add(tileStore);
         // TODO: cacheLevels
         current = new TileCacheDynamic(tileStore, current, data.getTmsRanges());
+        tileCaches.add(current);
+      } else if (cache.getType() == Type.IMMUTABLE) {
+        TileStore tileStore =
+            new TileStoreMulti(
+                cacheStore,
+                cache.getStorage(),
+                data.getId(),
+                getTileSchemas(tileGenerator, data.getLayers()));
+        tileStores.add(tileStore);
+        // TODO: cacheLevels
+        current =
+            new TileCacheImmutable(
+                tileWalker,
+                tileStore,
+                current,
+                Map.of("governmentalservice", cache.getTmsRanges()));
+        tileCaches.add(current);
       }
     }
 
@@ -99,7 +125,7 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
 
       if (cache.getType() == Type.DYNAMIC) {
         // TODO: cacheLevels
-        current = new TileCacheDynamic(tileCaches.get(i), current, data.getTmsRanges());
+        current = new TileCacheDynamic(tileStores.get(i), current, data.getTmsRanges());
       }
     }
 
@@ -170,7 +196,7 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
   @Override
   public void deleteFromCache(
       String layer, TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits) {
-    for (TileStore cache : tileCaches) {
+    for (TileStore cache : tileStores) {
       try {
         cache.delete(layer, tileMatrixSet, limits);
       } catch (IOException e) {
@@ -192,5 +218,19 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
   @Override
   public String getType() {
     return TileProviderFeaturesData.PROVIDER_TYPE;
+  }
+
+  // TODO
+  @Override
+  public void seed(
+      Map<String, TileGenerationParameters> layers,
+      List<MediaType> mediaTypes,
+      TaskContext taskContext)
+      throws IOException {
+    for (ChainedTileProvider cache : tileCaches) {
+      if (cache instanceof TileCacheImmutable) {
+        ((TileCacheImmutable) cache).seed(layers, mediaTypes, taskContext);
+      }
+    }
   }
 }

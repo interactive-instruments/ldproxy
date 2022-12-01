@@ -9,6 +9,7 @@ package de.ii.ogcapi.tiles.domain.provider;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.tilematrixsets.domain.MinMax;
+import java.util.Locale;
 import java.util.Map;
 import org.immutables.value.Value;
 
@@ -16,7 +17,12 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableCache.Builder.class)
 public interface Cache extends WithTmsLevels {
   enum Type {
-    DYNAMIC
+    DYNAMIC,
+    IMMUTABLE;
+
+    public String getSuffix() {
+      return this.name().substring(0, 3).toLowerCase(Locale.ROOT);
+    }
   }
 
   enum Storage {

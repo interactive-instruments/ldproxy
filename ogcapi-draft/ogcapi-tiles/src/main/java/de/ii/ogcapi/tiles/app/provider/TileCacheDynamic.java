@@ -23,6 +23,7 @@ public class TileCacheDynamic implements ChainedTileProvider {
   private final ChainedTileProvider delegate;
   private final Map<String, Map<String, Range<Integer>>> tmsRanges;
 
+  // TODO: factor out dynamic part, make it generic TileCache???
   public TileCacheDynamic(
       TileStore tileStore,
       ChainedTileProvider delegate,

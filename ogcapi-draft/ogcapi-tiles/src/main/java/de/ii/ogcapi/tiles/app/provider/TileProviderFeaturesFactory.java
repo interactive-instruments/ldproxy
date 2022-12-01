@@ -45,6 +45,7 @@ public class TileProviderFeaturesFactory
       AppContext appContext,
       Cql cql,
       BlobStore blobStore,
+      TileWalker tileWalker,
       TileProviderFeaturesFactoryAssisted factoryAssisted) {
     super(factoryAssisted);
   }

@@ -8,6 +8,7 @@
 package de.ii.ogcapi.tilematrixsets.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.Range;
 import java.util.Optional;
 import org.immutables.value.Value;
 
@@ -15,6 +16,14 @@ import org.immutables.value.Value;
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableMinMax.Builder.class)
 public interface MinMax {
+
+  static MinMax of(Range<Integer> range) {
+    return new ImmutableMinMax.Builder()
+        .min(range.lowerEndpoint())
+        .max(range.upperEndpoint())
+        .build();
+  }
+
   int getMin();
 
   int getMax();

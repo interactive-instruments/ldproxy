@@ -20,4 +20,26 @@ public interface TileStore extends TileStoreReadOnly {
 
   void delete(String layer, TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits)
       throws IOException;
+
+  interface Staging {
+
+    boolean inProgress();
+
+    boolean init() throws IOException;
+
+    void promote() throws IOException;
+
+    void cleanup() throws IOException;
+  }
+
+  default boolean canStage() {
+    return this instanceof Staging;
+  }
+
+  default Staging staging() {
+    if (!canStage()) {
+      throw new UnsupportedOperationException("Staging not supported");
+    }
+    return (Staging) this;
+  }
 }
