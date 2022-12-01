@@ -111,6 +111,7 @@ public class EndpointRouteDefinition extends Endpoint {
               operationSummary,
               operationDescription,
               Optional.empty(),
+              getOperationId("getRouteDefinition"),
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
       definitionBuilder.putResources(path, resourceBuilder.build());

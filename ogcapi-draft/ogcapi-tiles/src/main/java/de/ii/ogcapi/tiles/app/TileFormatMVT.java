@@ -19,6 +19,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
@@ -66,7 +67,7 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
-public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
+public class TileFormatMVT extends TileFormatWithQuerySupportExtension implements ConformanceClass {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TileFormatMVT.class);
   private static final double BUFFER_DEGREE = 0.00001;
@@ -138,6 +139,17 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension {
   @Override
   public DataType getDataType() {
     return TileSet.DataType.vector;
+  }
+
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    if (isEnabledForApi(apiData)
+        || apiData.getCollections().keySet().stream()
+            .anyMatch(collectionId -> isEnabledForApi(apiData, collectionId))) {
+      return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/mvt");
+    }
+
+    return ImmutableList.of();
   }
 
   @Override

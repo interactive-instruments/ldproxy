@@ -107,6 +107,7 @@ public class EndpointMapTileSingleCollection extends EndpointSubCollection
         ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_COLLECTION,
         "/collections/{collectionId}",
         "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+        getOperationId("getTile", EndpointTileMixin.COLLECTION_ID_PLACEHOLDER, "collection", "map"),
         TAGS);
   }
 

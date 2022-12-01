@@ -284,6 +284,7 @@ public class EndpointCollection extends EndpointSubCollection {
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("getCollection", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));

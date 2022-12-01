@@ -98,6 +98,7 @@ public class EndpointMapTileMultiCollection extends Endpoint implements Endpoint
         "map",
         ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE,
         "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+        getOperationId("getTile", "dataset", "map"),
         TAGS);
   }
 

@@ -130,6 +130,7 @@ public class EndpointStylesCollection extends EndpointSubCollection implements C
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("getStyles", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));

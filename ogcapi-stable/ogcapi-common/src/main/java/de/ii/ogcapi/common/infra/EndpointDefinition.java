@@ -96,6 +96,7 @@ public class EndpointDefinition extends Endpoint {
             operationSummary,
             Optional.empty(),
             Optional.empty(),
+            getOperationId("getApiDefinition"),
             ImmutableList.of())
         .ifPresent(operation -> resourceBuilder1.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder1.build());
@@ -115,6 +116,7 @@ public class EndpointDefinition extends Endpoint {
             operationSummary,
             Optional.empty(),
             Optional.empty(),
+            getOperationId("getApiDefinitionSubResource"),
             ImmutableList.of())
         .ifPresent(operation -> resourceBuilder2.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder2.build());

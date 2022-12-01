@@ -12,7 +12,9 @@ import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.PARAME
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.AbstractQueryParameterDatetime;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -25,6 +27,7 @@ import de.ii.xtraplatform.cql.domain.Interval;
 import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.TIntersects;
 import de.ii.xtraplatform.cql.domain.TemporalLiteral;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -39,7 +42,7 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
-    implements TypedQueryParameter<TemporalLiteral>, TileGenerationUserParameter {
+    implements TypedQueryParameter<TemporalLiteral>, TileGenerationUserParameter, ConformanceClass {
 
   @Inject
   QueryParameterDatetimeTile(SchemaValidator schemaValidator) {
@@ -63,6 +66,11 @@ public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
     Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
     return config.isPresent() && config.get().getTileProvider().requiresQuerySupport();
+  }
+
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/datetime");
   }
 
   @Override

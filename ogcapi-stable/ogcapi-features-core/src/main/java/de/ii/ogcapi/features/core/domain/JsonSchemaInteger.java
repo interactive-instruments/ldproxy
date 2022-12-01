@@ -29,6 +29,8 @@ public abstract class JsonSchemaInteger extends JsonSchema {
   @JsonProperty("enum")
   public abstract List<Integer> getEnums();
 
+  public abstract Optional<String> getUnit();
+
   public abstract static class Builder extends JsonSchema.Builder {}
 
   @SuppressWarnings("UnstableApiUsage")
@@ -38,5 +40,6 @@ public abstract class JsonSchemaInteger extends JsonSchema {
         from.getMinimum().ifPresent(val -> into.putLong(val));
         from.getMaximum().ifPresent(val -> into.putLong(val));
         from.getEnums().stream().sorted().forEachOrdered(val -> into.putInt(val));
+        from.getUnit().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
       };
 }

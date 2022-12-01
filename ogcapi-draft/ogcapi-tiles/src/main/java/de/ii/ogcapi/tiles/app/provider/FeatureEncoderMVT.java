@@ -53,6 +53,7 @@ public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
 
   private long mergeCount = 0;
   private long featureCount = 0;
+  private boolean full = true;
 
   // TODO: TilesConfiguration not available in xtraplatform, but new TileProviderData
   public FeatureEncoderMVT(TileGenerationContext encodingContext) {
@@ -131,6 +132,9 @@ public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
       if (Objects.isNull(tileGeometry)) {
         return;
       }
+
+      // in "full" tiles all features cover then whole tile
+      full = full && tileGeometry.equals(clipGeometry);
 
       // if polygons have to be merged, store them for now and process at the end
       if (Objects.nonNull(groupBy) && tileGeometry.getGeometryType().contains("Polygon")) {
@@ -238,6 +242,30 @@ public class FeatureEncoderMVT extends FeatureEncoderSfFlat {
 
     byte[] mvt = tileEncoder.encode();
     push(mvt);
+
+    if (featureCount == 0) {
+      // TODO header/trailer/field "OATiles-hint: empty", also include info in tile cache
+      if (LOGGER.isTraceEnabled()) {
+        LOGGER.trace(
+            "Collection {}, tile {}/{}/{}/{} is empty.",
+            collectionId,
+            tile.getTileMatrixSet().getId(),
+            tile.getLevel(),
+            tile.getRow(),
+            tile.getCol());
+      }
+    } else if (featureCount == written && full) {
+      // TODO header/trailer/field "OATiles-hint: full", also include info in tile cache
+      if (LOGGER.isTraceEnabled()) {
+        LOGGER.trace(
+            "Collection {}, tile {}/{}/{}/{} is full.",
+            collectionId,
+            tile.getTileMatrixSet().getId(),
+            tile.getLevel(),
+            tile.getRow(),
+            tile.getCol());
+      }
+    }
 
     if (LOGGER.isDebugEnabled()) {
       long encoderDuration = (System.nanoTime() - encoderStart) / 1000000;
