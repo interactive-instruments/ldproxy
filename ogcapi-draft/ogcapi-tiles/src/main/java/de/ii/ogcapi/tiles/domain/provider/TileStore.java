@@ -30,6 +30,8 @@ public interface TileStore extends TileStoreReadOnly {
     void promote() throws IOException;
 
     void cleanup() throws IOException;
+
+    void abort() throws IOException;
   }
 
   default boolean canStage() {

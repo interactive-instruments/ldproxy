@@ -460,13 +460,15 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
             : ImmutableMap.of();
   }
 
+  Optional<SeedingOptions> getSeedingOptions();
+
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
-  default Optional<SeedingOptions> getSeedingOptions() {
+  default Optional<SeedingOptions> getSeedingOptionsDerived() {
     return getTileProvider() instanceof TileProviderFeatures
-        ? ((TileProviderFeatures) getTileProvider()).getSeedingOptions()
-        : Optional.empty();
+        ? ((TileProviderFeatures) getTileProvider()).getSeedingOptions().or(this::getSeedingOptions)
+        : getSeedingOptions();
   }
 
   /**

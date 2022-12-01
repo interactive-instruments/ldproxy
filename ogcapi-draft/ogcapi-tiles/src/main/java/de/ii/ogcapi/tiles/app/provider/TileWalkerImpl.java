@@ -41,17 +41,6 @@ public class TileWalkerImpl implements TileWalker {
     this.crsTransformerFactory = crsTransformerFactory;
   }
 
-  interface TileVisitor {
-    boolean visit(
-        String layer,
-        MediaType outputFormat,
-        TileMatrixSet tileMatrixSet,
-        int level,
-        int row,
-        int col)
-        throws IOException;
-  }
-
   @Override
   public long getNumberOfTiles(
       Set<String> layers,
@@ -96,6 +85,58 @@ public class TileWalkerImpl implements TileWalker {
         Optional<BoundingBox> boundingBox = boundingBoxes.get(layer);
 
         walkTiles(layer, outputFormats, ranges, boundingBox, taskContext, tileWalker);
+      }
+    }
+  }
+
+  @Override
+  public void walkLayersAndLimits(
+      Set<String> layers,
+      Map<String, Map<String, Range<Integer>>> tmsRanges,
+      Map<String, Optional<BoundingBox>> boundingBoxes,
+      LimitsVisitor limitsVisitor)
+      throws IOException {
+    for (Map.Entry<String, Map<String, Range<Integer>>> entry : tmsRanges.entrySet()) {
+      String layer = entry.getKey();
+
+      if (layers.contains(layer)) {
+        Map<String, Range<Integer>> ranges = entry.getValue();
+        Optional<BoundingBox> boundingBox = boundingBoxes.get(layer);
+
+        walkLimits(layer, ranges, boundingBox, limitsVisitor);
+      }
+    }
+  }
+
+  private void walkLimits(
+      String layer,
+      Map<String, Range<Integer>> tmsRanges,
+      Optional<BoundingBox> boundingBox,
+      LimitsVisitor limitsVisitor)
+      throws IOException {
+    for (Map.Entry<String, Range<Integer>> entry : tmsRanges.entrySet()) {
+      TileMatrixSet tileMatrixSet = getTileMatrixSetById(entry.getKey());
+      BoundingBox bbox =
+          boundingBox
+              .flatMap(
+                  b ->
+                      crsTransformerFactory
+                          .getTransformer(b.getEpsgCrs(), tileMatrixSet.getCrs())
+                          .map(
+                              transformer -> {
+                                try {
+                                  return transformer.transformBoundingBox(b);
+                                } catch (CrsTransformationException e) {
+                                  return tileMatrixSet.getBoundingBox();
+                                }
+                              }))
+              .orElse(tileMatrixSet.getBoundingBox());
+
+      List<TileMatrixSetLimits> allLimits =
+          tileMatrixSet.getLimitsList(MinMax.of(entry.getValue()), bbox);
+
+      for (TileMatrixSetLimits limits : allLimits) {
+        limitsVisitor.visit(layer, tileMatrixSet, limits);
       }
     }
   }

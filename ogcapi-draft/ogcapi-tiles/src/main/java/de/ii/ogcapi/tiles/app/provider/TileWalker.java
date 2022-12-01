@@ -8,7 +8,8 @@
 package de.ii.ogcapi.tiles.app.provider;
 
 import com.google.common.collect.Range;
-import de.ii.ogcapi.tiles.app.provider.TileWalkerImpl.TileVisitor;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.services.domain.TaskContext;
 import java.io.IOException;
@@ -19,6 +20,22 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 
 public interface TileWalker {
+
+  interface TileVisitor {
+    boolean visit(
+        String layer,
+        MediaType outputFormat,
+        TileMatrixSet tileMatrixSet,
+        int level,
+        int row,
+        int col)
+        throws IOException;
+  }
+
+  interface LimitsVisitor {
+    void visit(String layer, TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits)
+        throws IOException;
+  }
 
   long getNumberOfTiles(
       Set<String> layers,
@@ -34,5 +51,12 @@ public interface TileWalker {
       Map<String, Optional<BoundingBox>> boundingBoxes,
       TaskContext taskContext,
       TileVisitor tileWalker)
+      throws IOException;
+
+  void walkLayersAndLimits(
+      Set<String> layers,
+      Map<String, Map<String, Range<Integer>>> tmsRanges,
+      Map<String, Optional<BoundingBox>> boundingBoxes,
+      LimitsVisitor limitsVisitor)
       throws IOException;
 }

@@ -803,7 +803,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     if (Objects.equals(tilesConfiguration.getCache(), TileCacheType.FILES)) {
       return List.of(
           new ImmutableCache.Builder()
-              .type(Type.IMMUTABLE)
+              .type(Type.DYNAMIC)
               .storage(Storage.PLAIN)
               .putAllLevels(tilesConfiguration.getSeedingDerived()) // TODO: per collection/layer?
               .build());

@@ -15,6 +15,7 @@ import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
 import de.ii.ogcapi.tiles.domain.provider.TileStore;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.base.domain.util.Tuple;
 import de.ii.xtraplatform.store.domain.BlobStore;
 import java.io.ByteArrayInputStream;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,6 +36,7 @@ import org.slf4j.LoggerFactory;
 public class TileStoreMulti implements TileStore, TileStore.Staging {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TileStoreMulti.class);
+  private static final String STAGING_MARKER = ".staging";
 
   private final BlobStore cacheStore;
   // TODO: factory?
@@ -65,15 +68,17 @@ public class TileStoreMulti implements TileStore, TileStore.Staging {
   }
 
   private List<Tuple<TileStore, BlobStore>> getActive() {
-    try (Stream<Path> walk = cacheStore.walk(Path.of(""), 1, (p, a) -> !a.isValue())) {
-      return walk.skip(1)
+    try (Stream<BlobStore> cacheLevels = getCacheLevels()) {
+      return cacheLevels
           .flatMap(
-              p -> {
+              cacheLevel -> {
                 try {
-                  BlobStore cacheLevel = cacheStore.with(p.getFileName().toString());
-                  boolean isStaging = cacheLevel.has(Path.of(".staging"));
+                  boolean isStaging = isStaging(cacheLevel);
 
-                  LOGGER.debug("{} {}", p.getFileName(), isStaging ? "staging" : "active");
+                  LOGGER.debug(
+                      "{} {}",
+                      cacheLevel.getPrefix().getFileName(),
+                      isStaging ? "staging" : "active");
 
                   if (!isStaging) {
                     return Stream.of(Tuple.of(getTileStore(cacheLevel), cacheLevel));
@@ -163,6 +168,10 @@ public class TileStoreMulti implements TileStore, TileStore.Staging {
 
     this.staging = Tuple.of(tileStore, stagingStore);
 
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("Staging cache level {}", stagingStore.getPrefix());
+    }
+
     return true;
   }
 
@@ -175,10 +184,20 @@ public class TileStoreMulti implements TileStore, TileStore.Staging {
   @Override
   public synchronized void promote() throws IOException {
     if (inProgress()) {
-      // TODO: rename folder, BlobStore.move? or just remove special marker file .staging?
       staging.second().delete(Path.of(".staging"));
 
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("Promoting cache level {}", staging.second().getPrefix());
+      }
+
       this.active.add(0, staging);
+      this.staging = null;
+    }
+  }
+
+  @Override
+  public void abort() throws IOException {
+    if (inProgress()) {
       this.staging = null;
     }
   }
@@ -189,8 +208,85 @@ public class TileStoreMulti implements TileStore, TileStore.Staging {
       throw new IllegalStateException("Cleanup is not allowed during staging.");
     }
 
-    // TODO: remove all directories with .staging
-    // remove all tiles that are also in newer active
-    // remove all tiles outside of bounds
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("Cleaning up cache levels");
+    }
+
+    cleanupStaging();
+    cleanupOutOfBounds();
+    cleanupDuplicates();
+
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("Cleaned up cache levels");
+    }
+  }
+
+  private void cleanupStaging() {
+    try (Stream<BlobStore> cacheLevels = getCacheLevels()) {
+      cacheLevels
+          .filter(
+              cacheLevel -> {
+                try {
+                  return isStaging(cacheLevel);
+                } catch (IOException e) {
+                  return false;
+                }
+              })
+          .forEach(this::deleteCacheLevel);
+    } catch (IOException e) {
+      LogContext.errorAsDebug(LOGGER, e, "Error during cleanup of staging caches.");
+    }
+  }
+
+  private void cleanupOutOfBounds() {
+    // TODO
+  }
+
+  private void cleanupDuplicates() {
+    try (Stream<BlobStore> cacheLevels = getCacheLevels()) {
+      cacheLevels
+          .filter(
+              cacheLevel -> {
+                try {
+                  return !isStaging(cacheLevel);
+                } catch (IOException e) {
+                  return false;
+                }
+              })
+          .forEach(this::deleteCacheLevel);
+    } catch (IOException e) {
+      LogContext.errorAsDebug(LOGGER, e, "Error during cleanup of staging caches.");
+    }
+  }
+
+  private void deleteCacheLevel(BlobStore cacheLevel) {
+    try (Stream<Path> paths = cacheStore.walk(cacheLevel.getPrefix(), 5, (p, a) -> true)) {
+      paths
+          .sorted(Comparator.reverseOrder())
+          .forEach(
+              path -> {
+                LOGGER.debug("DELETE {}", path);
+                try {
+                  cacheStore.delete(path);
+                } catch (IOException e) {
+                  LogContext.errorAsDebug(
+                      LOGGER, e, "Could not delete cache level entry {}.", path);
+                }
+              });
+    } catch (IOException e) {
+      LogContext.errorAsDebug(
+          LOGGER, e, "Could not delete cache level {}.", cacheLevel.getPrefix());
+    }
+  }
+
+  private Stream<BlobStore> getCacheLevels() throws IOException {
+    return cacheStore
+        .walk(Path.of(""), 1, (p, a) -> !a.isValue())
+        .skip(1)
+        .map(dir -> cacheStore.with(dir.getFileName().toString()));
+  }
+
+  private boolean isStaging(BlobStore cacheLevel) throws IOException {
+    return cacheLevel.has(Path.of(STAGING_MARKER));
   }
 }

@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.tiles.app.provider;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Range;
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
@@ -16,6 +18,7 @@ import de.ii.ogcapi.tiles.domain.provider.Cache.Storage;
 import de.ii.ogcapi.tiles.domain.provider.Cache.Type;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
 import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures;
+import de.ii.ogcapi.tiles.domain.provider.TileCache;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerator;
@@ -40,6 +43,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.ws.rs.core.MediaType;
@@ -57,7 +61,8 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
   private final ChainedTileProvider generatorProviderChain;
   private final ChainedTileProvider combinerProviderChain;
   private final List<TileStore> tileStores;
-  private final List<ChainedTileProvider> tileCaches;
+  private final List<TileCache> generatorCaches;
+  private final List<TileCache> combinerCaches;
 
   @AssistedInject
   public TileProviderFeatures(
@@ -72,7 +77,8 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
 
     this.tileGenerator = new TileGeneratorFeatures(data, crsInfo, entityRegistry, cql);
     this.tileStores = new ArrayList<>();
-    this.tileCaches = new ArrayList<>();
+    this.generatorCaches = new ArrayList<>();
+    this.combinerCaches = new ArrayList<>();
 
     BlobStore tilesStore = blobStore.with(TILES_DIR_NAME, clean(data.getId()));
     ChainedTileProvider current = tileGenerator;
@@ -81,9 +87,9 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
       Cache cache = data.getCaches().get(i);
       // TODO: stay backwards compatible? or move to new dir? or cleanup old in routine?
       BlobStore cacheStore =
-          data.getCaches().size() == 1 && cache.getType() == Type.DYNAMIC
-              ? tilesStore
-              : tilesStore.with(String.format("cache_%s", cache.getType().getSuffix()));
+          /*data.getCaches().size() == 1 && cache.getType() == Type.DYNAMIC
+          ? tilesStore
+          :*/ tilesStore.with(String.format("cache_%s", cache.getType().getSuffix()));
 
       if (cache.getType() == Type.DYNAMIC) {
         TileStore tileStore =
@@ -94,8 +100,8 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
 
         tileStores.add(tileStore);
         // TODO: cacheLevels
-        current = new TileCacheDynamic(tileStore, current, data.getTmsRanges());
-        tileCaches.add(current);
+        current = new TileCacheDynamic(tileWalker, tileStore, current, getCacheRanges(cache));
+        generatorCaches.add((TileCache) current);
       } else if (cache.getType() == Type.IMMUTABLE) {
         TileStore tileStore =
             new TileStoreMulti(
@@ -103,15 +109,10 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
                 cache.getStorage(),
                 data.getId(),
                 getTileSchemas(tileGenerator, data.getLayers()));
-        tileStores.add(tileStore);
+        // tileStores.add(tileStore);
         // TODO: cacheLevels
-        current =
-            new TileCacheImmutable(
-                tileWalker,
-                tileStore,
-                current,
-                Map.of("governmentalservice", cache.getTmsRanges()));
-        tileCaches.add(current);
+        current = new TileCacheImmutable(tileWalker, tileStore, current, getCacheRanges(cache));
+        generatorCaches.add((TileCache) current);
       }
     }
 
@@ -125,11 +126,39 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
 
       if (cache.getType() == Type.DYNAMIC) {
         // TODO: cacheLevels
-        current = new TileCacheDynamic(tileStores.get(i), current, data.getTmsRanges());
+        current =
+            new TileCacheDynamic(tileWalker, tileStores.get(i), current, getCacheRanges(cache));
+        combinerCaches.add((TileCache) current);
+      } else if (cache.getType() == Type.IMMUTABLE) {
+        // TODO: cacheLevels
+        current =
+            new TileCacheImmutable(tileWalker, tileStores.get(i), current, getCacheRanges(cache));
+        combinerCaches.add((TileCache) current);
       }
     }
 
     this.combinerProviderChain = current;
+  }
+
+  // TODO: layer levels
+  private Map<String, Map<String, Range<Integer>>> getCacheRanges(Cache cache) {
+    return getData().getLayers().entrySet().stream()
+        .map(entry -> new SimpleImmutableEntry<>(entry.getKey(), cache.getTmsRanges()))
+        .collect(MapStreams.toMap());
+  }
+
+  interface MapStreams {
+    static <T, U> Collector<Map.Entry<T, U>, ?, Map<T, U>> toMap() {
+      return Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue);
+    }
+
+    static <T, U> Collector<Map.Entry<T, U>, ?, Map<T, U>> toUnmodifiableMap() {
+      return Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue);
+    }
+
+    static <T, U> Collector<Map.Entry<T, U>, ?, ImmutableMap<T, U>> toImmutableMap() {
+      return ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue);
+    }
   }
 
   static String clean(String id) {
@@ -220,17 +249,61 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
     return TileProviderFeaturesData.PROVIDER_TYPE;
   }
 
-  // TODO
   @Override
   public void seed(
       Map<String, TileGenerationParameters> layers,
       List<MediaType> mediaTypes,
+      boolean reseed,
       TaskContext taskContext)
       throws IOException {
-    for (ChainedTileProvider cache : tileCaches) {
-      if (cache instanceof TileCacheImmutable) {
-        ((TileCacheImmutable) cache).seed(layers, mediaTypes, taskContext);
+
+    Map<String, TileGenerationParameters> validLayers = validLayers(layers);
+    Map<String, TileGenerationParameters> sourcedLayers = sourcedLayers(validLayers);
+    Map<String, TileGenerationParameters> combinedLayers = combinedLayers(validLayers);
+
+    if (!sourcedLayers.isEmpty()) {
+      for (TileCache cache : generatorCaches) {
+        cache.seed(sourcedLayers, mediaTypes, reseed, taskContext);
       }
     }
+    if (!combinedLayers.isEmpty()) {
+      for (TileCache cache : combinerCaches) {
+        cache.seed(combinedLayers, mediaTypes, reseed, taskContext);
+      }
+    }
+  }
+
+  private Map<String, TileGenerationParameters> validLayers(
+      Map<String, TileGenerationParameters> layers) {
+    return layers.entrySet().stream()
+        .filter(
+            entry -> {
+              if (!getData().getLayers().containsKey(entry.getKey())) {
+                LOGGER.warn("Layer with name '{}' not found", entry.getKey());
+                return false;
+              }
+              return true;
+            })
+        .collect(MapStreams.toMap());
+  }
+
+  private Map<String, TileGenerationParameters> sourcedLayers(
+      Map<String, TileGenerationParameters> layers) {
+    return layers.entrySet().stream()
+        .filter(
+            entry ->
+                getData().getLayers().containsKey(entry.getKey())
+                    && !getData().getLayers().get(entry.getKey()).isCombined())
+        .collect(MapStreams.toMap());
+  }
+
+  private Map<String, TileGenerationParameters> combinedLayers(
+      Map<String, TileGenerationParameters> layers) {
+    return layers.entrySet().stream()
+        .filter(
+            entry ->
+                getData().getLayers().containsKey(entry.getKey())
+                    && getData().getLayers().get(entry.getKey()).isCombined())
+        .collect(MapStreams.toMap());
   }
 }

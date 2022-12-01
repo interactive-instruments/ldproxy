@@ -10,6 +10,7 @@ package de.ii.ogcapi.tiles.app.provider;
 import com.google.common.collect.Range;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
 import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
+import de.ii.ogcapi.tiles.domain.provider.TileCache;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileResult;
@@ -27,7 +28,7 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TileCacheImmutable implements ChainedTileProvider {
+public class TileCacheImmutable implements ChainedTileProvider, TileCache {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TileCacheImmutable.class);
 
@@ -65,13 +66,15 @@ public class TileCacheImmutable implements ChainedTileProvider {
     return TileResult.notFound();
   }
 
+  @Override
   public void seed(
       Map<String, TileGenerationParameters> layers,
       List<MediaType> mediaTypes,
+      boolean reseed,
       TaskContext taskContext)
       throws IOException {
     if (tileStore.staging().inProgress()) {
-      // TODO: queue?
+      // TODO: queue? what about partials?
     }
 
     tileStore.staging().init();
@@ -84,12 +87,14 @@ public class TileCacheImmutable implements ChainedTileProvider {
                         entry.getKey(), entry.getValue().getClipBoundingBox()))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
+    // TODO: compute from limits instead of walking
     long numberOfTiles =
         tileWalker.getNumberOfTiles(
             layers.keySet(), mediaTypes, getTmsRanges(), boundingBoxes, taskContext);
     final double[] currentTile = {0.0};
+    final boolean[] isEmpty = {true};
 
-    LOGGER.debug("NUMTILES {}", numberOfTiles);
+    LOGGER.debug("NUMTILES {} {}", numberOfTiles, reseed);
 
     tileWalker.walkLayersAndTiles(
         layers.keySet(),
@@ -114,23 +119,28 @@ public class TileCacheImmutable implements ChainedTileProvider {
                   "currently processing -> %s, %s/%s/%s/%s, %s",
                   layer, tileMatrixSet.getId(), level, row, col, mediaType));
 
-          TileResult result = delegate.get(tile);
+          if (reseed || !tileStore.has(tile)) {
+            TileResult result = delegate.get(tile);
 
-          if (shouldCache(tile) && result.isAvailable()) {
-            tileStore.put(tile, new ByteArrayInputStream(result.getContent().get()));
-          }
+            if (shouldCache(tile) && result.isAvailable()) {
+              tileStore.put(tile, new ByteArrayInputStream(result.getContent().get()));
+              if (isEmpty[0]) {
+                isEmpty[0] = false;
+              }
+            }
 
-          if (result.isError()) {
-            LOGGER.warn(
-                "{}: processing failed -> {}, {}/{}/{}/{}, {} | {}",
-                taskContext.getTaskLabel(),
-                layer,
-                tileMatrixSet.getId(),
-                level,
-                row,
-                col,
-                mediaType,
-                result.getError().get());
+            if (result.isError()) {
+              LOGGER.warn(
+                  "{}: processing failed -> {}, {}/{}/{}/{}, {} | {}",
+                  taskContext.getTaskLabel(),
+                  layer,
+                  tileMatrixSet.getId(),
+                  level,
+                  row,
+                  col,
+                  mediaType,
+                  result.getError().get());
+            }
           }
 
           currentTile[0] += 1;
@@ -139,9 +149,15 @@ public class TileCacheImmutable implements ChainedTileProvider {
           return !taskContext.isStopped();
         });
 
-    tileStore.staging().promote();
+    if (!isEmpty[0]) {
+      tileStore.staging().promote();
+    } else {
+      tileStore.staging().abort();
+    }
 
-    tileStore.staging().cleanup();
+    if (taskContext.isFirstPartial()) {
+      tileStore.staging().cleanup();
+    }
   }
 
   private boolean shouldCache(TileQuery tileQuery) {
