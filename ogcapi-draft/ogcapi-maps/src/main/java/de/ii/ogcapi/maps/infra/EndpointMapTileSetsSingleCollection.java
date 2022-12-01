@@ -19,6 +19,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ogcapi.tiles.api.AbstractEndpointTileSetsSingleCollection;
+import de.ii.ogcapi.tiles.api.EndpointTileMixin;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import java.util.List;
@@ -61,8 +62,8 @@ public class EndpointMapTileSetsSingleCollection extends AbstractEndpointTileSet
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     return ImmutableList.of(
-        "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tilesets-list",
-        "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/geodata-tilesets");
+        "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list",
+        "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets");
   }
 
   @Override
@@ -88,6 +89,8 @@ public class EndpointMapTileSetsSingleCollection extends AbstractEndpointTileSet
         ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_SETS_COLLECTION,
         "/collections/{collectionId}",
         "/map/tiles",
+        getOperationId(
+            "getTileSetsList", EndpointTileMixin.COLLECTION_ID_PLACEHOLDER, "collection", "map"),
         TAGS);
   }
 

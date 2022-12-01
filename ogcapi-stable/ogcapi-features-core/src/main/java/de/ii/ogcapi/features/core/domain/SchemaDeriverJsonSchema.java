@@ -141,12 +141,20 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
 
   @Override
   protected JsonSchema getSchemaForLiteralType(
-      Type type, Optional<String> label, Optional<String> description) {
+      Type type, Optional<String> label, Optional<String> description, Optional<String> unit) {
     switch (type) {
       case INTEGER:
-        return ImmutableJsonSchemaInteger.builder().title(label).description(description).build();
+        return ImmutableJsonSchemaInteger.builder()
+            .title(label)
+            .description(description)
+            .unit(unit)
+            .build();
       case FLOAT:
-        return ImmutableJsonSchemaNumber.builder().title(label).description(description).build();
+        return ImmutableJsonSchemaNumber.builder()
+            .title(label)
+            .description(description)
+            .unit(unit)
+            .build();
       case BOOLEAN:
         return ImmutableJsonSchemaBoolean.builder().title(label).description(description).build();
       case DATETIME:
@@ -165,7 +173,11 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
             .build();
       case STRING:
       default:
-        return ImmutableJsonSchemaString.builder().title(label).description(description).build();
+        return ImmutableJsonSchemaString.builder()
+            .title(label)
+            .description(description)
+            .unit(unit)
+            .build();
     }
   }
 

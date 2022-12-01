@@ -86,7 +86,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection
 
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/core");
+    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core");
   }
 
   @Override
@@ -111,6 +111,11 @@ public class EndpointTileSingleCollection extends EndpointSubCollection
         ApiEndpointDefinition.SORT_PRIORITY_TILE_COLLECTION,
         "/collections/{collectionId}",
         "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+        getOperationId(
+            "getTile",
+            EndpointTileMixin.COLLECTION_ID_PLACEHOLDER,
+            "collection",
+            EndpointTileMixin.DATA_TYPE_PLACEHOLDER),
         TAGS);
   }
 

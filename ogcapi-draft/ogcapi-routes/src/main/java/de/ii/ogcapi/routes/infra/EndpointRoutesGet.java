@@ -130,6 +130,7 @@ public class EndpointRoutesGet extends Endpoint {
             operationSummary,
             operationDescription,
             Optional.empty(),
+            getOperationId("getRoutes"),
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());

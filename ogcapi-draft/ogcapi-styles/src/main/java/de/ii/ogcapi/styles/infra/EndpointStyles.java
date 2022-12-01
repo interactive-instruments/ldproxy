@@ -107,6 +107,7 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
             operationSummary,
             operationDescription,
             Optional.empty(),
+            getOperationId("getStyles"),
             TAGS)
         .ifPresent(operation -> resourceBuilderSet.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilderSet.build());

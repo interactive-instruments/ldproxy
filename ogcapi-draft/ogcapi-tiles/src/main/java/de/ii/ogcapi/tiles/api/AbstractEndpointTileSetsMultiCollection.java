@@ -77,6 +77,7 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
       String apiEntrypoint,
       int sortPriority,
       String path,
+      String dataType,
       List<String> tags) {
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
@@ -101,6 +102,7 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
             operationSummary,
             operationDescription,
             Optional.empty(),
+            getOperationId("getTileSetsList", "dataset", dataType),
             tags)
         .ifPresent(operation -> resourceBuilderSet.putOperations(method.name(), operation));
     definitionBuilder.putResources(path, resourceBuilderSet.build());

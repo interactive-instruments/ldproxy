@@ -117,6 +117,7 @@ public class EndpointResources extends Endpoint {
             operationSummary,
             operationDescription,
             Optional.empty(),
+            getOperationId("getResources"),
             TAGS)
         .ifPresent(operation -> resourceBuilderSet.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilderSet.build());

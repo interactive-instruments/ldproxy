@@ -171,6 +171,7 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
             operationSummary,
             operationDescription,
             Optional.empty(),
+            getOperationId("getCollections"),
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
