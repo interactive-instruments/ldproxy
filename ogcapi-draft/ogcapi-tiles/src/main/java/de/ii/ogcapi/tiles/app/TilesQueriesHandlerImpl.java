@@ -215,6 +215,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                 tilesLinkGenerator.generateTileSetEmbeddedLinks(
                                     requestContext.getUriCustomizer(),
                                     tileMatrixSet.getId(),
+                                    collectionId,
                                     tileFormats,
                                     i18n,
                                     requestContext.getLanguage()),
@@ -295,6 +296,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             requestContext.getUriCustomizer(),
             requestContext.getMediaType(),
             requestContext.getAlternateMediaTypes(),
+            tileMatrixSetId,
+            collectionId,
             tileFormats,
             i18n,
             requestContext.getLanguage());

@@ -127,8 +127,7 @@ public interface QueriesHandler<T extends QueryIdentifier> {
     requestContext.getLanguage().ifPresent(response::language);
 
     if (Objects.nonNull(links)) {
-
-      // skip URI templates in the header as these are not RFC 8288 links
+      // skip URI templates in the Link header as these are not RFC 8288 links
       List<javax.ws.rs.core.Link> headerLinks =
           links.stream()
               .filter(link -> link.getTemplated() == null || !link.getTemplated())
@@ -136,10 +135,15 @@ public interface QueriesHandler<T extends QueryIdentifier> {
               .map(Link::getLink)
               .collect(Collectors.toUnmodifiableList());
 
-      // only add links, if the Link strings are not larger than the limit
+      // Instead use a Link-Template header for templaes
+      List<String> headerLinkTemplates = getLinkTemplates(links);
+
+      // only add links and link templates, if the strings are not larger than the limit
       if (headerLinks.stream().map(l -> l.toString().length()).mapToInt(Integer::intValue).sum()
+              + headerLinkTemplates.stream().map(String::length).mapToInt(Integer::intValue).sum()
           <= requestContext.getMaxResponseLinkHeaderSize()) {
         headerLinks.forEach(response::links);
+        headerLinkTemplates.forEach(template -> response.header("Link-Template", template));
       }
     }
 
@@ -158,6 +162,26 @@ public interface QueriesHandler<T extends QueryIdentifier> {
     }
 
     return response;
+  }
+
+  default List<String> getLinkTemplates(List<Link> links) {
+    return links.stream()
+        .filter(link -> link.getTemplated() != null && link.getTemplated())
+        .sorted(Link.COMPARATOR_LINKS)
+        .map(
+            template -> {
+              StringBuilder builder =
+                  new StringBuilder(
+                      String.format("<%s>; rel=\"%s\"", template.getHref(), template.getRel()));
+              if (template.getTitle() != null) {
+                builder.append(String.format("; title=\"%s\"", template.getTitle()));
+              }
+              if (template.getType() != null) {
+                builder.append(String.format("; type=\"%s\"", template.getType()));
+              }
+              return builder.toString();
+            })
+        .collect(Collectors.toUnmodifiableList());
   }
 
   default Date getLastModified(QueryInput queryInput, PageRepresentation resource) {

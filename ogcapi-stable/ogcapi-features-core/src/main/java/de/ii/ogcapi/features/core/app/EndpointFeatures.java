@@ -446,6 +446,8 @@ public class EndpointFeatures extends EndpointSubCollection {
             operationSummary,
             operationDescription,
             Optional.empty(),
+            getOperationId(
+                subSubPath.contains("{featureId}") ? "getItem" : "getItems", collectionId),
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
 

@@ -89,6 +89,7 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
       int sortPriority,
       String basePath,
       String subSubPath,
+      Optional<String> operationIdWithPlaceholders,
       List<String> tags) {
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
@@ -125,6 +126,30 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
             collectionId.startsWith("{")
                 ? getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET)
                 : getContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+        Optional<String> operationId =
+            collectionId.startsWith("{")
+                ? operationIdWithPlaceholders.map(
+                    id ->
+                        id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER + ".", "")
+                            .replace(
+                                EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
+                                apiData
+                                        .getExtension(TilesConfiguration.class)
+                                        .map(c -> c.getTileEncodingsDerived().contains("MVT"))
+                                        .orElse(false)
+                                    ? "vector"
+                                    : "map"))
+                : operationIdWithPlaceholders.map(
+                    id ->
+                        id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER, collectionId)
+                            .replace(
+                                EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
+                                apiData
+                                        .getExtension(TilesConfiguration.class, collectionId)
+                                        .map(c -> c.getTileEncodingsDerived().contains("MVT"))
+                                        .orElse(false)
+                                    ? "vector"
+                                    : "map"));
         ApiOperation.getResource(
                 apiData,
                 resourcePath,
@@ -135,6 +160,7 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                operationId,
                 tags)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));

@@ -146,6 +146,15 @@ public abstract class EndpointSubCollection extends Endpoint {
     return Optional.empty();
   }
 
+  @Override
+  protected Optional<String> getOperationId(String name, String... prefixes) {
+    // prefixes is never empty and the first prefix is the collectionId or the collectionId template
+    if ("{collectionId}".equals(prefixes[0])) {
+      prefixes[0] = "collection";
+    }
+    return super.getOperationId(name, prefixes);
+  }
+
   /* TODO do we need collection-specific path parameters? The API definitions would need to be adapted for this, too
   ImmutableList<OgcApiPathParameter> getPathParameters(ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath, String collectionId) {
       return extensionRegistry.getExtensionsForType(OgcApiPathParameter.class)

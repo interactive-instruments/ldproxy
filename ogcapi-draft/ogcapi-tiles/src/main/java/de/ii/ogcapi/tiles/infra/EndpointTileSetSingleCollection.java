@@ -19,6 +19,7 @@ import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.api.AbstractEndpointTileSetSingleCollection;
+import de.ii.ogcapi.tiles.api.EndpointTileMixin;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
@@ -57,7 +58,12 @@ public class EndpointTileSetSingleCollection extends AbstractEndpointTileSetSing
 
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/tileset");
+    return ImmutableList.of(
+        "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tileset",
+        "http://www.opengis.net/spec/tms/2.0/conf/tilematrixsetlimits",
+        "http://www.opengis.net/spec/tms/2.0/conf/tilesetmetadata",
+        "http://www.opengis.net/spec/tms/2.0/conf/json-tilematrixsetlimits",
+        "http://www.opengis.net/spec/tms/2.0/conf/json-tilesetmetadata");
   }
 
   @Override
@@ -80,6 +86,11 @@ public class EndpointTileSetSingleCollection extends AbstractEndpointTileSetSing
         ApiEndpointDefinition.SORT_PRIORITY_TILE_SET_COLLECTION,
         "/collections/{collectionId}",
         "/tiles/{tileMatrixSetId}",
+        getOperationId(
+            "getTileSet",
+            EndpointTileMixin.COLLECTION_ID_PLACEHOLDER,
+            "collection",
+            EndpointTileMixin.DATA_TYPE_PLACEHOLDER),
         TAGS);
   }
 

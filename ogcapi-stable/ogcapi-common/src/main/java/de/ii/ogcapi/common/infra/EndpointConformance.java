@@ -105,6 +105,7 @@ public class EndpointConformance extends Endpoint {
             operationSummary,
             operationDescription,
             Optional.empty(),
+            getOperationId("getConformanceDeclaration"),
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder.build());

@@ -130,6 +130,7 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
             operationSummary,
             operationDescription,
             Optional.empty(),
+            getOperationId("getTileMatrixSets"),
             TAGS)
         .ifPresent(operation -> resourceBuilderSet.putOperations(method.name(), operation));
     definitionBuilder.putResources(path, resourceBuilderSet.build());
@@ -159,6 +160,7 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
               operationSummary,
               operationDescription,
               Optional.empty(),
+              getOperationId("getTileMatrixSet"),
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
       definitionBuilder.putResources(path, resourceBuilder.build());
