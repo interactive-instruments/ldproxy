@@ -22,7 +22,7 @@ public abstract class FeatureEncoderSfFlat
   protected Long featureDuration = 0L;
   protected long written = 0;
 
-  protected FeatureEncoderSfFlat(FeatureTransformationContext encodingContext) {
+  protected FeatureEncoderSfFlat(EncodingContextSfFlat encodingContext) {
     this.collectionId = encodingContext.getCollectionId();
     this.properties =
         encodingContext.getFields().values().stream().findFirst().orElse(ImmutableList.of("*"));

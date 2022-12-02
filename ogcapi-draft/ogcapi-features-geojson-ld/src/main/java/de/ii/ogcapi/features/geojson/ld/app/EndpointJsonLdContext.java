@@ -175,6 +175,7 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("getJsonLdContext", collectionId),
                 TAGS)
             .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());

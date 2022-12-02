@@ -23,8 +23,8 @@ import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.tilematrixsets.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSets.Builder;
-import de.ii.ogcapi.tiles.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
@@ -67,7 +67,7 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
       // Tiles are generated on-demand from a data source;
       // currently no vector tiles support for WFS backends
       return providers
-          .getFeatureProvider(apiData)
+          .getFeatureProvider(apiData, apiData.getCollections().get(collectionId))
           .map(FeatureProvider2::supportsHighLoad)
           .orElse(false);
     }
@@ -86,6 +86,7 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
       int sortPriority,
       String basePath,
       String subSubPath,
+      Optional<String> operationIdWithPlaceholders,
       List<String> tags) {
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
@@ -124,6 +125,30 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
             collectionId.startsWith("{")
                 ? getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET)
                 : getContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+        Optional<String> operationId =
+            collectionId.startsWith("{")
+                ? operationIdWithPlaceholders.map(
+                    id ->
+                        id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER + ".", "")
+                            .replace(
+                                EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
+                                apiData
+                                        .getExtension(TilesConfiguration.class)
+                                        .map(c -> c.getTileEncodingsDerived().contains("MVT"))
+                                        .orElse(false)
+                                    ? "vector"
+                                    : "map"))
+                : operationIdWithPlaceholders.map(
+                    id ->
+                        id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER, collectionId)
+                            .replace(
+                                EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
+                                apiData
+                                        .getExtension(TilesConfiguration.class, collectionId)
+                                        .map(c -> c.getTileEncodingsDerived().contains("MVT"))
+                                        .orElse(false)
+                                    ? "vector"
+                                    : "map"));
         ApiOperation.getResource(
                 apiData,
                 resourcePath,
@@ -134,6 +159,7 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                operationId,
                 tags)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));

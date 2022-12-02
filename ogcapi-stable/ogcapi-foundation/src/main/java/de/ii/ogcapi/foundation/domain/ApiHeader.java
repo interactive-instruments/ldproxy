@@ -9,11 +9,9 @@ package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.xtraplatform.base.domain.LogContext;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,21 +59,5 @@ public interface ApiHeader extends ApiExtension {
               "An exception occurred while validating the value '%s' for header '%s'",
               value, getId()));
     }
-  }
-
-  default ImmutableFeatureQuery.Builder transformQuery(
-      @SuppressWarnings(UNUSED) FeatureTypeConfigurationOgcApi featureType,
-      ImmutableFeatureQuery.Builder queryBuilder,
-      @SuppressWarnings(UNUSED) Map<String, String> headers,
-      @SuppressWarnings(UNUSED) OgcApiDataV2 apiData) {
-    return queryBuilder;
-  }
-
-  default Map<String, Object> transformContext(
-      @SuppressWarnings(UNUSED) FeatureTypeConfigurationOgcApi featureType,
-      Map<String, Object> context,
-      @SuppressWarnings(UNUSED) Map<String, String> headers,
-      @SuppressWarnings(UNUSED) OgcApiDataV2 apiData) {
-    return context;
   }
 }

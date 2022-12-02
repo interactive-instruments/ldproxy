@@ -7,13 +7,13 @@
  */
 package de.ii.ogcapi.tiles.app;
 
+import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.ByteStreams;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -24,74 +24,50 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ogcapi.tiles.domain.FeatureTransformationContextTiles;
-import de.ii.ogcapi.tiles.domain.ImmutableFeatureTransformationContextTiles;
+import de.ii.ogcapi.tilematrixsets.domain.MinMax;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSets;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSets.Builder;
-import de.ii.ogcapi.tiles.domain.MinMax;
-import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
-import de.ii.ogcapi.tiles.domain.Tile;
-import de.ii.ogcapi.tiles.domain.TileCache;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
+import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
-import de.ii.xtraplatform.base.domain.LogContext;
-import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.crs.domain.CrsTransformer;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationParametersTransient;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationParametersTransient;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
+import de.ii.ogcapi.tiles.domain.provider.TileProvider;
+import de.ii.ogcapi.tiles.domain.provider.TileQuery;
+import de.ii.ogcapi.tiles.domain.provider.TileResult;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.FeatureStream;
-import de.ii.xtraplatform.features.domain.FeatureStream.ResultReduced;
-import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
-import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
-import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
-import de.ii.xtraplatform.streams.domain.Reactive.Sink;
-import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
 import de.ii.xtraplatform.web.domain.ETag;
-import de.ii.xtraplatform.web.domain.LastModified;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,10 +83,11 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
   private final EntityRegistry entityRegistry;
   private final ExtensionRegistry extensionRegistry;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
-  private final TileCache tileCache;
-  private final StaticTileProviderStore staticTileProviderStore;
   private final FeaturesCoreProviders providers;
+  private final TilesProviders tilesProviders;
   private final TileMatrixSetRepository tileMatrixSetRepository;
+  // TODO
+  private final FeaturesQuery featuresQuery;
 
   @Inject
   public TilesQueriesHandlerImpl(
@@ -119,19 +96,19 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       EntityRegistry entityRegistry,
       ExtensionRegistry extensionRegistry,
       TileMatrixSetLimitsGenerator limitsGenerator,
-      TileCache tileCache,
-      StaticTileProviderStore staticTileProviderStore,
       FeaturesCoreProviders providers,
-      TileMatrixSetRepository tileMatrixSetRepository) {
+      TilesProviders tilesProviders,
+      TileMatrixSetRepository tileMatrixSetRepository,
+      FeaturesQuery featuresQuery) {
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
     this.entityRegistry = entityRegistry;
     this.extensionRegistry = extensionRegistry;
     this.limitsGenerator = limitsGenerator;
-    this.tileCache = tileCache;
-    this.staticTileProviderStore = staticTileProviderStore;
     this.providers = providers;
+    this.tilesProviders = tilesProviders;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
+    this.featuresQuery = featuresQuery;
 
     this.queryHandlers =
         ImmutableMap.<Query, QueryHandler<? extends QueryInput>>builder()
@@ -141,26 +118,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             .put(
                 Query.TILE_SET,
                 QueryHandler.with(QueryInputTileSet.class, this::getTileSetResponse))
-            .put(
-                Query.SINGLE_LAYER_TILE,
-                QueryHandler.with(
-                    QueryInputTileSingleLayer.class, this::getSingleLayerTileResponse))
-            .put(
-                Query.MULTI_LAYER_TILE,
-                QueryHandler.with(QueryInputTileMultiLayer.class, this::getMultiLayerTileResponse))
-            .put(
-                Query.EMPTY_TILE,
-                QueryHandler.with(QueryInputTileEmpty.class, this::getEmptyTileResponse))
-            .put(
-                Query.TILE_STREAM,
-                QueryHandler.with(QueryInputTileStream.class, this::getTileStreamResponse))
-            .put(
-                Query.MBTILES_TILE,
-                QueryHandler.with(QueryInputTileMbtilesTile.class, this::getMbtilesTileResponse))
-            .put(
-                Query.TILESERVER_TILE,
-                QueryHandler.with(
-                    QueryInputTileTileServerTile.class, this::getTileServerTileResponse))
+            .put(Query.TILE, QueryHandler.with(QueryInputTile.class, this::getTileResponse))
             .build();
   }
 
@@ -257,6 +215,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                 tilesLinkGenerator.generateTileSetEmbeddedLinks(
                                     requestContext.getUriCustomizer(),
                                     tileMatrixSet.getId(),
+                                    collectionId,
                                     tileFormats,
                                     i18n,
                                     requestContext.getLanguage()),
@@ -337,6 +296,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             requestContext.getUriCustomizer(),
             requestContext.getMediaType(),
             requestContext.getAlternateMediaTypes(),
+            tileMatrixSetId,
+            collectionId,
             tileFormats,
             i18n,
             requestContext.getLanguage());
@@ -384,291 +345,42 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         .build();
   }
 
-  private Response getSingleLayerTileResponse(
-      QueryInputTileSingleLayer queryInput, ApiRequestContext requestContext) {
-    OgcApi api = requestContext.getApi();
-    OgcApiDataV2 apiData = api.getData();
-    Tile tile = queryInput.getTile();
-    String collectionId = tile.getCollectionId();
-    FeatureProvider2 featureProvider = tile.getFeatureProvider().get();
-    FeatureQuery query = queryInput.getQuery();
+  private Response getTileResponse(QueryInputTile queryInput, ApiRequestContext requestContext) {
+    TileProvider tileProvider =
+        tilesProviders.getTileProviderOrThrow(
+            requestContext.getApi().getData(),
+            queryInput
+                .getCollectionId()
+                .flatMap(id -> requestContext.getApi().getData().getCollectionData(id)));
 
-    if (!(tile.getOutputFormat() instanceof TileFormatWithQuerySupportExtension))
-      throw new RuntimeException(
-          String.format(
-              "Unexpected tile format without query support. Found: %s",
-              tile.getOutputFormat().getClass().getSimpleName()));
-    TileFormatWithQuerySupportExtension outputFormat =
-        (TileFormatWithQuerySupportExtension) tile.getOutputFormat();
+    TileQuery tileQuery = getTileQuery(queryInput, requestContext, tileProvider);
 
-    // process parameters and generate query
-    Optional<CrsTransformer> crsTransformer = Optional.empty();
+    TileResult result = tileProvider.getTile(tileQuery);
 
-    EpsgCrs targetCrs = query.getCrs().orElse(queryInput.getDefaultCrs());
-    if (featureProvider.supportsCrs()) {
-      EpsgCrs sourceCrs = featureProvider.crs().getNativeCrs();
-      crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-    }
-
-    List<Link> links =
-        new DefaultLinksGenerator()
-            .generateLinks(
-                requestContext.getUriCustomizer(),
-                requestContext.getMediaType(),
-                requestContext.getAlternateMediaTypes(),
-                i18n,
-                requestContext.getLanguage());
-
-    String featureTypeId =
-        apiData
-            .getCollections()
-            .get(collectionId)
-            .getExtension(FeaturesCoreConfiguration.class)
-            .map(cfg -> cfg.getFeatureType().orElse(collectionId))
-            .orElse(collectionId);
-
-    FeatureTransformationContextTiles transformationContext;
-    try {
-      transformationContext =
-          new ImmutableFeatureTransformationContextTiles.Builder()
-              .api(api)
-              .apiData(apiData)
-              .featureSchemas(
-                  ImmutableMap.of(
-                      collectionId,
-                      Optional.ofNullable(featureProvider.getData().getTypes().get(featureTypeId))))
-              .tile(tile)
-              .tileCache(tileCache)
-              .ogcApiRequest(requestContext)
-              .crsTransformer(crsTransformer)
-              .codelists(
-                  entityRegistry.getEntitiesForType(Codelist.class).stream()
-                      .collect(Collectors.toMap(PersistentEntity::getId, c -> c)))
-              .defaultCrs(queryInput.getDefaultCrs())
-              .links(links)
-              .isFeatureCollection(true)
-              .fields(ImmutableMap.of(collectionId, query.getFields()))
-              .limit(query.getLimit())
-              .offset(0)
-              .i18n(i18n)
-              .outputStream(new OutputStreamToByteConsumer() /*TODO*/)
-              .build();
-    } catch (Exception e) {
-      throw new RuntimeException("Error building the tile transformation context.", e);
-    }
-
-    Optional<FeatureTokenEncoder<?>> encoder =
-        outputFormat.getFeatureEncoder(transformationContext);
-
-    if (outputFormat.supportsFeatureQuery() && encoder.isPresent()) {
-
-      FeatureStream featureStream = featureProvider.queries().getFeatureStream(query);
-
-      ResultReduced<byte[]> result =
-          generateTile(
-              featureStream, encoder.get(), transformationContext, outputFormat, featureTypeId);
-
-      // internal processing, no need to process headers
-      return prepareSuccessResponse(requestContext).entity(result.reduced()).build();
-    } else {
-      throw new NotAcceptableException(
-          MessageFormat.format(
-              "The requested media type {0} cannot be generated, because it does not support streaming.",
-              requestContext.getMediaType().type()));
-    }
-  }
-
-  private Response getMultiLayerTileResponse(
-      QueryInputTileMultiLayer queryInput, ApiRequestContext requestContext) {
-    OgcApi api = requestContext.getApi();
-    OgcApiDataV2 apiData = api.getData();
-    Tile multiLayerTile = queryInput.getTile();
-    List<String> collectionIds = multiLayerTile.getCollectionIds();
-    Map<String, FeatureQuery> queryMap = queryInput.getQueryMap();
-    Map<String, Tile> singleLayerTileMap = queryInput.getSingleLayerTileMap();
-    FeatureProvider2 featureProvider = multiLayerTile.getFeatureProvider().get();
-    TileMatrixSet tileMatrixSet = multiLayerTile.getTileMatrixSet();
-    int tileLevel = multiLayerTile.getTileLevel();
-    int tileRow = multiLayerTile.getTileRow();
-    int tileCol = multiLayerTile.getTileCol();
-
-    if (!(multiLayerTile.getOutputFormat() instanceof TileFormatWithQuerySupportExtension))
-      throw new RuntimeException(
-          String.format(
-              "Unexpected tile format without query support. Found: %s",
-              multiLayerTile.getOutputFormat().getClass().getSimpleName()));
-    TileFormatWithQuerySupportExtension outputFormat =
-        (TileFormatWithQuerySupportExtension) multiLayerTile.getOutputFormat();
-
-    // process parameters and generate query
-    Optional<CrsTransformer> crsTransformer = Optional.empty();
-
-    EpsgCrs targetCrs = tileMatrixSet.getCrs();
-    if (featureProvider.supportsCrs()) {
-      EpsgCrs sourceCrs = featureProvider.crs().getNativeCrs();
-      crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
-    }
-
-    List<Link> links =
-        new DefaultLinksGenerator()
-            .generateLinks(
-                requestContext.getUriCustomizer(),
-                requestContext.getMediaType(),
-                requestContext.getAlternateMediaTypes(),
-                i18n,
-                requestContext.getLanguage());
-
-    Map<String, ByteArrayOutputStream> byteArrayMap = new HashMap<>();
-
-    for (String collectionId : collectionIds) {
-      // TODO limitation of the current model: all layers have to come from the same feature
-      // provider and use the same CRS
-
-      Tile tile = singleLayerTileMap.get(collectionId);
-
-      if (!multiLayerTile.getTemporary()) {
-        // use cached tile
-        try {
-          Optional<InputStream> tileContent = tileCache.getTile(tile);
-          if (tileContent.isPresent()) {
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            ByteStreams.copy(tileContent.get(), buffer);
-            byteArrayMap.put(collectionId, buffer);
-            continue;
-          }
-        } catch (SQLException | IOException e) {
-          // could not read the cache, generate the tile
-        }
-      }
-
-      String featureTypeId =
-          apiData
-              .getCollections()
-              .get(collectionId)
-              .getExtension(FeaturesCoreConfiguration.class)
-              .map(cfg -> cfg.getFeatureType().orElse(collectionId))
-              .orElse(collectionId);
-
-      FeatureQuery query = queryMap.get(collectionId);
-      ImmutableFeatureTransformationContextTiles transformationContext;
-      try {
-        transformationContext =
-            new ImmutableFeatureTransformationContextTiles.Builder()
-                .api(api)
-                .apiData(apiData)
-                .featureSchemas(
-                    ImmutableMap.of(
-                        collectionId,
-                        Optional.ofNullable(
-                            featureProvider.getData().getTypes().get(featureTypeId))))
-                .tile(tile)
-                .tileCache(tileCache)
-                .ogcApiRequest(requestContext)
-                .crsTransformer(crsTransformer)
-                .codelists(
-                    entityRegistry.getEntitiesForType(Codelist.class).stream()
-                        .collect(Collectors.toMap(PersistentEntity::getId, c -> c)))
-                .defaultCrs(queryInput.getDefaultCrs())
-                .links(links)
-                .isFeatureCollection(true)
-                .fields(ImmutableMap.of(collectionId, query.getFields()))
-                .limit(query.getLimit())
-                .offset(0)
-                .i18n(i18n)
-                .outputStream(new OutputStreamToByteConsumer())
-                .build();
-      } catch (Exception e) {
-        throw new RuntimeException("Error building the tile transformation context.", e);
-      }
-
-      Optional<FeatureTokenEncoder<?>> encoder =
-          outputFormat.getFeatureEncoder(transformationContext);
-
-      if (outputFormat.supportsFeatureQuery() && encoder.isPresent()) {
-
-        FeatureStream featureStream = featureProvider.queries().getFeatureStream(query);
-
-        ResultReduced<byte[]> result =
-            generateTile(
-                featureStream, encoder.get(), transformationContext, outputFormat, featureTypeId);
-
-        if (result.isSuccess()) {
-          byte[] bytes = result.reduced();
-          ByteArrayOutputStream buffer = new ByteArrayOutputStream(bytes.length);
-          buffer.write(bytes, 0, bytes.length);
-          byteArrayMap.put(collectionId, buffer);
-        }
+    if (!result.isAvailable()) {
+      if (result.isOutsideLimits()) {
+        throw result.getError().map(NotFoundException::new).orElseGet(NotFoundException::new);
       } else {
-        throw new NotAcceptableException(
-            MessageFormat.format(
-                "The requested media type {0} cannot be generated, because it does not support streaming.",
-                requestContext.getMediaType().type()));
+        throw result
+            .getError()
+            .map(IllegalStateException::new)
+            .orElseGet(IllegalStateException::new);
       }
     }
 
-    TileFormatWithQuerySupportExtension.MultiLayerTileContent result;
-    try {
-      result =
-          outputFormat.combineSingleLayerTilesToMultiLayerTile(
-              tileMatrixSet, singleLayerTileMap, byteArrayMap);
-    } catch (IOException e) {
-      throw new RuntimeException("Error accessing the tile cache.", e);
-    }
+    byte[] content = result.getContent().get();
+    EntityTag eTag = ETag.from(content);
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, null, eTag);
 
-    // try to write/update tile in cache, if all collections have been processed
-    if (result.isComplete) {
-      try {
-        tileCache.storeTile(multiLayerTile, result.byteArray);
-      } catch (Throwable e) {
-        String msg =
-            "Failure to write the multi-layer file of tile {}/{}/{}/{} in dataset '{}', format '{}' to the cache";
-        LogContext.errorAsInfo(
-            LOGGER,
-            e,
-            msg,
-            tileMatrixSet.getId(),
-            tileLevel,
-            tileRow,
-            tileCol,
-            api.getId(),
-            outputFormat.getExtension());
+    if (Objects.nonNull(response)) {
+      // TODO add support for empty/full for Features and MBTiles caches
+      if (result.isEmpty()) {
+        response.header("OATiles-hint", "empty");
+      } else if (result.isFull()) {
+        response.header("OATiles-hint", "full");
       }
+      return response.build();
     }
-
-    Date lastModified = null;
-    EntityTag etag = ETag.from(result.byteArray);
-    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
-
-    return prepareSuccessResponse(
-            requestContext,
-            queryInput.getIncludeLinkHeader() ? links : null,
-            HeaderCaching.of(lastModified, etag, queryInput),
-            null,
-            HeaderContentDisposition.of(
-                String.format(
-                    "%s_%d_%d_%d.%s",
-                    tileMatrixSet.getId(),
-                    tileLevel,
-                    tileRow,
-                    tileCol,
-                    outputFormat.getMediaType().fileExtension())))
-        .entity(result.byteArray)
-        .build();
-  }
-
-  private Response getTileStreamResponse(
-      QueryInputTileStream queryInput, ApiRequestContext requestContext) {
-
-    byte[] content;
-    try {
-      content = queryInput.getTileContent().readAllBytes();
-    } catch (IOException e) {
-      throw new RuntimeException("Could not read tile from cache.", e);
-    }
-
-    StreamingOutput streamingOutput =
-        outputStream -> ByteStreams.copy(new ByteArrayInputStream(content), outputStream);
 
     List<Link> links =
         new DefaultLinksGenerator()
@@ -679,186 +391,76 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 i18n,
                 requestContext.getLanguage());
 
-    Date lastModified = queryInput.getLastModified().orElse(null);
-    EntityTag etag = ETag.from(content);
-    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
-
-    Tile tile = queryInput.getTile();
     return prepareSuccessResponse(
             requestContext,
             queryInput.getIncludeLinkHeader() ? links : null,
-            HeaderCaching.of(lastModified, etag, queryInput),
+            HeaderCaching.of(null, eTag, queryInput),
             null,
             HeaderContentDisposition.of(
                 String.format(
-                    "%s_%d_%d_%d.%s",
-                    tile.getTileMatrixSet().getId(),
-                    tile.getTileLevel(),
-                    tile.getTileRow(),
-                    tile.getTileCol(),
-                    tile.getOutputFormat().getMediaType().fileExtension())))
-        .entity(streamingOutput)
+                    "%s_%s_%d_%d_%d.%s",
+                    tileQuery.getLayer(),
+                    tileQuery.getTileMatrixSet().getId(),
+                    tileQuery.getLevel(),
+                    tileQuery.getRow(),
+                    tileQuery.getCol(),
+                    queryInput.getOutputFormat().getMediaType().fileExtension())))
+        .entity(result.getContent().get())
         .build();
   }
 
-  private Response getMbtilesTileResponse(
-      QueryInputTileMbtilesTile queryInput, ApiRequestContext requestContext) {
+  private TileQuery getTileQuery(
+      QueryInputTile queryInput, ApiRequestContext requestContext, TileProvider tileProvider) {
+    OgcApiDataV2 apiData = requestContext.getApi().getData();
+    Optional<FeatureTypeConfigurationOgcApi> collectionData =
+        queryInput.getCollectionId().flatMap(apiData::getCollectionData);
+    // TODO: get layer name from cfg
+    String layer = queryInput.getCollectionId().orElse(DATASET_TILES);
+    TileFormatExtension outputFormat = queryInput.getOutputFormat();
 
-    String mbtilesFilename = queryInput.getProvider().getFilename();
+    ImmutableTileQuery.Builder tileQueryBuilder =
+        ImmutableTileQuery.builder()
+            .from(queryInput)
+            .layer(layer)
+            .mediaType(outputFormat.getMediaType().type());
 
-    java.nio.file.Path provider =
-        staticTileProviderStore.getTileProvider(queryInput.getTile().getApiData(), mbtilesFilename);
+    tileQueryBuilder
+        .generationParametersBuilder()
+        .clipBoundingBox(
+            requestContext
+                .getApi()
+                .getSpatialExtent(
+                    queryInput.getCollectionId(), queryInput.getBoundingBox().getEpsgCrs()))
+        .propertyTransformations(
+            collectionData
+                .flatMap(cd -> cd.getExtension(FeaturesCoreConfiguration.class))
+                .map(
+                    pt ->
+                        pt.withSubstitutions(
+                            FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
+                                requestContext.getApiUri()))));
 
-    if (!provider.toFile().exists())
-      throw new RuntimeException(String.format("Mbtiles file '%s' does not exist", provider));
-
-    StreamingOutput streamingOutput =
-        outputStream ->
-            ByteStreams.copy(
-                staticTileProviderStore.getTile(provider, queryInput.getTile()), outputStream);
-
-    List<Link> links =
-        new DefaultLinksGenerator()
-            .generateLinks(
-                requestContext.getUriCustomizer(),
-                requestContext.getMediaType(),
-                ImmutableList.of(),
-                i18n,
-                requestContext.getLanguage());
-
-    Date lastModified = LastModified.from(provider);
-    EntityTag etag = ETag.from(staticTileProviderStore.getTile(provider, queryInput.getTile()));
-    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
-
-    Tile tile = queryInput.getTile();
-    return prepareSuccessResponse(
-            requestContext,
-            queryInput.getIncludeLinkHeader() ? links : null,
-            HeaderCaching.of(lastModified, etag, queryInput),
-            null,
-            HeaderContentDisposition.of(
-                String.format(
-                    "%s_%d_%d_%d.%s",
-                    tile.getTileMatrixSet().getId(),
-                    tile.getTileLevel(),
-                    tile.getTileRow(),
-                    tile.getTileCol(),
-                    tile.getOutputFormat().getMediaType().fileExtension())))
-        .entity(streamingOutput)
-        .build();
-  }
-
-  private Response getTileServerTileResponse(
-      QueryInputTileTileServerTile queryInput, ApiRequestContext requestContext) {
-
-    Tile tile = queryInput.getTile();
-
-    final String urlTemplate =
-        tile.isDatasetTile()
-            ? queryInput.getProvider().getUrlTemplate()
-            : queryInput.getProvider().getUrlTemplateSingleCollection();
-
-    if (Objects.isNull(urlTemplate))
-      throw new IllegalStateException(
-          "The MAP_TILES configuration is invalid, no 'urlTemplate' was found.");
-
-    ApiMediaType mediaType = tile.getOutputFormat().getMediaType();
-    WebTarget client =
-        ClientBuilder.newClient()
-            .target(urlTemplate)
-            .resolveTemplate("tileMatrix", tile.getTileLevel())
-            .resolveTemplate("tileRow", tile.getTileRow())
-            .resolveTemplate("tileCol", tile.getTileCol())
-            .resolveTemplate("fileExtension", mediaType.fileExtension());
-    if (Objects.nonNull(tile.getCollectionId()))
-      client = client.resolveTemplate("collectionId", tile.getCollectionId());
-    Response response = client.request(mediaType.type()).get();
-
-    // unsuccessful? just forward the error response
-    if (response.getStatus() != 200) return response;
-
-    List<Link> links =
-        new DefaultLinksGenerator()
-            .generateLinks(
-                requestContext.getUriCustomizer(),
-                requestContext.getMediaType(),
-                ImmutableList.of(),
-                i18n,
-                requestContext.getLanguage());
-
-    byte[] content;
-    try {
-      content = response.readEntity(InputStream.class).readAllBytes();
-    } catch (IOException e) {
-      throw new RuntimeException("Could not read map tile from TileServer.", e);
+    // TODO: TilesProviders along the line of FeaturesCoreProviders
+    Map<String, String> queryableTypes =
+        collectionData.map(cd -> featuresQuery.getQueryableTypes(apiData, cd)).orElse(Map.of());
+    Optional<TileGenerationSchema> generationSchema =
+        tileProvider.supportsGeneration()
+            ? Optional.of(tileProvider.generator().getGenerationSchema(layer, queryableTypes))
+            : Optional.empty();
+    ImmutableTileGenerationParametersTransient.Builder userParametersBuilder =
+        new ImmutableTileGenerationParametersTransient.Builder();
+    queryInput
+        .getParameters()
+        .forEach(
+            TileGenerationUserParameter.class,
+            parameter ->
+                parameter.applyTo(
+                    userParametersBuilder, queryInput.getParameters(), generationSchema));
+    TileGenerationParametersTransient userParameters = userParametersBuilder.build();
+    if (!userParameters.isEmpty()) {
+      tileQueryBuilder.generationParametersTransient(userParameters);
     }
-    Date lastModified = null;
-    EntityTag etag = ETag.from(content);
-    Response.ResponseBuilder responseBuilder =
-        evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(responseBuilder)) return responseBuilder.build();
-
-    return prepareSuccessResponse(
-            requestContext,
-            queryInput.getIncludeLinkHeader() ? links : null,
-            HeaderCaching.of(lastModified, etag, queryInput),
-            null,
-            HeaderContentDisposition.of(
-                String.format(
-                    "%s_%d_%d_%d.%s",
-                    tile.getTileMatrixSet().getId(),
-                    tile.getTileLevel(),
-                    tile.getTileRow(),
-                    tile.getTileCol(),
-                    tile.getOutputFormat().getMediaType().fileExtension())))
-        .entity(content)
-        .build();
-  }
-
-  private Response getEmptyTileResponse(
-      QueryInputTileEmpty queryInput, ApiRequestContext requestContext) {
-
-    List<Link> links =
-        new DefaultLinksGenerator()
-            .generateLinks(
-                requestContext.getUriCustomizer(),
-                requestContext.getMediaType(),
-                requestContext.getAlternateMediaTypes(),
-                i18n,
-                requestContext.getLanguage());
-
-    Tile tile = queryInput.getTile();
-
-    if (!(tile.getOutputFormat() instanceof TileFormatWithQuerySupportExtension))
-      throw new RuntimeException(
-          String.format(
-              "Unexpected tile format without query support. Found: %s",
-              tile.getOutputFormat().getClass().getSimpleName()));
-    TileFormatWithQuerySupportExtension outputFormat =
-        (TileFormatWithQuerySupportExtension) tile.getOutputFormat();
-
-    Date lastModified = null;
-    EntityTag etag = ETag.from(tile.getOutputFormat().getEmptyTile(tile));
-    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
-
-    return prepareSuccessResponse(
-            requestContext,
-            queryInput.getIncludeLinkHeader() ? links : null,
-            HeaderCaching.of(lastModified, etag, queryInput),
-            null,
-            HeaderContentDisposition.of(
-                String.format(
-                    "%s_%d_%d_%d.%s",
-                    tile.getTileMatrixSet().getId(),
-                    tile.getTileLevel(),
-                    tile.getTileRow(),
-                    tile.getTileCol(),
-                    tile.getOutputFormat().getMediaType().fileExtension())))
-        .entity(tile.getOutputFormat().getEmptyTile(tile))
-        .build();
+    return tileQueryBuilder.build();
   }
 
   private TileMatrixSet getTileMatrixSetById(String tileMatrixSetId) {
@@ -866,65 +468,5 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         .get(tileMatrixSetId)
         .orElseThrow(
             () -> new ServerErrorException("TileMatrixSet not found: " + tileMatrixSetId, 500));
-  }
-
-  private ResultReduced<byte[]> generateTile(
-      FeatureStream featureStream,
-      FeatureTokenEncoder<?> encoder,
-      FeatureTransformationContextTiles transformationContext,
-      TileFormatWithQuerySupportExtension outputFormat,
-      String featureTypeId) {
-
-    Map<String, PropertyTransformations> propertyTransformations =
-        transformationContext
-            .getCollection()
-            .flatMap(
-                collection ->
-                    outputFormat.getPropertyTransformations(
-                        collection,
-                        ImmutableMap.of("serviceUrl", transformationContext.getServiceUrl()),
-                        outputFormat.getBuildingBlockConfigurationType()))
-            .map(
-                propertyTransformations1 ->
-                    ImmutableMap.of(featureTypeId, propertyTransformations1))
-            .orElse(ImmutableMap.of());
-
-    SinkReduced<Object, byte[]> featureSink = encoder.to(Sink.reduceByteArray());
-
-    try {
-      ResultReduced<byte[]> result =
-          featureStream.runWith(featureSink, propertyTransformations).toCompletableFuture().join();
-
-      if (result.isSuccess()) {
-        Tile tile = transformationContext.tile();
-        try {
-          // write/update tile in cache
-          tileCache.storeTile(tile, result.reduced());
-        } catch (Throwable e) {
-          String msg =
-              "Failure to write the multi-layer file of tile {}/{}/{}/{} in dataset '{}', format '{}' to the cache";
-          LogContext.errorAsInfo(
-              LOGGER,
-              e,
-              msg,
-              tile.getTileMatrixSet().getId(),
-              tile.getTileLevel(),
-              tile.getTileRow(),
-              tile.getTileCol(),
-              transformationContext.getApiData().getId(),
-              outputFormat.getExtension());
-        }
-      } else {
-        result.getError().ifPresent(QueriesHandler::processStreamError);
-      }
-
-      return result;
-
-    } catch (CompletionException e) {
-      if (e.getCause() instanceof WebApplicationException) {
-        throw (WebApplicationException) e.getCause();
-      }
-      throw new IllegalStateException("Feature stream error.", e.getCause());
-    }
   }
 }

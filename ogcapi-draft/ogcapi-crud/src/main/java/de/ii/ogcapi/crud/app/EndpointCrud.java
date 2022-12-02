@@ -126,7 +126,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
     return super.isEnabledForApi(apiData, collectionId)
         && providers
-            .getFeatureProvider(apiData)
+            .getFeatureProvider(apiData, apiData.getCollections().get(collectionId))
             .map(FeatureProvider2::supportsTransactions)
             .orElse(false);
   }
@@ -202,6 +202,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("createItem", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.POST.name(), operation));
@@ -252,6 +253,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("replaceItem", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
@@ -277,6 +279,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("updateItem", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PATCH.name(), operation));
@@ -295,6 +298,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("deleteItem", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));

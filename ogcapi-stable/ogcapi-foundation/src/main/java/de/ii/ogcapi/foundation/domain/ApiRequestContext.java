@@ -35,4 +35,12 @@ public interface ApiRequestContext {
   default int getMaxResponseLinkHeaderSize() {
     return 2048;
   }
+
+  default String getApiUri() {
+    return getUriCustomizer()
+        .copy()
+        .cutPathAfterSegments(getApi().getData().getSubPath().toArray(new String[0]))
+        .clearParameters()
+        .toString();
+  }
 }

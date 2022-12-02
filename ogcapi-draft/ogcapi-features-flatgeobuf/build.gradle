@@ -1,6 +1,6 @@
 dependencies {
-    embedded (group: 'com.google.flatbuffers', name: 'flatbuffers-java', version: '2.0.3')
-    embedded (group: 'org.wololo', name: 'flatgeobuf', version: '3.22.2') {
+    embedded (group: 'com.google.flatbuffers', name: 'flatbuffers-java', version: '22.10.26')
+    embedded (group: 'org.wololo', name: 'flatgeobuf', version: '3.24.0') {
         exclude group: 'javax.media', module: 'jai_core'
         exclude module: 'jts-core'
         exclude module: 'jts-io-common'

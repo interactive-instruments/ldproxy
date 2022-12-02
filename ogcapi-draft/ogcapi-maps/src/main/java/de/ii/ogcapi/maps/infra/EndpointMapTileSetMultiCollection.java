@@ -67,6 +67,7 @@ public class EndpointMapTileSetMultiCollection extends AbstractEndpointTileSetMu
         "map",
         ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_SET,
         "/map/tiles/{tileMatrixSetId}",
+        "map",
         TAGS);
   }
 

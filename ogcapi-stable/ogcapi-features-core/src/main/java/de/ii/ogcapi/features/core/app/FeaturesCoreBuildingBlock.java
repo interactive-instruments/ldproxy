@@ -39,6 +39,7 @@ import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.features.domain.DatasetChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
@@ -46,6 +47,8 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
@@ -111,54 +114,22 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
-    // TODO: add capability to periodically reinitialize metadata from the feature data (to account
-    // for lost notifications,
-    //       because extent changes because of deletes are not taken into account, etc.)
-    // initialize dynamic collection metadata
     OgcApiDataV2 apiData = api.getData();
+
     apiData
         .getCollections()
-        .entrySet()
+        .keySet()
         .forEach(
-            entry -> {
-              final String collectionId = entry.getKey();
-              final Optional<CollectionExtent> optionalExtent = apiData.getExtent(collectionId);
-
-              optionalExtent
-                  .flatMap(
-                      extent -> extent.isSpatialComputed() ? Optional.empty() : extent.getSpatial())
-                  .or(() -> computeBbox(apiData, collectionId))
-                  .ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
-
-              optionalExtent
-                  .flatMap(
-                      extent ->
-                          extent.isTemporalComputed() ? Optional.empty() : extent.getTemporal())
-                  .or(() -> computeInterval(apiData, collectionId))
-                  .ifPresent(interval -> api.updateTemporalExtent(collectionId, interval));
-
-              final FeatureTypeConfigurationOgcApi collectionData =
-                  apiData.getCollections().get(collectionId);
-              final Optional<FeatureProvider2> provider =
-                  providers.getFeatureProvider(apiData, collectionData);
-              if (provider.map(FeatureProvider2::supportsQueries).orElse(false)) {
-                final String featureTypeId =
-                    collectionData
-                        .getExtension(FeaturesCoreConfiguration.class)
-                        .map(cfg -> cfg.getFeatureType().orElse(collectionId))
-                        .orElse(collectionId);
-                final long count = ((FeatureQueries) provider.get()).getFeatureCount(featureTypeId);
-                api.updateItemCount(collectionId, count);
-                if (LOGGER.isDebugEnabled()) {
-                  LOGGER.debug("Number of items in collection '{}': {}", collectionId, count);
-                }
-              }
-            });
+            collectionId ->
+                initMetadata(api, collectionId, Instant.now().truncatedTo(ChronoUnit.SECONDS)));
 
     providers
         .getFeatureProvider(apiData)
         .ifPresent(
-            provider -> provider.getFeatureChangeHandler().addListener(onFeatureChange(api)));
+            provider -> {
+              provider.getChangeHandler().addListener(onDatasetChange(api));
+              provider.getChangeHandler().addListener(onFeatureChange(api));
+            });
 
     // register schemas that cannot be derived automatically
     Schema<?> stringSchema = classSchemaCache.getSchema(JsonSchemaString.class);
@@ -195,6 +166,54 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
     return ValidationResult.of();
   }
 
+  // TODO: add capability to periodically reinitialize metadata from the feature data (to account
+  // for lost notifications,
+  //       because extent changes because of deletes are not taken into account, etc.)
+  // initialize dynamic collection metadata
+  private void initMetadata(OgcApi api, String collectionId, Instant lastModified) {
+    OgcApiDataV2 apiData = api.getData();
+    FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
+
+    final Optional<CollectionExtent> optionalExtent = apiData.getExtent(collectionId);
+
+    optionalExtent
+        .flatMap(extent -> extent.isSpatialComputed() ? Optional.empty() : extent.getSpatial())
+        .or(() -> computeBbox(apiData, collectionId))
+        .ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
+
+    optionalExtent
+        .flatMap(extent -> extent.isTemporalComputed() ? Optional.empty() : extent.getTemporal())
+        .or(() -> computeInterval(apiData, collectionId))
+        .ifPresent(interval -> api.updateTemporalExtent(collectionId, interval));
+
+    final Optional<FeatureProvider2> provider =
+        providers.getFeatureProvider(apiData, collectionData);
+    if (provider.map(FeatureProvider2::supportsQueries).orElse(false)) {
+      final String featureTypeId =
+          collectionData
+              .getExtension(FeaturesCoreConfiguration.class)
+              .map(cfg -> cfg.getFeatureType().orElse(collectionId))
+              .orElse(collectionId);
+      final long count = ((FeatureQueries) provider.get()).getFeatureCount(featureTypeId);
+      api.updateItemCount(collectionId, count);
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("Number of items in collection '{}': {}", collectionId, count);
+      }
+
+      api.updateLastModified(collectionId, lastModified);
+    }
+  }
+
+  private DatasetChangeListener onDatasetChange(OgcApi api) {
+    return change -> {
+      for (String featureType : change.getFeatureTypes()) {
+        String collectionId = getCollectionId(api.getData().getCollections().values(), featureType);
+
+        initMetadata(api, collectionId, change.getModified());
+      }
+    };
+  }
+
   private FeatureChangeListener onFeatureChange(OgcApi api) {
     return change -> {
       String collectionId =
@@ -202,15 +221,6 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
       switch (change.getAction()) {
         case CREATE:
           api.updateItemCount(collectionId, (long) change.getFeatureIds().size());
-          change
-              .getBoundingBox()
-              .flatMap(this::transformToCrs84)
-              .ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
-          change
-              .getInterval()
-              .ifPresent(
-                  interval -> api.updateTemporalExtent(collectionId, TemporalExtent.of(interval)));
-          break;
         case UPDATE:
           change
               .getBoundingBox()
