@@ -146,7 +146,7 @@ public class TileFormatMVT extends TileFormatWithQuerySupportExtension implement
     if (isEnabledForApi(apiData)
         || apiData.getCollections().keySet().stream()
             .anyMatch(collectionId -> isEnabledForApi(apiData, collectionId))) {
-      return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/mvt");
+      return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/mvt");
     }
 
     return ImmutableList.of();

@@ -52,7 +52,7 @@ public class FeatureCollectionView extends DatasetView {
   public List<NavigationDTO> pagination;
   public List<NavigationDTO> metaPagination;
   public List<FeatureHtml> features;
-  public boolean hideMap = true; // set to "hide"; change to "false" when we see a geometry
+  public boolean hideMap;
   public Set<Map.Entry<String, String>> filterFields;
   public Map<String, String> bbox;
   public TemporalExtent temporalExtent;
@@ -88,6 +88,7 @@ public class FeatureCollectionView extends DatasetView {
       Type mapClientType,
       String styleUrl,
       boolean removeZoomLevelConstraints,
+      boolean hideMap,
       Map<String, String> queryables,
       List<String> geometryProperties) {
     super(template, uri, name, title, description, attribution, urlPrefix, htmlConfig, noIndex);
@@ -102,6 +103,7 @@ public class FeatureCollectionView extends DatasetView {
     this.mapPosition = mapPosition;
     this.uriBuilder = new URICustomizer(uri);
     this.cesiumData = new CesiumData(features, geometryProperties);
+    this.hideMap = hideMap;
 
     this.bbox =
         spatialExtent

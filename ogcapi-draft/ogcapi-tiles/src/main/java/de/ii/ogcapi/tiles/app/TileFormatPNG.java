@@ -71,7 +71,7 @@ public class TileFormatPNG extends TileFormatExtension implements ConformanceCla
     if (isEnabledForApi(apiData)
         || apiData.getCollections().keySet().stream()
             .anyMatch(collectionId -> isEnabledForApi(apiData, collectionId))) {
-      return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/png");
+      return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/png");
     }
 
     return ImmutableList.of();
