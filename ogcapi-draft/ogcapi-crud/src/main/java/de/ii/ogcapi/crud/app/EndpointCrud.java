@@ -134,12 +134,10 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     return ImmutableList.of(
-        "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/create-replace-delete",
-        "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/optimistic-locking",
-        "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/features"
-        // TODO
-        // "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/create-replace-delete/update"
-        );
+        "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/create-replace-delete",
+        "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/update",
+        "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/optimistic-locking",
+        "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/features");
   }
 
   @Override
