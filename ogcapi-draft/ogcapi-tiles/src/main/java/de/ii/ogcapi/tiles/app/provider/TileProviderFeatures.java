@@ -109,7 +109,7 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
                 cache.getStorage(),
                 data.getId(),
                 getTileSchemas(tileGenerator, data.getLayers()));
-        // tileStores.add(tileStore);
+        tileStores.add(tileStore);
         // TODO: cacheLevels
         current = new TileCacheImmutable(tileWalker, tileStore, current, getCacheRanges(cache));
         generatorCaches.add((TileCache) current);
@@ -227,7 +227,7 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
       String layer, TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits) {
     for (TileStore cache : tileStores) {
       try {
-        cache.delete(layer, tileMatrixSet, limits);
+        cache.delete(layer, tileMatrixSet, limits, false);
       } catch (IOException e) {
 
       }
@@ -263,14 +263,27 @@ public class TileProviderFeatures extends AbstractPersistentEntity<TileProviderF
 
     if (!sourcedLayers.isEmpty()) {
       for (TileCache cache : generatorCaches) {
-        cache.seed(sourcedLayers, mediaTypes, reseed, taskContext);
+        cache.purge(sourcedLayers, mediaTypes, reseed, "tile generator", taskContext);
       }
     }
     if (!combinedLayers.isEmpty()) {
       for (TileCache cache : combinerCaches) {
-        cache.seed(combinedLayers, mediaTypes, reseed, taskContext);
+        cache.purge(combinedLayers, mediaTypes, reseed, "tile combiner", taskContext);
       }
     }
+
+    if (!sourcedLayers.isEmpty()) {
+      for (TileCache cache : generatorCaches) {
+        cache.seed(sourcedLayers, mediaTypes, reseed, "tile generator", taskContext);
+      }
+    }
+    if (!combinedLayers.isEmpty()) {
+      for (TileCache cache : combinerCaches) {
+        cache.seed(combinedLayers, mediaTypes, reseed, "tile combiner", taskContext);
+      }
+    }
+
+    // TODO: cleanup all orphaned tiles with merged limits
   }
 
   private Map<String, TileGenerationParameters> validLayers(

@@ -51,21 +51,21 @@ public class TileWalkerImpl implements TileWalker {
     final long[] numberOfTiles = {0};
 
     try {
-      walkLayersAndTiles(
+      walkLayersAndLimits(
           layers,
-          outputFormats,
           tmsRanges,
           boundingBoxes,
-          taskContext,
-          (ignore1, ignore2, ignore3, ignore4, ignore5, ignore6) -> {
-            numberOfTiles[0]++;
-            return true;
+          (layer, tms, limits) -> {
+            numberOfTiles[0] +=
+                taskContext.isPartial()
+                    ? limits.getNumberOfTiles(taskContext::matchesPartialModulo)
+                    : limits.getNumberOfTiles();
           });
     } catch (IOException e) {
       // ignore
     }
 
-    return numberOfTiles[0];
+    return numberOfTiles[0] * outputFormats.size();
   }
 
   @Override
@@ -108,6 +108,23 @@ public class TileWalkerImpl implements TileWalker {
     }
   }
 
+  @Override
+  public void walkLayersAndLimits(
+      Set<String> layers,
+      Map<String, Map<String, Range<Integer>>> tmsRanges,
+      LimitsVisitor limitsVisitor)
+      throws IOException {
+    for (Map.Entry<String, Map<String, Range<Integer>>> entry : tmsRanges.entrySet()) {
+      String layer = entry.getKey();
+
+      if (layers.contains(layer)) {
+        Map<String, Range<Integer>> ranges = entry.getValue();
+
+        walkLimits(layer, ranges, limitsVisitor);
+      }
+    }
+  }
+
   private void walkLimits(
       String layer,
       Map<String, Range<Integer>> tmsRanges,
@@ -134,6 +151,21 @@ public class TileWalkerImpl implements TileWalker {
 
       List<TileMatrixSetLimits> allLimits =
           tileMatrixSet.getLimitsList(MinMax.of(entry.getValue()), bbox);
+
+      for (TileMatrixSetLimits limits : allLimits) {
+        limitsVisitor.visit(layer, tileMatrixSet, limits);
+      }
+    }
+  }
+
+  private void walkLimits(
+      String layer, Map<String, Range<Integer>> tmsRanges, LimitsVisitor limitsVisitor)
+      throws IOException {
+    for (Map.Entry<String, Range<Integer>> entry : tmsRanges.entrySet()) {
+      TileMatrixSet tileMatrixSet = getTileMatrixSetById(entry.getKey());
+
+      List<TileMatrixSetLimits> allLimits =
+          tileMatrixSet.getLimitsList(MinMax.of(entry.getValue()), tileMatrixSet.getBoundingBox());
 
       for (TileMatrixSetLimits limits : allLimits) {
         limitsVisitor.visit(layer, tileMatrixSet, limits);

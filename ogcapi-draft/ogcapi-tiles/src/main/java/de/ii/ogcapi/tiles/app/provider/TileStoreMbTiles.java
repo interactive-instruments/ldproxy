@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.tiles.app.provider;
 
+import static de.ii.xtraplatform.base.domain.util.LambdaWithException.consumerMayThrow;
+
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tiles.domain.ImmutableVectorLayer;
@@ -30,12 +32,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TileStoreMbTiles implements TileStore {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TileStoreMbTiles.class);
+  private static final String MBTILES_SUFFIX = ".mbtiles";
 
   static TileStoreReadOnly readOnly(Map<String, Path> tileSetSources) {
     Map<String, MbtilesTileset> tileSets =
@@ -53,7 +57,39 @@ public class TileStoreMbTiles implements TileStore {
       BlobStore rootStore,
       String providerId,
       Map<String, Map<String, TileGenerationSchema>> tileSchemas) {
-    return new TileStoreMbTiles(providerId, rootStore, new ConcurrentHashMap<>(), tileSchemas);
+
+    Map<String, MbtilesTileset> tileSets = new ConcurrentHashMap<>();
+
+    try (Stream<Path> files =
+        rootStore.walk(
+            Path.of(""),
+            2,
+            (p, a) -> a.isValue() && p.getFileName().toString().endsWith(MBTILES_SUFFIX))) {
+      files
+          .filter(path -> path.getNameCount() == 2)
+          .forEach(
+              consumerMayThrow(
+                  path -> {
+                    String layer = path.getName(0).toString();
+                    String tms = path.getName(1).toString().replace(MBTILES_SUFFIX, "");
+                    tileSets.put(
+                        key(layer, tms),
+                        createTileSet(
+                            rootStore,
+                            providerId,
+                            layer,
+                            tms,
+                            getVectorLayers(tileSchemas, layer)));
+                  }));
+    } catch (IOException e) {
+      LogContext.errorAsWarn(LOGGER, e, "Error when loading tile caches");
+    } catch (RuntimeException e) {
+      if (e.getCause() instanceof IOException) {
+        LogContext.errorAsWarn(LOGGER, e.getCause(), "Error when loading tile caches");
+      }
+      throw e;
+    }
+    return new TileStoreMbTiles(providerId, rootStore, tileSets, tileSchemas);
   }
 
   private final String providerId;
@@ -145,10 +181,11 @@ public class TileStoreMbTiles implements TileStore {
           tileSets.put(
               key(tile),
               createTileSet(
+                  rootStore,
                   providerId,
                   tile.getLayer(),
-                  tile.getTileMatrixSet(),
-                  getVectorLayers(tile.getLayer())));
+                  tile.getTileMatrixSet().getId(),
+                  getVectorLayers(tileSchemas, tile.getLayer())));
         }
       }
       tileSets.get(key(tile)).writeTile(tile, content.readAllBytes());
@@ -194,7 +231,8 @@ public class TileStoreMbTiles implements TileStore {
   }
 
   @Override
-  public void delete(String layer, TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits)
+  public void delete(
+      String layer, TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits, boolean inverse)
       throws IOException {
     try {
       if (tileSets.containsKey(key(layer, tileMatrixSet))) {
@@ -219,14 +257,16 @@ public class TileStoreMbTiles implements TileStore {
     }
   }
 
-  private List<VectorLayer> getVectorLayers(String layer) {
+  private static List<VectorLayer> getVectorLayers(
+      Map<String, Map<String, TileGenerationSchema>> tileSchemas, String layer) {
     return tileSchemas.get(layer).entrySet().stream()
         .map(entry -> getVectorLayer(entry.getKey(), entry.getValue()))
         .collect(Collectors.toList());
   }
 
   // TODO: fields, minzoom, maxzoom
-  private VectorLayer getVectorLayer(String subLayer, TileGenerationSchema generationSchema) {
+  private static VectorLayer getVectorLayer(
+      String subLayer, TileGenerationSchema generationSchema) {
 
     ImmutableVectorLayer.Builder builder =
         ImmutableVectorLayer.builder().id(subLayer).fields(generationSchema.getProperties());
@@ -256,10 +296,14 @@ public class TileStoreMbTiles implements TileStore {
   }
 
   // TODO: minzoom, maxzoom, bounds, center
-  private MbtilesTileset createTileSet(
-      String name, String layer, TileMatrixSet tileMatrixSet, List<VectorLayer> vectorLayers)
+  private static MbtilesTileset createTileSet(
+      BlobStore rootStore,
+      String name,
+      String layer,
+      String tileMatrixSet,
+      List<VectorLayer> vectorLayers)
       throws IOException {
-    Path relPath = Path.of(layer).resolve(tileMatrixSet.getId() + ".mbtiles");
+    Path relPath = Path.of(layer).resolve(tileMatrixSet + MBTILES_SUFFIX);
     Optional<Path> filePath = rootStore.path(relPath, true);
 
     if (filePath.isEmpty()) {
@@ -290,6 +334,10 @@ public class TileStoreMbTiles implements TileStore {
   }
 
   private static String key(String layer, TileMatrixSet tileMatrixSet) {
-    return String.join("/", layer, tileMatrixSet.getId());
+    return key(layer, tileMatrixSet.getId());
+  }
+
+  private static String key(String layer, String tileMatrixSet) {
+    return String.join("/", layer, tileMatrixSet);
   }
 }

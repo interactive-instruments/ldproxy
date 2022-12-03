@@ -56,6 +56,12 @@ public interface TileWalker {
   void walkLayersAndLimits(
       Set<String> layers,
       Map<String, Map<String, Range<Integer>>> tmsRanges,
+      LimitsVisitor limitsVisitor)
+      throws IOException;
+
+  void walkLayersAndLimits(
+      Set<String> layers,
+      Map<String, Map<String, Range<Integer>>> tmsRanges,
       Map<String, Optional<BoundingBox>> boundingBoxes,
       LimitsVisitor limitsVisitor)
       throws IOException;

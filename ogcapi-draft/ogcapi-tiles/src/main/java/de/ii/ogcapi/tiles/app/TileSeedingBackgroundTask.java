@@ -156,11 +156,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
 
     try {
       if (!taskContext.isStopped()) {
-        seedCollectionLayers(api, outputFormats, reseed, taskContext);
-      }
-
-      if (!taskContext.isStopped()) {
-        seedDatasetLayer(api, outputFormats, reseed, taskContext);
+        seedLayers(api, outputFormats, reseed, taskContext);
       }
 
     } catch (IOException e) {
@@ -179,7 +175,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
     }
   }
 
-  private void seedCollectionLayers(
+  private void seedLayers(
       OgcApi api, List<TileFormatExtension> outputFormats, boolean reseed, TaskContext taskContext)
       throws IOException {
     OgcApiDataV2 apiData = api.getData();
@@ -223,24 +219,6 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
         layers.put(collectionId, generationParameters);
       }
     }
-
-    tileProvider.seeding().seed(layers, formats, reseed, taskContext);
-  }
-
-  private void seedDatasetLayer(
-      OgcApi api, List<TileFormatExtension> outputFormats, boolean reseed, TaskContext taskContext)
-      throws IOException {
-    OgcApiDataV2 apiData = api.getData();
-
-    // TODO: isEnabled should check that we have a tile provider
-    TileProvider tileProvider = tilesProviders.getTileProviderOrThrow(apiData);
-    List<MediaType> formats =
-        outputFormats.stream()
-            .filter(format -> tileProvider.generator().supports(format.getMediaType().type()))
-            .map(format -> format.getMediaType().type())
-            .collect(Collectors.toList());
-
-    Map<String, TileGenerationParameters> layers = new LinkedHashMap<>();
 
     Optional<TilesConfiguration> tilesConfiguration =
         apiData

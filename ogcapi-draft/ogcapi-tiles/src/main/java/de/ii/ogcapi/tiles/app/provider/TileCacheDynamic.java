@@ -9,7 +9,6 @@ package de.ii.ogcapi.tiles.app.provider;
 
 import com.google.common.collect.Range;
 import de.ii.ogcapi.tiles.domain.provider.ChainedTileProvider;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileQuery;
 import de.ii.ogcapi.tiles.domain.provider.TileCache;
 import de.ii.ogcapi.tiles.domain.provider.TileGenerationParameters;
 import de.ii.ogcapi.tiles.domain.provider.TileQuery;
@@ -19,11 +18,9 @@ import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.services.domain.TaskContext;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,100 +80,59 @@ public class TileCacheDynamic implements ChainedTileProvider, TileCache {
       Map<String, TileGenerationParameters> layers,
       List<MediaType> mediaTypes,
       boolean reseed,
+      String tileSourceLabel,
+      TaskContext taskContext)
+      throws IOException {
+    doSeed(
+        layers,
+        mediaTypes,
+        reseed,
+        tileSourceLabel,
+        taskContext,
+        tileStore,
+        delegate,
+        tileWalker,
+        getTmsRanges());
+  }
+
+  @Override
+  public void purge(
+      Map<String, TileGenerationParameters> layers,
+      List<MediaType> mediaTypes,
+      boolean reseed,
+      String tileSourceLabel,
       TaskContext taskContext)
       throws IOException {
 
-    Map<String, Optional<BoundingBox>> boundingBoxes =
-        layers.entrySet().stream()
-            .map(
-                entry ->
-                    new SimpleImmutableEntry<>(
-                        entry.getKey(), entry.getValue().getClipBoundingBox()))
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    Map<String, Optional<BoundingBox>> boundingBoxes = getBoundingBoxes(layers);
 
-    if (reseed && taskContext.isFirstPartial()) {
-      taskContext.setStatusMessage("purging cache");
+    // TODO: other partials may start writing before first partial is done with purging
+    // add preRun and postRun to tasks which are run before/after partials
+    if (reseed) {
+      if (taskContext.isFirstPartial()) {
+        LOGGER.debug("{}: purging cache for {}", taskContext.getTaskLabel(), tileSourceLabel);
 
-      tileWalker.walkLayersAndLimits(
-          layers.keySet(),
-          getTmsRanges(),
-          boundingBoxes,
-          (layer, tileMatrixSet, limits) -> {
-            try {
-              tileStore.delete(layer, tileMatrixSet, limits);
-            } catch (IOException e) {
-
-            }
-          });
-
-      taskContext.setStatusMessage("purged cache successfully");
-    }
-
-    // TODO: same as in immutable, extract
-    // TODO: compute from limits instead of walking
-    long numberOfTiles =
-        tileWalker.getNumberOfTiles(
-            layers.keySet(), mediaTypes, getTmsRanges(), boundingBoxes, taskContext);
-    final double[] currentTile = {0.0};
-    final boolean[] isEmpty = {true};
-
-    LOGGER.debug("NUMTILES {} {}", numberOfTiles, reseed);
-
-    tileWalker.walkLayersAndTiles(
-        layers.keySet(),
-        mediaTypes,
-        getTmsRanges(),
-        boundingBoxes,
-        taskContext,
-        (layer, mediaType, tileMatrixSet, level, row, col) -> {
-          TileQuery tile =
-              ImmutableTileQuery.builder()
-                  .layer(layer)
-                  .mediaType(mediaType)
-                  .tileMatrixSet(tileMatrixSet)
-                  .level(level)
-                  .row(row)
-                  .col(col)
-                  .generationParameters(layers.get(layer))
-                  .build();
-
-          taskContext.setStatusMessage(
-              String.format(
-                  "currently processing -> %s, %s/%s/%s/%s, %s",
-                  layer, tileMatrixSet.getId(), level, row, col, mediaType));
-
-          if (reseed || !tileStore.has(tile)) {
-            TileResult result = delegate.get(tile);
-
-            if (shouldCache(tile) && result.isAvailable()) {
-              tileStore.put(tile, new ByteArrayInputStream(result.getContent().get()));
-              if (isEmpty[0]) {
-                isEmpty[0] = false;
+        tileWalker.walkLayersAndLimits(
+            layers.keySet(),
+            getTmsRanges(),
+            boundingBoxes,
+            (layer, tileMatrixSet, limits) -> {
+              try {
+                tileStore.delete(layer, tileMatrixSet, limits, false);
+              } catch (IOException e) {
+                // ignore
               }
-            }
+            });
 
-            if (result.isError()) {
-              LOGGER.warn(
-                  "{}: processing failed -> {}, {}/{}/{}/{}, {} | {}",
-                  taskContext.getTaskLabel(),
-                  layer,
-                  tileMatrixSet.getId(),
-                  level,
-                  row,
-                  col,
-                  mediaType,
-                  result.getError().get());
-            }
-          }
-
-          currentTile[0] += 1;
-          taskContext.setCompleteness(currentTile[0] / numberOfTiles);
-
-          return !taskContext.isStopped();
-        });
-  }
-
-  private boolean shouldCache(TileQuery tileQuery) {
-    return !tileQuery.isTransient();
+        LOGGER.debug(
+            "{}: purged cache successfully for {}", taskContext.getTaskLabel(), tileSourceLabel);
+      } else {
+        try {
+          Thread.sleep(1000);
+        } catch (InterruptedException e) {
+          // ignore
+        }
+      }
+    }
   }
 }

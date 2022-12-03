@@ -10,6 +10,8 @@ package de.ii.ogcapi.tilematrixsets.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import java.nio.charset.StandardCharsets;
+import java.util.function.IntPredicate;
+import java.util.stream.IntStream;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -31,6 +33,19 @@ public abstract class TileMatrixSetLimits {
         && getMinTileCol() <= col
         && getMaxTileRow() >= row
         && getMinTileRow() <= row;
+  }
+
+  @Value.Derived
+  @Value.Auxiliary
+  public long getNumberOfTiles() {
+    return ((long) getMaxTileRow() - getMinTileRow() + 1) * (getMaxTileCol() - getMinTileCol() + 1);
+  }
+
+  public long getNumberOfTiles(IntPredicate whereColMatches) {
+    long numCols =
+        IntStream.rangeClosed(getMinTileCol(), getMaxTileCol()).filter(whereColMatches).count();
+
+    return (getMaxTileRow() - getMinTileRow() + 1) * numCols;
   }
 
   @SuppressWarnings("UnstableApiUsage")

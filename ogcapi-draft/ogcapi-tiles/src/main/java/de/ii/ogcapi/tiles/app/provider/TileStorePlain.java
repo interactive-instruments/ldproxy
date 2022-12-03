@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.ws.rs.core.MediaType;
@@ -70,7 +69,8 @@ class TileStorePlain implements TileStore {
   }
 
   @Override
-  public void delete(String layer, TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits)
+  public void delete(
+      String layer, TileMatrixSet tileMatrixSet, TileMatrixSetLimits limits, boolean inverse)
       throws IOException {
     try (Stream<Path> matchingFiles =
         blobStore.walk(
@@ -78,7 +78,8 @@ class TileStorePlain implements TileStore {
             5,
             (path, fileAttributes) ->
                 fileAttributes.isValue()
-                    && shouldDeleteTileFile(path, layer, tileMatrixSet.getId(), limits))) {
+                    && TileStore.isInsideBounds(
+                        path, layer, tileMatrixSet.getId(), limits, inverse))) {
 
       try {
         matchingFiles.forEach(consumerMayThrow(blobStore::delete));
@@ -98,47 +99,5 @@ class TileStorePlain implements TileStore {
         String.valueOf(tile.getLevel()),
         String.valueOf(tile.getRow()),
         String.format("%d.%s", tile.getCol(), EXTENSIONS.get(tile.getMediaType())));
-  }
-
-  @SuppressWarnings("UnstableApiUsage")
-  private static boolean shouldDeleteTileFile(
-      Path tilePath, String layer, String tileMatrixSet, TileMatrixSetLimits tmsLimits) {
-    if (tilePath.getNameCount() < 5) {
-      return false;
-    }
-
-    String layerSegment = tilePath.getName(0).toString();
-
-    if (!Objects.equals(layer, layerSegment)) {
-      return false;
-    }
-
-    String tmsId = tilePath.getName(1).toString();
-
-    if (!Objects.equals(tileMatrixSet, tmsId)) {
-      return false;
-    }
-
-    String level = tilePath.getName(2).toString();
-
-    if (!Objects.equals(tmsLimits.getTileMatrix(), level)) {
-      return false;
-    }
-
-    int row = Integer.parseInt(tilePath.getName(3).toString());
-
-    if (row < tmsLimits.getMinTileRow() || row > tmsLimits.getMaxTileRow()) {
-      return false;
-    }
-
-    String file = tilePath.getName(4).toString();
-
-    int col = Integer.parseInt(com.google.common.io.Files.getNameWithoutExtension(file));
-
-    if (col < tmsLimits.getMinTileCol() || col > tmsLimits.getMaxTileCol()) {
-      return false;
-    }
-
-    return true;
   }
 }
