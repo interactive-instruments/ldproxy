@@ -131,7 +131,7 @@ public class RoutesView extends OgcApiView {
                     .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
             .data(
                 new ImmutableSource.Builder()
-                    .type(MapClient.Source.TYPE.geojson)
+                    .type(MapClient.Source.TYPE.GEOJSON)
                     .url("{\"type\":\"FeatureCollection\",\"features\":[]}")
                     .isData(true)
                     .build())

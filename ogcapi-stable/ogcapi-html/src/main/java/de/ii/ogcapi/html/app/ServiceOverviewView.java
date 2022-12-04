@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
  */
 public class ServiceOverviewView extends OgcApiView {
   public URI uri;
-  public boolean isApiCatalog = true;
   public String tagsTitle;
   public String canonicalUrl;
   public List<ApiCatalogEntry> data;
@@ -47,7 +46,7 @@ public class ServiceOverviewView extends OgcApiView {
             .add(new NavigationDTO(i18n.get("root", language), true))
             .build(),
         htmlConfig,
-        htmlConfig.getNoIndexEnabled(),
+        Boolean.TRUE.equals(htmlConfig.getNoIndexEnabled()),
         apiCatalog.getUrlPrefix(),
         apiCatalog.getLinks(),
         apiCatalog.getTitle().orElse(i18n.get("rootTitle", language)),
@@ -59,6 +58,7 @@ public class ServiceOverviewView extends OgcApiView {
     this.tagsTitle = i18n.get("tagsTitle", language);
   }
 
+  @SuppressWarnings("unused")
   public String getDatasetsAsString() {
     return data.stream()
         .filter(ApiCatalogEntry::isDataset)
@@ -78,13 +78,14 @@ public class ServiceOverviewView extends OgcApiView {
         .collect(Collectors.joining(", "));
   }
 
+  @SuppressWarnings("unused")
   public boolean hasTags() {
     return !getAllTags().isEmpty();
   }
 
   public List<String> getAllTags() {
     return data.stream()
-        .map(api -> api.getTags())
+        .map(ApiCatalogEntry::getTags)
         .flatMap(Collection::stream)
         .distinct()
         .sorted()

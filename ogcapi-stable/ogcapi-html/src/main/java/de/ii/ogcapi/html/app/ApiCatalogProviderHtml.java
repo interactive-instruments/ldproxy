@@ -60,7 +60,7 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
             Identifier.from(
                 EntityDataDefaultsStore.EVENT_TYPE,
                 Service.TYPE,
-                OgcApiDataV2.SERVICE_TYPE.toLowerCase()));
+                OgcApiDataV2.SERVICE_TYPE.toLowerCase(Locale.ROOT)));
     if (builder instanceof ImmutableOgcApiDataV2.Builder) {
       ImmutableOgcApiDataV2 defaults =
           ((ImmutableOgcApiDataV2.Builder) builder.fillRequiredFieldsWithPlaceholders()).build();

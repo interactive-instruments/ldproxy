@@ -63,6 +63,8 @@ import org.slf4j.LoggerFactory;
 @JsonDeserialize(builder = ImmutableHtmlConfiguration.Builder.class)
 public interface HtmlConfiguration extends ExtensionConfiguration {
   Logger LOGGER = LoggerFactory.getLogger(HtmlConfiguration.class);
+  String DEFAULT = "DEFAULT";
+  String NONE = "NONE";
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
@@ -82,7 +84,7 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
    *     eingebettet sein sollen, sofern. Die Annotationen werden im Format JSON-LD eingebettet.
    * @default `true`
    */
-  @JsonAlias(value = "microdataEnabled")
+  @JsonAlias("microdataEnabled")
   @Nullable
   Boolean getSchemaOrgEnabled();
 
@@ -173,6 +175,7 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
    * @langDe *Deprecated* Siehe `basemapUrl`.
    * @default "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
    */
+  @SuppressWarnings("DeprecatedIsStillUsed")
   @Deprecated(since = "3.1.0")
   @Nullable
   String getLeafletUrl();
@@ -182,6 +185,7 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
    * @langDe *Deprecated* Siehe `basemapAttribution`.
    * @default "&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors"
    */
+  @SuppressWarnings("DeprecatedIsStillUsed")
   @Deprecated(since = "3.1.0")
   @Nullable
   String getLeafletAttribution();
@@ -191,6 +195,7 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
    * @langDe *Deprecated* Siehe `basemapUrl`.
    * @default "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png"
    */
+  @SuppressWarnings("DeprecatedIsStillUsed")
   @Deprecated(since = "3.1.0")
   @Nullable
   String getOpenLayersUrl();
@@ -200,6 +205,7 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
    * @langDe *Deprecated* Siehe `basemapAttribution`.
    * @default "&copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors"
    */
+  @SuppressWarnings("DeprecatedIsStillUsed")
   @Deprecated(since = "3.1.0")
   @Nullable
   String getOpenLayersAttribution();
@@ -219,26 +225,14 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
 
   default String getStyle(
       Optional<String> requestedStyle, Optional<String> collectionId, String serviceUrl) {
-    String styleUrl =
-        requestedStyle
-            .map(
-                s ->
-                    s.equals("DEFAULT") ? Objects.requireNonNullElse(getDefaultStyle(), "NONE") : s)
-            .filter(s -> !s.equals("NONE"))
-            .map(
-                s ->
-                    collectionId.isEmpty()
-                        ? String.format("%s/styles/%s?f=mbs", serviceUrl, s)
-                        : String.format(
-                            "%s/collections/%s/styles/%s?f=mbs", serviceUrl, collectionId.get(), s))
-            .orElse(null);
+    String styleUrl = getStyleUrl(requestedStyle, collectionId, serviceUrl);
 
     // Check that the style exists
     if (Objects.nonNull(styleUrl)) {
-      // TODO we currently test for the availability of the style using a HTTP request to
-      //      avoid a dependency to STYLES. Once OGC API Styles is stable, we should consider to
-      //      separate the StyleRepository from the endpoints. The StyleRepository could be part
-      //      of FOUNDATION or its own module
+      // We currently test for the availability of a style using an HTTP request to avoid
+      // a dependency to STYLES. Separate the StyleRepository from the STYLES module and
+      // move it to xtraplatform-spatial.
+      // See https://github.com/interactive-instruments/ldproxy/issues/808.
       try {
         URL url = new URL(styleUrl);
         HttpURLConnection http = (HttpURLConnection) url.openConnection();
@@ -248,8 +242,9 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
           return getStyle(requestedStyle, Optional.empty(), serviceUrl);
         } else if (http.getResponseCode() != 200) {
           LOGGER.error(
-              "Could not access style '{}', falling back to style 'NONE'. Response code: '{}'. Message: {}",
+              "Could not access style '{}', falling back to style '{}'. Response code: '{}'. Message: {}",
               styleUrl,
+              NONE,
               http.getResponseCode(),
               http.getResponseMessage());
           return null;
@@ -257,8 +252,9 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
         http.disconnect();
       } catch (Exception e) {
         LOGGER.error(
-            "Could not access style '{}', falling back to style 'NONE'. Reason: {}",
+            "Could not access style '{}', falling back to style '{}'. Reason: {}",
             styleUrl,
+            NONE,
             e.getMessage());
         if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
           LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
@@ -268,5 +264,19 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
     }
 
     return styleUrl;
+  }
+
+  private String getStyleUrl(
+      Optional<String> requestedStyle, Optional<String> collectionId, String serviceUrl) {
+    return requestedStyle
+        .map(s -> DEFAULT.equals(s) ? Objects.requireNonNullElse(getDefaultStyle(), NONE) : s)
+        .filter(s -> !NONE.equals(s))
+        .map(
+            s ->
+                collectionId.isEmpty()
+                    ? String.format("%s/styles/%s?f=mbs", serviceUrl, s)
+                    : String.format(
+                        "%s/collections/%s/styles/%s?f=mbs", serviceUrl, collectionId.get(), s))
+        .orElse(null);
   }
 }

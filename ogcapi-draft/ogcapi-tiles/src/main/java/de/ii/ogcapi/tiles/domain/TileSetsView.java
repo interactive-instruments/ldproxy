@@ -332,7 +332,7 @@ public class TileSetsView extends OgcApiView {
                 .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
         .data(
             new ImmutableSource.Builder()
-                .type(isVector ? TYPE.vector : TYPE.raster)
+                .type(isVector ? TYPE.VECTOR : TYPE.RASTER)
                 .url(xyzTemplate)
                 .putAllLayers(layers)
                 .build())

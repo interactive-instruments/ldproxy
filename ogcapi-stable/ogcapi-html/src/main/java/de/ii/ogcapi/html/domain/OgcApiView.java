@@ -14,6 +14,7 @@ import io.dropwizard.views.View;
 import java.nio.charset.Charset;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -55,7 +56,7 @@ public abstract class OgcApiView extends View {
     return links.stream()
         .filter(
             link -> Objects.equals(link.getRel(), "alternate") && !link.getTypeLabel().isBlank())
-        .sorted(Comparator.comparing(link -> link.getTypeLabel().toUpperCase()))
+        .sorted(Comparator.comparing(link -> link.getTypeLabel().toUpperCase(Locale.ROOT)))
         .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
         .collect(Collectors.toList());
   }
@@ -64,25 +65,31 @@ public abstract class OgcApiView extends View {
     return breadCrumbs;
   }
 
+  @SuppressWarnings("unused")
   public boolean hasBreadCrumbs() {
     return breadCrumbs.size() > 1;
   }
 
+  @SuppressWarnings("unused")
   public String getBreadCrumbsList() {
-    String result = "";
+    StringBuilder result = new StringBuilder(128);
     for (int i = 0; i < breadCrumbs.size(); i++) {
       NavigationDTO item = breadCrumbs.get(i);
-      result +=
-          "{ \"@type\": \"ListItem\", \"position\": "
-              + (i + 1)
-              + ", \"name\": \""
-              + item.label
-              + "\"";
-      if (Objects.nonNull(item.url)) result += ", \"item\": \"" + item.url + "\"";
-      result += " }";
-      if (i < breadCrumbs.size() - 1) result += ",\n    ";
+      result
+          .append("{ \"@type\": \"ListItem\", \"position\": ")
+          .append(i + 1)
+          .append(", \"name\": \"")
+          .append(item.label)
+          .append('"');
+      if (Objects.nonNull(item.url)) {
+        result.append(", \"item\": \"").append(item.url).append('"');
+      }
+      result.append(" }");
+      if (i < breadCrumbs.size() - 1) {
+        result.append(",\n    ");
+      }
     }
-    return result;
+    return result.toString();
   }
 
   public String getUrlPrefix() {
@@ -97,11 +104,14 @@ public abstract class OgcApiView extends View {
     return description;
   }
 
+  @SuppressWarnings("deprecation")
   public String getAttribution() {
-    if (Objects.nonNull(htmlConfig.getLeafletAttribution()))
+    if (Objects.nonNull(htmlConfig.getLeafletAttribution())) {
       return htmlConfig.getLeafletAttribution();
-    if (Objects.nonNull(htmlConfig.getOpenLayersAttribution()))
+    }
+    if (Objects.nonNull(htmlConfig.getOpenLayersAttribution())) {
       return htmlConfig.getOpenLayersAttribution();
+    }
     return htmlConfig.getBasemapAttribution();
   }
 }

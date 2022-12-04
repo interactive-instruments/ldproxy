@@ -10,6 +10,7 @@ package de.ii.ogcapi.html.domain;
 import com.google.common.collect.Multimap;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -102,9 +103,14 @@ public interface MapClient {
   @Value.Immutable
   interface Source {
     enum TYPE {
-      geojson,
-      vector,
-      raster
+      GEOJSON,
+      VECTOR,
+      RASTER;
+
+      @Override
+      public String toString() {
+        return super.toString().toLowerCase(Locale.ROOT);
+      }
     }
 
     TYPE getType();

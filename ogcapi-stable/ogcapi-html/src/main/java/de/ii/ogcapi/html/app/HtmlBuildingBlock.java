@@ -15,10 +15,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @author zahnen
- */
-
-/**
  * @title HTML
  * @langEn The module *HTML* may be enabled for every API. It is enabled by default. Provides HTML
  *     encoding for every supported resource that does not have more specific rules (like

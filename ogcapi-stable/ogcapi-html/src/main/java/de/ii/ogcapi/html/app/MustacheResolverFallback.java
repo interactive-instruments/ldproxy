@@ -22,12 +22,13 @@ public class MustacheResolverFallback extends PerClassMustacheResolver
     implements PartialMustacheResolver {
 
   @Inject
-  MustacheResolverFallback() {}
+  MustacheResolverFallback() {
+    super();
+  }
 
   // TODO sortPriority is higher than PerClassMustacheResolver; in case of a name collision or an
-  // attempt to overload
-  //      a template that exists in the HTML module locally, the HTML module template will always be
-  // used
+  // attempt to overload a template that exists in the HTML module locally, the HTML module template
+  // will always be used
 
   @Override
   public int getSortPriority() {

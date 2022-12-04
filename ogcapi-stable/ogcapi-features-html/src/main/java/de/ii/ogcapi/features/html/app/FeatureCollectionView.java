@@ -126,7 +126,7 @@ public class FeatureCollectionView extends DatasetView {
               .bounds(Optional.ofNullable(bbox))
               .data(
                   new ImmutableSource.Builder()
-                      .type(TYPE.geojson)
+                      .type(TYPE.GEOJSON)
                       .url(uriBuilder.removeParameters("f").ensureParameter("f", "json").toString())
                       .build())
               .popup(Popup.HOVER_ID)
