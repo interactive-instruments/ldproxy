@@ -77,6 +77,7 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -755,10 +756,19 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
       TilesConfiguration tilesConfiguration,
       Optional<FeaturesCoreConfiguration> featuresCore,
       Map<String, FeatureTypeConfigurationOgcApi> collections) {
+    Map<String, TilesConfiguration> collectionConfigs =
+        collections.entrySet().stream()
+            .map(
+                entry ->
+                    new SimpleImmutableEntry<>(
+                        entry.getKey(),
+                        entry.getValue().getExtension(TilesConfiguration.class).get()))
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+
     // TODO: seeding*, zoomLevelCache
     return new ImmutableTileProviderFeaturesData.Builder()
         .id(String.format("%s-tiles", apiId))
-        .addAllCaches(getCaches(tilesConfiguration))
+        .addAllCaches(getCaches(tilesConfiguration, collectionConfigs))
         .layerDefaults(
             new ImmutableLayerOptionsFeaturesDefault.Builder()
                 .featureProvider(
@@ -780,12 +790,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                         .build())
                 : Map.of())
         .putAllLayers(
-            collections.entrySet().stream()
-                .map(
-                    entry ->
-                        new SimpleImmutableEntry<>(
-                            entry.getKey(),
-                            entry.getValue().getExtension(TilesConfiguration.class).get()))
+            collectionConfigs.entrySet().stream()
                 .map(
                     entry ->
                         new SimpleImmutableEntry<>(
@@ -795,26 +800,31 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         .build();
   }
 
-  // TODO: seeding + caching
-  private static List<Cache> getCaches(TilesConfiguration tilesConfiguration) {
+  private static List<Cache> getCaches(
+      TilesConfiguration tilesConfiguration, Map<String, TilesConfiguration> collectionConfigs) {
 
-    if (Objects.equals(tilesConfiguration.getCache(), TileCacheType.FILES)) {
-      return List.of(
-          new ImmutableCache.Builder()
-              .type(Type.DYNAMIC)
-              .storage(Storage.PLAIN)
-              .putAllLevels(tilesConfiguration.getSeedingDerived()) // TODO: per collection/layer?
-              .build());
-    } else if (Objects.equals(tilesConfiguration.getCache(), TileCacheType.MBTILES)) {
-      return List.of(
-          new ImmutableCache.Builder()
-              .type(Type.DYNAMIC)
-              .storage(Storage.MBTILES)
-              .putAllLevels(tilesConfiguration.getSeedingDerived()) // TODO: per collection/layer?
-              .build());
+    if (Objects.equals(tilesConfiguration.getCache(), TileCacheType.NONE)) {
+      return List.of();
     }
 
-    return List.of();
+    Storage storage =
+        Objects.equals(tilesConfiguration.getCache(), TileCacheType.MBTILES)
+            ? Storage.MBTILES
+            : Storage.PLAIN;
+
+    return List.of(
+        new ImmutableCache.Builder()
+            .type(Type.DYNAMIC)
+            .storage(storage)
+            .putAllLevels(tilesConfiguration.getSeedingDerived()) // TODO: per collection/layer?
+            .putAllLayerLevels(
+                collectionConfigs.entrySet().stream()
+                    .map(
+                        entry ->
+                            new SimpleImmutableEntry<>(
+                                entry.getKey(), entry.getValue().getSeedingDerived()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
+            .build());
   }
 
   private static LayerOptionsFeatures getFeatureLayer(

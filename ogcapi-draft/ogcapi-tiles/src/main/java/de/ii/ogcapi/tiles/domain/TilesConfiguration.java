@@ -251,6 +251,15 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   String getTileProviderId();
 
   /**
+   * @langEn Specifies the tile provider layer.
+   * @langDe Spezifiziert den Tile-Provider Layer.
+   * @default {collectionId}
+   * @since v3.3
+   */
+  @Nullable
+  String getTileLayer();
+
+  /**
    * @langEn Controls which formats are supported for the tileset resources. Available are [OGC
    *     TileSetMetadata](https://docs.ogc.org/DRAFTS/17-083r3.html#tsmd-json-encoding) ("JSON") and
    *     [TileJSON](https://github.com/mapbox/tilejson-spec) ("TileJSON").
