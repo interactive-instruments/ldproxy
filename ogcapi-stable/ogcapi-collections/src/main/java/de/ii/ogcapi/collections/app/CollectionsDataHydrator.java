@@ -22,14 +22,10 @@ import java.util.AbstractMap;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
 public class CollectionsDataHydrator implements OgcApiDataHydratorExtension {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(CollectionsDataHydrator.class);
 
   private final URI servicesUri;
 
@@ -61,7 +57,6 @@ public class CollectionsDataHydrator implements OgcApiDataHydratorExtension {
                 data.getCollections().entrySet().stream()
                     .map(
                         entry -> {
-                          final String collectionId = entry.getKey();
                           if (entry.getValue().getDescription().isEmpty()
                               || !entry
                                   .getValue()
@@ -73,7 +68,7 @@ public class CollectionsDataHydrator implements OgcApiDataHydratorExtension {
 
                           return new AbstractMap.SimpleImmutableEntry<
                               String, FeatureTypeConfigurationOgcApi>(
-                              collectionId,
+                              entry.getKey(),
                               new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                                   .from(entry.getValue())
                                   .description(

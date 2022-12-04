@@ -22,17 +22,6 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = Builder.class)
 public abstract class Collections extends PageRepresentation {
 
-  public static final String SCHEMA_REF = "#/components/schemas/Collections";
-
-  // restrict to information in ogcapi-stable, everything else goes into the extensions map
-
-  public abstract List<String> getCrs();
-
-  public abstract List<OgcApiCollection> getCollections();
-
-  @JsonAnyGetter
-  public abstract Map<String, Object> getExtensions();
-
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<Collections> FUNNEL =
       (from, into) -> {
@@ -48,4 +37,15 @@ public abstract class Collections extends PageRepresentation {
             .forEachOrdered(key -> into.putString(key, StandardCharsets.UTF_8));
         // we cannot encode the generic extension object
       };
+
+  public static final String SCHEMA_REF = "#/components/schemas/Collections";
+
+  // restricted to information in ogcapi-stable, everything else goes into the extensions map
+
+  public abstract List<String> getCrs();
+
+  public abstract List<OgcApiCollection> getCollections();
+
+  @JsonAnyGetter
+  public abstract Map<String, Object> getExtensions();
 }

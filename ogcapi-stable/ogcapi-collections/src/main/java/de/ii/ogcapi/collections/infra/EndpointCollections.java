@@ -41,8 +41,6 @@ import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @langEn The dataset is organized in feature collections. This resource provides information about
@@ -83,7 +81,6 @@ import org.slf4j.LoggerFactory;
 @AutoBind
 public class EndpointCollections extends Endpoint implements ConformanceClass {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointCollections.class);
   private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
   private final QueriesHandlerCollections queryHandler;
@@ -109,26 +106,28 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     ValidationResult result = super.onStartup(api, apiValidation);
 
-    if (apiValidation == MODE.NONE) return result;
+    if (apiValidation == MODE.NONE) {
+      return result;
+    }
 
     ImmutableValidationResult.Builder builder =
         ImmutableValidationResult.builder().from(result).mode(apiValidation);
 
     Optional<CollectionsConfiguration> config =
         api.getData().getExtension(CollectionsConfiguration.class);
-    if (config.isPresent()) {
-      builder =
-          FoundationValidator.validateLinks(
-              builder, config.get().getAdditionalLinks(), "/collections");
-    }
+    config.ifPresent(
+        collectionsConfiguration ->
+            FoundationValidator.validateLinks(
+                builder, collectionsConfiguration.getAdditionalLinks(), "/collections"));
 
     return builder.build();
   }
 
   @Override
   public List<? extends FormatExtension> getFormats() {
-    if (formats == null)
+    if (formats == null) {
       formats = extensionRegistry.getExtensionsForType(CollectionsFormatExtension.class);
+    }
     return formats;
   }
 

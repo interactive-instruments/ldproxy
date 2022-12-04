@@ -27,12 +27,14 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class EndpointSubCollection extends Endpoint {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointSubCollection.class);
+  // NOTE: If there would be a need for collection-specific path parameters or headers, the API
+  // definitions would need to be adapted for this
+
+  public static final String COLLECTION_ID_TEMPLATE = "{collectionId}";
+  public static final String COLLECTIONS_PATH_START = "/collections/";
 
   public EndpointSubCollection(ExtensionRegistry extensionRegistry) {
     super(extensionRegistry);
@@ -65,7 +67,9 @@ public abstract class EndpointSubCollection extends Endpoint {
             f ->
                 f.getContent(
                     apiData,
-                    "/collections/" + collectionId.orElse("{collectionId}") + subSubPath,
+                    COLLECTIONS_PATH_START
+                        + collectionId.orElse(COLLECTION_ID_TEMPLATE)
+                        + subSubPath,
                     method))
         .filter(Objects::nonNull)
         .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
@@ -83,7 +87,9 @@ public abstract class EndpointSubCollection extends Endpoint {
             f ->
                 f.getRequestContent(
                     apiData,
-                    "/collections/" + collectionId.orElse("{collectionId}") + subSubPath,
+                    COLLECTIONS_PATH_START
+                        + collectionId.orElse(COLLECTION_ID_TEMPLATE)
+                        + subSubPath,
                     method))
         .filter(Objects::nonNull)
         .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
@@ -112,14 +118,14 @@ public abstract class EndpointSubCollection extends Endpoint {
       String definitionPath,
       String collectionId,
       HttpMethods method) {
-    if (collectionId.equals("{collectionId}")) {
-      Optional<String> representativeCollectionId = getRepresentativeCollectionId(apiData);
-      if (representativeCollectionId.isEmpty())
+    Optional<String> representativeCollectionId = Optional.empty();
+    if (COLLECTION_ID_TEMPLATE.equals(collectionId)) {
+      representativeCollectionId = getRepresentativeCollectionId(apiData);
+      if (representativeCollectionId.isEmpty()) {
         return getQueryParameters(extensionRegistry, apiData, definitionPath, method);
-
-      collectionId = representativeCollectionId.get();
+      }
     }
-    String finalCollectionId = collectionId;
+    final String finalCollectionId = representativeCollectionId.orElse(collectionId);
     return extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class).stream()
         .filter(param -> param.isApplicable(apiData, definitionPath, finalCollectionId, method))
         .sorted(Comparator.comparing(ParameterExtension::getName))
@@ -130,9 +136,8 @@ public abstract class EndpointSubCollection extends Endpoint {
       ExtensionRegistry extensionRegistry,
       OgcApiDataV2 apiData,
       String definitionPath,
-      String collectionId,
+      @SuppressWarnings("unused") String collectionId,
       HttpMethods method) {
-    // TODO or do we need collection-specific headers?
     return getHeaders(extensionRegistry, apiData, definitionPath, method);
   }
 
@@ -140,8 +145,9 @@ public abstract class EndpointSubCollection extends Endpoint {
     if (apiData
         .getExtension(CollectionsConfiguration.class)
         .filter(config -> config.getCollectionDefinitionsAreIdentical().orElse(false))
-        .isPresent())
+        .isPresent()) {
       return Optional.ofNullable(apiData.getCollections().keySet().iterator().next());
+    }
 
     return Optional.empty();
   }
@@ -149,18 +155,9 @@ public abstract class EndpointSubCollection extends Endpoint {
   @Override
   protected Optional<String> getOperationId(String name, String... prefixes) {
     // prefixes is never empty and the first prefix is the collectionId or the collectionId template
-    if ("{collectionId}".equals(prefixes[0])) {
+    if (COLLECTION_ID_TEMPLATE.equals(prefixes[0])) {
       prefixes[0] = "collection";
     }
     return super.getOperationId(name, prefixes);
   }
-
-  /* TODO do we need collection-specific path parameters? The API definitions would need to be adapted for this, too
-  ImmutableList<OgcApiPathParameter> getPathParameters(ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath, String collectionId) {
-      return extensionRegistry.getExtensionsForType(OgcApiPathParameter.class)
-              .stream()
-              .filter(param -> param.isApplicable(apiData, definitionPath, collectionId))
-              .collect(ImmutableSet.toImmutableSet());
-  }
-  */
 }

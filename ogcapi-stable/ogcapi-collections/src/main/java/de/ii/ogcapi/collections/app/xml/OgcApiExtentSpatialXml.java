@@ -12,13 +12,15 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(propOrder = {"lowerCorner", "upperCorner"})
+@SuppressWarnings("PMD.FieldNamingConventions")
 public class OgcApiExtentSpatialXml {
 
-  @XmlAttribute public String crs = null;
+  @XmlAttribute public String crs;
 
-  private String LowerCorner = null;
-  private String UpperCorner = null;
+  private String LowerCorner;
+  private String UpperCorner;
 
+  @SuppressWarnings("unused")
   public OgcApiExtentSpatialXml() {}
 
   public OgcApiExtentSpatialXml(String lowerCorner, String upperCorner) {
@@ -27,6 +29,7 @@ public class OgcApiExtentSpatialXml {
     this.crs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
   }
 
+  @SuppressWarnings("unused")
   public OgcApiExtentSpatialXml(String lowerCorner, String upperCorner, String crs) {
     this.LowerCorner = lowerCorner;
     this.UpperCorner = upperCorner;

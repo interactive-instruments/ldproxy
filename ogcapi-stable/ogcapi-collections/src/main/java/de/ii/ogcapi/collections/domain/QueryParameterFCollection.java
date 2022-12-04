@@ -16,8 +16,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn Todo
- * @langDe Todo
+ * @langEn Selects the output format of the response. If no value is provided, the standard HTTP
+ *     content negotiation rules are applied. That is, the "Accept" header will be used to determine
+ *     the format.
+ * @langDe Bestimmt das Ausgabeformat der Antwort. Wird kein Wert angegeben, werden die
+ *     Standard-HTTP-Inhaltsverhandlungsregeln angewendet. Das heißt, der "Accept"-Header wird zur
+ *     Bestimmung des Formats verwendet.
  * @name Collection
  * @endpoints Feature Collection
  */
@@ -38,7 +42,7 @@ public class QueryParameterFCollection extends QueryParameterFSubCollection {
 
   @Override
   public boolean matchesPath(String definitionPath) {
-    return definitionPath.equals("/collections/{collectionId}");
+    return "/collections/{collectionId}".equals(definitionPath);
   }
 
   @Override

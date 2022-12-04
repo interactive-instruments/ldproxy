@@ -15,13 +15,15 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlType(propOrder = {"begin", "end"})
+@SuppressWarnings("PMD.FieldNamingConventions")
 public class OgcApiExtentTemporalXml {
 
-  @XmlAttribute public String trs = null;
+  @XmlAttribute public String trs;
 
-  private String begin = null;
-  private String end = null;
+  private String begin;
+  private String end;
 
+  @SuppressWarnings("unused")
   public OgcApiExtentTemporalXml() {}
 
   public OgcApiExtentTemporalXml(String begin, String end) {
@@ -30,6 +32,7 @@ public class OgcApiExtentTemporalXml {
     this.trs = "http://www.opengis.net/def/uom/ISO-8601/0/Gregorian";
   }
 
+  @SuppressWarnings("unused")
   public OgcApiExtentTemporalXml(String begin, String end, String trs) {
     this.begin = begin;
     this.end = end;

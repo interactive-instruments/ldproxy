@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.collections.app.json;
 
+import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.Collections;
@@ -26,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -61,17 +64,17 @@ public class CollectionsFormatJson implements CollectionsFormatExtension, Confor
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, @NotNull String path) {
 
-    // TODO add examples
-    if (path.equals("/collections")) {
+    if ("/collections".equals(path)) {
       return new ImmutableApiMediaTypeContent.Builder()
           .schema(schemaCollections)
           .schemaRef(Collections.SCHEMA_REF)
           .referencedSchemas(referencedSchemasCollections)
           .ogcApiMediaType(MEDIA_TYPE)
           .build();
-    } else if (path.matches("^/collections/[^//]+/?")) {
+    } else if ("/collections/{collectionId}".equals(path)
+        || path.matches("^/collections/" + COLLECTION_ID_PATTERN + "/?$")) {
       return new ImmutableApiMediaTypeContent.Builder()
           .schema(schemaCollection)
           .schemaRef(OgcApiCollection.SCHEMA_REF)
@@ -80,7 +83,7 @@ public class CollectionsFormatJson implements CollectionsFormatExtension, Confor
           .build();
     }
 
-    throw new RuntimeException("Unexpected path: " + path);
+    throw new IllegalStateException("Unexpected path: " + path);
   }
 
   @Override

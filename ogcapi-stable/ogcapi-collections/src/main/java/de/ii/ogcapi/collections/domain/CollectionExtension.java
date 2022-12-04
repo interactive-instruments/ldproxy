@@ -21,6 +21,11 @@ import java.util.Optional;
 @AutoMultiBind
 public interface CollectionExtension extends ContentExtension {
 
+  @Override
+  default String getResourceName() {
+    return "Collection";
+  }
+
   ImmutableOgcApiCollection.Builder process(
       Builder collection,
       FeatureTypeConfigurationOgcApi featureTypeConfiguration,
@@ -30,9 +35,4 @@ public interface CollectionExtension extends ContentExtension {
       ApiMediaType mediaType,
       List<ApiMediaType> alternateMediaTypes,
       Optional<Locale> language);
-
-  default String getResourceName() {
-    return "Collection";
-  }
-  ;
 }

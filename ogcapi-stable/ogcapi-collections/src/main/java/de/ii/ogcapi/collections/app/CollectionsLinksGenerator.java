@@ -34,25 +34,24 @@ public class CollectionsLinksGenerator extends DefaultLinksGenerator {
             .addAll(
                 super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
 
-    if (licenseUrl.isPresent()) {
-      builder.add(
-          new ImmutableLink.Builder()
-              .href(licenseUrl.get())
-              .rel("license")
-              .title(
-                  licenseName.isPresent() ? licenseName.get() : i18n.get("licenseLink", language))
-              .build());
-    }
+    licenseUrl.ifPresent(
+        s ->
+            builder.add(
+                new ImmutableLink.Builder()
+                    .href(s)
+                    .rel("license")
+                    .title(licenseName.orElseGet(() -> i18n.get("licenseLink", language)))
+                    .build()));
 
-    if (describeFeatureTypeUrl.isPresent()) {
-      builder.add(
-          new ImmutableLink.Builder()
-              .href(describeFeatureTypeUrl.get())
-              .rel("describedby")
-              .type("application/xml")
-              .title(i18n.get("describedByXsdLink", language))
-              .build());
-    }
+    describeFeatureTypeUrl.ifPresent(
+        s ->
+            builder.add(
+                new ImmutableLink.Builder()
+                    .href(s)
+                    .rel("describedby")
+                    .type("application/xml")
+                    .title(i18n.get("describedByXsdLink", language))
+                    .build()));
 
     return builder.build();
   }

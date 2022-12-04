@@ -29,6 +29,23 @@ public abstract class OgcApiCollection extends PageRepresentationWithId {
 
   public static final String SCHEMA_REF = "#/components/schemas/Collection";
 
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<OgcApiCollection> FUNNEL =
+      (from, into) -> {
+        PageRepresentation.FUNNEL.funnel(from, into);
+        from.getExtent().ifPresent(val -> OgcApiExtent.FUNNEL.funnel(val, into));
+        from.getItemType().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getCrs().stream()
+            .sorted()
+            .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getStorageCrs().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getStorageCrsCoordinateEpoch().ifPresent(into::putFloat);
+        from.getExtensions().keySet().stream()
+            .sorted()
+            .forEachOrdered(key -> into.putString(key, StandardCharsets.UTF_8));
+        // we cannot encode the generic extension object
+      };
+
   // Core, part 1
   public abstract Optional<OgcApiExtent> getExtent();
 
@@ -63,21 +80,4 @@ public abstract class OgcApiCollection extends PageRepresentationWithId {
         ? Optional.of((Long) getExtensions().get("itemCount"))
         : Optional.empty();
   }
-
-  @SuppressWarnings("UnstableApiUsage")
-  public static final Funnel<OgcApiCollection> FUNNEL =
-      (from, into) -> {
-        PageRepresentation.FUNNEL.funnel(from, into);
-        from.getExtent().ifPresent(val -> OgcApiExtent.FUNNEL.funnel(val, into));
-        from.getItemType().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getCrs().stream()
-            .sorted()
-            .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getStorageCrs().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getStorageCrsCoordinateEpoch().ifPresent(val -> into.putFloat(val));
-        from.getExtensions().keySet().stream()
-            .sorted()
-            .forEachOrdered(key -> into.putString(key, StandardCharsets.UTF_8));
-        // we cannot encode the generic extension object
-      };
 }

@@ -27,6 +27,7 @@ public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache
 
   public abstract Schema<?> getSchema();
 
+  @Override
   public abstract SchemaValidator getSchemaValidator();
 
   @Override
@@ -59,7 +60,7 @@ public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache
         () ->
             apiData.getId().equals(getApiId())
                 && method == HttpMethods.GET
-                && definitionPath.equals("/collections/{collectionId}")
+                && "/collections/{collectionId}".equals(definitionPath)
                 && collectionId.equals(getCollectionId()));
   }
 
@@ -78,7 +79,9 @@ public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache
   @Override
   public Set<String> getFilterParameters(
       Set<String> filterParameters, OgcApiDataV2 apiData, String collectionId) {
-    if (!isEnabledForApi(apiData)) return filterParameters;
+    if (!isEnabledForApi(apiData)) {
+      return filterParameters;
+    }
 
     return ImmutableSet.<String>builder().addAll(filterParameters).add(getId(collectionId)).build();
   }

@@ -20,7 +20,6 @@ import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.CollectionExtent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -121,106 +120,143 @@ public class EndpointCollection extends EndpointSubCollection {
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     ValidationResult result = super.onStartup(api, apiValidation);
 
-    if (apiValidation == MODE.NONE) return result;
+    if (apiValidation == MODE.NONE) {
+      return result;
+    }
 
     ImmutableValidationResult.Builder builder =
         ImmutableValidationResult.builder().from(result).mode(apiValidation);
 
     for (FeatureTypeConfigurationOgcApi collectionData : api.getData().getCollections().values()) {
-      builder =
-          FoundationValidator.validateLinks(
-              builder,
-              collectionData.getAdditionalLinks(),
-              "/collections/" + collectionData.getId());
-
-      Optional<String> persistentUriTemplate = collectionData.getPersistentUriTemplate();
-      if (persistentUriTemplate.isPresent()) {
-        Pattern valuePattern = Pattern.compile("\\{\\{[\\w\\.]+( ?\\| ?[\\w]+(:'[^']*')*)*\\}\\}");
-        Matcher matcher = valuePattern.matcher(persistentUriTemplate.get());
-        if (!matcher.find()) {
-          builder.addStrictErrors(
-              MessageFormat.format(
-                  "Persistent URI template ''{0}'' in collection ''{1}'' does not have a valid value pattern.",
-                  persistentUriTemplate.get(), collectionData.getId()));
-        }
-      }
-
-      Optional<CollectionExtent> extent = api.getData().getExtent(collectionData.getId());
-      if (extent.isPresent()) {
-        Optional<BoundingBox> spatial = extent.get().getSpatial();
-        if (spatial.isPresent() && Objects.nonNull(spatial.get())) {
-          BoundingBox bbox = spatial.get();
-          if (!ImmutableSet.of(4326, 4979).contains(bbox.getEpsgCrs().getCode())
-              || bbox.getEpsgCrs().getForceAxisOrder() != EpsgCrs.Force.LON_LAT) {
-            builder.addStrictErrors(
-                MessageFormat.format(
-                    "The spatial extent in collection ''{0}'' must be in CRS84 or CRS84h. Found: ''{1}, {2}''.",
-                    collectionData.getId(),
-                    bbox.getEpsgCrs().toSimpleString(),
-                    bbox.getEpsgCrs().getForceAxisOrder()));
-          }
-          if (bbox.getXmin() < -180.0 || bbox.getXmin() > 180.0) {
-            builder.addStrictErrors(
-                MessageFormat.format(
-                    "The spatial extent in collection ''{0}'' has a longitude value that is not between -180 and 180. Found: ''{1}''.",
-                    collectionData.getId(), bbox.getXmin()));
-          }
-          if (bbox.getXmax() < -180.0 || bbox.getXmax() > 180.0) {
-            builder.addStrictErrors(
-                MessageFormat.format(
-                    "The spatial extent in collection ''{0}'' has a longitude value that is not between -180 and 180. Found: ''{1}''.",
-                    collectionData.getId(), bbox.getXmax()));
-          }
-          if (bbox.getYmin() < -90.0 || bbox.getYmin() > 90.0) {
-            builder.addStrictErrors(
-                MessageFormat.format(
-                    "The spatial extent in collection ''{0}'' has a latitude value that is not between -90 and 90. Found: ''{1}''.",
-                    collectionData.getId(), bbox.getYmin()));
-          }
-          if (bbox.getYmax() < -90.0 || bbox.getYmax() > 90.0) {
-            builder.addStrictErrors(
-                MessageFormat.format(
-                    "The spatial extent in collection ''{0}'' has a latitude value that is not between -90 and 90. Found: ''{1}''.",
-                    collectionData.getId(), bbox.getYmax()));
-          }
-          if (bbox.getYmax() < bbox.getYmin()) {
-            builder.addStrictErrors(
-                MessageFormat.format(
-                    "The spatial extent in collection ''{0}'' has a maxmimum latitude value ''{1}'' that is lower than the minimum value ''{2}''.",
-                    collectionData.getId(), bbox.getYmax(), bbox.getYmin()));
-          }
-        }
-        Optional<TemporalExtent> temporal = extent.get().getTemporal();
-        if (temporal.isPresent() && Objects.nonNull(temporal.get())) {
-          long start =
-              Objects.nonNull(temporal.get().getStart())
-                  ? temporal.get().getStart()
-                  : Long.MIN_VALUE;
-          long end =
-              Objects.nonNull(temporal.get().getEnd()) ? temporal.get().getEnd() : Long.MAX_VALUE;
-          if (end < start) {
-            builder.addStrictErrors(
-                MessageFormat.format(
-                    "The temporal extent in collection ''{0}'' has an end ''{1}'' before the start ''{2}''.",
-                    collectionData.getId(),
-                    Instant.ofEpochMilli(end).truncatedTo(ChronoUnit.SECONDS).toString(),
-                    Instant.ofEpochMilli(start).truncatedTo(ChronoUnit.SECONDS).toString()));
-          }
-        }
-      }
+      validateCollection(builder, api, collectionData);
     }
 
     return builder.build();
   }
 
+  private void validateCollection(
+      ImmutableValidationResult.Builder builder,
+      OgcApi api,
+      FeatureTypeConfigurationOgcApi collectionData) {
+    FoundationValidator.validateLinks(
+        builder, collectionData.getAdditionalLinks(), "/collections/" + collectionData.getId());
+
+    collectionData
+        .getPersistentUriTemplate()
+        .ifPresent(
+            persistentUriTemplate ->
+                validateUriTemplate(builder, collectionData, persistentUriTemplate));
+
+    api.getData()
+        .getExtent(collectionData.getId())
+        .ifPresent(
+            extent -> {
+              extent
+                  .getSpatial()
+                  .ifPresent(
+                      bbox -> {
+                        validateBoundingBox(builder, collectionData, bbox);
+                      });
+              extent
+                  .getTemporal()
+                  .ifPresent(
+                      interval -> {
+                        validateInterval(builder, collectionData, interval);
+                      });
+            });
+  }
+
+  private void validateInterval(
+      ImmutableValidationResult.Builder builder,
+      FeatureTypeConfigurationOgcApi collectionData,
+      TemporalExtent interval) {
+    long start = Objects.nonNull(interval.getStart()) ? interval.getStart() : Long.MIN_VALUE;
+    long end = Objects.nonNull(interval.getEnd()) ? interval.getEnd() : Long.MAX_VALUE;
+    if (end < start) {
+      builder.addStrictErrors(
+          MessageFormat.format(
+              "The temporal extent in collection ''{0}'' has an end ''{1}'' before the start ''{2}''.",
+              collectionData.getId(),
+              Instant.ofEpochMilli(end).truncatedTo(ChronoUnit.SECONDS).toString(),
+              Instant.ofEpochMilli(start).truncatedTo(ChronoUnit.SECONDS).toString()));
+    }
+  }
+
+  @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
+  private void validateBoundingBox(
+      ImmutableValidationResult.Builder builder,
+      FeatureTypeConfigurationOgcApi collectionData,
+      BoundingBox bbox) {
+    if (!ImmutableSet.of(4326, 4979).contains(bbox.getEpsgCrs().getCode())
+        || bbox.getEpsgCrs().getForceAxisOrder() != EpsgCrs.Force.LON_LAT) {
+      builder.addStrictErrors(
+          MessageFormat.format(
+              "The spatial extent in collection ''{0}'' must be in CRS84 or CRS84h. Found: ''{1}, {2}''.",
+              collectionData.getId(),
+              bbox.getEpsgCrs().toSimpleString(),
+              bbox.getEpsgCrs().getForceAxisOrder()));
+    }
+
+    if (bbox.getXmin() < -180.0 || bbox.getXmin() > 180.0) {
+      builder.addStrictErrors(
+          MessageFormat.format(
+              "The spatial extent in collection ''{0}'' has a longitude value that is not between -180 and 180. Found: ''{1}''.",
+              collectionData.getId(), bbox.getXmin()));
+    }
+
+    if (bbox.getXmax() < -180.0 || bbox.getXmax() > 180.0) {
+      builder.addStrictErrors(
+          MessageFormat.format(
+              "The spatial extent in collection ''{0}'' has a longitude value that is not between -180 and 180. Found: ''{1}''.",
+              collectionData.getId(), bbox.getXmax()));
+    }
+
+    if (bbox.getYmin() < -90.0 || bbox.getYmin() > 90.0) {
+      builder.addStrictErrors(
+          MessageFormat.format(
+              "The spatial extent in collection ''{0}'' has a latitude value that is not between -90 and 90. Found: ''{1}''.",
+              collectionData.getId(), bbox.getYmin()));
+    }
+
+    if (bbox.getYmax() < -90.0 || bbox.getYmax() > 90.0) {
+      builder.addStrictErrors(
+          MessageFormat.format(
+              "The spatial extent in collection ''{0}'' has a latitude value that is not between -90 and 90. Found: ''{1}''.",
+              collectionData.getId(), bbox.getYmax()));
+    }
+
+    if (bbox.getYmax() < bbox.getYmin()) {
+      builder.addStrictErrors(
+          MessageFormat.format(
+              "The spatial extent in collection ''{0}'' has a maxmimum latitude value ''{1}'' that is lower than the minimum value ''{2}''.",
+              collectionData.getId(), bbox.getYmax(), bbox.getYmin()));
+    }
+  }
+
+  private void validateUriTemplate(
+      ImmutableValidationResult.Builder builder,
+      FeatureTypeConfigurationOgcApi collectionData,
+      String persistentUriTemplate) {
+    Pattern valuePattern = Pattern.compile("\\{\\{[\\w\\.]+( ?\\| ?\\w+(:'[^']*')*)*\\}\\}");
+    Matcher matcher = valuePattern.matcher(persistentUriTemplate);
+    if (!matcher.find()) {
+      builder.addStrictErrors(
+          MessageFormat.format(
+              "Persistent URI template ''{0}'' in collection ''{1}'' does not have a valid value pattern.",
+              persistentUriTemplate, collectionData.getId()));
+    }
+  }
+
   @Override
   public List<? extends FormatExtension> getFormats() {
-    if (formats == null)
+    if (formats == null) {
       formats = extensionRegistry.getExtensionsForType(CollectionsFormatExtension.class);
+    }
     return formats;
   }
 
   @Override
+  @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
@@ -231,8 +267,8 @@ public class EndpointCollection extends EndpointSubCollection {
         getQueryParameters(extensionRegistry, apiData, path);
     List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
     Optional<OgcApiPathParameter> optCollectionIdParam =
-        pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-    if (!optCollectionIdParam.isPresent()) {
+        pathParameters.stream().filter(param -> "collectionId".equals(param.getName())).findAny();
+    if (optCollectionIdParam.isEmpty()) {
       LOGGER.error(
           "Path parameter 'collectionId' missing for resource at path '"
               + path
@@ -241,7 +277,7 @@ public class EndpointCollection extends EndpointSubCollection {
       final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
       final boolean explode = collectionIdParam.isExplodeInOpenApi(apiData);
       final List<String> collectionIds =
-          (explode) ? collectionIdParam.getValues(apiData) : ImmutableList.of("{collectionId}");
+          explode ? collectionIdParam.getValues(apiData) : ImmutableList.of("{collectionId}");
       for (String collectionId : collectionIds) {
         FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
         String operationSummary =

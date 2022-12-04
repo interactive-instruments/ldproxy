@@ -12,6 +12,7 @@ import de.ii.ogcapi.common.domain.OgcApiExtentSpatial;
 import de.ii.ogcapi.common.domain.OgcApiExtentTemporal;
 import java.util.Locale;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
@@ -23,9 +24,9 @@ public class OgcApiExtentXml {
   private final OgcApiExtentSpatial spatial;
   private final OgcApiExtentTemporal temporal;
 
-  public OgcApiExtentXml(OgcApiExtent extent) {
-    this.spatial = extent.getSpatial().orElse(null);
-    this.temporal = extent.getTemporal().orElse(null);
+  public OgcApiExtentXml(@Nullable OgcApiExtent extent) {
+    this.spatial = extent != null ? extent.getSpatial().orElse(null) : null;
+    this.temporal = extent != null ? extent.getTemporal().orElse(null) : null;
   }
 
   @XmlElement(name = "Spatial", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")

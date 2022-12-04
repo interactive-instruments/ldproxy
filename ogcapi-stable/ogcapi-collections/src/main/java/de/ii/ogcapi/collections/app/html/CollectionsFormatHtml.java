@@ -27,7 +27,6 @@ import de.ii.ogcapi.html.domain.NavigationDTO;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
-import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -42,9 +41,9 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
           .label("HTML")
           .parameter("html")
           .build();
-  private final Schema schema = new StringSchema().example("<html>...</html>");
+  private static final String SCHEMA_REF = "#/components/schemas/htmlSchema";
+  private final Schema<?> schema = new StringSchema().example("<html>...</html>");
   private final I18n i18n;
-  private static final String schemaRef = "#/components/schemas/htmlSchema";
 
   @Inject
   public CollectionsFormatHtml(I18n i18n) {
@@ -65,7 +64,7 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schema)
-        .schemaRef(schemaRef)
+        .schemaRef(SCHEMA_REF)
         .ogcApiMediaType(MEDIA_TYPE)
         .build();
   }
@@ -110,25 +109,17 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
 
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
-    OgcApiCollectionsView collectionsView =
-        new OgcApiCollectionsView(
-            api.getData(),
-            collections,
-            api.getSpatialExtent(),
-            breadCrumbs,
-            requestContext.getStaticUrlPrefix(),
-            htmlConfig,
-            isNoIndexEnabledForApi(api.getData()),
-            showCollectionDescriptionsInOverview(api.getData()),
-            i18n,
-            requestContext.getLanguage(),
-            Optional.empty()
-            /* TODO no access to feature providers at this point
-            providers.getFeatureProvider(api.getData()).getData().getDataSourceUrl()
-            */
-            );
-
-    return collectionsView;
+    return new OgcApiCollectionsView(
+        api.getData(),
+        collections,
+        api.getSpatialExtent(),
+        breadCrumbs,
+        requestContext.getStaticUrlPrefix(),
+        htmlConfig,
+        isNoIndexEnabledForApi(api.getData()),
+        showCollectionDescriptionsInOverview(api.getData()),
+        i18n,
+        requestContext.getLanguage());
   }
 
   @Override
@@ -158,6 +149,7 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
             .add(new NavigationDTO(ogcApiCollection.getTitle().orElse(ogcApiCollection.getId())))
             .build();
 
+    @SuppressWarnings("ConstantConditions")
     HtmlConfiguration htmlConfig =
         api.getData()
             .getCollections()
@@ -165,19 +157,16 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
             .getExtension(HtmlConfiguration.class)
             .orElse(null);
 
-    OgcApiCollectionView collectionView =
-        new OgcApiCollectionView(
-            api.getData(),
-            ogcApiCollection,
-            api.getSpatialExtent(ogcApiCollection.getId()),
-            breadCrumbs,
-            requestContext.getStaticUrlPrefix(),
-            htmlConfig,
-            isNoIndexEnabledForApi(api.getData()),
-            requestContext.getUriCustomizer(),
-            i18n,
-            requestContext.getLanguage());
-
-    return collectionView;
+    return new OgcApiCollectionView(
+        api.getData(),
+        ogcApiCollection,
+        api.getSpatialExtent(ogcApiCollection.getId()),
+        breadCrumbs,
+        requestContext.getStaticUrlPrefix(),
+        htmlConfig,
+        isNoIndexEnabledForApi(api.getData()),
+        requestContext.getUriCustomizer(),
+        i18n,
+        requestContext.getLanguage());
   }
 }

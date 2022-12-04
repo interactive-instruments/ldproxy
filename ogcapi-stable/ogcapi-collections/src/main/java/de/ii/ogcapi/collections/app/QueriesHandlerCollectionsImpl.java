@@ -52,6 +52,8 @@ import org.immutables.value.Value;
 public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections {
 
   private final I18n i18n;
+  private final ExtensionRegistry extensionRegistry;
+  private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
   public enum Query implements QueryIdentifier {
     COLLECTIONS,
@@ -60,8 +62,6 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
 
   @Value.Immutable
   public interface QueryInputCollections extends QueryInput {
-    boolean getIncludeLinkHeader();
-
     List<Link> getAdditionalLinks();
   }
 
@@ -69,13 +69,8 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
   public interface QueryInputFeatureCollection extends QueryInput {
     String getCollectionId();
 
-    boolean getIncludeLinkHeader();
-
     List<Link> getAdditionalLinks();
   }
-
-  private final ExtensionRegistry extensionRegistry;
-  private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
   @Inject
   public QueriesHandlerCollectionsImpl(ExtensionRegistry extensionRegistry, I18n i18n) {
@@ -148,6 +143,7 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
     Collections responseObject = collections.build();
 
     Date lastModified = getLastModified(queryInput);
+    @SuppressWarnings("UnstableApiUsage")
     EntityTag etag =
         !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
                 || api.getData()
@@ -158,11 +154,13 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
                 responseObject, Collections.FUNNEL, outputFormatExtension.getMediaType().label())
             : null;
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
 
     return prepareSuccessResponse(
             requestContext,
-            queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null,
+            queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : ImmutableList.of(),
             HeaderCaching.of(lastModified, etag, queryInput),
             null,
             HeaderContentDisposition.of(
@@ -231,6 +229,7 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
     OgcApiCollection responseObject = ogcApiCollection.build();
 
     Date lastModified = getLastModified(queryInput);
+    @SuppressWarnings("UnstableApiUsage")
     EntityTag etag =
         !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
                 || api.getData()
@@ -243,11 +242,13 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
                 outputFormatExtension.getMediaType().label())
             : null;
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
 
     return prepareSuccessResponse(
             requestContext,
-            queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : null,
+            queryInput.getIncludeLinkHeader() ? responseObject.getLinks() : ImmutableList.of(),
             HeaderCaching.of(lastModified, etag, queryInput),
             null,
             HeaderContentDisposition.of(
@@ -263,9 +264,5 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
 
   private List<CollectionsExtension> getCollectionsExtenders() {
     return extensionRegistry.getExtensionsForType(CollectionsExtension.class);
-  }
-
-  private void addLinks(Response.ResponseBuilder response, ImmutableList<Link> links) {
-    links.stream().forEach(link -> response.links(link.getLink()));
   }
 }

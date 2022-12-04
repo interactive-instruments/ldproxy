@@ -20,13 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class AbstractPathParameterCollectionId implements OgcApiPathParameter {
-
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(AbstractPathParameterCollectionId.class);
 
   public static final String COLLECTION_ID_PATTERN = "[\\w\\-]+";
 
@@ -54,8 +49,7 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
           apiData.hashCode(),
           !apiData
               .getExtension(CollectionsConfiguration.class)
-              .get()
-              .getCollectionIdAsParameter()
+              .flatMap(CollectionsConfiguration::getCollectionIdAsParameter)
               .orElse(false));
     }
 
@@ -68,7 +62,7 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
       apiCollectionMap.put(
           apiData.hashCode(),
           apiData.getCollections().keySet().stream()
-              .filter(collectionId -> apiData.isCollectionEnabled(collectionId))
+              .filter(apiData::isCollectionEnabled)
               .collect(Collectors.toUnmodifiableList()));
     }
 

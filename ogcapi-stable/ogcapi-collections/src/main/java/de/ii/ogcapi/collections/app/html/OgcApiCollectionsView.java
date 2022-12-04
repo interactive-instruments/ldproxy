@@ -26,13 +26,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("PMD.TooManyFields")
 public class OgcApiCollectionsView extends OgcApiView {
   private final List<OgcApiCollection> collections;
   private final boolean showCollectionDescriptions;
   public final boolean hasGeometry;
   private final I18n i18n;
   private final Optional<Locale> language;
-  public String dataSourceUrl;
   public String keywords;
   public List<String> crs;
   public ApiMetadata metadata;
@@ -56,8 +56,7 @@ public class OgcApiCollectionsView extends OgcApiView {
       boolean noIndex,
       boolean showCollectionDescriptions,
       I18n i18n,
-      Optional<Locale> language,
-      Optional<String> dataSourceUrl) {
+      Optional<Locale> language) {
     super(
         "collections.mustache",
         Charsets.UTF_8,
@@ -76,10 +75,6 @@ public class OgcApiCollectionsView extends OgcApiView {
     this.crs = collections.getCrs();
     this.hasGeometry = spatialExtent.isPresent();
 
-    if (dataSourceUrl.isPresent()) {
-      this.dataSourceUrl = dataSourceUrl.get();
-    }
-
     this.collectionsTitle = i18n.get("collectionsTitle", language);
     this.supportedCrsTitle = i18n.get("supportedCrsTitle", language);
     this.metadataTitle = i18n.get("metadataTitle", language);
@@ -94,7 +89,9 @@ public class OgcApiCollectionsView extends OgcApiView {
   public List<Link> getLinks() {
     return links.stream()
         .filter(
-            link -> !link.getRel().matches("^(?:self|alternate|describedby|license|enclosure)$"))
+            link ->
+                link.getRel() == null
+                    || !link.getRel().matches("^self|alternate|describedby|license|enclosure$"))
         .collect(Collectors.toList());
   }
 
@@ -104,27 +101,29 @@ public class OgcApiCollectionsView extends OgcApiView {
 
   public List<Link> getMetadataLinks() {
     return links.stream()
-        .filter(link -> link.getRel().matches("^(?:describedby)$"))
+        .filter(link -> link.getRel() == null || link.getRel().matches("^describedby$"))
         .collect(Collectors.toList());
   }
 
+  @SuppressWarnings("unused")
   public boolean hasLicense() {
     return !getLicenseLinks().isEmpty();
   }
 
   public List<Link> getLicenseLinks() {
     return links.stream()
-        .filter(link -> link.getRel().matches("^(?:license)$"))
+        .filter(link -> link.getRel() == null || link.getRel().matches("^license$"))
         .collect(Collectors.toList());
   }
 
+  @SuppressWarnings("unused")
   public boolean hasDownload() {
     return !getDownloadLinks().isEmpty();
   }
 
   public List<Link> getDownloadLinks() {
     return links.stream()
-        .filter(link -> link.getRel().matches("^(?:enclosure)$"))
+        .filter(link -> link.getRel() == null || link.getRel().matches("^enclosure$"))
         .collect(Collectors.toList());
   }
 
@@ -146,13 +145,15 @@ public class OgcApiCollectionsView extends OgcApiView {
                     collection.getId(),
                     "hrefcollection",
                     collection.getLinks().stream()
-                        .filter(link -> link.getRel().equalsIgnoreCase("self"))
+                        .filter(
+                            link -> link.getRel() == null || link.getRel().equalsIgnoreCase("self"))
                         .findFirst()
-                        .map(link -> link.getHref())
+                        .map(Link::getHref)
                         .orElse(""),
                     "hrefitems",
                     collection.getLinks().stream()
-                        .filter(link -> link.getRel().equalsIgnoreCase("self"))
+                        .filter(
+                            link -> link.getRel() == null || link.getRel().equalsIgnoreCase("self"))
                         .findFirst()
                         .map(link -> link.getHref() + "/items")
                         .orElse(""),

@@ -23,18 +23,17 @@ import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("PMD.TooManyFields")
 public class OgcApiCollectionView extends OgcApiDatasetView {
 
   private final OgcApiCollection collection;
   public String itemType;
   public final Optional<Long> itemCount;
   public boolean spatialSearch;
-  public Map<String, String> temporalExtent;
   public List<String> crs;
   public boolean hasGeometry;
   public String storageCrs;
@@ -88,12 +87,12 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
         collection.getExtent(),
         language);
     this.collection = collection;
-    this.isDataset = Objects.nonNull(htmlConfig) ? htmlConfig.getSchemaOrgEnabled() : false;
+    this.isDataset = Boolean.TRUE.equals(htmlConfig.getSchemaOrgEnabled());
 
     this.items =
         collection.getLinks().stream()
-            .filter(link -> link.getRel().equalsIgnoreCase("items"))
-            .filter(link -> link.getType().equalsIgnoreCase("text/html"))
+            .filter(link -> "items".equalsIgnoreCase(link.getRel()))
+            .filter(link -> "text/html".equalsIgnoreCase(link.getType()))
             .findFirst()
             .orElse(null);
     this.crs = collection.getCrs();
@@ -119,6 +118,7 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
     this.styleInfosTitle = i18n.get("styleInfosTitle", language);
     this.mainLinksTitle = i18n.get("mainLinksTitle", language);
     this.collectionInformationTitle = i18n.get("collectionInformationTitle", language);
+    //noinspection deprecation
     this.mapClient =
         new ImmutableMapClient.Builder()
             .backgroundUrl(
@@ -142,27 +142,29 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
 
   public List<Link> getMetadataLinks() {
     return links.stream()
-        .filter(link -> link.getRel().matches("^(?:describedby)$"))
+        .filter(link -> Objects.equals(link.getRel(), "describedby"))
         .collect(Collectors.toList());
   }
 
+  @SuppressWarnings("unused")
   public boolean hasLicense() {
     return !getLicenseLinks().isEmpty();
   }
 
   public List<Link> getLicenseLinks() {
     return links.stream()
-        .filter(link -> link.getRel().matches("^(?:license)$"))
+        .filter(link -> Objects.equals(link.getRel(), "license"))
         .collect(Collectors.toUnmodifiableList());
   }
 
+  @SuppressWarnings("unused")
   public boolean hasDownload() {
     return !getDownloadLinks().isEmpty();
   }
 
   public List<Link> getDownloadLinks() {
     return links.stream()
-        .filter(link -> link.getRel().matches("^(?:enclosure)$"))
+        .filter(link -> Objects.equals(link.getRel(), "enclosure"))
         .collect(Collectors.toUnmodifiableList());
   }
 
@@ -180,7 +182,9 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
   public List<Link> getTiles() {
     return links.stream()
         .filter(
-            link -> link.getRel().startsWith("http://www.opengis.net/def/rel/ogc/1.0/tilesets-"))
+            link ->
+                link.getRel() != null
+                    && link.getRel().startsWith("http://www.opengis.net/def/rel/ogc/1.0/tilesets-"))
         .collect(Collectors.toUnmodifiableList());
   }
 
@@ -199,13 +203,14 @@ public class OgcApiCollectionView extends OgcApiDatasetView {
     return collection;
   }
 
+  @SuppressWarnings("unused")
   public Optional<String> getSchemaOrgDataset() {
     // for cases with a single collection, that collection is not reported as a sub-dataset
     return apiData.getCollections().size() > 1
         ? Optional.of(
             getSchemaOrgDataset(
                 apiData,
-                Optional.of(apiData.getCollections().get(collection.getId())),
+                Optional.ofNullable(apiData.getCollections().get(collection.getId())),
                 uriCustomizer
                     .clearParameters()
                     .removeLastPathSegments(2)

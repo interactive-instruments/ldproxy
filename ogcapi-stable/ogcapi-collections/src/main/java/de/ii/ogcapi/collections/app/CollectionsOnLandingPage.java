@@ -25,6 +25,7 @@ import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
+import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -66,39 +67,14 @@ public class CollectionsOnLandingPage implements LandingPageExtension {
 
     List<String> collectionNames =
         apiData.getCollections().values().stream()
-            .filter(featureType -> featureType.getEnabled())
-            .map(featureType -> featureType.getLabel())
+            .filter(FeatureTypeConfigurationOgcApi::getEnabled)
+            .map(FeatureTypeConfiguration::getLabel)
             .collect(Collectors.toList());
     String suffix =
-        (collectionNames.size() > 0 && collectionNames.size() <= 4)
-            ? " (" + String.join(", ", collectionNames) + ")"
+        !collectionNames.isEmpty() && collectionNames.size() <= 4
+            ? String.format(" (%s)", String.join(", ", collectionNames))
             : "";
-
-    landingPageBuilder
-        .addLinks(
-            new ImmutableLink.Builder()
-                .href(
-                    uriCustomizer
-                        .copy()
-                        .ensureNoTrailingSlash()
-                        .ensureLastPathSegment("collections")
-                        .removeParameters("f")
-                        .toString())
-                .rel("data")
-                .title(i18n.get("dataLink", language) + suffix)
-                .build())
-        .addLinks(
-            new ImmutableLink.Builder()
-                .href(
-                    uriCustomizer
-                        .copy()
-                        .ensureNoTrailingSlash()
-                        .ensureLastPathSegment("collections")
-                        .removeParameters("f")
-                        .toString())
-                .rel("http://www.opengis.net/def/rel/ogc/1.0/data")
-                .title(i18n.get("dataLink", language) + suffix)
-                .build());
+    addDataLinks(landingPageBuilder, uriCustomizer, language, suffix);
 
     ImmutableList.Builder<Link> distributionLinks =
         new ImmutableList.Builder<Link>()
@@ -106,20 +82,19 @@ public class CollectionsOnLandingPage implements LandingPageExtension {
                 apiData
                     .getExtension(CollectionsConfiguration.class)
                     .map(CollectionsConfiguration::getAdditionalLinks)
-                    .orElse(ImmutableList.<Link>of())
+                    .orElse(ImmutableList.of())
                     .stream()
                     .filter(link -> Objects.equals(link.getRel(), "enclosure"))
                     .collect(Collectors.toUnmodifiableList()));
 
     // for cases with a single collection, that collection is not reported as a sub-dataset and we
-    // need to
-    // determine the distribution links (enclosure links provided in additonalLinks and the regular
-    // items
-    // links to the features in the API)
+    // need to determine the distribution links (enclosure links provided in additonalLinks and the
+    // regular items links to the features in the API)
     if (apiData.getCollections().size() == 1) {
       String collectionId = apiData.getCollections().keySet().iterator().next();
       FeatureTypeConfigurationOgcApi featureTypeConfiguration =
           apiData.getCollections().get(collectionId);
+      //noinspection ConstantConditions
       distributionLinks.addAll(
           featureTypeConfiguration.getAdditionalLinks().stream()
               .filter(link -> Objects.equals(link.getRel(), "enclosure"))
@@ -156,5 +131,37 @@ public class CollectionsOnLandingPage implements LandingPageExtension {
     landingPageBuilder.putExtensions("datasetDownloadLinks", distributionLinks.build());
 
     return landingPageBuilder;
+  }
+
+  private void addDataLinks(
+      Builder landingPageBuilder,
+      URICustomizer uriCustomizer,
+      Optional<Locale> language,
+      String suffix) {
+    landingPageBuilder
+        .addLinks(
+            new ImmutableLink.Builder()
+                .href(
+                    uriCustomizer
+                        .copy()
+                        .ensureNoTrailingSlash()
+                        .ensureLastPathSegment("collections")
+                        .removeParameters("f")
+                        .toString())
+                .rel("data")
+                .title(i18n.get("dataLink", language) + suffix)
+                .build())
+        .addLinks(
+            new ImmutableLink.Builder()
+                .href(
+                    uriCustomizer
+                        .copy()
+                        .ensureNoTrailingSlash()
+                        .ensureLastPathSegment("collections")
+                        .removeParameters("f")
+                        .toString())
+                .rel("http://www.opengis.net/def/rel/ogc/1.0/data")
+                .title(i18n.get("dataLink", language) + suffix)
+                .build());
   }
 }
