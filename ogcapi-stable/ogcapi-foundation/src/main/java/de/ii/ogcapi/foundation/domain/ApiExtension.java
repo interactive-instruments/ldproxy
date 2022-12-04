@@ -12,15 +12,16 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.util.Objects;
 import java.util.function.Predicate;
+import javax.validation.constraints.NotNull;
 
 @AutoMultiBind
 public interface ApiExtension {
 
-  default boolean isEnabledForApi(OgcApiDataV2 apiData) {
+  default boolean isEnabledForApi(@NotNull OgcApiDataV2 apiData) {
     return isExtensionEnabled(apiData, getBuildingBlockConfigurationType());
   }
 
-  default boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+  default boolean isEnabledForApi(@NotNull OgcApiDataV2 apiData, @NotNull String collectionId) {
     return isExtensionEnabled(
         apiData.getCollections().get(collectionId), getBuildingBlockConfigurationType());
   }
@@ -30,7 +31,7 @@ public interface ApiExtension {
   }
 
   default <T extends ExtensionConfiguration> boolean isExtensionEnabled(
-      ExtendableConfiguration extendableConfiguration, Class<T> clazz) {
+      @NotNull ExtendableConfiguration extendableConfiguration, @NotNull Class<T> clazz) {
     return Objects.nonNull(extendableConfiguration)
         && extendableConfiguration
             .getExtension(clazz)
@@ -39,7 +40,9 @@ public interface ApiExtension {
   }
 
   default <T extends ExtensionConfiguration> boolean isExtensionEnabled(
-      ExtendableConfiguration extendableConfiguration, Class<T> clazz, Predicate<T> predicate) {
+      @NotNull ExtendableConfiguration extendableConfiguration,
+      @NotNull Class<T> clazz,
+      @NotNull Predicate<T> predicate) {
     return Objects.nonNull(extendableConfiguration)
         && extendableConfiguration
             .getExtension(clazz)
@@ -48,7 +51,7 @@ public interface ApiExtension {
             .isPresent();
   }
 
-  default ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+  default ValidationResult onStartup(@NotNull OgcApi api, @NotNull MODE apiValidation) {
     // optional start actions
     return ValidationResult.of();
   }

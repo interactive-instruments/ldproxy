@@ -8,6 +8,7 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import javax.validation.constraints.NotNull;
 
 @AutoMultiBind
 public interface FormatExtension extends ApiExtension {
@@ -28,7 +29,7 @@ public interface FormatExtension extends ApiExtension {
    * @return the Schema and an optional example object for this format and a GET operation on this
    *     resource in this API
    */
-  ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path);
+  ApiMediaTypeContent getContent(@NotNull OgcApiDataV2 apiData, @NotNull String path);
 
   /**
    * @param apiData information about the API
@@ -36,7 +37,8 @@ public interface FormatExtension extends ApiExtension {
    * @param method the HTTP method of the operation
    * @return the Schema and an optional example object for this format and the resource in this API
    */
-  default ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
+  default ApiMediaTypeContent getContent(
+      @NotNull OgcApiDataV2 apiData, @NotNull String path, @NotNull HttpMethods method) {
     if (method == HttpMethods.GET) {
       return getContent(apiData, path);
     }
@@ -52,7 +54,7 @@ public interface FormatExtension extends ApiExtension {
    *     resource in this API
    */
   default ApiMediaTypeContent getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
+      @NotNull OgcApiDataV2 apiData, @NotNull String path, @NotNull HttpMethods method) {
     return null;
   }
 

@@ -15,6 +15,7 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import javax.validation.constraints.NotNull;
 
 @AutoMultiBind
 public interface OgcApiQueryParameter extends ParameterExtension {
@@ -23,20 +24,29 @@ public interface OgcApiQueryParameter extends ParameterExtension {
     return "form";
   }
 
-  boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method);
+  boolean isApplicable(
+      @NotNull OgcApiDataV2 apiData, @NotNull String definitionPath, @NotNull HttpMethods method);
 
   default boolean isApplicable(
-      OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
+      @NotNull OgcApiDataV2 apiData,
+      @NotNull String definitionPath,
+      @NotNull String collectionId,
+      @NotNull HttpMethods method) {
     return isApplicable(apiData, definitionPath, method);
   }
 
   default Set<String> getFilterParameters(
-      Set<String> filterParameters, OgcApiDataV2 apiData, String collectionId) {
+      @NotNull Set<String> filterParameters,
+      @NotNull OgcApiDataV2 apiData,
+      @NotNull String collectionId) {
     return filterParameters;
   }
 
   default void updateOpenApiDefinition(
-      OgcApiDataV2 apiData, Optional<String> collectionId, OpenAPI openAPI, Operation op) {
+      @NotNull OgcApiDataV2 apiData,
+      @NotNull Optional<String> collectionId,
+      @NotNull OpenAPI openAPI,
+      @NotNull Operation op) {
     String id = getId(collectionId);
     op.addParametersItem(new Parameter().$ref("#/components/parameters/" + id));
     if (Objects.isNull(openAPI.getComponents().getParameters().get(id))) {
@@ -44,7 +54,8 @@ public interface OgcApiQueryParameter extends ParameterExtension {
     }
   }
 
-  private Parameter newQueryParameter(OgcApiDataV2 apiData, Optional<String> collectionId) {
+  private Parameter newQueryParameter(
+      @NotNull OgcApiDataV2 apiData, @NotNull Optional<String> collectionId) {
     return new io.swagger.v3.oas.models.parameters.QueryParameter()
         .name(getName())
         .description(getDescription())

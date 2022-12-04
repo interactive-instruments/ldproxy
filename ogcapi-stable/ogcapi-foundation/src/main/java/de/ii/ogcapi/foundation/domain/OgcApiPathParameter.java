@@ -14,37 +14,44 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import javax.validation.constraints.NotNull;
 
 @AutoMultiBind
 public interface OgcApiPathParameter extends ParameterExtension {
-  default boolean isExplodeInOpenApi(OgcApiDataV2 apiData) {
+  default boolean isExplodeInOpenApi(@NotNull OgcApiDataV2 apiData) {
     return false;
   }
 
-  List<String> getValues(OgcApiDataV2 apiData);
+  List<String> getValues(@NotNull OgcApiDataV2 apiData);
 
   String getPattern();
 
-  boolean isApplicable(OgcApiDataV2 apiData, String definitionPath);
+  boolean isApplicable(@NotNull OgcApiDataV2 apiData, @NotNull String definitionPath);
 
-  default boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId) {
+  default boolean isApplicable(
+      @NotNull OgcApiDataV2 apiData, @NotNull String definitionPath, @NotNull String collectionId) {
     return isApplicable(apiData, definitionPath);
   }
 
   default boolean isApplicable(
-      OgcApiDataV2 apiData, String definitionPath, Optional<String> collectionId) {
+      @NotNull OgcApiDataV2 apiData,
+      @NotNull String definitionPath,
+      @NotNull Optional<String> collectionId) {
     return collectionId
         .map(s -> isApplicable(apiData, definitionPath, s))
         .orElseGet(() -> isApplicable(apiData, definitionPath));
   }
 
   @Override
-  default boolean getRequired(OgcApiDataV2 apiData) {
+  default boolean getRequired(@NotNull OgcApiDataV2 apiData) {
     return true;
   }
 
   default void updateOpenApiDefinition(
-      OgcApiDataV2 apiData, Optional<String> collectionId, OpenAPI openAPI, Operation op) {
+      @NotNull OgcApiDataV2 apiData,
+      @NotNull Optional<String> collectionId,
+      @NotNull OpenAPI openAPI,
+      @NotNull Operation op) {
     String id = getId(collectionId);
     op.addParametersItem(new Parameter().$ref("#/components/parameters/" + id));
     if (Objects.isNull(openAPI.getComponents().getParameters().get(id))) {
@@ -52,7 +59,8 @@ public interface OgcApiPathParameter extends ParameterExtension {
     }
   }
 
-  private Parameter newPathParameter(OgcApiDataV2 apiData, Optional<String> collectionId) {
+  private Parameter newPathParameter(
+      @NotNull OgcApiDataV2 apiData, @NotNull Optional<String> collectionId) {
     return new io.swagger.v3.oas.models.parameters.PathParameter()
         .name(getName())
         .description(getDescription())

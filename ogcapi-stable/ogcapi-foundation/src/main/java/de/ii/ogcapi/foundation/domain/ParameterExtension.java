@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import javax.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,11 +31,11 @@ public interface ParameterExtension extends ApiExtension {
     return getName();
   }
 
-  default String getId(String collectionId) {
+  default String getId(@NotNull String collectionId) {
     return getId();
   }
 
-  default String getId(Optional<String> collectionId) {
+  default String getId(@NotNull Optional<String> collectionId) {
     return collectionId.isPresent() ? getId(collectionId.get()) : getId();
   }
 
@@ -42,7 +43,7 @@ public interface ParameterExtension extends ApiExtension {
 
   String getDescription();
 
-  default boolean getRequired(OgcApiDataV2 apiData) {
+  default boolean getRequired(@NotNull OgcApiDataV2 apiData) {
     return false;
   }
 
@@ -51,19 +52,21 @@ public interface ParameterExtension extends ApiExtension {
     return getRequired(apiData);
   }
 
-  default boolean getRequired(OgcApiDataV2 apiData, Optional<String> collectionId) {
+  default boolean getRequired(
+      @NotNull OgcApiDataV2 apiData, @NotNull Optional<String> collectionId) {
     return collectionId.map(s -> getRequired(apiData, s)).orElseGet(() -> getRequired(apiData));
   }
 
-  default Schema<?> getSchema(OgcApiDataV2 apiData) {
+  default Schema<?> getSchema(@NotNull OgcApiDataV2 apiData) {
     return SCHEMA;
   }
 
-  default Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
+  default Schema<?> getSchema(@NotNull OgcApiDataV2 apiData, @NotNull String collectionId) {
     return getSchema(apiData);
   }
 
-  default Schema<?> getSchema(OgcApiDataV2 apiData, Optional<String> collectionId) {
+  default Schema<?> getSchema(
+      @NotNull OgcApiDataV2 apiData, @NotNull Optional<String> collectionId) {
     return collectionId.isPresent() ? getSchema(apiData, collectionId.get()) : getSchema(apiData);
   }
 
@@ -72,7 +75,9 @@ public interface ParameterExtension extends ApiExtension {
   }
 
   default Optional<String> validate(
-      OgcApiDataV2 apiData, Optional<String> collectionId, List<String> values) {
+      @NotNull OgcApiDataV2 apiData,
+      @NotNull Optional<String> collectionId,
+      @NotNull List<String> values) {
     // first validate against the schema
     Optional<String> result = validateSchema(apiData, collectionId, values);
     if (result.isPresent()) {
@@ -83,7 +88,9 @@ public interface ParameterExtension extends ApiExtension {
   }
 
   default Optional<String> validateOther(
-      OgcApiDataV2 apiData, Optional<String> collectionId, List<String> values) {
+      @NotNull OgcApiDataV2 apiData,
+      @NotNull Optional<String> collectionId,
+      @NotNull List<String> values) {
     return Optional.empty();
   }
 
@@ -93,7 +100,9 @@ public interface ParameterExtension extends ApiExtension {
   SchemaValidator getSchemaValidator();
 
   default Optional<String> validateSchema(
-      OgcApiDataV2 apiData, Optional<String> collectionId, List<String> values) {
+      @NotNull OgcApiDataV2 apiData,
+      @NotNull Optional<String> collectionId,
+      @NotNull List<String> values) {
     try {
       Schema<?> schema = getSchema(apiData, collectionId);
       String schemaContent = Json.mapper().writeValueAsString(schema);
@@ -141,7 +150,7 @@ public interface ParameterExtension extends ApiExtension {
     return Optional.empty();
   }
 
-  private String getJsonContent(String value, Schema<?> schema) {
+  private String getJsonContent(@NotNull String value, @NotNull Schema<?> schema) {
     return ("object".equals(schema.getType()) && value.trim().startsWith("{"))
             || ("array".equals(schema.getType()) && value.trim().startsWith("["))
         ? value
@@ -149,9 +158,9 @@ public interface ParameterExtension extends ApiExtension {
   }
 
   default Map<String, String> transformParameters(
-      FeatureTypeConfigurationOgcApi featureType,
-      Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
+      @NotNull FeatureTypeConfigurationOgcApi featureType,
+      @NotNull Map<String, String> parameters,
+      @NotNull OgcApiDataV2 apiData) {
     return parameters;
   }
 }

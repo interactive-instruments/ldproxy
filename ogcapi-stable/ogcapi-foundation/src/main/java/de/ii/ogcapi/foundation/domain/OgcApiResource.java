@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import javax.validation.constraints.NotNull;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,13 +47,13 @@ public interface OgcApiResource {
 
   Map<String, ApiOperation> getOperations();
 
-  default boolean isSubCollectionWithExplicitId(OgcApiDataV2 apiData) {
+  default boolean isSubCollectionWithExplicitId(@NotNull OgcApiDataV2 apiData) {
     return getPathParameters().stream()
         .anyMatch(
             param -> "collectionId".equals(param.getName()) && param.isExplodeInOpenApi(apiData));
   }
 
-  default Optional<String> getCollectionId(OgcApiDataV2 apiData) {
+  default Optional<String> getCollectionId(@NotNull OgcApiDataV2 apiData) {
     return isSubCollectionWithExplicitId(apiData)
         ? Optional.ofNullable(
             Splitter.on("/").limit(3).omitEmptyStrings().splitToList(getPath()).get(1))
@@ -79,7 +80,7 @@ public interface OgcApiResource {
     return Pattern.compile(getPathPattern());
   }
 
-  default void updateOpenApiDefinition(OgcApiDataV2 apiData, OpenAPI openAPI) {
+  default void updateOpenApiDefinition(@NotNull OgcApiDataV2 apiData, @NotNull OpenAPI openAPI) {
     String path = getPath();
     if (path.startsWith("/api")) {
       // skip the API definition
@@ -100,7 +101,7 @@ public interface OgcApiResource {
     }
   }
 
-  private Set<Integer> initErrorStatusCodes(String method) {
+  private Set<Integer> initErrorStatusCodes(@NotNull String method) {
     HashSet<Integer> errorCodes = new HashSet<>();
     switch (method) {
       case "GET":

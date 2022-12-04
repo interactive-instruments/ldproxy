@@ -16,6 +16,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
 
@@ -28,7 +29,7 @@ public interface EndpointExtension extends ApiExtension {
           .sortPriority(SORT_PRIORITY_DUMMY)
           .build();
 
-  default ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
+  default ApiEndpointDefinition getDefinition(@NotNull OgcApiDataV2 apiData) {
     return DEFAULT_DEFINITION;
   }
 
@@ -37,7 +38,7 @@ public interface EndpointExtension extends ApiExtension {
   }
 
   default ImmutableSet<ApiMediaType> getMediaTypes(
-      OgcApiDataV2 apiData, String requestSubPath, String method) {
+      @NotNull OgcApiDataV2 apiData, @NotNull String requestSubPath, @NotNull String method) {
     ApiEndpointDefinition apiDef = getDefinition(apiData);
     if (apiDef.getResources().isEmpty()) {
       return ImmutableSet.of();
@@ -57,12 +58,13 @@ public interface EndpointExtension extends ApiExtension {
     throw new ServerErrorException("Invalid sub path: " + requestSubPath, 500);
   }
 
-  default List<OgcApiQueryParameter> getParameters(OgcApiDataV2 apiData, String requestSubPath) {
+  default List<OgcApiQueryParameter> getParameters(
+      @NotNull OgcApiDataV2 apiData, @NotNull String requestSubPath) {
     return getParameters(apiData, requestSubPath, "GET");
   }
 
   default List<OgcApiQueryParameter> getParameters(
-      OgcApiDataV2 apiData, String requestSubPath, String method) {
+      @NotNull OgcApiDataV2 apiData, @NotNull String requestSubPath, @NotNull String method) {
     ApiEndpointDefinition apiDef = getDefinition(apiData);
     if (apiDef.getResources().isEmpty()) {
       return ImmutableList.of();
@@ -79,7 +81,9 @@ public interface EndpointExtension extends ApiExtension {
   }
 
   default ImmutableList<OgcApiPathParameter> getPathParameters(
-      ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath) {
+      @NotNull ExtensionRegistry extensionRegistry,
+      @NotNull OgcApiDataV2 apiData,
+      @NotNull String definitionPath) {
     return extensionRegistry.getExtensionsForType(OgcApiPathParameter.class).stream()
         .filter(param -> param.isApplicable(apiData, definitionPath))
         .sorted(Comparator.comparing(ParameterExtension::getName))
@@ -87,15 +91,17 @@ public interface EndpointExtension extends ApiExtension {
   }
 
   default ImmutableList<OgcApiQueryParameter> getQueryParameters(
-      ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath) {
+      @NotNull ExtensionRegistry extensionRegistry,
+      @NotNull OgcApiDataV2 apiData,
+      @NotNull String definitionPath) {
     return getQueryParameters(extensionRegistry, apiData, definitionPath, HttpMethods.GET);
   }
 
   default ImmutableList<OgcApiQueryParameter> getQueryParameters(
-      ExtensionRegistry extensionRegistry,
-      OgcApiDataV2 apiData,
-      String definitionPath,
-      HttpMethods method) {
+      @NotNull ExtensionRegistry extensionRegistry,
+      @NotNull OgcApiDataV2 apiData,
+      @NotNull String definitionPath,
+      @NotNull HttpMethods method) {
     return extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class).stream()
         .filter(param -> param.isApplicable(apiData, definitionPath, method))
         .sorted(Comparator.comparing(ParameterExtension::getName))
@@ -103,10 +109,10 @@ public interface EndpointExtension extends ApiExtension {
   }
 
   default ImmutableList<ApiHeader> getHeaders(
-      ExtensionRegistry extensionRegistry,
-      OgcApiDataV2 apiData,
-      String definitionPath,
-      HttpMethods method) {
+      @NotNull ExtensionRegistry extensionRegistry,
+      @NotNull OgcApiDataV2 apiData,
+      @NotNull String definitionPath,
+      @NotNull HttpMethods method) {
     return extensionRegistry.getExtensionsForType(ApiHeader.class).stream()
         .filter(param -> param.isApplicable(apiData, definitionPath, method))
         .sorted(Comparator.comparing(ApiHeader::getId))
@@ -114,10 +120,10 @@ public interface EndpointExtension extends ApiExtension {
   }
 
   default void checkPathParameter(
-      ExtensionRegistry extensionRegistry,
-      OgcApiDataV2 apiData,
-      String definitionPath,
-      String parameterName,
+      @NotNull ExtensionRegistry extensionRegistry,
+      @NotNull OgcApiDataV2 apiData,
+      @NotNull String definitionPath,
+      @NotNull String parameterName,
       String parameterValue) {
     getPathParameters(extensionRegistry, apiData, definitionPath).stream()
         .filter(param -> param.getName().equalsIgnoreCase(parameterName))

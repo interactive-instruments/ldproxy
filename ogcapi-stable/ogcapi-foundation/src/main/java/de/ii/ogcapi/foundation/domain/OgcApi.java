@@ -11,8 +11,8 @@ import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.services.domain.Service;
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
+import javax.validation.constraints.NotNull;
 
 public interface OgcApi extends Service {
 
@@ -20,10 +20,10 @@ public interface OgcApi extends Service {
   OgcApiDataV2 getData();
 
   <T extends FormatExtension> Optional<T> getOutputFormat(
-      Class<T> extensionType, ApiMediaType mediaType, String path, Optional<String> collectionId);
-
-  <T extends FormatExtension> List<T> getAllOutputFormats(
-      Class<T> extensionType, ApiMediaType mediaType, String path, Optional<T> excludeFormat);
+      @NotNull Class<T> extensionType,
+      @NotNull ApiMediaType mediaType,
+      @NotNull String path,
+      @NotNull Optional<String> collectionId);
 
   /**
    * Determine spatial extent of all collections in the dataset.
@@ -38,7 +38,7 @@ public interface OgcApi extends Service {
    * @param targetCrs the target CRS
    * @return the bounding box
    */
-  Optional<BoundingBox> getSpatialExtent(EpsgCrs targetCrs);
+  Optional<BoundingBox> getSpatialExtent(@NotNull EpsgCrs targetCrs);
 
   /**
    * Determine spatial extent of a collection in the dataset.
@@ -46,7 +46,7 @@ public interface OgcApi extends Service {
    * @param collectionId the name of the feature type
    * @return the bounding box in the default CRS
    */
-  Optional<BoundingBox> getSpatialExtent(String collectionId);
+  Optional<BoundingBox> getSpatialExtent(@NotNull String collectionId);
 
   /**
    * Determine spatial extent of a collection in the dataset in another CRS.
@@ -55,7 +55,7 @@ public interface OgcApi extends Service {
    * @param targetCrs the target CRS
    * @return the bounding box in the target CRS
    */
-  Optional<BoundingBox> getSpatialExtent(String collectionId, EpsgCrs targetCrs);
+  Optional<BoundingBox> getSpatialExtent(@NotNull String collectionId, @NotNull EpsgCrs targetCrs);
 
   default Optional<BoundingBox> getSpatialExtent(Optional<String> collectionId, EpsgCrs targetCrs) {
     return collectionId.isPresent()
@@ -70,7 +70,7 @@ public interface OgcApi extends Service {
    * @param bbox the extent
    * @return {@code true} if the value changed and was non-empty before
    */
-  boolean updateSpatialExtent(String collectionId, BoundingBox bbox);
+  boolean updateSpatialExtent(@NotNull String collectionId, @NotNull BoundingBox bbox);
 
   /**
    * Determine temporal extent of all collections in the dataset.
@@ -85,7 +85,7 @@ public interface OgcApi extends Service {
    * @param collectionId the name of the feature type
    * @return the temporal extent in the Gregorian calendar
    */
-  Optional<TemporalExtent> getTemporalExtent(String collectionId);
+  Optional<TemporalExtent> getTemporalExtent(@NotNull String collectionId);
 
   /**
    * Update temporal extent of a collection in the dataset.
@@ -94,7 +94,8 @@ public interface OgcApi extends Service {
    * @param temporalExtent the extent
    * @return {@code true} if the value changed and was non-empty before
    */
-  boolean updateTemporalExtent(String collectionId, TemporalExtent temporalExtent);
+  boolean updateTemporalExtent(
+      @NotNull String collectionId, @NotNull TemporalExtent temporalExtent);
 
   /**
    * Determine timestamp of the last modification of all collections in the dataset.
@@ -109,7 +110,7 @@ public interface OgcApi extends Service {
    * @param collectionId the name of the feature type
    * @return the timestamp
    */
-  Optional<Instant> getLastModified(String collectionId);
+  Optional<Instant> getLastModified(@NotNull String collectionId);
 
   /**
    * Update timestamp of the last modification in a collection.
@@ -118,7 +119,8 @@ public interface OgcApi extends Service {
    * @param lastModified the timestamp
    * @return {@code true} if the value changed and was non-empty before
    */
-  boolean updateLastModified(String collectionId, Instant lastModified);
+  @SuppressWarnings("UnusedReturnValue")
+  boolean updateLastModified(@NotNull String collectionId, @NotNull Instant lastModified);
 
   /**
    * Determine the number of items in all collections in the dataset.
@@ -133,7 +135,7 @@ public interface OgcApi extends Service {
    * @param collectionId the name of the feature type
    * @return the number of items
    */
-  Optional<Long> getItemCount(String collectionId);
+  Optional<Long> getItemCount(@NotNull String collectionId);
 
   /**
    * Update the number of items in a collection.
@@ -142,23 +144,25 @@ public interface OgcApi extends Service {
    * @param itemCount the item count
    * @return {@code true} if the value changed and was non-empty before
    */
-  boolean updateItemCount(String collectionId, Long itemCount);
+  boolean updateItemCount(@NotNull String collectionId, @NotNull Long itemCount);
 
   // convenience methods
 
-  default Optional<BoundingBox> getSpatialExtent(Optional<String> collectionId) {
+  default Optional<BoundingBox> getSpatialExtent(@NotNull Optional<String> collectionId) {
     return collectionId.isPresent() ? getSpatialExtent(collectionId.get()) : getSpatialExtent();
   }
 
-  default Optional<TemporalExtent> getTemporalExtent(Optional<String> collectionId) {
+  @SuppressWarnings("unused")
+  default Optional<TemporalExtent> getTemporalExtent(@NotNull Optional<String> collectionId) {
     return collectionId.isPresent() ? getTemporalExtent(collectionId.get()) : getTemporalExtent();
   }
 
-  default Optional<Instant> getLastModified(Optional<String> collectionId) {
+  default Optional<Instant> getLastModified(@NotNull Optional<String> collectionId) {
     return collectionId.isPresent() ? getLastModified(collectionId.get()) : getLastModified();
   }
 
-  default Optional<Long> getItemCount(Optional<String> collectionId) {
+  @SuppressWarnings("unused")
+  default Optional<Long> getItemCount(@NotNull Optional<String> collectionId) {
     return collectionId.isPresent() ? getItemCount(collectionId.get()) : getItemCount();
   }
 }
