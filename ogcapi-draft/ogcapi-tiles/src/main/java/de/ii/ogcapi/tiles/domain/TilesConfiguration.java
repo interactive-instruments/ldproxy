@@ -218,6 +218,7 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
 public interface TilesConfiguration extends SfFlatConfiguration, CachingConfiguration {
 
+  @Deprecated(since = "3.3")
   enum TileCacheType {
     FILES,
     MBTILES,
@@ -225,13 +226,29 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn Specifies the data source for the tiles, see [Tile provider objects](#tile-provider).
-   * @langDe Spezifiziert die Datenquelle für die Kacheln, siehe
+   * @langEn *Deprecated (from v4.0 on you have to use [Tile
+   *     Provider](../../providers/tile/README.md) entities)* Specifies the data source for the
+   *     tiles, see [Tile provider objects](#tile-provider).
+   * @langDe *Deprecated (von v4.0 an müssen [Tile-Provider](../../providers/tile/README.md)
+   *     Entities verwendet werden )* Spezifiziert die Datenquelle für die Kacheln, siehe
    *     [Tile-Provider-Objekte](#tile-provider).
-   * @default `{ "type": "FEATURES", ... }`
+   * @default { "type": "FEATURES", ... }
    */
+  @Deprecated(since = "3.3")
   @Nullable
   TileProvider getTileProvider();
+
+  /**
+   * @langEn *Deprecated (will be renamed to `tileProvider` in v4.0)* Specifies the data source for
+   *     the tiles, see [Tile Providers](../../providers/tile/README.md).
+   * @langDe *Deprecated (wird in v4.0 zu `tileProvider` umbenannt)* Spezifiziert die Datenquelle
+   *     für die Kacheln, siehe [Tile-Provider](../../providers/tile/README.md).
+   * @default null
+   * @since v3.3
+   */
+  @Deprecated(since = "3.3")
+  @Nullable
+  String getTileProviderId();
 
   /**
    * @langEn Controls which formats are supported for the tileset resources. Available are [OGC
@@ -241,20 +258,18 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
    *     Verfügung stehen [OGC
    *     TileSetMetadata](https://docs.ogc.org/DRAFTS/17-083r3.html#tsmd-json-encoding) ("JSON") und
    *     [TileJSON](https://github.com/mapbox/tilejson-spec) ("TileJSON").
-   * @default `[ "JSON", "TileJSON" ]`
+   * @default [ "JSON", "TileJSON" ]
    */
   List<String> getTileSetEncodings();
 
   /**
-   * @langEn `FILES` stores each tile as a file in the file system. `MBTILES` stores the tiles in an
-   *     MBTiles file (one MBTiles file per tileset). It is recommended to use `MBTILES`. It is
-   *     planned to change the default to `MBTILES` with version 4.0.
-   * @langDe `FILES` speichert jede Kachel als Datei im Dateisystem. `MBTILES` speichert die Kacheln
-   *     in einer MBTiles-Datei (eine MBTiles-Datei pro Tileset). Es wird die Verwendung von
-   *     `MBTILES` empfohlen. Es ist geplant, den Default mit der Version 4.0 auf `MBTILES`
-   *     zuändern.
-   * @default `FILES`
+   * @langEn *Deprecated* `FILES` stores each tile as a file in the file system. `MBTILES` stores
+   *     the tiles in an MBTiles file (one MBTiles file per tileset).
+   * @langDe *Deprecated* `FILES` speichert jede Kachel als Datei im Dateisystem. `MBTILES`
+   *     speichert die Kacheln in einer MBTiles-Datei (eine MBTiles-Datei pro Tileset).
+   * @default FILES
    */
+  @Deprecated(since = "3.3")
   @Nullable
   TileCacheType getCache();
 
@@ -269,7 +284,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
    *     `OPEN_LAYERS` unterstützt (OpenLayers). Die Unterstützung von Open Layers ist nur sinnvoll,
    *     wenn in der HTML Ausgabe auch andere der vordefinierten Kachelschemas unterstützt werden
    *     sollen. Bei `OPEN_LAYERS` werden keine Styles unterstützt.
-   * @default `MAP_LIBRE`
+   * @default MAP_LIBRE
    */
   @Nullable
   MapClient.Type getMapClientType();
@@ -288,7 +303,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
    *     nach einem Style mit dem Namen für die Feature Collection gesucht; falls keiner gefunden
    *     wird, wird nach einem Style mit dem Namen auf der API-Ebene gesucht. Wird kein Style
    *     gefunden, wird `NONE` verwendet.
-   * @default `DEFAULT`
+   * @default DEFAULT
    */
   @Nullable
   String getStyle();
@@ -304,17 +319,20 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
    *     angezeigt werden. Diese Option sollte nicht gewählt werden, wenn der Style unterschiedliche
    *     Präsentationen je nach Zoomstufe vorsieht, da ansonsten alle Layer auf allen Zoomstufen
    *     gleichzeitig angezeigt werden.
-   * @default `false`
+   * @default false
    */
   @Nullable
   Boolean getRemoveZoomLevelConstraints();
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
-   * @default `[ "MVT" ]`
+   * @langEn List of tile formats to be supported, in general `MVT` (Mapbox Vector Tiles), `PNG`,
+   *     `WebP` and `JPEG` are allowed. The actually supported formats depend on the [Tile
+   *     Provider](../../providers/tile/README.md).
+   * @langDe Liste der zu unterstützenden Kachelformate, generell erlaubt sind `MVT` (Mapbox Vector
+   *     Tiles), `PNG`, `WebP` und `JPEG`. Die konkret unterstützten Formate sind vom
+   *     [Tile-Provider](../../providers/tile/README.md) abhängig.
+   * @default [ "MVT" ]
    */
-  @Deprecated
   List<String> getTileEncodings();
 
   // Note: Most configuration options have been moved to TileProviderFeatures and have been
@@ -339,6 +357,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
                     : ImmutableList.of();
   }
 
+  // TODO: always get from provider?
   /**
    * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
    * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
@@ -361,11 +380,12 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn Controls the zoom levels available for each active tiling scheme as well as which zoom
+   *     level to use as default.
+   * @langDe Steuert die Zoomstufen, die für jedes aktive Kachelschema verfügbar sind sowie welche
+   *     Zoomstufe als Default bei verwendet werden soll.
    * @default `{ "WebMercatorQuad" : { "min": 0, "max": 23 } }`
    */
-  @Deprecated
   Map<String, MinMax> getZoomLevels();
 
   @Value.Auxiliary
@@ -460,6 +480,14 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
             : ImmutableMap.of();
   }
 
+  /**
+   * @langEn *Deprecated (will be renamed to `seeding` in v4.0)* Controls how and when tiles are
+   *     precomputed, see [Seeding options](#seeding-options).
+   * @langDe *Deprecated (wird in v4.0 zu `seeding` umbenannt)* Steuert wie und wann Kacheln
+   *     vorberechnet werden, siehe [Optionen für das * Seeding](#seeding-options).
+   * @default {}
+   */
+  @Deprecated(since = "3.3")
   Optional<SeedingOptions> getSeedingOptions();
 
   @Value.Auxiliary
@@ -549,22 +577,6 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
             ? ((TileProviderFeatures) getTileProvider()).getRules()
             : ImmutableMap.of();
   }
-
-  /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
-   * @default 0.1
-   */
-  @Deprecated
-  Optional<Double> getMaxRelativeAreaChangeInPolygonRepair();
-
-  /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
-   * @default 1.0
-   */
-  @Deprecated
-  Optional<Double> getMaxAbsoluteAreaChangeInPolygonRepair();
 
   /**
    * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).

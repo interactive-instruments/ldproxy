@@ -8,22 +8,40 @@
 package de.ii.ogcapi.tiles.domain.provider;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData.Builder;
+import de.ii.xtraplatform.docs.DocFile;
+import de.ii.xtraplatform.docs.DocStep;
+import de.ii.xtraplatform.docs.DocStep.Step;
+import de.ii.xtraplatform.docs.DocTable;
+import de.ii.xtraplatform.docs.DocTable.ColumnSet;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import java.util.Map;
 import java.util.Objects;
 import org.immutables.value.Value;
 
 /**
- * # Tile-Provider FEATURES
+ * # Features
  *
  * @langEn In this tile provider, the tiles in Mapbox Vector Tiles format are derived from the
  *     features provided by the API in the area of the tile.
  * @langDe Bei diesem Tile-Provider werden die Kacheln im Format Mapbox Vector Tiles aus den von der
  *     API bereitgestellten Features im Gebiet der Kachel abgeleitet.
+ *     <p>{@docTable:properties}
+ * @propertyTable {@link de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData}
  */
+@DocFile(
+    path = "providers/tile",
+    name = "features.md",
+    tables = {
+      @DocTable(
+          name = "properties",
+          rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@propertyTable}"),
+            @DocStep(type = Step.JSON_PROPERTIES)
+          },
+          columnSet = ColumnSet.JSON_PROPERTIES),
+    })
 @Value.Immutable
-@JsonDeserialize(builder = Builder.class)
+@JsonDeserialize(builder = ImmutableTileProviderFeaturesData.Builder.class)
 public interface TileProviderFeaturesData extends TileProviderData, WithCaches {
 
   String PROVIDER_SUBTYPE = "FEATURES";

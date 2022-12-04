@@ -8,30 +8,38 @@
 package de.ii.ogcapi.tiles.domain.provider;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.xtraplatform.docs.DocFile;
+import de.ii.xtraplatform.docs.DocStep;
+import de.ii.xtraplatform.docs.DocStep.Step;
+import de.ii.xtraplatform.docs.DocTable;
+import de.ii.xtraplatform.docs.DocTable.ColumnSet;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import java.util.Map;
 import java.util.Objects;
 import org.immutables.value.Value;
 
 /**
- * # Tile-Provider TILESERVER
+ * # HTTP
  *
  * @langEn With this tile provider, the tiles are obtained from [TileServer-GL
- *     instance](https://github.com/maptiler/tileserver-gl). Only the "WebMercatorQuad" tile scheme
- *     is supported.
- *     <p>In the current version, this provider is only supported in the [Map Tiles](map-tiles.md)
- *     module. Only bitmap tile formats are supported. Seeding or caching are not supported.
- *     <p>This tile provider is experimental and its configuration options may change in future
- *     versions.
+ *     instance](https://github.com/maptiler/tileserver-gl).
  * @langDe Bei diesem Tile-Provider werden die Kacheln über eine
- *     [TileServer-GL-Instanz](https://github.com/maptiler/tileserver-gl) bezogen. Unterstützt wird
- *     nur das Kachelschema "WebMercatorQuad".
- *     <p>In der aktuellen Version wird dieser Provider nur im Modul [Map Tiles](map-tiles.md)
- *     unterstützt. Unterstützt werden nur die Bitmap-Kachelformate. Seeding oder Caching werden
- *     nicht unterstützt.
- *     <p>Dieser Tile-Provider ist experimentell und seine Konfigurationsoptionen können sich in
- *     zukünftigen Versionen ändern.
+ *     [TileServer-GL-Instanz](https://github.com/maptiler/tileserver-gl) bezogen.
+ *     <p>{@docTable:properties}
+ * @propertyTable {@link de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderHttpData}
  */
+@DocFile(
+    path = "providers/tile",
+    name = "http.md",
+    tables = {
+      @DocTable(
+          name = "properties",
+          rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@propertyTable}"),
+            @DocStep(type = Step.JSON_PROPERTIES)
+          },
+          columnSet = ColumnSet.JSON_PROPERTIES),
+    })
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableTileProviderHttpData.Builder.class)
 public interface TileProviderHttpData extends TileProviderData {

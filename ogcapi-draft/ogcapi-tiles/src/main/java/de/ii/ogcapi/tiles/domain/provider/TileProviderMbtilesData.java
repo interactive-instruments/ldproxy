@@ -8,13 +8,18 @@
 package de.ii.ogcapi.tiles.domain.provider;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.xtraplatform.docs.DocFile;
+import de.ii.xtraplatform.docs.DocStep;
+import de.ii.xtraplatform.docs.DocStep.Step;
+import de.ii.xtraplatform.docs.DocTable;
+import de.ii.xtraplatform.docs.DocTable.ColumnSet;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import java.util.Map;
 import java.util.Objects;
 import org.immutables.value.Value;
 
 /**
- * # Tile-Provider MBTILES
+ * # MbTiles
  *
  * @langEn With this tile provider, the tiles are provided via an [MBTiles
  *     file](https://github.com/mapbox/mbtiles-spec). The tile format and all other properties of
@@ -24,7 +29,21 @@ import org.immutables.value.Value;
  *     [MBTiles-Datei](https://github.com/mapbox/mbtiles-spec) bereitgestellt. Das Kachelformat und
  *     alle anderen Eigenschaften der Tileset-Ressource ergeben sich aus dem Inhalt der
  *     MBTiles-Datei. Unterstützt wird nur das Kachelschema "WebMercatorQuad".
+ *     <p>{@docTable:properties}
+ * @propertyTable {@link de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderMbtilesData}
  */
+@DocFile(
+    path = "providers/tile",
+    name = "mbtiles.md",
+    tables = {
+      @DocTable(
+          name = "properties",
+          rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@propertyTable}"),
+            @DocStep(type = Step.JSON_PROPERTIES)
+          },
+          columnSet = ColumnSet.JSON_PROPERTIES),
+    })
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableTileProviderMbtilesData.Builder.class)
 public interface TileProviderMbtilesData extends TileProviderData {

@@ -19,8 +19,6 @@ public interface LevelTransformation extends WithLevels {
 
   Optional<Boolean> getMerge();
 
-  Optional<Boolean> getReduceInClusters();
-
   List<String> getGroupBy();
 
   List<String> getProperties();

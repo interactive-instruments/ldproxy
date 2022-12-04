@@ -190,36 +190,6 @@ public abstract class TileProviderFeatures extends TileProvider {
   }
 
   /**
-   * @langEn *Deprecated, no longer used* Maximum allowed relative change of surface sizes when
-   *     attempting to fix an invalid surface geometry. The fixed geometry is only used when the
-   *     condition is met. The value `0.1` means 10%.
-   * @langDe *Deprecated, wird nicht mehr benutzt* Steuert die maximal erlaubte relative Änderung
-   *     der Flächengröße beim Versuch eine topologisch ungültige Polygongeometrie im
-   *     Koordinatensystem der Kachel zu reparieren. Ist die Bedingung erfüllt, wird die reparierte
-   *     Polygongeometrie verwendet. Der Wert 0.1 entspricht 10%.
-   * @default 0.1
-   */
-  // TODO: remove
-  @Deprecated
-  public abstract Optional<Double> getMaxRelativeAreaChangeInPolygonRepair();
-
-  /**
-   * @langEn *Deprecated, no longer used* Maximum allowed absolute change of surface sizes when
-   *     attempting to fix an invalid surface geometry. The fixed geometry is only used when the
-   *     condition is met. The value `1.0` corresponds to one "pixel" in the used coordinate
-   *     reference system.
-   * @langDe *Deprecated, wird nicht mehr benutzt* Steuert die maximal erlaubte absolute Änderung
-   *     der Flächengröße beim Versuch eine topologisch ungültige Polygongeometrie im
-   *     Koordinatensystem der Kachel zu reparieren. Ist die Bedingung erfüllt, wird die reparierte
-   *     Polygongeometrie verwendet. Der Wert 1.0 entspricht einem "Pixel" im
-   *     Kachelkoordinatensystem.
-   * @default 1.0
-   */
-  // TODO: remove
-  @Deprecated
-  public abstract Optional<Double> getMaxAbsoluteAreaChangeInPolygonRepair();
-
-  /**
    * @langEn Features with line geometries shorter that the given value are excluded from tiles.
    *     Features with surface geometries smaller than the square of the given value are excluded
    *     from the tiles. The value `0.5` corresponds to half a "pixel" in the used coordinate

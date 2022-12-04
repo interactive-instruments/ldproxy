@@ -1,6 +1,33 @@
 const { path } = require('@vuepress/utils');
 const { createGroup } = require('./sidebar.helper.js');
 
+const sidebar = lang => { 
+  const root = lang == '/' ? '' : 'de';
+  const prefix = lang == 'en' ? '' : 'de/';
+
+  return [
+    createGroup({en: 'Getting Started', de: 'Erste Schritte'}[lang], root, {ignoreReadme: true}),
+    createGroup({en: 'Application', de: 'Applikation'}[lang], prefix + 'application'),
+    createGroup({en: 'APIs', de: 'APIs'}[lang], prefix + 'services', {
+      children: [
+        createGroup({en: 'Building Blocks', de: 'Bausteine'}[lang], prefix + 'services/building-blocks', {collapsible: true, headerReadme: true})
+      ]
+    }),
+    createGroup({en: 'Data Providers', de: 'Daten-Provider'}[lang], prefix + 'providers', {
+      children: [
+        createGroup({en: 'Features', de: 'Features'}[lang], prefix + 'providers/feature', {headerReadme: true, 
+          children: [
+            createGroup({en: 'Extensions', de: 'Erweiterungen'}[lang], prefix + 'providers/feature/extensions', {collapsible: true, headerReadme: true})
+          ]
+        }),
+        createGroup({en: 'Tiles', de: 'Tiles'}[lang], prefix + 'providers/tile', {headerReadme: true}),
+      ]
+    }),
+    createGroup({en: 'Auxiliaries', de: 'Zubehör'}[lang], prefix + 'auxiliaries', {ignoreReadme: true}),
+    {text: {en: 'Advanced', de: 'Fortgeschritten'}[lang]},
+  ]
+};
+
 module.exports = {
   base: '/',
   locales: {
@@ -63,18 +90,7 @@ module.exports = {
             link: 'https://demo.ldproxy.net',
           },
         ],
-        sidebar: [
-          createGroup('Getting Started', '/', {ignoreReadme: true}),
-          createGroup('Application', 'application'),
-          createGroup('APIs', 'services', {
-            children: [
-              createGroup('Building Blocks', 'services/building-blocks', {collapsible: true})
-            ]
-          }),
-          createGroup('Data Providers', 'providers'),
-          createGroup('Codelists', 'codelists'),
-          {text: 'Advanced'},
-        ],
+        sidebar: sidebar('en'),
         themeExtensions: {
           legalNoticeUrl: 'https://www.interactive-instruments.de/en/about/impressum/',
           privacyNoticeUrl: 'https://www.interactive-instruments.de/en/about/datenschutzerklarung/',
@@ -94,18 +110,7 @@ module.exports = {
             link: 'https://demo.ldproxy.net',
           },
         ],
-        sidebar: [
-          createGroup('Erste Schritte', 'de', {ignoreReadme: true}),
-          createGroup('Applikation', 'de/application'),
-          createGroup('APIs', 'de/services', {
-            children: [
-              createGroup('Bausteine', 'de/services/building-blocks', {collapsible: true})
-            ]
-          }),
-          createGroup('Daten-Provider', 'de/providers'),
-          createGroup('Codelisten', 'de/codelists'),
-          {text: 'Fortgeschritten'},
-        ],
+        sidebar: sidebar('de'),
         themeExtensions: {
           onThisPageLabel: 'Auf dieser Seite',
           legalNoticeLabel: 'Impressum',
