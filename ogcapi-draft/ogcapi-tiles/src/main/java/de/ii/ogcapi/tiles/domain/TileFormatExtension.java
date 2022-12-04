@@ -71,29 +71,7 @@ public abstract class TileFormatExtension implements FormatExtension {
             || formats.contains(getMediaType().label()));
   }
 
-  public boolean canMultiLayer() {
-    return false;
-  }
-
-  public boolean supportsFeatureQuery() {
-    return this instanceof TileFromFeatureQuery;
-  }
-
   public abstract String getExtension();
-
-  public boolean getGzippedInMbtiles() {
-    return false;
-  }
-
-  public boolean getSupportsEmptyTile() {
-    return false;
-  }
-
-  public byte[] getEmptyTile(Tile tile) {
-    throw new IllegalStateException(
-        String.format(
-            "No empty tile available for tile format %s.", this.getClass().getSimpleName()));
-  }
 
   public abstract TileSet.DataType getDataType();
 

@@ -10,7 +10,6 @@ package de.ii.ogcapi.tiles.domain;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tiles.domain.provider.TileProvider;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.util.Optional;
 
@@ -18,16 +17,16 @@ public interface TilesProviders {
 
   boolean hasTileProvider(OgcApiDataV2 apiData);
 
-  Optional<TileProvider> getTileProvider(OgcApiDataV2 apiData);
+  Optional<de.ii.xtraplatform.tiles.domain.TileProvider> getTileProvider(OgcApiDataV2 apiData);
 
-  TileProvider getTileProviderOrThrow(OgcApiDataV2 apiData);
+  de.ii.xtraplatform.tiles.domain.TileProvider getTileProviderOrThrow(OgcApiDataV2 apiData);
 
   boolean hasTileProvider(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData);
 
-  Optional<TileProvider> getTileProvider(
+  Optional<de.ii.xtraplatform.tiles.domain.TileProvider> getTileProvider(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData);
 
-  TileProvider getTileProviderOrThrow(
+  de.ii.xtraplatform.tiles.domain.TileProvider getTileProviderOrThrow(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData);
 
   default boolean hasTileProvider(
@@ -37,14 +36,14 @@ public interface TilesProviders {
         : hasTileProvider(apiData);
   }
 
-  default Optional<TileProvider> getTileProvider(
+  default Optional<de.ii.xtraplatform.tiles.domain.TileProvider> getTileProvider(
       OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> collectionData) {
     return collectionData.isPresent()
         ? getTileProvider(apiData, collectionData.get())
         : getTileProvider(apiData);
   }
 
-  default TileProvider getTileProviderOrThrow(
+  default de.ii.xtraplatform.tiles.domain.TileProvider getTileProviderOrThrow(
       OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> collectionData) {
     return collectionData.isPresent()
         ? getTileProviderOrThrow(apiData, collectionData.get())

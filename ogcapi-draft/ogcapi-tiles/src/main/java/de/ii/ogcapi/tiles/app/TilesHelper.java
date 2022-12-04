@@ -26,24 +26,19 @@ import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.tilematrixsets.domain.ImmutableTilesBoundingBox;
-import de.ii.ogcapi.tilematrixsets.domain.MinMax;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
-import de.ii.ogcapi.tilematrixsets.domain.TilesBoundingBox;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsOgcApi;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetOgcApi;
 import de.ii.ogcapi.tiles.domain.ImmutableTileLayer;
 import de.ii.ogcapi.tiles.domain.ImmutableTilePoint;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSet;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSet.Builder;
-import de.ii.ogcapi.tiles.domain.ImmutableVectorLayer;
 import de.ii.ogcapi.tiles.domain.TileLayer;
 import de.ii.ogcapi.tiles.domain.TilePoint;
 import de.ii.ogcapi.tiles.domain.TileProviderFeatures;
 import de.ii.ogcapi.tiles.domain.TileProviderMbtiles;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ogcapi.tiles.domain.VectorLayer;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
@@ -53,6 +48,12 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.tiles.domain.ImmutableTilesBoundingBox;
+import de.ii.xtraplatform.tiles.domain.ImmutableVectorLayer;
+import de.ii.xtraplatform.tiles.domain.MinMax;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
+import de.ii.xtraplatform.tiles.domain.TilesBoundingBox;
+import de.ii.xtraplatform.tiles.domain.VectorLayer;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.AbstractMap;
@@ -107,7 +108,7 @@ public class TilesHelper {
 
     if (tileMatrixSet.getURI().isPresent())
       builder.tileMatrixSetURI(tileMatrixSet.getURI().get().toString());
-    else builder.tileMatrixSet(tileMatrixSet.getTileMatrixSetData());
+    else builder.tileMatrixSet(TileMatrixSetOgcApi.of(tileMatrixSet.getTileMatrixSetData()));
 
     if (Objects.isNull(zoomLevels)) builder.tileMatrixSetLimits(ImmutableList.of());
     else
@@ -128,7 +129,7 @@ public class TilesHelper {
                   api.getSpatialExtent(collectionId)
                       .orElse(tileMatrixSet.getBoundingBoxCrs84(crsTransformerFactory)));
       builder.boundingBox(
-          ImmutableTilesBoundingBox.builder()
+          new ImmutableTilesBoundingBox.Builder()
               .lowerLeft(
                   BigDecimal.valueOf(boundingBox.getXmin()).setScale(7, RoundingMode.HALF_UP),
                   BigDecimal.valueOf(boundingBox.getYmin()).setScale(7, RoundingMode.HALF_UP))
@@ -139,7 +140,7 @@ public class TilesHelper {
               .build());
     } catch (CrsTransformationException e) {
       builder.boundingBox(
-          ImmutableTilesBoundingBox.builder()
+          new ImmutableTilesBoundingBox.Builder()
               .lowerLeft(BigDecimal.valueOf(-180), BigDecimal.valueOf(-90))
               .upperRight(BigDecimal.valueOf(180), BigDecimal.valueOf(90))
               .crs(OgcCrs.CRS84.toUriString())
@@ -362,7 +363,7 @@ public class TilesHelper {
    */
   public static Optional<Integer> getMinzoom(TileSet tileset) {
     return tileset.getTileMatrixSetLimits().stream()
-        .map(TileMatrixSetLimits::getTileMatrix)
+        .map(TileMatrixSetLimitsOgcApi::getTileMatrix)
         .map(Integer::valueOf)
         .min(Integer::compareTo);
   }
@@ -376,7 +377,7 @@ public class TilesHelper {
    */
   public static Optional<Integer> getMaxzoom(TileSet tileset) {
     return tileset.getTileMatrixSetLimits().stream()
-        .map(TileMatrixSetLimits::getTileMatrix)
+        .map(TileMatrixSetLimitsOgcApi::getTileMatrix)
         .map(Integer::valueOf)
         .max(Integer::compareTo);
   }

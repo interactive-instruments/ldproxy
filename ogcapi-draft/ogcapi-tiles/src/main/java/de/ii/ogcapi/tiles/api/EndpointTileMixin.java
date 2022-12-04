@@ -26,15 +26,15 @@ import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
-import de.ii.ogcapi.tilematrixsets.domain.MinMax;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsOgcApi;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTile;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
+import de.ii.xtraplatform.tiles.domain.MinMax;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
@@ -267,7 +267,7 @@ public interface EndpointTileMixin {
             .orElseThrow(
                 () -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
 
-    TileMatrixSetLimits tileLimits =
+    TileMatrixSetLimitsOgcApi tileLimits =
         limitsGenerator.getTileMatrixSetLimits(api, tileMatrixSet, level, collectionId);
 
     if (tileLimits != null) {

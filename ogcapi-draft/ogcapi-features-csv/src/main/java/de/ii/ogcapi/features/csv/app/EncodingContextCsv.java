@@ -7,8 +7,8 @@
  */
 package de.ii.ogcapi.features.csv.app;
 
-import de.ii.ogcapi.features.core.domain.EncodingContextSfFlat;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.transform.EncodingContextSfFlat;
 import org.immutables.value.Value;
 
 @Value.Immutable

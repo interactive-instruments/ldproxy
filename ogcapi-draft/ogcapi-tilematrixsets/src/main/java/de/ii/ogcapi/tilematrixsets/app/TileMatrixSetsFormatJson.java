@@ -16,7 +16,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetData;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetOgcApi;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSets;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
@@ -43,8 +43,9 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
 
   @Inject
   public TileMatrixSetsFormatJson(ClassSchemaCache classSchemaCache) {
-    schemaStyleTileMatrixSet = classSchemaCache.getSchema(TileMatrixSetData.class);
-    referencedSchemasTileMatrixSet = classSchemaCache.getReferencedSchemas(TileMatrixSetData.class);
+    schemaStyleTileMatrixSet = classSchemaCache.getSchema(TileMatrixSetOgcApi.class);
+    referencedSchemasTileMatrixSet =
+        classSchemaCache.getReferencedSchemas(TileMatrixSetOgcApi.class);
     schemaStyleTileMatrixSets = classSchemaCache.getSchema(TileMatrixSets.class);
     referencedSchemasTileMatrixSets = classSchemaCache.getReferencedSchemas(TileMatrixSets.class);
   }
@@ -66,7 +67,7 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
     else if (path.equals("/tileMatrixSets/{tileMatrixSetId}"))
       return new ImmutableApiMediaTypeContent.Builder()
           .schema(schemaStyleTileMatrixSet)
-          .schemaRef(TileMatrixSetData.SCHEMA_REF)
+          .schemaRef(TileMatrixSetOgcApi.SCHEMA_REF)
           .referencedSchemas(referencedSchemasTileMatrixSet)
           .ogcApiMediaType(MEDIA_TYPE)
           .build();
@@ -82,7 +83,7 @@ public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
 
   @Override
   public Object getTileMatrixSetEntity(
-      TileMatrixSetData tileMatrixSet, OgcApi api, ApiRequestContext requestContext) {
+      TileMatrixSetOgcApi tileMatrixSet, OgcApi api, ApiRequestContext requestContext) {
     return tileMatrixSet;
   }
 }

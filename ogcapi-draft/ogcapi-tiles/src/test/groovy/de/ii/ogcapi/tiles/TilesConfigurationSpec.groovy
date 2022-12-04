@@ -10,12 +10,12 @@ package de.ii.ogcapi.tiles
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import de.ii.ogcapi.foundation.domain.*
-import de.ii.ogcapi.tilematrixsets.domain.ImmutableMinMax
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration
 import de.ii.ogcapi.tiles.domain.TilesConfiguration
-import de.ii.ogcapi.tiles.domain.provider.ImmutableLevelFilter
-import de.ii.ogcapi.tiles.domain.provider.ImmutableLevelTransformation
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
+import de.ii.xtraplatform.tiles.domain.ImmutableLevelFilter
+import de.ii.xtraplatform.tiles.domain.ImmutableLevelTransformation
+import de.ii.xtraplatform.tiles.domain.ImmutableMinMax
 
 @SuppressWarnings('ClashingTraitMethods')
 class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<TilesConfiguration>, MergeMinimal<TilesConfiguration>, MergeSimple<TilesConfiguration>, MergeCollection<TilesConfiguration>, MergeMap<TilesConfiguration>, MergeNested<TilesConfiguration> {

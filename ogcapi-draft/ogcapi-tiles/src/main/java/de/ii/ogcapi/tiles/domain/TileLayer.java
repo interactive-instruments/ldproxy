@@ -12,7 +12,8 @@ import com.google.common.hash.Funnel;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
 import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.foundation.domain.OgcResourceMetadata;
-import de.ii.ogcapi.tilematrixsets.domain.TilesBoundingBox;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetOgcApi;
+import de.ii.xtraplatform.tiles.domain.TilesBoundingBox;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.immutables.value.Value;
@@ -73,7 +74,7 @@ public abstract class TileLayer extends OgcResourceMetadata {
         from.getMaxCellSize().ifPresent(into::putDouble);
         from.getMinScaleDenominator().ifPresent(into::putDouble);
         from.getMaxScaleDenominator().ifPresent(into::putDouble);
-        from.getBoundingBox().ifPresent(val -> TilesBoundingBox.FUNNEL.funnel(val, into));
+        from.getBoundingBox().ifPresent(val -> TileMatrixSetOgcApi.FUNNEL_BBOX.funnel(val, into));
         from.getPropertiesSchema().ifPresent(val -> JsonSchema.FUNNEL.funnel(val, into));
       };
 }

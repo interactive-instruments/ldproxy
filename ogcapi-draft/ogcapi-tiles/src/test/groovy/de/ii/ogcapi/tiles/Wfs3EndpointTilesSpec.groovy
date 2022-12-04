@@ -9,9 +9,9 @@ package de.ii.ogcapi.tiles
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
-import de.ii.ogcapi.tilematrixsets.domain.ImmutableMinMax
-import de.ii.ogcapi.tilematrixsets.domain.MinMax
 import de.ii.ogcapi.tiles.infra.EndpointTileSetsMultiCollection
+import de.ii.xtraplatform.tiles.domain.ImmutableMinMax
+import de.ii.xtraplatform.tiles.domain.MinMax
 import spock.lang.Ignore
 import spock.lang.Specification
 

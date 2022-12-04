@@ -1,25 +1,9 @@
 
 maturity = 'EXPERIMENTAL'
 
-repositories {
-    maven {
-        url "https://ecc-mvn.ams3.digitaloceanspaces.com/releases"
-    }
-}
-
 dependencies {
     provided project(":ogcapi-tilematrixsets")
-    embedded (group: 'no.ecc.vectortile', name: 'java-vector-tile', version: '1.3.21') {
-        exclude module: 'jts-core'
-        exclude module: 'jts-io-common'
-    }
 
     testImplementation(testFixtures(group: 'de.interactive_instruments', name: 'ogcapi-foundation'))
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
-}
-
-moduleInfo {
-    requires = [
-            'java.sql'
-    ]
 }

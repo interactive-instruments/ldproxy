@@ -8,7 +8,7 @@
 package de.ii.ogcapi.tiles
 
 
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet
+import de.ii.xtraplatform.tiles.domain.TileMatrixSet
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.EpsgCrs
 import spock.lang.Specification

@@ -15,16 +15,16 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tilematrixsets.domain.MinMax;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsOgcApi;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
-import de.ii.ogcapi.tiles.domain.provider.TileProvider;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.tiles.domain.MinMax;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
+import de.ii.xtraplatform.tiles.domain.TileProvider;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
 import java.util.Locale;
@@ -197,9 +197,9 @@ public class TilesProvidersImpl implements TilesProviders {
       TileMatrixSet tileMatrixSet,
       MinMax levels,
       BoundingBox bbox) {
-    List<TileMatrixSetLimits> limitsList =
+    List<TileMatrixSetLimitsOgcApi> limitsList =
         limitsGenerator.getTileMatrixSetLimits(bbox, tileMatrixSet, levels);
-    for (TileMatrixSetLimits limits : limitsList) {
+    for (TileMatrixSetLimitsOgcApi limits : limitsList) {
       if (LOGGER.isTraceEnabled()) {
         LOGGER.trace(
             "Deleting tiles from cache: API {}, collection {}, tiles {}/{}/{}-{}/{}-{}, TMS rows {}-{}",

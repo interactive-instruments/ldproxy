@@ -9,47 +9,36 @@ package de.ii.ogcapi.tilematrixsets.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSetLimits;
 import java.nio.charset.StandardCharsets;
-import java.util.function.IntPredicate;
-import java.util.stream.IntStream;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
-@JsonDeserialize(builder = ImmutableTileMatrixSetLimits.Builder.class)
-public abstract class TileMatrixSetLimits {
+@JsonDeserialize(builder = ImmutableTileMatrixSetLimitsOgcApi.Builder.class)
+public abstract class TileMatrixSetLimitsOgcApi implements TileMatrixSetLimits {
+
+  public static TileMatrixSetLimitsOgcApi of(TileMatrixSetLimits limits) {
+    return new ImmutableTileMatrixSetLimitsOgcApi.Builder().from(limits).build();
+  }
+
+  @Override
   public abstract String getTileMatrix();
 
+  @Override
   public abstract Integer getMinTileRow();
 
+  @Override
   public abstract Integer getMaxTileRow();
 
+  @Override
   public abstract Integer getMinTileCol();
 
+  @Override
   public abstract Integer getMaxTileCol();
 
-  public boolean contains(int row, int col) {
-    return getMaxTileCol() >= col
-        && getMinTileCol() <= col
-        && getMaxTileRow() >= row
-        && getMinTileRow() <= row;
-  }
-
-  @Value.Derived
-  @Value.Auxiliary
-  public long getNumberOfTiles() {
-    return ((long) getMaxTileRow() - getMinTileRow() + 1) * (getMaxTileCol() - getMinTileCol() + 1);
-  }
-
-  public long getNumberOfTiles(IntPredicate whereColMatches) {
-    long numCols =
-        IntStream.rangeClosed(getMinTileCol(), getMaxTileCol()).filter(whereColMatches).count();
-
-    return (getMaxTileRow() - getMinTileRow() + 1) * numCols;
-  }
-
   @SuppressWarnings("UnstableApiUsage")
-  public static final Funnel<TileMatrixSetLimits> FUNNEL =
+  public static final Funnel<TileMatrixSetLimitsOgcApi> FUNNEL =
       (from, into) -> {
         into.putString(from.getTileMatrix(), StandardCharsets.UTF_8);
         into.putInt(from.getMinTileRow());

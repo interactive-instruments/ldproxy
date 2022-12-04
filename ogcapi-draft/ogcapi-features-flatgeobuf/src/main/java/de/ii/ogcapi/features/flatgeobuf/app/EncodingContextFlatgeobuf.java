@@ -7,9 +7,9 @@
  */
 package de.ii.ogcapi.features.flatgeobuf.app;
 
-import de.ii.ogcapi.features.core.domain.EncodingContextSfFlat;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.transform.EncodingContextSfFlat;
 import java.util.Optional;
 import org.immutables.value.Value;
 

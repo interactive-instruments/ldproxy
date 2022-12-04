@@ -9,18 +9,19 @@ package de.ii.ogcapi.tilematrixsets.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.OgcApi;
-import de.ii.ogcapi.tilematrixsets.domain.MinMax;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsOgcApi;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.tiles.domain.MinMax;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.slf4j.Logger;
@@ -44,19 +45,23 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
   }
 
   @Override
-  public List<TileMatrixSetLimits> getTileMatrixSetLimits(
+  public List<TileMatrixSetLimitsOgcApi> getTileMatrixSetLimits(
       OgcApi api,
       TileMatrixSet tileMatrixSet,
       MinMax tileMatrixRange,
       Optional<String> collectionId) {
-    return tileMatrixSet.getLimitsList(
-        tileMatrixRange, getBoundingBox(api, tileMatrixSet, collectionId));
+    return tileMatrixSet
+        .getLimitsList(tileMatrixRange, getBoundingBox(api, tileMatrixSet, collectionId))
+        .stream()
+        .map(TileMatrixSetLimitsOgcApi::of)
+        .collect(Collectors.toList());
   }
 
   @Override
-  public TileMatrixSetLimits getTileMatrixSetLimits(
+  public TileMatrixSetLimitsOgcApi getTileMatrixSetLimits(
       OgcApi api, TileMatrixSet tileMatrixSet, int tileMatrix, Optional<String> collectionId) {
-    return tileMatrixSet.getLimits(tileMatrix, getBoundingBox(api, tileMatrixSet, collectionId));
+    return TileMatrixSetLimitsOgcApi.of(
+        tileMatrixSet.getLimits(tileMatrix, getBoundingBox(api, tileMatrixSet, collectionId)));
   }
 
   /**
@@ -67,7 +72,7 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
    * @return list of TileMatrixSetLimits
    */
   @Override
-  public List<TileMatrixSetLimits> getTileMatrixSetLimits(
+  public List<TileMatrixSetLimitsOgcApi> getTileMatrixSetLimits(
       BoundingBox boundingBox, TileMatrixSet tileMatrixSet, MinMax tileMatrixRange) {
 
     Optional<BoundingBox> bbox =
@@ -80,7 +85,9 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
       bbox = Optional.of(tileMatrixSet.getBoundingBox());
     }
 
-    return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get());
+    return tileMatrixSet.getLimitsList(tileMatrixRange, bbox.get()).stream()
+        .map(TileMatrixSetLimitsOgcApi::of)
+        .collect(Collectors.toList());
   }
 
   private static BoundingBox getBoundingBox(

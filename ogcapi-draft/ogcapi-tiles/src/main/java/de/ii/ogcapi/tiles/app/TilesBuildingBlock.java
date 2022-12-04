@@ -8,7 +8,7 @@
 package de.ii.ogcapi.tiles.app;
 
 import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
-import static de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures.COMBINE_ALL;
+import static de.ii.xtraplatform.tiles.domain.LayerOptionsFeatures.COMBINE_ALL;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -25,15 +25,10 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tilematrixsets.domain.ImmutableMinMax;
-import de.ii.ogcapi.tilematrixsets.domain.MinMax;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration;
 import de.ii.ogcapi.tiles.domain.ImmutableTileProviderFeatures;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration.Builder;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ogcapi.tiles.domain.TileProviderFeatures;
 import de.ii.ogcapi.tiles.domain.TileProviderMbtiles;
 import de.ii.ogcapi.tiles.domain.TileProviderTileServer;
@@ -41,26 +36,6 @@ import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration.TileCacheType;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
-import de.ii.ogcapi.tiles.domain.provider.Cache;
-import de.ii.ogcapi.tiles.domain.provider.Cache.Storage;
-import de.ii.ogcapi.tiles.domain.provider.Cache.Type;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableCache;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsFeatures;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsFeaturesDefault;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsHttp;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsHttpDefault;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsMbTiles;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableLayerOptionsMbTilesDefault;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderFeaturesData;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderHttpData;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileProviderMbtilesData;
-import de.ii.ogcapi.tiles.domain.provider.LayerOptionsFeatures;
-import de.ii.ogcapi.tiles.domain.provider.LevelFilter;
-import de.ii.ogcapi.tiles.domain.provider.LevelTransformation;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderData;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderFeaturesData;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderHttpData;
-import de.ii.ogcapi.tiles.domain.provider.TileProviderMbtilesData;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.base.domain.util.Tuple;
 import de.ii.xtraplatform.cql.domain.Cql;
@@ -71,6 +46,30 @@ import de.ii.xtraplatform.store.domain.entities.EntityFactories;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import de.ii.xtraplatform.tiles.domain.Cache;
+import de.ii.xtraplatform.tiles.domain.Cache.Storage;
+import de.ii.xtraplatform.tiles.domain.Cache.Type;
+import de.ii.xtraplatform.tiles.domain.ImmutableCache;
+import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsFeatures;
+import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsFeaturesDefault;
+import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsHttp;
+import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsHttpDefault;
+import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsMbTiles;
+import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsMbTilesDefault;
+import de.ii.xtraplatform.tiles.domain.ImmutableMinMax;
+import de.ii.xtraplatform.tiles.domain.ImmutableTileProviderFeaturesData;
+import de.ii.xtraplatform.tiles.domain.ImmutableTileProviderHttpData;
+import de.ii.xtraplatform.tiles.domain.ImmutableTileProviderMbtilesData;
+import de.ii.xtraplatform.tiles.domain.LayerOptionsFeatures;
+import de.ii.xtraplatform.tiles.domain.LevelFilter;
+import de.ii.xtraplatform.tiles.domain.LevelTransformation;
+import de.ii.xtraplatform.tiles.domain.MinMax;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
+import de.ii.xtraplatform.tiles.domain.TileProviderData;
+import de.ii.xtraplatform.tiles.domain.TileProviderFeaturesData;
+import de.ii.xtraplatform.tiles.domain.TileProviderHttpData;
+import de.ii.xtraplatform.tiles.domain.TileProviderMbtilesData;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
@@ -178,9 +177,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         .tileProvider(
             ImmutableTileProviderFeatures.builder()
                 .tileEncodings(
-                    extensionRegistry
-                        .getExtensionsForType(TileFormatWithQuerySupportExtension.class)
-                        .stream()
+                    extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
                         .filter(FormatExtension::isEnabledByDefault)
                         .map(format -> format.getMediaType().label())
                         .collect(ImmutableList.toImmutableList()))
@@ -798,6 +795,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         .build();
   }
 
+  // TODO: seeding + caching
   private static List<Cache> getCaches(TilesConfiguration tilesConfiguration) {
 
     if (Objects.equals(tilesConfiguration.getCache(), TileCacheType.FILES)) {
@@ -812,8 +810,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
           new ImmutableCache.Builder()
               .type(Type.DYNAMIC)
               .storage(Storage.MBTILES)
-              .putAllLevels(
-                  tilesConfiguration.getZoomLevelsDerived()) // TODO: per collection/layer?
+              .putAllLevels(tilesConfiguration.getSeedingDerived()) // TODO: per collection/layer?
               .build());
     }
 

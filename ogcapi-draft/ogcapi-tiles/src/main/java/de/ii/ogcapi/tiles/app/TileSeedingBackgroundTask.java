@@ -19,14 +19,13 @@ import de.ii.ogcapi.foundation.domain.OgcApiBackgroundTask;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.domain.SeedingOptions;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ogcapi.tiles.domain.TileFormatWithQuerySupportExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationParameters.Builder;
-import de.ii.ogcapi.tiles.domain.provider.TileGenerationParameters;
-import de.ii.ogcapi.tiles.domain.provider.TileProvider;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.services.domain.TaskContext;
+import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParameters;
+import de.ii.xtraplatform.tiles.domain.TileGenerationParameters;
+import de.ii.xtraplatform.tiles.domain.TileProvider;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -77,9 +76,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
     }
 
     // no formats available
-    if (extensionRegistry
-        .getExtensionsForType(TileFormatWithQuerySupportExtension.class)
-        .isEmpty()) {
+    if (extensionRegistry.getExtensionsForType(TileFormatExtension.class).isEmpty()) {
       return false;
     }
 
@@ -203,7 +200,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
 
       if (tilesConfiguration.isPresent()) {
         TileGenerationParameters generationParameters =
-            new Builder()
+            new ImmutableTileGenerationParameters.Builder()
                 .clipBoundingBox(api.getSpatialExtent(collectionId))
                 .propertyTransformations(
                     api.getData()
@@ -227,7 +224,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
 
     if (tilesConfiguration.isPresent()) {
       TileGenerationParameters generationParameters =
-          new Builder()
+          new ImmutableTileGenerationParameters.Builder()
               .clipBoundingBox(api.getSpatialExtent())
               .propertyTransformations(
                   api.getData()

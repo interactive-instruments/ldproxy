@@ -19,16 +19,16 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ogcapi.tilematrixsets.domain.ImmutableTileMatrixSetData;
 import de.ii.ogcapi.tilematrixsets.domain.ImmutableTileMatrixSetLinks;
+import de.ii.ogcapi.tilematrixsets.domain.ImmutableTileMatrixSetOgcApi;
 import de.ii.ogcapi.tilematrixsets.domain.ImmutableTileMatrixSets;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetData;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetOgcApi;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSets;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsFormatExtension;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsLinksGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import de.ii.xtraplatform.web.domain.ETag;
 import java.net.URI;
 import java.text.MessageFormat;
@@ -186,8 +186,8 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
             .orElseThrow(
                 () -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
 
-    TileMatrixSetData tileMatrixSetData =
-        ImmutableTileMatrixSetData.builder()
+    TileMatrixSetOgcApi tileMatrixSetData =
+        new ImmutableTileMatrixSetOgcApi.Builder()
             .from(tileMatrixSet.getTileMatrixSetData())
             .links(links)
             .build();
@@ -200,7 +200,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
                     .map(HtmlConfiguration::getSendEtags)
                     .orElse(false)
             ? ETag.from(
-                tileMatrixSetData, TileMatrixSetData.FUNNEL, outputFormat.getMediaType().label())
+                tileMatrixSetData, TileMatrixSetOgcApi.FUNNEL, outputFormat.getMediaType().label())
             : null;
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
     if (Objects.nonNull(response)) return response.build();
