@@ -29,15 +29,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("PMD.TooManyFields")
 public class OgcApiLandingPageView extends OgcApiDatasetView {
 
   private final LandingPage apiLandingPage;
   public final String mainLinksTitle;
   public final String apiInformationTitle;
   public List<Link> distributionLinks;
-  public String dataSourceUrl;
   public String keywords;
-  public String keywordsWithQuotes;
   public boolean spatialSearch;
   public String dataTitle;
   public String apiDefinitionTitle;
@@ -93,6 +92,7 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
             .map(ApiMetadata::getKeywords)
             .map(v -> Joiner.on(',').skipNulls().join(v))
             .orElse(null);
+    //noinspection unchecked
     distributionLinks =
         Objects.requireNonNullElse(
             (List<Link>) apiLandingPage.getExtensions().get("datasetDownloadLinks"),
@@ -113,6 +113,7 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
     this.externalDocsTitle = i18n.get("externalDocsTitle", language);
     this.attributionTitle = i18n.get("attributionTitle", language);
     this.none = i18n.get("none", language);
+    //noinspection deprecation
     this.mapClient =
         new ImmutableMapClient.Builder()
             .backgroundUrl(
@@ -128,10 +129,10 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
             .build();
   }
 
+  @Override
   public List<Link> getDistributionLinks() {
     return distributionLinks;
   }
-  ;
 
   public Optional<Link> getData() {
     return links.stream()
@@ -145,7 +146,9 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
   public List<Link> getTiles() {
     return links.stream()
         .filter(
-            link -> link.getRel().startsWith("http://www.opengis.net/def/rel/ogc/1.0/tilesets-"))
+            link ->
+                link.getRel() != null
+                    && link.getRel().startsWith("http://www.opengis.net/def/rel/ogc/1.0/tilesets-"))
         .collect(Collectors.toUnmodifiableList());
   }
 
@@ -167,22 +170,27 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
     return links.stream().filter(link -> Objects.equals(link.getRel(), "ldp-map")).findFirst();
   }
 
+  @SuppressWarnings("unused")
   public Optional<Link> getApiDefinition() {
     return links.stream().filter(link -> Objects.equals(link.getRel(), "service-desc")).findFirst();
   }
 
+  @SuppressWarnings("unused")
   public Optional<Link> getApiDocumentation() {
     return links.stream().filter(link -> Objects.equals(link.getRel(), "service-doc")).findFirst();
   }
 
+  @SuppressWarnings("unused")
   public Optional<ExternalDocumentation> getExternalDocs() {
     return apiLandingPage.getExternalDocs();
   }
 
+  @SuppressWarnings("unused")
   public Optional<String> getSchemaOrgDataset() {
     return Optional.of(getSchemaOrgDataset(apiData, Optional.empty(), uriCustomizer.copy(), false));
   }
 
+  @SuppressWarnings("unused")
   public boolean getContactInfo() {
     return getMetadata()
         .filter(

@@ -66,15 +66,14 @@ public class CommonFormatJson implements CommonFormatExtension, ConformanceClass
   @Override
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
 
-    // TODO add examples
-    if (path.equals("/")) {
+    if ("/".equals(path)) {
       return new ImmutableApiMediaTypeContent.Builder()
           .schema(schemaLandingPage)
           .schemaRef(LandingPage.SCHEMA_REF)
           .referencedSchemas(referencedSchemasLandingPage)
           .ogcApiMediaType(MEDIA_TYPE)
           .build();
-    } else if (path.equals("/conformance")) {
+    } else if ("/conformance".equals(path)) {
       return new ImmutableApiMediaTypeContent.Builder()
           .schema(schemaConformance)
           .schemaRef(ConformanceDeclaration.SCHEMA_REF)
@@ -83,7 +82,7 @@ public class CommonFormatJson implements CommonFormatExtension, ConformanceClass
           .build();
     }
 
-    throw new RuntimeException("Unexpected path: " + path);
+    throw new IllegalStateException("Unexpected path: " + path);
   }
 
   @Override
@@ -98,7 +97,7 @@ public class CommonFormatJson implements CommonFormatExtension, ConformanceClass
         .from(apiLandingPage)
         .extensions(
             apiLandingPage.getExtensions().entrySet().stream()
-                .filter(entry -> !entry.getKey().equals("datasetDownloadLinks"))
+                .filter(entry -> !"datasetDownloadLinks".equals(entry.getKey()))
                 .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue)))
         .build();
   }

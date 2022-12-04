@@ -33,11 +33,11 @@ import javax.ws.rs.core.MediaType;
       ExceptionFormatExtension.class,
       FormatExtension.class,
       ApiExtension.class
-    }) // TODO: workaround for issue in dagger-auto
+    }) // workaround for issue in dagger-auto
 public class ExceptionFormatJson extends ErrorEntityWriter<ApiErrorMessage, ApiErrorMessage>
     implements ExceptionFormatExtension {
 
-  private final Schema schema;
+  private final Schema<?> schema;
 
   public static final String SCHEMA_REF_EXCEPTIONS = "#/components/schemas/Exceptions";
 

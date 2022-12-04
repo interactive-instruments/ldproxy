@@ -19,6 +19,11 @@ import java.util.Optional;
 @AutoMultiBind
 public interface ConformanceDeclarationExtension extends ContentExtension {
 
+  @Override
+  default String getResourceName() {
+    return "Conformance Declaration";
+  }
+
   ImmutableConformanceDeclaration.Builder process(
       ImmutableConformanceDeclaration.Builder conformanceDeclarationBuilder,
       OgcApiDataV2 apiData,
@@ -26,9 +31,4 @@ public interface ConformanceDeclarationExtension extends ContentExtension {
       ApiMediaType mediaType,
       List<ApiMediaType> alternateMediaTypes,
       Optional<Locale> language);
-
-  default String getResourceName() {
-    return "Conformance Declaration";
-  }
-  ;
 }

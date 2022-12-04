@@ -20,6 +20,11 @@ import java.util.Optional;
 @AutoMultiBind
 public interface LandingPageExtension extends ContentExtension {
 
+  @Override
+  default String getResourceName() {
+    return "Landing Page";
+  }
+
   ImmutableLandingPage.Builder process(
       Builder landingPageBuilder,
       OgcApi api,
@@ -27,9 +32,4 @@ public interface LandingPageExtension extends ContentExtension {
       ApiMediaType mediaType,
       List<ApiMediaType> alternateMediaTypes,
       Optional<Locale> language);
-
-  default String getResourceName() {
-    return "Landing Page";
-  }
-  ;
 }

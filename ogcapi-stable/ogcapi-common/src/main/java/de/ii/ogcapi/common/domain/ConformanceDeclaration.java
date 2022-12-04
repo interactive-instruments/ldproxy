@@ -22,11 +22,6 @@ public abstract class ConformanceDeclaration extends PageRepresentation {
 
   public static final String SCHEMA_REF = "#/components/schemas/ConformanceDeclaration";
 
-  public abstract List<String> getConformsTo();
-
-  @JsonAnyGetter
-  public abstract Map<String, Object> getExtensions();
-
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<ConformanceDeclaration> FUNNEL =
       (from, into) -> {
@@ -39,4 +34,9 @@ public abstract class ConformanceDeclaration extends PageRepresentation {
             .forEachOrdered(key -> into.putString(key, StandardCharsets.UTF_8));
         // we cannot encode the generic extension object
       };
+
+  public abstract List<String> getConformsTo();
+
+  @JsonAnyGetter
+  public abstract Map<String, Object> getExtensions();
 }

@@ -39,11 +39,16 @@ import javax.ws.rs.core.Response;
 
 /**
  * @langEn The URIs of all conformance classes supported by the server. This information is provided
- *     to support 'generic' clients that want to access multiple OGC API implementations - and not
- *     'just' a specific API. For clients accessing only a single API, this information is in
+ *     to support 'generic' clients that want to access multiple OGC Web API implementations - and
+ *     not 'just' a specific API. For clients accessing only a single API, this information is in
  *     general not relevant and the OpenAPI definition details the required information about the
  *     API.
- * @langDe TODO
+ * @langDe Die URIs aller vom Server unterstützten Konformitätsklassen. Diese Informationen werden
+ *     bereitgestellt, um "generische" Clients zu unterstützen, die auf mehrere
+ *     OGC-Web-API-Implementierungen zugreifen wollen - und nicht "nur" auf eine bestimmte API. Für
+ *     Clients, die nur auf eine einzige API zugreifen, sind diese Informationen im Allgemeinen
+ *     nicht relevant, und die OpenAPI-Definition enthält die erforderlichen Informationen über die
+ *     API.
  * @name Conformance Declaration
  * @path /{apiId}/conformance
  * @formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}

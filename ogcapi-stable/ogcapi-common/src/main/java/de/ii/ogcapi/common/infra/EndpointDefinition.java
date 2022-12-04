@@ -39,8 +39,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @name API Definition
@@ -50,8 +48,6 @@ import org.slf4j.LoggerFactory;
 @Singleton
 @AutoBind
 public class EndpointDefinition extends Endpoint {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointDefinition.class);
 
   private final QueriesHandlerCommon queryHandler;
 
@@ -69,8 +65,9 @@ public class EndpointDefinition extends Endpoint {
 
   @Override
   public List<? extends FormatExtension> getFormats() {
-    if (formats == null)
+    if (formats == null) {
       formats = extensionRegistry.getExtensionsForType(ApiDefinitionFormatExtension.class);
+    }
     return formats;
   }
 

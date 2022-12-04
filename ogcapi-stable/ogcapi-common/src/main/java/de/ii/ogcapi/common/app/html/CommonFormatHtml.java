@@ -44,8 +44,8 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
           .label("HTML")
           .parameter("html")
           .build();
-  private final Schema schema = new StringSchema().example("<html>...</html>");
-  private static final String schemaRef = "#/components/schemas/htmlSchema";
+  private final Schema<?> schema = new StringSchema().example("<html>...</html>");
+  private static final String SCHEMA_REF = "#/components/schemas/htmlSchema";
 
   private final I18n i18n;
 
@@ -68,7 +68,7 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schema)
-        .schemaRef(schemaRef)
+        .schemaRef(SCHEMA_REF)
         .ogcApiMediaType(MEDIA_TYPE)
         .build();
   }
@@ -101,19 +101,16 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
 
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
-    OgcApiLandingPageView landingPageView =
-        new OgcApiLandingPageView(
-            api.getData(),
-            apiLandingPage,
-            breadCrumbs,
-            requestContext.getStaticUrlPrefix(),
-            htmlConfig,
-            isNoIndexEnabledForApi(api.getData()),
-            requestContext.getUriCustomizer(),
-            i18n,
-            requestContext.getLanguage());
-
-    return landingPageView;
+    return new OgcApiLandingPageView(
+        api.getData(),
+        apiLandingPage,
+        breadCrumbs,
+        requestContext.getStaticUrlPrefix(),
+        htmlConfig,
+        isNoIndexEnabledForApi(api.getData()),
+        requestContext.getUriCustomizer(),
+        i18n,
+        requestContext.getLanguage());
   }
 
   @Override
@@ -143,15 +140,13 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
 
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
-    OgcApiConformanceDeclarationView ogcApiConformanceDeclarationView =
-        new OgcApiConformanceDeclarationView(
-            conformanceDeclaration,
-            breadCrumbs,
-            requestContext.getStaticUrlPrefix(),
-            htmlConfig,
-            isNoIndexEnabledForApi(api.getData()),
-            i18n,
-            requestContext.getLanguage());
-    return ogcApiConformanceDeclarationView;
+    return new OgcApiConformanceDeclarationView(
+        conformanceDeclaration,
+        breadCrumbs,
+        requestContext.getStaticUrlPrefix(),
+        htmlConfig,
+        isNoIndexEnabledForApi(api.getData()),
+        i18n,
+        requestContext.getLanguage());
   }
 }

@@ -8,6 +8,7 @@
 package de.ii.ogcapi.common.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.common.domain.ApiDefinitionFormatExtension;
 import de.ii.ogcapi.common.domain.CommonFormatExtension;
@@ -54,6 +55,10 @@ import org.immutables.value.Value;
 @AutoBind
 public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
 
+  private final ExtensionRegistry extensionRegistry;
+  private final I18n i18n;
+  private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
+
   public enum Query implements QueryIdentifier {
     LANDING_PAGE,
     CONFORMANCE_DECLARATION,
@@ -62,24 +67,16 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
 
   @Value.Immutable
   public interface QueryInputLandingPage extends QueryInput {
-    boolean getIncludeLinkHeader();
-
     List<Link> getAdditionalLinks();
   }
 
   @Value.Immutable
-  public interface QueryInputConformance extends QueryInput {
-    boolean getIncludeLinkHeader();
-  }
+  public interface QueryInputConformance extends QueryInput {}
 
   @Value.Immutable
   public interface Definition extends QueryInput {
     Optional<String> getSubPath();
   }
-
-  private final ExtensionRegistry extensionRegistry;
-  private final I18n i18n;
-  private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
   @Inject
   public QueriesHandlerCommonImpl(ExtensionRegistry extensionRegistry, I18n i18n) {
@@ -109,9 +106,6 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
     List<Link> links =
         linksGenerator.generateLinks(
             requestContext.getUriCustomizer().copy(),
-            Optional.empty(), // TODO: support schema links, e.g. for WFS provider new
-            // WFSRequest(service.getWfsAdapter(), new
-            // DescribeFeatureType()).getAsUrl()
             requestContext.getMediaType(),
             requestContext.getAlternateMediaTypes(),
             i18n,
@@ -150,11 +144,8 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
 
     LandingPage apiLandingPage = builder.build();
 
-    Object entity =
-        outputFormatExtension.getLandingPageEntity(
-            apiLandingPage, requestContext.getApi(), requestContext);
-
     Date lastModified = getLastModified(queryInput);
+    @SuppressWarnings("UnstableApiUsage")
     EntityTag etag =
         !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
                 || api.getData()
@@ -167,11 +158,17 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                 outputFormatExtension.getMediaType().label())
             : null;
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
+
+    Object entity =
+        outputFormatExtension.getLandingPageEntity(
+            apiLandingPage, requestContext.getApi(), requestContext);
 
     return prepareSuccessResponse(
             requestContext,
-            queryInput.getIncludeLinkHeader() ? apiLandingPage.getLinks() : null,
+            queryInput.getIncludeLinkHeader() ? apiLandingPage.getLinks() : ImmutableList.of(),
             HeaderCaching.of(lastModified, etag, queryInput),
             null,
             HeaderContentDisposition.of(
@@ -242,10 +239,8 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
 
     ConformanceDeclaration conformanceDeclaration = builder.build();
 
-    Object entity =
-        outputFormatExtension.getConformanceEntity(
-            conformanceDeclaration, requestContext.getApi(), requestContext);
     Date lastModified = getLastModified(queryInput);
+    @SuppressWarnings("UnstableApiUsage")
     EntityTag etag =
         !outputFormatExtension.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
                 || requestContext
@@ -260,11 +255,19 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                 outputFormatExtension.getMediaType().label())
             : null;
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
+
+    Object entity =
+        outputFormatExtension.getConformanceEntity(
+            conformanceDeclaration, requestContext.getApi(), requestContext);
 
     return prepareSuccessResponse(
             requestContext,
-            queryInput.getIncludeLinkHeader() ? conformanceDeclaration.getLinks() : null,
+            queryInput.getIncludeLinkHeader()
+                ? conformanceDeclaration.getLinks()
+                : ImmutableList.of(),
             HeaderCaching.of(lastModified, etag, queryInput),
             null,
             HeaderContentDisposition.of(
@@ -300,13 +303,16 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
           requestContext.getApi().getData(), requestContext, subPath);
     }
 
+    // API definitions should be versioned properly, see
+    // https://github.com/interactive-instruments/ldproxy/issues/807
+
     Date lastModified = getLastModified(queryInput);
-    // TODO support ETag
     EntityTag etag = null;
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
 
-    // TODO support headers
     return outputFormatExtension.getApiDefinitionResponse(
         requestContext.getApi().getData(), requestContext);
   }

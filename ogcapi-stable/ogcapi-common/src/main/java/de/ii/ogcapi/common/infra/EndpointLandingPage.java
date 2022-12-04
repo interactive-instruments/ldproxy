@@ -42,14 +42,14 @@ import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @langEn The landing page provides links to the API definition (link relations `service-desc` and
  *     `service-doc`), the Conformance declaration (path `/conformance`, link relation
  *     `conformance`), and other resources in the API.
- * @langDe TODO
+ * @langDe Die Startseite enthält Links zur API-Definition (Link-Relationen `service-desc` und
+ *     `service-doc`), zur Konformitätserklärung (Pfad `/conformance`, Link-Relation `conformance`)
+ *     und anderen Ressourcen in der API.
  * @name Landing Page
  * @path /{apiId}/
  * @formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
@@ -58,7 +58,6 @@ import org.slf4j.LoggerFactory;
 @AutoBind
 public class EndpointLandingPage extends Endpoint implements ConformanceClass {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointLandingPage.class);
   private static final List<String> TAGS = ImmutableList.of("Capabilities");
 
   private final QueriesHandlerCommon queryHandler;
@@ -87,9 +86,10 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
         ImmutableValidationResult.builder().from(result).mode(apiValidation);
 
     Optional<CommonConfiguration> config = api.getData().getExtension(CommonConfiguration.class);
-    if (config.isPresent()) {
-      FoundationValidator.validateLinks(builder, config.get().getAdditionalLinks(), "/");
-    }
+    config.ifPresent(
+        commonConfiguration ->
+            FoundationValidator.validateLinks(
+                builder, commonConfiguration.getAdditionalLinks(), "/"));
 
     return builder.build();
   }

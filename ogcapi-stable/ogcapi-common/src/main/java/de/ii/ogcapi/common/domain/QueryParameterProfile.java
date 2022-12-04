@@ -24,11 +24,14 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
 
   protected final ExtensionRegistry extensionRegistry;
   protected final SchemaValidator schemaValidator;
+  protected final ConcurrentMap<Integer, ConcurrentMap<String, Schema>> schemaMap;
 
   protected QueryParameterProfile(
       ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super();
     this.extensionRegistry = extensionRegistry;
     this.schemaValidator = schemaValidator;
+    this.schemaMap = new ConcurrentHashMap<>();
   }
 
   @Override
@@ -56,25 +59,26 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
 
   protected abstract List<String> getProfiles(OgcApiDataV2 apiData);
 
-  protected List<String> getProfiles(OgcApiDataV2 apiData, String collectionId) {
+  protected List<String> getProfiles(
+      OgcApiDataV2 apiData, @SuppressWarnings("unused") String collectionId) {
+    // currently no support for different values for each collection
     return getProfiles(apiData);
   }
-  ;
 
   protected abstract String getDefault(OgcApiDataV2 apiData);
 
-  protected String getDefault(OgcApiDataV2 apiData, String collectionId) {
+  protected String getDefault(
+      OgcApiDataV2 apiData, @SuppressWarnings("unused") String collectionId) {
+    // currently no support for different values for each collection
     return getDefault(apiData);
   }
-  ;
-
-  protected ConcurrentMap<Integer, ConcurrentMap<String, Schema>> schemaMap =
-      new ConcurrentHashMap<>();
 
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {
     int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.containsKey(apiHashCode)) {
+      schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    }
     if (!schemaMap.get(apiHashCode).containsKey("*")) {
       schemaMap
           .get(apiHashCode)
@@ -86,7 +90,9 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
     int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.containsKey(apiHashCode)) {
+      schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    }
     if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
       schemaMap
           .get(apiHashCode)

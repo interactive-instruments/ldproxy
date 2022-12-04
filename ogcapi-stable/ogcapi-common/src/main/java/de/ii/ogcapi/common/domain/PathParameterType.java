@@ -22,11 +22,14 @@ public abstract class PathParameterType extends ApiExtensionCache implements Ogc
 
   protected final ExtensionRegistry extensionRegistry;
   protected final SchemaValidator schemaValidator;
+  protected final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap;
 
   protected PathParameterType(
       ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super();
     this.extensionRegistry = extensionRegistry;
     this.schemaValidator = schemaValidator;
+    this.schemaMap = new ConcurrentHashMap<>();
   }
 
   @Override
@@ -48,18 +51,18 @@ public abstract class PathParameterType extends ApiExtensionCache implements Ogc
 
   protected abstract boolean isApplicablePath(OgcApiDataV2 apiData, String definitionPath);
 
-  protected List<String> getValues(OgcApiDataV2 apiData, String collectionId) {
+  protected List<String> getValues(
+      OgcApiDataV2 apiData, @SuppressWarnings("unused") String collectionId) {
+    // currently no support for different values for each collection
     return getValues(apiData);
   }
-  ;
-
-  protected ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =
-      new ConcurrentHashMap<>();
 
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {
     int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.containsKey(apiHashCode)) {
+      schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    }
     if (!schemaMap.get(apiHashCode).containsKey("*")) {
       schemaMap.get(apiHashCode).put("*", new StringSchema()._enum(getValues(apiData)));
     }
@@ -69,7 +72,9 @@ public abstract class PathParameterType extends ApiExtensionCache implements Ogc
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
     int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.containsKey(apiHashCode)) {
+      schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    }
     if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
       schemaMap
           .get(apiHashCode)

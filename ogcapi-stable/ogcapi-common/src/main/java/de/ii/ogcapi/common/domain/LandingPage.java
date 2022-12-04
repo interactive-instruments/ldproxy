@@ -23,15 +23,6 @@ public abstract class LandingPage extends PageRepresentation {
 
   public static final String SCHEMA_REF = "#/components/schemas/LandingPage";
 
-  public abstract Optional<String> getAttribution();
-
-  public abstract Optional<OgcApiExtent> getExtent();
-
-  public abstract Optional<ExternalDocumentation> getExternalDocs();
-
-  @JsonAnyGetter
-  public abstract Map<String, Object> getExtensions();
-
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<LandingPage> FUNNEL =
       (from, into) -> {
@@ -44,4 +35,13 @@ public abstract class LandingPage extends PageRepresentation {
             .forEachOrdered(key -> into.putString(key, StandardCharsets.UTF_8));
         // we cannot encode the generic extension object
       };
+
+  public abstract Optional<String> getAttribution();
+
+  public abstract Optional<OgcApiExtent> getExtent();
+
+  public abstract Optional<ExternalDocumentation> getExternalDocs();
+
+  @JsonAnyGetter
+  public abstract Map<String, Object> getExtensions();
 }

@@ -26,11 +26,12 @@ import javax.inject.Singleton;
 @AutoBind
 public class QueryParameterToken extends ApiExtensionCache implements OgcApiQueryParameter {
 
-  private Schema<?> schema = null;
+  private Schema<?> schema;
   private final SchemaValidator schemaValidator;
 
   @Inject
   public QueryParameterToken(SchemaValidator schemaValidator) {
+    super();
     this.schemaValidator = schemaValidator;
   }
 

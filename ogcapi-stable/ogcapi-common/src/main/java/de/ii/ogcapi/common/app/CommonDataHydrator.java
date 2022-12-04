@@ -17,14 +17,10 @@ import de.ii.xtraplatform.services.domain.ServicesContext;
 import java.net.URI;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
 public class CommonDataHydrator implements OgcApiDataHydratorExtension {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(CommonDataHydrator.class);
 
   private final URI servicesUri;
 

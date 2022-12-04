@@ -25,10 +25,13 @@ public abstract class QueryParameterF extends ApiExtensionCache implements OgcAp
 
   protected final ExtensionRegistry extensionRegistry;
   protected final SchemaValidator schemaValidator;
+  protected final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap;
 
   protected QueryParameterF(ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+    super();
     this.extensionRegistry = extensionRegistry;
     this.schemaValidator = schemaValidator;
+    this.schemaMap = new ConcurrentHashMap<>();
   }
 
   @Override
@@ -60,18 +63,17 @@ public abstract class QueryParameterF extends ApiExtensionCache implements OgcAp
 
   protected abstract Class<? extends FormatExtension> getFormatClass();
 
-  protected ConcurrentMap<Integer, ConcurrentMap<String, Schema>> schemaMap =
-      new ConcurrentHashMap<>();
-
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {
     int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.containsKey(apiHashCode)) {
+      schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    }
     if (!schemaMap.get(apiHashCode).containsKey("*")) {
       List<String> fEnum = new ArrayList<>();
       extensionRegistry.getExtensionsForType(getFormatClass()).stream()
           .filter(f -> f.isEnabledForApi(apiData))
-          .filter(f -> !f.getMediaType().parameter().equals("*"))
+          .filter(f -> !"*".equals(f.getMediaType().parameter()))
           .map(f -> f.getMediaType().parameter())
           .distinct()
           .sorted()
@@ -84,12 +86,14 @@ public abstract class QueryParameterF extends ApiExtensionCache implements OgcAp
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
     int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.containsKey(apiHashCode)) {
+      schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    }
     if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
       List<String> fEnum = new ArrayList<>();
       extensionRegistry.getExtensionsForType(getFormatClass()).stream()
           .filter(f -> f.isEnabledForApi(apiData, collectionId))
-          .filter(f -> !f.getMediaType().parameter().equals("*"))
+          .filter(f -> !"*".equals(f.getMediaType().parameter()))
           .map(f -> f.getMediaType().parameter())
           .distinct()
           .sorted()

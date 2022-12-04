@@ -29,7 +29,7 @@ import javax.ws.rs.core.MediaType;
       ExceptionFormatExtension.class,
       FormatExtension.class,
       ApiExtension.class
-    }) // TODO: workaround for issue in dagger-auto
+    }) // workaround for issue in dagger-auto
 public class ExceptionFormatHtml extends ErrorEntityWriter<ApiErrorMessage, OgcApiErrorView>
     implements ExceptionFormatExtension {
 

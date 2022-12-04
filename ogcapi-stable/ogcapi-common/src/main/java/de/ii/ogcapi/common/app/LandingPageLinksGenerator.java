@@ -20,9 +20,9 @@ import java.util.Optional;
 
 public class LandingPageLinksGenerator extends DefaultLinksGenerator {
 
+  @Override
   public List<Link> generateLinks(
       URICustomizer uriBuilder,
-      Optional<String> describeFeatureTypeUrl,
       ApiMediaType mediaType,
       List<ApiMediaType> alternateMediaTypes,
       I18n i18n,

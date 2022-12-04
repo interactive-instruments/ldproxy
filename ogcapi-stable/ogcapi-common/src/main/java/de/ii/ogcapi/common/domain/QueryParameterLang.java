@@ -27,11 +27,12 @@ import javax.inject.Singleton;
 @AutoBind
 public class QueryParameterLang extends ApiExtensionCache implements OgcApiQueryParameter {
 
-  private Schema<?> schema = null;
+  private Schema<?> schema;
   private final SchemaValidator schemaValidator;
 
   @Inject
   public QueryParameterLang(SchemaValidator schemaValidator) {
+    super();
     this.schemaValidator = schemaValidator;
   }
 
@@ -73,6 +74,7 @@ public class QueryParameterLang extends ApiExtensionCache implements OgcApiQuery
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    //noinspection ConstantConditions
     return isExtensionEnabled(
         apiData, FoundationConfiguration.class, FoundationConfiguration::getUseLangParameter);
   }

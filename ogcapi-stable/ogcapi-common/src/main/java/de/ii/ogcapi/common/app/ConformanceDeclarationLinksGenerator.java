@@ -19,6 +19,7 @@ import java.util.Optional;
 
 public class ConformanceDeclarationLinksGenerator extends DefaultLinksGenerator {
 
+  @Override
   public List<Link> generateLinks(
       URICustomizer uriBuilder,
       ApiMediaType mediaType,

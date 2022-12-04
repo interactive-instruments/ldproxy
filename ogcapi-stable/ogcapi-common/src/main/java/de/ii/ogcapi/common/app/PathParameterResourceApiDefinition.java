@@ -22,15 +22,11 @@ import java.util.Map;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
 public class PathParameterResourceApiDefinition implements OgcApiPathParameter {
 
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(PathParameterResourceApiDefinition.class);
   Map<String, Set<String>> apiCollectionMap;
   private final SchemaValidator schemaValidator;
 
@@ -39,7 +35,6 @@ public class PathParameterResourceApiDefinition implements OgcApiPathParameter {
     this.schemaValidator = schemaValidator;
     this.apiCollectionMap = new HashMap<>();
   }
-  ;
 
   @Override
   public String getPattern() {
@@ -73,7 +68,7 @@ public class PathParameterResourceApiDefinition implements OgcApiPathParameter {
 
   @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-    return isEnabledForApi(apiData) && definitionPath.equals("/api/{resource}");
+    return isEnabledForApi(apiData) && "/api/{resource}".equals(definitionPath);
   }
 
   @Override

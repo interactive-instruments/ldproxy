@@ -24,6 +24,7 @@ public class LandingPageXml implements OgcApiXml {
   private String title;
   private String description;
 
+  @SuppressWarnings("unused")
   public LandingPageXml() {}
 
   public LandingPageXml(List<Link> links, String title, String description) {
