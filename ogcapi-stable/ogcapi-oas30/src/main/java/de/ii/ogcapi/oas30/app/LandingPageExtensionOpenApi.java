@@ -76,7 +76,7 @@ public class LandingPageExtensionOpenApi implements LandingPageExtension {
                         .type(f.getMediaType().type().toString())
                         .title(
                             i18n.get(
-                                f.getRel().get().equals("service-desc")
+                                "service-desc".equals(f.getRel().get())
                                     ? "serviceDescLink"
                                     : "serviceDocLink",
                                 language))

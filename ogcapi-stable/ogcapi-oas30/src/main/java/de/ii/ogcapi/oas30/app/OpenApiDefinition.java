@@ -44,18 +44,15 @@ public class OpenApiDefinition implements OpenApiExtension {
   @Override
   public OpenAPI process(OpenAPI openAPI, OgcApiDataV2 apiData) {
     if (apiData != null) {
-
       extensionRegistry.getExtensionsForType(EndpointExtension.class).stream()
           .filter(endpoint -> endpoint.isEnabledForApi(apiData))
           .map(endpoint -> endpoint.getDefinition(apiData))
           .sorted(Comparator.comparing(ApiEndpointDefinition::getSortPriority))
           .forEachOrdered(
-              ogcApiEndpointDefinition -> {
-                ogcApiEndpointDefinition.updateOpenApiDefinition(apiData, openAPI);
-              });
+              ogcApiEndpointDefinition ->
+                  ogcApiEndpointDefinition.updateOpenApiDefinition(apiData, openAPI));
 
       // TODO apply rename transformers for filter properties and values
-
     }
 
     return openAPI;

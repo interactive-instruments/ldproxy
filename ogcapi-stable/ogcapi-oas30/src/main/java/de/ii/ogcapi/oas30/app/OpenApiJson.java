@@ -24,8 +24,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @format JSON
@@ -34,8 +32,7 @@ import org.slf4j.LoggerFactory;
 @AutoBind
 public class OpenApiJson implements ApiDefinitionFormatExtension {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(OpenApiJson.class);
-  private static ApiMediaType MEDIA_TYPE =
+  private static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
           .type(
               new MediaType(
@@ -64,7 +61,9 @@ public class OpenApiJson implements ApiDefinitionFormatExtension {
 
   @Override
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.startsWith("/api/")) return null;
+    if (path.startsWith("/api/")) {
+      return null;
+    }
 
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(new ObjectSchema())

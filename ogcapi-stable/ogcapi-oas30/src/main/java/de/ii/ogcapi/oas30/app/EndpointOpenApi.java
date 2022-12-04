@@ -16,14 +16,10 @@ import de.ii.ogcapi.oas30.domain.Oas30Configuration;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
 public class EndpointOpenApi implements ConformanceClass {
-
-  private static Logger LOGGER = LoggerFactory.getLogger(EndpointOpenApi.class);
 
   @Inject
   EndpointOpenApi() {}

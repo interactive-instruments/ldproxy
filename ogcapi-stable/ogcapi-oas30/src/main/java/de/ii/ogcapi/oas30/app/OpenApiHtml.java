@@ -25,8 +25,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @format HTML
@@ -35,21 +33,17 @@ import org.slf4j.LoggerFactory;
 @AutoBind
 public class OpenApiHtml implements ApiDefinitionFormatExtension {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(OpenApiHtml.class);
-  private static ApiMediaType MEDIA_TYPE =
+  private static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
           .type(MediaType.TEXT_HTML_TYPE)
           .label("HTML")
           .parameter("html")
           .build();
 
-  private final ExtendableOpenApiDefinition openApiDefinition;
   private final OpenApiViewerResource openApiViewerResource;
 
   @Inject
-  public OpenApiHtml(
-      ExtendableOpenApiDefinition openApiDefinition, OpenApiViewerResource openApiViewerResource) {
-    this.openApiDefinition = openApiDefinition;
+  public OpenApiHtml(OpenApiViewerResource openApiViewerResource) {
     this.openApiViewerResource = openApiViewerResource;
   }
 
@@ -66,7 +60,9 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
 
   @Override
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.startsWith("/api/")) return null;
+    if (path.startsWith("/api/")) {
+      return null;
+    }
 
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(new StringSchema().example("<html>...</html>"))
@@ -84,12 +80,12 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
             .location(apiRequestContext.getUriCustomizer().copy().ensureTrailingSlash().build())
             .build();
       } catch (URISyntaxException ex) {
-        throw new RuntimeException("Invalid URI: " + ex.getMessage(), ex);
+        throw new IllegalStateException("Invalid URI: " + ex.getMessage(), ex);
       }
     }
 
     if (openApiViewerResource == null) {
-      throw new NullPointerException(
+      throw new IllegalStateException(
           "The object to retrieve auxiliary files for the HTML API documentation is null, but should not be null.");
     }
 
