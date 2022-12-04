@@ -224,7 +224,7 @@ public class QueryParameterFilter extends ApiExtensionCache
     if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record))
       builder.add(
           "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/features-filter",
-          "http://www.opengis.net/spec/ogcapi-records-1/0.0/req/cql-filter");
+          "http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/cql-filter");
 
     return builder.build();
   }
