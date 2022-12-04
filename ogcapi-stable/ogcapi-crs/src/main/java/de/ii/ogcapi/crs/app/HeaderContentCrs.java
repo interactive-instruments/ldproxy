@@ -32,12 +32,13 @@ import javax.inject.Singleton;
 @AutoBind
 public class HeaderContentCrs extends ApiExtensionCache implements ApiHeader {
 
-  private final Schema<?> schema = new StringSchema().format("uri");
+  private final ConcurrentMap<Integer, Schema<?>> schemaMap = new ConcurrentHashMap<>();
   private final SchemaValidator schemaValidator;
   private final CrsSupport crsSupport;
 
   @Inject
   HeaderContentCrs(SchemaValidator schemaValidator, CrsSupport crsSupport) {
+    super();
     this.schemaValidator = schemaValidator;
     this.crsSupport = crsSupport;
   }
@@ -63,12 +64,9 @@ public class HeaderContentCrs extends ApiExtensionCache implements ApiHeader {
         this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
         () ->
             isEnabledForApi(apiData)
-                && ((method == HttpMethods.GET && definitionPath.endsWith("/items"))
-                    || (method == HttpMethods.GET
-                        && definitionPath.endsWith("/items/{featureId}"))));
+                && (method == HttpMethods.GET && definitionPath.endsWith("/items")
+                    || method == HttpMethods.GET && definitionPath.endsWith("/items/{featureId}")));
   }
-
-  private final ConcurrentMap<Integer, Schema<?>> schemaMap = new ConcurrentHashMap<>();
 
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {

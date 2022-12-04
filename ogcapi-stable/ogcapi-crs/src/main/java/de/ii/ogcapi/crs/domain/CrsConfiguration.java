@@ -14,9 +14,16 @@ import java.util.Set;
 import org.immutables.value.Value;
 
 /**
- * @langEn Todo
- * @langDe Das Default-Koordinatenreferenzsystem `CRS84` entspricht `code: 4326, forceAxisOrder:
- *     LON_LAT`, `CRS84h` entspricht `code: 4979, forceAxisOrder: LON_LAT`.
+ * @langEn The default coordinate reference system `ogc:CRS84` corresponds to `epsg:4326` with the
+ *     axis order longitude/latitude, `ogc:CRS84h` corresponds to `epsg:4979` in the axis order
+ *     longitude/latitude/height. By specifying the query parameter `crs` at the resources
+ *     "Features" and "Feature" the coordinates can be requested in one of the configured coordinate
+ *     reference systems.
+ * @langDe Das Default-Koordinatenreferenzsystem `ogc:CRS84` entspricht `epsg:4326` in der
+ *     Achsenreihenfolge Länge/Breite, `ogc:CRS84h` entspricht `epsg:4979` in der Achsenreihenfolge
+ *     Länge/Breite/Höhe. Durch Angabe des Query-Parameters `crs` bei den Ressourcen "Features" und
+ *     "Feature" können die Koordinaten in einem der konfigurierten Koordinatenreferenzsysteme
+ *     angefordert werden.
  * @example <code>
  * ```yaml
  * - buildingBlock: CRS
@@ -31,10 +38,6 @@ import org.immutables.value.Value;
  *     forceAxisOrder: NONE
  * ```
  * </code>
- * @langEn Todo
- * @langDe Durch Angabe des Query-Parameters `crs` bei den Ressourcen "Features" und "Feature"
- *     können die Koordinaten in einem der konfigurierten Koordinatenreferenzsystemen angefordert
- *     werden.
  */
 @Value.Immutable
 @Value.Style(builder = "new")

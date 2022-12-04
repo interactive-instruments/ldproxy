@@ -93,9 +93,8 @@ public class CrsBuildingBlock implements ApiBuildingBlock {
             .flatMap(featureProvider2 -> featureProvider2.getData().getNativeCrs())
             .orElse(OgcCrs.CRS84);
 
-    EpsgCrs lastCrs = null;
+    EpsgCrs lastCrs = defaultCrs;
     try {
-      lastCrs = defaultCrs;
       crsTransformerFactory.getTransformer(providerCrs, defaultCrs);
 
       for (EpsgCrs crs : crsConfiguration.get().getAdditionalCrs()) {

@@ -14,9 +14,11 @@ import de.ii.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ogcapi.crs.domain.CrsSupport;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import java.util.List;
 import java.util.Optional;
@@ -39,12 +41,17 @@ public class CrsSupportImpl implements CrsSupport {
 
   @Override
   public boolean isEnabled(OgcApiDataV2 apiData) {
-    return apiData.getExtension(CrsConfiguration.class).filter(cfg -> cfg.isEnabled()).isPresent();
+    return apiData
+        .getExtension(CrsConfiguration.class)
+        .filter(ExtensionConfiguration::isEnabled)
+        .isPresent();
   }
 
   @Override
   public List<EpsgCrs> getSupportedCrsList(OgcApiDataV2 apiData) {
-    if (!isEnabled(apiData)) return ImmutableList.of();
+    if (!isEnabled(apiData)) {
+      return ImmutableList.of();
+    }
 
     return getSupportedCrsList(apiData, null);
   }
@@ -92,14 +99,31 @@ public class CrsSupportImpl implements CrsSupport {
 
   private EpsgCrs getDefaultCrs(
       OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration) {
-    return apiData.getExtension(FeaturesCoreConfiguration.class).get().getDefaultEpsgCrs();
+    return featureTypeConfiguration
+        .map(
+            cfg ->
+                cfg.getExtension(FeaturesCoreConfiguration.class)
+                    .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
+                    .orElse(OgcCrs.CRS84))
+        .orElse(
+            apiData
+                .getExtension(FeaturesCoreConfiguration.class)
+                .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
+                .orElse(OgcCrs.CRS84));
   }
 
   private Set<EpsgCrs> getAdditionalCrs(
       OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration) {
-    return apiData
-        .getExtension(CrsConfiguration.class)
-        .map(CrsConfiguration::getAdditionalCrs)
-        .orElse(ImmutableSet.of());
+    return featureTypeConfiguration
+        .map(
+            cfg ->
+                cfg.getExtension(CrsConfiguration.class)
+                    .map(CrsConfiguration::getAdditionalCrs)
+                    .orElse(ImmutableSet.of()))
+        .orElse(
+            apiData
+                .getExtension(CrsConfiguration.class)
+                .map(CrsConfiguration::getAdditionalCrs)
+                .orElse(ImmutableSet.of()));
   }
 }

@@ -45,6 +45,8 @@ import javax.inject.Singleton;
 public class QueryParameterCrsFeatures extends ApiExtensionCache
     implements OgcApiQueryParameter, ConformanceClass, FeatureQueryTransformer {
 
+  private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =
+      new ConcurrentHashMap<>();
   public static final String CRS = "crs";
   public static final String CRS84 = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
   public static final String CRS84H = "http://www.opengis.net/def/crs/OGC/0/CRS84h";
@@ -54,6 +56,7 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache
 
   @Inject
   public QueryParameterCrsFeatures(CrsSupport crsSupport, SchemaValidator schemaValidator) {
+    super();
     this.crsSupport = crsSupport;
     this.schemaValidator = schemaValidator;
   }
@@ -80,17 +83,16 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache
         () ->
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
-                && (definitionPath.equals("/collections/{collectionId}/items")
-                    || definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
+                && ("/collections/{collectionId}/items".equals(definitionPath)
+                    || "/collections/{collectionId}/items/{featureId}".equals(definitionPath)));
   }
-
-  private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =
-      new ConcurrentHashMap<>();
 
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
     int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.containsKey(apiHashCode)) {
+      schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    }
     if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
       List<String> crsList =
           crsSupport

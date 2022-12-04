@@ -37,13 +37,15 @@ import javax.inject.Singleton;
  * @langDe Das Koordinatenreferenzsystem des Parameters "bbox". Default ist WGS84
  *     longitude/latitude.
  * @name BBOX_CRS
- * @endpoints TODO
+ * @endpoints Features
  */
 @Singleton
 @AutoBind
 public class QueryParameterBboxCrsFeatures extends ApiExtensionCache
     implements OgcApiQueryParameter {
 
+  private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =
+      new ConcurrentHashMap<>();
   public static final String BBOX = "bbox";
   public static final String BBOX_CRS = "bbox-crs";
   public static final String CRS84 = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
@@ -54,6 +56,7 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache
 
   @Inject
   public QueryParameterBboxCrsFeatures(CrsSupport crsSupport, SchemaValidator schemaValidator) {
+    super();
     this.crsSupport = crsSupport;
     this.schemaValidator = schemaValidator;
   }
@@ -80,16 +83,15 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache
         () ->
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
-                && definitionPath.equals("/collections/{collectionId}/items"));
+                && "/collections/{collectionId}/items".equals(definitionPath));
   }
-
-  private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =
-      new ConcurrentHashMap<>();
 
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
     int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.containsKey(apiHashCode)) {
+      schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    }
     if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
       // TODO: include 2D (variants) of the CRSs
       // default is currently always CRS84
