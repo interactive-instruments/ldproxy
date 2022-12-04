@@ -88,7 +88,7 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
 
     Optional<CommonConfiguration> config = api.getData().getExtension(CommonConfiguration.class);
     if (config.isPresent()) {
-      builder = FoundationValidator.validateLinks(builder, config.get().getAdditionalLinks(), "/");
+      FoundationValidator.validateLinks(builder, config.get().getAdditionalLinks(), "/");
     }
 
     return builder.build();

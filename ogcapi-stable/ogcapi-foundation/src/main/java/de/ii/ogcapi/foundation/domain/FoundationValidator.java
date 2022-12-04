@@ -18,7 +18,7 @@ import java.util.Objects;
 public final class FoundationValidator {
   private FoundationValidator() {}
 
-  public static ImmutableValidationResult.Builder validateLinks(
+  public static void validateLinks(
       ImmutableValidationResult.Builder builder, List<Link> links, String path) {
     links.stream()
         .filter(
@@ -46,10 +46,9 @@ public final class FoundationValidator {
                       "Link ''{0}'' in resource ''{1}'' has no link relation type (attribute ''rel'').",
                       link.getHref(), path));
             });
-    return builder;
   }
 
-  public static ImmutableValidationResult.Builder validateUri(
+  public static void validateUri(
       ImmutableValidationResult.Builder builder, String uri, String path) {
     try {
       new URL(uri).toURI();
@@ -57,6 +56,5 @@ public final class FoundationValidator {
       builder.addStrictErrors(
           MessageFormat.format("Link ''{0}'' in resource ''{1}'' is not a valid URI.", uri, path));
     }
-    return builder;
   }
 }

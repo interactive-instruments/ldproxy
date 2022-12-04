@@ -118,21 +118,6 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
   }
 
   @Override
-  public <T extends FormatExtension> List<T> getAllOutputFormats(
-      Class<T> extensionType, ApiMediaType mediaType, String path, Optional<T> excludeFormat) {
-    return extensionRegistry.getExtensionsForType(extensionType).stream()
-        .filter(
-            outputFormatExtension ->
-                !Objects.equals(outputFormatExtension, excludeFormat.orElse(null)))
-        .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
-        .filter(
-            outputFormatExtension ->
-                mediaType.type().isCompatible(outputFormatExtension.getMediaType().type()))
-        .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(getData()))
-        .collect(Collectors.toList());
-  }
-
-  @Override
   public Optional<BoundingBox> getSpatialExtent() {
     return getChangingData().get(ChangingSpatialExtent.class).map(ChangingValue::getValue);
   }
