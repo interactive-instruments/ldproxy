@@ -63,7 +63,7 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
       // Tiles are pre-generated as a static tile set
       return config.filter(ExtensionConfiguration::isEnabled).isPresent();
     } else {
-      if (config.filter(TilesConfiguration::isSingleCollectionEnabled).isEmpty()) return false;
+      if (config.filter(TilesConfiguration::hasCollectionTiles).isEmpty()) return false;
       // Tiles are generated on-demand from a data source;
       // currently no vector tiles support for WFS backends
       return providers

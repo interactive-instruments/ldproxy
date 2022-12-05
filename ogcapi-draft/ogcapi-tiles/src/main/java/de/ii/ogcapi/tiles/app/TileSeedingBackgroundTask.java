@@ -218,9 +218,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
     }
 
     Optional<TilesConfiguration> tilesConfiguration =
-        apiData
-            .getExtension(TilesConfiguration.class)
-            .filter(TilesConfiguration::isMultiCollectionEnabled);
+        apiData.getExtension(TilesConfiguration.class).filter(TilesConfiguration::hasDatasetTiles);
 
     if (tilesConfiguration.isPresent()) {
       TileGenerationParameters generationParameters =

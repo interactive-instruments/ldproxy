@@ -31,7 +31,7 @@ public abstract class MapTileFormatExtension extends TileFormatExtension {
         && apiData
             .getExtension(TilesConfiguration.class)
             .filter(TilesConfiguration::isEnabled)
-            .filter(TilesConfiguration::isMultiCollectionEnabled)
+            .filter(TilesConfiguration::hasDatasetTiles)
             .isPresent();
   }
 
@@ -47,7 +47,7 @@ public abstract class MapTileFormatExtension extends TileFormatExtension {
         && apiData
             .getExtension(TilesConfiguration.class, collectionId)
             .filter(TilesConfiguration::getEnabled)
-            .filter(TilesConfiguration::isSingleCollectionEnabled)
+            .filter(TilesConfiguration::hasCollectionTiles)
             .isPresent();
   }
 

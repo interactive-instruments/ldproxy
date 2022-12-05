@@ -63,7 +63,7 @@ public abstract class AbstractEndpointTileSetMultiCollection extends Endpoint {
       // Tiles are generated on-demand from a data source
       if (config
           .filter(TilesConfiguration::isEnabled)
-          .filter(TilesConfiguration::isMultiCollectionEnabled)
+          .filter(TilesConfiguration::hasDatasetTiles)
           .isEmpty()) return false;
       // currently no vector tiles support for WFS backends
       return providers

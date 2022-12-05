@@ -125,7 +125,7 @@ public class QueryParameterCollections extends ApiExtensionCache
     Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
     return config.isPresent()
         && config.get().isEnabled()
-        && config.get().isMultiCollectionEnabled()
+        && config.get().hasDatasetTiles()
         && config.get().getTileProvider().requiresQuerySupport();
   }
 

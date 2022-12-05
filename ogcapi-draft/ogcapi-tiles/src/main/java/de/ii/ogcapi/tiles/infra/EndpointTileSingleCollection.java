@@ -80,7 +80,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection
     return apiData
         .getExtension(TilesConfiguration.class, collectionId)
         .filter(TilesConfiguration::isEnabled)
-        .filter(TilesConfiguration::isSingleCollectionEnabled)
+        .filter(TilesConfiguration::hasCollectionTiles)
         .isPresent();
   }
 

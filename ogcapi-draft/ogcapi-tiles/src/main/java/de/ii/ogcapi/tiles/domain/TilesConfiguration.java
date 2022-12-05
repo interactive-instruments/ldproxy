@@ -10,6 +10,7 @@ package de.ii.ogcapi.tiles.domain;
 import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.LIMIT_DEFAULT;
 import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.MINIMUM_SIZE_IN_PIXEL;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
@@ -418,36 +419,42 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
-   * @default `true`
+   * @langEn Enable vector tiles for each *Feature Collection*. Every tile contains a layer with the
+   *     feature from the collection.
+   * @langDe Steuert, ob Vector Tiles für jede Feature Collection aktiviert werden sollen. Jede
+   *     Kachel hat einen Layer mit den Features aus der Collection.
+   * @default true
+   * @since v3.3
    */
-  @Deprecated
+  @JsonAlias("singleCollectionEnabled")
   @Nullable
-  Boolean getSingleCollectionEnabled();
+  Boolean getCollectionTiles();
 
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
-  default boolean isSingleCollectionEnabled() {
-    return Objects.equals(getSingleCollectionEnabled(), true)
+  default boolean hasCollectionTiles() {
+    return Objects.equals(getCollectionTiles(), true)
         || (Objects.nonNull(getTileProvider()) && getTileProvider().isSingleCollectionEnabled());
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
-   * @default `true`
+   * @langEn Enable vector tiles for the whole dataset. Every tile contains one layer per collection
+   *     with the features of that collection.
+   * @langDe Steuert, ob Vector Tiles für den Datensatz aktiviert werden sollen. Jede Kachel hat
+   *     einen Layer pro Collection mit den Features aus der Collection.
+   * @default true
+   * @since v3.3
    */
-  @Deprecated
+  @JsonAlias("multiCollectionEnabled")
   @Nullable
-  Boolean getMultiCollectionEnabled();
+  Boolean getDatasetTiles();
 
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
-  default boolean isMultiCollectionEnabled() {
-    return Objects.equals(getMultiCollectionEnabled(), true)
+  default boolean hasDatasetTiles() {
+    return Objects.equals(getDatasetTiles(), true)
         || (Objects.nonNull(getTileProvider()) && getTileProvider().isMultiCollectionEnabled());
   }
 

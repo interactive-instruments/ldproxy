@@ -76,7 +76,7 @@ public class EndpointTileMultiCollection extends Endpoint
     return apiData
         .getExtension(TilesConfiguration.class)
         .filter(TilesConfiguration::isEnabled)
-        .filter(TilesConfiguration::isMultiCollectionEnabled)
+        .filter(TilesConfiguration::hasDatasetTiles)
         .isPresent();
   }
 

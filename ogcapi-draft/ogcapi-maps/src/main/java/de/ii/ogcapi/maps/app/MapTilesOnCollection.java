@@ -59,7 +59,7 @@ public class MapTilesOnCollection implements CollectionExtension {
         && apiData
             .getExtension(TilesConfiguration.class)
             .filter(TilesConfiguration::isEnabled)
-            .filter(TilesConfiguration::isSingleCollectionEnabled)
+            .filter(TilesConfiguration::hasCollectionTiles)
             .isPresent();
   }
 

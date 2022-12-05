@@ -15,6 +15,10 @@ import java.util.Optional;
 
 public interface TilesProviders {
 
+  static String toTilesId(String apiId) {
+    return String.format("%s-tiles", apiId);
+  }
+
   boolean hasTileProvider(OgcApiDataV2 apiData);
 
   Optional<de.ii.xtraplatform.tiles.domain.TileProvider> getTileProvider(OgcApiDataV2 apiData);

@@ -54,7 +54,7 @@ public class MapTilesOnLandingPage implements LandingPageExtension {
         && apiData
             .getExtension(TilesConfiguration.class)
             .filter(TilesConfiguration::isEnabled)
-            .filter(TilesConfiguration::isMultiCollectionEnabled)
+            .filter(TilesConfiguration::hasDatasetTiles)
             .isPresent();
   }
 

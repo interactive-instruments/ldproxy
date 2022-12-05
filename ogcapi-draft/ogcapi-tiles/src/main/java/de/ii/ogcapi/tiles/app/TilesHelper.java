@@ -202,7 +202,7 @@ public class TilesHelper {
                                       entry.getValue().getExtension(TilesConfiguration.class);
                                   return entry.getValue().getEnabled()
                                       && config.isPresent()
-                                      && config.get().isMultiCollectionEnabled();
+                                      && config.get().hasDatasetTiles();
                                 })
                             .map(
                                 entry -> {

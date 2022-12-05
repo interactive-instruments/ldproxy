@@ -23,8 +23,8 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
     TilesConfiguration getFull() {
         return new ImmutableTilesConfiguration.Builder()
                 .enabled(true)
-                .singleCollectionEnabled(true)
-                .multiCollectionEnabled(true)
+                .collectionTiles(true)
+                .datasetTiles(true)
                 .ignoreInvalidGeometries(true)
                 .limit(1)
                 .minimumSizeInPixel(1)
@@ -55,8 +55,8 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
     TilesConfiguration getSimple() {
         return new ImmutableTilesConfiguration.Builder()
                 .enabled(false)
-                .singleCollectionEnabled(false)
-                .multiCollectionEnabled(false)
+                .collectionTiles(false)
+                .datasetTiles(false)
                 .ignoreInvalidGeometries(false)
                 .limit(10)
                 .minimumSizeInPixel(10)

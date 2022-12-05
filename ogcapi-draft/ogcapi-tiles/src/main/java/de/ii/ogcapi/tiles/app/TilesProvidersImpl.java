@@ -68,7 +68,7 @@ public class TilesProvidersImpl implements TilesProviders {
 
     if (!optionalTileProvider.isPresent()) {
       optionalTileProvider =
-          entityRegistry.getEntity(TileProvider.class, String.format("%s-tiles", apiData.getId()));
+          entityRegistry.getEntity(TileProvider.class, TilesProviders.toTilesId(apiData.getId()));
     }
     return optionalTileProvider;
   }
@@ -102,9 +102,7 @@ public class TilesProvidersImpl implements TilesProviders {
     return extendableConfiguration
         .getExtension(TilesConfiguration.class)
         .filter(ExtensionConfiguration::isEnabled)
-        // TODO
-        .map(c -> "USE_FALLBACK")
-        // .flatMap(TilesConfiguration::getTileProviderRef)
+        .flatMap(cfg -> Optional.ofNullable(cfg.getTileProviderId()))
         .flatMap(id -> entityRegistry.getEntity(TileProvider.class, id));
   }
 

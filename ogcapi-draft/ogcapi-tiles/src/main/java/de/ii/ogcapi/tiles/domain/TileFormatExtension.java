@@ -27,7 +27,7 @@ public abstract class TileFormatExtension implements FormatExtension {
     return apiData
         .getExtension(TilesConfiguration.class)
         .filter(TilesConfiguration::isEnabled)
-        .filter(TilesConfiguration::isMultiCollectionEnabled)
+        .filter(TilesConfiguration::hasDatasetTiles)
         .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
         .isPresent();
   }
@@ -37,7 +37,7 @@ public abstract class TileFormatExtension implements FormatExtension {
     return apiData
         .getExtension(TilesConfiguration.class, collectionId)
         .filter(TilesConfiguration::isEnabled)
-        .filter(TilesConfiguration::isSingleCollectionEnabled)
+        .filter(TilesConfiguration::hasCollectionTiles)
         .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
         .isPresent();
   }

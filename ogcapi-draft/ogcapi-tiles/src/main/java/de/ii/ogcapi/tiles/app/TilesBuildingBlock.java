@@ -265,15 +265,24 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     if (tilesConfiguration.isEmpty()) {
       return ValidationResult.of();
     }
+    if (!tilesProviders.hasTileProvider(apiData)) {
+      if (Objects.nonNull(tilesConfiguration.get().getTileProviderId())) {
+        throw new IllegalStateException(
+            String.format(
+                "Tile provider with id '%s' not found.",
+                tilesConfiguration.get().getTileProviderId()));
 
-    Optional<Tuple<Class<? extends TileProviderData>, ? extends TileProviderData>>
-        tileProviderData = getTileProviderData(apiData);
-    if (tileProviderData.isPresent()) {
-      entityFactories
-          .get(tileProviderData.get().first())
-          .createInstance(tileProviderData.get().second())
-          .join();
-      LogContext.put(LogContext.CONTEXT.SERVICE, apiData.getId());
+      } else {
+        Optional<Tuple<Class<? extends TileProviderData>, ? extends TileProviderData>>
+            tileProviderData = getTileProviderData(apiData);
+        if (tileProviderData.isPresent()) {
+          entityFactories
+              .get(tileProviderData.get().first())
+              .createInstance(tileProviderData.get().second())
+              .join();
+          LogContext.put(LogContext.CONTEXT.SERVICE, apiData.getId());
+        }
+      }
     }
 
     try {
@@ -609,7 +618,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                         .getValue()
                         .getExtension(TilesConfiguration.class)
                         .filter(TilesConfiguration::isEnabled)
-                        .filter(TilesConfiguration::isSingleCollectionEnabled)
+                        .filter(TilesConfiguration::hasCollectionTiles)
                         .isPresent())
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
@@ -649,13 +658,15 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
       TileProviderMbtiles tileProviderMbtiles,
       Map<String, FeatureTypeConfigurationOgcApi> collections) {
     return new ImmutableTileProviderMbtilesData.Builder()
-        .id(String.format("%s-tiles", apiId))
+        .id(TilesProviders.toTilesId(apiId))
+        .providerType(TileProviderMbtilesData.PROVIDER_TYPE)
+        .providerSubType(TileProviderMbtilesData.PROVIDER_SUBTYPE)
         .layerDefaults(
             new ImmutableLayerOptionsMbTilesDefault.Builder()
                 .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
                 .build())
         .putAllLayers(
-            tilesConfiguration.isMultiCollectionEnabled()
+            tilesConfiguration.hasDatasetTiles()
                 ? Map.of(
                     DATASET_TILES,
                     new ImmutableLayerOptionsMbTiles.Builder()
@@ -705,13 +716,15 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
       TileProviderTileServer tileProviderTileServer,
       Map<String, FeatureTypeConfigurationOgcApi> collections) {
     return new ImmutableTileProviderHttpData.Builder()
-        .id(String.format("%s-tiles", apiId))
+        .id(TilesProviders.toTilesId(apiId))
+        .providerType(TileProviderHttpData.PROVIDER_TYPE)
+        .providerSubType(TileProviderHttpData.PROVIDER_SUBTYPE)
         .layerDefaults(
             new ImmutableLayerOptionsHttpDefault.Builder()
                 .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
                 .build())
         .putAllLayers(
-            tilesConfiguration.isMultiCollectionEnabled()
+            tilesConfiguration.hasDatasetTiles()
                 ? Map.of(
                     DATASET_TILES,
                     new ImmutableLayerOptionsHttp.Builder()
@@ -765,9 +778,10 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                         entry.getValue().getExtension(TilesConfiguration.class).get()))
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 
-    // TODO: seeding*, zoomLevelCache
     return new ImmutableTileProviderFeaturesData.Builder()
-        .id(String.format("%s-tiles", apiId))
+        .id(TilesProviders.toTilesId(apiId))
+        .providerType(TileProviderFeaturesData.PROVIDER_TYPE)
+        .providerSubType(TileProviderFeaturesData.PROVIDER_SUBTYPE)
         .addAllCaches(getCaches(tilesConfiguration, collectionConfigs))
         .layerDefaults(
             new ImmutableLayerOptionsFeaturesDefault.Builder()
@@ -780,7 +794,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                 .ignoreInvalidGeometries(tilesConfiguration.isIgnoreInvalidGeometriesDerived())
                 .build())
         .putAllLayers(
-            tilesConfiguration.isMultiCollectionEnabled()
+            tilesConfiguration.hasDatasetTiles()
                 ? Map.of(
                     DATASET_TILES,
                     new ImmutableLayerOptionsFeatures.Builder()
