@@ -19,16 +19,16 @@
             <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
         </div>
     {{/map}}
-    {{#ProcessedTiles}}
+    {{#tiles}}
         <div class="row my-1">
             <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
         </div>
-    {{/ProcessedTiles}}
-    {{#ProcessedStyles}}
+    {{/tiles}}
+    {{#styles}}
         <div class="row my-1">
             <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
         </div>
-    {{/ProcessedStyles}}
+    {{/styles}}
     {{#dapa}}
         <div class="row my-1">
             <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
@@ -51,7 +51,7 @@
         </div>
     {{/itemCount}}
 
-    {{#ProcessedBbox}}
+    {{#bbox}}
     <div class="row my-3">
         <div class="col-md-2 font-weight-bold">{{spatialExtentTitle}}</div>
         {{^hideMap}}
@@ -69,9 +69,9 @@
             </div>
         {{/hideMap}}
     </div>
-    {{/ProcessedBbox}}
+    {{/bbox}}
 
-    {{#ProcessedTemporalCoverageHtml}}
+    {{#temporalCoverageHtml}}
     <div class="row my-3">
         <div class="col-md-2 font-weight-bold">{{temporalExtentTitle}}</div>
         <div class="col-md-10">
@@ -82,21 +82,21 @@
             </ul>
         </div>
     </div>
-    {{/ProcessedTemporalCoverageHtml}}
+    {{/temporalCoverageHtml}}
 
     {{#hasLicense}}
         <div class="row my-3">
             <div class="col-md-2 font-weight-bold">{{licenseTitle}}</div>
             <div class="col-md-10">
                 <ul class="list-unstyled">
-                    {{#ProcessedLicenseLinks}}
+                    {{#licenseLinks}}
                         <li>
                             <a href="{{href}}">{{title}}</a>
                         </li>
-                    {{/ProcessedLicenseLinks}}
-                    {{^ProcessedLicenseLinks}}
+                    {{/licenseLinks}}
+                    {{^licenseLinks}}
                         <li>{{none}}</li>
-                    {{/ProcessedLicenseLinks}}
+                    {{/licenseLinks}}
                 </ul>
             </div>
         </div>
@@ -107,14 +107,14 @@
             <div class="col-md-2 font-weight-bold">{{downloadTitle}}</div>
             <div class="col-md-10">
                 <ul class="list-unstyled">
-                    {{#ProcessedDownloadLinks}}
+                    {{#downloadLinks}}
                         <li>
                             <a href="{{href}}">{{title}}</a>
                         </li>
-                    {{/ProcessedDownloadLinks}}
-                    {{^ProcessedDownloadLinks}}
+                    {{/downloadLinks}}
+                    {{^downloadLinks}}
                         <li>{{none}}</li>
-                    {{/ProcessedDownloadLinks}}
+                    {{/downloadLinks}}
                 </ul>
             </div>
         </div>
@@ -125,14 +125,14 @@
             <div class="col-md-2 font-weight-bold">{{metadataTitle}}</div>
             <div class="col-md-10">
                 <ul class="list-unstyled">
-                    {{#ProcessedMetadataLinks}}
+                    {{#metadataLinks}}
                         <li>
                             <a href="{{href}}">{{title}}</a>
                         </li>
-                    {{/ProcessedMetadataLinks}}
-                    {{^ProcessedMetadataLinks}}
+                    {{/metadataLinks}}
+                    {{^metadataLinks}}
                         <li>{{none}}</li>
-                    {{/ProcessedMetadataLinks}}
+                    {{/metadataLinks}}
                 </ul>
             </div>
         </div>
@@ -143,20 +143,20 @@
             <div class="col-md-2 font-weight-bold">{{styleInfosTitle}}</div>
             <div class="col-md-10">
                 <ul class="list-unstyled">
-                    {{#ProcessedStyles}}
+                    {{#styles}}
                         <li>
                             {{#title}}{{.}} ({{id}}){{/title}}{{^title}}{{id}}{{/title}}
                             <ul>
-                                {{#ProcessedLinks}}
+                                {{#links}}
                                     <li class="list-unstyled"><a href="{{href}}">{{title}}</a></li>
-                                {{/ProcessedLinks}}
+                                {{/links}}
                             </ul>
                             <br/>
                         </li>
-                    {{/ProcessedStyles}}
-                    {{^ProcessedStyles}}
+                    {{/styles}}
+                    {{^styles}}
                         <li>{{none}}</li>
-                    {{/ProcessedStyles}}
+                    {{/styles}}
                 </ul>
             </div>
         </div>
@@ -212,14 +212,14 @@
         <div class="col-md-2 font-weight-bold">{{additionalLinksTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
-                {{#ProcessedLinks}}
+                {{#links}}
                     <li>
                         <a href="{{href}}">{{title}}</a>
                     </li>
-                {{/ProcessedLinks}}
-                {{^ProcessedLinks}}
+                {{/links}}
+                {{^links}}
                     <li>{{none}}</li>
-                {{/ProcessedLinks}}
+                {{/links}}
             </ul>
         </div>
     </div>

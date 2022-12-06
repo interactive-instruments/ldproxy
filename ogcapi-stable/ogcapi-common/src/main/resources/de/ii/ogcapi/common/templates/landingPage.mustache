@@ -6,31 +6,31 @@
     <br/>
     <h2>{{mainLinksTitle}}</h2>
 
-    {{#ProcessedData}}
+    {{#data}}
     <div class="row my-1">
         <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
     </div>
-    {{/ProcessedData}}
-    {{#ProcessedMap}}
+    {{/data}}
+    {{#map}}
         <div class="row my-1">
             <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
         </div>
-    {{/ProcessedMap}}
-    {{#ProcessedTiles}}
+    {{/map}}
+    {{#tiles}}
     <div class="row my-1">
         <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
     </div>
-    {{/ProcessedTiles}}
-    {{#ProcessedStyles}}
+    {{/tiles}}
+    {{#styles}}
     <div class="row my-1">
         <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
     </div>
-    {{/ProcessedStyles}}
-    {{#ProcessedRoutes}}
+    {{/styles}}
+    {{#routes}}
     <div class="row my-1">
         <div class="col-md-12  text-truncate"><big><a href="{{href}}">{{title}}</a></big></div>
     </div>
-    {{/ProcessedRoutes}}
+    {{/routes}}
     <br/>
 
     <h2>{{apiInformationTitle}}</h2>
@@ -39,36 +39,36 @@
         <div class="col-md-2 font-weight-bold">{{apiDocumentationTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
-                {{#ProcessedApiDefinition}}
+                {{#apiDefinition}}
                     <li>
                         <a href="{{href}}" target="_blank">{{title}}</a>
                     </li>
-                {{/ProcessedApiDefinition}}
-                {{#ProcessedApiDocumentation}}
+                {{/apiDefinition}}
+                {{#apiDocumentation}}
                     <li>
                         <a href="{{href}}" target="_blank">{{title}}</a>
                     </li>
-                {{/ProcessedApiDocumentation}}
-                {{^ProcessedApiDefinition}}
-                    {{^ProcessedApiDocumentation}}
+                {{/apiDocumentation}}
+                {{^apiDefinition}}
+                    {{^apiDocumentation}}
                         <li>{{none}}</li>
-                    {{/ProcessedApiDocumentation}}
-                {{/ProcessedApiDefinition}}
+                    {{/apiDocumentation}}
+                {{/apiDefinition}}
             </ul>
         </div>
     </div>
 
-    {{#ProcessedExternalDocs}}
+    {{#externalDocs}}
         <div class="row my-3">
             <div class="col-md-2 font-weight-bold">{{externalDocsTitle}}</div>
             <div class="col-md-10">
                 <span><a href="{{url}}">{{#description}}{{{.}}}{{/description}}{{^description}}{{url}}{{/description}}</a></span>
             </div>
         </div>
-    {{/ProcessedExternalDocs}}
+    {{/externalDocs}}
 
-    {{#ProcessedMetadata}}
-    {{#ProcessedContactInfo}}
+    {{#metadata}}
+    {{#contactInfo}}
     <div class="row my-3">
         <div class="col-md-2 font-weight-bold">{{providerTitle}}</div>
         <div class="col-md-10">
@@ -88,7 +88,7 @@
             </ul>
         </div>
     </div>
-    {{/ProcessedContactInfo}}
+    {{/contactInfo}}
     {{#licenseName}}
         <div class="row my-3">
             <div class="col-md-2 font-weight-bold">{{licenseTitle}}</div>
@@ -124,9 +124,9 @@
             </div>
         </div>
     {{/attribution}}
-    {{/ProcessedMetadata}}
+    {{/metadata}}
 
-    {{#ProcessedBbox}}
+    {{#bbox}}
         <div class="row my-3">
             <div class="col-md-2 font-weight-bold">{{spatialExtentTitle}}</div>
             {{^hideMap}}
@@ -144,9 +144,9 @@
                 </div>
             {{/hideMap}}
         </div>
-    {{/ProcessedBbox}}
+    {{/bbox}}
 
-    {{#ProcessedTemporalCoverageHtml}}
+    {{#temporalCoverageHtml}}
         <div class="row my-3">
             <div class="col-md-2 font-weight-bold">{{temporalExtentTitle}}</div>
             <div class="col-md-10">
@@ -157,7 +157,7 @@
                 </ul>
             </div>
         </div>
-    {{/ProcessedTemporalCoverageHtml}}
+    {{/temporalCoverageHtml}}
 
     <h2>{{expertInformationTitle}}</h2>
 
@@ -165,14 +165,14 @@
         <div class="col-md-2 font-weight-bold">{{additionalLinksTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
-                {{#ProcessedLinks}}
+                {{#links}}
                     <li>
                         <a href="{{href}}">{{title}}</a>
                     </li>
-                {{/ProcessedLinks}}
-                {{^ProcessedLinks}}
+                {{/links}}
+                {{^links}}
                     <li>{{none}}</li>
-                {{/ProcessedLinks}}
+                {{/links}}
             </ul>
         </div>
     </div>
@@ -182,14 +182,14 @@
             <div class="col-md-2 font-weight-bold">{{title}}</div>
             <div class="col-md-10">
                 <ul class="list-unstyled">
-                    {{#ProcessedLinks}}
+                    {{#links}}
                         <li>
                             <a href="{{url}}" {{#target}}target="{{.}}"{{/target}}>{{title}}</a>
                         </li>
-                    {{/ProcessedLinks}}
-                    {{^ProcessedLinks}}
+                    {{/links}}
+                    {{^links}}
                         <li>{{none}}</li>
-                    {{/ProcessedLinks}}
+                    {{/links}}
                 </ul>
             </div>
         </div>

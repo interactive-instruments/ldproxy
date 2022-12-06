@@ -11,17 +11,17 @@
         <div class="col-md-2 font-weight-bold">{{collectionsTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
-                {{#ProcessedCollections}}
+                {{#collections}}
                     <li>
                         <a href="{{hrefitems}}">{{title}}</a> <small>— <a href="{{hrefcollection}}">{{moreInformation}}</a>{{#itemCount}} — <span class="text-secondary">{{.}} {{itemType}}</span>{{/itemCount}}</small>
                         {{#description}}<ul class="list-unstyled">
                             <li class="list-group-item pt-0 pb-2 small text-secondary" style="border: none">{{{.}}}</li>
                         </ul>{{/description}}
                     </li>
-                {{/ProcessedCollections}}
-                {{^ProcessedCollections}}
+                {{/collections}}
+                {{^collections}}
                     <li>{{none}}</li>
-                {{/ProcessedCollections}}
+                {{/collections}}
             </ul>
         </div>
     </div>
@@ -31,14 +31,14 @@
         <div class="col-md-2 font-weight-bold">{{licenseTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
-                {{#ProcessedLicenseLinks}}
+                {{#licenseLinks}}
                     <li>
                         <a href="{{href}}">{{title}}</a>
                     </li>
-                {{/ProcessedLicenseLinks}}
-                {{^ProcessedLicenseLinks}}
+                {{/licenseLinks}}
+                {{^licenseLinks}}
                     <li>{{none}}</li>
-                {{/ProcessedLicenseLinks}}
+                {{/licenseLinks}}
             </ul>
         </div>
     </div>
@@ -49,14 +49,14 @@
         <div class="col-md-2 font-weight-bold">{{downloadTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
-                {{#ProcessedDownloadLinks}}
+                {{#downloadLinks}}
                     <li>
                         <a href="{{href}}">{{title}}</a>
                     </li>
-                {{/ProcessedDownloadLinks}}
-                {{^ProcessedDownloadLinks}}
+                {{/downloadLinks}}
+                {{^downloadLinks}}
                     <li>{{none}}</li>
-                {{/ProcessedDownloadLinks}}
+                {{/downloadLinks}}
             </ul>
         </div>
     </div>
@@ -67,14 +67,14 @@
             <div class="col-md-2 font-weight-bold">{{metadataTitle}}</div>
             <div class="col-md-10">
                 <ul class="list-unstyled">
-                    {{#ProcessedMetadataLinks}}
+                    {{#metadataLinks}}
                         <li>
                             <a href="{{href}}">{{title}}</a>
                         </li>
-                    {{/ProcessedMetadataLinks}}
-                    {{^ProcessedMetadataLinks}}
+                    {{/metadataLinks}}
+                    {{^metadataLinks}}
                         <li>{{none}}</li>
-                    {{/ProcessedMetadataLinks}}
+                    {{/metadataLinks}}
                 </ul>
             </div>
         </div>
@@ -106,14 +106,14 @@
         <div class="col-md-2 font-weight-bold">{{additionalLinksTitle}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
-                {{#ProcessedLinks}}
+                {{#links}}
                     <li>
                         <a href="{{href}}">{{title}}</a>
                     </li>
-                {{/ProcessedLinks}}
-                {{^ProcessedLinks}}
+                {{/links}}
+                {{^links}}
                     <li>{{none}}</li>
-                {{/ProcessedLinks}}
+                {{/links}}
             </ul>
         </div>
     </div>

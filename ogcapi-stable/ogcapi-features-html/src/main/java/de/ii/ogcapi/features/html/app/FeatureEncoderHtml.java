@@ -29,7 +29,8 @@ import org.slf4j.LoggerFactory;
 public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, FeatureHtml> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderHtml.class);
-  private FeatureTransformationContextHtml transformationContext;
+
+  private final FeatureTransformationContextHtml transformationContext;
 
   public FeatureEncoderHtml(FeatureTransformationContextHtml transformationContext) {
     this.transformationContext = transformationContext;
@@ -185,10 +186,6 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
 
   @Override
   public void onFeature(FeatureHtml feature) {
-    if (transformationContext.collectionView().hideMap() && feature.hasGeometry()) {
-      transformationContext.collectionView().setHideMap(false);
-    }
-
     transformationContext
         .featuresHtmlConfiguration()
         .getFeatureTitleTemplate()

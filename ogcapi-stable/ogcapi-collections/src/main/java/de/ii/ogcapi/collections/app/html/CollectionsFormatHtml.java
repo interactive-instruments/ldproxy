@@ -122,7 +122,7 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
             .description(collections.getDescription().get())
             .i18n(i18n)
             .language(requestContext.getLanguage())
-            .collections(collections.getCollections())
+            .rawCollections(collections.getCollections())
             .spatialExtent(api.getSpatialExtent())
             .showCollectionDescriptions(showCollectionDescriptionsInOverview(api.getData()))
             .crs(collections.getCrs())

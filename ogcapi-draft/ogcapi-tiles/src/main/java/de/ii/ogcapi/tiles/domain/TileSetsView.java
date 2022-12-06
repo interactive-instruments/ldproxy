@@ -280,7 +280,7 @@ public abstract class TileSetsView extends OgcApiView {
         if (tileSet.isPresent()) {
           Multimap<String, List<String>> layers = getLayers(tileSet.get());
 
-          return getMapClient(
+          return buildMapClient(
               Type.MAP_LIBRE,
               styleUrl(),
               removeZoomLevelConstraints(),
@@ -297,7 +297,7 @@ public abstract class TileSetsView extends OgcApiView {
       } else if (mapClientType().equals(MapClient.Type.OPEN_LAYERS)) {
         Multimap<String, List<String>> layers = getLayers(tiles().getTilesets().get(0));
 
-        return getMapClient(
+        return buildMapClient(
             Type.OPEN_LAYERS,
             styleUrl(),
             removeZoomLevelConstraints(),
@@ -409,7 +409,7 @@ public abstract class TileSetsView extends OgcApiView {
     super("tiles.mustache");
   }
 
-  private MapClient getMapClient(
+  private MapClient buildMapClient(
       Type type,
       String styleUrl,
       boolean removeZoomLevelConstraints,

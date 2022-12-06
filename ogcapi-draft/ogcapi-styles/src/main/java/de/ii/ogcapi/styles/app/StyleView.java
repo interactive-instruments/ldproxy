@@ -49,7 +49,7 @@ public abstract class StyleView extends OgcApiView {
 
   public abstract Map<String, Collection<String>> layerMap();
 
-  public Map<String, String> getProcessedBbox() {
+  public Map<String, String> getBbox() {
     return bbox();
   }
 

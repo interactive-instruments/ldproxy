@@ -262,6 +262,14 @@ public class FeaturesFormatHtml
                     nameValuePair.getName().equals("bare")
                         && nameValuePair.getValue().equals("true"));
 
+    boolean hideMap =
+        transformationContext
+            .getFeatureSchema()
+            .flatMap(
+                x ->
+                    x.getProperties().stream().filter(FeatureSchema::isPrimaryGeometry).findFirst())
+            .isEmpty();
+
     if (transformationContext.isFeatureCollection()) {
       FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionName);
 
@@ -310,6 +318,7 @@ public class FeaturesFormatHtml
               language,
               isNoIndexEnabledForApi(apiData),
               getMapPosition(apiData, collectionName),
+              hideMap,
               getGeometryProperties(apiData, collectionName));
 
       addDatasetNavigation(
@@ -334,6 +343,7 @@ public class FeaturesFormatHtml
               isNoIndexEnabledForApi(apiData),
               apiData.getSubPath(),
               getMapPosition(apiData, collectionName),
+              hideMap,
               getGeometryProperties(apiData, collectionName));
     }
 
@@ -362,6 +372,7 @@ public class FeaturesFormatHtml
       Optional<Locale> language,
       boolean noIndex,
       POSITION mapPosition,
+      boolean hideMap,
       List<String> geometryProperties) {
     OgcApiDataV2 apiData = api.getData();
     URI requestUri = null;
@@ -410,8 +421,7 @@ public class FeaturesFormatHtml
      */
     ModifiableFeatureCollectionView modifiableFeatureCollectionView;
     if (!bare) {
-      ModifiableFeatureCollectionFeatureCollectionView
-          modifiableFeatureCollectionFeatureCollectionView =
+      modifiableFeatureCollectionView =
               ModifiableFeatureCollectionFeatureCollectionView.create()
                   .setApiData(apiData)
                   .setCollectionData(featureType)
@@ -431,6 +441,7 @@ public class FeaturesFormatHtml
                   .setMapClientType(mapClientType)
                   .setStyleUrl(styleUrl.orElse(null))
                   .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
+                  .setHideMap(hideMap)
                   .setQueryables(filterableFields)
                   .setGeometryProperties(geometryProperties)
                   .setUriCustomizer(uriCustomizer)
@@ -444,13 +455,8 @@ public class FeaturesFormatHtml
                   .setTemporalExtent(
                       Optional.ofNullable(api.getTemporalExtent(featureType.getId()).orElse(null)));
 
-      modifiableFeatureCollectionView =
-          ModifiableFeatureCollectionView.create()
-              .from(modifiableFeatureCollectionFeatureCollectionView);
-
     } else {
-      ModifiableFeatureCollectionBareView modifiableFeatureCollectionBareView =
-          ModifiableFeatureCollectionBareView.create()
+      modifiableFeatureCollectionView.create()
               .setApiData(apiData)
               .setCollectionData(featureType)
               .setSpatialExtent(api.getSpatialExtent(featureType.getId()))
@@ -482,14 +488,6 @@ public class FeaturesFormatHtml
               .setTemporalExtent(
                   Optional.ofNullable(api.getTemporalExtent(featureType.getId()).orElse(null)));
 
-      modifiableFeatureCollectionView =
-          ModifiableFeatureCollectionView.create().from(modifiableFeatureCollectionBareView);
-    }
-
-    if (!bare) {
-      modifiableFeatureCollectionView.setTemplateName("featureCollection.mustache");
-    } else {
-      modifiableFeatureCollectionView.setTemplateName("featureCollectionBare.mustache");
     }
 
     return modifiableFeatureCollectionView;
@@ -507,6 +505,7 @@ public class FeaturesFormatHtml
       boolean noIndex,
       List<String> subPathToLandingPage,
       FeaturesHtmlConfiguration.POSITION mapPosition,
+      boolean hideMap,
       List<String> geometryProperties) {
     OgcApiDataV2 apiData = api.getData();
     String rootTitle = i18n.get("root", language);
@@ -561,8 +560,8 @@ public class FeaturesFormatHtml
             .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
             .collect(Collectors.toList());
 
-    ModifiableFeatureCollectionDetailsView modifiableFeatureCollectionDetailsView =
-        ModifiableFeatureCollectionDetailsView.create()
+    ModifiableFeatureCollectionView modifiableFeatureCollectionView =
+        ModifiableFeatureCollectionView.create()
             .setApiData(apiData)
             .setCollectionData(featureType)
             .setSpatialExtent(api.getSpatialExtent(featureType.getId()))
@@ -574,7 +573,7 @@ public class FeaturesFormatHtml
             .setAttribution(attribution)
             .setUrlPrefix(staticUrlPrefix)
             .setHtmlConfig(htmlConfig.orElse(null))
-            .setPersistentUri(persistentUri)
+            .setPersistentUri(Optional.ofNullable(persistentUri).orElse(null)
             .setNoIndex(noIndex)
             .setI18n(i18n)
             .setLanguage(language.orElse(Locale.ENGLISH))
@@ -582,6 +581,7 @@ public class FeaturesFormatHtml
             .setMapClientType(mapClientType)
             .setStyleUrl(styleUrl.orElse(null))
             .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
+            .setHideMap(hideMap)
             .setGeometryProperties(geometryProperties)
             .setTemplateName("featureDetails.mustache")
             .setTemporalExtent(
@@ -613,10 +613,6 @@ public class FeaturesFormatHtml
                     .add(new NavigationDTO(featureId))
                     .build());
 
-    ModifiableFeatureCollectionView modifiableFeatureCollectionView = // Todo hier interface
-        ModifiableFeatureCollectionView.create().from(modifiableFeatureCollectionDetailsView);
-
-    modifiableFeatureCollectionView.setTemplateName("featureDetails.mustache");
     return modifiableFeatureCollectionView;
 
     /**

@@ -40,8 +40,4 @@ public abstract class StylesView extends OgcApiView {
   public StylesView() {
     super("styles.mustache");
   }
-
-  public List<StyleEntry> getProcessedStyles() {
-    return styleEntries();
-  }
 }

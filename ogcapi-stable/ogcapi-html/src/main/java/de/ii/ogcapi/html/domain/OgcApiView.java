@@ -51,29 +51,13 @@ public abstract class OgcApiView extends View {
     super(String.format("/templates/%s", templateName), Charsets.UTF_8);
   }
 
-  public String getUrlPrefix() {
-    return urlPrefix();
-  }
-
-  public String getTitle() {
-    return title();
-  }
-
-  public String getDescription() {
-    return description();
-  }
-
-  public List<NavigationDTO> getProcessedFormats() {
+  public List<NavigationDTO> getFormats() {
     return links().stream()
         .filter(
             link -> Objects.equals(link.getRel(), "alternate") && !link.getTypeLabel().isBlank())
         .sorted(Comparator.comparing(link -> link.getTypeLabel().toUpperCase()))
         .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
         .collect(Collectors.toList());
-  }
-
-  public List<NavigationDTO> getProcessedBreadCrumbs() {
-    return breadCrumbs();
   }
 
   public boolean hasBreadCrumbs() {
@@ -83,7 +67,7 @@ public abstract class OgcApiView extends View {
     return false;
   }
 
-  public String getProcessedBreadCrumbsList() {
+  public String getBreadCrumbsList() {
     String result = "";
     for (int i = 0; i < breadCrumbs().size(); i++) {
       NavigationDTO item = breadCrumbs().get(i);
@@ -104,7 +88,7 @@ public abstract class OgcApiView extends View {
     return result;
   }
 
-  public String getProcessedAttribution() {
+  public String getAttribution() {
     if (Objects.nonNull(htmlConfig().getLeafletAttribution())) {
       return htmlConfig().getLeafletAttribution();
     }

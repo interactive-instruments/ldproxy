@@ -10,7 +10,7 @@
         <div class="col-md-2 font-weight-bold">{{title}}</div>
         <div class="col-md-10">
             <ul class="list-unstyled">
-                {{#ProcessedStyles}}
+                {{#styleEntries}}
                     <li>
                         {{#title}}{{.}} ({{id}}){{/title}}{{^title}}{{id}}{{/title}}
                         <ul>
@@ -20,10 +20,10 @@
                         </ul>
                         <br/>
                     </li>
-                {{/ProcessedStyles}}
-                {{^ProcessedStyles}}
+                {{/styleEntries}}
+                {{^styleEntries}}
                     <li>{{none}}</li>
-                {{/ProcessedStyles}}
+                {{/styleEntries}}
             </ul>
         </div>
     </div>

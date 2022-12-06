@@ -52,7 +52,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
   }
 
   @Value.Default
-  public Optional<TemporalExtent> temporalExtent() {
+  public Optional<TemporalExtent> rawTemporalExtent() {
     return temporalExtentIso()
         .map(v -> v.getInterval()[0])
         .map(
@@ -65,7 +65,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
   }
 
   @Value.Derived
-  public Optional<BoundingBox> bbox() {
+  public Optional<BoundingBox> rawBbox() {
     return extent()
         .flatMap(OgcApiExtent::getSpatial)
         .map(OgcApiExtentSpatial::getBbox)
@@ -81,9 +81,9 @@ public abstract class OgcApiDatasetView extends OgcApiView {
     super(templateName);
   }
 
-  public abstract List<Link> getProcessedDistributionLinks();
+  public abstract List<Link> getDistributionLinks();
 
-  public List<Link> getProcessedLinks() {
+  public List<Link> getLinks() {
     List<String> ignoreRels =
         new ImmutableList.Builder<String>()
             .add("self")
@@ -110,11 +110,11 @@ public abstract class OgcApiDatasetView extends OgcApiView {
         .collect(Collectors.toList());
   }
 
-  public Optional<ApiMetadata> getProcessedMetadata() {
+  public Optional<ApiMetadata> getMetadata() {
     return apiData().getMetadata();
   }
 
-  public Optional<String> getProcessedCanonicalUrl() throws URISyntaxException {
+  public Optional<String> getCanonicalUrl() throws URISyntaxException {
     return links().stream()
         .filter(link -> Objects.equals(link.getRel(), "self"))
         .map(Link::getHref)
@@ -124,33 +124,33 @@ public abstract class OgcApiDatasetView extends OgcApiView {
         .findFirst();
   }
 
-  public Map<String, String> getProcessedTemporalExtent() {
-    if (temporalExtent().isEmpty()) return null;
-    else if (Objects.isNull(temporalExtent().get().getStart())
-        && Objects.isNull(temporalExtent().get().getEnd())) return ImmutableMap.of();
-    else if (Objects.isNull(temporalExtent().get().getStart()))
-      return ImmutableMap.of("end", String.valueOf(temporalExtent().get().getEnd()));
-    else if (Objects.isNull(temporalExtent().get().getEnd()))
-      return ImmutableMap.of("start", String.valueOf(temporalExtent().get().getStart()));
+  public Map<String, String> getTemporalExtent() {
+    if (rawTemporalExtent().isEmpty()) return null;
+    else if (Objects.isNull(rawTemporalExtent().get().getStart())
+        && Objects.isNull(rawTemporalExtent().get().getEnd())) return ImmutableMap.of();
+    else if (Objects.isNull(rawTemporalExtent().get().getStart()))
+      return ImmutableMap.of("end", String.valueOf(rawTemporalExtent().get().getEnd()));
+    else if (Objects.isNull(rawTemporalExtent().get().getEnd()))
+      return ImmutableMap.of("start", String.valueOf(rawTemporalExtent().get().getStart()));
     else
       return ImmutableMap.of(
           "start",
-          String.valueOf(temporalExtent().get().getStart()),
+          String.valueOf(rawTemporalExtent().get().getStart()),
           "end",
-          String.valueOf(temporalExtent().get().getEnd()));
+          String.valueOf(rawTemporalExtent().get().getEnd()));
   }
 
-  public Optional<String> getProcessedTemporalCoverage() {
+  public Optional<String> getTemporalCoverage() {
     return temporalExtentIso().map(v -> v.getFirstIntervalIso8601());
   }
 
-  public Optional<String> getProcessedTemporalCoverageHtml() {
-    return temporalExtent()
+  public Optional<String> getTemporalCoverageHtml() {
+    return rawTemporalExtent()
         .map(extent -> extent.humanReadable(language().orElse(Locale.getDefault())));
   }
 
-  public Map<String, String> getProcessedBbox() {
-    return bbox()
+  public Map<String, String> getBbox() {
+    return rawBbox()
         .map(
             v ->
                 ImmutableMap.of(
@@ -165,17 +165,17 @@ public abstract class OgcApiDatasetView extends OgcApiView {
         .orElse(null);
   }
 
-  public Optional<String> getProcessedSpatialCoverage() {
-    return bbox()
+  public Optional<String> getSpatialCoverage() {
+    return rawBbox()
         .map(
             v ->
                 String.format(
                     Locale.US, "%f %f %f %f", v.getYmin(), v.getXmin(), v.getYmax(), v.getXmax()));
   }
 
-  public Optional<String> getProcessedDistributionsAsString() {
+  public Optional<String> getDistributionsAsString() {
     String distribution =
-        getProcessedDistributionLinks().stream()
+        getDistributionLinks().stream()
             .map(
                 link ->
                     "{ \"@type\": \"DataDownload\", "
@@ -192,13 +192,13 @@ public abstract class OgcApiDatasetView extends OgcApiView {
     return distribution.isEmpty() ? Optional.empty() : Optional.of(distribution);
   }
 
-  protected String getProcessedSchemaOrgDataset(
+  protected String getSchemaOrgDataset(
       OgcApiDataV2 apiData,
       Optional<FeatureTypeConfigurationOgcApi> collection,
       URICustomizer landingPageUriCustomizer,
       boolean embedded) {
     ApiMetadata metadata =
-        getProcessedMetadata().orElse(new ImmutableApiMetadata.Builder().build());
+        getMetadata().orElse(new ImmutableApiMetadata.Builder().build());
     String url =
         collection
             .map(
@@ -443,12 +443,12 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                 + "}"
             : "")
         + (!embedded
-            ? getProcessedTemporalCoverage()
+            ? getTemporalCoverage()
                 .map(s -> "," + NEW_LINE + "\"temporalCoverage\": \"" + s + "\"")
                 .orElse("")
             : "")
         + (!embedded
-            ? getProcessedSpatialCoverage()
+            ? getSpatialCoverage()
                 .map(
                     s ->
                         ","
@@ -465,7 +465,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                         ","
                             + NEW_LINE
                             + "\"isPartOf\": "
-                            + getProcessedSchemaOrgDataset(
+                            + getSchemaOrgDataset(
                                 apiData, Optional.empty(), landingPageUriCustomizer.copy(), true))
                 // for cases with a single collection, that collection is not reported as a
                 // sub-dataset
@@ -480,7 +480,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                                         .filter(col -> col.getEnabled())
                                         .map(
                                             s ->
-                                                getProcessedSchemaOrgDataset(
+                                                getSchemaOrgDataset(
                                                     apiData,
                                                     Optional.of(s),
                                                     landingPageUriCustomizer.copy(),
@@ -499,7 +499,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                         + "\" }")
             : "")
         + (!embedded
-            ? getProcessedDistributionsAsString()
+            ? getDistributionsAsString()
                 .map(s -> "," + NEW_LINE + "\"distribution\": [ " + s + " ]")
                 .orElse("")
             : "")

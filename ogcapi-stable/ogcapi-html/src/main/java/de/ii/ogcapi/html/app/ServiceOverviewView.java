@@ -65,7 +65,7 @@ public abstract class ServiceOverviewView extends OgcApiView {
     super("services.mustache");
   }
 
-  public String getProcessedDatasetsAsString() {
+  public String getDatasetsAsString() {
     return data().stream()
         .filter(ApiCatalogEntry::isDataset)
         .map(
@@ -84,7 +84,7 @@ public abstract class ServiceOverviewView extends OgcApiView {
         .collect(Collectors.joining(", "));
   }
 
-  public List<String> getProcessedAllTags() {
+  public List<String> getAllTags() {
     return data().stream()
         .map(api -> api.getTags())
         .flatMap(Collection::stream)
@@ -94,6 +94,6 @@ public abstract class ServiceOverviewView extends OgcApiView {
   }
 
   public boolean hasTags() {
-    return !getProcessedAllTags().isEmpty();
+    return !getAllTags().isEmpty();
   }
 }

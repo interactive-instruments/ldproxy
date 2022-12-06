@@ -26,7 +26,7 @@ import org.immutables.value.Value;
 @Value.Style(builder = "new")
 public abstract class OgcApiCollectionsView extends OgcApiView {
 
-  public abstract List<OgcApiCollection> collections();
+  public abstract List<OgcApiCollection> rawCollections();
 
   public abstract Optional<Locale> language();
 
@@ -96,54 +96,54 @@ public abstract class OgcApiCollectionsView extends OgcApiView {
 
   @Value.Derived
   public boolean hasDownload() {
-    return !getProcessedDownloadLinks().isEmpty();
+    return !getDownloadLinks().isEmpty();
   }
 
   @Value.Derived
   public boolean hasLicense() {
-    return !getProcessedLicenseLinks().isEmpty();
+    return !getLicenseLinks().isEmpty();
   }
 
   @Value.Derived
   public boolean hasMetadata() {
-    return !getProcessedMetadataLinks().isEmpty();
+    return !getMetadataLinks().isEmpty();
   }
 
   public OgcApiCollectionsView() {
     super("collections.mustache");
   }
 
-  public List<Link> getProcessedLinks() {
+  public List<Link> getLinks() {
     return links().stream()
         .filter(
             link -> !link.getRel().matches("^(?:self|alternate|describedby|license|enclosure)$"))
         .collect(Collectors.toList());
   }
 
-  public List<Link> getProcessedMetadataLinks() {
+  public List<Link> getMetadataLinks() {
     return links().stream()
         .filter(link -> link.getRel().matches("^(?:describedby)$"))
         .collect(Collectors.toList());
   }
 
-  public List<Link> getProcessedLicenseLinks() {
+  public List<Link> getLicenseLinks() {
     return links().stream()
         .filter(link -> link.getRel().matches("^(?:license)$"))
         .collect(Collectors.toList());
   }
 
-  public List<Link> getProcessedDownloadLinks() {
+  public List<Link> getDownloadLinks() {
     return links().stream()
         .filter(link -> link.getRel().matches("^(?:enclosure)$"))
         .collect(Collectors.toList());
   }
 
-  public List<Map<String, String>> getProcessedCollections() {
+  public List<Map<String, String>> getCollections() {
 
     Comparator<OgcApiCollection> byTitle =
         Comparator.comparing(collection -> collection.getTitle().orElse(collection.getId()));
 
-    return collections().stream()
+    return rawCollections().stream()
         .sorted(byTitle)
         .map(
             collection ->

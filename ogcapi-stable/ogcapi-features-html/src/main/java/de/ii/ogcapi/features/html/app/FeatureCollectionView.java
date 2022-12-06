@@ -111,13 +111,13 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
 
   @Nullable
   @Value.Derived
-  public MapClient mapClient() {
+  public MapClient rawMapClient() {
     if (mapClientType().equals(MapClient.Type.MAP_LIBRE)) {
       return new ImmutableMapClient.Builder()
           .backgroundUrl(
               Optional.ofNullable(htmlConfig().getLeafletUrl())
                   .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
-          .attribution(getProcessedAttribution())
+          .attribution(getAttribution())
           .bounds(Optional.ofNullable(mapBbox()))
           .data(
               new ImmutableSource.Builder()
@@ -140,7 +140,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
                           url.replace("{z}", "{TileMatrix}")
                               .replace("{y}", "{TileRow}")
                               .replace("{x}", "{TileCol}")))
-          .attribution(getProcessedAttribution())
+          .attribution(getAttribution())
           .build();
     } else {
       LOGGER.error(
@@ -176,7 +176,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
   }
 
   @Nullable
-  public abstract String persistentUri();
+  public abstract Optional<String> PersistentUri();
 
   @Nullable
   public abstract Boolean spatialSearch();
@@ -188,9 +188,8 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
 
   @Value.Default
   public boolean hideMap() {
-    return true;
+    return false;
   }
-  // set to "hide"; change to "false" when we see a geometry
 
   @Nullable
   @Value.Derived
@@ -222,13 +221,13 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
         && Objects.equals(htmlConfig().getSchemaOrgEnabled(), true));
   }
 
-  public MapClient GetProcessedMapClient() {
+  public MapClient getMapClient() {
     if (mapClientType().equals(MapClient.Type.MAP_LIBRE)) {
       return new ImmutableMapClient.Builder()
           .backgroundUrl(
               Optional.ofNullable(htmlConfig().getLeafletUrl())
                   .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
-          .attribution(getProcessedAttribution())
+          .attribution(getAttribution())
           .bounds(Optional.ofNullable(mapBbox()))
           .data(
               new ImmutableSource.Builder()
@@ -250,7 +249,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
                           url.replace("{z}", "{TileMatrix}")
                               .replace("{y}", "{TileRow}")
                               .replace("{x}", "{TileCol}")))
-          .attribution(getProcessedAttribution())
+          .attribution(getAttribution())
           .build();
     } else {
       LOGGER.error(
@@ -326,13 +325,13 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
     return path;
   }
 
-  public boolean isProcessedMapTop() {
+  public boolean isMapTop() {
     return mapPosition() == POSITION.TOP
         || (mapPosition() == POSITION.AUTO
             && (features().isEmpty() || features().stream().anyMatch(FeatureHtml::hasObjects)));
   }
 
-  public boolean isProcessedMapRight() {
+  public boolean isMapRight() {
     return mapPosition() == POSITION.RIGHT
         || (mapPosition() == POSITION.AUTO
             && !features().isEmpty()
@@ -340,13 +339,13 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
   }
 
   @Override
-  public List<NavigationDTO> getProcessedFormats() {
+  public List<NavigationDTO> getFormats() {
     return formats();
   }
 
   @Override
-  public String getProcessedAttribution() {
-    String basemapAttribution = super.getProcessedAttribution();
+  public String getAttribution() {
+    String basemapAttribution = super.getAttribution();
     if (Objects.nonNull(attribution())) {
       if (Objects.nonNull(basemapAttribution))
         return String.join(" | ", attribution(), basemapAttribution);
@@ -356,8 +355,8 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
   }
 
   @Override
-  public Optional<String> getProcessedCanonicalUrl() throws URISyntaxException {
-    if (!isCollection() && persistentUri() != null) return Optional.of(persistentUri());
+  public Optional<String> getCanonicalUrl() throws URISyntaxException {
+    if (!isCollection() && PersistentUri() != null) return Optional.of(PersistentUri());
 
     URICustomizer canonicalUri = uriBuilder().copy().ensureNoTrailingSlash().clearParameters();
 
@@ -372,12 +371,6 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
         : Optional.empty();
   }
 
-  public Optional<String> getProcessedPersistentUri() throws URISyntaxException {
-    if (!isCollection() && persistentUri() != null) return Optional.of(persistentUri());
-
-    return Optional.empty();
-  }
-
   public String getQueryWithoutPage() {
     List<NameValuePair> query =
         URLEncodedUtils.parse(Query().substring(1), Charset.forName("utf-8")).stream()
@@ -387,7 +380,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
     return '?' + URLEncodedUtils.format(query, '&', Charset.forName("utf-8")) + '&';
   }
 
-  public Function<String, String> getProcessedCurrentUrlWithSegment() {
+  public Function<String, String> getCurrentUrlWithSegment() {
     return segment ->
         uriBuilderWithFOnly()
             .copy()
@@ -400,7 +393,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
     return new DecoratedCollection<>(keywords());
   }
 
-  public Function<String, String> getProcessedQueryWithout() {
+  public Function<String, String> getQueryWithout() {
     return without -> {
       List<String> ignore = Splitter.on(',').trimResults().omitEmptyStrings().splitToList(without);
 
@@ -413,7 +406,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
     };
   }
 
-  public Function<String, String> getProcessedCurrentUrlWithSegmentClearParams() {
+  public Function<String, String> getCurrentUrlWithSegmentClearParams() {
     return segment ->
         uriBuilder()
             .copy()

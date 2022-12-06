@@ -150,7 +150,7 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
         .attribution(
             Optional.ofNullable(htmlConfig().getLeafletAttribution())
                 .or(() -> Optional.ofNullable(htmlConfig().getBasemapAttribution())))
-        .bounds(Optional.ofNullable(this.getProcessedBbox()))
+        .bounds(Optional.ofNullable(this.getBbox()))
         .drawBounds(true)
         .isInteractive(false)
         .defaultStyle(new ImmutableStyle.Builder().color("red").build())
@@ -161,11 +161,11 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
     super("landingPage.mustache");
   }
 
-  public List<Link> getProcessedDistributionLinks() {
+  public List<Link> getDistributionLinks() {
     return distributionLinks();
   }
 
-  public Optional<Link> getProcessedData() {
+  public Optional<Link> getData() {
     return links().stream()
         .filter(
             link ->
@@ -174,54 +174,54 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
         .findFirst();
   }
 
-  public List<Link> getProcessedTiles() {
+  public List<Link> getTiles() {
     return links().stream()
         .filter(
             link -> link.getRel().startsWith("http://www.opengis.net/def/rel/ogc/1.0/tilesets-"))
         .collect(Collectors.toUnmodifiableList());
   }
 
-  public Optional<Link> getProcessedStyles() {
+  public Optional<Link> getStyles() {
     return links().stream()
         .filter(
             link -> Objects.equals(link.getRel(), "http://www.opengis.net/def/rel/ogc/1.0/styles"))
         .findFirst();
   }
 
-  public Optional<Link> getProcessedRoutes() {
+  public Optional<Link> getRoutes() {
     return links().stream()
         .filter(
             link -> Objects.equals(link.getRel(), "http://www.opengis.net/def/rel/ogc/1.0/routes"))
         .findFirst();
   }
 
-  public Optional<Link> getProcessedMap() {
+  public Optional<Link> getMap() {
     return links().stream().filter(link -> Objects.equals(link.getRel(), "ldp-map")).findFirst();
   }
 
-  public Optional<Link> getProcessedApiDefinition() {
+  public Optional<Link> getApiDefinition() {
     return links().stream()
         .filter(link -> Objects.equals(link.getRel(), "service-desc"))
         .findFirst();
   }
 
-  public Optional<Link> getProcessedApiDocumentation() {
+  public Optional<Link> getApiDocumentation() {
     return links().stream()
         .filter(link -> Objects.equals(link.getRel(), "service-doc"))
         .findFirst();
   }
 
-  public Optional<ExternalDocumentation> getProcessedExternalDocsProcessedExternalDocs() {
+  public Optional<ExternalDocumentation> getExternalDocs() {
     return apiLandingPage().getExternalDocs();
   }
 
-  public Optional<String> getProcessedSchemaOrgDataset() {
+  public Optional<String> getSchemaOrgDataset() {
     return Optional.of(
-        getProcessedSchemaOrgDataset(apiData(), Optional.empty(), uriCustomizer().copy(), false));
+        getSchemaOrgDataset(apiData(), Optional.empty(), uriCustomizer().copy(), false));
   }
 
-  public boolean getProcessedContactInfo() {
-    return getProcessedMetadata()
+  public boolean getContactInfo() {
+    return getMetadata()
         .filter(
             md ->
                 md.getContactEmail().isPresent()
