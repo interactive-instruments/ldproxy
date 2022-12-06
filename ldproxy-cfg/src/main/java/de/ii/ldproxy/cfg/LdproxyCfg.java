@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
 import de.ii.xtraplatform.base.domain.Jackson;
 import de.ii.xtraplatform.base.domain.JacksonProvider;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
@@ -23,6 +24,7 @@ import de.ii.xtraplatform.features.sql.domain.FeatureProviderSqlData;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.app.EventStoreDefault;
+import de.ii.xtraplatform.store.app.StoreImpl;
 import de.ii.xtraplatform.store.app.ValueEncodingJackson;
 import de.ii.xtraplatform.store.app.entities.EntityDataDefaultsStoreImpl;
 import de.ii.xtraplatform.store.app.entities.EntityDataStoreImpl;
@@ -53,12 +55,15 @@ public class LdproxyCfg implements Cfg {
   public LdproxyCfg(Path dataDirectory) {
     this.requiredIncludes = new RequiredIncludes();
     this.builders = new Builders() {};
-    StoreConfiguration storeConfiguration = new StoreConfiguration();
+    StoreConfiguration storeConfiguration = new ImmutableStoreConfiguration.Builder().build();
     Jackson jackson = new JacksonProvider(JacksonSubTypes::ids);
     this.objectMapper = new ValueEncodingJackson<EntityData>(jackson, false).getMapper(FORMAT.YML);
-    EventStoreDriver storeDriver = new EventStoreDriverFs(dataDirectory, storeConfiguration);
+    EventStoreDriver storeDriver = new EventStoreDriverFs(dataDirectory);
     EventStore eventStore =
-        new EventStoreDefault(storeConfiguration, storeDriver, new EventSubscriptionsMock());
+        new EventStoreDefault(
+            new StoreImpl(dataDirectory, storeConfiguration),
+            storeDriver,
+            new EventSubscriptionsMock());
     AppContext appContext = new AppContextCfg();
     OgcApiExtensionRegistry extensionRegistry = new OgcApiExtensionRegistry();
     Set<EntityFactory> factories = EntityFactories.factories(extensionRegistry);

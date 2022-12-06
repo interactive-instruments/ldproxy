@@ -33,7 +33,7 @@ public class EndpointOpenApi implements ConformanceClass {
     // TODO only return the URIs for Features and Tiles, if the building blocks are enabled
     return ImmutableList.of(
         "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30",
-        "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/req/oas30",
+        "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/oas30",
         "http://www.opengis.net/spec/ogcapi-common-1/1.0/conf/oas30");
   }
 

@@ -188,9 +188,8 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
 
   @Value.Default
   public boolean hideMap() {
-    return true;
+    return false;
   }
-  // set to "hide"; change to "false" when we see a geometry
 
   @Nullable
   @Value.Derived
