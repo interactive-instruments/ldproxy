@@ -42,11 +42,6 @@ class AppContextCfg implements AppContext {
   }
 
   @Override
-  public Path getConfigurationFile() {
-    return null;
-  }
-
-  @Override
   public AppConfiguration getConfiguration() {
     AppConfiguration appConfiguration = new AppConfiguration(true);
     appConfiguration.store =
