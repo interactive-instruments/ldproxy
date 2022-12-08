@@ -8,14 +8,15 @@
 package de.ii.ogcapi.features.core.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesQueriesHandler;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesType;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
@@ -84,14 +85,13 @@ public class CollectionPropertiesQueriesHandlerImpl implements CollectionPropert
     final OgcApi api = requestContext.getApi();
     final OgcApiDataV2 apiData = api.getData();
     final String collectionId = queryInput.getCollectionId();
-    final CollectionPropertiesType type = queryInput.getType();
-    final JsonSchemaCache schemaCache = queryInput.getSchemaCache();
 
     if (!apiData.isCollectionEnabled(collectionId)) {
       throw new NotFoundException(
           MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
     }
     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
+    final CollectionPropertiesType type = queryInput.getType();
 
     CollectionPropertiesFormat outputFormat =
         api.getOutputFormat(
@@ -120,9 +120,9 @@ public class CollectionPropertiesQueriesHandlerImpl implements CollectionPropert
 
     Optional<String> schemaUri =
         links.stream()
-            .filter(link -> link.getRel().equals("self"))
+            .filter(link -> link.getRel() != null && link.getRel().equals("self"))
             .map(Link::getHref)
-            .map(link -> !link.contains("?") ? link : link.substring(0, link.indexOf("?")))
+            .map(link -> link.contains("?") ? link.substring(0, link.indexOf("?")) : link)
             .findAny();
 
     FeatureSchema featureSchema =
@@ -134,7 +134,8 @@ public class CollectionPropertiesQueriesHandlerImpl implements CollectionPropert
                     .type(SchemaBase.Type.OBJECT)
                     .build());
 
-    JsonSchemaDocument schema =
+    final JsonSchemaCache schemaCache = queryInput.getSchemaCache();
+    JsonSchemaAbstractDocument schema =
         schemaCache.getSchema(featureSchema, apiData, collectionData, schemaUri);
 
     Date lastModified = getLastModified(queryInput);
@@ -147,17 +148,18 @@ public class CollectionPropertiesQueriesHandlerImpl implements CollectionPropert
             ? ETag.from(schema, JsonSchema.FUNNEL, outputFormat.getMediaType().label())
             : null;
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
 
     return prepareSuccessResponse(
             requestContext,
-            queryInput.getIncludeLinkHeader() ? links : null,
+            queryInput.getIncludeLinkHeader() ? links : ImmutableList.of(),
             HeaderCaching.of(lastModified, etag, queryInput),
             null,
             HeaderContentDisposition.of(
                 String.format(
-                    "%s.%s.%s",
-                    collectionId, type.toString(), outputFormat.getMediaType().fileExtension())))
+                    "%s.%s.%s", collectionId, type, outputFormat.getMediaType().fileExtension())))
         .entity(outputFormat.getEntity(schema, type, links, collectionId, api, requestContext))
         .build();
   }

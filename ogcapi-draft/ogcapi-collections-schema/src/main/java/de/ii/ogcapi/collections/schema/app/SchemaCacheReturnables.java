@@ -7,9 +7,9 @@
  */
 package de.ii.ogcapi.collections.schema.app;
 
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument.VERSION;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ogcapi.features.geojson.domain.SchemaDeriverReturnables;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -33,7 +33,7 @@ public class SchemaCacheReturnables extends JsonSchemaCache {
   }
 
   @Override
-  protected JsonSchemaDocument deriveSchema(
+  protected JsonSchemaAbstractDocument deriveSchema(
       FeatureSchema schema,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
@@ -58,6 +58,7 @@ public class SchemaCacheReturnables extends JsonSchemaCache {
             Optional.empty(),
             codelistSupplier.get());
 
-    return (JsonSchemaDocument) schema.accept(schemaTransformer).accept(schemaDeriverReturnables);
+    return (JsonSchemaAbstractDocument)
+        schema.accept(schemaTransformer).accept(schemaDeriverReturnables);
   }
 }

@@ -14,7 +14,6 @@ import de.ii.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import java.util.List;
@@ -27,12 +26,8 @@ import javax.inject.Singleton;
 @AutoBind
 public class LandingPageExtensionFeatures implements LandingPageExtension {
 
-  private final I18n i18n;
-
   @Inject
-  LandingPageExtensionFeatures(I18n i18n) {
-    this.i18n = i18n;
-  }
+  LandingPageExtensionFeatures() {}
 
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {

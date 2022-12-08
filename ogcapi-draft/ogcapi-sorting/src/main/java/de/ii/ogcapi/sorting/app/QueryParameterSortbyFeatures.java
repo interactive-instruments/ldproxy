@@ -66,7 +66,7 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
 
     // TODO add feature-specific conformance class once we have a draft spec
 
-    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record))
+    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.RECORD))
       builder.add("http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/sorting");
 
     return builder.build();

@@ -20,9 +20,10 @@ public abstract class FeatureEncoderSfFlat
   protected final long transformerStart;
   protected long processingStart;
   protected Long featureDuration = 0L;
-  protected long written = 0;
+  protected long written;
 
   protected FeatureEncoderSfFlat(EncodingContextSfFlat encodingContext) {
+    super();
     this.collectionId = encodingContext.getCollectionId();
     this.properties =
         encodingContext.getFields().values().stream().findFirst().orElse(ImmutableList.of("*"));

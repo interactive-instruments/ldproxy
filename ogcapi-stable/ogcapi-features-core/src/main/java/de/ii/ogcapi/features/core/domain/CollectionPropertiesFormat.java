@@ -28,12 +28,13 @@ public interface CollectionPropertiesFormat extends GenericFormatExtension {
               .map(CollectionPropertiesType::toString)
               .collect(Collectors.joining("|")));
 
+  @Override
   default String getPathPattern() {
     return "^/?collections/" + COLLECTION_ID_PATTERN + "/" + RESOURCE_ID_PATTERN + "/?$";
   }
 
   Object getEntity(
-      JsonSchemaObject schemaCollectionProperties,
+      JsonSchemaAbstractDocument schemaCollectionProperties,
       CollectionPropertiesType type,
       List<Link> links,
       String collectionId,

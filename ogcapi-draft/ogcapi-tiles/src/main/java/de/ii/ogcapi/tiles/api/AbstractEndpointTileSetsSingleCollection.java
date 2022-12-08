@@ -24,7 +24,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.tilematrixsets.domain.MinMax;
-import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSets.Builder;
+import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
@@ -186,7 +186,7 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
         collectionId);
 
     TilesQueriesHandler.QueryInputTileSets queryInput =
-        new Builder()
+        new ImmutableQueryInputTileSets.Builder()
             .from(getGenericQueryInput(apiData))
             .collectionId(collectionId)
             .center(getCenter(apiData))

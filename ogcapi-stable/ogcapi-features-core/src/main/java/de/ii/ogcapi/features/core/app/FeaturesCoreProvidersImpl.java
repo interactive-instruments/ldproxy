@@ -40,7 +40,7 @@ public class FeaturesCoreProvidersImpl implements FeaturesCoreProviders {
   public Optional<FeatureProvider2> getFeatureProvider(OgcApiDataV2 apiData) {
     Optional<FeatureProvider2> optionalFeatureProvider = getOptionalFeatureProvider(apiData);
 
-    if (!optionalFeatureProvider.isPresent()) {
+    if (optionalFeatureProvider.isEmpty()) {
       optionalFeatureProvider = entityRegistry.getEntity(FeatureProvider2.class, apiData.getId());
     }
     return optionalFeatureProvider;

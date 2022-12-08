@@ -33,25 +33,21 @@ public interface FeaturesQuery {
       String featureId,
       Optional<ETag.Type> withETag);
 
-  FeatureQuery requestToFeatureQuery(
+  FeatureQuery requestToFeaturesQuery(
       OgcApi api,
       FeatureTypeConfigurationOgcApi collectionData,
       EpsgCrs defaultCrs,
       Map<String, Integer> coordinatePrecision,
-      int minimumPageSize,
       int defaultPageSize,
-      int maxPageSize,
       Map<String, String> parameters,
       List<OgcApiQueryParameter> allowedParameters);
 
-  FeatureQuery requestToBareFeatureQuery(
+  FeatureQuery requestToBareFeaturesQuery(
       OgcApiDataV2 apiData,
       String featureTypeId,
       EpsgCrs defaultCrs,
       Map<String, Integer> coordinatePrecision,
-      int minimumPageSize,
       int defaultPageSize,
-      int maxPageSize,
       Map<String, String> parameters,
       List<OgcApiQueryParameter> allowedParameters);
 

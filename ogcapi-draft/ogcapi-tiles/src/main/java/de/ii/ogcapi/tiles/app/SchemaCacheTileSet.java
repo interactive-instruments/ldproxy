@@ -8,9 +8,9 @@
 package de.ii.ogcapi.tiles.app;
 
 import com.google.common.collect.ImmutableMap;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument.VERSION;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.ogcapi.features.geojson.domain.SchemaDeriverReturnables;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -34,7 +34,7 @@ class SchemaCacheTileSet extends JsonSchemaCache {
   }
 
   @Override
-  protected JsonSchemaDocument deriveSchema(
+  protected JsonSchemaAbstractDocument deriveSchema(
       FeatureSchema schema,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
@@ -55,6 +55,7 @@ class SchemaCacheTileSet extends JsonSchemaCache {
             Optional.empty(),
             codelistSupplier.get());
 
-    return (JsonSchemaDocument) schema.accept(schemaFlattener).accept(schemaDeriverReturnables);
+    return (JsonSchemaAbstractDocument)
+        schema.accept(schemaFlattener).accept(schemaDeriverReturnables);
   }
 }

@@ -70,7 +70,9 @@ public interface FeaturesCoreProviders {
               Optional<FeatureProvider2> featureProvider = getFeatureProvider(apiData, featureType);
               Optional<FeatureSchema> schema =
                   featureProvider.map(provider -> provider.getData().getTypes().get(featureTypeId));
-              if (schema.isEmpty()) return null;
+              if (schema.isEmpty()) {
+                return null;
+              }
 
               return new AbstractMap.SimpleImmutableEntry<>(featureType.getId(), schema.get());
             })

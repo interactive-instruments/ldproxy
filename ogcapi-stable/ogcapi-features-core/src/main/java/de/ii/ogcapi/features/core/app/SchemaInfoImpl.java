@@ -5,20 +5,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.features.core.domain;
+package de.ii.ogcapi.features.core.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Vector;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -43,7 +45,9 @@ public class SchemaInfoImpl implements SchemaInfo {
   @Override
   public List<String> getPropertyNames(
       FeatureSchema featureType, boolean withArrayBrackets, boolean withObjects) {
-    if (Objects.isNull(featureType)) return ImmutableList.of();
+    if (Objects.isNull(featureType)) {
+      return ImmutableList.of();
+    }
 
     return featureType.getProperties().stream()
         .map(
@@ -55,12 +59,13 @@ public class SchemaInfoImpl implements SchemaInfo {
 
   private List<String> getPropertyNames(
       FeatureSchema property, String basePath, boolean withArrayBrackets, boolean withObjects) {
-    List<String> propertyNames = new Vector<>();
+    List<String> propertyNames = new ArrayList<>();
     if (property.isObject()) {
       if (withObjects) {
         propertyNames.add(getPropertyName(property, basePath, withArrayBrackets));
       }
-      property.getProperties().stream()
+      property
+          .getProperties()
           .forEach(
               subProperty ->
                   propertyNames.addAll(
@@ -90,10 +95,13 @@ public class SchemaInfoImpl implements SchemaInfo {
   @Override
   public Map<String, SchemaBase.Type> getPropertyTypes(
       FeatureSchema featureType, boolean withArrayBrackets) {
-    if (Objects.isNull(featureType)) return ImmutableMap.of();
+    if (Objects.isNull(featureType)) {
+      return ImmutableMap.of();
+    }
 
     ImmutableMap.Builder<String, SchemaBase.Type> nameTypeMapBuilder = new ImmutableMap.Builder<>();
-    featureType.getProperties().stream()
+    featureType
+        .getProperties()
         .forEach(
             featureProperty ->
                 addPropertyTypes(nameTypeMapBuilder, featureProperty, "", withArrayBrackets));
@@ -106,7 +114,8 @@ public class SchemaInfoImpl implements SchemaInfo {
       String basePath,
       boolean withArrayBrackets) {
     if (property.isObject()) {
-      property.getProperties().stream()
+      property
+          .getProperties()
           .forEach(
               subProperty ->
                   addPropertyTypes(
@@ -134,10 +143,13 @@ public class SchemaInfoImpl implements SchemaInfo {
    */
   @Override
   public Map<String, String> getNameTitleMap(FeatureSchema featureType) {
-    if (Objects.isNull(featureType)) return ImmutableMap.of();
+    if (Objects.isNull(featureType)) {
+      return ImmutableMap.of();
+    }
 
     ImmutableMap.Builder<String, String> nameTitleMapBuilder = new ImmutableMap.Builder<>();
-    featureType.getProperties().stream()
+    featureType
+        .getProperties()
         .forEach(
             featureProperty -> addPropertyTitles(nameTitleMapBuilder, featureProperty, "", ""));
     return nameTitleMapBuilder.build();
@@ -150,7 +162,8 @@ public class SchemaInfoImpl implements SchemaInfo {
       String baseTitle) {
     if (property.isObject()) {
       nameTitleMapBuilder.put(getPropertyTitle(property, basePath, baseTitle));
-      property.getProperties().stream()
+      property
+          .getProperties()
           .forEach(
               subProperty -> {
                 Map.Entry<String, String> entry = getPropertyTitle(property, basePath, baseTitle);
@@ -171,9 +184,6 @@ public class SchemaInfoImpl implements SchemaInfo {
     return new AbstractMap.SimpleImmutableEntry<>(name, title);
   }
 
-  // TODO since the following take apiData as input an not the schema, should these be moved to a
-  // CollectionInfo class?
-
   @Override
   public List<String> getPropertyNames(OgcApiDataV2 apiData, String collectionId) {
     return getPropertyNames(apiData, collectionId, false, false);
@@ -184,7 +194,9 @@ public class SchemaInfoImpl implements SchemaInfo {
       OgcApiDataV2 apiData, String collectionId, boolean withSpatial, boolean withArrayBrackets) {
     Optional<FeatureSchema> schema =
         providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId));
-    if (schema.isEmpty()) return ImmutableList.of();
+    if (schema.isEmpty()) {
+      return ImmutableList.of();
+    }
 
     return schema.get().getProperties().stream()
         .filter(featureProperty -> !featureProperty.isSpatial() || withSpatial)

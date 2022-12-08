@@ -25,8 +25,14 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.immutables.value.Value;
 
+// reconsider in https://github.com/interactive-instruments/ldproxy/issues/543
+@SuppressWarnings("PMD.ExcessivePublicCount")
 public interface Geometry<T> {
 
+  String COORDINATE_DIMENSION_ERROR_MESSAGE =
+      "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.";
+
+  @SuppressWarnings("PMD.FieldNamingConventions")
   enum Type {
     Point,
     LineString,
@@ -62,8 +68,11 @@ public interface Geometry<T> {
     }
 
     static Point of(List<Double> xyz) {
-      if (xyz.size() == 2) return Point.of(xyz.get(0), xyz.get(1));
-      else if (xyz.size() == 3) return Point.of(xyz.get(0), xyz.get(1), xyz.get(2));
+      if (xyz.size() == 2) {
+        return Point.of(xyz.get(0), xyz.get(1));
+      } else if (xyz.size() == 3) {
+        return Point.of(xyz.get(0), xyz.get(1), xyz.get(2));
+      }
       throw new IllegalArgumentException(
           String.format("A coordinate requires 2 or 3 values. Found: %s", xyz));
     }
@@ -127,7 +136,7 @@ public interface Geometry<T> {
       List<Coordinate> coords = getCoordinatesFlat();
       Preconditions.checkState(
           coords.stream().skip(1).allMatch(c -> c.size() == coords.get(0).size()),
-          "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.",
+          COORDINATE_DIMENSION_ERROR_MESSAGE,
           coords.size());
     }
 
@@ -188,7 +197,7 @@ public interface Geometry<T> {
       List<Coordinate> coords = getCoordinatesFlat();
       Preconditions.checkState(
           coords.stream().skip(1).allMatch(c -> c.size() == coords.get(0).size()),
-          "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.",
+          COORDINATE_DIMENSION_ERROR_MESSAGE,
           coords.size());
     }
 
@@ -231,7 +240,7 @@ public interface Geometry<T> {
       List<Coordinate> coords = getCoordinatesFlat();
       Preconditions.checkState(
           coords.stream().skip(1).allMatch(c -> c.size() == coords.get(0).size()),
-          "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.",
+          COORDINATE_DIMENSION_ERROR_MESSAGE,
           coords.size());
     }
 
@@ -275,7 +284,7 @@ public interface Geometry<T> {
       List<Coordinate> coords = getCoordinatesFlat();
       Preconditions.checkState(
           coords.stream().skip(1).allMatch(c -> c.size() == coords.get(0).size()),
-          "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.",
+          COORDINATE_DIMENSION_ERROR_MESSAGE,
           coords.size());
     }
 
@@ -320,7 +329,7 @@ public interface Geometry<T> {
       List<Coordinate> coords = getCoordinatesFlat();
       Preconditions.checkState(
           coords.stream().skip(1).allMatch(c -> c.size() == coords.get(0).size()),
-          "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.",
+          COORDINATE_DIMENSION_ERROR_MESSAGE,
           coords.size());
     }
 
@@ -331,6 +340,8 @@ public interface Geometry<T> {
   }
 
   class CoordinateSerializer extends StdSerializer<Coordinate> {
+    private static final long serialVersionUID = 1L;
+
     public CoordinateSerializer() {
       this(null);
     }
@@ -345,7 +356,9 @@ public interface Geometry<T> {
       gen.writeStartArray();
       gen.writeNumber(value.x);
       gen.writeNumber(value.y);
-      if (!Double.isNaN(value.z)) gen.writeNumber(value.z);
+      if (!Double.isNaN(value.z)) {
+        gen.writeNumber(value.z);
+      }
       gen.writeEndArray();
     }
   }
@@ -379,10 +392,11 @@ public interface Geometry<T> {
           return y;
         case 2:
           return z;
+        default:
+          throw new IllegalStateException(
+              String.format(
+                  "Invalid index for a coordinate, must be between 0 and 2. Found: %d", index));
       }
-      throw new IllegalStateException(
-          String.format(
-              "Invalid index for a coordinate, must be between 0 and 2. Found: %d", index));
     }
 
     public static Coordinate of(double x, double y) {
@@ -394,8 +408,11 @@ public interface Geometry<T> {
     }
 
     public static Coordinate of(List<Double> xyz) {
-      if (xyz.size() == 2) return Coordinate.of(xyz.get(0), xyz.get(1));
-      else if (xyz.size() == 3) return Coordinate.of(xyz.get(0), xyz.get(1), xyz.get(2));
+      if (xyz.size() == 2) {
+        return Coordinate.of(xyz.get(0), xyz.get(1));
+      } else if (xyz.size() == 3) {
+        return Coordinate.of(xyz.get(0), xyz.get(1), xyz.get(2));
+      }
       throw new IllegalArgumentException(
           String.format("A coordinate requires 2 or 3 values. Found: %s", xyz));
     }

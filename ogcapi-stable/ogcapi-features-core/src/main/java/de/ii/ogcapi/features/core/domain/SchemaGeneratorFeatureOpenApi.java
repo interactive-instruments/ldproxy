@@ -56,8 +56,9 @@ public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
     int apiHashCode = apiData.hashCode();
-    if (!schemaCache.containsKey(apiHashCode))
+    if (!schemaCache.containsKey(apiHashCode)) {
       schemaCache.put(apiHashCode, new ConcurrentHashMap<>());
+    }
     if (!schemaCache.get(apiHashCode).containsKey(collectionId)) {
       FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
       String featureTypeId =
@@ -68,8 +69,8 @@ public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
               .filter(ExtensionConfiguration::isEnabled)
               .filter(
                   cfg ->
-                      cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature)
-                          != FeaturesCoreConfiguration.ItemType.unknown)
+                      cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.FEATURE)
+                          != FeaturesCoreConfiguration.ItemType.UNKNOWN)
               .map(cfg -> cfg.getFeatureType().orElse(collectionId))
               .orElse(collectionId);
       FeatureSchema featureType =
@@ -77,14 +78,14 @@ public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
               .getFeatureProvider(apiData, collectionData)
               .map(provider -> provider.getData().getTypes().get(featureTypeId))
               .orElse(null);
-      if (Objects.isNull(featureType))
+      if (Objects.isNull(featureType)) {
         // Use an empty object schema as fallback, if we cannot get one from the provider
         featureType =
             new ImmutableFeatureSchema.Builder()
                 .name(featureTypeId)
                 .type(SchemaBase.Type.OBJECT)
                 .build();
-
+      }
       schemaCache.get(apiHashCode).put(collectionId, getSchema(featureType, collectionData));
     }
     return schemaCache.get(apiHashCode).get(collectionId);

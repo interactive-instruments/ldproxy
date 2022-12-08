@@ -18,10 +18,6 @@ import java.util.Optional;
 
 public class SchemaCacheSfFlat extends FeatureSchemaCache {
 
-  public SchemaCacheSfFlat() {
-    super();
-  }
-
   @Override
   protected FeatureSchema deriveSchema(
       FeatureSchema schema,
@@ -33,7 +29,9 @@ public class SchemaCacheSfFlat extends FeatureSchemaCache {
     WithTransformationsApplied schemaTransformer = new WithTransformationsApplied(transformations);
 
     Optional<String> separator = schemaTransformer.getFlatteningSeparator(schema);
-    if (separator.isEmpty()) return schema.accept(schemaTransformer);
+    if (separator.isEmpty()) {
+      return schema.accept(schemaTransformer);
+    }
 
     int maxMultiplicity =
         Objects.requireNonNull(((SfFlatConfiguration) configuration).getMaxMultiplicity());

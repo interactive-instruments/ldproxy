@@ -10,9 +10,9 @@ package de.ii.ogcapi.crud.app;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaFalse;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument.VERSION;
 import de.ii.ogcapi.features.core.domain.JsonSchemaBuildingBlocks;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.features.geojson.domain.SchemaDeriverReturnables;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -84,14 +84,14 @@ public class SchemaDeriverReceivables extends SchemaDeriverReturnables {
       Map<String, JsonSchema> properties,
       Map<String, JsonSchema> defs,
       List<String> required,
-      JsonSchemaDocument.Builder builder) {
+      JsonSchemaAbstractDocument.Builder builder) {
     super.adjustRootSchema(schema, properties, defs, required, builder);
 
     if (allOptional) {
       builder.required(List.of());
     }
 
-    JsonSchemaDocument schemaDocument = builder.build();
+    JsonSchemaAbstractDocument schemaDocument = builder.build();
     Map<String, JsonSchema> newProperties = new LinkedHashMap<>(schemaDocument.getProperties());
     newProperties.remove("links");
 

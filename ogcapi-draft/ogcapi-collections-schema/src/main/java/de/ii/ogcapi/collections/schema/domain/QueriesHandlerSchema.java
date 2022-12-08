@@ -11,8 +11,8 @@ import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.collections.schema.domain.QueriesHandlerSchema.Query;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument.VERSION;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
@@ -119,7 +119,7 @@ public interface QueriesHandlerSchema extends QueriesHandler<Query> {
                     .type(SchemaBase.Type.OBJECT)
                     .build());
 
-    JsonSchemaDocument schema =
+    JsonSchemaAbstractDocument schema =
         getJsonSchema(
             featureSchema,
             apiData,
@@ -152,7 +152,7 @@ public interface QueriesHandlerSchema extends QueriesHandler<Query> {
         .build();
   }
 
-  JsonSchemaDocument getJsonSchema(
+  JsonSchemaAbstractDocument getJsonSchema(
       FeatureSchema featureSchema,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,

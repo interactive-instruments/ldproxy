@@ -65,18 +65,19 @@ public class FanOutArrays implements SchemaVisitorTopDown<FeatureSchema, List<Fe
     return ImmutableList.of(schema);
   }
 
-  private FeatureSchema replaceArrays(FeatureSchema property, int[] indicees) {
+  private FeatureSchema replaceArrays(FeatureSchema property, int... indicees) {
     String name = property.getName();
     for (int indicee : indicees) {
-      name = name.replaceFirst("\\[\\]", String.format("%s%d", separator, indicee));
+      name = name.replaceFirst("\\[]", String.format("%s%d", separator, indicee));
     }
     return new ImmutableFeatureSchema.Builder().from(property).name(name).build();
   }
 
   private List<FeatureSchema> fanOut(FeatureSchema property, int[] indicees, int array) {
-    if (array == indicees.length) return ImmutableList.of(replaceArrays(property, indicees));
-    else {
-      ImmutableList.Builder<FeatureSchema> builder = new ImmutableList.Builder<FeatureSchema>();
+    if (array == indicees.length) {
+      return ImmutableList.of(replaceArrays(property, indicees));
+    } else {
+      ImmutableList.Builder<FeatureSchema> builder = new ImmutableList.Builder<>();
       for (indicees[array] = 1; indicees[array] <= maxMultiplicity; indicees[array]++) {
         builder.addAll(fanOut(property, indicees, array + 1));
       }

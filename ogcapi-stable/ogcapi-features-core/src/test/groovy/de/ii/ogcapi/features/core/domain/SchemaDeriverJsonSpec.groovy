@@ -29,7 +29,7 @@ class SchemaDeriverJsonSpec extends Specification {
         FeatureSchema flatSchema = SchemaDeriverFixtures.FEATURE_SCHEMA.accept(schemaFlattener)
 
         when:
-        JsonSchemaDocument document = flatSchema.accept(schemaDeriver) as JsonSchemaDocument
+        JsonSchemaAbstractDocument document = flatSchema.accept(schemaDeriver) as JsonSchemaAbstractDocument
 
         then:
         document == expected

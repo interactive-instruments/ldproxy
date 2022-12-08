@@ -23,24 +23,34 @@ import javax.inject.Singleton;
 
 /**
  * @langEn Only features that have a geometry that intersects the bounding box are selected. The
- *     bounding box is provided as four numbers: * Lower left corner, coordinate axis 1 * Lower left
- *     corner, coordinate axis 2 * Upper right corner, coordinate axis 1 * Upper right corner,
- *     coordinate axis 2 The coordinate reference system of the values is WGS 84 longitude/latitude
+ *     bounding box is provided as four numbers:
+ *     <p>
+ *     <p>* Lower left corner, coordinate axis 1
+ *     <p>* Lower left corner, coordinate axis 2
+ *     <p>* Upper right corner, coordinate axis 1
+ *     <p>* Upper right corner, coordinate axis 2
+ *     <p>
+ *     <p>The coordinate reference system of the values is WGS 84 longitude/latitude
  *     (http://www.opengis.net/def/crs/OGC/1.3/CRS84) unless a different coordinate reference system
  *     is specified in the parameter `bbox-crs`. For WGS 84 longitude/latitude the values are in
  *     most cases the sequence of minimum longitude, minimum latitude, maximum longitude and maximum
  *     latitude. However, in cases where the box spans the antimeridian the first value (west-most
  *     box edge) is larger than the third value (east-most box edge).
  * @langDe Es werden nur Features ausgewählt, deren Geometrie den Begrenzungsrahmen schneidet. Der
- *     Begrenzungsrahmen wird als vier Zahlen angegeben: * Linke untere Ecke, Koordinatenachse 1 *
- *     Linke untere Ecke, Koordinatenachse 2 * Rechte obere Ecke, Koordinatenachse 1 * Obere rechte
- *     Ecke, Koordinatenachse 2 Das Koordinatenreferenzsystem der Werte ist WGS 84
- *     Längen/Breitengrad (http://www.opengis.net/def/crs/OGC/1.3/CRS84) es sei denn, im Parameter
- *     `bbox-crs` wird ein anderes Koordinatenreferenzsystem angegeben. Für WGS 84
- *     longitude/latitude sind die Werte in den meisten Fällen die Folge von minimaler Länge,
- *     minimaler Breitengrad, maximaler Längengrad und maximaler Breitengrad. In den Fällen, in
- *     denen die Box den Antimeridian überspannt, ist der erste Wert (westlichster Boxrand) jedoch
- *     größer als der dritte Wert (östlichste Kante der Box).
+ *     Begrenzungsrahmen wird als vier Zahlen angegeben:
+ *     <p>
+ *     <p>* Linke untere Ecke, Koordinatenachse 1
+ *     <p>* Linke untere Ecke, Koordinatenachse 2
+ *     <p>* Rechte obere Ecke, Koordinatenachse 1
+ *     <p>* Obere rechte Ecke, Koordinatenachse 2
+ *     <p>
+ *     <p>Das Koordinatenreferenzsystem der Werte ist WGS 84 Längen/Breitengrad
+ *     (http://www.opengis.net/def/crs/OGC/1.3/CRS84) es sei denn, im Parameter `bbox-crs` wird ein
+ *     anderes Koordinatenreferenzsystem angegeben. Für WGS 84 longitude/latitude sind die Werte in
+ *     den meisten Fällen die Folge von minimaler Länge, minimaler Breitengrad, maximaler Längengrad
+ *     und maximaler Breitengrad. In den Fällen, in denen die Box den Antimeridian überspannt, ist
+ *     der erste Wert (westlichster Boxrand) jedoch größer als der dritte Wert (östlichste Kante der
+ *     Box).
  * @name bbox
  * @endpoints Features
  */
@@ -53,9 +63,12 @@ public class QueryParameterBbox extends ApiExtensionCache implements OgcApiQuery
 
   @Inject
   public QueryParameterBbox(SchemaValidator schemaValidator) {
+    super();
     this.schemaValidator = schemaValidator;
-    // TODO support 6 coordinates (note: maxItems was originally set to 4 for now, but the CITE
-    // tests require maxItems=6)
+    // Note: we currently only support four coordinates, because this is how the standard Simple
+    // Features intersects operator works, but the CITE tests requires maxItems=6 in the API
+    // definition. If 5 or 6 coordinates are provided, an error will be thrown later when the
+    // values are processed.
     this.baseSchema =
         new ArraySchema().items(new NumberSchema().format("double")).minItems(4).maxItems(6);
   }
@@ -88,7 +101,7 @@ public class QueryParameterBbox extends ApiExtensionCache implements OgcApiQuery
         () ->
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
-                && definitionPath.equals("/collections/{collectionId}/items"));
+                && "/collections/{collectionId}/items".equals(definitionPath));
   }
 
   @Override

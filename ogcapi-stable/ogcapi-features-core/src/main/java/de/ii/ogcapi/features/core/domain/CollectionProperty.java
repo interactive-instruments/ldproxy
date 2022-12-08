@@ -41,6 +41,6 @@ public abstract class CollectionProperty {
 
   @Value.Derived
   public Optional<String> getValueList() {
-    return !getValues().isEmpty() ? Optional.of(String.join("; ", getValues())) : Optional.empty();
+    return getValues().isEmpty() ? Optional.empty() : Optional.of(String.join("; ", getValues()));
   }
 }

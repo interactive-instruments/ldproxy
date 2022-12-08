@@ -7,9 +7,9 @@
  */
 package de.ii.ogcapi.crud.app;
 
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument.VERSION;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -34,7 +34,7 @@ public class SchemaCacheReceivables extends JsonSchemaCache {
   }
 
   @Override
-  protected JsonSchemaDocument deriveSchema(
+  protected JsonSchemaAbstractDocument deriveSchema(
       FeatureSchema schema,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
@@ -53,6 +53,6 @@ public class SchemaCacheReceivables extends JsonSchemaCache {
             allNonRequiredNullable,
             strict);
 
-    return (JsonSchemaDocument) schema.accept(schemaDeriverReceivables);
+    return (JsonSchemaAbstractDocument) schema.accept(schemaDeriverReceivables);
   }
 }

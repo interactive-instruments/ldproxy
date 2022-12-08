@@ -20,6 +20,13 @@ import java.util.Optional;
 
 public class FeaturesLinksGenerator extends DefaultLinksGenerator {
 
+  public static final String LIMIT = "limit";
+  public static final String OFFSET = "offset";
+  public static final String NEXT = "next";
+  public static final String PREV = "prev";
+  public static final String FIRST = "first";
+  public static final String LANG = "lang";
+
   public List<Link> generateLinks(
       URICustomizer uriBuilder,
       int offset,
@@ -34,14 +41,14 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
             .addAll(
                 super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
 
-    uriBuilder.removeParameters("lang");
+    uriBuilder.removeParameters(LANG);
 
     // we have to create a next link here as we do not know numberMatched yet, but it will
     // be removed again in the feature transformer, if we are on the last page
     builder.add(
         new ImmutableLink.Builder()
             .href(getUrlWithPageAndCount(uriBuilder.copy(), offset + limit, limit, defaultLimit))
-            .rel("next")
+            .rel(NEXT)
             .type(mediaType.type().toString())
             .title(i18n.get("nextLink", language))
             .build());
@@ -49,14 +56,14 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
       builder.add(
           new ImmutableLink.Builder()
               .href(getUrlWithPageAndCount(uriBuilder.copy(), offset - limit, limit, defaultLimit))
-              .rel("prev")
+              .rel(PREV)
               .type(mediaType.type().toString())
               .title(i18n.get("prevLink", language))
               .build());
       builder.add(
           new ImmutableLink.Builder()
               .href(getUrlWithPageAndCount(uriBuilder.copy(), 0, limit, defaultLimit))
-              .rel("first")
+              .rel(FIRST)
               .type(mediaType.type().toString())
               .title(i18n.get("firstLink", language))
               .build());
@@ -68,26 +75,26 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
   private String getUrlWithPageAndCount(
       final URICustomizer uriBuilder, final int offset, final int limit, final int defaultLimit) {
     if (offset == 0 && limit == defaultLimit) {
-      return uriBuilder.ensureNoTrailingSlash().removeParameters("offset", "limit").toString();
+      return uriBuilder.ensureNoTrailingSlash().removeParameters(OFFSET, LIMIT).toString();
     } else if (limit == defaultLimit) {
       return uriBuilder
           .ensureNoTrailingSlash()
-          .removeParameters("offset", "limit")
-          .setParameter("offset", String.valueOf(Integer.max(0, offset)))
+          .removeParameters(OFFSET, LIMIT)
+          .setParameter(OFFSET, String.valueOf(Integer.max(0, offset)))
           .toString();
     } else if (offset == 0) {
       return uriBuilder
           .ensureNoTrailingSlash()
-          .removeParameters("offset", "limit")
-          .setParameter("limit", String.valueOf(limit))
+          .removeParameters(OFFSET, LIMIT)
+          .setParameter(LIMIT, String.valueOf(limit))
           .toString();
     }
 
     return uriBuilder
         .ensureNoTrailingSlash()
-        .removeParameters("offset", "limit")
-        .setParameter("limit", String.valueOf(limit))
-        .setParameter("offset", String.valueOf(Integer.max(0, offset)))
+        .removeParameters(OFFSET, LIMIT)
+        .setParameter(LIMIT, String.valueOf(limit))
+        .setParameter(OFFSET, String.valueOf(Integer.max(0, offset)))
         .toString();
   }
 }

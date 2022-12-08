@@ -11,9 +11,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument.VERSION;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.ogcapi.features.core.domain.SchemaDeriverCollectionProperties;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -32,7 +32,7 @@ class SchemaCacheQueryables extends JsonSchemaCache {
   private static final String DEFAULT_FLATTENING_SEPARATOR = ".";
 
   @Override
-  protected JsonSchemaDocument deriveSchema(
+  protected JsonSchemaAbstractDocument deriveSchema(
       FeatureSchema schema,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
@@ -73,7 +73,7 @@ class SchemaCacheQueryables extends JsonSchemaCache {
             ImmutableList.of(),
             queryablesWithSeparator);
 
-    return (JsonSchemaDocument)
+    return (JsonSchemaAbstractDocument)
         schema.accept(schemaFlattener).accept(schemaDeriverCollectionProperties);
   }
 }

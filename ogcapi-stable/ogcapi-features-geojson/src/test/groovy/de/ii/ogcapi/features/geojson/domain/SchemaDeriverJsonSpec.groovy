@@ -19,6 +19,7 @@ import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRef
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaString
 import de.ii.ogcapi.features.core.domain.JsonSchema
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument
 import de.ii.ogcapi.features.core.domain.JsonSchemaBuildingBlocks
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument
 import de.ii.ogcapi.features.core.domain.SchemaDeriverJsonSchema
@@ -40,7 +41,7 @@ class SchemaDeriverJsonSpec extends Specification {
         def schemaDeriver = new SchemaDeriverReturnables(version, Optional.empty(), "foo", Optional.empty(), ImmutableList.of())
 
         when:
-        JsonSchemaDocument document = FEATURE_SCHEMA.accept(schemaDeriver) as JsonSchemaDocument
+        JsonSchemaAbstractDocument document = FEATURE_SCHEMA.accept(schemaDeriver) as JsonSchemaAbstractDocument
 
         then:
         document == expected
@@ -58,7 +59,7 @@ class SchemaDeriverJsonSpec extends Specification {
         FeatureSchema flatSchema = FEATURE_SCHEMA.accept(schemaFlattener)
 
         when:
-        JsonSchemaDocument document = flatSchema.accept(schemaDeriver) as JsonSchemaDocument
+        JsonSchemaAbstractDocument document = flatSchema.accept(schemaDeriver) as JsonSchemaAbstractDocument
 
         then:
         document == expected

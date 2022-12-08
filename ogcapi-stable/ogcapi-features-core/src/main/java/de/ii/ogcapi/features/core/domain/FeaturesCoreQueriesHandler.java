@@ -42,8 +42,6 @@ public interface FeaturesCoreQueriesHandler
     Optional<Integer> getDefaultPageSize();
 
     boolean getShowsFeatureSelfLink();
-
-    boolean getIncludeLinkHeader();
   }
 
   @Value.Immutable
@@ -57,7 +55,5 @@ public interface FeaturesCoreQueriesHandler
     FeatureProvider2 getFeatureProvider();
 
     EpsgCrs getDefaultCrs();
-
-    boolean getIncludeLinkHeader();
   }
 }

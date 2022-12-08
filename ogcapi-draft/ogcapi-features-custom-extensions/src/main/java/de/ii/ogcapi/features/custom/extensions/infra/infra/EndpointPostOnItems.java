@@ -247,14 +247,12 @@ public class EndpointPostOnItems extends EndpointSubCollection {
                     }));
 
     FeatureQuery query =
-        ogcApiFeaturesQuery.requestToFeatureQuery(
+        ogcApiFeaturesQuery.requestToFeaturesQuery(
             api,
             collectionData,
             coreConfiguration.getDefaultEpsgCrs(),
             coreConfiguration.getCoordinatePrecision(),
-            minimumPageSize,
             defaultPageSize,
-            maxPageSize,
             toFlatMap(parameters),
             knownParameters);
 

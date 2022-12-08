@@ -13,7 +13,6 @@ import de.ii.ogcapi.features.core.domain.processing.FeatureProcess;
 import de.ii.ogcapi.features.core.domain.processing.FeatureProcessChain;
 import de.ii.ogcapi.features.core.domain.processing.FeatureProcessInfo;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import java.util.List;
 import javax.inject.Inject;
@@ -24,43 +23,43 @@ import javax.inject.Singleton;
 public class FeatureProcessInfoImpl implements FeatureProcessInfo {
 
   private final ExtensionRegistry extensionRegistry;
-  private final I18n i18n;
 
   @Inject
-  public FeatureProcessInfoImpl(ExtensionRegistry extensionRegistry, I18n i18n) {
+  public FeatureProcessInfoImpl(ExtensionRegistry extensionRegistry) {
     this.extensionRegistry = extensionRegistry;
-    this.i18n = i18n;
   }
 
+  @Override
   public List<FeatureProcessChain> getProcessingChains(
       OgcApiDataV2 apiData, Class<? extends FeatureProcess> processType) {
-    ImmutableList.Builder<FeatureProcessChain> chainBuilder =
-        new ImmutableList.Builder<FeatureProcessChain>();
+    ImmutableList.Builder<FeatureProcessChain> chainBuilder = new ImmutableList.Builder<>();
     extensionRegistry.getExtensionsForType(processType).stream()
         .filter(process -> !process.getSupportedCollections(apiData).isEmpty())
         .filter(process -> process.isEnabledForApi(apiData))
         .forEach(
             process -> {
               ImmutableList<FeatureProcess> processList = ImmutableList.of(process);
-              if (!process.isNeverTerminal())
+              if (!process.isNeverTerminal()) {
                 chainBuilder.add(new FeatureProcessChain(processList));
+              }
               nextChainElement(apiData, processType, chainBuilder, process, processList);
             });
     return chainBuilder.build();
   }
 
+  @Override
   public List<FeatureProcessChain> getProcessingChains(
       OgcApiDataV2 apiData, String collectionId, Class<? extends FeatureProcess> processType) {
-    ImmutableList.Builder<FeatureProcessChain> chainBuilder =
-        new ImmutableList.Builder<FeatureProcessChain>();
+    ImmutableList.Builder<FeatureProcessChain> chainBuilder = new ImmutableList.Builder<>();
     extensionRegistry.getExtensionsForType(processType).stream()
         .filter(process -> process.getSupportedCollections(apiData).contains(collectionId))
         .filter(process -> process.isEnabledForApi(apiData))
         .forEach(
             process -> {
               ImmutableList<FeatureProcess> processList = ImmutableList.of(process);
-              if (!process.isNeverTerminal())
+              if (!process.isNeverTerminal()) {
                 chainBuilder.add(new FeatureProcessChain(processList));
+              }
               nextChainElement(apiData, processType, chainBuilder, process, processList);
             });
     return chainBuilder.build();
@@ -68,7 +67,7 @@ public class FeatureProcessInfoImpl implements FeatureProcessInfo {
 
   private void nextChainElement(
       OgcApiDataV2 apiData,
-      Class<? extends FeatureProcess> processType,
+      @SuppressWarnings("unused") Class<? extends FeatureProcess> processType,
       ImmutableList.Builder<FeatureProcessChain> chainBuilder,
       FeatureProcess process,
       ImmutableList<FeatureProcess> processList) {
@@ -80,12 +79,14 @@ public class FeatureProcessInfoImpl implements FeatureProcessInfo {
               ImmutableList.Builder<FeatureProcess> builder = ImmutableList.builder();
               builder.addAll(processList).add(nextProcess);
               ImmutableList<FeatureProcess> newProcessList = builder.build();
-              if (!nextProcess.isNeverTerminal())
+              if (!nextProcess.isNeverTerminal()) {
                 chainBuilder.add(new FeatureProcessChain(newProcessList));
+              }
               nextChainElement(apiData, processType, chainBuilder, nextProcess, newProcessList);
             });
   }
 
+  @Override
   public boolean matches(
       OgcApiDataV2 apiData,
       Class<? extends FeatureProcess> processType,

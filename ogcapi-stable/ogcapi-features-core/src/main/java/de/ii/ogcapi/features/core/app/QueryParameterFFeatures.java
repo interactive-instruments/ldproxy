@@ -19,8 +19,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn TODO
- * @langDe TODO
+ * @langEn Select the output format of the response. If no value is provided, the standard HTTP
+ *     rules apply, i.e., the `Accept` header will be used to determine the format.
+ * @langDe Wählen Sie das Ausgabeformat der Antwort. Wird kein Wert angegeben, gelten die
+ *     Standard-HTTP-Regeln, d. h. der "Accept"-Header wird zur Bestimmung des Formats verwendet.
  * @name Features
  * @endpoints Features
  */

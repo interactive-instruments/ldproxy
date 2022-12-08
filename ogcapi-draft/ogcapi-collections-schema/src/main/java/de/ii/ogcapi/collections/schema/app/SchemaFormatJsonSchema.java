@@ -9,7 +9,7 @@ package de.ii.ogcapi.collections.schema.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.schema.domain.SchemaFormatExtension;
-import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -89,7 +89,10 @@ public class SchemaFormatJsonSchema implements SchemaFormatExtension {
 
   @Override
   public Object getEntity(
-      JsonSchemaObject schema, String collectionId, OgcApi api, ApiRequestContext requestContext) {
+      JsonSchemaAbstractDocument schema,
+      String collectionId,
+      OgcApi api,
+      ApiRequestContext requestContext) {
     return schema;
   }
 }

@@ -8,12 +8,17 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-public abstract class JsonSchemaRefV7 extends JsonSchemaRef {
+public abstract class JsonSchemaRefV7 extends JsonSchemaRefInternal {
 
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaRef> FUNNEL = JsonSchemaRefInternal.FUNNEL::funnel;
+
+  @Override
   @JsonIgnore
   @Value.Auxiliary
   public String getDefsName() {

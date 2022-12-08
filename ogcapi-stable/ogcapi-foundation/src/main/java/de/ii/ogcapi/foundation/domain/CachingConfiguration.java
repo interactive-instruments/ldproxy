@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
  *     resources (see below).
  *     <p>In any module that provides resources and does not just implement query parameters or
  *     output formats, there is a `caching` configuration option whose value is an object with the
- *     following optional entries: Translated with www.DeepL.com/Translator (free version)
+ *     following optional entries:
  * @langDe ldproxy setzt in Antworten die folgenden HTTP-Header für HTTP-Caching - soweit diese für
  *     die jeweilige Ressource bestimmt werden können:
  *     <p>* `Last-Modified`: Der Zeitstempel der letzten Änderung wird - sofern möglich - aus der

@@ -7,11 +7,12 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
+import static de.ii.xtraplatform.features.domain.FeatureSchema.LOGGER;
+
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument.VERSION;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.features.domain.SchemaDeriver;
@@ -25,6 +26,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@SuppressWarnings({"PMD.GodClass", "PMD.TooManyMethods"})
 public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> {
 
   protected final VERSION version;
@@ -59,7 +61,9 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
   protected Map<String, JsonSchema> getNestedProperties(JsonSchema property) {
     return property instanceof JsonSchemaObject
         ? ((JsonSchemaObject) property).getProperties()
-        : ImmutableMap.of();
+        : property instanceof JsonSchemaAbstractDocument
+            ? ((JsonSchemaAbstractDocument) property).getProperties()
+            : ImmutableMap.of();
   }
 
   @Override
@@ -69,7 +73,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
       Map<String, JsonSchema> definitions,
       List<String> requiredProperties) {
 
-    JsonSchemaDocument.Builder builder =
+    JsonSchemaAbstractDocument.Builder builder =
         version == VERSION.V7
             ? ImmutableJsonSchemaDocumentV7.builder()
             : ImmutableJsonSchemaDocument.builder();
@@ -89,7 +93,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
       Map<String, JsonSchema> properties,
       Map<String, JsonSchema> definitions,
       List<String> requiredProperties,
-      JsonSchemaDocument.Builder rootBuilder) {}
+      JsonSchemaAbstractDocument.Builder rootBuilder) {}
 
   @Override
   protected Stream<JsonSchema> extractDefinitions(Stream<JsonSchema> properties) {
@@ -100,12 +104,13 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
                 property instanceof JsonSchemaArray
                     ? ((JsonSchemaArray) property).getItems()
                     : property)
-        .filter(property -> property instanceof JsonSchemaRef && property.getName().isPresent())
+        .filter(
+            property -> property instanceof JsonSchemaRefInternal && property.getName().isPresent())
         .filter(
             ref ->
-                Objects.nonNull(((JsonSchemaRef) ref).getDef())
-                    && ((JsonSchemaRef) ref).getDef().getName().isPresent())
-        .map(ref -> ((JsonSchemaRef) ref).getDef())
+                Objects.nonNull(((JsonSchemaRefInternal) ref).getDef())
+                    && ((JsonSchemaRefInternal) ref).getDef().getName().isPresent())
+        .map(ref -> ((JsonSchemaRefInternal) ref).getDef())
         .flatMap(
             def ->
                 def instanceof JsonSchemaObject
@@ -182,6 +187,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
   }
 
   @Override
+  @SuppressWarnings("PMD.CyclomaticComplexity")
   protected JsonSchema getSchemaForGeometry(FeatureSchema schema) {
     JsonSchema jsonSchema;
     switch (schema.getGeometryType().orElse(SimpleFeatureGeometry.ANY)) {
@@ -231,6 +237,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
     return modify(jsonSchema, builder -> builder.isRequired(true));
   }
 
+  @SuppressWarnings("PMD.CyclomaticComplexity")
   protected JsonSchema modify(JsonSchema jsonSchema, Consumer<JsonSchema.Builder> modifier) {
     JsonSchema.Builder builder = null;
 
@@ -256,6 +263,8 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
       builder = ImmutableJsonSchemaNumber.builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaString) {
       builder = ImmutableJsonSchemaString.builder().from(jsonSchema);
+    } else {
+      LOGGER.error("!!!");
     }
 
     if (Objects.nonNull(builder)) {
@@ -266,6 +275,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
     return jsonSchema;
   }
 
+  @Override
   protected JsonSchema withConstraints(
       JsonSchema schema,
       SchemaConstraints constraints,
@@ -278,81 +288,112 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
           .maxItems(constraints.getMaxOccurrence())
           .build();
     }
-
     JsonSchema result = schema;
+    result = processRequired(constraints, result);
+    result = processEnumeratedValues(constraints, property, codelists, result);
+    result = processRegex(constraints, result);
+    result = processMinMax(constraints, result);
+    return result;
+  }
 
+  private JsonSchema processRequired(SchemaConstraints constraints, JsonSchema result) {
     if (constraints.getRequired().isPresent() && constraints.getRequired().get()) {
-      result = withRequired(result);
+      return withRequired(result);
     }
+    return result;
+  }
 
-    if (!constraints.getEnumValues().isEmpty()) {
-      // if enum is specified in the configuration, it wins over codelist
-      boolean string =
-          property.isArray()
-              ? property.getValueType().orElse(SchemaBase.Type.UNKNOWN) != SchemaBase.Type.INTEGER
-              : property.getType() != SchemaBase.Type.INTEGER;
-      result =
-          string
-              ? ImmutableJsonSchemaString.builder()
-                  .from(result)
-                  .enums(constraints.getEnumValues())
-                  .build()
-              : ImmutableJsonSchemaInteger.builder()
-                  .from(result)
-                  .enums(
-                      constraints.getEnumValues().stream()
-                          .map(val -> Integer.parseInt(val))
-                          .collect(Collectors.toList()))
-                  .build();
-    } else if (constraints.getCodelist().isPresent()) {
-      Optional<Codelist> codelist =
-          codelists.stream()
-              .filter(cl -> cl.getId().equals(constraints.getCodelist().get()))
-              .findAny();
-      if (codelist.isPresent() && !codelist.get().getData().getFallback().isPresent()) {
-        boolean string =
-            property.isArray()
-                ? property.getValueType().orElse(SchemaBase.Type.UNKNOWN) != SchemaBase.Type.INTEGER
-                : property.getType() != SchemaBase.Type.INTEGER;
-        Set<String> values = codelist.get().getData().getEntries().keySet();
-        result =
-            string
-                ? ImmutableJsonSchemaString.builder().from(result).enums(values).build()
-                : ImmutableJsonSchemaInteger.builder()
-                    .from(result)
-                    .enums(
-                        values.stream()
-                            .map(val -> Integer.valueOf(val))
-                            .sorted()
-                            .collect(Collectors.toList()))
-                    .build();
-      }
-    }
+  private JsonSchema processRegex(SchemaConstraints constraints, JsonSchema result) {
     if (constraints.getRegex().isPresent() && result instanceof ImmutableJsonSchemaString) {
-      result =
-          ImmutableJsonSchemaString.builder()
-              .from(result)
-              .pattern(constraints.getRegex().get())
-              .build();
+      return ImmutableJsonSchemaString.builder()
+          .from(result)
+          .pattern(constraints.getRegex().get())
+          .build();
     }
+    return result;
+  }
+
+  private JsonSchema processMinMax(SchemaConstraints constraints, JsonSchema result) {
     if (constraints.getMin().isPresent() || constraints.getMax().isPresent()) {
       if (result instanceof ImmutableJsonSchemaInteger) {
-        ImmutableJsonSchemaInteger.Builder builder =
-            ImmutableJsonSchemaInteger.builder().from(result);
-        if (constraints.getMin().isPresent())
-          builder.minimum(Math.round(constraints.getMin().get()));
-        if (constraints.getMax().isPresent())
-          builder.maximum(Math.round(constraints.getMax().get()));
-        result = builder.build();
+        return processMinMaxInteger(constraints, (JsonSchemaInteger) result);
       } else if (result instanceof ImmutableJsonSchemaNumber) {
-        ImmutableJsonSchemaNumber.Builder builder =
-            ImmutableJsonSchemaNumber.builder().from(result);
-        if (constraints.getMin().isPresent()) builder.minimum(constraints.getMin().get());
-        if (constraints.getMax().isPresent()) builder.maximum(constraints.getMax().get());
-        result = builder.build();
+        return processMinMaxNumber(constraints, (JsonSchemaNumber) result);
       }
     }
+    return result;
+  }
 
+  private ImmutableJsonSchemaNumber processMinMaxNumber(
+      SchemaConstraints constraints, JsonSchemaNumber result) {
+    ImmutableJsonSchemaNumber.Builder builder = ImmutableJsonSchemaNumber.builder().from(result);
+    if (constraints.getMin().isPresent()) {
+      builder.minimum(constraints.getMin().get());
+    }
+    if (constraints.getMax().isPresent()) {
+      builder.maximum(constraints.getMax().get());
+    }
+    return builder.build();
+  }
+
+  private ImmutableJsonSchemaInteger processMinMaxInteger(
+      SchemaConstraints constraints, JsonSchemaInteger result) {
+    ImmutableJsonSchemaInteger.Builder builder = ImmutableJsonSchemaInteger.builder().from(result);
+    if (constraints.getMin().isPresent()) {
+      builder.minimum(Math.round(constraints.getMin().get()));
+    }
+    if (constraints.getMax().isPresent()) {
+      builder.maximum(Math.round(constraints.getMax().get()));
+    }
+    return builder.build();
+  }
+
+  @SuppressWarnings("PMD.ConfusingTernary")
+  private JsonSchema processEnumeratedValues(
+      SchemaConstraints constraints,
+      FeatureSchema property,
+      List<Codelist> codelists,
+      JsonSchema result) {
+    // if enum is specified in the configuration, it wins over codelist
+    if (!constraints.getEnumValues().isEmpty()) {
+      return processEnum(constraints.getEnumValues(), property, result);
+    } else if (constraints.getCodelist().isPresent()) {
+      return processCodelist(constraints.getCodelist().get(), property, codelists, result);
+    }
+    return result;
+  }
+
+  private JsonSchema processEnum(
+      List<String> enumValues, FeatureSchema property, JsonSchema result) {
+    boolean string =
+        property.isArray()
+            ? property.getValueType().orElse(Type.UNKNOWN) != Type.INTEGER
+            : property.getType() != Type.INTEGER;
+    return string
+        ? ImmutableJsonSchemaString.builder().from(result).enums(enumValues).build()
+        : ImmutableJsonSchemaInteger.builder()
+            .from(result)
+            .enums(enumValues.stream().map(Integer::parseInt).collect(Collectors.toList()))
+            .build();
+  }
+
+  private JsonSchema processCodelist(
+      String codelistId, FeatureSchema property, List<Codelist> codelists, JsonSchema result) {
+    Optional<Codelist> codelist =
+        codelists.stream().filter(cl -> cl.getId().equals(codelistId)).findAny();
+    if (codelist.isPresent() && codelist.get().getData().getFallback().isEmpty()) {
+      boolean string =
+          property.isArray()
+              ? property.getValueType().orElse(Type.UNKNOWN) != Type.INTEGER
+              : property.getType() != Type.INTEGER;
+      Set<String> values = codelist.get().getData().getEntries().keySet();
+      return string
+          ? ImmutableJsonSchemaString.builder().from(result).enums(values).build()
+          : ImmutableJsonSchemaInteger.builder()
+              .from(result)
+              .enums(values.stream().map(Integer::valueOf).sorted().collect(Collectors.toList()))
+              .build();
+    }
     return result;
   }
 

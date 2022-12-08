@@ -18,6 +18,19 @@ import org.immutables.value.Value;
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 public abstract class JsonSchemaString extends JsonSchema {
 
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaString> FUNNEL =
+      (from, into) -> {
+        JsonSchema.FUNNEL.funnel(from, into);
+        into.putString(from.getType(), StandardCharsets.UTF_8);
+        from.getFormat().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getPattern().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getEnums().stream()
+            .sorted()
+            .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getUnit().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+      };
+
   public final String getType() {
     return "string";
   }
@@ -32,16 +45,4 @@ public abstract class JsonSchemaString extends JsonSchema {
   public abstract Optional<String> getUnit();
 
   public abstract static class Builder extends JsonSchema.Builder {}
-
-  @SuppressWarnings("UnstableApiUsage")
-  public static final Funnel<JsonSchemaString> FUNNEL =
-      (from, into) -> {
-        into.putString(from.getType(), StandardCharsets.UTF_8);
-        from.getFormat().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getPattern().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getEnums().stream()
-            .sorted()
-            .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getUnit().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-      };
 }

@@ -16,9 +16,28 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn TODO
- * @langDe TODO
- * @name Datetime
+ * @langEn Either a date-time or an interval. Date and time expressions adhere to RFC 3339.
+ *     <p>Intervals may be bounded or half-bounded (double-dots at start or end).
+ *     <p>Examples:
+ *     <p>
+ *     <p>* A date-time: "2018-02-12T23:20:50Z"
+ *     <p>* A bounded interval: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+ *     <p>* Half-bounded intervals: "2018-02-12T00:00:00Z/.." or "../2018-03-18T12:31:12Z"
+ *     <p>
+ *     <p>Only features that have a temporal property that intersects the value of `datetime` are
+ *     selected.
+ * @langDe Entweder ein Datum/Zeitpunkt oder ein Intervall. Datums- und Zeitausdrücke entsprechen
+ *     RFC 3339.
+ *     <p>Intervalle können begrenzt oder halb-begrenzt sein (Doppelpunkte am Anfang oder Ende).
+ *     <p>Beispiele:
+ *     <p>
+ *     <p>* Ein Datum-Zeitpunkt: "2018-02-12T23:20:50Z"
+ *     <p>* Ein begrenztes Intervall: "2018-02-12T00:00:00Z/2018-03-18T12:31:12Z"
+ *     <p>* Half-bounded intervals: "2018-02-12T00:00:00Z/.." oder "../2018-03-18T12:31:12Z"
+ *     <p>
+ *     <p>Es werden nur Merkmale ausgewählt, die eine zeitliche Eigenschaft haben, die den Wert von
+ *     `datetime` überschneidet.
+ * @name datetime
  * @endpoints Features
  */
 @Singleton
@@ -37,6 +56,6 @@ public class QueryParameterDatetime extends AbstractQueryParameterDatetime {
         () ->
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
-                && definitionPath.equals("/collections/{collectionId}/items"));
+                && "/collections/{collectionId}/items".equals(definitionPath));
   }
 }

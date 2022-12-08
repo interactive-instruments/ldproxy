@@ -19,6 +19,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesLinksGenerator;
 import de.ii.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
 import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
@@ -120,7 +121,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     FeatureQuery query = queryInput.getQuery();
 
     Optional<Integer> defaultPageSize = queryInput.getDefaultPageSize();
-    boolean onlyHitsIfMore = false; // TODO check
 
     FeatureFormatExtension outputFormat =
         api.getOutputFormat(
@@ -136,26 +136,23 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                             requestContext.getMediaType())));
 
     return getResponse(
-        api,
         requestContext,
+        api,
         collectionId,
         null,
         queryInput,
         query,
         queryInput.getFeatureProvider(),
-        null,
+        getFeaturesLinks(
+            requestContext, query, defaultPageSize, requestContext.getAlternateMediaTypes()),
         outputFormat,
-        onlyHitsIfMore,
-        defaultPageSize,
         queryInput.getShowsFeatureSelfLink(),
-        queryInput.getIncludeLinkHeader(),
         queryInput.getDefaultCrs());
   }
 
   private Response getItemResponse(QueryInputFeature queryInput, ApiRequestContext requestContext) {
 
     OgcApi api = requestContext.getApi();
-    OgcApiDataV2 apiData = api.getData();
     String collectionId = queryInput.getCollectionId();
     String featureId = queryInput.getFeatureId();
     FeatureQuery query = queryInput.getQuery();
@@ -181,36 +178,42 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     }
 
     return getResponse(
-        api,
         requestContext,
+        api,
         collectionId,
         featureId,
         queryInput,
         query,
         queryInput.getFeatureProvider(),
-        persistentUri,
+        getFeatureLinks(
+            requestContext,
+            persistentUri,
+            outputFormat.getCollectionMediaType(),
+            requestContext.getAlternateMediaTypes()),
         outputFormat,
         false,
-        Optional.empty(),
-        false,
-        queryInput.getIncludeLinkHeader(),
         queryInput.getDefaultCrs());
   }
 
+  // Does it make sense to refactor this method?
+  @SuppressWarnings({
+    "PMD.CognitiveComplexity",
+    "PMD.CyclomaticComplexity",
+    "PMD.NPathComplexity",
+    "PMD.ExcessiveMethodLength",
+    "PMD.UnusedPrivateMethod" // unclear why PMD reports this warning
+  })
   private Response getResponse(
-      OgcApi api,
       ApiRequestContext requestContext,
+      OgcApi api,
       String collectionId,
       String featureId,
       QueryInput queryInput,
       FeatureQuery query,
       FeatureProvider2 featureProvider,
-      String canonicalUri,
+      List<Link> links,
       FeatureFormatExtension outputFormat,
-      boolean onlyHitsIfMore,
-      Optional<Integer> defaultPageSize,
       boolean showsFeatureSelfLink,
-      boolean includeLinkHeader,
       EpsgCrs defaultCrs) {
 
     ensureCollectionIdExists(api.getData(), collectionId);
@@ -225,37 +228,9 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
     }
 
-    List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
-
-    List<Link> links =
-        Objects.isNull(featureId)
-            ? new FeaturesLinksGenerator()
-                .generateLinks(
-                    requestContext.getUriCustomizer(),
-                    query.getOffset(),
-                    query.getLimit(),
-                    defaultPageSize.orElse(0),
-                    requestContext.getMediaType(),
-                    alternateMediaTypes,
-                    i18n,
-                    requestContext.getLanguage())
-            : new FeatureLinksGenerator()
-                .generateLinks(
-                    requestContext.getUriCustomizer(),
-                    requestContext.getMediaType(),
-                    alternateMediaTypes,
-                    outputFormat.getCollectionMediaType(),
-                    canonicalUri,
-                    i18n,
-                    requestContext.getLanguage());
-
-    String featureTypeId =
-        api.getData()
-            .getCollections()
-            .get(collectionId)
-            .getExtension(FeaturesCoreConfiguration.class)
-            .map(cfg -> cfg.getFeatureType().orElse(collectionId))
-            .orElse(collectionId);
+    FeatureTypeConfigurationOgcApi collectionData =
+        Objects.requireNonNull(api.getData().getCollections().get(collectionId));
+    String featureTypeId = getFeatureType(collectionData);
 
     ImmutableFeatureTransformationContextGeneric.Builder transformationContext =
         new ImmutableFeatureTransformationContextGeneric.Builder()
@@ -281,7 +256,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             .offset(query.getOffset())
             .maxAllowableOffset(query.getMaxAllowableOffset())
             .geometryPrecision(query.getGeometryPrecision())
-            .isHitsOnlyIfMore(onlyHitsIfMore)
             .showsFeatureSelfLink(showsFeatureSelfLink);
 
     FeatureStream featureStream;
@@ -311,7 +285,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
 
       propertyTransformations =
           outputFormat
-              .getPropertyTransformations(api.getData().getCollections().get(collectionId))
+              .getPropertyTransformations(collectionData)
               .map(
                   pt ->
                       ImmutableMap.of(
@@ -338,7 +312,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 .getExtension(HtmlConfiguration.class, collectionId)
                 .map(HtmlConfiguration::getSendEtags)
                 .orElse(false))) {
-      ResultReduced<byte[]> result = reduce(featureStream, true, encoder, propertyTransformations);
+      ResultReduced<byte[]> result = reduce(featureStream, encoder, propertyTransformations);
 
       bytes = result.reduced();
 
@@ -353,20 +327,24 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     }
 
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
 
-    // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched
-    // and OGC-numberReturned headers
-    // TODO For now remove the "next" links from the headers since at this point we don't know,
-    // whether there will be a next page
+    // open issues:
+    // determine numberMatched, numberReturned and optionally return them as OGC-numberMatched
+    // and OGC-numberReturned headers;
+    // for now remove the "next" links from the headers since at this point we don't know
+    // whether there will be a next page;
+    // see https://github.com/interactive-instruments/ldproxy/issues/812
 
     return prepareSuccessResponse(
             requestContext,
-            includeLinkHeader
+            queryInput.getIncludeLinkHeader()
                 ? links.stream()
                     .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
                     .collect(ImmutableList.toImmutableList())
-                : null,
+                : ImmutableList.of(),
             HeaderCaching.of(lastModified, etag, queryInput),
             targetCrs,
             HeaderContentDisposition.of(
@@ -376,6 +354,46 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                     outputFormat.getMediaType().fileExtension())))
         .entity(Objects.nonNull(bytes) ? bytes : streamingOutput)
         .build();
+  }
+
+  private String getFeatureType(FeatureTypeConfigurationOgcApi collectionData) {
+    return collectionData
+        .getExtension(FeaturesCoreConfiguration.class)
+        .flatMap(FeaturesCoreConfiguration::getFeatureType)
+        .orElse(collectionData.getId());
+  }
+
+  private List<Link> getFeaturesLinks(
+      ApiRequestContext requestContext,
+      FeatureQuery query,
+      Optional<Integer> defaultPageSize,
+      List<ApiMediaType> alternateMediaTypes) {
+    return new FeaturesLinksGenerator()
+        .generateLinks(
+            requestContext.getUriCustomizer(),
+            query.getOffset(),
+            query.getLimit(),
+            defaultPageSize.orElse(0),
+            requestContext.getMediaType(),
+            alternateMediaTypes,
+            i18n,
+            requestContext.getLanguage());
+  }
+
+  private List<Link> getFeatureLinks(
+      ApiRequestContext requestContext,
+      String canonicalUri,
+      ApiMediaType collectionMediaType,
+      List<ApiMediaType> alternateMediaTypes) {
+    return new FeatureLinksGenerator()
+        .generateLinks(
+            requestContext.getUriCustomizer(),
+            requestContext.getMediaType(),
+            alternateMediaTypes,
+            collectionMediaType,
+            canonicalUri,
+            i18n,
+            requestContext.getLanguage());
   }
 
   private StreamingOutput stream(
@@ -400,7 +418,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
 
   private ResultReduced<byte[]> reduce(
       FeatureStream featureTransformStream,
-      boolean failIfEmpty,
       final FeatureTokenEncoder<?> encoder,
       Map<String, PropertyTransformations> propertyTransformations) {
 
@@ -413,7 +430,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 .toCompletableFuture()
                 .join();
 
-    return run(stream, failIfEmpty);
+    return run(stream, true);
   }
 
   private <U extends ResultBase> U run(Supplier<U> stream, boolean failIfEmpty) {
@@ -432,7 +449,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       if (e.getCause() instanceof WebApplicationException) {
         throw (WebApplicationException) e.getCause();
       }
-      throw new IllegalStateException("Feature stream error.", e.getCause());
+      throw new IllegalStateException("Feature stream error.", e);
     }
   }
 }

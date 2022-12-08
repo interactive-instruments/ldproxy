@@ -15,13 +15,13 @@ import org.immutables.value.Value;
 @Value.Style(jdkOnly = true)
 public abstract class JsonSchemaFalse extends JsonSchema {
 
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaFalse> FUNNEL = JsonSchema.FUNNEL::funnel;
+
   // any instance is invalid
 
   @JsonValue
   public final boolean toValue() {
     return false;
   }
-
-  @SuppressWarnings("UnstableApiUsage")
-  public static final Funnel<JsonSchemaFalse> FUNNEL = (from, into) -> {};
 }

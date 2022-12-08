@@ -20,6 +20,9 @@ import java.util.Optional;
 
 public class FeatureLinksGenerator extends DefaultLinksGenerator {
 
+  public static final String CANONICAL = "canonical";
+  public static final String COLLECTION = "collection";
+
   public List<Link> generateLinks(
       URICustomizer uriBuilder,
       ApiMediaType mediaType,
@@ -33,13 +36,14 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
             .addAll(
                 super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
 
-    if (canonicalUri != null)
+    if (canonicalUri != null) {
       builder.add(
           new ImmutableLink.Builder()
               .href(canonicalUri)
-              .rel("canonical")
+              .rel(CANONICAL)
               .title(i18n.get("persistentLink", language))
               .build());
+    }
 
     builder.add(
         new ImmutableLink.Builder()
@@ -50,7 +54,7 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
                     .ensureParameter("f", collectionMediaType.parameter())
                     .removeLastPathSegments(2)
                     .toString())
-            .rel("collection")
+            .rel(COLLECTION)
             .type(collectionMediaType.type().toString())
             .title(i18n.get("collectionLink", language))
             .build());
@@ -66,15 +70,16 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
       String canonicalUri,
       I18n i18n,
       Optional<Locale> language) {
-    final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<Link>();
+    final ImmutableList.Builder<Link> builder = new ImmutableList.Builder<>();
 
-    if (canonicalUri != null)
+    if (canonicalUri != null) {
       builder.add(
           new ImmutableLink.Builder()
               .href(canonicalUri)
-              .rel("canonical")
+              .rel(CANONICAL)
               .title(i18n.get("persistentLink", language))
               .build());
+    }
 
     builder.add(
         new ImmutableLink.Builder()
@@ -85,7 +90,7 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
                     .ensureParameter("f", collectionMediaType.parameter())
                     .removeLastPathSegments(2)
                     .toString())
-            .rel("collection")
+            .rel(COLLECTION)
             .type(collectionMediaType.type().toString())
             .title(i18n.get("collectionLink", language))
             .build());

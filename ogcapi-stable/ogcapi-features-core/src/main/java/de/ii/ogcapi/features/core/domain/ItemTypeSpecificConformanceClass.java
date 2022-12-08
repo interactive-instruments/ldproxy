@@ -22,7 +22,7 @@ public interface ItemTypeSpecificConformanceClass extends ConformanceClass {
                     && collection
                         .getExtension(FeaturesCoreConfiguration.class)
                         .flatMap(FeaturesCoreConfiguration::getItemType)
-                        .orElse(FeaturesCoreConfiguration.ItemType.feature)
+                        .orElse(FeaturesCoreConfiguration.ItemType.FEATURE)
                         .equals(itemType));
   }
 

@@ -9,40 +9,40 @@ package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.hash.Funnel;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.Builder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.immutables.value.Value;
 
 public abstract class JsonSchema {
 
-  @SuppressWarnings("UnstableApiUsage")
+  @SuppressWarnings({"UnstableApiUsage", "PMD.CyclomaticComplexity"})
   public static final Funnel<JsonSchema> FUNNEL =
       (from, into) -> {
         from.getTitle().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
         from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
-        if (from instanceof JsonSchemaString)
+        if (from instanceof JsonSchemaString) {
           JsonSchemaString.FUNNEL.funnel((JsonSchemaString) from, into);
-        else if (from instanceof JsonSchemaNumber)
+        } else if (from instanceof JsonSchemaNumber) {
           JsonSchemaNumber.FUNNEL.funnel((JsonSchemaNumber) from, into);
-        else if (from instanceof JsonSchemaInteger)
+        } else if (from instanceof JsonSchemaInteger) {
           JsonSchemaInteger.FUNNEL.funnel((JsonSchemaInteger) from, into);
-        else if (from instanceof JsonSchemaBoolean)
+        } else if (from instanceof JsonSchemaBoolean) {
           JsonSchemaBoolean.FUNNEL.funnel((JsonSchemaBoolean) from, into);
-        else if (from instanceof JsonSchemaObject)
+        } else if (from instanceof JsonSchemaObject) {
           JsonSchemaObject.FUNNEL.funnel((JsonSchemaObject) from, into);
-        else if (from instanceof JsonSchemaArray)
+        } else if (from instanceof JsonSchemaArray) {
           JsonSchemaArray.FUNNEL.funnel((JsonSchemaArray) from, into);
-        else if (from instanceof JsonSchemaNull)
+        } else if (from instanceof JsonSchemaNull) {
           JsonSchemaNull.FUNNEL.funnel((JsonSchemaNull) from, into);
-        else if (from instanceof JsonSchemaTrue)
+        } else if (from instanceof JsonSchemaTrue) {
           JsonSchemaTrue.FUNNEL.funnel((JsonSchemaTrue) from, into);
-        else if (from instanceof JsonSchemaFalse)
+        } else if (from instanceof JsonSchemaFalse) {
           JsonSchemaFalse.FUNNEL.funnel((JsonSchemaFalse) from, into);
-        else if (from instanceof JsonSchemaRef)
+        } else if (from instanceof JsonSchemaRef) {
           JsonSchemaRef.FUNNEL.funnel((JsonSchemaRef) from, into);
-        else if (from instanceof JsonSchemaOneOf)
+        } else if (from instanceof JsonSchemaOneOf) {
           JsonSchemaOneOf.FUNNEL.funnel((JsonSchemaOneOf) from, into);
+        }
       };
 
   public abstract Optional<String> getTitle();
@@ -73,6 +73,7 @@ public abstract class JsonSchema {
 
     public abstract Builder name(String name);
 
+    @SuppressWarnings("PMD.LinguisticNaming")
     public abstract Builder isRequired(boolean isRequired);
 
     public abstract JsonSchema build();

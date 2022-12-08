@@ -16,8 +16,8 @@ import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaNumber;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaString;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
@@ -166,7 +166,7 @@ public class TilesHelper {
                 JsonSchemaCache schemas =
                     new SchemaCacheTileSet(() -> entityRegistry.getEntitiesForType(Codelist.class));
 
-                Map<String, JsonSchemaDocument> schemaMap =
+                Map<String, JsonSchemaAbstractDocument> schemaMap =
                     collectionId.isPresent()
                         ? apiData
                             .getCollectionData(collectionId.get())
@@ -230,7 +230,7 @@ public class TilesHelper {
                           FeatureTypeConfigurationOgcApi collectionData =
                               apiData.getCollections().get(collectionId2);
 
-                          JsonSchemaDocument schema = entry.getValue();
+                          JsonSchemaAbstractDocument schema = entry.getValue();
                           ImmutableTileLayer.Builder builder2 =
                               ImmutableTileLayer.builder()
                                   .id(collectionId2)

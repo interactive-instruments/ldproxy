@@ -22,9 +22,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn TODO
- * @langDe TODO
+ * @langEn The optional `offset` parameter identifies the index of the first feature in the response
+ *     in the overall result set.
+ * @langDe Der optionale `offset`-Parameter gibt den Index des ersten Merkmals in der Antwort in der
+ *     gesamten Ergebnismenge an.
  * @name offset
+ * @default 0
  * @endpoints Features
  */
 @Singleton
@@ -33,9 +36,11 @@ public class QueryParameterOffsetFeatures extends ApiExtensionCache
     implements OgcApiQueryParameter {
 
   private final SchemaValidator schemaValidator;
+  private Schema<?> schema;
 
   @Inject
   QueryParameterOffsetFeatures(SchemaValidator schemaValidator) {
+    super();
     this.schemaValidator = schemaValidator;
   }
 
@@ -51,8 +56,7 @@ public class QueryParameterOffsetFeatures extends ApiExtensionCache
 
   @Override
   public String getDescription() {
-    return "The optional offset parameter identifies the index of the first feature in the response in the overall "
-        + "result set.";
+    return "The optional offset parameter identifies the index of the first feature in the response in the overall result set.";
   }
 
   @Override
@@ -62,10 +66,8 @@ public class QueryParameterOffsetFeatures extends ApiExtensionCache
         () ->
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
-                && definitionPath.equals("/collections/{collectionId}/items"));
+                && "/collections/{collectionId}/items".equals(definitionPath));
   }
-
-  private Schema<?> schema = null;
 
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {

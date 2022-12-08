@@ -20,11 +20,13 @@ public interface SchemaInfo {
 
   Map<String, String> getNameTitleMap(FeatureSchema featureType);
 
+  Map<String, SchemaBase.Type> getPropertyTypes(
+      FeatureSchema featureType, boolean withArrayBrackets);
+
+  // convenience methods for collections by identifier
+
   List<String> getPropertyNames(OgcApiDataV2 apiData, String collectionId);
 
   List<String> getPropertyNames(
       OgcApiDataV2 apiData, String collectionId, boolean withSpatial, boolean withArrayBrackets);
-
-  Map<String, SchemaBase.Type> getPropertyTypes(
-      FeatureSchema featureType, boolean withArrayBrackets);
 }

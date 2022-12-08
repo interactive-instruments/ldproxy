@@ -19,15 +19,10 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
 public class PathParameterFeatureIdFeatures implements OgcApiPathParameter {
-
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(PathParameterFeatureIdFeatures.class);
 
   public static final String FEATURE_ID_PATTERN = "[^/ ]+";
 
@@ -37,7 +32,6 @@ public class PathParameterFeatureIdFeatures implements OgcApiPathParameter {
   public PathParameterFeatureIdFeatures(SchemaValidator schemaValidator) {
     this.schemaValidator = schemaValidator;
   }
-  ;
 
   @Override
   public String getPattern() {
@@ -72,7 +66,7 @@ public class PathParameterFeatureIdFeatures implements OgcApiPathParameter {
   @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
     return isEnabledForApi(apiData)
-        && definitionPath.equals("/collections/{collectionId}/items/{featureId}");
+        && "/collections/{collectionId}/items/{featureId}".equals(definitionPath);
   }
 
   @Override

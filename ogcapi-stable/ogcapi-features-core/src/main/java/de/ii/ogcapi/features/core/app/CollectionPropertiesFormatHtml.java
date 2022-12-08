@@ -11,10 +11,11 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesType;
-import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
@@ -53,9 +54,12 @@ public class CollectionPropertiesFormatHtml implements CollectionPropertiesForma
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
     return apiData
             .getExtension(getBuildingBlockConfigurationType())
-            .map(cfg -> cfg.isEnabled())
+            .map(ExtensionConfiguration::isEnabled)
             .orElse(false)
-        && apiData.getExtension(HtmlConfiguration.class).map(cfg -> cfg.isEnabled()).orElse(true);
+        && apiData
+            .getExtension(HtmlConfiguration.class)
+            .map(ExtensionConfiguration::isEnabled)
+            .orElse(true);
   }
 
   @Override
@@ -64,13 +68,13 @@ public class CollectionPropertiesFormatHtml implements CollectionPropertiesForma
             .getCollections()
             .get(collectionId)
             .getExtension(getBuildingBlockConfigurationType())
-            .map(cfg -> cfg.isEnabled())
+            .map(ExtensionConfiguration::isEnabled)
             .orElse(false)
         && apiData
             .getCollections()
             .get(collectionId)
             .getExtension(HtmlConfiguration.class)
-            .map(cfg -> cfg.isEnabled())
+            .map(ExtensionConfiguration::isEnabled)
             .orElse(true);
   }
 
@@ -92,7 +96,7 @@ public class CollectionPropertiesFormatHtml implements CollectionPropertiesForma
 
   @Override
   public Object getEntity(
-      JsonSchemaObject schemaProperties,
+      JsonSchemaAbstractDocument schemaProperties,
       CollectionPropertiesType type,
       List<Link> links,
       String collectionId,
@@ -143,7 +147,6 @@ public class CollectionPropertiesFormatHtml implements CollectionPropertiesForma
         requestContext.getStaticUrlPrefix(),
         htmlConfig,
         isNoIndexEnabledForApi(api.getData()),
-        requestContext.getUriCustomizer(),
         i18n,
         requestContext.getLanguage());
   }

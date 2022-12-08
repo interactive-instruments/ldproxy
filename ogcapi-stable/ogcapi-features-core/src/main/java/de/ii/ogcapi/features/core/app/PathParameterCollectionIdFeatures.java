@@ -26,9 +26,9 @@ public class PathParameterCollectionIdFeatures extends AbstractPathParameterColl
 
   @Override
   public boolean matchesPath(String definitionPath) {
-    return definitionPath.equals("/collections/{collectionId}/items")
-        || definitionPath.equals("/collections/{collectionId}/items/{featureId}")
-        || definitionPath.equals("/collections/{collectionId}/context");
+    return "/collections/{collectionId}/items".equals(definitionPath)
+        || "/collections/{collectionId}/items/{featureId}".equals(definitionPath)
+        || "/collections/{collectionId}/context".equals(definitionPath);
   }
 
   @Override

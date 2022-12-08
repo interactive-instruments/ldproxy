@@ -109,12 +109,16 @@ public interface FeatureSfFlat extends FeatureBase<PropertySfFlat, FeatureSchema
             .map(
                 p -> {
                   Object val = getValue(p, true);
-                  if (Objects.isNull(val)) return null;
+                  if (Objects.isNull(val)) {
+                    return null;
+                  }
                   return String.format("'%s': %s", p.getName(), val);
                 })
             .filter(Objects::nonNull)
             .collect(Collectors.joining(", "));
-    if (value.isBlank()) return null;
+    if (value.isBlank()) {
+      return null;
+    }
     return String.format("{ %s }", value);
   }
 
@@ -124,12 +128,16 @@ public interface FeatureSfFlat extends FeatureBase<PropertySfFlat, FeatureSchema
             .map(
                 p -> {
                   Object val = getValue(p, true);
-                  if (Objects.isNull(val)) return null;
+                  if (Objects.isNull(val)) {
+                    return null;
+                  }
                   return val.toString();
                 })
             .filter(Objects::nonNull)
             .collect(Collectors.joining(", "));
-    if (value.isBlank()) return null;
+    if (value.isBlank()) {
+      return null;
+    }
     return String.format("[ %s ]", value);
   }
 

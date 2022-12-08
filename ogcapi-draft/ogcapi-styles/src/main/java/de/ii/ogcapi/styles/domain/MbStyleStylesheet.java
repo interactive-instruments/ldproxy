@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.foundation.domain.ImmutableLink;
@@ -84,7 +85,7 @@ public abstract class MbStyleStylesheet {
     JsonSchemaCache schemas =
         new SchemaCacheStyleLayer(() -> entityRegistry.getEntitiesForType(Codelist.class));
 
-    Map<String, JsonSchemaObject> schemaMap =
+    Map<String, JsonSchemaAbstractDocument> schemaMap =
         getLayers().stream()
             .filter(
                 layer ->

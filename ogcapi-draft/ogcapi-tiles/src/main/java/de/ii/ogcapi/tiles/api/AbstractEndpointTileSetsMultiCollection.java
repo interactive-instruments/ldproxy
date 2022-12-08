@@ -21,7 +21,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSets.Builder;
+import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
@@ -123,7 +123,7 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
     TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
 
     TilesQueriesHandler.QueryInputTileSets queryInput =
-        new Builder()
+        new ImmutableQueryInputTileSets.Builder()
             .from(getGenericQueryInput(apiData))
             .center(tilesConfiguration.getCenterDerived())
             .tileMatrixSetZoomLevels(tilesConfiguration.getZoomLevelsDerived())

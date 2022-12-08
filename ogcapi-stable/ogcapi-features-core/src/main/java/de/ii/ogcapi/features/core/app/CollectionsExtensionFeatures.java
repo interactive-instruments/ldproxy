@@ -78,6 +78,6 @@ public class CollectionsExtensionFeatures implements CollectionsExtension {
 
     collectionsBuilder.addAllCollections(collections);
 
-    return collectionsBuilder; // TODO .addSections(ImmutableMap.of("collections", collections));
+    return collectionsBuilder;
   }
 }

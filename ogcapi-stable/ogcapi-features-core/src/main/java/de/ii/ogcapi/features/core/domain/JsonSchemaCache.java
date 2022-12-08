@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument.VERSION;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentMap;
 public abstract class JsonSchemaCache {
 
   private final ConcurrentMap<
-          Integer, ConcurrentMap<String, ConcurrentMap<VERSION, JsonSchemaDocument>>>
+          Integer, ConcurrentMap<String, ConcurrentMap<VERSION, JsonSchemaAbstractDocument>>>
       cache;
   private final WithScope withScope;
 
@@ -33,7 +33,7 @@ public abstract class JsonSchemaCache {
     this.withScope = new WithScope(scope);
   }
 
-  public final JsonSchemaDocument getSchema(
+  public final JsonSchemaAbstractDocument getSchema(
       FeatureSchema featureSchema,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
@@ -41,7 +41,7 @@ public abstract class JsonSchemaCache {
     return getSchema(featureSchema, apiData, collectionData, schemaUri, VERSION.current());
   }
 
-  public final JsonSchemaDocument getSchema(
+  public final JsonSchemaAbstractDocument getSchema(
       FeatureSchema featureSchema,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
@@ -67,7 +67,7 @@ public abstract class JsonSchemaCache {
     return cache.get(apiHashCode).get(collectionData.getId()).get(version);
   }
 
-  protected abstract JsonSchemaDocument deriveSchema(
+  protected abstract JsonSchemaAbstractDocument deriveSchema(
       FeatureSchema schema,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,

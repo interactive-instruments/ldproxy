@@ -8,7 +8,7 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.google.common.base.CaseFormat;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument.VERSION;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
@@ -37,7 +37,7 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
       Map<String, JsonSchema> properties,
       Map<String, JsonSchema> defs,
       List<String> required,
-      JsonSchemaDocument.Builder builder) {
+      JsonSchemaAbstractDocument.Builder builder) {
     properties.forEach(
         (propertyName, propertySchema) -> {
           String cleanName = propertyName.replaceAll("\\[\\]", "");
@@ -49,6 +49,7 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
   }
 
   @Override
+  @SuppressWarnings("PMD.CyclomaticComplexity")
   protected JsonSchema getSchemaForGeometry(FeatureSchema schema) {
     JsonSchema jsonSchema;
     SimpleFeatureGeometry type = schema.getGeometryType().orElse(SimpleFeatureGeometry.ANY);

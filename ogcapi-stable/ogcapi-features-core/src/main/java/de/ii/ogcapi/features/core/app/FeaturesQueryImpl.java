@@ -24,7 +24,6 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryValidationInputCoordinates;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
-import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -39,7 +38,6 @@ import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
 import de.ii.xtraplatform.cql.domain.In;
 import de.ii.xtraplatform.cql.domain.Interval;
 import de.ii.xtraplatform.cql.domain.Like;
-import de.ii.xtraplatform.cql.domain.Or;
 import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.SIntersects;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
@@ -60,7 +58,6 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.web.domain.ETag;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,15 +74,27 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.GodClass", "PMD.CyclomaticComplexity"})
 public class FeaturesQueryImpl implements FeaturesQuery {
 
   private static final Splitter ARRAY_SPLITTER = Splitter.on(',').trimResults();
-
   private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesQueryImpl.class);
-  private static final double BUFFER_DEGREE = 0.00001;
+  private static final double BUFFER_DEGREE = 0.000_01;
   private static final double BUFFER_METRE = 10.0;
+  public static final String RESULT_TYPE = "resultType";
+  public static final String HITS = "hits";
+  public static final String LIMIT = "limit";
+  public static final String OFFSET = "offset";
+  public static final String FILTER_LANG = "filter-lang";
+  public static final String CQL2_JSON = "cql2-json";
+  public static final String FILTER_CRS = "filter-crs";
+  public static final String BBOX_CRS = "bbox-crs";
+  public static final String ASTERISK = "*";
+  public static final String PERCENT = "%";
+  public static final String METER = "meter";
+  public static final String METRE = "metre";
+  public static final String DEGREE = "degree";
 
-  private final ExtensionRegistry extensionRegistry;
   private final CrsTransformerFactory crsTransformerFactory;
   private final CrsInfo crsInfo;
   private final SchemaInfo schemaInfo;
@@ -94,13 +103,11 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
   @Inject
   public FeaturesQueryImpl(
-      ExtensionRegistry extensionRegistry,
       CrsTransformerFactory crsTransformerFactory,
       CrsInfo crsInfo,
       SchemaInfo schemaInfo,
       FeaturesCoreProviders providers,
       Cql cql) {
-    this.extensionRegistry = extensionRegistry;
     this.crsTransformerFactory = crsTransformerFactory;
     this.crsInfo = crsInfo;
     this.schemaInfo = schemaInfo;
@@ -119,20 +126,19 @@ public class FeaturesQueryImpl implements FeaturesQuery {
       String featureId,
       Optional<ETag.Type> withEtag) {
 
+    Map<String, String> effectiveParameters = parameters;
     for (OgcApiQueryParameter parameter : allowedParameters) {
-      parameters = parameter.transformParameters(collectionData, parameters, apiData);
+      effectiveParameters =
+          parameter.transformParameters(collectionData, effectiveParameters, apiData);
     }
 
     final Cql2Expression filter = In.of(ScalarLiteral.of(featureId));
 
-    final String collectionId = collectionData.getId();
     final String featureTypeId =
-        apiData
-            .getCollections()
-            .get(collectionId)
+        collectionData
             .getExtension(FeaturesCoreConfiguration.class)
-            .map(cfg -> cfg.getFeatureType().orElse(collectionId))
-            .orElse(collectionId);
+            .flatMap(FeaturesCoreConfiguration::getFeatureType)
+            .orElse(collectionData.getId());
 
     final ImmutableFeatureQuery.Builder queryBuilder =
         ImmutableFeatureQuery.builder()
@@ -145,7 +151,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     for (OgcApiQueryParameter parameter : allowedParameters) {
       if (parameter instanceof FeatureQueryTransformer) {
         ((FeatureQueryTransformer) parameter)
-            .transformQuery(queryBuilder, parameters, apiData, collectionData);
+            .transformQuery(queryBuilder, effectiveParameters, apiData, collectionData);
       }
     }
 
@@ -153,14 +159,12 @@ public class FeaturesQueryImpl implements FeaturesQuery {
   }
 
   @Override
-  public FeatureQuery requestToFeatureQuery(
+  public FeatureQuery requestToFeaturesQuery(
       OgcApi api,
       FeatureTypeConfigurationOgcApi collectionData,
       EpsgCrs defaultCrs,
       Map<String, Integer> coordinatePrecision,
-      int minimumPageSize,
       int defaultPageSize,
-      int maxPageSize,
       Map<String, String> parameters,
       List<OgcApiQueryParameter> allowedParameters) {
     final OgcApiDataV2 apiData = api.getData();
@@ -168,119 +172,114 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     final Map<String, String> queryableTypes = getQueryableTypes(apiData, collectionData);
 
     Set<String> filterParameters = ImmutableSet.of();
+    Map<String, String> effectiveParameters = parameters;
     for (OgcApiQueryParameter parameter : allowedParameters) {
       filterParameters =
           parameter.getFilterParameters(filterParameters, apiData, collectionData.getId());
-      parameters = parameter.transformParameters(collectionData, parameters, apiData);
+      effectiveParameters =
+          parameter.transformParameters(collectionData, effectiveParameters, apiData);
     }
 
     final Map<String, String> filters =
-        getFiltersFromQuery(parameters, filterableFields, filterParameters);
+        getFiltersFromQuery(effectiveParameters, filterableFields, filterParameters);
 
     boolean hitsOnly =
-        parameters.containsKey("resultType")
-            && parameters.get("resultType").toLowerCase().equals("hits");
+        parameters.containsKey(RESULT_TYPE)
+            && HITS.equalsIgnoreCase(effectiveParameters.get(RESULT_TYPE));
 
-    /**
+    /*
      * NOTE: OGC API and ldproxy do not use the HTTP "Range" header for limit/offset for the
-     * following reasons: - We need to support some non-header mechanism anyhow to be able to mint
-     * URIs (links) to pages / partial responses. - A request without a range header cannot return
-     * 206, so there is no way that a server could have a default limit. I.e. any request to a
-     * collection without a range header would have to return all features and it is important to
-     * enable servers to have a default page limit. - There is no real need for multipart responses,
-     * but servers would have to support requests that lead to 206 multipart responses. - Developers
-     * do not seem to expect such an approach and since it uses a custom range unit anyhow (i.e. not
-     * bytes), it is unclear how much value it brings. Probably consistent with this: I have not
-     * seen much of range headers in Web APIs for paging.
+     * following reasons:
+     *
+     * <p>- We need to support some non-header mechanism anyhow to be able to mint URIs (links) to
+     * pages / partial responses.
+     *
+     * <p>- A request without a range header cannot return 206, so there is no way that a server
+     * could have a default limit. I.e. any request to a collection without a range header would
+     * have to return all features and it is important to enable servers to have a default page
+     * limit.
+     *
+     * <p>- There is no real need for multipart responses, but servers would have to support
+     * requests that lead to 206 multipart responses.
+     *
+     * <p>- Developers do not seem to expect such an approach and since it uses a custom range unit
+     * anyhow (i.e. not bytes), it is unclear how much value it brings. Probably consistent with
+     * this: I have not seen much of range headers in Web APIs for paging.
      */
-    // TODO detailed checks should no longer be necessary
     final int limit =
-        parseLimit(minimumPageSize, defaultPageSize, maxPageSize, parameters.get("limit"));
-    final int offset = parseOffset(parameters.get("offset"));
-
-    final String collectionId = collectionData.getId();
-    String featureTypeId =
-        apiData
-            .getCollections()
-            .get(collectionId)
-            .getExtension(FeaturesCoreConfiguration.class)
-            .map(cfg -> cfg.getFeatureType().orElse(collectionId))
-            .orElse(collectionId);
+        effectiveParameters.containsKey(LIMIT)
+            ? Integer.parseInt(effectiveParameters.get(LIMIT))
+            : defaultPageSize;
+    final int offset =
+        effectiveParameters.containsKey(OFFSET)
+            ? Integer.parseInt(effectiveParameters.get(OFFSET))
+            : 0;
 
     final ImmutableFeatureQuery.Builder queryBuilder =
         ImmutableFeatureQuery.builder()
-            .type(featureTypeId)
+            .type(getFeatureTypeId(collectionData))
             .crs(defaultCrs)
             .limit(limit)
             .offset(offset)
             .hitsOnly(hitsOnly);
 
-    for (OgcApiQueryParameter parameter : allowedParameters) {
-      if (parameter instanceof FeatureQueryTransformer) {
-        ((FeatureQueryTransformer) parameter).transformQuery(queryBuilder, parameters, apiData);
-        ((FeatureQueryTransformer) parameter)
-            .transformQuery(queryBuilder, parameters, apiData, collectionData);
-      }
-    }
+    processParameters(collectionData, parameters, allowedParameters, apiData, queryBuilder);
 
+    processFilters(
+        api,
+        collectionData,
+        parameters,
+        filterableFields,
+        queryableTypes,
+        filterParameters,
+        filters,
+        queryBuilder);
+
+    return processCoordinatePrecision(queryBuilder, coordinatePrecision).build();
+  }
+
+  private void processFilters(
+      OgcApi api,
+      FeatureTypeConfigurationOgcApi collectionData,
+      Map<String, String> parameters,
+      Map<String, String> filterableFields,
+      Map<String, String> queryableTypes,
+      Set<String> filterParameters,
+      Map<String, String> filters,
+      ImmutableFeatureQuery.Builder queryBuilder) {
     if (!filters.isEmpty()) {
-      Cql.Format cqlFormat = Cql.Format.TEXT;
-      EpsgCrs crs = OgcCrs.CRS84;
-      if (parameters.containsKey("filter-lang")
-          && "cql2-json".equals(parameters.get("filter-lang"))) {
-        cqlFormat = Cql.Format.JSON;
-      }
-      if (parameters.containsKey("filter-crs")) {
-        crs = EpsgCrs.fromString(parameters.get("filter-crs"));
-      }
-      QueryValidationInputCoordinates queryValidationInput;
-      if (apiData
-          .getExtension(FeaturesCoreConfiguration.class, collectionId)
-          .map(FeaturesCoreConfiguration::getValidateCoordinatesInQueries)
-          .orElse(false)) {
-        queryValidationInput =
-            new ImmutableQueryValidationInputCoordinates.Builder()
-                .enabled(true)
-                .bboxCrs(
-                    parameters.containsKey("bbox-crs")
-                        ? EpsgCrs.fromString(parameters.get("bbox-crs"))
-                        : OgcCrs.CRS84)
-                .filterCrs(crs)
-                .nativeCrs(
-                    providers
-                        .getFeatureProvider(apiData, collectionData)
-                        .map(FeatureProvider2::getData)
-                        .flatMap(FeatureProviderDataV2::getNativeCrs))
-                .build();
-      } else {
-        queryValidationInput = QueryValidationInputCoordinates.none();
-      }
-      // We are using the spatial extent of the data to avoid
-      // coordinate transformation errors when a bbox parameter
-      // is completely outside of the domain of a projected CRS
-      // in which the data is stored. Using the minimal bounding
-      // box can lead to surprising results in particular with
-      // point features and queries in other CRSs where features
-      // on the boundary of the spatial extent are suddenly no
-      // longer included in the result. For the purpose of the
-      // filter, we do not need the minimal bounding rectangle,
-      // but we can use a small buffer to avoid those issues.
-      EpsgCrs bboxCrs =
-          parameters.containsKey("bbox-crs")
-              ? EpsgCrs.fromString(parameters.get("bbox-crs"))
+      OgcApiDataV2 apiData = api.getData();
+
+      Format cqlFormat =
+          parameters.containsKey(FILTER_LANG) && CQL2_JSON.equals(parameters.get(FILTER_LANG))
+              ? Format.JSON
+              : Format.TEXT;
+
+      EpsgCrs crs =
+          parameters.containsKey(FILTER_CRS)
+              ? EpsgCrs.fromString(parameters.get(FILTER_CRS))
               : OgcCrs.CRS84;
-      double buffer = getBuffer(bboxCrs);
-      Optional<BoundingBox> spatialExtentForBboxParameter =
-          api.getSpatialExtent(collectionId, bboxCrs)
-              .map(
-                  bbox ->
-                      new ImmutableBoundingBox.Builder()
-                          .from(bbox)
-                          .xmin(bbox.getXmin() - buffer)
-                          .xmax(bbox.getXmax() + buffer)
-                          .ymin(bbox.getYmin() - buffer)
-                          .ymax(bbox.getYmax() + buffer)
-                          .build());
+
+      QueryValidationInputCoordinates queryValidationInput =
+          apiData
+                  .getExtension(FeaturesCoreConfiguration.class, collectionData.getId())
+                  .map(FeaturesCoreConfiguration::getValidateCoordinatesInQueries)
+                  .orElse(false)
+              ? new ImmutableQueryValidationInputCoordinates.Builder()
+                  .enabled(true)
+                  .bboxCrs(
+                      parameters.containsKey(BBOX_CRS)
+                          ? EpsgCrs.fromString(parameters.get(BBOX_CRS))
+                          : OgcCrs.CRS84)
+                  .filterCrs(crs)
+                  .nativeCrs(
+                      providers
+                          .getFeatureProvider(apiData, collectionData)
+                          .map(FeatureProvider2::getData)
+                          .flatMap(FeatureProviderDataV2::getNativeCrs))
+                  .build()
+              : QueryValidationInputCoordinates.none();
+
       Optional<Cql2Expression> cql =
           getCQLFromFilters(
               filters,
@@ -290,7 +289,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
               cqlFormat,
               crs,
               queryValidationInput,
-              spatialExtentForBboxParameter);
+              getBoundingBox(api, parameters, collectionData.getId()));
 
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug("Filter: {}", cql);
@@ -298,42 +297,77 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
       queryBuilder.filter(cql);
     }
-
-    return processCoordinatePrecision(queryBuilder, coordinatePrecision).build();
   }
 
-  private double getBuffer(EpsgCrs crs) {
-    List<Unit<?>> units = crsInfo.getAxisUnits(crs);
-    if (!units.isEmpty()) {
-      return Units.METRE.equals(units.get(0)) ? BUFFER_METRE : BUFFER_DEGREE;
+  private Optional<BoundingBox> getBoundingBox(
+      OgcApi api, Map<String, String> parameters, String collectionId) {
+    // We are using the spatial extent of the data to avoid
+    // coordinate transformation errors when a bbox parameter
+    // is completely outside of the domain of a projected CRS
+    // in which the data is stored. Using the minimal bounding
+    // box can lead to surprising results in particular with
+    // point features and queries in other CRSs where features
+    // on the boundary of the spatial extent are suddenly no
+    // longer included in the result. For the purpose of the
+    // filter, we do not need the minimal bounding rectangle,
+    // but we can use a small buffer to avoid those issues.
+    EpsgCrs bboxCrs =
+        parameters.containsKey(BBOX_CRS)
+            ? EpsgCrs.fromString(parameters.get(BBOX_CRS))
+            : OgcCrs.CRS84;
+    List<Unit<?>> units = crsInfo.getAxisUnits(bboxCrs);
+    double buffer =
+        !units.isEmpty() && Units.DEGREE.equals(units.get(0)) ? BUFFER_DEGREE : BUFFER_METRE;
+    return api.getSpatialExtent(collectionId, bboxCrs)
+        .map(
+            bbox ->
+                new ImmutableBoundingBox.Builder()
+                    .from(bbox)
+                    .xmin(bbox.getXmin() - buffer)
+                    .xmax(bbox.getXmax() + buffer)
+                    .ymin(bbox.getYmin() - buffer)
+                    .ymax(bbox.getYmax() + buffer)
+                    .build());
+  }
+
+  private String getFeatureTypeId(FeatureTypeConfigurationOgcApi collection) {
+    return collection
+        .getExtension(FeaturesCoreConfiguration.class)
+        .flatMap(FeaturesCoreConfiguration::getFeatureType)
+        .orElse(collection.getId());
+  }
+
+  private void processParameters(
+      FeatureTypeConfigurationOgcApi collectionData,
+      Map<String, String> parameters,
+      List<OgcApiQueryParameter> allowedParameters,
+      OgcApiDataV2 apiData,
+      ImmutableFeatureQuery.Builder queryBuilder) {
+    for (OgcApiQueryParameter parameter : allowedParameters) {
+      if (parameter instanceof FeatureQueryTransformer) {
+        ((FeatureQueryTransformer) parameter).transformQuery(queryBuilder, parameters, apiData);
+        ((FeatureQueryTransformer) parameter)
+            .transformQuery(queryBuilder, parameters, apiData, collectionData);
+      }
     }
-    // fallback to meters
-    return BUFFER_METRE;
   }
 
-  public FeatureQuery requestToBareFeatureQuery(
+  @Override
+  public FeatureQuery requestToBareFeaturesQuery(
       OgcApiDataV2 apiData,
       String featureTypeId,
-      EpsgCrs defaultCrs,
+      EpsgCrs crs,
       Map<String, Integer> coordinatePrecision,
-      int minimumPageSize,
       int defaultPageSize,
-      int maxPageSize,
       Map<String, String> parameters,
       List<OgcApiQueryParameter> allowedParameters) {
 
-    // TODO detailed checks should no longer be necessary
     final int limit =
-        parseLimit(minimumPageSize, defaultPageSize, maxPageSize, parameters.get("limit"));
-    final int offset = parseOffset(parameters.get("offset"));
-
+        parameters.containsKey(LIMIT) ? Integer.parseInt(parameters.get(LIMIT)) : defaultPageSize;
+    final int offset =
+        parameters.containsKey(OFFSET) ? Integer.parseInt(parameters.get(OFFSET)) : 0;
     final ImmutableFeatureQuery.Builder queryBuilder =
-        ImmutableFeatureQuery.builder()
-            .type(featureTypeId)
-            .crs(defaultCrs)
-            .limit(limit)
-            .offset(offset)
-            .hitsOnly(false);
+        ImmutableFeatureQuery.builder().type(featureTypeId).crs(crs).limit(limit).offset(offset);
 
     for (OgcApiQueryParameter parameter : allowedParameters) {
       if (parameter instanceof FeatureQueryTransformer) {
@@ -360,6 +394,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         .flatMap(SchemaBase::getPrimaryGeometry)
         .ifPresent(geometry -> queryables.put(PARAMETER_BBOX, geometry.getFullPathAsString()));
 
+    //noinspection ConstantConditions
     featureSchema
         .flatMap(SchemaBase::getPrimaryInterval)
         .ifPresentOrElse(
@@ -385,7 +420,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
   public Map<String, String> getQueryableTypes(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData) {
 
-    ImmutableMap.Builder<String, String> builder = ImmutableMap.<String, String>builder();
+    ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
 
     Optional<FeatureSchema> featureSchema = providers.getFeatureSchema(apiData, collectionData);
     if (featureSchema.isPresent()) {
@@ -476,76 +511,26 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         filters.entrySet().stream()
             .map(
                 filter -> {
-                  if (filter.getKey().equals(PARAMETER_BBOX)) {
-                    if (filterableFields
-                        .get(filter.getKey())
-                        .equals(FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE)) return null;
-
-                    Cql2Expression cqlPredicate =
-                        bboxToCql(filterableFields.get(filter.getKey()), filter.getValue(), bbox);
-
-                    if (queryValidationInput.getEnabled()) {
-                      queryValidationInput
-                          .getBboxCrs()
-                          .ifPresent(
-                              bboxCrs ->
-                                  cql.checkCoordinates(
-                                      cqlPredicate,
-                                      crsTransformerFactory,
-                                      crsInfo,
-                                      bboxCrs,
-                                      queryValidationInput.getNativeCrs().orElse(null)));
-                    }
-
-                    return cqlPredicate;
+                  if (PARAMETER_BBOX.equals(filter.getKey())) {
+                    return processBbox(
+                        filterableFields, queryValidationInput, bbox, filter.getValue());
                   }
-                  if (filter.getKey().equals(PARAMETER_DATETIME)) {
-                    if (filterableFields
-                        .get(filter.getKey())
-                        .equals(FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE)) return null;
-                    return timeToCql(filterableFields.get(filter.getKey()), filter.getValue())
-                        .orElse(null);
+                  if (PARAMETER_DATETIME.equals(filter.getKey())) {
+                    return processDatetime(filterableFields, filter.getValue());
                   }
                   if (filterParameters.contains(filter.getKey())) {
-                    Cql2Expression cqlPredicate;
-                    try {
-                      cqlPredicate = cql.read(filter.getValue(), cqlFormat, crs);
-                    } catch (Throwable e) {
-                      throw new IllegalArgumentException(
-                          String.format("The parameter '%s' is invalid", filter.getKey()), e);
-                    }
-
-                    List<String> invalidProperties =
-                        cql.findInvalidProperties(cqlPredicate, filterableFields.keySet());
-
-                    if (!invalidProperties.isEmpty()) {
-                      throw new IllegalArgumentException(
-                          String.format(
-                              "The parameter '%s' is invalid. Unknown or forbidden properties used: %s.",
-                              filter.getKey(), String.join(", ", invalidProperties)));
-                    }
-                    // will throw an error
-                    cql.checkTypes(cqlPredicate, queryableTypes);
-
-                    if (queryValidationInput.getEnabled()) {
-                      queryValidationInput
-                          .getFilterCrs()
-                          .ifPresent(
-                              filterCrs ->
-                                  cql.checkCoordinates(
-                                      cqlPredicate,
-                                      crsTransformerFactory,
-                                      crsInfo,
-                                      filterCrs,
-                                      queryValidationInput.getNativeCrs().orElse(null)));
-                    }
-
-                    return cqlPredicate;
+                    return processFilterParameter(
+                        filterableFields,
+                        queryableTypes,
+                        cqlFormat,
+                        crs,
+                        queryValidationInput,
+                        filter);
                   }
-                  if (filter.getValue().contains("*")) {
+                  if (filter.getValue().contains(ASTERISK)) {
                     return Like.of(
                         filterableFields.get(filter.getKey()),
-                        ScalarLiteral.of(filter.getValue().replace("*", "%")));
+                        ScalarLiteral.of(filter.getValue().replace(ASTERISK, PERCENT)));
                   }
 
                   return Eq.of(
@@ -559,6 +544,84 @@ public class FeaturesQueryImpl implements FeaturesQuery {
         : Optional.of(predicates.size() == 1 ? predicates.get(0) : And.of(predicates));
   }
 
+  private Cql2Expression processFilterParameter(
+      Map<String, String> filterableFields,
+      Map<String, String> queryableTypes,
+      Format cqlFormat,
+      EpsgCrs crs,
+      QueryValidationInputCoordinates queryValidationInput,
+      Map.Entry<String, String> filter) {
+    Cql2Expression cqlPredicate;
+    try {
+      cqlPredicate = cql.read(filter.getValue(), cqlFormat, crs);
+    } catch (Throwable e) {
+      throw new IllegalArgumentException(
+          String.format("The parameter '%s' is invalid", filter.getKey()), e);
+    }
+
+    List<String> invalidProperties =
+        cql.findInvalidProperties(cqlPredicate, filterableFields.keySet());
+
+    if (!invalidProperties.isEmpty()) {
+      throw new IllegalArgumentException(
+          String.format(
+              "The parameter '%s' is invalid. Unknown or forbidden properties used: %s.",
+              filter.getKey(), String.join(", ", invalidProperties)));
+    }
+    // will throw an error
+    cql.checkTypes(cqlPredicate, queryableTypes);
+
+    if (queryValidationInput.getEnabled()) {
+      queryValidationInput
+          .getFilterCrs()
+          .ifPresent(
+              filterCrs ->
+                  cql.checkCoordinates(
+                      cqlPredicate,
+                      crsTransformerFactory,
+                      crsInfo,
+                      filterCrs,
+                      queryValidationInput.getNativeCrs().orElse(null)));
+    }
+
+    return cqlPredicate;
+  }
+
+  private Cql2Expression processDatetime(Map<String, String> filterableFields, String value) {
+    if (FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE.equals(
+        filterableFields.get(PARAMETER_DATETIME))) {
+      return null;
+    }
+    return timeToCql(filterableFields.get(PARAMETER_DATETIME), value).orElse(null);
+  }
+
+  private Cql2Expression processBbox(
+      Map<String, String> filterableFields,
+      QueryValidationInputCoordinates queryValidationInput,
+      Optional<BoundingBox> bbox,
+      String value) {
+    if (FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE.equals(filterableFields.get(PARAMETER_BBOX))) {
+      return null;
+    }
+
+    Cql2Expression cqlPredicate = bboxToCql(filterableFields.get(PARAMETER_BBOX), value, bbox);
+
+    if (queryValidationInput.getEnabled()) {
+      queryValidationInput
+          .getBboxCrs()
+          .ifPresent(
+              bboxCrs ->
+                  cql.checkCoordinates(
+                      cqlPredicate,
+                      crsTransformerFactory,
+                      crsInfo,
+                      bboxCrs,
+                      queryValidationInput.getNativeCrs().orElse(null)));
+    }
+
+    return cqlPredicate;
+  }
+
   private Cql2Expression bboxToCql(
       String geometryField, String bboxValue, Optional<BoundingBox> optionalSpatialExtent) {
     List<String> values = ARRAY_SPLITTER.splitToList(bboxValue);
@@ -566,10 +629,10 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     if (values.size() == 5) {
       try {
-        sourceCrs = EpsgCrs.fromString(values.get(4));
-        values = values.subList(0, 4);
+        sourceCrs = EpsgCrs.fromString(values.get(values.size() - 1));
+        values = values.subList(0, values.size() - 1);
       } catch (Throwable e) {
-        // continue, fifth value is not from bbox-crs, as that is already validated in
+        // ignore, the value is not from bbox-crs, as that is already validated in
         // OgcApiParameterCrs
       }
     }
@@ -581,16 +644,17 @@ public class FeaturesQueryImpl implements FeaturesQuery {
               values.size()));
     }
 
-    List<Double> bboxCoordinates;
-    try {
-      bboxCoordinates = values.stream().map(Double::valueOf).collect(Collectors.toList());
-    } catch (NumberFormatException e) {
-      throw new IllegalArgumentException(
-          String.format(
-              "The parameter 'bbox' is invalid: the coordinates are not valid numbers '%s'",
-              getBboxAsString(values)));
-    }
+    List<Double> bboxCoordinates =
+        values.stream().map(Double::valueOf).collect(Collectors.toList());
 
+    return getCql2Expression(geometryField, optionalSpatialExtent, sourceCrs, bboxCoordinates);
+  }
+
+  private Cql2Expression getCql2Expression(
+      String geometryField,
+      Optional<BoundingBox> optionalSpatialExtent,
+      EpsgCrs sourceCrs,
+      List<Double> bboxCoordinates) {
     Envelope envelope =
         Envelope.of(
             bboxCoordinates.get(0),
@@ -630,11 +694,6 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     return SIntersects.of(Property.of(geometryField), SpatialLiteral.of(envelope));
   }
 
-  private String getBboxAsString(List<String> bboxArray) {
-    return String.format(
-        "%s,%s,%s,%s", bboxArray.get(0), bboxArray.get(1), bboxArray.get(2), bboxArray.get(3));
-  }
-
   private Optional<Cql2Expression> timeToCql(String timeField, String timeValue) {
     // valid values: timestamp or time interval;
     // this includes open intervals indicated by ".." (see ISO 8601-2);
@@ -667,94 +726,15 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     return Optional.of(TIntersects.of(Property.of(timeField), temporalLiteral));
   }
 
-  private Optional<Cql2Expression> qToCql(List<String> qFields, String qValue) {
-    // predicate that ORs LIKE operators of all values;
-    List<String> qValues = Splitter.on(",").trimResults().splitToList(qValue);
-
-    return qFields.size() > 1 || qValues.size() > 1
-        ? Optional.of(
-            Or.of(
-                qFields.stream()
-                    .map(
-                        qField ->
-                            qValues.stream()
-                                .map(word -> Like.of(qField, ScalarLiteral.of("%" + word + "%")))
-                                .collect(Collectors.toUnmodifiableList()))
-                    .flatMap(Collection::stream)
-                    .collect(Collectors.toUnmodifiableList())))
-        : Optional.of(Like.of(qFields.get(0), ScalarLiteral.of("%" + qValues.get(0) + "%")));
-  }
-
-  private int parseLimit(
-      int minimumPageSize, int defaultPageSize, int maxPageSize, String paramLimit) {
-    int limit = defaultPageSize;
-    if (paramLimit != null && !paramLimit.isEmpty()) {
-      try {
-        limit = Integer.parseInt(paramLimit);
-      } catch (NumberFormatException ex) {
-        throw new IllegalArgumentException(
-            "Invalid value for query parameter 'limit'. The value must be an integer. Found: "
-                + paramLimit);
-      }
-      if (limit < Integer.max(minimumPageSize, 1)) {
-        throw new IllegalArgumentException(
-            "Invalid value for query parameter 'limit'. The value must be at least "
-                + minimumPageSize
-                + ". Found: "
-                + paramLimit);
-      }
-      if (limit > maxPageSize) {
-        throw new IllegalArgumentException(
-            "Invalid value for query parameter 'limit'. The value must be less than "
-                + maxPageSize
-                + ". Found: "
-                + paramLimit);
-      }
-    }
-    return limit;
-  }
-
-  private int parseOffset(String paramOffset) {
-    int offset = 0;
-    if (paramOffset != null && !paramOffset.isEmpty()) {
-      try {
-        offset = Integer.parseInt(paramOffset);
-      } catch (NumberFormatException ex) {
-        throw new IllegalArgumentException(
-            "Invalid value for query parameter 'offset'. The value must be a non-negative integer. Found: "
-                + paramOffset);
-      }
-      if (offset < 0) {
-        throw new IllegalArgumentException(
-            "Invalid value for query parameter 'offset'. The value must be a non-negative integer. Found: "
-                + paramOffset);
-      }
-    }
-    return offset;
-  }
-
   private ImmutableFeatureQuery.Builder processCoordinatePrecision(
       ImmutableFeatureQuery.Builder queryBuilder, Map<String, Integer> coordinatePrecision) {
     // check, if we need to add a precision value; for this we need the target CRS,
     // so we need to build the query to get the CRS
     ImmutableFeatureQuery query = queryBuilder.build();
     if (!coordinatePrecision.isEmpty() && query.getCrs().isPresent()) {
-      Integer precision;
-      List<Unit<?>> units = crsInfo.getAxisUnits(query.getCrs().get());
       ImmutableList.Builder<Integer> precisionListBuilder = new ImmutableList.Builder<>();
-      for (Unit<?> unit : units) {
-        if (unit.equals(Units.METRE)) {
-          precision = coordinatePrecision.get("meter");
-          if (Objects.isNull(precision)) precision = coordinatePrecision.get("metre");
-        } else if (unit.equals(Units.DEGREE)) {
-          precision = coordinatePrecision.get("degree");
-        } else {
-          LOGGER.debug(
-              "Coordinate precision could not be set, unrecognised unit found: '{}'.",
-              unit.getName());
-          return queryBuilder;
-        }
-        precisionListBuilder.add(precision);
+      for (Unit<?> unit : crsInfo.getAxisUnits(query.getCrs().get())) {
+        processUnit(precisionListBuilder, coordinatePrecision, unit);
       }
       List<Integer> precisionList = precisionListBuilder.build();
       if (!precisionList.isEmpty()) {
@@ -762,5 +742,28 @@ public class FeaturesQueryImpl implements FeaturesQuery {
       }
     }
     return queryBuilder;
+  }
+
+  private void processUnit(
+      ImmutableList.Builder<Integer> precisionListBuilder,
+      Map<String, Integer> coordinatePrecision,
+      Unit<?> unit) {
+    Integer precision;
+    if (unit.equals(Units.METRE)) {
+      precision = coordinatePrecision.get(METER);
+      if (Objects.isNull(precision)) {
+        precision = coordinatePrecision.get(METRE);
+      }
+    } else if (unit.equals(Units.DEGREE)) {
+      precision = coordinatePrecision.get(DEGREE);
+    } else {
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug(
+            "Coordinate precision, unrecognised unit found: '{}'. Using degree as fallback unit.",
+            unit.getName());
+      }
+      precision = coordinatePrecision.get(DEGREE);
+    }
+    precisionListBuilder.add(precision);
   }
 }

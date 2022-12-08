@@ -19,7 +19,6 @@ import java.util.Optional;
 import java.util.Set;
 import javax.ws.rs.core.MediaType;
 
-// TODO
 public interface FeatureProcess extends ProcessExtension {
   /**
    * @return a brief summary of the execute

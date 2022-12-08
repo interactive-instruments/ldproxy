@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("PMD.GodClass")
 public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
 
   protected final String label;
@@ -128,6 +129,7 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
   }
 
   @Override
+  @SuppressWarnings("PMD.CyclomaticComplexity")
   protected Schema<?> getSchemaForGeometry(FeatureSchema schema) {
     Schema<?> oapiSchema;
     switch (schema.getGeometryType().orElse(SimpleFeatureGeometry.ANY)) {
@@ -135,48 +137,53 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
         oapiSchema =
             new Schema<>()
                 .$ref(
-                    "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/pointGeoJSON");
+                    "https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/pointGeoJSON.yaml");
         break;
       case MULTI_POINT:
         oapiSchema =
             new Schema<>()
                 .$ref(
-                    "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/multipointGeoJSON");
+                    "https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/multipointGeoJSON.yaml");
         break;
       case LINE_STRING:
         oapiSchema =
             new Schema<>()
                 .$ref(
-                    "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/linestringGeoJSON");
+                    "https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/linestringGeoJSON.yaml");
         break;
       case MULTI_LINE_STRING:
         oapiSchema =
             new Schema<>()
                 .$ref(
-                    "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/multilinestringGeoJSON");
+                    "https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/multilinestringGeoJSON");
         break;
       case POLYGON:
         oapiSchema =
             new Schema<>()
                 .$ref(
-                    "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/polygonGeoJSON");
+                    "https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/polygonGeoJSON");
         break;
       case MULTI_POLYGON:
         oapiSchema =
             new Schema<>()
                 .$ref(
-                    "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/multipolygonGeoJSON");
+                    "https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/multipolygonGeoJSON");
+        break;
+      case NONE:
+        oapiSchema = new Schema<>().nullable(true);
         break;
       case GEOMETRY_COLLECTION:
+        oapiSchema =
+            new Schema<>()
+                .$ref(
+                    "https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/geometrycollectionGeoJSON");
+        break;
       case ANY:
       default:
         oapiSchema =
             new Schema<>()
                 .$ref(
-                    "https://raw.githubusercontent.com/opengeospatial/ogcapi-features/master/core/openapi/ogcapi-features-1.yaml#/components/schemas/geometryGeoJSON");
-        break;
-      case NONE:
-        oapiSchema = null;
+                    "https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/schemas/geometryGeoJSON");
         break;
     }
     return oapiSchema;
@@ -214,40 +221,8 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
       result = withRequired(result);
     }
 
-    if (!constraints.getEnumValues().isEmpty()) {
-      // if enum is specified in the configuration, it wins over codelist
-      boolean isString =
-          property.isArray()
-              ? property.getValueType().orElse(Type.UNKNOWN) != Type.INTEGER
-              : property.getType() != Type.INTEGER;
-      if (isString) {
-        ((Schema<String>) result).setEnum(constraints.getEnumValues());
-      } else {
-        ((Schema<Integer>) result)
-            .setEnum(
-                constraints.getEnumValues().stream()
-                    .map(Integer::parseInt)
-                    .collect(Collectors.toList()));
-      }
-    } else if (constraints.getCodelist().isPresent()) {
-      Optional<Codelist> codelist =
-          codelists.stream()
-              .filter(cl -> cl.getId().equals(constraints.getCodelist().get()))
-              .findAny();
-      if (codelist.isPresent() && !codelist.get().getData().getFallback().isPresent()) {
-        boolean isString =
-            property.isArray()
-                ? property.getValueType().orElse(Type.UNKNOWN) != Type.INTEGER
-                : property.getType() != Type.INTEGER;
-        Set<String> values = codelist.get().getData().getEntries().keySet();
-        if (isString) {
-          ((Schema<String>) result).setEnum(new ArrayList<>(values));
-        } else {
-          ((Schema<Integer>) result)
-              .setEnum(values.stream().map(Integer::parseInt).collect(Collectors.toList()));
-        }
-      }
-    }
+    processEnumeratedValues(constraints, property, codelists, result);
+
     if (constraints.getRegex().isPresent()) {
       result.setPattern(constraints.getRegex().get());
     }
@@ -259,6 +234,52 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
     }
 
     return oapiSchema;
+  }
+
+  @SuppressWarnings("PMD.ConfusingTernary")
+  private void processEnumeratedValues(
+      SchemaConstraints constraints,
+      FeatureSchema property,
+      List<Codelist> codelists,
+      Schema<?> result) {
+    // if enum is specified in the configuration, it wins over codelist
+    if (!constraints.getEnumValues().isEmpty()) {
+      processEnum(constraints.getEnumValues(), property, result);
+    } else if (constraints.getCodelist().isPresent()) {
+      processCodelist(constraints.getCodelist().get(), property, codelists, result);
+    }
+  }
+
+  private void processCodelist(
+      String codelistId, FeatureSchema property, List<Codelist> codelists, Schema<?> result) {
+    Optional<Codelist> codelist =
+        codelists.stream().filter(cl -> cl.getId().equals(codelistId)).findAny();
+    if (codelist.isPresent() && codelist.get().getData().getFallback().isEmpty()) {
+      boolean isString =
+          property.isArray()
+              ? property.getValueType().orElse(Type.UNKNOWN) != Type.INTEGER
+              : property.getType() != Type.INTEGER;
+      Set<String> values = codelist.get().getData().getEntries().keySet();
+      if (isString) {
+        ((Schema<String>) result).setEnum(new ArrayList<>(values));
+      } else {
+        ((Schema<Integer>) result)
+            .setEnum(values.stream().map(Integer::parseInt).collect(Collectors.toList()));
+      }
+    }
+  }
+
+  private void processEnum(List<String> enumValues, FeatureSchema property, Schema<?> result) {
+    boolean isString =
+        property.isArray()
+            ? property.getValueType().orElse(Type.UNKNOWN) != Type.INTEGER
+            : property.getType() != Type.INTEGER;
+    if (isString) {
+      ((Schema<String>) result).setEnum(enumValues);
+    } else {
+      ((Schema<Integer>) result)
+          .setEnum(enumValues.stream().map(Integer::parseInt).collect(Collectors.toList()));
+    }
   }
 
   @Override

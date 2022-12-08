@@ -10,10 +10,11 @@ package de.ii.ogcapi.features.core.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesType;
-import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.Link;
@@ -49,9 +50,12 @@ public class CollectionPropertiesFormatJson implements CollectionPropertiesForma
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
     return apiData
             .getExtension(getBuildingBlockConfigurationType())
-            .map(cfg -> cfg.isEnabled())
+            .map(ExtensionConfiguration::isEnabled)
             .orElse(false)
-        && apiData.getExtension(JsonConfiguration.class).map(cfg -> cfg.isEnabled()).orElse(true);
+        && apiData
+            .getExtension(JsonConfiguration.class)
+            .map(ExtensionConfiguration::isEnabled)
+            .orElse(true);
   }
 
   @Override
@@ -60,13 +64,13 @@ public class CollectionPropertiesFormatJson implements CollectionPropertiesForma
             .getCollections()
             .get(collectionId)
             .getExtension(getBuildingBlockConfigurationType())
-            .map(cfg -> cfg.isEnabled())
+            .map(ExtensionConfiguration::isEnabled)
             .orElse(false)
         && apiData
             .getCollections()
             .get(collectionId)
             .getExtension(JsonConfiguration.class)
-            .map(cfg -> cfg.isEnabled())
+            .map(ExtensionConfiguration::isEnabled)
             .orElse(true);
   }
 
@@ -75,15 +79,14 @@ public class CollectionPropertiesFormatJson implements CollectionPropertiesForma
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(new ObjectSchema())
         .schemaRef("#/components/schemas/anyObject")
-        // TODO with OpenAPI 3.1 change to a link to a property schema
-        // .schemaRef("https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v3.0/schema.json#/definitions/Schema")
+        // with OpenAPI 3.1 change to a link to a property schema
         .ogcApiMediaType(MEDIA_TYPE)
         .build();
   }
 
   @Override
   public Object getEntity(
-      JsonSchemaObject schema,
+      JsonSchemaAbstractDocument schema,
       CollectionPropertiesType type,
       List<Link> links,
       String collectionId,

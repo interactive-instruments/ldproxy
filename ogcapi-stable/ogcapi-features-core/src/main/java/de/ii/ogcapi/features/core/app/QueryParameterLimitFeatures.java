@@ -31,20 +31,30 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn TODO
- * @langDe TODO
+ * @langEn The optional `limit` parameter limits the number of items that are presented in the
+ *     response document. Only items are counted that are on the first level of the collection in
+ *     the response document. Nested objects contained within the explicitly requested items are not
+ *     counted.
+ * @langDe Der optionale Parameter `limit` begrenzt die Anzahl der im Antwortdokument dargestellten
+ *     Elemente, wobei nur die Elemente gezählt werden, die sich auf der ersten Ebene der Sammlung
+ *     im Antwortdokument befinden. Verschachtelte Objekte, die innerhalb der explizit angeforderten
+ *     Elemente enthalten sind, werden nicht gezählt.
  * @name limit
+ * @default 0
  * @endpoints Features
  */
 @Singleton
 @AutoBind
 public class QueryParameterLimitFeatures extends ApiExtensionCache implements OgcApiQueryParameter {
 
+  private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap;
   private final SchemaValidator schemaValidator;
 
   @Inject
   QueryParameterLimitFeatures(SchemaValidator schemaValidator) {
+    super();
     this.schemaValidator = schemaValidator;
+    this.schemaMap = new ConcurrentHashMap<>();
   }
 
   @Override
@@ -71,16 +81,15 @@ public class QueryParameterLimitFeatures extends ApiExtensionCache implements Og
         () ->
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
-                && definitionPath.equals("/collections/{collectionId}/items"));
+                && "/collections/{collectionId}/items".equals(definitionPath));
   }
-
-  private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =
-      new ConcurrentHashMap<>();
 
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {
     int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.containsKey(apiHashCode)) {
+      schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    }
     String collectionId = "*";
     if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
       Schema<?> schema = new IntegerSchema();
@@ -110,7 +119,9 @@ public class QueryParameterLimitFeatures extends ApiExtensionCache implements Og
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
     int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.containsKey(apiHashCode)) {
+      schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    }
     if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
       Schema<?> schema = new IntegerSchema();
       FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
@@ -149,11 +160,12 @@ public class QueryParameterLimitFeatures extends ApiExtensionCache implements Og
     // special validation to support limit values higher than the maximum,
     // the limit will later be reduced to the maximum
 
-    if (values.size() != 1)
+    if (values.size() != 1) {
       return Optional.of(
           String.format(
               "Parameter value '%s' is invalid for parameter '%s': The must be a single value.",
               values, getName()));
+    }
 
     int limit;
     try {
@@ -171,11 +183,12 @@ public class QueryParameterLimitFeatures extends ApiExtensionCache implements Og
         context
             .getExtension(FeaturesCoreConfiguration.class)
             .map(FeaturesCoreConfiguration::getMinimumPageSize);
-    if (minimumPageSize.isPresent() && limit < minimumPageSize.get())
+    if (minimumPageSize.isPresent() && limit < minimumPageSize.get()) {
       return Optional.of(
           String.format(
               "Parameter value '%s' is invalid for parameter '%s': The value is smaller than the minimum value '%d'.",
               values, getName(), minimumPageSize.get()));
+    }
 
     return Optional.empty();
   }
@@ -193,15 +206,13 @@ public class QueryParameterLimitFeatures extends ApiExtensionCache implements Og
               .getExtension(FeaturesCoreConfiguration.class)
               .map(FeaturesCoreConfiguration::getMaximumPageSize);
       if (maxPageSize.isPresent() && limit > maxPageSize.get()) {
-        parameters =
-            new ImmutableMap.Builder<String, String>()
-                .putAll(
-                    parameters.entrySet().stream()
-                        .filter(entry -> !entry.getKey().equals(getName()))
-                        .collect(
-                            Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue)))
-                .put(getName(), String.valueOf(maxPageSize.get()))
-                .build();
+        return new ImmutableMap.Builder<String, String>()
+            .putAll(
+                parameters.entrySet().stream()
+                    .filter(entry -> !entry.getKey().equals(getName()))
+                    .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue)))
+            .put(getName(), String.valueOf(maxPageSize.get()))
+            .build();
       }
     }
     return parameters;

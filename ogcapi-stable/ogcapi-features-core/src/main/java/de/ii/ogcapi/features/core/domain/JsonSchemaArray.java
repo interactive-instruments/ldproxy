@@ -16,6 +16,16 @@ import org.immutables.value.Value;
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 public abstract class JsonSchemaArray extends JsonSchema {
 
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaArray> FUNNEL =
+      (from, into) -> {
+        JsonSchema.FUNNEL.funnel(from, into);
+        into.putString(from.getType(), StandardCharsets.UTF_8);
+        JsonSchema.FUNNEL.funnel(from.getItems(), into);
+        from.getMinItems().ifPresent(into::putInt);
+        from.getMaxItems().ifPresent(into::putInt);
+      };
+
   public final String getType() {
     return "array";
   }
@@ -27,13 +37,4 @@ public abstract class JsonSchemaArray extends JsonSchema {
   public abstract Optional<Integer> getMaxItems();
 
   public abstract static class Builder extends JsonSchema.Builder {}
-
-  @SuppressWarnings("UnstableApiUsage")
-  public static final Funnel<JsonSchemaArray> FUNNEL =
-      (from, into) -> {
-        into.putString(from.getType(), StandardCharsets.UTF_8);
-        JsonSchema.FUNNEL.funnel(from.getItems(), into);
-        from.getMinItems().ifPresent(val -> into.putInt(val));
-        from.getMaxItems().ifPresent(val -> into.putInt(val));
-      };
 }

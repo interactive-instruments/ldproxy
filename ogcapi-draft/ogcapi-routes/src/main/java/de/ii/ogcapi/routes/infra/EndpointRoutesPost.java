@@ -358,13 +358,11 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
     List<OgcApiQueryParameter> allowedParameters =
         getQueryParameters(extensionRegistry, api.getData(), "/routes", HttpMethods.POST);
     FeatureQuery query =
-        ogcApiFeaturesQuery.requestToBareFeatureQuery(
+        ogcApiFeaturesQuery.requestToBareFeaturesQuery(
             api.getData(),
             featureTypeId,
             defaultCrs,
             coordinatePrecision,
-            1,
-            Integer.MAX_VALUE,
             Integer.MAX_VALUE,
             toFlatMap(uriInfo.getQueryParameters()),
             allowedParameters);

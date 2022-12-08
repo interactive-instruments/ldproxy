@@ -26,8 +26,6 @@ public abstract class AbstractQueryParameterDatetime extends ApiExtensionCache
       "(?:" + LOCAL_DATE_REGEX + "|" + OPEN_REGEX + "|" + NOW_REGEX + ")";
   private static final String LOCAL_DATE_OPEN_INTERVAL_REGEX =
       LOCAL_DATE_OR_OPEN_REGEX + "/" + LOCAL_DATE_OR_OPEN_REGEX;
-  private static final String LOCAL_DATE_CLOSED_INTERVAL_REGEX =
-      LOCAL_DATE_REGEX + "/" + LOCAL_DATE_REGEX;
   private static final String OFFSET_DATE_TIME_REGEX =
       LOCAL_DATE_REGEX
           + "T(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]):(?:[0-5][0-9]|60)(?:\\.[0-9]+)?(Z|(\\+|-)(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]))";
@@ -35,37 +33,27 @@ public abstract class AbstractQueryParameterDatetime extends ApiExtensionCache
       "(?:" + OFFSET_DATE_TIME_REGEX + "|" + OPEN_REGEX + "|" + NOW_REGEX + ")";
   private static final String OFFSET_DATE_TIME_OPEN_INTERVAL_REGEX =
       OFFSET_DATE_TIME_OR_OPEN_REGEX + "/" + OFFSET_DATE_TIME_OR_OPEN_REGEX;
-  private static final String OFFSET_DATE_TIME_CLOSED_INTERVAL_REGEX =
-      OFFSET_DATE_TIME_REGEX + "/" + OFFSET_DATE_TIME_REGEX;
+  public static final String START = "^";
+  public static final String END = "$";
+  public static final String END_START = "$|^";
   private static final String DATETIME_OPEN_REGEX =
-      "^"
+      START
           + LOCAL_DATE_REGEX
-          + "$|^"
+          + END_START
           + NOW_REGEX
-          + "$|^"
+          + END_START
           + LOCAL_DATE_OPEN_INTERVAL_REGEX
-          + "$|^"
+          + END_START
           + OFFSET_DATE_TIME_REGEX
-          + "$|^"
+          + END_START
           + OFFSET_DATE_TIME_OPEN_INTERVAL_REGEX
-          + "$";
-  private static final String DATETIME_CLOSED_REGEX =
-      "^"
-          + LOCAL_DATE_REGEX
-          + "$|^"
-          + NOW_REGEX
-          + "$|^"
-          + LOCAL_DATE_CLOSED_INTERVAL_REGEX
-          + "$|^"
-          + OFFSET_DATE_TIME_REGEX
-          + "$|^"
-          + OFFSET_DATE_TIME_CLOSED_INTERVAL_REGEX
-          + "$";
+          + END;
 
   private final Schema<?> baseSchema;
   protected final SchemaValidator schemaValidator;
 
   public AbstractQueryParameterDatetime(SchemaValidator schemaValidator) {
+    super();
     this.schemaValidator = schemaValidator;
     this.baseSchema = new StringSchema().pattern(DATETIME_OPEN_REGEX);
   }

@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration.Builder;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -24,6 +25,7 @@ import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -82,25 +84,31 @@ import org.immutables.value.Value;
 public interface FeaturesCoreConfiguration
     extends ExtensionConfiguration, PropertyTransformations, CachingConfiguration {
 
+  int MINIMUM_PAGE_SIZE = 1;
+  int DEFAULT_PAGE_SIZE = 10;
+  int MAX_PAGE_SIZE = 10_000;
+  String PARAMETER_BBOX = "bbox";
+  String PARAMETER_DATETIME = "datetime";
+  String DATETIME_INTERVAL_SEPARATOR = "/";
+
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
+  @SuppressWarnings("PMD.FieldNamingConventions")
   enum DefaultCrs {
     CRS84,
     CRS84h
   }
 
   enum ItemType {
-    unknown,
-    feature,
-    record
-  }
+    UNKNOWN,
+    FEATURE,
+    RECORD;
 
-  int MINIMUM_PAGE_SIZE = 1;
-  int DEFAULT_PAGE_SIZE = 10;
-  int MAX_PAGE_SIZE = 10000;
-  String PARAMETER_BBOX = "bbox";
-  String PARAMETER_DATETIME = "datetime";
-  String DATETIME_INTERVAL_SEPARATOR = "/";
+    @Override
+    public String toString() {
+      return super.toString().toLowerCase(Locale.ROOT);
+    }
+  }
 
   /**
    * @langEn Id of the feature provider to use. Normally the feature provider and API ids are the
@@ -182,7 +190,7 @@ public interface FeaturesCoreConfiguration
    *     enthalten ist.
    * @default `false`
    */
-  @Deprecated
+  @Deprecated(since = "?.?.?")
   @Nullable
   Boolean getShowsFeatureSelfLink();
 
@@ -270,10 +278,10 @@ public interface FeaturesCoreConfiguration
       FeaturesCollectionQueryables queryables = getQueryables().get();
       Map<String, String> parameters = new LinkedHashMap<>();
 
-      if (!queryables.getSpatial().isEmpty()) {
-        parameters.put(PARAMETER_BBOX, queryables.getSpatial().get(0));
-      } else {
+      if (queryables.getSpatial().isEmpty()) {
         parameters.put(PARAMETER_BBOX, FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE);
+      } else {
+        parameters.put(PARAMETER_BBOX, queryables.getSpatial().get(0));
       }
 
       if (queryables.getTemporal().size() > 1) {
@@ -284,10 +292,10 @@ public interface FeaturesCoreConfiguration
                 queryables.getTemporal().get(0),
                 DATETIME_INTERVAL_SEPARATOR,
                 queryables.getTemporal().get(1)));
-      } else if (!queryables.getTemporal().isEmpty()) {
-        parameters.put(PARAMETER_DATETIME, queryables.getTemporal().get(0));
-      } else {
+      } else if (queryables.getTemporal().isEmpty()) {
         parameters.put(PARAMETER_DATETIME, FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE);
+      } else {
+        parameters.put(PARAMETER_DATETIME, queryables.getTemporal().get(0));
       }
 
       queryables.getSpatial().forEach(property -> parameters.put(property, property));
@@ -321,20 +329,19 @@ public interface FeaturesCoreConfiguration
   @Value.Auxiliary
   default boolean hasDeprecatedQueryables() {
     return getQueryables().orElse(FeaturesCollectionQueryables.of()).getAll().stream()
-        .anyMatch(key -> key.matches(".*\\[[^\\]]*\\].*"));
+        .anyMatch(key -> key.matches(".*\\[[^]]*].*"));
   }
 
   default List<String> normalizeQueryables(List<String> queryables, String collectionId) {
     return queryables.stream()
         .map(
             queryable -> {
-              if (queryable.matches(".*\\[[^\\]]*\\].*")) {
-                // TODO use info for now, but upgrade to warn after some time
-                LOGGER.info(
+              if (queryable.matches(".*\\[[^]]*].*")) {
+                LOGGER.warn(
                     "The queryable '{}' in collection '{}' uses a deprecated style that includes square brackets for arrays. The brackets have been dropped during hydration.",
                     queryable,
                     collectionId);
-                return queryable.replaceAll("\\[[^\\]]*\\]", "");
+                return queryable.replaceAll("\\[[^]]*]", "");
               }
               return queryable;
             })

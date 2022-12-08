@@ -11,9 +11,9 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.schema.domain.QueriesHandlerSchema;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument.VERSION;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.I18n;
@@ -73,14 +73,14 @@ public class QueriesHandlerSchemaReturnables implements QueriesHandlerSchema {
   }
 
   @Override
-  public JsonSchemaDocument getJsonSchema(
+  public JsonSchemaAbstractDocument getJsonSchema(
       FeatureSchema featureSchema,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
       Optional<String> schemaUri,
       VERSION version,
       String type) {
-    JsonSchemaDocument schema = null;
+    JsonSchemaAbstractDocument schema = null;
 
     if (type.equals(SCHEMA_TYPE_FEATURE)) {
       schema = schemaCache.getSchema(featureSchema, apiData, collectionData, schemaUri, version);

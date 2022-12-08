@@ -14,10 +14,10 @@ import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRef;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRefV7;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaString;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument.VERSION;
 import de.ii.ogcapi.features.core.domain.JsonSchemaBuildingBlocks;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
-import de.ii.ogcapi.features.core.domain.JsonSchemaRef;
+import de.ii.ogcapi.features.core.domain.JsonSchemaRefInternal;
 import de.ii.ogcapi.features.core.domain.SchemaDeriverJsonSchema;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -69,10 +69,10 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
       Map<String, JsonSchema> properties,
       Map<String, JsonSchema> defs,
       List<String> required,
-      JsonSchemaDocument.Builder builder) {
+      JsonSchemaAbstractDocument.Builder builder) {
 
-    JsonSchemaRef linkRef =
-        version == JsonSchemaDocument.VERSION.V7
+    JsonSchemaRefInternal linkRef =
+        version == JsonSchemaAbstractDocument.VERSION.V7
             ? ImmutableJsonSchemaRefV7.builder().objectType("Link").build()
             : ImmutableJsonSchemaRef.builder().objectType("Link").build();
 

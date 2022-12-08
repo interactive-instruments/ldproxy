@@ -9,7 +9,7 @@ package de.ii.ogcapi.collections.schema.domain;
 
 import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
 
-import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -25,5 +25,8 @@ public interface SchemaFormatExtension extends FormatExtension {
   }
 
   Object getEntity(
-      JsonSchemaObject schema, String collectionId, OgcApi api, ApiRequestContext requestContext);
+      JsonSchemaAbstractDocument schema,
+      String collectionId,
+      OgcApi api,
+      ApiRequestContext requestContext);
 }

@@ -25,6 +25,7 @@ import java.util.Optional;
 @AutoMultiBind
 public interface FeatureFormatExtension extends FormatExtension {
 
+  @Override
   default String getPathPattern() {
     return "^/?collections/"
         + COLLECTION_ID_PATTERN
@@ -67,8 +68,7 @@ public interface FeatureFormatExtension extends FormatExtension {
     Optional<PropertyTransformations> coreTransformations =
         collectionData
             .getExtension(FeaturesCoreConfiguration.class)
-            .map(
-                featuresCoreConfiguration -> ((PropertyTransformations) featuresCoreConfiguration));
+            .map(featuresCoreConfiguration -> featuresCoreConfiguration);
 
     Optional<PropertyTransformations> formatTransformations =
         collectionData
@@ -77,8 +77,7 @@ public interface FeatureFormatExtension extends FormatExtension {
                 buildingBlockConfiguration ->
                     buildingBlockConfiguration instanceof PropertyTransformations)
             .map(
-                buildingBlockConfiguration ->
-                    ((PropertyTransformations) buildingBlockConfiguration));
+                buildingBlockConfiguration -> (PropertyTransformations) buildingBlockConfiguration);
 
     return formatTransformations
         .map(ft -> coreTransformations.map(ft::mergeInto).orElse(ft))

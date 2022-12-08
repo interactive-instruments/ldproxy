@@ -12,10 +12,12 @@ import java.io.IOException;
 import java.util.function.Consumer;
 
 @AutoMultiBind
+@SuppressWarnings("PMD.TooManyMethods")
 public interface FeatureWriter<T extends EncodingAwareContext<?>> {
 
   int getSortPriority();
 
+  @SuppressWarnings("PMD.CyclomaticComplexity")
   default void onEvent(T context, Consumer<T> next) throws IOException {
     switch (context.encoding().getState().getEvent()) {
       case START:
@@ -53,6 +55,8 @@ public interface FeatureWriter<T extends EncodingAwareContext<?>> {
       case ARRAY_END:
         onArrayEnd(context, next);
         break;
+      default:
+        // ignore
     }
   }
 

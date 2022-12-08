@@ -8,7 +8,6 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -56,6 +55,7 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
   OgcApiDataV2 getApiData();
 
   @Derived
+  @Override
   default String getCollectionId() {
     return getFeatureSchemas().keySet().stream().findFirst().orElse(null);
   }
@@ -77,7 +77,9 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
 
   @Value.Derived
   default EpsgCrs getTargetCrs() {
-    if (getCrsTransformer().isPresent()) return getCrsTransformer().get().getTargetCrs();
+    if (getCrsTransformer().isPresent()) {
+      return getCrsTransformer().get().getTargetCrs();
+    }
     return getSourceCrs().orElse(getDefaultCrs());
   }
 
@@ -98,18 +100,8 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
   }
 
   @Value.Default
-  default boolean isHitsOnlyIfMore() {
-    return false;
-  }
-
-  @Value.Default
   default boolean isPropertyOnly() {
     return false;
-  }
-
-  @Value.Default
-  default Map<String, List<String>> getFields() {
-    return ImmutableMap.of("*", ImmutableList.of("*"));
   }
 
   ApiRequestContext getOgcApiRequest();
@@ -159,7 +151,6 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
         getApiData().getCollections().get(collectionIds.stream().findFirst().orElse(null)));
   }
 
-  // TODO: to geometry simplification module
   @Value.Default
   default double getMaxAllowableOffset() {
     return 0;

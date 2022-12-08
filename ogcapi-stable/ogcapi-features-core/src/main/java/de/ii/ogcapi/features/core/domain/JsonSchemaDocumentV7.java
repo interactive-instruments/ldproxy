@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.hash.Funnel;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,9 +17,14 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
+public abstract class JsonSchemaDocumentV7 extends JsonSchemaAbstractDocument {
+
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaDocumentV7> FUNNEL =
+      JsonSchemaAbstractDocument.FUNNEL::funnel;
 
   @Override
+  @JsonProperty("$schema")
   @Value.Derived
   public String getSchema() {
     return VERSION.V7.url();
@@ -27,8 +33,6 @@ public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
   @Override
   @JsonProperty("definitions")
   public abstract Map<String, JsonSchema> getDefinitions();
-
-  abstract static class Builder extends JsonSchemaDocument.Builder {}
 
   @Value.Check
   public JsonSchemaDocumentV7 adjustRefs() {
@@ -53,7 +57,7 @@ public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
                 new SimpleImmutableEntry<>(
                     property.getKey(),
                     isRefWithWrongVersion(property.getValue())
-                        ? adjustRef((JsonSchemaRef) property.getValue())
+                        ? adjustRef((JsonSchemaRefInternal) property.getValue())
                         : property.getValue() instanceof JsonSchemaObject
                             ? adjustRefs((JsonSchemaObject) property.getValue())
                             : property.getValue() instanceof JsonSchemaArray
@@ -86,7 +90,7 @@ public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
     return schema;
   }
 
-  static JsonSchemaRefV7 adjustRef(JsonSchemaRef schema) {
+  static JsonSchemaRefV7 adjustRef(JsonSchemaRefInternal schema) {
     if (isRefWithWrongVersion(schema)) {
       return ImmutableJsonSchemaRefV7.builder().from(schema).build();
     }
@@ -99,10 +103,10 @@ public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
         .anyMatch(
             property ->
                 isRefWithWrongVersion(property)
-                    || (property instanceof JsonSchemaObject
-                        && hasRefsWithWrongVersion((JsonSchemaObject) property))
-                    || (property instanceof JsonSchemaArray
-                        && isRefWithWrongVersion(((JsonSchemaArray) property).getItems())));
+                    || property instanceof JsonSchemaObject
+                        && hasRefsWithWrongVersion((JsonSchemaObject) property)
+                    || property instanceof JsonSchemaArray
+                        && isRefWithWrongVersion(((JsonSchemaArray) property).getItems()));
   }
 
   static boolean hasRefsWithWrongVersion(JsonSchemaObject schema) {
@@ -113,12 +117,14 @@ public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
     return isRefWithWrongVersion(schema.getItems());
   }
 
-  static boolean hasRefsWithWrongVersion(JsonSchemaDocument schema) {
+  static boolean hasRefsWithWrongVersion(JsonSchemaAbstractDocument schema) {
     return hasRefsWithWrongVersion(schema.getProperties())
         || hasRefsWithWrongVersion(schema.getDefinitions());
   }
 
   static boolean isRefWithWrongVersion(JsonSchema schema) {
-    return schema instanceof JsonSchemaRef && !(schema instanceof JsonSchemaRefV7);
+    return schema instanceof JsonSchemaRefInternal && !(schema instanceof JsonSchemaRefV7);
   }
+
+  public abstract static class Builder extends JsonSchemaAbstractDocument.Builder {}
 }

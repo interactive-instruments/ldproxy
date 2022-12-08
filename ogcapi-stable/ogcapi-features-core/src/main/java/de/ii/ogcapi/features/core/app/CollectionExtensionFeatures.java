@@ -20,6 +20,7 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableLink;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -62,23 +63,27 @@ public class CollectionExtensionFeatures implements CollectionExtension {
       List<ApiMediaType> alternateMediaTypes,
       Optional<Locale> language) {
 
-    collection
-        .title(featureType.getLabel())
-        .description(featureType.getDescription())
-        .itemType(
-            featureType
-                .getExtension(FeaturesCoreConfiguration.class)
-                .filter(ExtensionConfiguration::isEnabled)
-                .flatMap(FeaturesCoreConfiguration::getItemType)
-                .map(Enum::toString)
-                .orElse(FeaturesCoreConfiguration.ItemType.unknown.toString()));
-
-    api.getItemCount(featureType.getId())
-        .filter(count -> count >= 0)
-        .ifPresent(count -> collection.putExtensions("itemCount", count));
+    init(collection, featureType, api);
 
     URICustomizer uriBuilder = uriCustomizer.copy().ensureNoTrailingSlash().clearParameters();
 
+    addSelfLink(collection, featureType, isNested, language, uriBuilder);
+
+    addItemsLinks(collection, featureType, api, language, uriBuilder);
+
+    addDescribeFeatureTypeUrl(collection, language, Optional.empty());
+
+    addExtents(collection, featureType, api);
+
+    return collection;
+  }
+
+  private void addSelfLink(
+      Builder collection,
+      FeatureTypeConfigurationOgcApi featureType,
+      boolean isNested,
+      Optional<Locale> language,
+      URICustomizer uriBuilder) {
     if (isNested) {
       // also add an untyped a self link in the Collections resource, otherwise the standard links
       // are already there
@@ -96,42 +101,10 @@ public class CollectionExtensionFeatures implements CollectionExtension {
                       .replace("{{collection}}", featureType.getLabel()))
               .build());
     }
+  }
 
-    List<ApiMediaType> featureMediaTypes =
-        extensionRegistry.getExtensionsForType(FeatureFormatExtension.class).stream()
-            .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(api.getData()))
-            .map(outputFormatExtension -> outputFormatExtension.getMediaType())
-            .collect(Collectors.toList());
-
-    featureMediaTypes.stream()
-        .forEach(
-            mtype ->
-                collection.addLinks(
-                    new ImmutableLink.Builder()
-                        .href(
-                            uriBuilder
-                                .ensureLastPathSegments("collections", featureType.getId(), "items")
-                                .setParameter("f", mtype.parameter())
-                                .toString())
-                        .rel("items")
-                        .type(mtype.type().toString())
-                        .title(
-                            i18n.get("itemsLink", language)
-                                .replace("{{collection}}", featureType.getLabel())
-                                .replace("{{type}}", mtype.label()))
-                        .build()));
-
-    Optional<String> describeFeatureTypeUrl = Optional.empty();
-    if (describeFeatureTypeUrl.isPresent()) {
-      collection.addLinks(
-          new ImmutableLink.Builder()
-              .href(describeFeatureTypeUrl.get())
-              .rel("describedby")
-              .type("application/xml")
-              .title(i18n.get("describedByXsdLink", language))
-              .build());
-    }
-
+  private void addExtents(
+      Builder collection, FeatureTypeConfigurationOgcApi featureType, OgcApi api) {
     // only add extents for cases where we can filter using spatial / temporal predicates
     Optional<FeaturesCollectionQueryables> queryables =
         featureType
@@ -156,8 +129,66 @@ public class CollectionExtensionFeatures implements CollectionExtension {
     } else if (hasTemporalQueryable) {
       collection.extent(OgcApiExtent.of(Optional.empty(), temporal));
     }
+  }
 
-    return collection;
+  private void addDescribeFeatureTypeUrl(
+      Builder collection, Optional<Locale> language, Optional<String> describeFeatureTypeUrl) {
+    describeFeatureTypeUrl.ifPresent(
+        s ->
+            collection.addLinks(
+                new ImmutableLink.Builder()
+                    .href(s)
+                    .rel("describedby")
+                    .type("application/xml")
+                    .title(i18n.get("describedByXsdLink", language))
+                    .build()));
+  }
+
+  private void addItemsLinks(
+      Builder collection,
+      FeatureTypeConfigurationOgcApi featureType,
+      OgcApi api,
+      Optional<Locale> language,
+      URICustomizer uriBuilder) {
+    List<ApiMediaType> featureMediaTypes =
+        extensionRegistry.getExtensionsForType(FeatureFormatExtension.class).stream()
+            .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(api.getData()))
+            .map(FormatExtension::getMediaType)
+            .collect(Collectors.toList());
+
+    featureMediaTypes.forEach(
+        mtype ->
+            collection.addLinks(
+                new ImmutableLink.Builder()
+                    .href(
+                        uriBuilder
+                            .ensureLastPathSegments("collections", featureType.getId(), "items")
+                            .setParameter("f", mtype.parameter())
+                            .toString())
+                    .rel("items")
+                    .type(mtype.type().toString())
+                    .title(
+                        i18n.get("itemsLink", language)
+                            .replace("{{collection}}", featureType.getLabel())
+                            .replace("{{type}}", mtype.label()))
+                    .build()));
+  }
+
+  private void init(Builder collection, FeatureTypeConfigurationOgcApi featureType, OgcApi api) {
+    collection
+        .title(featureType.getLabel())
+        .description(featureType.getDescription())
+        .itemType(
+            featureType
+                .getExtension(FeaturesCoreConfiguration.class)
+                .filter(ExtensionConfiguration::isEnabled)
+                .flatMap(FeaturesCoreConfiguration::getItemType)
+                .map(Enum::toString)
+                .orElse(FeaturesCoreConfiguration.ItemType.UNKNOWN.toString()));
+
+    api.getItemCount(featureType.getId())
+        .filter(count -> count >= 0)
+        .ifPresent(count -> collection.putExtensions("itemCount", count));
   }
 
   public static OgcApiCollection createNestedCollection(
@@ -184,12 +215,6 @@ public class CollectionExtensionFeatures implements CollectionExtension {
               language);
     }
 
-    ImmutableOgcApiCollection result = null;
-    try {
-      result = ogcApiCollection.build();
-    } catch (Throwable e) {
-      result = null;
-    }
-    return result;
+    return ogcApiCollection.build();
   }
 }

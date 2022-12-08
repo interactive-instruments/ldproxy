@@ -58,8 +58,9 @@ public interface PropertySfFlat extends PropertyBase<PropertySfFlat, FeatureSche
                   return getJtsPolygon(geometryFactory, true);
                 case MULTI_POLYGON:
                   return getJtsMultiPolygon(geometryFactory);
+                default:
+                  return Optional.empty();
               }
-              return Optional.empty();
             });
   }
 

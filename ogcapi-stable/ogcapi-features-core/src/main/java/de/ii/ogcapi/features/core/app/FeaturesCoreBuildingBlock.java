@@ -102,7 +102,7 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
   public ExtensionConfiguration getDefaultConfiguration() {
     return new ImmutableFeaturesCoreConfiguration.Builder()
         .enabled(true)
-        .itemType(FeaturesCoreConfiguration.ItemType.feature)
+        .itemType(FeaturesCoreConfiguration.ItemType.FEATURE)
         .defaultCrs(FeaturesCoreConfiguration.DefaultCrs.CRS84)
         .minimumPageSize(MINIMUM_PAGE_SIZE)
         .defaultPageSize(DEFAULT_PAGE_SIZE)
@@ -166,10 +166,10 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
     return ValidationResult.of();
   }
 
-  // TODO: add capability to periodically reinitialize metadata from the feature data (to account
-  // for lost notifications,
-  //       because extent changes because of deletes are not taken into account, etc.)
+  // add capability to periodically reinitialize metadata from the feature data (to account for lost
+  // notifications, because extent changes because of deletes are not taken into account, etc.)
   // initialize dynamic collection metadata
+  // see https://github.com/interactive-instruments/ldproxy/issues/633
   private void initMetadata(OgcApi api, String collectionId, Instant lastModified) {
     OgcApiDataV2 apiData = api.getData();
     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
@@ -214,6 +214,7 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
     };
   }
 
+  @SuppressWarnings("PMD.ImplicitSwitchFallThrough")
   private FeatureChangeListener onFeatureChange(OgcApi api) {
     return change -> {
       String collectionId =
@@ -233,6 +234,8 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
           break;
         case DELETE:
           api.updateItemCount(collectionId, (long) -change.getFeatureIds().size());
+          break;
+        default:
           break;
       }
       api.updateLastModified(collectionId, change.getModified());
@@ -254,7 +257,7 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
       }
       return Optional.empty();
     }
-    return Optional.ofNullable(boundingBox);
+    return Optional.of(boundingBox);
   }
 
   private Optional<BoundingBox> computeBbox(OgcApiDataV2 apiData, String collectionId) {
@@ -271,33 +274,35 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
               .orElse(collectionId);
       Optional<BoundingBox> spatialExtent =
           featureProvider.get().extents().getSpatialExtent(featureType);
-      if (spatialExtent.isPresent()) {
-
-        BoundingBox boundingBox = spatialExtent.get();
-        if (!boundingBox.getEpsgCrs().equals(OgcCrs.CRS84)
-            && !boundingBox.getEpsgCrs().equals(OgcCrs.CRS84h)) {
-          Optional<CrsTransformer> transformer =
-              boundingBox.is3d()
-                  ? crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84h)
-                  : crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84);
-          if (transformer.isPresent()) {
-            try {
-              boundingBox = transformer.get().transformBoundingBox(boundingBox);
-            } catch (CrsTransformationException e) {
-              LOGGER.error(
-                  "Error while computing spatial extent of collection '{}' while transforming the CRS of the bounding box: {}",
-                  collectionId,
-                  e.getMessage());
-              return Optional.empty();
-            }
-          }
-        }
-
-        return Optional.of(boundingBox);
-      }
+      return spatialExtent.map(
+          boundingBox -> transformBoundingBoxIfNecessary(collectionId, boundingBox));
     }
 
     return Optional.empty();
+  }
+
+  private BoundingBox transformBoundingBoxIfNecessary(
+      String collectionId, BoundingBox boundingBox) {
+    if (!boundingBox.getEpsgCrs().equals(OgcCrs.CRS84)
+        && !boundingBox.getEpsgCrs().equals(OgcCrs.CRS84h)) {
+      return (boundingBox.is3d()
+              ? crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84h)
+              : crsTransformerFactory.getTransformer(boundingBox.getEpsgCrs(), OgcCrs.CRS84))
+          .map(
+              t -> {
+                try {
+                  return t.transformBoundingBox(boundingBox);
+                } catch (CrsTransformationException e) {
+                  LOGGER.error(
+                      "Error while computing spatial extent of collection '{}' while transforming the CRS of the bounding box: {}",
+                      collectionId,
+                      e.getMessage());
+                  return null;
+                }
+              })
+          .orElse(null);
+    }
+    return boundingBox;
   }
 
   private Optional<TemporalExtent> computeInterval(OgcApiDataV2 apiData, String collectionId) {

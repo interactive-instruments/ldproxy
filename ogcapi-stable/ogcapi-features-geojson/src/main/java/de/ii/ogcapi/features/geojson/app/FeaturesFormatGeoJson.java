@@ -111,10 +111,10 @@ public class FeaturesFormatGeoJson
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
 
-    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.feature))
+    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.FEATURE))
       builder.add(CONFORMANCE_CLASS_FEATURES);
 
-    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record))
+    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.RECORD))
       builder.add(CONFORMANCE_CLASS_RECORDS);
 
     return builder.build();

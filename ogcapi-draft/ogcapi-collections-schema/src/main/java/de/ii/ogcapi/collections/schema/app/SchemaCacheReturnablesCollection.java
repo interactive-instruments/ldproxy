@@ -15,12 +15,12 @@ import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRef;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRefExternal;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRefV7;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaString;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaAbstractDocument.VERSION;
 import de.ii.ogcapi.features.core.domain.JsonSchemaBuildingBlocks;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
-import de.ii.ogcapi.features.core.domain.JsonSchemaRef;
 import de.ii.ogcapi.features.core.domain.JsonSchemaRefExternal;
+import de.ii.ogcapi.features.core.domain.JsonSchemaRefInternal;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -29,20 +29,20 @@ import java.util.Optional;
 public class SchemaCacheReturnablesCollection extends JsonSchemaCache {
 
   @Override
-  protected JsonSchemaDocument deriveSchema(
+  protected JsonSchemaAbstractDocument deriveSchema(
       FeatureSchema schema,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
       Optional<String> schemaUri,
       VERSION version) {
 
-    JsonSchemaDocument.Builder builder =
+    JsonSchemaAbstractDocument.Builder builder =
         version == VERSION.V7
             ? ImmutableJsonSchemaDocumentV7.builder()
             : ImmutableJsonSchemaDocument.builder();
 
-    JsonSchemaRef linkRef =
-        version == JsonSchemaDocument.VERSION.V7
+    JsonSchemaRefInternal linkRef =
+        version == JsonSchemaAbstractDocument.VERSION.V7
             ? ImmutableJsonSchemaRefV7.builder().objectType("Link").build()
             : ImmutableJsonSchemaRef.builder().objectType("Link").build();
 

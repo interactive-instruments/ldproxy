@@ -272,7 +272,6 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             .offset(query.getOffset())
             .maxAllowableOffset(query.getMaxAllowableOffset())
             .geometryPrecision(query.getGeometryPrecision())
-            .isHitsOnlyIfMore(false)
             .showsFeatureSelfLink(false)
             .name(inputs.getName())
             .format(outputFormat)

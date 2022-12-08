@@ -123,10 +123,10 @@ public class FeaturesFormatHtml
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
 
-    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.feature))
+    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.FEATURE))
       builder.add("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html");
 
-    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record))
+    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.RECORD))
       builder.add("http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/html");
 
     return builder.build();

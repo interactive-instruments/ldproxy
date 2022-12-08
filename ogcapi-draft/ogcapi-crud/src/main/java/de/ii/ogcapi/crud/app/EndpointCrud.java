@@ -332,8 +332,8 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             .filter(ExtensionConfiguration::isEnabled)
             .filter(
                 cfg ->
-                    cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature)
-                        != FeaturesCoreConfiguration.ItemType.unknown)
+                    cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.FEATURE)
+                        != FeaturesCoreConfiguration.ItemType.UNKNOWN)
             .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
     String featureType = coreConfiguration.getFeatureType().orElse(collectionId);
@@ -382,8 +382,8 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             .filter(ExtensionConfiguration::isEnabled)
             .filter(
                 cfg ->
-                    cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature)
-                        != FeaturesCoreConfiguration.ItemType.unknown)
+                    cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.FEATURE)
+                        != FeaturesCoreConfiguration.ItemType.UNKNOWN)
             .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
     String featureType = coreConfiguration.getFeatureType().orElse(collectionId);
@@ -450,8 +450,8 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             .filter(ExtensionConfiguration::isEnabled)
             .filter(
                 cfg ->
-                    cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature)
-                        != FeaturesCoreConfiguration.ItemType.unknown)
+                    cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.FEATURE)
+                        != FeaturesCoreConfiguration.ItemType.UNKNOWN)
             .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
     String featureType = coreConfiguration.getFeatureType().orElse(collectionId);

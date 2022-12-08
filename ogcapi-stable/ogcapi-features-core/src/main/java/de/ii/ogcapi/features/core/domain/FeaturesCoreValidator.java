@@ -46,7 +46,9 @@ public class FeaturesCoreValidator implements FeaturesCoreValidation {
 
   @Override
   public List<String> getInvalidPropertyKeys(Collection<String> keys, FeatureSchema schema) {
-    if (Objects.isNull(keys)) return ImmutableList.of();
+    if (Objects.isNull(keys)) {
+      return ImmutableList.of();
+    }
 
     return keys.stream()
         // remove '*' keys
@@ -70,10 +72,14 @@ public class FeaturesCoreValidator implements FeaturesCoreValidation {
 
               final String collectionId = entry.getKey();
               final FeatureSchema schema = featureSchemas.get(collectionId);
-              if (Objects.isNull(schema)) return null;
+              if (Objects.isNull(schema)) {
+                return null;
+              }
 
               List<String> invalidKeys = getInvalidPropertyKeys(keyMap.get(collectionId), schema);
-              if (invalidKeys.isEmpty()) return null;
+              if (invalidKeys.isEmpty()) {
+                return null;
+              }
 
               return new AbstractMap.SimpleImmutableEntry<>(collectionId, invalidKeys);
             })

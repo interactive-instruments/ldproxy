@@ -15,15 +15,16 @@ import org.immutables.value.Value;
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true)
 public abstract class JsonSchemaBoolean extends JsonSchema {
 
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaBoolean> FUNNEL =
+      (from, into) -> {
+        JsonSchema.FUNNEL.funnel(from, into);
+        into.putString(from.getType(), StandardCharsets.UTF_8);
+      };
+
   public final String getType() {
     return "boolean";
   }
 
   public abstract static class Builder extends JsonSchema.Builder {}
-
-  @SuppressWarnings("UnstableApiUsage")
-  public static final Funnel<JsonSchemaBoolean> FUNNEL =
-      (from, into) -> {
-        into.putString(from.getType(), StandardCharsets.UTF_8);
-      };
 }

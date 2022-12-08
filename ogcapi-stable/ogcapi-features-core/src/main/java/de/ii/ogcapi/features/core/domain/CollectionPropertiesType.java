@@ -7,12 +7,14 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
+import java.util.Locale;
+
 public enum CollectionPropertiesType {
   QUERYABLES,
   SORTABLES;
 
   @Override
   public String toString() {
-    return this.name().toLowerCase();
+    return this.name().toLowerCase(Locale.ROOT);
   }
 }
