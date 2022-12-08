@@ -89,6 +89,7 @@ public interface ApiOperation {
       String operationSummary,
       Optional<String> operationDescription,
       Optional<ExternalDocumentation> externalDocs,
+      Optional<String> operationId,
       List<String> tags) {
     if (responseContent.isEmpty()) {
       if (LOGGER.isErrorEnabled()) {
@@ -149,6 +150,7 @@ public interface ApiOperation {
             .summary(operationSummary)
             .description(operationDescription)
             .externalDocs(externalDocs)
+            .operationId(operationId)
             .tags(tags)
             .queryParameters(postUrlEncoded ? ImmutableList.of() : queryParameters)
             .headers(
@@ -179,6 +181,7 @@ public interface ApiOperation {
       String operationSummary,
       Optional<String> operationDescription,
       Optional<ExternalDocumentation> externalDocs,
+      Optional<String> operationId,
       List<String> tags) {
     if ((method == HttpMethods.POST || method == HttpMethods.PUT || method == HttpMethods.PATCH)
         && requestContent.isEmpty()) {
@@ -196,6 +199,7 @@ public interface ApiOperation {
             .summary(operationSummary)
             .description(operationDescription)
             .externalDocs(externalDocs)
+            .operationId(operationId)
             .tags(tags)
             .queryParameters(queryParameters)
             .headers(
@@ -233,6 +237,7 @@ public interface ApiOperation {
       String operationSummary,
       Optional<String> operationDescription,
       Optional<ExternalDocumentation> externalDocs,
+      Optional<String> operationId,
       List<String> tags) {
     ImmutableApiResponse.Builder responseBuilder =
         new ImmutableApiResponse.Builder()
@@ -250,6 +255,7 @@ public interface ApiOperation {
             .summary(operationSummary)
             .description(operationDescription)
             .externalDocs(externalDocs)
+            .operationId(operationId)
             .tags(tags)
             .queryParameters(queryParameters)
             .headers(

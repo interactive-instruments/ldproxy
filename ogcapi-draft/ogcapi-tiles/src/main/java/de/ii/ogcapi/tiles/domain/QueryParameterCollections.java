@@ -13,11 +13,14 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
+import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationParametersTransient;
+import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -40,7 +43,10 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterCollections extends ApiExtensionCache
-    implements OgcApiQueryParameter, ConformanceClass {
+    implements OgcApiQueryParameter,
+        ConformanceClass,
+        TypedQueryParameter<List<String>>,
+        TileGenerationUserParameter {
 
   private final SchemaValidator schemaValidator;
 
@@ -52,7 +58,7 @@ public class QueryParameterCollections extends ApiExtensionCache
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     return ImmutableList.of(
-        "http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/collection-selection");
+        "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/collection-selection");
   }
 
   @Override
@@ -129,34 +135,23 @@ public class QueryParameterCollections extends ApiExtensionCache
   }
 
   @Override
-  public Map<String, Object> transformContext(
-      FeatureTypeConfigurationOgcApi featureType,
-      Map<String, Object> context,
-      Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
-    if (!isEnabledForApi(apiData)) return context;
-
-    List<String> availableCollections = getCollectionIds(apiData);
-    List<String> requestedCollections = getCollectionsList(parameters);
-    context.put(
-        "collections",
-        requestedCollections.isEmpty()
-            ? availableCollections
-            : requestedCollections.stream()
-                .filter(availableCollections::contains)
-                .collect(Collectors.toList()));
-
-    return context;
+  public List<String> parse(String value, OgcApiDataV2 apiData) {
+    try {
+      List<String> collections = getCollectionIds(apiData);
+      return Splitter.on(',').omitEmptyStrings().trimResults().splitToList(value).stream()
+          .filter(collections::contains)
+          .collect(ImmutableList.toImmutableList());
+    } catch (Throwable e) {
+      throw new IllegalArgumentException(
+          String.format("Invalid value for query parameter '%s'.", getName()), e);
+    }
   }
 
-  private List<String> getCollectionsList(Map<String, String> parameters) {
-    if (parameters.containsKey("collections")) {
-      return Splitter.on(',')
-          .omitEmptyStrings()
-          .trimResults()
-          .splitToList(parameters.get("collections"));
-    } else {
-      return ImmutableList.of();
-    }
+  @Override
+  public void applyTo(
+      ImmutableTileGenerationParametersTransient.Builder userParametersBuilder,
+      QueryParameterSet parameters,
+      Optional<TileGenerationSchema> generationSchema) {
+    parameters.getValue(this).ifPresent(userParametersBuilder::addAllLayers);
   }
 }

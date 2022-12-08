@@ -187,6 +187,7 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("createStyle", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.POST.name(), operation));
@@ -245,6 +246,7 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("replaceStyle", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
@@ -266,6 +268,7 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("deleteStyle", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));

@@ -193,6 +193,14 @@ public class FeaturesFormatHtml extends FeaturesFormatBaseHtml
                     nameValuePair.getName().equals("bare")
                         && nameValuePair.getValue().equals("true"));
 
+    boolean hideMap =
+        transformationContext
+            .getFeatureSchema()
+            .flatMap(
+                x ->
+                    x.getProperties().stream().filter(FeatureSchema::isPrimaryGeometry).findFirst())
+            .isEmpty();
+
     if (transformationContext.isFeatureCollection()) {
       FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionName);
 
@@ -241,6 +249,7 @@ public class FeaturesFormatHtml extends FeaturesFormatBaseHtml
               language,
               isNoIndexEnabledForApi(apiData),
               getMapPosition(apiData, collectionName),
+              hideMap,
               getGeometryProperties(apiData, collectionName));
 
       addDatasetNavigation(
@@ -265,6 +274,7 @@ public class FeaturesFormatHtml extends FeaturesFormatBaseHtml
               isNoIndexEnabledForApi(apiData),
               apiData.getSubPath(),
               getMapPosition(apiData, collectionName),
+              hideMap,
               getGeometryProperties(apiData, collectionName));
     }
 
@@ -293,6 +303,7 @@ public class FeaturesFormatHtml extends FeaturesFormatBaseHtml
       Optional<Locale> language,
       boolean noIndex,
       POSITION mapPosition,
+      boolean hideMap,
       List<String> geometryProperties) {
     OgcApiDataV2 apiData = api.getData();
     URI requestUri = null;
@@ -342,6 +353,7 @@ public class FeaturesFormatHtml extends FeaturesFormatBaseHtml
             mapClientType,
             styleUrl,
             removeZoomLevelConstraints,
+            hideMap,
             filterableFields,
             geometryProperties);
 
@@ -380,6 +392,7 @@ public class FeaturesFormatHtml extends FeaturesFormatBaseHtml
       boolean noIndex,
       List<String> subPathToLandingPage,
       FeaturesHtmlConfiguration.POSITION mapPosition,
+      boolean hideMap,
       List<String> geometryProperties) {
     OgcApiDataV2 apiData = api.getData();
     String rootTitle = i18n.get("root", language);
@@ -441,6 +454,7 @@ public class FeaturesFormatHtml extends FeaturesFormatBaseHtml
             mapClientType,
             styleUrl,
             removeZoomLevelConstraints,
+            hideMap,
             null,
             geometryProperties);
     featureTypeDataset.description = featureType.getDescription().orElse(featureType.getLabel());

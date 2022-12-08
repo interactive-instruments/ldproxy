@@ -120,7 +120,7 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
         transformationContext.getCrsTransformer().isPresent()
             ? transformationContext.getCrsTransformer().get().getTargetCrs()
             : providers
-                .getFeatureProvider(apiData)
+                .getFeatureProvider(apiData, collectionData)
                 .map(FeatureProvider2::getData)
                 .flatMap(FeatureProviderDataV2::getNativeCrs)
                 .orElse(EpsgCrs.of(4326, EpsgCrs.Force.LON_LAT));
@@ -143,9 +143,10 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
 
     return Optional.of(
         new FeatureEncoderFlatgeobuf(
-            ImmutableFeatureTransformationContextFlatgeobuf.builder()
+            ImmutableEncodingContextFlatgeobuf.builder()
                 .from(transformationContext)
                 .schema(schema)
+                .crsTransformer(transformationContext.getCrsTransformer())
                 .is3d(crsInfo.is3d(crs))
                 .build()));
   }

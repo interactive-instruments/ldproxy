@@ -10,10 +10,13 @@ package de.ii.ogcapi.features.html.app;
 import de.ii.ogcapi.features.html.domain.FeatureCollectionBaseView;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ogcapi.html.domain.ImmutableMapClient;
+import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -44,6 +47,7 @@ public class FeatureCollectionView extends FeatureCollectionBaseView {
       Type mapClientType,
       String styleUrl,
       boolean removeZoomLevelConstraints,
+      boolean hideMap,
       Map<String, String> queryables,
       List<String> geometryProperties) {
     super(
@@ -62,6 +66,7 @@ public class FeatureCollectionView extends FeatureCollectionBaseView {
         mapClientType,
         styleUrl,
         removeZoomLevelConstraints,
+        hideMap,
         geometryProperties);
 
     if (Objects.nonNull(queryables)) {

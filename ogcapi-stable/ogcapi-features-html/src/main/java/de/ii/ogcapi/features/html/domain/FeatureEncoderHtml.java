@@ -225,10 +225,6 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
 
   @Override
   public void onFeature(FeatureHtml feature) {
-    if (transformationContext.collectionView().hideMap && feature.hasGeometry()) {
-      transformationContext.collectionView().hideMap = false;
-    }
-
     transformationContext
         .featuresHtmlConfiguration()
         .getFeatureTitleTemplate()

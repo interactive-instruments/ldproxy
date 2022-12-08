@@ -23,12 +23,12 @@ import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.NavigationDTO;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSetsView;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.net.URI;
@@ -163,9 +163,6 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
     return new TileSetsView(
         api.getData(),
         tiles,
-        collectionId,
-        api.getSpatialExtent(collectionId),
-        api.getTemporalExtent(collectionId),
         tileMatrixSets,
         breadCrumbs,
         requestContext.getStaticUrlPrefix(),
@@ -174,7 +171,6 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
         removeZoomLevelConstraints,
         htmlConfig.orElseThrow(),
         isNoIndexEnabledForApi(api.getData()),
-        requestContext.getUriCustomizer(),
         i18n,
         requestContext.getLanguage());
   }

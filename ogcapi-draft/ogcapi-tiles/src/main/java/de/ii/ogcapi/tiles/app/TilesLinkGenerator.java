@@ -42,53 +42,11 @@ public class TilesLinkGenerator extends DefaultLinksGenerator {
                         .copy()
                         .removeLastPathSegment("collections")
                         .ensureNoTrailingSlash()
-                        .ensureLastPathSegment("tileMatrixSets")
-                        .removeParameters("f")
-                        .toString())
-                .rel("http://www.opengis.net/def/rel/ogc/1.0/tiling-schemes")
-                .title(i18n.get("tileMatrixSetsLink", language))
-                .build())
-        .add(
-            new ImmutableLink.Builder()
-                .href(
-                    uriBuilder
-                        .copy()
-                        .removeLastPathSegment("collections")
-                        .ensureNoTrailingSlash()
                         .ensureLastPathSegment("tiles")
                         .removeParameters("f")
                         .toString())
                 .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-" + dataType.toString())
                 .title(i18n.get("tilesLink", language))
-                .build())
-        .build();
-  }
-
-  /**
-   * generates the links on the page /{apiId}/tileMatrixSets
-   *
-   * @param uriBuilder the URI, split in host, path and query
-   * @param tileMatrixSetId the id of the tiling Scheme
-   * @param i18n module to get linguistic text
-   * @param language the requested language (optional)
-   * @return a list with links
-   */
-  public List<Link> generateTileMatrixSetsLinks(
-      URICustomizer uriBuilder, String tileMatrixSetId, I18n i18n, Optional<Locale> language) {
-
-    return ImmutableList.<Link>builder()
-        .add(
-            new ImmutableLink.Builder()
-                .href(
-                    uriBuilder
-                        .copy()
-                        .ensureLastPathSegment(tileMatrixSetId)
-                        .removeParameters("f")
-                        .toString())
-                .rel("self")
-                .title(
-                    i18n.get("tileMatrixSetLink", language)
-                        .replace("{{tileMatrixSetId}}", tileMatrixSetId))
                 .build())
         .build();
   }
@@ -121,6 +79,7 @@ public class TilesLinkGenerator extends DefaultLinksGenerator {
    * generates the URI templates on the page .../tiles/{tileMatrixSetId}
    *
    * @param uriBuilder the URI, split in host, path and query
+   * @param collectionId
    * @param i18n module to get linguistic text
    * @param language the requested language (optional)
    * @return a list with links
@@ -129,6 +88,8 @@ public class TilesLinkGenerator extends DefaultLinksGenerator {
       URICustomizer uriBuilder,
       ApiMediaType mediaType,
       List<ApiMediaType> alternateMediaTypes,
+      String tileMatrixSetId,
+      Optional<String> collectionId,
       List<TileFormatExtension> tileFormats,
       I18n i18n,
       Optional<Locale> language) {
@@ -137,6 +98,20 @@ public class TilesLinkGenerator extends DefaultLinksGenerator {
         new ImmutableList.Builder<Link>()
             .addAll(
                 super.generateLinks(uriBuilder, mediaType, alternateMediaTypes, i18n, language));
+
+    builder.add(
+        new ImmutableLink.Builder()
+            .href(
+                uriBuilder
+                    .copy()
+                    .clearParameters()
+                    .ensureNoTrailingSlash()
+                    .removeLastPathSegments(collectionId.isPresent() ? 4 : 2)
+                    .ensureLastPathSegments("tileMatrixSets", tileMatrixSetId)
+                    .toString())
+            .rel("http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme")
+            .title(i18n.get("tilingSchemeLink", language))
+            .build());
 
     tileFormats.forEach(
         format ->
@@ -159,6 +134,7 @@ public class TilesLinkGenerator extends DefaultLinksGenerator {
    * generates the URI templates on the page .../tiles/{tileMatrixSetId}
    *
    * @param uriBuilder the URI, split in host, path and query
+   * @param collectionId
    * @param i18n module to get linguistic text
    * @param language the requested language (optional)
    * @return a list with links
@@ -166,6 +142,7 @@ public class TilesLinkGenerator extends DefaultLinksGenerator {
   public List<Link> generateTileSetEmbeddedLinks(
       URICustomizer uriBuilder,
       String tileMatrixSetId,
+      Optional<String> collectionId,
       List<TileFormatExtension> tileFormats,
       I18n i18n,
       Optional<Locale> language) {
@@ -186,6 +163,20 @@ public class TilesLinkGenerator extends DefaultLinksGenerator {
                         i18n.get("tileSetLink", language)
                             .replace("{{tileMatrixSetId}}", tileMatrixSetId))
                     .build());
+
+    builder.add(
+        new ImmutableLink.Builder()
+            .href(
+                uriBuilder
+                    .copy()
+                    .clearParameters()
+                    .ensureNoTrailingSlash()
+                    .removeLastPathSegments(collectionId.isPresent() ? 3 : 1)
+                    .ensureLastPathSegments("tileMatrixSets", tileMatrixSetId)
+                    .toString())
+            .rel("http://www.opengis.net/def/rel/ogc/1.0/tiling-scheme")
+            .title(i18n.get("tilingSchemeLink", language))
+            .build());
 
     tileFormats.forEach(
         format ->

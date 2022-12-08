@@ -8,21 +8,24 @@
 package de.ii.ogcapi.tiles.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
+import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
 @Singleton
 @AutoBind
-public class TileFormatJPEG extends TileFormatExtension {
+public class TileFormatJPEG extends TileFormatExtension implements ConformanceClass {
 
   public static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
@@ -61,5 +64,16 @@ public class TileFormatJPEG extends TileFormatExtension {
   @Override
   public DataType getDataType() {
     return TileSet.DataType.map;
+  }
+
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    if (isEnabledForApi(apiData)
+        || apiData.getCollections().keySet().stream()
+            .anyMatch(collectionId -> isEnabledForApi(apiData, collectionId))) {
+      return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/jpeg");
+    }
+
+    return ImmutableList.of();
   }
 }

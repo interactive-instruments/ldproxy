@@ -36,7 +36,7 @@ import org.immutables.value.Value.Derived;
 /**
  * @author zahnen
  */
-public interface FeatureTransformationContext {
+public interface FeatureTransformationContext extends EncodingContextSfFlat {
   enum Event {
     START,
     END,

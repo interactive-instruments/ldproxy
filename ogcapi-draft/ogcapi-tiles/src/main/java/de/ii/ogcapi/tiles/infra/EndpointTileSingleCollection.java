@@ -9,7 +9,7 @@ package de.ii.ogcapi.tiles.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
@@ -18,19 +18,17 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tiles.api.AbstractEndpointTileSingleCollection;
-import de.ii.ogcapi.tiles.domain.StaticTileProviderStore;
-import de.ii.ogcapi.tiles.domain.TileCache;
+import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
+import de.ii.ogcapi.tiles.api.EndpointTileMixin;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ogcapi.tiles.domain.TileProvider;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetLimitsGenerator;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -40,8 +38,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @langEn Access single-layer tiles
@@ -58,37 +54,39 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointTileSingleCollection extends AbstractEndpointTileSingleCollection
-    implements ConformanceClass {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileSingleCollection.class);
+public class EndpointTileSingleCollection extends EndpointSubCollection
+    implements ConformanceClass, EndpointTileMixin {
 
   private static final List<String> TAGS = ImmutableList.of("Access single-layer tiles");
 
+  private final TilesQueriesHandler queryHandler;
+  private final TileMatrixSetLimitsGenerator limitsGenerator;
+  private final TileMatrixSetRepository tileMatrixSetRepository;
+
   @Inject
   EndpointTileSingleCollection(
-      FeaturesCoreProviders providers,
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
-      CrsTransformerFactory crsTransformerFactory,
       TileMatrixSetLimitsGenerator limitsGenerator,
-      TileCache cache,
-      StaticTileProviderStore staticTileProviderStore,
       TileMatrixSetRepository tileMatrixSetRepository) {
-    super(
-        providers,
-        extensionRegistry,
-        queryHandler,
-        crsTransformerFactory,
-        limitsGenerator,
-        cache,
-        staticTileProviderStore,
-        tileMatrixSetRepository);
+    super(extensionRegistry);
+    this.queryHandler = queryHandler;
+    this.limitsGenerator = limitsGenerator;
+    this.tileMatrixSetRepository = tileMatrixSetRepository;
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return apiData
+        .getExtension(TilesConfiguration.class, collectionId)
+        .filter(TilesConfiguration::isEnabled)
+        .filter(TilesConfiguration::isSingleCollectionEnabled)
+        .isPresent();
   }
 
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/0.0/conf/core");
+    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/core");
   }
 
   @Override
@@ -105,12 +103,19 @@ public class EndpointTileSingleCollection extends AbstractEndpointTileSingleColl
 
   @Override
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-    return computeDefinition(
+    return computeDefinitionSingle(
+        extensionRegistry,
+        this,
         apiData,
         "collections",
         ApiEndpointDefinition.SORT_PRIORITY_TILE_COLLECTION,
         "/collections/{collectionId}",
         "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+        getOperationId(
+            "getTile",
+            EndpointTileMixin.COLLECTION_ID_PLACEHOLDER,
+            "collection",
+            EndpointTileMixin.DATA_TYPE_PLACEHOLDER),
         TAGS);
   }
 
@@ -126,22 +131,22 @@ public class EndpointTileSingleCollection extends AbstractEndpointTileSingleColl
       @Context UriInfo uriInfo,
       @Context ApiRequestContext requestContext)
       throws CrsTransformationException, IOException, NotFoundException {
+    QueryInput queryInput =
+        getQueryInputTile(
+            extensionRegistry,
+            this,
+            limitsGenerator,
+            tileMatrixSetRepository,
+            api,
+            requestContext,
+            uriInfo,
+            "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+            Optional.of(collectionId),
+            tileMatrixSetId,
+            tileMatrix,
+            tileRow,
+            tileCol);
 
-    TileProvider tileProvider =
-        api.getData()
-            .getExtension(TilesConfiguration.class)
-            .map(TilesConfiguration::getTileProvider)
-            .orElseThrow();
-    return super.getTile(
-        api,
-        requestContext,
-        uriInfo,
-        "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
-        collectionId,
-        tileMatrixSetId,
-        tileMatrix,
-        tileRow,
-        tileCol,
-        tileProvider);
+    return queryHandler.handle(TilesQueriesHandler.Query.TILE, queryInput, requestContext);
   }
 }

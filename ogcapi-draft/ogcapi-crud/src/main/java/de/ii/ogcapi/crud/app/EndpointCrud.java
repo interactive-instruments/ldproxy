@@ -126,7 +126,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
     return super.isEnabledForApi(apiData, collectionId)
         && providers
-            .getFeatureProvider(apiData)
+            .getFeatureProvider(apiData, apiData.getCollections().get(collectionId))
             .map(FeatureProvider2::supportsTransactions)
             .orElse(false);
   }
@@ -134,12 +134,10 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     return ImmutableList.of(
-        "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/create-replace-delete",
-        "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/optimistic-locking",
-        "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/features"
-        // TODO
-        // "http://www.opengis.net/spec/ogcapi-features-4/1.0/req/create-replace-delete/update"
-        );
+        "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/create-replace-delete",
+        "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/update",
+        "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/optimistic-locking",
+        "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/features");
   }
 
   @Override
@@ -202,6 +200,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("createItem", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.POST.name(), operation));
@@ -252,6 +251,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("replaceItem", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
@@ -277,6 +277,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("updateItem", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PATCH.name(), operation));
@@ -295,6 +296,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("deleteItem", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));
