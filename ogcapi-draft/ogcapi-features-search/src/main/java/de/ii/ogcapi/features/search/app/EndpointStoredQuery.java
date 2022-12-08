@@ -222,6 +222,7 @@ public class EndpointStoredQuery extends Endpoint {
                       operationSummary,
                       operationDescription,
                       Optional.empty(),
+                      getOperationId("executeStoredQuery"),
                       TAGS)
                   .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
               definitionBuilder.putResources(path, resourceBuilder.build());

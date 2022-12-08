@@ -18,6 +18,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
 import de.ii.ogcapi.features.html.domain.FeatureEncoderHtml;
+import de.ii.ogcapi.features.html.domain.FeatureTransformationContextHtml;
 import de.ii.ogcapi.features.html.domain.FeaturesFormatBaseHtml;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
@@ -278,7 +279,7 @@ public class FeaturesFormatHtml extends FeaturesFormatBaseHtml
               getGeometryProperties(apiData, collectionName));
     }
 
-    ImmutableFeatureTransformationContextHtml transformationContextHtml =
+    FeatureTransformationContextHtml transformationContextHtml =
         ImmutableFeatureTransformationContextHtml.builder()
             .from(transformationContext)
             .collectionView(featureTypeDataset)

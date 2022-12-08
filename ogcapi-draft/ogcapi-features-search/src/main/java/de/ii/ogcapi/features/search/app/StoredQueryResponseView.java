@@ -46,6 +46,7 @@ public class StoredQueryResponseView extends FeatureCollectionBaseView {
       Type mapClientType,
       String styleUrl,
       boolean removeZoomLevelConstraints,
+      boolean hideMap,
       List<String> geometryProperties) {
     super(
         spatialExtent,
@@ -63,6 +64,7 @@ public class StoredQueryResponseView extends FeatureCollectionBaseView {
         mapClientType,
         styleUrl,
         removeZoomLevelConstraints,
+        hideMap,
         geometryProperties);
 
     this.fromStoredQuery = true;

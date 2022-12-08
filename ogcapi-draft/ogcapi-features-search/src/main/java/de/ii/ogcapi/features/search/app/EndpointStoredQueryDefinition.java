@@ -124,6 +124,7 @@ public class EndpointStoredQueryDefinition extends Endpoint {
               operationSummary,
               operationDescription,
               Optional.empty(),
+              getOperationId("getStoredQueryDefinition"),
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
       definitionBuilder.putResources(path, resourceBuilder.build());

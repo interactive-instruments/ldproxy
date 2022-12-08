@@ -162,6 +162,7 @@ public class EndpointStoredQueriesManager extends Endpoint implements Conformanc
               operationSummary,
               operationDescription,
               Optional.empty(),
+              getOperationId("createOrUpdateStoredQuery"),
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
 
@@ -179,6 +180,7 @@ public class EndpointStoredQueriesManager extends Endpoint implements Conformanc
               operationSummary,
               operationDescription,
               Optional.empty(),
+              getOperationId("deleteStoredQuery"),
               TAGS)
           .ifPresent(
               operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));

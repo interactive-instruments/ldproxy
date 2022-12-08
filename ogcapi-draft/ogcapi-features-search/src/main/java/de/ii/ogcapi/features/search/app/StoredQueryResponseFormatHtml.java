@@ -29,6 +29,7 @@ import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -136,6 +137,14 @@ public class StoredQueryResponseFormatHtml extends FeaturesFormatBaseHtml {
                     nameValuePair.getName().equals("bare")
                         && nameValuePair.getValue().equals("true"));
 
+    boolean hideMap =
+        transformationContext
+            .getFeatureSchema()
+            .flatMap(
+                x ->
+                    x.getProperties().stream().filter(FeatureSchema::isPrimaryGeometry).findFirst())
+            .isEmpty();
+
     String queryId = transformationContext.getQueryId().orElseThrow();
     featureTypeDataset =
         createView(
@@ -150,6 +159,7 @@ public class StoredQueryResponseFormatHtml extends FeaturesFormatBaseHtml {
             language,
             isNoIndexEnabledForApi(apiData),
             getMapPosition(apiData),
+            hideMap,
             ImmutableList.of());
 
     addNavigation(
@@ -188,6 +198,7 @@ public class StoredQueryResponseFormatHtml extends FeaturesFormatBaseHtml {
       Optional<Locale> language,
       boolean noIndex,
       POSITION mapPosition,
+      boolean hideMap,
       List<String> geometryProperties) {
     OgcApiDataV2 apiData = api.getData();
     URI requestUri = null;
@@ -239,6 +250,7 @@ public class StoredQueryResponseFormatHtml extends FeaturesFormatBaseHtml {
             mapClientType,
             styleUrl,
             removeZoomLevelConstraints,
+            hideMap,
             geometryProperties);
 
     featureTypeDataset.temporalExtent = api.getTemporalExtent().orElse(null);

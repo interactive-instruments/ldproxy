@@ -104,6 +104,7 @@ public class EndpointStoredQueries extends Endpoint implements ConformanceClass 
             operationSummary,
             operationDescription,
             Optional.empty(),
+            getOperationId("getStoredQueries"),
             TAGS)
         .ifPresent(operation -> resourceBuilderSet.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilderSet.build());

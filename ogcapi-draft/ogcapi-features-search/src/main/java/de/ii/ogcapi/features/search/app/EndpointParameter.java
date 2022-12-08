@@ -136,6 +136,7 @@ public class EndpointParameter extends Endpoint {
               operationSummary,
               Optional.empty(),
               Optional.empty(),
+              getOperationId("getStoredQueryParameter"),
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
       definitionBuilder.putResources(path, resourceBuilder.build());
