@@ -4,14 +4,9 @@ import { useLocation, useHistory } from "react-router-dom";
 import { useFassets } from "feature-u";
 
 import { collectionEditTabs } from "../constants";
-import Index from "./Index";
+import Listing from "./Listing";
 
-const ServiceEditCollections = ({
-  serviceId,
-  serviceLabel,
-  collections,
-  isCompact,
-}) => {
+const ServiceEditCollections = ({ serviceId, serviceLabel, collections, isCompact }) => {
   const location = useLocation();
   const history = useHistory();
 
@@ -31,7 +26,7 @@ const ServiceEditCollections = ({
   //console.log("COLLTABS", tabs);
 
   return (
-    <Index
+    <Listing
       serviceId={serviceId}
       serviceLabel={serviceLabel}
       collections={collections}
