@@ -92,8 +92,6 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
           "The object to retrieve auxiliary files for the HTML API documentation is null, but should not be null.");
     }
 
-    // TODO: this also returns a 200 with an entity for non-existing files, but there is no way to
-    // identify it here to throw a NotFoundException()
     return openApiViewerResource.getFile(file);
   }
 }

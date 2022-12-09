@@ -51,8 +51,6 @@ public class OpenApiDefinition implements OpenApiExtension {
           .forEachOrdered(
               ogcApiEndpointDefinition ->
                   ogcApiEndpointDefinition.updateOpenApiDefinition(apiData, openAPI));
-
-      // TODO apply rename transformers for filter properties and values
     }
 
     return openAPI;
