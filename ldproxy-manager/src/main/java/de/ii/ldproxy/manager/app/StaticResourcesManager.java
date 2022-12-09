@@ -21,7 +21,7 @@ public class StaticResourcesManager implements StaticResources {
 
   @Inject
   StaticResourcesManager(AppContext appContext) {
-    this.isEnabled = appContext.getConfiguration().manager.enabled;
+    this.isEnabled = appContext.getConfiguration().getManager().getEnabled();
   }
 
   @Override

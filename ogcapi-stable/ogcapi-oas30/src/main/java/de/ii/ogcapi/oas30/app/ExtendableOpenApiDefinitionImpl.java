@@ -12,13 +12,14 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
+import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.oas30.domain.OpenApiExtension;
 import de.ii.xtraplatform.base.domain.AppContext;
-import de.ii.xtraplatform.base.domain.AuthConfig;
+import de.ii.xtraplatform.base.domain.AuthConfiguration;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Yaml;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -37,13 +38,15 @@ import org.apache.commons.lang3.StringUtils;
 @AutoBind
 public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinition {
 
-  private final AuthConfig authConfig;
+  private final AuthConfiguration authConfig;
   private final ExtensionRegistry extensionRegistry;
 
   @Inject
   public ExtendableOpenApiDefinitionImpl(
-      AppContext appContext, ExtensionRegistry extensionRegistry) {
-    this.authConfig = appContext.getConfiguration().auth;
+      AppContext appContext,
+      ExtensionRegistry extensionRegistry,
+      ClassSchemaCache classSchemaCache) {
+    this.authConfig = appContext.getConfiguration().getAuth();
     this.extensionRegistry = extensionRegistry;
   }
 
