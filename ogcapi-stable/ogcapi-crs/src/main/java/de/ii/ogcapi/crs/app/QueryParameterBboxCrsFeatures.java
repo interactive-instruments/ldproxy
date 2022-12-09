@@ -19,6 +19,7 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import io.swagger.v3.oas.models.media.Schema;
@@ -51,12 +52,15 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache
   public static final String CRS84 = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
   public static final String CRS84H = "http://www.opengis.net/def/crs/OGC/0/CRS84h";
 
+  private final CrsInfo crsInfo;
   private final CrsSupport crsSupport;
   private final SchemaValidator schemaValidator;
 
   @Inject
-  public QueryParameterBboxCrsFeatures(CrsSupport crsSupport, SchemaValidator schemaValidator) {
+  public QueryParameterBboxCrsFeatures(
+      CrsInfo crsInfo, CrsSupport crsSupport, SchemaValidator schemaValidator) {
     super();
+    this.crsInfo = crsInfo;
     this.crsSupport = crsSupport;
     this.schemaValidator = schemaValidator;
   }
@@ -93,25 +97,38 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache
       schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
     }
     if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
-      // TODO: include 2D (variants) of the CRSs
-      // default is currently always CRS84
-      String defaultCrs = CRS84 /* TODO support 4 or 6 numbers
-            apiData.getExtension(FeaturesCoreConfiguration.class, collectionId)
-                .map(FeaturesCoreConfiguration::getDefaultEpsgCrs)
-                .map(EpsgCrs::toUriString)
-                .orElse(CRS84) */;
       List<String> crsList =
           crsSupport
               .getSupportedCrsList(apiData, apiData.getCollections().get(collectionId))
               .stream()
               .map(crs -> crs.equals(OgcCrs.CRS84h) ? OgcCrs.CRS84 : crs)
+              .map(crs -> crsInfo.is3d(crs) ? mapTo2d(crs) : crs)
               .map(EpsgCrs::toUriString)
               .collect(ImmutableList.toImmutableList());
       schemaMap
           .get(apiHashCode)
-          .put(collectionId, new StringSchema()._enum(crsList)._default(defaultCrs));
+          .put(collectionId, new StringSchema()._enum(crsList)._default(CRS84));
     }
     return schemaMap.get(apiHashCode).get(collectionId);
+  }
+
+  private EpsgCrs mapTo2d(EpsgCrs crs) {
+    // map selected 3D CRSs to the corresponding 2D CRS
+    if (crs.equals(OgcCrs.CRS84h)) {
+      return OgcCrs.CRS84;
+    } else if (crs.equals(EpsgCrs.of(4979))) {
+      return EpsgCrs.of(4_326);
+    } else if (crs.equals(EpsgCrs.of(5554))) {
+      return EpsgCrs.of(25_831);
+    } else if (crs.equals(EpsgCrs.of(5555))) {
+      return EpsgCrs.of(25_832);
+    } else if (crs.equals(EpsgCrs.of(5556))) {
+      return EpsgCrs.of(25_833);
+      // add more as needed
+    } else if (crs.getVerticalCode().isPresent()) {
+      return EpsgCrs.of(crs.getCode(), crs.getForceAxisOrder());
+    }
+    return crs;
   }
 
   @Override
