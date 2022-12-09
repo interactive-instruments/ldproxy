@@ -9,8 +9,8 @@ package de.ii.ogcapi.tiles.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationParametersTransient;
-import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
+import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
+import de.ii.xtraplatform.tiles.domain.TileGenerationSchema;
 import java.util.Optional;
 
 @AutoMultiBind

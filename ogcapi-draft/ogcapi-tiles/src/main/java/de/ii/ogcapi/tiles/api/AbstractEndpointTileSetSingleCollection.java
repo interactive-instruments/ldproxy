@@ -73,7 +73,7 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
       // Tiles are generated on-demand from a data source
       if (config
           .filter(TilesConfiguration::isEnabled)
-          .filter(TilesConfiguration::isSingleCollectionEnabled)
+          .filter(TilesConfiguration::hasCollectionTiles)
           .isEmpty()) return false;
       // currently no vector tiles support for WFS backends
       return providers

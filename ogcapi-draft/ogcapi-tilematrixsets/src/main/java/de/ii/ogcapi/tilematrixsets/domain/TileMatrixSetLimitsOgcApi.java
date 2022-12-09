@@ -9,32 +9,36 @@ package de.ii.ogcapi.tilematrixsets.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSetLimits;
 import java.nio.charset.StandardCharsets;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
-@JsonDeserialize(builder = ImmutableTileMatrixSetLimits.Builder.class)
-public abstract class TileMatrixSetLimits {
-  public abstract String getTileMatrix();
+@JsonDeserialize(builder = ImmutableTileMatrixSetLimitsOgcApi.Builder.class)
+public abstract class TileMatrixSetLimitsOgcApi implements TileMatrixSetLimits {
 
-  public abstract Integer getMinTileRow();
-
-  public abstract Integer getMaxTileRow();
-
-  public abstract Integer getMinTileCol();
-
-  public abstract Integer getMaxTileCol();
-
-  public boolean contains(int row, int col) {
-    return getMaxTileCol() >= col
-        && getMinTileCol() <= col
-        && getMaxTileRow() >= row
-        && getMinTileRow() <= row;
+  public static TileMatrixSetLimitsOgcApi of(TileMatrixSetLimits limits) {
+    return new ImmutableTileMatrixSetLimitsOgcApi.Builder().from(limits).build();
   }
 
+  @Override
+  public abstract String getTileMatrix();
+
+  @Override
+  public abstract Integer getMinTileRow();
+
+  @Override
+  public abstract Integer getMaxTileRow();
+
+  @Override
+  public abstract Integer getMinTileCol();
+
+  @Override
+  public abstract Integer getMaxTileCol();
+
   @SuppressWarnings("UnstableApiUsage")
-  public static final Funnel<TileMatrixSetLimits> FUNNEL =
+  public static final Funnel<TileMatrixSetLimitsOgcApi> FUNNEL =
       (from, into) -> {
         into.putString(from.getTileMatrix(), StandardCharsets.UTF_8);
         into.putInt(from.getMinTileRow());

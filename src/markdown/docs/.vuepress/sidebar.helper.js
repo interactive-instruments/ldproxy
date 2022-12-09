@@ -1,10 +1,11 @@
 const { fs, path } = require('@vuepress/utils');
+//const util = require('util');
 
 module.exports = {
 	createGroup: createGroup,
 }
 
-function createGroup(title, directory, options = { children: [], ignoreReadme: false}) {
+function createGroup(title, directory, options = { children: [], ignoreReadme: false, headerReadme: false, collapsible: false}) {
   const extension = [".md"];
   const dir = normalize(directory);
   const mdPath = path.join(`${__dirname}/..${dir}`);
@@ -19,13 +20,13 @@ function createGroup(title, directory, options = { children: [], ignoreReadme: f
       (item) =>
         fs.statSync(path.join(mdPath, item)).isFile() &&
         extension.includes(path.extname(item)) &&
-        (!opts.ignoreReadme || item.toLowerCase() !== "readme.md")
+        ((!opts.ignoreReadme && !opts.headerReadme) || item.toLowerCase() !== "readme.md")
     )
     .sort(sortMdFiles)
     .map(item => `${dir}${item}`);
   
 
-  const sidebar = title ? { text: title, children: [...files, ...opts.children], collapsible: opts.collapsible } : [...files];
+  const sidebar = title ? { text: title, children: [...files, ...opts.children], collapsible: opts.collapsible, link: opts.headerReadme ? dir : undefined } : [...files];
 
   //console.log(util.inspect(sidebar, false, null, true));
 

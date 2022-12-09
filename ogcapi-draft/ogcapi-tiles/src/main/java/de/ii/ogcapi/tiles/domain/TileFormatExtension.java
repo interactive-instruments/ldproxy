@@ -27,7 +27,7 @@ public abstract class TileFormatExtension implements FormatExtension {
     return apiData
         .getExtension(TilesConfiguration.class)
         .filter(TilesConfiguration::isEnabled)
-        .filter(TilesConfiguration::isMultiCollectionEnabled)
+        .filter(TilesConfiguration::hasDatasetTiles)
         .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
         .isPresent();
   }
@@ -37,7 +37,7 @@ public abstract class TileFormatExtension implements FormatExtension {
     return apiData
         .getExtension(TilesConfiguration.class, collectionId)
         .filter(TilesConfiguration::isEnabled)
-        .filter(TilesConfiguration::isSingleCollectionEnabled)
+        .filter(TilesConfiguration::hasCollectionTiles)
         .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
         .isPresent();
   }
@@ -71,29 +71,7 @@ public abstract class TileFormatExtension implements FormatExtension {
             || formats.contains(getMediaType().label()));
   }
 
-  public boolean canMultiLayer() {
-    return false;
-  }
-
-  public boolean supportsFeatureQuery() {
-    return this instanceof TileFromFeatureQuery;
-  }
-
   public abstract String getExtension();
-
-  public boolean getGzippedInMbtiles() {
-    return false;
-  }
-
-  public boolean getSupportsEmptyTile() {
-    return false;
-  }
-
-  public byte[] getEmptyTile(Tile tile) {
-    throw new IllegalStateException(
-        String.format(
-            "No empty tile available for tile format %s.", this.getClass().getSimpleName()));
-  }
 
   public abstract TileSet.DataType getDataType();
 

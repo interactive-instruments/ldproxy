@@ -30,9 +30,9 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 /**
- * @langEn # Common
+ * @langEn # OGC API
  *     <p>Each API represents a deployment of a single OGC Web API.
- * @langDe # Allgemein
+ * @langDe # OGC API
  *     <p>Jede API stellt eine OGC Web API bereit.
  *     <p>Die Konfiguration einer API wird in einer Konfigurationsdatei in einem Objekt mit den
  *     folgenden Eigenschaften beschrieben.

@@ -48,7 +48,7 @@ public class TilesOnLandingPage implements LandingPageExtension {
 
     return extension
         .filter(TilesConfiguration::isEnabled)
-        .filter(TilesConfiguration::isMultiCollectionEnabled)
+        .filter(TilesConfiguration::hasDatasetTiles)
         .isPresent();
   }
 

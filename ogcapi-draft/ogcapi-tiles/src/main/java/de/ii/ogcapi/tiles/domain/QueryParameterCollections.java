@@ -19,9 +19,9 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
-import de.ii.ogcapi.tiles.domain.provider.ImmutableTileGenerationParametersTransient;
-import de.ii.ogcapi.tiles.domain.provider.TileGenerationSchema;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
+import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
+import de.ii.xtraplatform.tiles.domain.TileGenerationSchema;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -125,7 +125,7 @@ public class QueryParameterCollections extends ApiExtensionCache
     Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
     return config.isPresent()
         && config.get().isEnabled()
-        && config.get().isMultiCollectionEnabled()
+        && config.get().hasDatasetTiles()
         && config.get().getTileProvider().requiresQuerySupport();
   }
 

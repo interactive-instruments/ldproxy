@@ -14,7 +14,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetRepository;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
@@ -54,7 +54,7 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
         apiData
             .getExtension(TilesConfiguration.class)
             .filter(TilesConfiguration::isEnabled)
-            .filter(TilesConfiguration::isMultiCollectionEnabled)
+            .filter(TilesConfiguration::hasDatasetTiles)
             .map(TilesConfiguration::getZoomLevelsDerived)
             .map(Map::keySet)
             .orElse(ImmutableSet.of())

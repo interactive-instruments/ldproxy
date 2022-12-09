@@ -8,10 +8,10 @@
 package de.ii.ogcapi.features.csv.app;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.features.core.domain.FeatureEncoderSfFlat;
-import de.ii.ogcapi.features.core.domain.FeatureSfFlat;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.transform.FeatureEncoderSfFlat;
+import de.ii.xtraplatform.features.domain.transform.FeatureSfFlat;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.SortedMap;

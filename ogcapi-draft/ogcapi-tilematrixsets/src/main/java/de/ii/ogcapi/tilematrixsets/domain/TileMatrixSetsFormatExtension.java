@@ -24,5 +24,5 @@ public interface TileMatrixSetsFormatExtension extends GenericFormatExtension {
       TileMatrixSets tileMatrixSets, OgcApi api, ApiRequestContext requestContext);
 
   Object getTileMatrixSetEntity(
-      TileMatrixSetData tileMatrixSet, OgcApi api, ApiRequestContext requestContext);
+      TileMatrixSetOgcApi tileMatrixSet, OgcApi api, ApiRequestContext requestContext);
 }

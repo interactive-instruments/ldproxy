@@ -14,13 +14,13 @@ import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.html.domain.OgcApiView;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetData;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetOgcApi;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
 public class TileMatrixSetView extends OgcApiView {
-  public TileMatrixSetData tileMatrixSet;
+  public TileMatrixSetOgcApi tileMatrixSet;
   public String idTitle;
   public String boundingBoxTitle;
   public String wellKnownScaleSetTitle;
@@ -36,7 +36,7 @@ public class TileMatrixSetView extends OgcApiView {
 
   public TileMatrixSetView(
       OgcApiDataV2 apiData,
-      TileMatrixSetData tileMatrixSet,
+      TileMatrixSetOgcApi tileMatrixSet,
       List<NavigationDTO> breadCrumbs,
       String staticUrlPrefix,
       HtmlConfiguration htmlConfig,

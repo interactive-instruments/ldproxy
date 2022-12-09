@@ -26,7 +26,6 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
@@ -437,7 +436,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     try {
       U result = stream.get();
 
-      result.getError().ifPresent(QueriesHandler::processStreamError);
+      result.getError().ifPresent(FeatureStream::processStreamError);
 
       if (result.isEmpty() && failIfEmpty) {
         throw new NotFoundException("The requested feature does not exist.");

@@ -23,12 +23,12 @@ import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.tilematrixsets.domain.MinMax;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.tiles.domain.MinMax;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -63,7 +63,7 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
       // Tiles are pre-generated as a static tile set
       return config.filter(ExtensionConfiguration::isEnabled).isPresent();
     } else {
-      if (config.filter(TilesConfiguration::isSingleCollectionEnabled).isEmpty()) return false;
+      if (config.filter(TilesConfiguration::hasCollectionTiles).isEmpty()) return false;
       // Tiles are generated on-demand from a data source;
       // currently no vector tiles support for WFS backends
       return providers

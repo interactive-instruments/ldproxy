@@ -9,14 +9,6 @@ dependencies {
     provided project(":ogcapi-json")
     provided project(":ogcapi-oas30")
 
-    embeddedExport (group: 'org.locationtech.jts', name: 'jts-core', version: '1.19.0')
-    embeddedExport (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.19.0') {
-        exclude module: 'junit'
-    }
-    embedded (group: 'tec.units', name: 'unit-ri', version: '1.0.3') {
-        exclude module: 'unit-api'
-    }
-
     testImplementation(testFixtures(project(":ogcapi-foundation")))
     testImplementation project(":ogcapi-html")
     testImplementation project(":ogcapi-json")

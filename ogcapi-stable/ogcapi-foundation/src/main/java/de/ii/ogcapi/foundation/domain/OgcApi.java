@@ -10,6 +10,7 @@ package de.ii.ogcapi.foundation.domain;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.services.domain.Service;
+import java.net.URI;
 import java.time.Instant;
 import java.util.Optional;
 import javax.validation.constraints.NotNull;
@@ -165,4 +166,6 @@ public interface OgcApi extends Service {
   default Optional<Long> getItemCount(@NotNull Optional<String> collectionId) {
     return collectionId.isPresent() ? getItemCount(collectionId.get()) : getItemCount();
   }
+
+  URI getUri();
 }

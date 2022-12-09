@@ -11,9 +11,9 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.OgcResourceMetadata;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetData;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimits;
-import de.ii.ogcapi.tilematrixsets.domain.TilesBoundingBox;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsOgcApi;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetOgcApi;
+import de.ii.xtraplatform.tiles.domain.TilesBoundingBox;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;
@@ -38,11 +38,11 @@ public abstract class TileSet extends OgcResourceMetadata {
 
   public abstract String getTileMatrixSetId();
 
-  public abstract Optional<TileMatrixSetData> getTileMatrixSet();
+  public abstract Optional<TileMatrixSetOgcApi> getTileMatrixSet();
 
   public abstract Optional<String> getTileMatrixSetURI();
 
-  public abstract List<TileMatrixSetLimits> getTileMatrixSetLimits();
+  public abstract List<TileMatrixSetLimitsOgcApi> getTileMatrixSetLimits();
 
   public abstract TilesBoundingBox getBoundingBox();
 
@@ -65,13 +65,13 @@ public abstract class TileSet extends OgcResourceMetadata {
         OgcResourceMetadata.FUNNEL.funnel(from, into);
         into.putString(from.getDataType().toString(), StandardCharsets.UTF_8);
         into.putString(from.getTileMatrixSetId(), StandardCharsets.UTF_8);
-        from.getTileMatrixSet().ifPresent(val -> TileMatrixSetData.FUNNEL.funnel(val, into));
+        from.getTileMatrixSet().ifPresent(val -> TileMatrixSetOgcApi.FUNNEL.funnel(val, into));
         from.getTileMatrixSetURI().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-        TilesBoundingBox.FUNNEL.funnel(from.getBoundingBox(), into);
+        TileMatrixSetOgcApi.FUNNEL_BBOX.funnel(from.getBoundingBox(), into);
         from.getCenterPoint().ifPresent(val -> TilePoint.FUNNEL.funnel(val, into));
         from.getTileMatrixSetLimits().stream()
-            .sorted(Comparator.comparing(TileMatrixSetLimits::getTileMatrix))
-            .forEachOrdered(val -> TileMatrixSetLimits.FUNNEL.funnel(val, into));
+            .sorted(Comparator.comparing(TileMatrixSetLimitsOgcApi::getTileMatrix))
+            .forEachOrdered(val -> TileMatrixSetLimitsOgcApi.FUNNEL.funnel(val, into));
         from.getLayers().stream()
             .sorted(Comparator.comparing(TileLayer::getId))
             .forEachOrdered(val -> TileLayer.FUNNEL.funnel(val, into));
