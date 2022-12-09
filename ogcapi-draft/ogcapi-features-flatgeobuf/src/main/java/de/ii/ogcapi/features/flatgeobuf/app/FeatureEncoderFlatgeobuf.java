@@ -8,14 +8,14 @@
 package de.ii.ogcapi.features.flatgeobuf.app;
 
 import com.google.flatbuffers.FlatBufferBuilder;
-import de.ii.ogcapi.features.core.domain.FeatureEncoderSfFlat;
-import de.ii.ogcapi.features.core.domain.FeatureSfFlat;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
+import de.ii.xtraplatform.features.domain.transform.FeatureEncoderSfFlat;
+import de.ii.xtraplatform.features.domain.transform.FeatureSfFlat;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

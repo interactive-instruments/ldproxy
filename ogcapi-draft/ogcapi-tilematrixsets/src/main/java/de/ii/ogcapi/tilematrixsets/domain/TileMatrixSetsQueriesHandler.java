@@ -11,6 +11,7 @@ import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
 import java.util.List;
 import java.util.Map;
 import org.immutables.value.Value;

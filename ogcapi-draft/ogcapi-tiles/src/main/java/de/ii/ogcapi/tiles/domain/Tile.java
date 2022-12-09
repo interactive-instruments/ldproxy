@@ -9,7 +9,6 @@ package de.ii.ogcapi.tiles.domain;
 
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSet;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -17,6 +16,7 @@ import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;

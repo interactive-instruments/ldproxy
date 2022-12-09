@@ -64,7 +64,7 @@ public class TilesOnCollection implements CollectionExtension {
         && isExtensionEnabled(
             featureTypeConfiguration,
             TilesConfiguration.class,
-            TilesConfiguration::isSingleCollectionEnabled)) {
+            TilesConfiguration::hasCollectionTiles)) {
       Optional<DataType> dataType =
           extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
               .filter(

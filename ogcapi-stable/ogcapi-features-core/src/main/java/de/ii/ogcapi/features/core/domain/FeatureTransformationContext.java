@@ -22,6 +22,7 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureType;
+import de.ii.xtraplatform.features.domain.transform.EncodingContextSfFlat;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;

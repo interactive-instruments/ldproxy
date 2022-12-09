@@ -20,7 +20,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.NavigationDTO;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetData;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetOgcApi;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSets;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsFormatExtension;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -103,7 +103,7 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
 
   @Override
   public Object getTileMatrixSetEntity(
-      TileMatrixSetData tileMatrixSet, OgcApi api, ApiRequestContext requestContext) {
+      TileMatrixSetOgcApi tileMatrixSet, OgcApi api, ApiRequestContext requestContext) {
     String rootTitle = i18n.get("root", requestContext.getLanguage());
     String tileMatrixSetsTitle = i18n.get("tileMatrixSetsTitle", requestContext.getLanguage());
     String title = tileMatrixSet.getTitle().orElse(tileMatrixSet.getId());

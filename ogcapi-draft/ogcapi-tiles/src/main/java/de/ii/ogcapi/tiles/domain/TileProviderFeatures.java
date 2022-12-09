@@ -11,9 +11,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import de.ii.ogcapi.tilematrixsets.domain.MinMax;
-import de.ii.ogcapi.tiles.domain.provider.LevelFilter;
-import de.ii.ogcapi.tiles.domain.provider.LevelTransformation;
+import de.ii.xtraplatform.tiles.domain.LevelFilter;
+import de.ii.xtraplatform.tiles.domain.LevelTransformation;
+import de.ii.xtraplatform.tiles.domain.MinMax;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -188,36 +188,6 @@ public abstract class TileProviderFeatures extends TileProvider {
   public boolean isIgnoreInvalidGeometries() {
     return Objects.equals(getIgnoreInvalidGeometries(), true);
   }
-
-  /**
-   * @langEn *Deprecated, no longer used* Maximum allowed relative change of surface sizes when
-   *     attempting to fix an invalid surface geometry. The fixed geometry is only used when the
-   *     condition is met. The value `0.1` means 10%.
-   * @langDe *Deprecated, wird nicht mehr benutzt* Steuert die maximal erlaubte relative Änderung
-   *     der Flächengröße beim Versuch eine topologisch ungültige Polygongeometrie im
-   *     Koordinatensystem der Kachel zu reparieren. Ist die Bedingung erfüllt, wird die reparierte
-   *     Polygongeometrie verwendet. Der Wert 0.1 entspricht 10%.
-   * @default 0.1
-   */
-  // TODO: remove
-  @Deprecated
-  public abstract Optional<Double> getMaxRelativeAreaChangeInPolygonRepair();
-
-  /**
-   * @langEn *Deprecated, no longer used* Maximum allowed absolute change of surface sizes when
-   *     attempting to fix an invalid surface geometry. The fixed geometry is only used when the
-   *     condition is met. The value `1.0` corresponds to one "pixel" in the used coordinate
-   *     reference system.
-   * @langDe *Deprecated, wird nicht mehr benutzt* Steuert die maximal erlaubte absolute Änderung
-   *     der Flächengröße beim Versuch eine topologisch ungültige Polygongeometrie im
-   *     Koordinatensystem der Kachel zu reparieren. Ist die Bedingung erfüllt, wird die reparierte
-   *     Polygongeometrie verwendet. Der Wert 1.0 entspricht einem "Pixel" im
-   *     Kachelkoordinatensystem.
-   * @default 1.0
-   */
-  // TODO: remove
-  @Deprecated
-  public abstract Optional<Double> getMaxAbsoluteAreaChangeInPolygonRepair();
 
   /**
    * @langEn Features with line geometries shorter that the given value are excluded from tiles.
