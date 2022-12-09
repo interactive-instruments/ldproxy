@@ -14,6 +14,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
@@ -830,7 +831,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         new ImmutableCache.Builder()
             .type(Type.DYNAMIC)
             .storage(storage)
-            .putAllLevels(tilesConfiguration.getSeedingDerived()) // TODO: per collection/layer?
+            .putAllLevels(tilesConfiguration.getSeedingDerived())
             .putAllLayerLevels(
                 collectionConfigs.entrySet().stream()
                     .map(
@@ -838,7 +839,40 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                             new SimpleImmutableEntry<>(
                                 entry.getKey(), entry.getValue().getSeedingDerived()))
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
+            .build(),
+        new ImmutableCache.Builder()
+            .type(Type.DYNAMIC)
+            .storage(storage)
+            .seeded(false)
+            .putAllLevels(getNonSeededRanges(tilesConfiguration))
+            .putAllLayerLevels(
+                collectionConfigs.entrySet().stream()
+                    .map(
+                        entry ->
+                            new SimpleImmutableEntry<>(
+                                entry.getKey(), getNonSeededRanges(entry.getValue())))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
             .build());
+  }
+
+  private static Map<String, MinMax> getNonSeededRanges(TilesConfiguration tilesConfiguration) {
+    Map<String, MinMax> seeding = tilesConfiguration.getSeedingDerived();
+
+    return tilesConfiguration.getZoomLevelsCacheDerived().entrySet().stream()
+        .map(
+            entry -> {
+              if (seeding.containsKey(entry.getKey())) {
+                Range<Integer> range =
+                    Range.closed(
+                        Math.max(
+                            seeding.get(entry.getKey()).getMax() + 1, entry.getValue().getMin()),
+                        entry.getValue().getMax());
+
+                return new SimpleImmutableEntry<>(entry.getKey(), MinMax.of(range));
+              }
+              return entry;
+            })
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   private static LayerOptionsFeatures getFeatureLayer(
