@@ -197,7 +197,7 @@ import de.ii.xtraplatform.docs.DocVar;
                     @DocStep(
                         type = Step.TAG,
                         params =
-                            "<SplitBadge type=\"{@layer.nameSuffix}\" left=\"spec\" right=\"{@layer.nameSuffix}\" vertical=\"center\" /><span/><SplitBadge type=\"{@module.maturity}\" left=\"impl\" right=\"{@module.maturity}\" vertical=\"center\" />"),
+                            "<SplitBadge type=\"{@layer.nameSuffix}\" left=\"spec\" right=\"{@layer.nameSuffix}\" vertical=\"center\" style=\"margin-bottom: 5px;\" /><span/><SplitBadge type=\"{@module.maturity}\" left=\"impl\" right=\"{@module.maturity}\" vertical=\"center\" />"),
                 header = {
                   @DocI18n(language = "en", value = "Classification"),
                   @DocI18n(language = "de", value = "Klassifizierung")
@@ -223,12 +223,14 @@ import de.ii.xtraplatform.docs.DocVar;
                   + "<SplitBadge type=\"{@module.maturity}\" left=\"impl\" right=\"{@module.maturity}\" vertical=\"super\" />\n\n"
                   + "{@body}\n\n"
                   + "## Scope\n\n"
-                  + "{@scopeEn}\n\n"
+                  + "{@scopeEn |||}\n\n"
                   + "{@conformanceEn ### Conformance Classes\n\n|||}\n\n"
                   + "{@docTable:endpoints ### Resources\n\n|||}\n\n"
                   + "{@docTable:queryParams ### Query Parameters\n\n|||}\n\n"
                   + "## Configuration\n\n"
+                  + "{@configurationEn |||}\n\n"
                   + "{@docTable:properties ### Options\n\n||| This building block has no configuration options.}\n\n"
+                  + "{@propertiesEn |||}\n\n"
                   + "{@docVar:example ### Example\n\n|||}\n"),
       @DocI18n(
           language = "de",
@@ -238,12 +240,14 @@ import de.ii.xtraplatform.docs.DocVar;
                   + "<SplitBadge type=\"{@module.maturity}\" left=\"impl\" right=\"{@module.maturity}\" vertical=\"super\" />\n\n"
                   + "{@body}\n\n"
                   + "## Umfang\n\n"
-                  + "{@scopeDe}\n\n"
+                  + "{@scopeDe |||}\n\n"
                   + "{@conformanceDe ### Konformitätsklassen\n\n|||}\n\n"
                   + "{@docTable:endpoints ### Ressourcen\n\n|||}\n\n"
                   + "{@docTable:queryParams ### Query Parameter\n\n|||}\n\n"
                   + "## Konfiguration\n\n"
+                  + "{@configurationDe |||}\n\n"
                   + "{@docTable:properties ### Optionen\n\n||| Dieses Modul hat keine Konfigurationsoptionen.}\n\n"
+                  + "{@propertiesDe |||}\n\n"
                   + "{@docVar:example ### Beispiel\n\n|||}\n")
     },
     tables = {
