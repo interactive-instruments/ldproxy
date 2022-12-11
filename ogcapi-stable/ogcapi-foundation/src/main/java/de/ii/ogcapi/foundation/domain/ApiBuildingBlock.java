@@ -182,8 +182,9 @@ import de.ii.xtraplatform.docs.DocVar;
     tables = {
       @DocTable(
           name = "overview",
-          rows = {@DocStep(type = Step.IMPLEMENTATIONS)
-            // @DocStep(type = Step.SORTED, params = "{@sortPriority}")
+          rows = {
+            @DocStep(type = Step.IMPLEMENTATIONS),
+            @DocStep(type = Step.SORTED, params = "{@title}")
           },
           columns = {
             @DocColumn(

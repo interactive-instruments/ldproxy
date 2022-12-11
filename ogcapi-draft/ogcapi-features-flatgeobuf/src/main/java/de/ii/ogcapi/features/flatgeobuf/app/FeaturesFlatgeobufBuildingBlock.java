@@ -16,6 +16,8 @@ import javax.inject.Singleton;
 
 /**
  * @title Features Flatgeobuf
+ * @langEn TODO
+ * @langDe TODO
  */
 @Singleton
 @AutoBind
