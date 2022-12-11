@@ -18,11 +18,11 @@ import javax.inject.Singleton;
  * @title JSON
  * @langEn The module *JSON* may be enabled for every API. It is enabled by default. Provides JSON
  *     encoding for every supported resource that does not have more specific rules (like
- *     [Features](geo_json.md)).
+ *     [Features](features_geojson.md)).
  * @langDe Das Modul *JSON* kann für jede über ldproxy bereitgestellte API aktiviert werden und ist
  *     standardmäßig aktiviert. Soweit für eine Ressource keine speziellen Regelungen für die
- *     Ausgabeformate bestehen (wie zum Beispiel für [Features](geo_json.md)) und die Ressource JSON
- *     unterstützt, können Clients das Ausgabeformat anfordern.
+ *     Ausgabeformate bestehen (wie zum Beispiel für [Features](features_geojson.md)) und die
+ *     Ressource JSON unterstützt, können Clients das Ausgabeformat anfordern.
  * @propertyTable {@link de.ii.ogcapi.json.domain.ImmutableJsonConfiguration}
  */
 @Singleton

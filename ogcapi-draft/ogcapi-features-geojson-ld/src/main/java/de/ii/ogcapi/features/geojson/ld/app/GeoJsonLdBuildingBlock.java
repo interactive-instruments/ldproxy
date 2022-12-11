@@ -16,7 +16,7 @@ import javax.inject.Singleton;
 
 /**
  * @title Features GeoJSON-LD
- * @langEn Adds support for JSON-LD by extending the [GeoJSON](geo_json.md) encoding.
+ * @langEn Adds support for JSON-LD by extending the [GeoJSON](features_geojson.md) encoding.
  * @langDe Das Modul "Features GeoJSON-LD" kann für jede über ldproxy bereitgestellte API mit einem
  *     Feature-Provider aktiviert werden, sofern die GeoJSON-Ausgabe aktiviert ist.
  *     <p>Es ergänzt die GeoJSON-Ausgabe um die folgenden Angaben:
