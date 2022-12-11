@@ -15,11 +15,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title Filter / CQL2
+ * @title Filter
  * @langEn The module "Filter / CQL2" can be enabled for any API with a feature provider. It enables
  *     the specification of the query parameters `filter` and `filter-long` for
- *     [features](features_core.md) and [vector tiles](tiles.md). Supported are the filter languages
- *     `cql2-text` and `cql2-json`.
+ *     [features](features_core.md) and [vector tiles](vector_tiles.md). Supported are the filter
+ *     languages `cql2-text` and `cql2-json`.
  * @conformanceEn This module implements requirements of the conformance classes *Filter* and
  *     *Features Filter* from the draft specification [OGC API - Features - Part 3: Common Query
  *     Language](https://docs.ogc.org/DRAFTS/19-079r1.html) as well as the conformance classes
@@ -31,11 +31,12 @@ import javax.inject.Singleton;
  *     the course of the development and approval process of the draft.
  * @langDe Das Modul "Filter / CQL2" kann für jede über ldproxy bereitgestellte API mit einem
  *     Feature-Provider aktiviert werden. Es aktiviert die Angabe der Query-Parameter `filter` und
- *     `filter-lang` für [Features](features_core.md) und [Vector Tiles](tiles.md). Unterstützt
- *     werden die Filtersprachen `cql2-text` und `cql2-json`.
+ *     `filter-lang` für [Features](features_core.md) und [Vector Tiles](vector_tiles.md).
+ *     Unterstützt werden die Filtersprachen `cql2-text` und `cql2-json`.
  *     <p>The publication of the queryables is controlled by the [Collections Queryables
- *     module](queryables.md). If "Filter / CQL2" is enabled, then "Collections Queryables" must be
- *     enabled, too, so that clients can determine the feature properties that can be queried.
+ *     module](collections_queryables.md). If "Filter / CQL2" is enabled, then "Collections
+ *     Queryables" must be enabled, too, so that clients can determine the feature properties that
+ *     can be queried.
  * @conformanceDe Dieses Modul implementiert die Anforderungen der Konformitätsklassen *Filter* und
  *     *Features Filter* aus dem Entwurf der Spezifikation [OGC API - Features - Part 3: Common
  *     Query Language](https://docs.ogc.org/DRAFTS/19-079r1.html) sowie die Konformitätsklassen
@@ -46,9 +47,9 @@ import javax.inject.Singleton;
  *     (CQL2](https://docs.ogc.org/DRAFTS/21-065.html). Die Implementierung kann sich im Zuge der
  *     weiteren Standardisierung des Entwurfs noch ändern.
  *     <p>Die Veröffentlichung der Queryables wird über das [Modul "Collections
- *     Queryables"](queryables.md) gesteuert. Ist "Filter / CQL2" aktiviert, dann muss "Collection
- *     Queryables" aktiviert sein, damit Clients die abfragbaren Objekteigenschaften bestimmen
- *     können.
+ *     Queryables"](collections_queryables.md) gesteuert. Ist "Filter / CQL2" aktiviert, dann muss
+ *     "Collection Queryables" aktiviert sein, damit Clients die abfragbaren Objekteigenschaften
+ *     bestimmen können.
  * @queryParameterTable {@link de.ii.ogcapi.filter.api.QueryParameterFilter}, {@link
  *     de.ii.ogcapi.filter.api.QueryParameterFilterCrs}, {@link
  *     de.ii.ogcapi.filter.api.QueryParameterFilterLang}

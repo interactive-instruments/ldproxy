@@ -77,9 +77,9 @@ import de.ii.xtraplatform.docs.DocVar;
  *     `https://example.com/pfad/zu/apis/{apiId}/collections`.
  *     <p><a name="transformations"></a>
  *     <p>### Property transformations
- *     <p>Modules related to feature encoding ([Core](features_core.md), [GeoJSON](geo_json.md),
- *     [HTML](features_html.md), [Vector Tiles](tiles.md)) support transforming feature properties
- *     for all or only for specific encodings.
+ *     <p>Modules related to feature encoding ([Core](features_core.md),
+ *     [GeoJSON](features_geojson.md), [HTML](features_html.md), [Vector Tiles](vector_tiles.md))
+ *     support transforming feature properties for all or only for specific encodings.
  *     <p>Transformations do not affect data sources, they are applied on-the-fly as part of the
  *     encoding.
  *     <p>Filter expressions do not take transformations into account, they have to be based on the
@@ -125,9 +125,9 @@ import de.ii.xtraplatform.docs.DocVar;
  *     <p><a name="transformations"></a>
  *     <p>### Transformationen
  *     <p>In den API-Modulen, die Features verarbeiten ([Core](features_core.md),
- *     [GeoJSON](geo_json.md), [JSON-FG](json_fg.md), [HTML](features_html.md), [Tiles](tiles.md)
- *     mit dem Features-Tile-Provider), können die Feature-Eigenschaften über Transformationen an
- *     die Anforderungen der Ausgabe angepasst werden.
+ *     [GeoJSON](features_geojson.md), [JSON-FG](features_json-fg.md), [HTML](features_html.md),
+ *     [Tiles](vector_tiles.md) mit dem Features-Tile-Provider), können die Feature-Eigenschaften
+ *     über Transformationen an die Anforderungen der Ausgabe angepasst werden.
  *     <p>Die Transformation der Werte erfolgt bei der Aufbereitung der Daten für die Rückgabe über
  *     die API. Die Datenhaltung selbst bleibt unverändert.
  *     <p>Alle Filterausdrücke (siehe `queryables` im [Modul "Features Core"](features_core.md))

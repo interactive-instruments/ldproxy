@@ -18,9 +18,12 @@ import de.ii.ogcapi.routes.domain.ImmutableRoutingConfiguration;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @title Routing
+ */
 @Singleton
 @AutoBind
-public class CapabilityRouting implements ApiBuildingBlock {
+public class RoutingBuildingBlock implements ApiBuildingBlock {
 
   public static String CORE = "http://www.opengis.net/spec/ogcapi-routes-1/1.0.0-draft.1/conf/core";
   public static String MODE = "http://www.opengis.net/spec/ogcapi-routes-1/1.0.0-draft.1/conf/mode";
@@ -36,7 +39,7 @@ public class CapabilityRouting implements ApiBuildingBlock {
       "http://www.opengis.net/spec/ogcapi-routes-1/1.0.0-draft.1/conf/manage-routes";
 
   @Inject
-  CapabilityRouting() {}
+  RoutingBuildingBlock() {}
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {

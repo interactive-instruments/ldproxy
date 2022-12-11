@@ -40,6 +40,12 @@ import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.base.domain.util.Tuple;
 import de.ii.xtraplatform.cql.domain.Cql;
+import de.ii.xtraplatform.docs.DocDefs;
+import de.ii.xtraplatform.docs.DocStep;
+import de.ii.xtraplatform.docs.DocStep.Step;
+import de.ii.xtraplatform.docs.DocTable;
+import de.ii.xtraplatform.docs.DocTable.ColumnSet;
+import de.ii.xtraplatform.docs.DocVar;
 import de.ii.xtraplatform.features.domain.DatasetChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -119,6 +125,14 @@ import org.sqlite.SQLiteJDBCLoader;
  *     `cache/tiles/{apiId}`. Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden,
  *     dann sollte das Cache-Verzeichnis für die API gelöscht werden, damit der Cache mit den
  *     aktualisierten Daten oder Regeln neu aufgebaut wird.
+ * @propertiesEn ### Tile Provider
+ *     <p>{@docVar:provider}
+ *     <p>#### Features
+ *     <p>{@docTable:providerFeatures}
+ * @propertiesDe ### Tile Provider
+ *     <p>{@docVar:provider}
+ *     <p>#### Features
+ *     <p>{@docTable:providerFeatures}
  * @example {@link de.ii.ogcapi.tiles.domain.TilesConfiguration}
  * @propertyTable {@link de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration}
  * @endpointTable {@link de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection}, {@link
@@ -134,7 +148,27 @@ import org.sqlite.SQLiteJDBCLoader;
  *     de.ii.ogcapi.tiles.domain.QueryParameterFTileSets}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterLimitTile},
  * @see de.ii.ogcapi.tiles.domain.SeedingOptions
+ * @ref:provider {@link de.ii.ogcapi.tiles.domain.TileProvider}
+ * @ref:providerFeatures {@link de.ii.ogcapi.tiles.domain.ImmutableTileProviderFeatures}
  */
+@DocDefs(
+    tables = {
+      @DocTable(
+          name = "providerFeatures",
+          rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:providerFeatures}"),
+            @DocStep(type = Step.JSON_PROPERTIES)
+          },
+          columnSet = ColumnSet.JSON_PROPERTIES),
+    },
+    vars = {
+      @DocVar(
+          name = "provider",
+          value = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:provider}"),
+            @DocStep(type = Step.TAG, params = "{@bodyBlock}")
+          })
+    })
 @Singleton
 @AutoBind
 public class TilesBuildingBlock implements ApiBuildingBlock {
