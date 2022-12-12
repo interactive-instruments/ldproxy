@@ -20,6 +20,15 @@ dependencies {
     modules subprojects
 }
 
+layer {
+    PRODUCTION {
+        minimumCoverage = 0.0
+    }
+    CANDIDATE {
+        minimumCoverage = 0.0
+    }
+}
+
 task checkAll { dependsOn subprojects*.tasks*.findByPath('check') }
 task testAll { dependsOn subprojects*.tasks*.findByPath('test') }
 tasks.publish { dependsOn subprojects*.tasks*.findByPath('publish') }
