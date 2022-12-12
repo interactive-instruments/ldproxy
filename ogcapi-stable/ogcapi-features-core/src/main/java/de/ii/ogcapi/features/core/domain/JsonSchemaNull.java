@@ -18,7 +18,6 @@ public abstract class JsonSchemaNull extends JsonSchema {
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<JsonSchemaNull> FUNNEL =
       (from, into) -> {
-        JsonSchema.FUNNEL.funnel(from, into);
         into.putString(from.getType(), StandardCharsets.UTF_8);
       };
 

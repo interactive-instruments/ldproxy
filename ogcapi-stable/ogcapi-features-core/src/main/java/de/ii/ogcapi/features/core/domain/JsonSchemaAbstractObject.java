@@ -19,7 +19,6 @@ public abstract class JsonSchemaAbstractObject extends JsonSchema {
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<JsonSchemaAbstractObject> FUNNEL =
       (from, into) -> {
-        JsonSchema.FUNNEL.funnel(from, into);
         into.putString(from.getType(), StandardCharsets.UTF_8);
         from.getRequired().stream()
             .sorted()

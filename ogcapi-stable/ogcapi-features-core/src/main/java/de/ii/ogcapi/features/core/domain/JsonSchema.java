@@ -38,8 +38,10 @@ public abstract class JsonSchema {
           JsonSchemaTrue.FUNNEL.funnel((JsonSchemaTrue) from, into);
         } else if (from instanceof JsonSchemaFalse) {
           JsonSchemaFalse.FUNNEL.funnel((JsonSchemaFalse) from, into);
-        } else if (from instanceof JsonSchemaRef) {
-          JsonSchemaRef.FUNNEL.funnel((JsonSchemaRef) from, into);
+        } else if (from instanceof JsonSchemaRefInternal) {
+          JsonSchemaRefInternal.FUNNEL.funnel((JsonSchemaRefInternal) from, into);
+        } else if (from instanceof JsonSchemaRefExternal) {
+          JsonSchemaRefExternal.FUNNEL.funnel((JsonSchemaRefExternal) from, into);
         } else if (from instanceof JsonSchemaOneOf) {
           JsonSchemaOneOf.FUNNEL.funnel((JsonSchemaOneOf) from, into);
         }

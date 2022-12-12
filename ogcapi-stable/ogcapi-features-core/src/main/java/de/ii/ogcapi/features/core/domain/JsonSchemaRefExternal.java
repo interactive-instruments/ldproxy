@@ -19,7 +19,6 @@ public abstract class JsonSchemaRefExternal extends JsonSchema {
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<JsonSchemaRefExternal> FUNNEL =
       (from, into) -> {
-        JsonSchema.FUNNEL.funnel(from, into);
         into.putString(from.getRef(), StandardCharsets.UTF_8);
       };
 

@@ -19,7 +19,6 @@ public abstract class JsonSchemaArray extends JsonSchema {
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<JsonSchemaArray> FUNNEL =
       (from, into) -> {
-        JsonSchema.FUNNEL.funnel(from, into);
         into.putString(from.getType(), StandardCharsets.UTF_8);
         JsonSchema.FUNNEL.funnel(from.getItems(), into);
         from.getMinItems().ifPresent(into::putInt);

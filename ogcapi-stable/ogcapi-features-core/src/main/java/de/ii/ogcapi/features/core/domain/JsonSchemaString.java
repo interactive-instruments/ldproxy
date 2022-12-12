@@ -21,7 +21,6 @@ public abstract class JsonSchemaString extends JsonSchema {
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<JsonSchemaString> FUNNEL =
       (from, into) -> {
-        JsonSchema.FUNNEL.funnel(from, into);
         into.putString(from.getType(), StandardCharsets.UTF_8);
         from.getFormat().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
         from.getPattern().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));

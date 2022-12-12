@@ -16,7 +16,7 @@ import org.immutables.value.Value;
 public abstract class JsonSchemaTrue extends JsonSchema {
 
   @SuppressWarnings("UnstableApiUsage")
-  public static final Funnel<JsonSchemaTrue> FUNNEL = JsonSchema.FUNNEL::funnel;
+  public static final Funnel<JsonSchemaTrue> FUNNEL = (from, into) -> {};
 
   // any instance is valid, same as {}
 

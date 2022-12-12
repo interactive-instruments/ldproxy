@@ -21,7 +21,6 @@ public abstract class JsonSchemaInteger extends JsonSchema {
   @SuppressWarnings("UnstableApiUsage")
   public static final Funnel<JsonSchemaInteger> FUNNEL =
       (from, into) -> {
-        JsonSchema.FUNNEL.funnel(from, into);
         into.putString(from.getType(), StandardCharsets.UTF_8);
         from.getMinimum().ifPresent(into::putLong);
         from.getMaximum().ifPresent(into::putLong);

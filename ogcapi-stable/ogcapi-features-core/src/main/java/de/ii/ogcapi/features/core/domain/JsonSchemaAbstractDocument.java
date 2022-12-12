@@ -20,16 +20,6 @@ public abstract class JsonSchemaAbstractDocument extends JsonSchemaAbstractObjec
   public static final Funnel<JsonSchemaAbstractDocument> FUNNEL =
       (from, into) -> {
         JsonSchemaAbstractObject.FUNNEL.funnel(from, into);
-        into.putString(from.getType(), StandardCharsets.UTF_8);
-        from.getRequired().stream()
-            .sorted()
-            .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getProperties().entrySet().stream()
-            .sorted(Map.Entry.comparingByKey())
-            .forEachOrdered(entry -> JsonSchema.FUNNEL.funnel(entry.getValue(), into));
-        from.getPatternProperties().entrySet().stream()
-            .sorted(Map.Entry.comparingByKey())
-            .forEachOrdered(entry -> JsonSchema.FUNNEL.funnel(entry.getValue(), into));
         into.putString(from.getSchema(), StandardCharsets.UTF_8);
         from.getId().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
         from.getDefinitions().entrySet().stream()
