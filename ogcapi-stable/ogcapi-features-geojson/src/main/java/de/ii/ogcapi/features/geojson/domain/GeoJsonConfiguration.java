@@ -109,6 +109,7 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableGeoJsonConfiguration.Builder.class)
 public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
+  @SuppressWarnings("PMD.ClassNamingConventions")
   enum NESTED_OBJECTS {
     NEST,
     FLATTEN
@@ -128,6 +129,7 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
    *     [`flatten`-Transformation](../../providers/details/transformations.md).
    * @default `FLATTEN
    */
+  @SuppressWarnings("DeprecatedIsStillUsed")
   @Deprecated(since = "3.1.0")
   @Nullable
   NESTED_OBJECTS getNestedObjectStrategy();
@@ -139,10 +141,12 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
    *     [`flatten`-Transformation](../../providers/details/transformations.md).
    * @default `SUFFIX`
    */
+  @SuppressWarnings("DeprecatedIsStillUsed")
   @Deprecated(since = "3.1.0")
   @Nullable
   MULTIPLICITY getMultiplicityStrategy();
 
+  @SuppressWarnings("DeprecatedIsStillUsed")
   @Deprecated(since = "3.1.0")
   @Nullable
   Boolean getUseFormattedJsonOutput();
@@ -154,6 +158,7 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
    *     [`flatten`-Transformation](../../providers/details/transformations.md).
    * @default "."
    */
+  @SuppressWarnings("DeprecatedIsStillUsed")
   @Deprecated(since = "3.1.0")
   @Nullable
   String getSeparator();

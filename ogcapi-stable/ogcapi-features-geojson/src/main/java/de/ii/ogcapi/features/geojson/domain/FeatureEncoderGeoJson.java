@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableCollection;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext.Event;
 import de.ii.xtraplatform.base.domain.LogContext;
-import de.ii.xtraplatform.features.domain.FeatureProperty;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoderDefault;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import java.io.IOException;
@@ -23,22 +22,20 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings({"ConstantConditions", "PMD.TooManyMethods"})
 public class FeatureEncoderGeoJson extends FeatureTokenEncoderDefault<EncodingAwareContextGeoJson> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderGeoJson.class);
 
   private final ImmutableCollection<GeoJsonWriter> featureWriters;
   private final FeatureTransformationContextGeoJson transformationContext;
-  private final StringBuilder stringBuilder;
-  private FeatureProperty currentProperty;
-  private boolean combineCurrentPropertyValues;
 
   public FeatureEncoderGeoJson(
       FeatureTransformationContextGeoJson transformationContext,
       ImmutableCollection<GeoJsonWriter> featureWriters) {
+    super();
     this.transformationContext = transformationContext;
     this.featureWriters = featureWriters;
-    this.stringBuilder = new StringBuilder();
   }
 
   private Consumer<EncodingAwareContextGeoJson> executePipeline(
@@ -55,7 +52,9 @@ public class FeatureEncoderGeoJson extends FeatureTokenEncoderDefault<EncodingAw
 
   @Override
   public void onStart(EncodingAwareContextGeoJson context) {
-    // TODO: more elegant solution
+    // The following is needed when the encoder writes to the output stream; that is, not only
+    // push() is used to write;
+    // see https://github.com/interactive-instruments/ldproxy/issues/818
     if (transformationContext.getOutputStream() instanceof OutputStreamToByteConsumer) {
       ((OutputStreamToByteConsumer) transformationContext.getOutputStream())
           .setByteConsumer(this::push);
@@ -84,10 +83,6 @@ public class FeatureEncoderGeoJson extends FeatureTokenEncoderDefault<EncodingAw
 
   @Override
   public void onFeatureStart(EncodingAwareContextGeoJson context) {
-    // TODO: schema
-    // transformationContext.getState()
-    //    .setCurrentFeatureType(Optional.ofNullable(featureType));
-
     transformationContext.getState().setEvent(FeatureTransformationContext.Event.FEATURE_START);
     executePipeline(featureWriters.iterator()).accept(context);
 

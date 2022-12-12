@@ -10,7 +10,6 @@ package de.ii.ogcapi.features.html.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
 import de.ii.ogcapi.features.html.domain.ImmutableFeaturesHtmlConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -26,21 +25,13 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
 public class FeaturesHtmlDataHydrator implements OgcApiDataHydratorExtension {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesHtmlDataHydrator.class);
-
-  private final FeaturesCoreProviders providers;
-
   @Inject
-  public FeaturesHtmlDataHydrator(FeaturesCoreProviders providers) {
-    this.providers = providers;
-  }
+  public FeaturesHtmlDataHydrator() {}
 
   @Override
   public int getSortPriority() {
@@ -58,7 +49,9 @@ public class FeaturesHtmlDataHydrator implements OgcApiDataHydratorExtension {
 
     // any Features HTML hydration actions are not taken in STRICT validation mode;
     // STRICT: an invalid service definition will not start
-    if (apiData.getApiValidation() != MODE.STRICT) return apiData;
+    if (apiData.getApiValidation() != MODE.STRICT) {
+      return apiData;
+    }
 
     OgcApiDataV2 data = apiData;
 
@@ -74,18 +67,21 @@ public class FeaturesHtmlDataHydrator implements OgcApiDataHydratorExtension {
                   final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
                   FeaturesHtmlConfiguration config =
                       collectionData.getExtension(FeaturesHtmlConfiguration.class).orElse(null);
-                  if (Objects.isNull(config)) return null;
+                  if (Objects.isNull(config)) {
+                    return null;
+                  }
 
                   final String collectionId = entry.getKey();
                   final String buildingBlock = config.getBuildingBlock();
 
-                  if (config.hasDeprecatedTransformationKeys())
+                  if (config.hasDeprecatedTransformationKeys()) {
                     config =
                         new ImmutableFeaturesHtmlConfiguration.Builder()
                             .from(config)
                             .transformations(
                                 config.normalizeTransformationKeys(buildingBlock, collectionId))
                             .build();
+                  }
 
                   return new AbstractMap.SimpleImmutableEntry<>(collectionId, config);
                 })
@@ -101,7 +97,9 @@ public class FeaturesHtmlDataHydrator implements OgcApiDataHydratorExtension {
                     .map(
                         entry -> {
                           final String collectionId = entry.getKey();
-                          if (!configs.containsKey(collectionId)) return entry;
+                          if (!configs.containsKey(collectionId)) {
+                            return entry;
+                          }
 
                           final FeaturesHtmlConfiguration config = configs.get(collectionId);
                           final String buildingBlock = config.getBuildingBlock();

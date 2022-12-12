@@ -18,9 +18,16 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@SuppressWarnings("PMD.AvoidDuplicateLiterals") // resolve as part of glTF update
 public class CesiumData {
 
-  private class FeatureGeometry {
+  public final List<FeatureHtml> features;
+  private final List<String> geometryProperties;
+  private final boolean clampToGround;
+
+  private List<FeatureGeometry> geometries;
+
+  private static class FeatureGeometry {
     String name;
     Geometry<?> geometry;
 
@@ -30,16 +37,10 @@ public class CesiumData {
     }
   }
 
-  public final List<FeatureHtml> features;
-  private final List<String> geometryProperties;
-  private final boolean clampToGround;
-
-  private List<FeatureGeometry> geometries = null;
-
   public CesiumData(List<FeatureHtml> features, List<String> geometryProperties) {
     this.features = features;
     this.geometryProperties = geometryProperties;
-    this.clampToGround = true; // TODO make configurable
+    this.clampToGround = true;
   }
 
   private List<FeatureGeometry> getGeometries(
@@ -50,7 +51,9 @@ public class CesiumData {
               List<PropertyHtml> geomProperties = ImmutableList.of();
               for (String geometryProperty : geometryProperties) {
                 geomProperties = feature.findPropertiesByPath(geometryProperty);
-                if (!geomProperties.isEmpty()) break;
+                if (!geomProperties.isEmpty()) {
+                  break;
+                }
               }
               if (geomProperties.isEmpty()) {
                 Optional<PropertyHtml> defaultGeom = feature.getGeometry();
@@ -67,8 +70,11 @@ public class CesiumData {
         .collect(Collectors.toUnmodifiableList());
   }
 
+  @SuppressWarnings("unused")
   public String getFeatureExtent() {
-    if (Objects.isNull(geometries)) geometries = getGeometries(features, geometryProperties);
+    if (Objects.isNull(geometries)) {
+      geometries = getGeometries(features, geometryProperties);
+    }
     List<Coordinate> coordinates =
         geometries.stream()
             .map(f -> f.geometry.getCoordinatesFlat())
@@ -81,46 +87,47 @@ public class CesiumData {
     return "Rectangle.fromDegrees(" + minLon + "," + minLat + "," + maxLon + "," + maxLat + ")";
   }
 
+  @SuppressWarnings("unused")
   public List<String> getMapEntities() {
     ImmutableList.Builder<String> builder = ImmutableList.builder();
-    if (Objects.isNull(geometries)) geometries = getGeometries(features, geometryProperties);
-    geometries.stream()
-        .forEach(
-            f -> {
-              final Double minHeight =
-                  clampToGround && f.geometry.is3d()
-                      ? getMin(f.geometry.getCoordinatesFlat(), 2).orElse(0.0)
-                      : null;
-              switch (f.geometry.getType()) {
-                case MultiPoint:
-                  ((Geometry.MultiPoint) f.geometry)
-                      .getCoordinates().stream()
-                          .forEach(point -> addPoint(builder, f.name, point, minHeight));
-                  break;
-                case Point:
-                  addPoint(builder, f.name, (Geometry.Point) f.geometry, minHeight);
-                  break;
-                case MultiLineString:
-                  ((Geometry.MultiLineString) f.geometry)
-                      .getCoordinates().stream()
-                          .forEach(line -> addLineString(builder, f.name, line, minHeight));
-                  break;
-                case LineString:
-                  addLineString(builder, f.name, (Geometry.LineString) f.geometry, minHeight);
-                  break;
-                case MultiPolygon:
-                  ((Geometry.MultiPolygon) f.geometry)
-                      .getCoordinates().stream()
-                          .forEach(polygon -> addPolygon(builder, f.name, polygon, minHeight));
-                  break;
-                case Polygon:
-                  addPolygon(builder, f.name, (Geometry.Polygon) f.geometry, minHeight);
-                  break;
-                default:
-                  throw new IllegalStateException(
-                      "Unsupported geometry type: " + f.geometry.getType());
-              }
-            });
+    if (Objects.isNull(geometries)) {
+      geometries = getGeometries(features, geometryProperties);
+    }
+    geometries.forEach(
+        f -> {
+          final Double minHeight =
+              clampToGround && f.geometry.is3d()
+                  ? getMin(f.geometry.getCoordinatesFlat(), 2).orElse(0.0)
+                  : null;
+          switch (f.geometry.getType()) {
+            case MultiPoint:
+              ((Geometry.MultiPoint) f.geometry)
+                  .getCoordinates()
+                  .forEach(point -> addPoint(builder, f.name, point, minHeight));
+              break;
+            case Point:
+              addPoint(builder, f.name, (Geometry.Point) f.geometry, minHeight);
+              break;
+            case MultiLineString:
+              ((Geometry.MultiLineString) f.geometry)
+                  .getCoordinates()
+                  .forEach(line -> addLineString(builder, f.name, line, minHeight));
+              break;
+            case LineString:
+              addLineString(builder, f.name, (Geometry.LineString) f.geometry, minHeight);
+              break;
+            case MultiPolygon:
+              ((Geometry.MultiPolygon) f.geometry)
+                  .getCoordinates()
+                  .forEach(polygon -> addPolygon(builder, f.name, polygon, minHeight));
+              break;
+            case Polygon:
+              addPolygon(builder, f.name, (Geometry.Polygon) f.geometry, minHeight);
+              break;
+            default:
+              throw new IllegalStateException("Unsupported geometry type: " + f.geometry.getType());
+          }
+        });
     return builder.build();
   }
 
@@ -239,11 +246,12 @@ public class CesiumData {
   }
 
   private String getCoordinatesString(List<Geometry.Coordinate> coordinates) {
-    if (is3d(coordinates))
+    if (is3d(coordinates)) {
       return coordinates.stream()
           .flatMap(List::stream)
           .map(String::valueOf)
           .collect(Collectors.joining(","));
+    }
 
     return coordinates.stream()
         .map(coord -> ImmutableList.of(coord.get(0), coord.get(1), 0.0))
@@ -253,7 +261,10 @@ public class CesiumData {
   }
 
   private String getCoordinatesString(List<Geometry.Coordinate> coordinates, Double deltaHeight) {
-    if (Objects.isNull(deltaHeight)) return getCoordinatesString(coordinates);
+    if (Objects.isNull(deltaHeight)) {
+      return getCoordinatesString(coordinates);
+    }
+
     return coordinates.stream()
         .map(
             coord -> Geometry.Coordinate.of(coord.get(0), coord.get(1), coord.get(2) - deltaHeight))

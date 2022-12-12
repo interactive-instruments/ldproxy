@@ -118,6 +118,7 @@ public class GmlWriterProperties implements GmlWriter {
   }
 
   @Override
+  @SuppressWarnings("PMD.CognitiveComplexity")
   public void onValue(EncodingAwareContextGml context, Consumer<EncodingAwareContextGml> next)
       throws IOException {
     if (!shouldSkipProperty(context)) {
@@ -139,25 +140,7 @@ public class GmlWriterProperties implements GmlWriter {
             // encode as XML attribute
             context.encoding().writeAsXmlAtt(schema.getName(), value);
           } else {
-            // opening tag of property element
-            context.encoding().write("<");
-            String[] name = schema.getName().split(XML_NAME_ATTRIBUTE_SEPARATOR, 2);
-            context.encoding().write(name[0]);
-            if (name.length == 2) {
-              context.encoding().write(" name=\"");
-              context.encoding().write(name[1]);
-              context.encoding().write("\"");
-            }
-            writeUnitIfNecessary(context, schema);
-            context.encoding().write(">");
-
-            // value
-            writeValue(context, value, schema.getType());
-
-            // closing tag
-            context.encoding().write("</");
-            context.encoding().write(name[0]);
-            context.encoding().write(">");
+            writePropertyElement(context, schema, value);
           }
         }
       } else {
@@ -166,6 +149,29 @@ public class GmlWriterProperties implements GmlWriter {
     }
 
     next.accept(context);
+  }
+
+  private void writePropertyElement(
+      EncodingAwareContextGml context, FeatureSchema schema, String value) {
+    // opening tag of property element
+    context.encoding().write("<");
+    String[] name = schema.getName().split(XML_NAME_ATTRIBUTE_SEPARATOR, 2);
+    context.encoding().write(name[0]);
+    if (name.length == 2) {
+      context.encoding().write(" name=\"");
+      context.encoding().write(name[1]);
+      context.encoding().write("\"");
+    }
+    writeUnitIfNecessary(context, schema);
+    context.encoding().write(">");
+
+    // value
+    writeValue(context, value, schema.getType());
+
+    // closing tag
+    context.encoding().write("</");
+    context.encoding().write(name[0]);
+    context.encoding().write(">");
   }
 
   private void setVariableObjectElementName(
@@ -225,7 +231,7 @@ public class GmlWriterProperties implements GmlWriter {
     context.encoding().write(" xlink:");
     context.encoding().write(schema.getName());
     context.encoding().write("=\"");
-    if (schema.getName().equals("href") && context.encoding().getAllLinksAreLocal()) {
+    if ("href".equals(schema.getName()) && context.encoding().getAllLinksAreLocal()) {
       String localHref =
           context.encoding().getIdsIncludeCollectionId()
               ? String.format(
@@ -258,7 +264,7 @@ public class GmlWriterProperties implements GmlWriter {
     if (type == Type.BOOLEAN) {
       context
           .encoding()
-          .write(Boolean.parseBoolean(value) || value.equalsIgnoreCase("t") || value.equals("1"));
+          .write(Boolean.parseBoolean(value) || "t".equalsIgnoreCase(value) || "1".equals(value));
     } else {
       context.encoding().write(escapeText(value));
     }

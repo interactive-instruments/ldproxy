@@ -18,8 +18,20 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.immutables.value.Value;
 
+// see https://github.com/interactive-instruments/ldproxy/issues/543
+@SuppressWarnings("PMD.ExcessivePublicCount")
 public interface Geometry<T> {
 
+  String AT_LEAST_TWO_COORDINATES =
+      "A line string must have at least two coordinates, found %d coordiantes.";
+  String COORDINATE_REQUIRES_2_OR_3_VALUES = "A coordinate requires 2 or 3 values. Found: %s";
+  String DIFFERENT_DIMENSIONS =
+      "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.";
+  String AT_LEAST_4_COORDINATES = "Each ring must have at least 4 coordinates, found: %d.";
+  String AT_LEAST_AN_OUTER_RING = "A polygon must have at least an outer ring, no ring was found.";
+  String ONLY_ONE_COORDINATE = "A point must have only one coordinate, found %d coordinates.";
+
+  @SuppressWarnings("PMD.FieldNamingConventions")
   enum Type {
     Point,
     LineString,
@@ -53,10 +65,12 @@ public interface Geometry<T> {
     }
 
     static Point of(List<Double> xyz) {
-      if (xyz.size() == 2) return Point.of(xyz.get(0), xyz.get(1));
-      else if (xyz.size() == 3) return Point.of(xyz.get(0), xyz.get(1), xyz.get(2));
-      throw new IllegalArgumentException(
-          String.format("A coordinate requires 2 or 3 values. Found: %s", xyz));
+      if (xyz.size() == 2) {
+        return Point.of(xyz.get(0), xyz.get(1));
+      } else if (xyz.size() == 3) {
+        return Point.of(xyz.get(0), xyz.get(1), xyz.get(2));
+      }
+      throw new IllegalArgumentException(String.format(COORDINATE_REQUIRES_2_OR_3_VALUES, xyz));
     }
 
     static Point of(Coordinate coordinate) {
@@ -82,9 +96,7 @@ public interface Geometry<T> {
     @Value.Check
     default void check() {
       Preconditions.checkState(
-          getCoordinates().size() == 1,
-          "A point must have only one coordinate, found %d coordinates.",
-          getCoordinates().size());
+          getCoordinates().size() == 1, ONLY_ONE_COORDINATE, getCoordinates().size());
     }
 
     @Override
@@ -124,13 +136,11 @@ public interface Geometry<T> {
     @Value.Check
     default void check() {
       Preconditions.checkState(
-          getCoordinates().size() > 1,
-          "A line string must have at least two coordinates, found %d coordiantes.",
-          getCoordinates().size());
+          getCoordinates().size() > 1, AT_LEAST_TWO_COORDINATES, getCoordinates().size());
       List<Coordinate> coords = getCoordinatesFlat();
       Preconditions.checkState(
           coords.stream().skip(1).allMatch(c -> c.size() == coords.get(0).size()),
-          "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.",
+          DIFFERENT_DIMENSIONS,
           coords.size());
     }
 
@@ -181,20 +191,18 @@ public interface Geometry<T> {
 
     @Value.Check
     default void check() {
-      Preconditions.checkState(
-          !getCoordinates().isEmpty(),
-          "A polygon must have at least an outer ring, no ring was found.");
+      Preconditions.checkState(!getCoordinates().isEmpty(), AT_LEAST_AN_OUTER_RING);
       getCoordinates()
           .forEach(
               ring ->
                   Preconditions.checkState(
                       ring.getCoordinates().size() > 3,
-                      "Each ring must have at least 4 coordinates, found: %d.",
+                      AT_LEAST_4_COORDINATES,
                       ring.getCoordinates().size()));
       List<Coordinate> coords = getCoordinatesFlat();
       Preconditions.checkState(
           coords.stream().skip(1).allMatch(c -> c.size() == coords.get(0).size()),
-          "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.",
+          DIFFERENT_DIMENSIONS,
           coords.size());
     }
 
@@ -240,7 +248,7 @@ public interface Geometry<T> {
       List<Coordinate> coords = getCoordinatesFlat();
       Preconditions.checkState(
           coords.stream().skip(1).allMatch(c -> c.size() == coords.get(0).size()),
-          "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.",
+          DIFFERENT_DIMENSIONS,
           coords.size());
     }
 
@@ -286,7 +294,7 @@ public interface Geometry<T> {
       List<Coordinate> coords = getCoordinatesFlat();
       Preconditions.checkState(
           coords.stream().skip(1).allMatch(c -> c.size() == coords.get(0).size()),
-          "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.",
+          DIFFERENT_DIMENSIONS,
           coords.size());
     }
 
@@ -334,7 +342,7 @@ public interface Geometry<T> {
       List<Coordinate> coords = getCoordinatesFlat();
       Preconditions.checkState(
           coords.stream().skip(1).allMatch(c -> c.size() == coords.get(0).size()),
-          "The first coordinate has dimension %d, but at least one other coordinate has a different dimension.",
+          DIFFERENT_DIMENSIONS,
           coords.size());
     }
 
@@ -344,6 +352,7 @@ public interface Geometry<T> {
     }
   }
 
+  @SuppressWarnings("serial")
   class Coordinate extends ArrayList<Double> {
 
     public static Coordinate of(double x, double y) {
@@ -355,10 +364,12 @@ public interface Geometry<T> {
     }
 
     public static Coordinate of(List<Double> xyz) {
-      if (xyz.size() == 2) return new Coordinate(xyz.get(0), xyz.get(1));
-      else if (xyz.size() == 3) return new Coordinate(xyz.get(0), xyz.get(1), xyz.get(2));
-      throw new IllegalArgumentException(
-          String.format("A coordinate requires 2 or 3 values. Found: %s", xyz));
+      if (xyz.size() == 2) {
+        return new Coordinate(xyz.get(0), xyz.get(1));
+      } else if (xyz.size() == 3) {
+        return new Coordinate(xyz.get(0), xyz.get(1), xyz.get(2));
+      }
+      throw new IllegalArgumentException(String.format(COORDINATE_REQUIRES_2_OR_3_VALUES, xyz));
     }
 
     public Coordinate(double x, double y) {

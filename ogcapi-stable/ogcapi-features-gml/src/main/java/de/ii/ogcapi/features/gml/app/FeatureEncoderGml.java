@@ -22,9 +22,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({
-  "PMD.TooManyMethods"
-}) // this class needs that many methods, a refactoring makes no sense
+@SuppressWarnings({"PMD.TooManyMethods", "ConstantConditions"})
 public class FeatureEncoderGml extends FeatureTokenEncoderDefault<EncodingAwareContextGml> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderGml.class);

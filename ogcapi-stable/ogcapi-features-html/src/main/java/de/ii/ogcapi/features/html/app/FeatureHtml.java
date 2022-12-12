@@ -7,7 +7,11 @@
  */
 package de.ii.ogcapi.features.html.app;
 
+import static de.ii.ogcapi.features.html.app.PropertyHtml.PATH_COMPARISON.EQUAL;
+import static de.ii.ogcapi.features.html.app.PropertyHtml.PATH_COMPARISON.SUB_PATH;
+
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.features.html.app.PropertyHtml.PATH_COMPARISON;
 import de.ii.ogcapi.features.html.domain.Geometry;
 import de.ii.xtraplatform.features.domain.FeatureBase;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -22,6 +26,7 @@ import org.immutables.value.Value;
 
 @Value.Modifiable
 @Value.Style(set = "*")
+@SuppressWarnings("unused")
 public interface FeatureHtml extends FeatureBase<PropertyHtml, FeatureSchema> {
 
   Optional<String> getItemType();
@@ -87,7 +92,7 @@ public interface FeatureHtml extends FeatureBase<PropertyHtml, FeatureSchema> {
         .or(
             () ->
                 getProperties().stream()
-                    .map(property -> property.getGeometry())
+                    .map(PropertyHtml::getGeometry)
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .findFirst());
@@ -103,50 +108,57 @@ public interface FeatureHtml extends FeatureBase<PropertyHtml, FeatureSchema> {
                   geo.getSchema().flatMap(FeatureSchema::getGeometryType);
               List<PropertyHtml> coordinates = getFirstCoordinates();
               if (geometryType.isPresent() && !coordinates.isEmpty()) {
-
-                if ((geometryType.get() == SimpleFeatureGeometry.POINT
-                    || geometryType.get() == SimpleFeatureGeometry.MULTI_POINT)) {
+                if (geometryType.get() == SimpleFeatureGeometry.POINT
+                    || geometryType.get() == SimpleFeatureGeometry.MULTI_POINT) {
                   PropertyHtml point = coordinates.get(0);
                   if (point.getValues().size() > 1) {
-                    String latitude = point.getValues().get(0).getValue();
-                    String longitude = point.getValues().get(1).getValue();
-
-                    return Optional.of(
-                        String.format(
-                            "{ \"@type\": \"GeoCoordinates\", \"latitude\": \"%s\", \"longitude\": \"%s\" }",
-                            latitude, longitude));
+                    return getPointString(point);
                   }
                 } else if (geometryType.get() != SimpleFeatureGeometry.ANY) {
-                  String geomType;
-                  switch (geometryType.get()) {
-                    case POLYGON:
-                    case MULTI_POLYGON:
-                      geomType = "polygon";
-                      break;
-                    default:
-                      geomType = "line";
-                      break;
-                  }
-                  String coords =
-                      coordinates.stream()
-                          .map(
-                              coord ->
-                                  coord.getValues().size() > 1
-                                      ? coord.getValues().get(1).getValue()
-                                          + " "
-                                          + coord.getValues().get(0).getValue()
-                                      : "")
-                          .collect(Collectors.joining(" "));
-
-                  return Optional.of(
-                      String.format(
-                          "{ \"@type\": \"GeoShape\", \"%s\": \"%s\" }", geomType, coords));
+                  return getAnyString(geometryType, coordinates);
                 }
               }
 
               return Optional.empty();
             })
         .orElse(null);
+  }
+
+  private Optional<String> getAnyString(
+      Optional<SimpleFeatureGeometry> geometryType, List<PropertyHtml> coordinates) {
+    String geomType;
+    switch (geometryType.get()) {
+      case POLYGON:
+      case MULTI_POLYGON:
+        geomType = "polygon";
+        break;
+      default:
+        geomType = "line";
+        break;
+    }
+    String coords =
+        coordinates.stream()
+            .map(
+                coord ->
+                    coord.getValues().size() > 1
+                        ? coord.getValues().get(1).getValue()
+                            + " "
+                            + coord.getValues().get(0).getValue()
+                        : "")
+            .collect(Collectors.joining(" "));
+
+    return Optional.of(
+        String.format("{ \"@type\": \"GeoShape\", \"%s\": \"%s\" }", geomType, coords));
+  }
+
+  private Optional<String> getPointString(PropertyHtml point) {
+    String latitude = point.getValues().get(0).getValue();
+    String longitude = point.getValues().get(1).getValue();
+
+    return Optional.of(
+        String.format(
+            "{ \"@type\": \"GeoCoordinates\", \"latitude\": \"%s\", \"longitude\": \"%s\" }",
+            latitude, longitude));
   }
 
   @Value.Lazy
@@ -204,17 +216,18 @@ public interface FeatureHtml extends FeatureBase<PropertyHtml, FeatureSchema> {
         getProperties().stream()
             .map(
                 property -> {
-                  switch (PropertyHtml.pathCompatible(property.getPropertyPath(), path)) {
-                    case SUB_PATH:
-                      return property.findPropertiesByPath(path);
-                    case EQUAL:
-                      return ImmutableList.of(property);
+                  PATH_COMPARISON result =
+                      PropertyHtml.pathCompatible(property.getPropertyPath(), path);
+                  if (result == SUB_PATH) {
+                    return property.findPropertiesByPath(path);
+                  } else if (result == EQUAL) {
+                    return ImmutableList.of(property);
                   }
                   return ImmutableList.<PropertyHtml>of();
                 })
             .flatMap(Collection::stream)
             .collect(Collectors.toUnmodifiableList());
-    if (properties.isEmpty())
+    if (properties.isEmpty()) {
       properties =
           getProperties().stream()
               .filter(property -> property.getSchema().filter(SchemaBase::isSpatial).isEmpty())
@@ -222,6 +235,7 @@ public interface FeatureHtml extends FeatureBase<PropertyHtml, FeatureSchema> {
               .filter(Optional::isPresent)
               .map(Optional::get)
               .collect(Collectors.toUnmodifiableList());
+    }
     return properties;
   }
 }

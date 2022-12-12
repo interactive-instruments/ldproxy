@@ -14,6 +14,7 @@ import de.ii.xtraplatform.crs.domain.CoordinateTuple;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.json.domain.GeoJsonGeometryType;
 import java.io.IOException;
@@ -22,6 +23,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -31,7 +33,17 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
+@SuppressWarnings("PMD.TooManyMethods")
 public class GeoJsonWriterGeometry implements GeoJsonWriter {
+
+  private boolean suppressPrimaryGeometry;
+  private boolean geometryOpen;
+  private boolean hasPrimaryGeometry;
+  private boolean inPrimaryGeometry;
+  private final List<String> pos = new ArrayList<>();
+  // move coordinate conversion to WGS 84 to the transformation pipeline,
+  // see https://github.com/interactive-instruments/ldproxy/issues/521
+  private Optional<CrsTransformer> crsTransformerGeometry;
 
   private final CrsTransformerFactory crsTransformerFactory;
 
@@ -39,15 +51,6 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
   public GeoJsonWriterGeometry(CrsTransformerFactory crsTransformerFactory) {
     this.crsTransformerFactory = crsTransformerFactory;
   }
-
-  private boolean suppressPrimaryGeometry;
-  private boolean geometryOpen;
-  private boolean hasPrimaryGeometry;
-  private boolean inPrimaryGeometry;
-  private final List<String> pos = new ArrayList<>();
-  // TODO: move coordinate conversion to WGS 84 to the transformation pipeline,
-  //       see https://github.com/interactive-instruments/ldproxy/issues/521
-  private CrsTransformer crsTransformerGeometry;
 
   @Override
   public GeoJsonWriterGeometry create() {
@@ -64,13 +67,12 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
     suppressPrimaryGeometry = context.encoding().getSuppressPrimaryGeometry();
-    crsTransformerGeometry = null;
+    crsTransformerGeometry = Optional.empty();
     if (!suppressPrimaryGeometry && context.encoding().getForceDefaultCrs()) {
       EpsgCrs sourceCrs = context.encoding().getTargetCrs();
       EpsgCrs targetCrs = context.encoding().getDefaultCrs();
       if (!Objects.equals(sourceCrs, targetCrs)) {
-        crsTransformerGeometry =
-            crsTransformerFactory.getTransformer(sourceCrs, targetCrs).orElse(null);
+        crsTransformerGeometry = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
       }
     }
 
@@ -93,17 +95,21 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
       throws IOException {
     if (context.schema().filter(SchemaBase::isSpatial).isPresent()
         && context.geometryType().isPresent()) {
-      if (suppressPrimaryGeometry && context.schema().get().isPrimaryGeometry()) {
+      if (suppressPrimaryGeometry
+          && context.schema().map(SchemaBase::isPrimaryGeometry).orElse(false)) {
         inPrimaryGeometry = true;
       } else {
-        if (context.schema().get().isPrimaryGeometry()) {
+        if (context.schema().map(SchemaBase::isPrimaryGeometry).orElse(false)) {
           hasPrimaryGeometry = true;
           inPrimaryGeometry = true;
           context.encoding().stopBuffering();
 
           context.encoding().getJson().writeFieldName("geometry");
         } else {
-          context.encoding().getJson().writeFieldName(context.schema().get().getName());
+          context
+              .encoding()
+              .getJson()
+              .writeFieldName(context.schema().map(FeatureSchema::getName).orElseThrow());
         }
 
         context.encoding().getJson().writeStartObject();
@@ -143,28 +149,7 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
 
     if (geometryOpen) {
       if (!pos.isEmpty()) {
-        if (Objects.isNull(crsTransformerGeometry)) {
-          // fallback
-          for (String p : pos) context.encoding().getJson().writeRawValue(p);
-        } else {
-          CoordinateTuple coord =
-              crsTransformerGeometry.transform(new CoordinateTuple(pos.get(0), pos.get(1)));
-          context
-              .encoding()
-              .getJson()
-              .writeRawValue(
-                  BigDecimal.valueOf(coord.getX())
-                      .setScale(7, RoundingMode.HALF_DOWN)
-                      .toPlainString());
-          context
-              .encoding()
-              .getJson()
-              .writeRawValue(
-                  BigDecimal.valueOf(coord.getY())
-                      .setScale(7, RoundingMode.HALF_DOWN)
-                      .toPlainString());
-          if (pos.size() == 3) context.encoding().getJson().writeRawValue(pos.get(2));
-        }
+        writeCoordinates(context);
         pos.clear();
       }
 
@@ -174,13 +159,38 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
     next.accept(context);
   }
 
+  private void writeCoordinates(EncodingAwareContextGeoJson context) throws IOException {
+    if (crsTransformerGeometry.isEmpty()) {
+      // fallback
+      for (String p : pos) {
+        context.encoding().getJson().writeRawValue(p);
+      }
+    } else {
+      CoordinateTuple coord =
+          crsTransformerGeometry.get().transform(new CoordinateTuple(pos.get(0), pos.get(1)));
+      context
+          .encoding()
+          .getJson()
+          .writeRawValue(
+              BigDecimal.valueOf(coord.getX()).setScale(7, RoundingMode.HALF_DOWN).toPlainString());
+      context
+          .encoding()
+          .getJson()
+          .writeRawValue(
+              BigDecimal.valueOf(coord.getY()).setScale(7, RoundingMode.HALF_DOWN).toPlainString());
+      if (pos.size() == 3) {
+        context.encoding().getJson().writeRawValue(pos.get(2));
+      }
+    }
+  }
+
   @Override
   public void onObjectEnd(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
     if (context.schema().filter(SchemaBase::isSpatial).isPresent() && geometryOpen) {
 
-      boolean stopBuffering = context.schema().get().isPrimaryGeometry();
+      boolean stopBuffering = context.schema().map(SchemaBase::isPrimaryGeometry).orElse(false);
       if (stopBuffering) {
         context.encoding().stopBuffering();
       }

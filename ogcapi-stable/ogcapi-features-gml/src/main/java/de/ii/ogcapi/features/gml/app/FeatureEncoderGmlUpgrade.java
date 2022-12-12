@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author zahnen
  */
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.GodClass", "PMD.CyclomaticComplexity"})
 public class FeatureEncoderGmlUpgrade
     extends FeatureTokenEncoderDefault<EncodingAwareContextGmlUpgrade> {
 
@@ -73,10 +74,6 @@ public class FeatureEncoderGmlUpgrade
   private Integer currentDimension;
   private String locations;
 
-  @SuppressWarnings({
-    "PMD.TooManyMethods",
-    "PMD.GodClass"
-  }) // this class needs that many methods, a refactoring makes no sense
   public FeatureEncoderGmlUpgrade(FeatureTransformationContextGmlUpgrade transformationContext) {
     super();
     this.transformationContext = transformationContext;
@@ -85,7 +82,6 @@ public class FeatureEncoderGmlUpgrade
         new OutputStreamWriter(transformationContext.getOutputStream(), StandardCharsets.UTF_8);
     this.namespaces = new XMLNamespaceNormalizer(transformationContext.getNamespaces());
     this.crsTransformer = transformationContext.getCrsTransformer().orElse(null);
-    //noinspection UnstableApiUsage
     this.escaper = XmlEscapers.xmlAttributeEscaper();
     this.maxAllowableOffset = transformationContext.getMaxAllowableOffset();
     this.namespaces.addNamespace("sf", "http://www.opengis.net/ogcapi-features-1/1.0/sf", true);

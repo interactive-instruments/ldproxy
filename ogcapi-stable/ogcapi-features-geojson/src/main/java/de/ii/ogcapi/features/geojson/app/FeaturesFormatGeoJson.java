@@ -83,6 +83,7 @@ public class FeaturesFormatGeoJson
           .label("JSON")
           .parameter("json")
           .build();
+  public static final String COLLECTION_ID_TEMPLATE = "{collectionId}";
 
   private final FeaturesCoreProviders providers;
   private final EntityRegistry entityRegistry;
@@ -111,11 +112,13 @@ public class FeaturesFormatGeoJson
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
 
-    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.FEATURE))
+    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.FEATURE)) {
       builder.add(CONFORMANCE_CLASS_FEATURES);
+    }
 
-    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.RECORD))
+    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.RECORD)) {
       builder.add(CONFORMANCE_CLASS_RECORDS);
+    }
 
     return builder.build();
   }
@@ -140,7 +143,9 @@ public class FeaturesFormatGeoJson
 
     // no additional operational checks for now, only validation; we can stop, if no validation is
     // requested
-    if (apiValidation == MODE.NONE) return ValidationResult.of();
+    if (apiValidation == MODE.NONE) {
+      return ValidationResult.of();
+    }
 
     ImmutableValidationResult.Builder builder =
         ImmutableValidationResult.builder().mode(apiValidation);
@@ -148,44 +153,12 @@ public class FeaturesFormatGeoJson
     Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(api.getData());
 
     // get GeoJSON configurations to process
-    Map<String, GeoJsonConfiguration> geoJsonConfigurationMap =
-        api.getData().getCollections().entrySet().stream()
-            .map(
-                entry -> {
-                  final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
-                  final GeoJsonConfiguration config =
-                      collectionData.getExtension(GeoJsonConfiguration.class).orElse(null);
-                  if (Objects.isNull(config)) return null;
-                  return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), config);
-                })
-            .filter(Objects::nonNull)
-            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+    Map<String, GeoJsonConfiguration> geoJsonConfigurationMap = getConfigurations(api);
 
     for (Map.Entry<String, GeoJsonConfiguration> entry : geoJsonConfigurationMap.entrySet()) {
       String collectionId = entry.getKey();
       GeoJsonConfiguration config = entry.getValue();
-
-      if (config.getNestedObjectStrategy() == GeoJsonConfiguration.NESTED_OBJECTS.FLATTEN
-          && config.getMultiplicityStrategy() != GeoJsonConfiguration.MULTIPLICITY.SUFFIX) {
-        builder.addStrictErrors(
-            MessageFormat.format(
-                "The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.",
-                collectionId, config.getMultiplicityStrategy()));
-      } else if (config.getNestedObjectStrategy() == GeoJsonConfiguration.NESTED_OBJECTS.NEST
-          && config.getMultiplicityStrategy() != GeoJsonConfiguration.MULTIPLICITY.ARRAY) {
-        builder.addStrictErrors(
-            MessageFormat.format(
-                "The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.",
-                collectionId, config.getMultiplicityStrategy()));
-      }
-
-      List<String> separators = ImmutableList.of(".", "_", ":", "/");
-      if (!separators.contains(config.getSeparator())) {
-        builder.addStrictErrors(
-            MessageFormat.format(
-                "The separator ''{0}'' in collection ''{1}'' is invalid, it must be one of {2}.",
-                config.getSeparator(), collectionId, separators));
-      }
+      processCollection(builder, collectionId, config);
     }
 
     Map<String, Collection<String>> keyMap =
@@ -224,24 +197,66 @@ public class FeaturesFormatGeoJson
     return builder.build();
   }
 
+  @SuppressWarnings("deprecation")
+  private void processCollection(
+      ImmutableValidationResult.Builder builder, String collectionId, GeoJsonConfiguration config) {
+    if (config.getNestedObjectStrategy() == GeoJsonConfiguration.NESTED_OBJECTS.FLATTEN
+        && config.getMultiplicityStrategy() != GeoJsonConfiguration.MULTIPLICITY.SUFFIX) {
+      builder.addStrictErrors(
+          MessageFormat.format(
+              "The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.",
+              collectionId, config.getMultiplicityStrategy()));
+    } else if (config.getNestedObjectStrategy() == GeoJsonConfiguration.NESTED_OBJECTS.NEST
+        && config.getMultiplicityStrategy() != GeoJsonConfiguration.MULTIPLICITY.ARRAY) {
+      builder.addStrictErrors(
+          MessageFormat.format(
+              "The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.",
+              collectionId, config.getMultiplicityStrategy()));
+    }
+
+    List<String> separators = ImmutableList.of(".", "_", ":", "/");
+    if (!separators.contains(config.getSeparator())) {
+      builder.addStrictErrors(
+          MessageFormat.format(
+              "The separator ''{0}'' in collection ''{1}'' is invalid, it must be one of {2}.",
+              config.getSeparator(), collectionId, separators));
+    }
+  }
+
+  private ImmutableMap<String, GeoJsonConfiguration> getConfigurations(OgcApi api) {
+    return api.getData().getCollections().entrySet().stream()
+        .map(
+            entry -> {
+              final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
+              final GeoJsonConfiguration config =
+                  collectionData.getExtension(GeoJsonConfiguration.class).orElse(null);
+              if (Objects.isNull(config)) {
+                return null;
+              }
+              return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), config);
+            })
+        .filter(Objects::nonNull)
+        .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
   @Override
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
     String schemaRef = "https://geojson.org/schema/FeatureCollection.json";
-    Schema<?> schema = new ObjectSchema(); // TODO
+    Schema<?> schema = new ObjectSchema();
     String collectionId =
-        path.startsWith("/collections") ? path.split("/", 4)[2] : "{collectionId}";
-    if (collectionId.equals("{collectionId}")
+        path.startsWith("/collections") ? path.split("/", 4)[2] : COLLECTION_ID_TEMPLATE;
+    if (COLLECTION_ID_TEMPLATE.equals(collectionId)
         && apiData
             .getExtension(CollectionsConfiguration.class)
             .filter(config -> config.getCollectionDefinitionsAreIdentical().orElse(false))
             .isPresent()) {
       collectionId = apiData.getCollections().keySet().iterator().next();
     }
-    if (!collectionId.equals("{collectionId}")) {
-      if (path.matches("/collections/[^//]+/items/?")) {
+    if (!COLLECTION_ID_TEMPLATE.equals(collectionId)) {
+      if (path.matches("/collections/[^/]+/items/?")) {
         schemaRef = schemaGeneratorFeatureCollection.getSchemaReference(collectionId);
         schema = schemaGeneratorFeatureCollection.getSchema(apiData, collectionId);
-      } else if (path.matches("/collections/[^//]+/items/[^//]+/?")) {
+      } else if (path.matches("/collections/[^/]+/items/[^/]+/?")) {
         schemaRef = schemaGeneratorFeature.getSchemaReference(collectionId);
         schema = schemaGeneratorFeature.getSchema(apiData, collectionId);
       }
@@ -257,34 +272,39 @@ public class FeaturesFormatGeoJson
   @Override
   public ApiMediaTypeContent getRequestContent(
       OgcApiDataV2 apiData, String path, HttpMethods method) {
-    String schemaRef = "#/components/schemas/anyObject";
-    Schema schema = new ObjectSchema();
-    String collectionId =
-        path.startsWith("/collections") ? path.split("/", 4)[2] : "{collectionId}";
-    if ((path.matches("/collections/[^//]+/items/[^//]+/?") && method == HttpMethods.PUT)
-        || (path.matches("/collections/[^//]+/items/?") && method == HttpMethods.POST)
-        || (path.matches("/collections/[^//]+/items/[^//]+/?") && method == HttpMethods.PATCH)) {
-
-      if (collectionId.equals("{collectionId}")
-          && apiData
-              .getExtension(CollectionsConfiguration.class)
-              .filter(config -> config.getCollectionDefinitionsAreIdentical().orElse(false))
-              .isPresent()) {
-        collectionId = apiData.getCollections().keySet().iterator().next();
-      }
-      if (!collectionId.equals("{collectionId}")) {
-        // TODO: implement getMutablesSchema with SchemaDeriverOpenApiMutables
-        schema = schemaGeneratorFeature.getSchema(apiData, collectionId);
-        schemaRef = schemaGeneratorFeature.getSchemaReference(collectionId);
-      }
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schema)
-          .schemaRef(schemaRef)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
+    if (!hasContent(path, method)) {
+      return null;
     }
 
-    return null;
+    String schemaRef = "#/components/schemas/anyObject";
+    Schema<?> schema = new ObjectSchema();
+
+    String collectionId =
+        path.startsWith("/collections") ? path.split("/", 4)[2] : COLLECTION_ID_TEMPLATE;
+    if (COLLECTION_ID_TEMPLATE.equals(collectionId)
+        && apiData
+            .getExtension(CollectionsConfiguration.class)
+            .filter(config -> config.getCollectionDefinitionsAreIdentical().orElse(false))
+            .isPresent()) {
+      collectionId = apiData.getCollections().keySet().iterator().next();
+    }
+
+    if (!COLLECTION_ID_TEMPLATE.equals(collectionId)) {
+      schema = schemaGeneratorFeature.getSchema(apiData, collectionId);
+      schemaRef = schemaGeneratorFeature.getSchemaReference(collectionId);
+    }
+
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(schema)
+        .schemaRef(schemaRef)
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
+  }
+
+  private boolean hasContent(String path, HttpMethods method) {
+    return path.matches("/collections/[^/]+/items/[^/]+/?") && method == HttpMethods.PUT
+        || path.matches("/collections/[^/]+/items/?") && method == HttpMethods.POST
+        || path.matches("/collections/[^/]+/items/[^/]+/?") && method == HttpMethods.PATCH;
   }
 
   @Override
@@ -301,7 +321,6 @@ public class FeaturesFormatGeoJson
   public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
       FeatureTransformationContext transformationContext, Optional<Locale> language) {
 
-    // TODO support language
     ImmutableSortedSet<GeoJsonWriter> geoJsonWriters =
         geoJsonWriterRegistry.getWriters().stream()
             .map(GeoJsonWriter::create)
@@ -309,6 +328,7 @@ public class FeaturesFormatGeoJson
                 ImmutableSortedSet.toImmutableSortedSet(
                     Comparator.comparingInt(GeoJsonWriter::getSortPriority)));
 
+    @SuppressWarnings({"deprecation", "ConstantConditions", "OptionalGetWithoutIsPresent"})
     ImmutableFeatureTransformationContextGeoJson transformationContextGeoJson =
         ImmutableFeatureTransformationContextGeoJson.builder()
             .from(transformationContext)
@@ -324,13 +344,14 @@ public class FeaturesFormatGeoJson
                             transformationContext.getOgcApiRequest().getParameters().get("pretty"))
                         .filter(value -> Objects.equals(value, "true"))
                         .isPresent()
-                    || (transformationContext
-                        .getApiData()
-                        .getCollections()
-                        .get(transformationContext.getCollectionId())
-                        .getExtension(GeoJsonConfiguration.class)
-                        .get()
-                        .getUseFormattedJsonOutput()))
+                    || Boolean.TRUE.equals(
+                        transformationContext
+                            .getApiData()
+                            .getCollections()
+                            .get(transformationContext.getCollectionId())
+                            .getExtension(GeoJsonConfiguration.class)
+                            .get()
+                            .getUseFormattedJsonOutput()))
             .debugJson(
                 Optional.ofNullable(
                         transformationContext.getOgcApiRequest().getParameters().get("debug"))

@@ -19,17 +19,14 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author zahnen
  */
+@SuppressWarnings({"OptionalGetWithoutIsPresent", "PMD.CloseResource", "PMD.TooManyMethods"})
 @Singleton
 @AutoBind
 public class GeoJsonWriterProperties implements GeoJsonWriter {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(GeoJsonWriterProperties.class);
 
   private boolean currentStarted;
 
@@ -156,7 +153,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   }
 
   protected boolean shouldSkipProperty(EncodingAwareContextGeoJson context) {
-    return !hasMappingAndValue(context) || (context.schema().get().isId() || context.inGeometry());
+    return !hasMappingAndValue(context) || context.schema().get().isId() || context.inGeometry();
   }
 
   protected boolean hasMappingAndValue(EncodingAwareContextGeoJson context) {
@@ -164,13 +161,15 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         && Objects.nonNull(context.value());
   }
 
-  // TODO: centralize value type mappings (either as transformer or as part of context)
+  // centralize value type mappings (either as transformer or as part of context);
+  // see https://github.com/interactive-instruments/ldproxy/issues/817
+  @SuppressWarnings("PMD.ImplicitSwitchFallThrough")
   private void writeValue(JsonGenerator json, String value, Type type) throws IOException {
     switch (type) {
       case BOOLEAN:
-        // TODO: normalize in decoder
+        // normalize in decoder
         json.writeBoolean(
-            value.equalsIgnoreCase("t") || value.equalsIgnoreCase("true") || value.equals("1"));
+            "t".equalsIgnoreCase(value) || "true".equalsIgnoreCase(value) || "1".equals(value));
         break;
       case INTEGER:
         try {

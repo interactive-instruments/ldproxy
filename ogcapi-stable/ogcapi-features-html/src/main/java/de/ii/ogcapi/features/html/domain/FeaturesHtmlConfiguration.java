@@ -89,6 +89,8 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableFeaturesHtmlConfiguration.Builder.class)
 public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
+  String LINK_WILDCARD = "*{objectType=Link}";
+
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   enum LAYOUT {
@@ -224,9 +226,9 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   @Value.Check
   default FeaturesHtmlConfiguration backwardsCompatibility() {
     if (getLayout() == LAYOUT.CLASSIC
-        && (!hasTransformation(
+        && !hasTransformation(
             PropertyTransformations.WILDCARD,
-            transformations -> transformations.getFlatten().isPresent()))) {
+            transformations -> transformations.getFlatten().isPresent())) {
       Map<String, List<PropertyTransformation>> transformations =
           withTransformation(
               PropertyTransformations.WILDCARD,
@@ -248,8 +250,6 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
 
     return this;
   }
-
-  String LINK_WILDCARD = "*{objectType=Link}";
 
   @Value.Check
   default FeaturesHtmlConfiguration transformLinks() {

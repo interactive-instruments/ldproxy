@@ -28,6 +28,10 @@ import javax.inject.Singleton;
 @AutoBind
 public class GeoJsonWriterId implements GeoJsonWriter {
 
+  private String currentId;
+  private boolean currentIdIsInteger;
+  private boolean writeAtFeatureEnd;
+
   @Inject
   public GeoJsonWriterId() {}
 
@@ -36,16 +40,13 @@ public class GeoJsonWriterId implements GeoJsonWriter {
     return new GeoJsonWriterId();
   }
 
-  private String currentId;
-  private boolean currentIdIsInteger;
-  private boolean writeAtFeatureEnd = false;
-
   @Override
   public int getSortPriority() {
     return 10;
   }
 
   @Override
+  @SuppressWarnings("PMD.NullAssignment")
   public void onFeatureEnd(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
@@ -54,9 +55,11 @@ public class GeoJsonWriterId implements GeoJsonWriter {
       this.writeAtFeatureEnd = false;
 
       if (Objects.nonNull(currentId)) {
-        if (currentIdIsInteger)
+        if (currentIdIsInteger) {
           context.encoding().getJson().writeNumberField("id", Long.parseLong(currentId));
-        else context.encoding().getJson().writeStringField("id", currentId);
+        } else {
+          context.encoding().getJson().writeStringField("id", currentId);
+        }
         addLinks(context, currentId);
         this.currentId = null;
         this.currentIdIsInteger = false;
@@ -75,22 +78,7 @@ public class GeoJsonWriterId implements GeoJsonWriter {
       FeatureSchema currentSchema = context.schema().get();
 
       if (currentSchema.isId()) {
-        String id = context.value();
-
-        // always a string for a multi-collection query
-        boolean isInteger =
-            currentSchema.getType() == Type.INTEGER
-                && context.encoding().getFeatureSchemas().size() == 1;
-
-        if (writeAtFeatureEnd) {
-          currentId = id;
-          currentIdIsInteger = isInteger;
-        } else {
-          if (isInteger) context.encoding().getJson().writeNumberField("id", Long.parseLong(id));
-          else context.encoding().getJson().writeStringField("id", id);
-
-          addLinks(context, context.value());
-        }
+        handleId(context, currentSchema);
       } else {
         this.writeAtFeatureEnd = true;
       }
@@ -99,16 +87,39 @@ public class GeoJsonWriterId implements GeoJsonWriter {
     next.accept(context);
   }
 
+  private void handleId(EncodingAwareContextGeoJson context, FeatureSchema currentSchema)
+      throws IOException {
+    String id = Objects.requireNonNull(context.value());
+
+    // always a string for a multi-collection query
+    boolean isInteger =
+        currentSchema.getType() == Type.INTEGER
+            && context.encoding().getFeatureSchemas().size() == 1;
+
+    if (writeAtFeatureEnd) {
+      currentId = id;
+      currentIdIsInteger = isInteger;
+    } else {
+      if (isInteger) {
+        context.encoding().getJson().writeNumberField("id", Long.parseLong(id));
+      } else {
+        context.encoding().getJson().writeStringField("id", id);
+      }
+
+      addLinks(context, context.value());
+    }
+  }
+
   @Override
   public void onCoordinates(
-      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
-      throws IOException {
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) {
     this.writeAtFeatureEnd = true;
 
     next.accept(context);
   }
 
-  private void addLinks(EncodingAwareContextGeoJson context, String featureId) throws IOException {
+  @SuppressWarnings("ConstantConditions")
+  private void addLinks(EncodingAwareContextGeoJson context, String featureId) {
     if (context.encoding().isFeatureCollection()
         && Objects.nonNull(featureId)
         && !featureId.isEmpty()) {
@@ -132,16 +143,16 @@ public class GeoJsonWriterId implements GeoJsonWriter {
               .getCollections()
               .get(context.encoding().getCollectionId())
               .getPersistentUriTemplate();
-      if (template.isPresent()) {
-        context
-            .encoding()
-            .getState()
-            .addCurrentFeatureLinks(
-                new ImmutableLink.Builder()
-                    .rel("canonical")
-                    .href(StringTemplateFilters.applyTemplate(template.get(), featureId))
-                    .build());
-      }
+      template.ifPresent(
+          s ->
+              context
+                  .encoding()
+                  .getState()
+                  .addCurrentFeatureLinks(
+                      new ImmutableLink.Builder()
+                          .rel("canonical")
+                          .href(StringTemplateFilters.applyTemplate(s, featureId))
+                          .build()));
     }
   }
 }

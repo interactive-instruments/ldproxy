@@ -17,9 +17,6 @@ import javax.inject.Singleton;
 
 /**
  * @author zahnen
- */
-
-/**
  * @title Features GeoJSON
  * @langEn The module *Features GeoJSON* may be enabled for every API with a feature provider. It
  *     provides the resources *Features* and *Feature* encoded as GeoJSON.
@@ -48,6 +45,7 @@ public class GeoJsonBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
+    //noinspection deprecation
     return new Builder()
         .enabled(true)
         .nestedObjectStrategy(GeoJsonConfiguration.NESTED_OBJECTS.NEST)

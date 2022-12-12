@@ -23,13 +23,10 @@ import javax.inject.Singleton;
 
 /**
  * @langEn Debug option in development environments: Bare HTML output for feature pages.
- * @langDe Todo
+ * @langDe Debug-Option in Entwicklungsumgebungen: "Nackte" HTML-Ausgabe für Features.
  * @name bare
  * @endpoints Feature
  */
-
-// TODO: this was not meant for debugging but is needed for the nearby functionality, so it could be
-// moved to community
 @Singleton
 @AutoBind
 public class QueryParameterBareHtml extends ApiExtensionCache implements OgcApiQueryParameter {
@@ -40,6 +37,7 @@ public class QueryParameterBareHtml extends ApiExtensionCache implements OgcApiQ
 
   @Inject
   public QueryParameterBareHtml(AppContext appContext, SchemaValidator schemaValidator) {
+    super();
     this.allowDebug = appContext.isDevEnv();
     this.schemaValidator = schemaValidator;
   }
@@ -61,8 +59,8 @@ public class QueryParameterBareHtml extends ApiExtensionCache implements OgcApiQ
         () ->
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
-                && (definitionPath.equals("/collections/{collectionId}/items")
-                    || definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
+                && ("/collections/{collectionId}/items".equals(definitionPath)
+                    || "/collections/{collectionId}/items/{featureId}".equals(definitionPath)));
   }
 
   @Override

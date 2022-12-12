@@ -31,6 +31,14 @@ import java.util.Optional;
 
 public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
 
+  private static final String LINK = "Link";
+  private static final String ID = "id";
+  private static final String GEOMETRY = "geometry";
+  private static final String PROPERTIES = "properties";
+  private static final String TYPE = "type";
+  private static final String EMPTY_ARRAY = "[]";
+  private static final String LINKS = "links";
+
   public SchemaDeriverReturnables(
       VERSION version,
       Optional<String> schemaUri,
@@ -73,30 +81,30 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
 
     JsonSchemaRefInternal linkRef =
         version == JsonSchemaAbstractDocument.VERSION.V7
-            ? ImmutableJsonSchemaRefV7.builder().objectType("Link").build()
-            : ImmutableJsonSchemaRef.builder().objectType("Link").build();
+            ? ImmutableJsonSchemaRefV7.builder().objectType(LINK).build()
+            : ImmutableJsonSchemaRef.builder().objectType(LINK).build();
 
-    builder.putDefinitions("Link", JsonSchemaBuildingBlocks.LINK_JSON);
+    builder.putDefinitions(LINK, JsonSchemaBuildingBlocks.LINK_JSON);
 
     defs.forEach(
         (name, def) -> {
-          if (!Objects.equals("Link", name)) {
+          if (!Objects.equals(LINK, name)) {
             builder.putDefinitions(name, def);
           }
         });
 
-    builder.putProperties("type", ImmutableJsonSchemaString.builder().addEnums("Feature").build());
+    builder.putProperties(TYPE, ImmutableJsonSchemaString.builder().addEnums("Feature").build());
 
-    builder.putProperties("links", ImmutableJsonSchemaArray.builder().items(linkRef).build());
+    builder.putProperties(LINKS, ImmutableJsonSchemaArray.builder().items(linkRef).build());
 
     findByRole(properties, Role.ID)
         .ifPresent(
             jsonSchema -> {
               if (jsonSchema.isRequired()) {
                 jsonSchema.getName().ifPresent(required::remove);
-                builder.addRequired("id");
+                builder.addRequired(ID);
               }
-              builder.putProperties("id", jsonSchema);
+              builder.putProperties(ID, jsonSchema);
             });
 
     findByRole(properties, Role.PRIMARY_GEOMETRY)
@@ -106,27 +114,29 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
               if (jsonSchema.isRequired()) {
                 jsonSchema.getName().ifPresent(required::remove);
               }
-              builder.putProperties("geometry", jsonSchema);
+              builder.putProperties(GEOMETRY, jsonSchema);
             },
-            () -> builder.putProperties("geometry", JsonSchemaBuildingBlocks.NULL));
+            () -> builder.putProperties(GEOMETRY, JsonSchemaBuildingBlocks.NULL));
 
     Map<String, JsonSchema> propertiesWithoutRoles = withoutRoles(properties);
 
     builder.putProperties(
-        "properties",
+        PROPERTIES,
         ImmutableJsonSchemaObject.builder()
             .required(required)
             .properties(withoutFlattenedArrays(propertiesWithoutRoles))
             .patternProperties(onlyFlattenedArraysAsPatterns(propertiesWithoutRoles))
             .build());
 
-    builder.addRequired("type", "geometry", "properties");
+    builder.addRequired(TYPE, GEOMETRY, PROPERTIES);
   }
 
   private Map<String, JsonSchema> onlyFlattenedArraysAsPatterns(
       Map<String, JsonSchema> properties) {
     return properties.entrySet().stream()
-        .filter(entry -> entry.getValue().getName().filter(name -> name.contains("[]")).isPresent())
+        .filter(
+            entry ->
+                entry.getValue().getName().filter(name -> name.contains(EMPTY_ARRAY)).isPresent())
         .map(
             entry ->
                 new SimpleImmutableEntry<>(
@@ -135,13 +145,14 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
   }
 
   private String flattenedArrayNameAsPattern(String name) {
-    return "^" + name.replace("[]", "\\.\\d+") + "$";
+    return "^" + name.replace(EMPTY_ARRAY, "\\.\\d+") + "$";
   }
 
   private Map<String, JsonSchema> withoutFlattenedArrays(Map<String, JsonSchema> properties) {
     return properties.entrySet().stream()
         .filter(
-            entry -> entry.getValue().getName().filter(name -> !name.contains("[]")).isPresent())
+            entry ->
+                entry.getValue().getName().filter(name -> !name.contains(EMPTY_ARRAY)).isPresent())
         .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 }

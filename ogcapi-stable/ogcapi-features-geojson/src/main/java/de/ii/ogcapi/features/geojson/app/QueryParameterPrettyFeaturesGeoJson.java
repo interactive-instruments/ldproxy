@@ -23,7 +23,7 @@ import javax.inject.Singleton;
 
 /**
  * @langEn Debug option in development environments: Pretty print the GeoJSON output.
- * @langDe Todo
+ * @langDe Debug-Option in Entwicklungsumgebungen: Gibt die GeoJSON-Ausgabe formatiert aus.
  * @name pretty
  * @endpoints Features
  */
@@ -39,6 +39,7 @@ public class QueryParameterPrettyFeaturesGeoJson extends ApiExtensionCache
   @Inject
   public QueryParameterPrettyFeaturesGeoJson(
       AppContext appContext, SchemaValidator schemaValidator) {
+    super();
     this.allowDebug = appContext.isDevEnv();
     this.schemaValidator = schemaValidator;
   }
@@ -60,8 +61,8 @@ public class QueryParameterPrettyFeaturesGeoJson extends ApiExtensionCache
         () ->
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
-                && (definitionPath.equals("/collections/{collectionId}/items")
-                    || definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
+                && ("/collections/{collectionId}/items".equals(definitionPath)
+                    || "/collections/{collectionId}/items/{featureId}".equals(definitionPath)));
   }
 
   @Override

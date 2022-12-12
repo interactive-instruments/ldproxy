@@ -28,9 +28,12 @@ import javax.inject.Singleton;
 /**
  * @author zahnen
  */
+@SuppressWarnings("ConstantConditions")
 @Singleton
 @AutoBind
 public class GeoJsonWriterLinks implements GeoJsonWriter {
+
+  private Set<String> featureRels;
 
   @Inject
   public GeoJsonWriterLinks() {}
@@ -39,8 +42,6 @@ public class GeoJsonWriterLinks implements GeoJsonWriter {
   public GeoJsonWriterLinks create() {
     return new GeoJsonWriterLinks();
   }
-
-  private Set<String> featureRels;
 
   @Override
   public int getSortPriority() {
@@ -51,6 +52,7 @@ public class GeoJsonWriterLinks implements GeoJsonWriter {
     this.featureRels = ImmutableSet.of();
   }
 
+  @SuppressWarnings("deprecation")
   @Override
   public void onStart(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
@@ -82,7 +84,9 @@ public class GeoJsonWriterLinks implements GeoJsonWriter {
               .map(
                   cfg -> {
                     boolean addSelf = cfg.getShowsFeatureSelfLink();
-                    if (!addSelf) return cfg.getEmbeddedFeatureLinkRels();
+                    if (!addSelf) {
+                      return cfg.getEmbeddedFeatureLinkRels();
+                    }
 
                     return ImmutableSet.<String>builder()
                         .addAll(cfg.getEmbeddedFeatureLinkRels())
@@ -153,9 +157,15 @@ public class GeoJsonWriterLinks implements GeoJsonWriter {
       for (Link link : links) {
         json.writeStartObject();
         json.writeStringField("href", link.getHref());
-        if (Objects.nonNull(link.getRel())) json.writeStringField("rel", link.getRel());
-        if (Objects.nonNull(link.getType())) json.writeStringField("type", link.getType());
-        if (Objects.nonNull(link.getTitle())) json.writeStringField("title", link.getTitle());
+        if (Objects.nonNull(link.getRel())) {
+          json.writeStringField("rel", link.getRel());
+        }
+        if (Objects.nonNull(link.getType())) {
+          json.writeStringField("type", link.getType());
+        }
+        if (Objects.nonNull(link.getTitle())) {
+          json.writeStringField("title", link.getTitle());
+        }
         json.writeEndObject();
       }
 

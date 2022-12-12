@@ -25,8 +25,7 @@ import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -44,11 +43,12 @@ import org.slf4j.LoggerFactory;
 /**
  * @author zahnen
  */
+@SuppressWarnings({"PMD.TooManyFields", "unused"})
 public class FeatureCollectionView extends DatasetView {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureCollectionView.class);
 
-  private URI uri;
+  private final URI uri;
   public List<NavigationDTO> pagination;
   public List<NavigationDTO> metaPagination;
   public List<FeatureHtml> features;
@@ -64,10 +64,15 @@ public class FeatureCollectionView extends DatasetView {
   public boolean spatialSearch;
   public boolean schemaOrgFeatures;
   public POSITION mapPosition;
-  public final MapClient mapClient;
-  public final FilterEditor filterEditor;
+  public final Optional<MapClient> mapClient;
+  public final Optional<FilterEditor> filterEditor;
   public final CesiumData cesiumData;
 
+  @SuppressWarnings({
+    "deprecation",
+    "PMD.ExcessiveParameterList",
+    "PMD.ExcessiveMethodLength"
+  }) // will be addressed by https://github.com/interactive-instruments/ldproxy/issues/605
   public FeatureCollectionView(
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
@@ -94,9 +99,7 @@ public class FeatureCollectionView extends DatasetView {
     super(template, uri, name, title, description, attribution, urlPrefix, htmlConfig, noIndex);
     this.features = new ArrayList<>();
     this.isCollection = !"featureDetails".equals(template);
-    this.uri =
-        uri; // TODO need to overload getPath() as it currently forces trailing slashes while OGC
-    // API uses no trailing slashes
+    this.uri = uri;
     this.persistentUri = persistentUri;
     this.schemaOrgFeatures =
         Objects.nonNull(htmlConfig) && Objects.equals(htmlConfig.getSchemaOrgEnabled(), true);
@@ -118,89 +121,102 @@ public class FeatureCollectionView extends DatasetView {
 
     if (mapClientType.equals(MapClient.Type.MAP_LIBRE)) {
       this.mapClient =
-          new ImmutableMapClient.Builder()
-              .backgroundUrl(
-                  Optional.ofNullable(htmlConfig.getLeafletUrl())
-                      .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
-              .attribution(getAttribution())
-              .bounds(Optional.ofNullable(bbox))
-              .data(
-                  new ImmutableSource.Builder()
-                      .type(TYPE.GEOJSON)
-                      .url(uriBuilder.removeParameters("f").ensureParameter("f", "json").toString())
-                      .build())
-              .popup(Popup.HOVER_ID)
-              .styleUrl(Optional.ofNullable(styleUrl))
-              .removeZoomLevelConstraints(removeZoomLevelConstraints)
-              .useBounds(true)
-              .build();
+          Optional.of(
+              new ImmutableMapClient.Builder()
+                  .backgroundUrl(
+                      Optional.ofNullable(htmlConfig.getLeafletUrl())
+                          .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
+                  .attribution(getAttribution())
+                  .bounds(Optional.ofNullable(bbox))
+                  .data(
+                      new ImmutableSource.Builder()
+                          .type(TYPE.GEOJSON)
+                          .url(
+                              uriBuilder
+                                  .removeParameters("f")
+                                  .ensureParameter("f", "json")
+                                  .toString())
+                          .build())
+                  .popup(Popup.HOVER_ID)
+                  .styleUrl(Optional.ofNullable(styleUrl))
+                  .removeZoomLevelConstraints(removeZoomLevelConstraints)
+                  .useBounds(true)
+                  .build());
     } else if (mapClientType.equals(MapClient.Type.CESIUM)) {
       this.mapClient =
-          new ImmutableMapClient.Builder()
-              .type(mapClientType)
-              .backgroundUrl(
-                  Optional.ofNullable(htmlConfig.getLeafletUrl())
-                      .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl()))
-                      .map(
-                          url ->
-                              url.replace("{z}", "{TileMatrix}")
-                                  .replace("{y}", "{TileRow}")
-                                  .replace("{x}", "{TileCol}")))
-              .attribution(getAttribution())
-              .build();
+          Optional.of(
+              new ImmutableMapClient.Builder()
+                  .type(mapClientType)
+                  .backgroundUrl(
+                      Optional.ofNullable(htmlConfig.getLeafletUrl())
+                          .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl()))
+                          .map(
+                              url ->
+                                  url.replace("{z}", "{TileMatrix}")
+                                      .replace("{y}", "{TileRow}")
+                                      .replace("{x}", "{TileCol}")))
+                  .attribution(getAttribution())
+                  .build());
     } else {
       LOGGER.error(
           "Configuration error: {} is not a supported map client for the HTML representation of features.",
           mapClientType);
-      this.mapClient = null;
+      this.mapClient = Optional.empty();
     }
 
     if (Objects.nonNull(queryables)) {
+      //noinspection ConstantConditions
       this.filterEditor =
-          new ImmutableFilterEditor.Builder()
-              .backgroundUrl(
-                  Optional.ofNullable(htmlConfig.getLeafletUrl())
-                      .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
-              .attribution(htmlConfig.getBasemapAttribution())
-              .fields(queryables.entrySet())
-              .build();
+          Optional.of(
+              new ImmutableFilterEditor.Builder()
+                  .backgroundUrl(
+                      Optional.ofNullable(htmlConfig.getLeafletUrl())
+                          .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
+                  .attribution(htmlConfig.getBasemapAttribution())
+                  .fields(queryables.entrySet())
+                  .build());
     } else {
-      this.filterEditor = null;
+      this.filterEditor = Optional.empty();
     }
   }
 
   @Override
   public String getPath() {
-    String path = uri.getPath();
-    return path;
+    // we need to overload getPath() as it currently forces trailing slashes while OGC API uses no
+    // trailing slashes
+    return uri.getPath();
   }
 
   public boolean isMapTop() {
     return mapPosition == POSITION.TOP
-        || (mapPosition == POSITION.AUTO
-            && (features.isEmpty() || features.stream().anyMatch(FeatureHtml::hasObjects)));
+        || mapPosition == POSITION.AUTO
+            && (features.isEmpty() || features.stream().anyMatch(FeatureHtml::hasObjects));
   }
 
   public boolean isMapRight() {
     return mapPosition == POSITION.RIGHT
-        || (mapPosition == POSITION.AUTO
+        || mapPosition == POSITION.AUTO
             && !features.isEmpty()
-            && features.stream().noneMatch(FeatureHtml::hasObjects));
+            && features.stream().noneMatch(FeatureHtml::hasObjects);
   }
 
   @Override
-  public String getAttribution() {
+  public final String getAttribution() {
     String basemapAttribution = super.getAttribution();
     if (Objects.nonNull(attribution)) {
-      if (Objects.nonNull(basemapAttribution))
+      if (Objects.nonNull(basemapAttribution)) {
         return String.join(" | ", attribution, basemapAttribution);
-      else return attribution;
+      } else {
+        return attribution;
+      }
     }
     return basemapAttribution;
   }
 
-  public Optional<String> getCanonicalUrl() throws URISyntaxException {
-    if (!isCollection && persistentUri != null) return Optional.of(persistentUri);
+  public Optional<String> getCanonicalUrl() {
+    if (!isCollection && persistentUri != null) {
+      return Optional.of(persistentUri);
+    }
 
     URICustomizer canonicalUri = uriBuilder.copy().ensureNoTrailingSlash().clearParameters();
 
@@ -210,24 +226,26 @@ public class FeatureCollectionView extends DatasetView {
             && metaPagination.stream()
                 .anyMatch(navigationDTO -> "prev".equals(navigationDTO.label));
 
-    return !hasOtherParams && (!isCollection || !hasPrevLink)
-        ? Optional.of(canonicalUri.toString())
-        : Optional.empty();
+    return hasOtherParams || (isCollection && hasPrevLink)
+        ? Optional.empty()
+        : Optional.of(canonicalUri.toString());
   }
 
-  public Optional<String> getPersistentUri() throws URISyntaxException {
-    if (!isCollection && persistentUri != null) return Optional.of(persistentUri);
+  public Optional<String> getPersistentUri() {
+    if (!isCollection && persistentUri != null) {
+      return Optional.of(persistentUri);
+    }
 
     return Optional.empty();
   }
 
   public String getQueryWithoutPage() {
     List<NameValuePair> query =
-        URLEncodedUtils.parse(getQuery().substring(1), Charset.forName("utf-8")).stream()
-            .filter(kvp -> !kvp.getName().equals("offset") && !kvp.getName().equals("limit"))
+        URLEncodedUtils.parse(getQuery().substring(1), StandardCharsets.UTF_8).stream()
+            .filter(kvp -> !"offset".equals(kvp.getName()) && !"limit".equals(kvp.getName()))
             .collect(Collectors.toList());
 
-    return '?' + URLEncodedUtils.format(query, '&', Charset.forName("utf-8")) + '&';
+    return '?' + URLEncodedUtils.format(query, '&', StandardCharsets.UTF_8) + '&';
   }
 
   public Function<String, String> getCurrentUrlWithSegment() {

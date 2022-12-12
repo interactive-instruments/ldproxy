@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.html.app;
 
+import static de.ii.ogcapi.features.html.app.PropertyHtml.PATH_COMPARISON;
+
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.html.domain.Geometry;
@@ -16,6 +18,7 @@ import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.FeaturePropertyTransformerFlatten;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,6 +27,15 @@ import org.immutables.value.Value;
 @Value.Modifiable
 @Value.Style(set = "*")
 public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> {
+
+  Splitter PATH_SPLITTER = Splitter.on('.').omitEmptyStrings();
+
+  @SuppressWarnings("PMD.ClassNamingConventions")
+  enum PATH_COMPARISON {
+    INCOMPATIBLE,
+    SUB_PATH,
+    EQUAL
+  }
 
   Optional<String> getItemType();
 
@@ -41,6 +53,7 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
         .orElse("");
   }
 
+  @Override
   @Value.Default
   default String getName() {
     return isFlattened()
@@ -52,8 +65,7 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
 
   @Value.Lazy
   default boolean hasValues() {
-    return isValue()
-        || (isArray() && getNestedProperties().stream().anyMatch(PropertyBase::isValue));
+    return isValue() || isArray() && getNestedProperties().stream().anyMatch(PropertyBase::isValue);
   }
 
   @Value.Lazy
@@ -114,10 +126,11 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
   default boolean isImageUrl() {
     return Objects.nonNull(getValue())
         && isUrl()
-        && (getValue().toLowerCase().endsWith(".png")
-            || getValue().toLowerCase().endsWith(".jpg")
-            || getValue().toLowerCase().endsWith(".jpeg")
-            || getValue().toLowerCase().endsWith(".gif"));
+        && (getValue().toLowerCase(Locale.ROOT).endsWith(".png")
+            || getValue().toLowerCase(Locale.ROOT).endsWith(".jpg")
+            || getValue().toLowerCase(Locale.ROOT).endsWith(".jpeg")
+            || getValue().toLowerCase(Locale.ROOT).endsWith(".gif")
+            || getValue().toLowerCase(Locale.ROOT).endsWith(".webp"));
   }
 
   @Value.Lazy
@@ -171,22 +184,17 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
     return getTransformed().containsKey(FeaturePropertyTransformerFlatten.TYPE);
   }
 
-  Splitter PATH_SPLITTER = Splitter.on('.').omitEmptyStrings();
-
-  enum PATH_COMPARISON {
-    INCOMPATIBLE,
-    SUB_PATH,
-    EQUAL
-  }
-
   // 0: incompatible
   // 1: sub-path
   // 2: equal
   static PATH_COMPARISON pathCompatible(List<String> propertyPath, List<String> referencePath) {
-    if (propertyPath.size() > referencePath.size()) return PATH_COMPARISON.INCOMPATIBLE;
+    if (propertyPath.size() > referencePath.size()) {
+      return PATH_COMPARISON.INCOMPATIBLE;
+    }
     for (int i = 0; i < propertyPath.size(); i++) {
-      if (!Objects.equals(propertyPath.get(i), referencePath.get(i)))
+      if (!Objects.equals(propertyPath.get(i), referencePath.get(i))) {
         return PATH_COMPARISON.INCOMPATIBLE;
+      }
     }
     return propertyPath.size() == referencePath.size()
         ? PATH_COMPARISON.EQUAL
@@ -221,17 +229,18 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
         getNestedProperties().stream()
             .map(
                 property -> {
-                  switch (PropertyHtml.pathCompatible(property.getPropertyPath(), path)) {
-                    case SUB_PATH:
-                      return property.findPropertiesByPath(path);
-                    case EQUAL:
-                      return ImmutableList.of(property);
+                  PATH_COMPARISON result =
+                      PropertyHtml.pathCompatible(property.getPropertyPath(), path);
+                  if (result == PATH_COMPARISON.SUB_PATH) {
+                    return property.findPropertiesByPath(path);
+                  } else if (result == PATH_COMPARISON.EQUAL) {
+                    return ImmutableList.of(property);
                   }
                   return ImmutableList.<PropertyHtml>of();
                 })
             .flatMap(Collection::stream)
             .collect(Collectors.toUnmodifiableList());
-    if (properties.isEmpty())
+    if (properties.isEmpty()) {
       properties =
           getNestedProperties().stream()
               .filter(property -> property.getSchema().filter(SchemaBase::isSpatial).isEmpty())
@@ -239,16 +248,19 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
               .filter(Optional::isPresent)
               .map(Optional::get)
               .collect(Collectors.toUnmodifiableList());
+    }
     return properties;
   }
 
   @Value.Lazy
+  @SuppressWarnings("PMD.CyclomaticComplexity")
   default Geometry<?> parseGeometry() {
-    if (getSchema().filter(SchemaBase::isSpatial).isEmpty() || getGeometryType().isEmpty())
+    if (getSchema().filter(SchemaBase::isSpatial).isEmpty() || getGeometryType().isEmpty()) {
       throw new IllegalStateException(
           String.format(
               "Feature property with path '%s' is not a spatial geometry: '%s'",
               getPropertyPath(), getSchema()));
+    }
 
     List<PropertyHtml> coordinatesProperties = getNestedProperties().get(0).getNestedProperties();
     switch (getGeometryType().get()) {

@@ -23,7 +23,8 @@ import javax.inject.Singleton;
 
 /**
  * @langEn Debug option in development environments: Log debug information for the GeoJSON output.
- * @langDe Todo
+ * @langDe Debug-Option in Entwicklungsumgebungen: Protokolliert Debug-Informationen für die
+ *     GeoJSON-Ausgabe.
  * @name debug
  * @endpoints Features
  */
@@ -39,6 +40,7 @@ public class QueryParameterDebugFeaturesGeoJson extends ApiExtensionCache
   @Inject
   public QueryParameterDebugFeaturesGeoJson(
       AppContext appContext, SchemaValidator schemaValidator) {
+    super();
     this.allowDebug = appContext.isDevEnv();
     this.schemaValidator = schemaValidator;
   }
@@ -60,8 +62,8 @@ public class QueryParameterDebugFeaturesGeoJson extends ApiExtensionCache
         () ->
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
-                && (definitionPath.equals("/collections/{collectionId}/items")
-                    || definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
+                && ("/collections/{collectionId}/items".equals(definitionPath)
+                    || "/collections/{collectionId}/items/{featureId}".equals(definitionPath)));
   }
 
   @Override

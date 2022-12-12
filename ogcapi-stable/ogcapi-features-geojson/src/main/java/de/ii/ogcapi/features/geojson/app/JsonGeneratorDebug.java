@@ -9,10 +9,8 @@ package de.ii.ogcapi.features.geojson.app;
 
 import com.fasterxml.jackson.core.Base64Variant;
 import com.fasterxml.jackson.core.FormatSchema;
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonStreamContext;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.PrettyPrinter;
@@ -30,12 +28,14 @@ import org.slf4j.LoggerFactory;
 /**
  * @author fischer
  */
+@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessivePublicCount", "PMD.CyclomaticComplexity"})
 public class JsonGeneratorDebug extends JsonGenerator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonGeneratorDebug.class);
   private final JsonGenerator jsonGenerator;
 
   public JsonGeneratorDebug(JsonGenerator jsonGenerator) {
+    super();
     this.jsonGenerator = jsonGenerator;
   }
 
@@ -130,224 +130,264 @@ public class JsonGeneratorDebug extends JsonGenerator {
   }
 
   @Override
-  public void writeStartArray() throws IOException, JsonGenerationException {
-    LOGGER.debug("[");
+  public void writeStartArray() throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("[");
+    }
     jsonGenerator.writeStartArray();
   }
 
   @Override
-  public void writeEndArray() throws IOException, JsonGenerationException {
-    LOGGER.debug("]");
+  public void writeEndArray() throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("]");
+    }
     jsonGenerator.writeEndArray();
   }
 
   @Override
-  public void writeStartObject() throws IOException, JsonGenerationException {
-    LOGGER.debug("{");
+  public void writeStartObject() throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("{");
+    }
     jsonGenerator.writeStartObject();
   }
 
   @Override
-  public void writeEndObject() throws IOException, JsonGenerationException {
-    LOGGER.debug("}");
+  public void writeEndObject() throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("}");
+    }
     jsonGenerator.writeEndObject();
   }
 
   @Override
-  public void writeFieldName(String string) throws IOException, JsonGenerationException {
-    LOGGER.debug(string + " :");
+  public void writeFieldName(String string) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(string + " :");
+    }
     jsonGenerator.writeFieldName(string);
   }
 
   @Override
-  public void writeFieldName(SerializableString ss) throws IOException, JsonGenerationException {
-    LOGGER.debug(ss.toString());
+  public void writeFieldName(SerializableString ss) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(ss.toString());
+    }
     jsonGenerator.writeFieldName(ss);
   }
 
   @Override
-  public void writeString(String string) throws IOException, JsonGenerationException {
-    LOGGER.debug("= " + string);
+  public void writeString(String string) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("= " + string);
+    }
     jsonGenerator.writeString(string);
   }
 
   @Override
-  public void writeString(char[] chars, int i, int i1) throws IOException, JsonGenerationException {
+  public void writeString(char[] chars, int i, int i1) throws IOException {
     jsonGenerator.writeString(chars, i, i1);
   }
 
   @Override
-  public void writeString(SerializableString ss) throws IOException, JsonGenerationException {
+  public void writeString(SerializableString ss) throws IOException {
     jsonGenerator.writeString(ss);
   }
 
   @Override
-  public void writeRawUTF8String(byte[] bytes, int i, int i1)
-      throws IOException, JsonGenerationException {
+  public void writeRawUTF8String(byte[] bytes, int i, int i1) throws IOException {
     jsonGenerator.writeRawUTF8String(bytes, i, i1);
   }
 
   @Override
-  public void writeUTF8String(byte[] bytes, int i, int i1)
-      throws IOException, JsonGenerationException {
+  public void writeUTF8String(byte[] bytes, int i, int i1) throws IOException {
     jsonGenerator.writeUTF8String(bytes, i, i1);
   }
 
   @Override
-  public void writeRaw(String string) throws IOException, JsonGenerationException {
-    LOGGER.debug(string);
+  public void writeRaw(String string) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(string);
+    }
     jsonGenerator.writeRaw(string);
   }
 
   @Override
-  public void writeRaw(String string, int i, int i1) throws IOException, JsonGenerationException {
-    LOGGER.debug(string.substring(i, i1));
+  public void writeRaw(String string, int i, int i1) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(string.substring(i, i1));
+    }
     jsonGenerator.writeRaw(string, i, i1);
   }
 
   @Override
-  public void writeRaw(char[] chars, int i, int i1) throws IOException, JsonGenerationException {
-    LOGGER.debug(new String(chars, i, i1));
+  public void writeRaw(char[] chars, int i, int i1) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(new String(chars, i, i1));
+    }
     jsonGenerator.writeRaw(chars, i, i1);
   }
 
   @Override
-  public void writeRaw(char c) throws IOException, JsonGenerationException {
-    LOGGER.debug(String.valueOf(c));
+  public void writeRaw(char c) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(String.valueOf(c));
+    }
     jsonGenerator.writeRaw(c);
   }
 
   @Override
-  public void writeRaw(SerializableString ss) throws IOException, JsonGenerationException {
+  public void writeRaw(SerializableString ss) throws IOException {
     jsonGenerator.writeRaw(ss);
   }
 
   @Override
-  public void writeRawValue(String string) throws IOException, JsonGenerationException {
-    LOGGER.debug(string);
+  public void writeRawValue(String string) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(string);
+    }
     jsonGenerator.writeRawValue(string);
   }
 
   @Override
-  public void writeRawValue(String string, int i, int i1)
-      throws IOException, JsonGenerationException {
-    LOGGER.debug(string.substring(i, i1));
+  public void writeRawValue(String string, int i, int i1) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(string.substring(i, i1));
+    }
     jsonGenerator.writeRawValue(string, i, i1);
   }
 
   @Override
-  public void writeRawValue(char[] chars, int i, int i1)
-      throws IOException, JsonGenerationException {
-    LOGGER.debug(new String(chars, i, i1));
+  public void writeRawValue(char[] chars, int i, int i1) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(new String(chars, i, i1));
+    }
     jsonGenerator.writeRawValue(chars, i, i1);
   }
 
   @Override
-  public void writeBinary(Base64Variant bv, byte[] bytes, int i, int i1)
-      throws IOException, JsonGenerationException {
+  public void writeBinary(Base64Variant bv, byte[] bytes, int i, int i1) throws IOException {
     jsonGenerator.writeBinary(bv, bytes, i, i1);
   }
 
   @Override
-  public void writeBinary(byte[] bytes, int i, int i1) throws IOException, JsonGenerationException {
+  public void writeBinary(byte[] bytes, int i, int i1) throws IOException {
     jsonGenerator.writeBinary(bytes, i, i1);
   }
 
   @Override
-  public void writeBinary(byte[] bytes) throws IOException, JsonGenerationException {
+  public void writeBinary(byte[] bytes) throws IOException {
     jsonGenerator.writeBinary(bytes);
   }
 
   @Override
-  public int writeBinary(InputStream in, int i) throws IOException, JsonGenerationException {
+  public int writeBinary(InputStream in, int i) throws IOException {
     return jsonGenerator.writeBinary(in, i);
   }
 
   @Override
-  public int writeBinary(Base64Variant bv, InputStream in, int i)
-      throws IOException, JsonGenerationException {
+  public int writeBinary(Base64Variant bv, InputStream in, int i) throws IOException {
     return jsonGenerator.writeBinary(bv, in, i);
   }
 
   @Override
-  public void writeNumber(int i) throws IOException, JsonGenerationException {
-    LOGGER.debug(String.valueOf(i));
+  public void writeNumber(int i) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(String.valueOf(i));
+    }
     jsonGenerator.writeNumber(i);
   }
 
   @Override
-  public void writeNumber(long l) throws IOException, JsonGenerationException {
-    LOGGER.debug(String.valueOf(l));
+  public void writeNumber(long l) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(String.valueOf(l));
+    }
     jsonGenerator.writeNumber(l);
   }
 
   @Override
-  public void writeNumber(BigInteger bi) throws IOException, JsonGenerationException {
-    LOGGER.debug(String.valueOf(bi));
+  public void writeNumber(BigInteger bi) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(String.valueOf(bi));
+    }
     jsonGenerator.writeNumber(bi);
   }
 
   @Override
-  public void writeNumber(double d) throws IOException, JsonGenerationException {
-    LOGGER.debug(String.valueOf(d));
+  public void writeNumber(double d) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(String.valueOf(d));
+    }
     jsonGenerator.writeNumber(d);
   }
 
   @Override
-  public void writeNumber(float f) throws IOException, JsonGenerationException {
-    LOGGER.debug(String.valueOf(f));
+  public void writeNumber(float f) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(String.valueOf(f));
+    }
     jsonGenerator.writeNumber(f);
   }
 
   @Override
-  public void writeNumber(BigDecimal bd) throws IOException, JsonGenerationException {
-    LOGGER.debug(String.valueOf(bd));
+  public void writeNumber(BigDecimal bd) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(String.valueOf(bd));
+    }
     jsonGenerator.writeNumber(bd);
   }
 
   @Override
-  public void writeNumber(String string)
-      throws IOException, JsonGenerationException, UnsupportedOperationException {
-    LOGGER.debug(string);
+  public void writeNumber(String string) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(string);
+    }
     jsonGenerator.writeNumber(string);
   }
 
   @Override
-  public void writeBoolean(boolean bln) throws IOException, JsonGenerationException {
-    LOGGER.debug(String.valueOf(bln));
+  public void writeBoolean(boolean bln) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(String.valueOf(bln));
+    }
     jsonGenerator.writeBoolean(bln);
   }
 
   @Override
-  public void writeNull() throws IOException, JsonGenerationException {
-    LOGGER.debug("NULL");
+  public void writeNull() throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug("NULL");
+    }
     jsonGenerator.writeNull();
   }
 
   @Override
-  public void writeObject(Object o) throws IOException, JsonProcessingException {
+  public void writeObject(Object o) throws IOException {
     jsonGenerator.writeObject(o);
   }
 
   @Override
-  public void writeStringField(String string, String string1)
-      throws IOException, JsonGenerationException {
-    LOGGER.debug(string + " : " + string1);
+  public void writeStringField(String string, String string1) throws IOException {
+    if (LOGGER.isDebugEnabled()) {
+      LOGGER.debug(string + " : " + string1);
+    }
     jsonGenerator.writeStringField(string, string1);
   }
 
   @Override
-  public void writeTree(TreeNode tn) throws IOException, JsonProcessingException {
+  public void writeTree(TreeNode tn) throws IOException {
     jsonGenerator.writeTree(tn);
   }
 
   @Override
-  public void copyCurrentEvent(JsonParser jp) throws IOException, JsonProcessingException {
+  public void copyCurrentEvent(JsonParser jp) throws IOException {
     jsonGenerator.copyCurrentEvent(jp);
   }
 
   @Override
-  public void copyCurrentStructure(JsonParser jp) throws IOException, JsonProcessingException {
+  public void copyCurrentStructure(JsonParser jp) throws IOException {
     jsonGenerator.copyCurrentStructure(jp);
   }
 
@@ -376,6 +416,7 @@ public class JsonGeneratorDebug extends JsonGenerator {
     return jsonGenerator.getFeatureMask();
   }
 
+  @SuppressWarnings("deprecation")
   @Override
   public JsonGenerator setFeatureMask(int i) {
     return jsonGenerator.setFeatureMask(i);

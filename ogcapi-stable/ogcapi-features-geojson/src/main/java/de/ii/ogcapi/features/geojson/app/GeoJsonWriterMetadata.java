@@ -47,11 +47,6 @@ public class GeoJsonWriterMetadata implements GeoJsonWriter {
       OptionalLong numberReturned = context.metadata().getNumberReturned();
       OptionalLong numberMatched = context.metadata().getNumberMatched();
 
-      /* TODO
-      boolean isLastPage = numberReturned.orElse(0) < context.query().getLimit();
-      this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getLinks(), isLastPage);
-       */
-
       if (numberReturned.isPresent()) {
         context.encoding().getJson().writeNumberField("numberReturned", numberReturned.getAsLong());
       }
@@ -66,49 +61,4 @@ public class GeoJsonWriterMetadata implements GeoJsonWriter {
 
     next.accept(context);
   }
-
-  /* TODO
-  @Override
-  public void onFeatureStart(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-      if (!context.encoding().isFeatureCollection()) {
-          this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getLinks(), false);
-      }
-
-      // next chain for extensions
-      next.accept(context);
-  }
-
-  @Override
-  public void onFeatureEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) throws IOException {
-      // next chain for extensions
-      next.accept(context);
-
-      if (!context.encoding().isFeatureCollection()) {
-          this.writeLinksIfAny(context.encoding().getJson(), context.encoding().getLinks(), false);
-      }
-  }
-
-  private void writeLinksIfAny(JsonGenerator json, List<Link> links, boolean isLastPage) throws IOException {
-      if (!links.isEmpty()) {
-          json.writeFieldName("links");
-          json.writeStartArray();
-
-          for (Link link : links) {
-              if (!(isLastPage && Objects.equals(link.getRel(), "next"))) {
-                  json.writeStartObject();
-                  json.writeStringField("href", link.getHref());
-                  if (Objects.nonNull(link.getRel()))
-                      json.writeStringField("rel", link.getRel());
-                  if (Objects.nonNull(link.getType()))
-                      json.writeStringField("type", link.getType());
-                  if (Objects.nonNull(link.getTitle()))
-                      json.writeStringField("title", link.getTitle());
-                  json.writeEndObject();
-              }
-          }
-
-          json.writeEndArray();
-      }
-  }
-   */
 }

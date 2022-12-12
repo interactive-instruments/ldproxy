@@ -30,9 +30,13 @@ import org.immutables.value.Value;
 /**
  * @author zahnen
  */
+@SuppressWarnings("ConstantConditions")
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 public abstract class FeatureTransformationContextGeoJson implements FeatureTransformationContext {
+
+  // TODO: to state
+  private TokenBuffer tokenBuffer;
 
   @Override
   @Value.Default
@@ -61,7 +65,7 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
 
   @Value.Default
   protected JsonGenerator getJsonGenerator() {
-    JsonGenerator json = null;
+    JsonGenerator json;
     try {
       json = new JsonFactory().createGenerator(getOutputStream());
     } catch (IOException e) {
@@ -73,7 +77,7 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
       json.useDefaultPrettyPrinter();
     }
     if (getDebugJson()) {
-      // Zum JSON debuggen hier einschalten.
+      // Activate to debug JSON
       json = new JsonGeneratorDebug(json);
     }
 
@@ -87,17 +91,14 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
 
   @Value.Default
   public boolean getPrettify() {
-    return getGeoJsonConfig().getUseFormattedJsonOutput() == true;
+    //noinspection deprecation
+    return Boolean.TRUE.equals(getGeoJsonConfig().getUseFormattedJsonOutput());
   }
-
-  // TODO: to state
-  private TokenBuffer tokenBuffer;
 
   protected TokenBuffer getJsonBuffer() {
     return tokenBuffer;
   }
 
-  // @Value.Derived
   private TokenBuffer createJsonBuffer() {
     TokenBuffer json = new TokenBuffer(new ObjectMapper(), false);
 
@@ -120,7 +121,6 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
   public final void stopBuffering() throws IOException {
     if (getState().isBuffering()) {
       getState().setIsBuffering(false);
-      // getJsonBuffer().serialize(getJsonGenerator());
       getJsonBuffer().close();
     }
   }
@@ -132,6 +132,8 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
     }
   }
 
+  // TODO: Generated builder '.from' method will not copy from attribute 'state' because it has
+  //       different return type in supertype.
   @Value.Modifiable
   public abstract static class StateGeoJson extends State {
 

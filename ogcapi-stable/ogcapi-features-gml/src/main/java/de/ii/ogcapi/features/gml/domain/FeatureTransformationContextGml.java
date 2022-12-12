@@ -23,10 +23,7 @@ import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@SuppressWarnings({
-  "ConstantConditions",
-  "PMD.TooManyMethods"
-}) // this class needs that many methods, a refactoring makes no sense
+@SuppressWarnings({"ConstantConditions", "PMD.TooManyMethods", "PMD.ExcessivePublicCount"})
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 public abstract class FeatureTransformationContextGml implements FeatureTransformationContext {
@@ -116,25 +113,7 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
   public void flush() throws IOException {
     if (buffer.length() > 0) {
       // replace placeholders
-      getState()
-          .getPlaceholders()
-          .forEach(
-              (key, value) -> {
-                // Most placeholders cannot be empty - if they are, there is an error that
-                // should be reported
-                if (!key.startsWith("_$$_XML_ATTRIBUTE_") && value.isEmpty()) {
-                  return;
-                }
-                // variable object elements appear twice - opening and closing tag
-                IntStream.rangeClosed(1, 2)
-                    .forEach(
-                        i -> {
-                          int idx = buffer.lastIndexOf(key);
-                          if (idx != -1) {
-                            buffer.replace(idx, idx + key.length(), value);
-                          }
-                        });
-              });
+      getState().getPlaceholders().forEach(this::processPlaceholders);
 
       if (buffer.indexOf("_$$_") == -1) {
         // write buffer
@@ -151,6 +130,23 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
       getState().unsetPlaceholders();
       buffer.setLength(0);
     }
+  }
+
+  private void processPlaceholders(String key, String value) {
+    // Most placeholders cannot be empty - if they are, there is an error that
+    // should be reported
+    if (!key.startsWith("_$$_XML_ATTRIBUTE_") && value.isEmpty()) {
+      return;
+    }
+    // variable object elements appear twice - opening and closing tag
+    IntStream.rangeClosed(1, 2)
+        .forEach(
+            i -> {
+              int idx = buffer.lastIndexOf(key);
+              if (idx != -1) {
+                buffer.replace(idx, idx + key.length(), value);
+              }
+            });
   }
 
   /**
@@ -474,6 +470,8 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
     return "gml";
   }
 
+  // TODO: Generated builder '.from' method will not copy from attribute 'state' because it has
+  //       different return type in supertype.
   @Value.Modifiable
   public abstract static class StateGml extends State {
 
