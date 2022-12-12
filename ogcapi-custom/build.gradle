@@ -15,6 +15,7 @@ apply from: '../formatting.gradle'
 
 dependencies {
     layers group: 'de.interactive_instruments', name: 'ogcapi-stable', version: version
+    layers group: 'de.interactive_instruments', name: 'ogcapi-draft', version: version
 
     // modules to include in this layer
     modules subprojects
