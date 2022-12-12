@@ -12,7 +12,6 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
-import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -43,9 +42,7 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
 
   @Inject
   public ExtendableOpenApiDefinitionImpl(
-      AppContext appContext,
-      ExtensionRegistry extensionRegistry,
-      ClassSchemaCache classSchemaCache) {
+      AppContext appContext, ExtensionRegistry extensionRegistry) {
     this.authConfig = appContext.getConfiguration().getAuth();
     this.extensionRegistry = extensionRegistry;
   }
