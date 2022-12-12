@@ -56,7 +56,7 @@ import de.ii.xtraplatform.docs.DocVar;
  *     <p>### Response language
  *     <p>For operations that return a response, the language for linguistic texts is chosen using
  *     standard HTTP content negiotiation with `Accept-Language` headers.
- *     <p>If enabled in [Common Core](common.md), GET operations additionally support the quer
+ *     <p>If enabled in [Common Core](common_core.md), GET operations additionally support the quer
  *     parameter `lang`, which allows to explicitely choose the language and override the result of
  *     the content negotiation. The supported languages depend on the affected resource and the
  *     configuration. Support for multilingualism is currently limited. There are four possible
