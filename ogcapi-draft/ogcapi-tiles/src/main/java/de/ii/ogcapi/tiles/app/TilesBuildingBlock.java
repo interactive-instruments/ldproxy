@@ -212,11 +212,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         .enabled(false)
         .tileProvider(
             ImmutableTileProviderFeatures.builder()
-                .tileEncodings(
-                    extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
-                        .filter(FormatExtension::isEnabledByDefault)
-                        .map(format -> format.getMediaType().label())
-                        .collect(ImmutableList.toImmutableList()))
+                .tileEncodings(ImmutableList.of(TileFormatMVT.MEDIA_TYPE.label()))
                 .center(ImmutableList.of(0.0, 0.0))
                 .zoomLevels(
                     ImmutableMap.of(
