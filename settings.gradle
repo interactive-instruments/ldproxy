@@ -32,4 +32,5 @@ extensions.gitHooks.with {
 
 includeBuild 'ogcapi-stable'
 includeBuild 'ogcapi-draft'
+includeBuild 'ogcapi-custom'
 
