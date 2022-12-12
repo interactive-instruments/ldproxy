@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.routes.app.CapabilityRouting;
+import de.ii.ogcapi.routes.app.RoutingBuildingBlock;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import java.util.List;
 import javax.inject.Inject;
@@ -27,7 +27,7 @@ public class ConformanceDeclarationWeight implements ConformanceClass {
 
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-    return ImmutableList.of(CapabilityRouting.WEIGHT);
+    return ImmutableList.of(RoutingBuildingBlock.WEIGHT);
   }
 
   @Override

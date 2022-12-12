@@ -13,22 +13,24 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.List;
 import org.immutables.value.Value;
 
-// TODO: show
 /**
- * # Tile-Provider-Objects
- *
  * @langEn *Deprecated (from v4.0 on you have to use [Tile Provider](../../providers/tile/README.md)
  *     entities)*
+ *     <p>
  *     <p>There are currently three types of Tile providers supported:
- *     <p>- `FEATURES`: The tiles are derived from a feature provider. - `MBTILES`: The tiles of a
- *     tileset in the "WebMercatorQuad" tiling scheme are available in an MBTiles archive. -
- *     `TILESERVER`: The tiles are retrieved from a TileServer GL instance.
+ *     <p><code>
+ * - `FEATURES`: The tiles are derived from a feature provider.
+ * - `MBTILES`: The tiles of a tileset in the "WebMercatorQuad" tiling scheme are available in an MBTiles archive.
+ * - `TILESERVER`: The tiles are retrieved from a TileServer GL instance.
+ *     </code>
  * @langDe *Deprecated (von v4.0 an müssen [Tile-Provider](../../providers/tile/README.md) Entities
- *     verwendet werden )*
+ *     verwendet werden )*<br>
  *     <p>Es werden aktuell drei Arten von Tile-Providern unterstützt:
- *     <p>- `FEATURES`: Die Kacheln werden aus einem Feature-Provider abgeleitet. - `MBTILES`: Die
- *     Kacheln eines Tileset im Kachelschema "WebMercatorQuad" liegen in einem MBTiles-Archiv vor. -
- *     `TILESERVER`: Die Kacheln werden von einer TileServer-GL-Instanz abgerufen.
+ *     <p><code>
+ * - `FEATURES`: Die Kacheln werden aus einem Feature-Provider abgeleitet.
+ * - `MBTILES`: Die Kacheln eines Tileset im Kachelschema "WebMercatorQuad" liegen in einem MBTiles-Archiv vor.
+ * - `TILESERVER`: Die Kacheln werden von einer TileServer-GL-Instanz abgerufen.
+ *     </code>
  */
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,

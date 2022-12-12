@@ -39,7 +39,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableExample;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.routes.app.CapabilityRouting;
+import de.ii.ogcapi.routes.app.RoutingBuildingBlock;
 import de.ii.ogcapi.routes.domain.HtmlForm;
 import de.ii.ogcapi.routes.domain.HtmlFormDefaults;
 import de.ii.ogcapi.routes.domain.ImmutableQueryInputComputeRoute;
@@ -129,7 +129,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
 
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-    return ImmutableList.of(CapabilityRouting.CORE, CapabilityRouting.MODE);
+    return ImmutableList.of(RoutingBuildingBlock.CORE, RoutingBuildingBlock.MODE);
   }
 
   @Override

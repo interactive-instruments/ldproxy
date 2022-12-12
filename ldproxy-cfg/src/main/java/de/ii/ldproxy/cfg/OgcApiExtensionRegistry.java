@@ -17,7 +17,7 @@ import de.ii.ogcapi.crs.app.CrsBuildingBlock;
 import de.ii.ogcapi.crud.app.CrudBuildingBlock;
 import de.ii.ogcapi.features.core.app.FeaturesCoreBuildingBlock;
 import de.ii.ogcapi.features.custom.extensions.app.FeaturesExtensionsBuildingBlock;
-import de.ii.ogcapi.features.flatgeobuf.app.CapabilityFlatgeobuf;
+import de.ii.ogcapi.features.flatgeobuf.app.FeaturesFlatgeobufBuildingBlock;
 import de.ii.ogcapi.features.geojson.app.GeoJsonBuildingBlock;
 import de.ii.ogcapi.features.geojson.ld.app.GeoJsonLdBuildingBlock;
 import de.ii.ogcapi.features.gml.app.GmlBuildingBlock;
@@ -52,7 +52,7 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
             .add(new QueryablesBuildingBlock())
             .add(new SchemaBuildingBlock())
             .add(new FeaturesExtensionsBuildingBlock())
-            .add(new CapabilityFlatgeobuf())
+            .add(new FeaturesFlatgeobufBuildingBlock())
             .add(new GeoJsonLdBuildingBlock())
             .add(new JsonFgBuildingBlock())
             .add(new FilterBuildingBlock())

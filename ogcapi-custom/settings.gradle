@@ -1,0 +1,17 @@
+pluginManagement {
+    repositories {
+        maven {  
+            url "https://dl.interactive-instruments.de/repository/maven-releases/"  
+        }
+        maven {  
+            url "https://dl.interactive-instruments.de/repository/maven-snapshots/"  
+        }
+        gradlePluginPortal()
+    }
+}
+
+rootDir.listFiles().each { file ->
+    if (file.isDirectory() && (file.name.startsWith('ogcapi'))) {
+    	include file.name
+    }    
+}

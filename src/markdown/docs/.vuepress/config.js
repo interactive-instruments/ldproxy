@@ -68,10 +68,11 @@ module.exports = {
     //logo: 'https://vuejs.org/images/logo.png',
     editLink: false,
     darkMode: true,
-    /*themeExtensions: {
+    themeExtensions: {
       navbar: true,
       onThisPage: true,
-    },*/
+      tableRowHeight: true,
+    },
     themePlugins: {
       //prismjs: false,
     },

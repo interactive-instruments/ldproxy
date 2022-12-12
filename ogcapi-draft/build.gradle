@@ -1,5 +1,5 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-layer' version '4.4.1'
+    id 'de.interactive_instruments.xtraplatform-layer' version '4.4.3'
     id "com.diffplug.spotless" version "6.7.2" apply false
 }
 
@@ -18,6 +18,15 @@ dependencies {
 
     // modules to include in this layer
     modules subprojects
+}
+
+layer {
+    PRODUCTION {
+        minimumCoverage = 0.0
+    }
+    CANDIDATE {
+        minimumCoverage = 0.0
+    }
 }
 
 task checkAll { dependsOn subprojects*.tasks*.findByPath('check') }
