@@ -2,5 +2,4 @@
 maturity = 'EXPERIMENTAL'
 
 dependencies {
-    provided project(":ogcapi-tiles")
 }

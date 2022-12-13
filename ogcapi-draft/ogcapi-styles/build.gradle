@@ -2,8 +2,6 @@
 maturity = 'EXPERIMENTAL'
 
 dependencies {
-    provided project(":ogcapi-tiles")
-
     embeddedExport (group: 'com.github.java-json-tools', name: 'json-patch', version: '1.13') {
         exclude module: 'jackson-core'
         exclude module: 'jackson-databind'
