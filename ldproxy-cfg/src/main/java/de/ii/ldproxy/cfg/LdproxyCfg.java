@@ -40,6 +40,7 @@ import de.ii.xtraplatform.store.domain.entities.EntityDataStore;
 import de.ii.xtraplatform.store.domain.entities.EntityFactory;
 import de.ii.xtraplatform.store.infra.EventStoreDriverFs;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
@@ -54,6 +55,13 @@ public class LdproxyCfg implements Cfg {
   private final RequiredIncludes requiredIncludes;
 
   public LdproxyCfg(Path dataDirectory) {
+    Path store = dataDirectory.resolve(StoreConfiguration.DEFAULT_LOCATION);
+    try {
+      Files.createDirectories(store);
+    } catch (IOException e) {
+      throw new IllegalStateException("Could not create " + store);
+    }
+
     this.requiredIncludes = new RequiredIncludes();
     this.builders = new Builders() {};
     StoreConfiguration storeConfiguration =
