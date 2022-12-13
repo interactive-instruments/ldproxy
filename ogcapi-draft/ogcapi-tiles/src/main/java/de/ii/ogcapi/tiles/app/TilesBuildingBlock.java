@@ -887,18 +887,31 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
 
   private static Map<String, MinMax> getNonSeededRanges(TilesConfiguration tilesConfiguration) {
     Map<String, MinMax> seeding = tilesConfiguration.getSeedingDerived();
+    Map<String, MinMax> cache = tilesConfiguration.getZoomLevelsCacheDerived();
 
-    return tilesConfiguration.getZoomLevelsCacheDerived().entrySet().stream()
+    return tilesConfiguration.getZoomLevelsDerived().entrySet().stream()
         .map(
             entry -> {
               if (seeding.containsKey(entry.getKey())) {
-                Range<Integer> range =
-                    Range.closed(
-                        Math.max(
-                            seeding.get(entry.getKey()).getMax() + 1, entry.getValue().getMin()),
-                        entry.getValue().getMax());
+                Range<Integer> range;
+                if (cache.containsKey(entry.getKey())) {
+                  range =
+                      Range.closed(
+                          Math.max(
+                              seeding.get(entry.getKey()).getMax() + 1,
+                              cache.get(entry.getKey()).getMin()),
+                          cache.get(entry.getKey()).getMax());
+                } else {
+                  range =
+                      Range.closed(
+                          Math.max(
+                              seeding.get(entry.getKey()).getMax() + 1, entry.getValue().getMin()),
+                          entry.getValue().getMax());
+                }
 
                 return new SimpleImmutableEntry<>(entry.getKey(), MinMax.of(range));
+              } else if (cache.containsKey(entry.getKey())) {
+                return new SimpleImmutableEntry<>(entry.getKey(), cache.get(entry.getKey()));
               }
               return entry;
             })
