@@ -1,0 +1,9 @@
+
+maturity = 'EXPERIMENTAL'
+
+dependencies {
+    provided project(":ogcapi-foundation")
+    provided project(":ogcapi-common")
+    provided project(":ogcapi-html")
+    provided project(":ogcapi-json")
+}
