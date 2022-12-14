@@ -122,6 +122,24 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache
   }
 
   @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return super.isEnabledForApi(apiData)
+        && apiData
+            .getExtension(FeaturesCoreConfiguration.class)
+            .map(ExtensionConfiguration::isEnabled)
+            .orElse(true);
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return super.isEnabledForApi(apiData, collectionId)
+        && apiData
+            .getExtension(FeaturesCoreConfiguration.class, collectionId)
+            .map(ExtensionConfiguration::isEnabled)
+            .orElse(true);
+  }
+
+  @Override
   public ImmutableFeatureQuery.Builder transformQuery(
       ImmutableFeatureQuery.Builder queryBuilder,
       Map<String, String> parameters,
