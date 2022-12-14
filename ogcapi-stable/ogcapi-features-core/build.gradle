@@ -7,6 +7,7 @@ dependencies {
     provided project(":ogcapi-collections")
     provided project(":ogcapi-html")
     provided project(":ogcapi-json")
+    provided project(":ogcapi-oas30")
 
     testImplementation(testFixtures(project(":ogcapi-foundation")))
     testImplementation project(":ogcapi-html")
