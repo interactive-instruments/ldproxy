@@ -46,8 +46,6 @@ import de.ii.xtraplatform.docs.DocStep.Step;
 import de.ii.xtraplatform.docs.DocTable;
 import de.ii.xtraplatform.docs.DocTable.ColumnSet;
 import de.ii.xtraplatform.docs.DocVar;
-import de.ii.xtraplatform.features.domain.DatasetChangeListener;
-import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.EntityFactories;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -81,7 +79,6 @@ import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleImmutableEntry;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -324,14 +321,6 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
           .addStrictErrors(MessageFormat.format("Could not load SQLite: {}", e.getMessage()))
           .build();
     }
-
-    providers
-        .getFeatureProvider(apiData)
-        .ifPresent(
-            provider -> {
-              provider.getChangeHandler().addListener(onDatasetChange(api));
-              provider.getChangeHandler().addListener(onFeatureChange(api));
-            });
 
     if (apiValidation == MODE.NONE) {
       return ValidationResult.of();
@@ -939,72 +928,5 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         .minimumSizeInPixel(cfg.getMinimumSizeInPixelDerived())
         .ignoreInvalidGeometries(cfg.isIgnoreInvalidGeometriesDerived())
         .build();
-  }
-
-  // TODO: only when enabled in configuration?
-  private DatasetChangeListener onDatasetChange(OgcApi api) {
-    return change -> {
-      for (String featureType : change.getFeatureTypes()) {
-        String collectionId = getCollectionId(api.getData().getCollections().values(), featureType);
-
-        try {
-          tilesProviders.deleteTiles(
-              api, Optional.of(collectionId), Optional.empty(), Optional.empty());
-        } catch (Exception e) {
-          if (LOGGER.isErrorEnabled()) {
-            LOGGER.error(
-                "Error while deleting tiles from the tile cache after a dataset change.", e);
-          }
-        }
-        ;
-      }
-    };
-  }
-
-  // TODO: seeding not triggered?
-  private FeatureChangeListener onFeatureChange(OgcApi api) {
-    return change -> {
-      String collectionId =
-          getCollectionId(api.getData().getCollections().values(), change.getFeatureType());
-      switch (change.getAction()) {
-        case CREATE:
-        case UPDATE:
-          change
-              .getBoundingBox()
-              .ifPresent(
-                  bbox -> {
-                    try {
-                      tilesProviders.deleteTiles(
-                          api, Optional.of(collectionId), Optional.empty(), Optional.of(bbox));
-                    } catch (Exception e) {
-                      if (LOGGER.isErrorEnabled()) {
-                        LOGGER.error(
-                            "Error while deleting tiles from the tile cache after a feature change.",
-                            e);
-                      }
-                    }
-                  });
-          break;
-        case DELETE:
-          // TODO we would need the extent of the deleted feature to update the cache
-          break;
-      }
-    };
-  }
-
-  // TODO centralize
-  private String getCollectionId(
-      Collection<FeatureTypeConfigurationOgcApi> collections, String featureType) {
-    return collections.stream()
-        .map(
-            collection ->
-                collection
-                    .getExtension(FeaturesCoreConfiguration.class)
-                    .flatMap(FeaturesCoreConfiguration::getFeatureType))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .filter(ft -> Objects.equals(ft, featureType))
-        .findFirst()
-        .orElse(featureType);
   }
 }
