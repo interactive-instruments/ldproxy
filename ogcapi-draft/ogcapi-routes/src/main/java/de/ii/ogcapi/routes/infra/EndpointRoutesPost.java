@@ -96,6 +96,8 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointRoutesPost.class);
   private static final List<String> TAGS = ImmutableList.of("Routing");
+  // TODO determine the appropriate segment limit
+  public static final int LIMIT = 250_000;
 
   private final QueryHandlerRoutes queryHandler;
   private final Schema<?> schemaRouteDefinition;
@@ -364,8 +366,8 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
             defaultCrs,
             coordinatePrecision,
             1,
-            Integer.MAX_VALUE,
-            Integer.MAX_VALUE,
+            LIMIT,
+            LIMIT,
             toFlatMap(uriInfo.getQueryParameters()),
             allowedParameters);
 
