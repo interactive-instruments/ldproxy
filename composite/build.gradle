@@ -1,5 +1,5 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-composite' version '4.4.3'
+    id 'de.interactive_instruments.xtraplatform-composite' version '4.4.4'
 }
 tasks.register('d') {
     dependsOn project.gradle.includedBuild('ldproxy').task(':dependencies')
