@@ -1,5 +1,5 @@
 
-maturity = 'EXPERIMENTAL'
+maturity = 'CANDIDATE'
 
 dependencies {
     embeddedExport (group: 'com.github.java-json-tools', name: 'json-patch', version: '1.13') {

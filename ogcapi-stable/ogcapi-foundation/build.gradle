@@ -1,5 +1,5 @@
 
-maturity = 'PRODUCTION'
+maturity = 'MATURE'
 
 dependencies {
     embedded (group: 'com.networknt', name: 'json-schema-validator', version: '1.0.73') {
