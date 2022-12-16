@@ -39,9 +39,6 @@ import de.ii.xtraplatform.features.domain.FeatureStream.Result;
 import de.ii.xtraplatform.features.domain.FeatureStream.ResultBase;
 import de.ii.xtraplatform.features.domain.FeatureStream.ResultReduced;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
-import de.ii.xtraplatform.features.domain.ImmutableMultiFeatureQuery;
-import de.ii.xtraplatform.features.domain.ImmutableSubQuery;
-import de.ii.xtraplatform.features.domain.MultiFeatureQuery;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
@@ -302,29 +299,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                   transformationContextGeneric, requestContext.getLanguage())
               .get();
     } else if (outputFormat.canEncodeFeatures()) {
-      // TODO remove test code
-      if (!query.returnsSingleFeature() && featureProvider.supportsMultiQueries()) {
-        MultiFeatureQuery multiFeatureQuery =
-            ImmutableMultiFeatureQuery.builder()
-                .limit(query.getLimit())
-                .offset(query.getOffset())
-                .geometryPrecision(query.getGeometryPrecision())
-                .maxAllowableOffset(query.getMaxAllowableOffset())
-                .crs(query.getCrs())
-                .addQueries(
-                    ImmutableSubQuery.builder()
-                        .type(collectionId)
-                        .filters(query.getFilters())
-                        .sortKeys(query.getSortKeys())
-                        .fields(query.getFields())
-                        .skipGeometry(query.skipGeometry())
-                        .build())
-                .build();
-        featureStream = featureProvider.multiQueries().getFeatureStream(multiFeatureQuery);
-        LOGGER.debug("Using Multi-Collection Query.");
-      } else {
-        featureStream = featureProvider.queries().getFeatureStream(query);
-      }
+      featureStream = featureProvider.queries().getFeatureStream(query);
 
       ImmutableFeatureTransformationContextGeneric transformationContextGeneric =
           transformationContext.outputStream(new OutputStreamToByteConsumer()).build();
