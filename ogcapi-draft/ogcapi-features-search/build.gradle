@@ -1,5 +1,5 @@
 
-maturity = 'EXPERIMENTAL'
+maturity = 'PROPOSAL'
 
 dependencies {
     provided project(":ogcapi-collections-queryables")
