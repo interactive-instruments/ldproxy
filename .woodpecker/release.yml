@@ -63,7 +63,7 @@ pipeline:
 
 # TODO: fails because java is missing ???
   github:
-    image: node:12-alpine
+    image: node:18-alpine
     commands:
       - export HOME=$${CI_WORKSPACE}
       - apk --no-cache add git libc6-compat

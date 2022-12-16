@@ -28,9 +28,11 @@ import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.services.domain.AbstractService;
+import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.entities.ChangingValue;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -46,15 +48,18 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
 
   private final CrsTransformerFactory crsTransformerFactory;
   private final ExtensionRegistry extensionRegistry;
+  private final ServicesContext servicesContext;
 
   @AssistedInject
   public OgcApiEntity(
       CrsTransformerFactory crsTransformerFactory,
       ExtensionRegistry extensionRegistry,
+      ServicesContext servicesContext,
       @Assisted OgcApiDataV2 data) {
     super(data);
     this.crsTransformerFactory = crsTransformerFactory;
     this.extensionRegistry = extensionRegistry;
+    this.servicesContext = servicesContext;
   }
 
   @Override
@@ -225,6 +230,11 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
   public boolean updateItemCount(String collectionId, Long itemCount) {
     return getChangingData()
         .update(ChangingItemCount.class, collectionId, ChangingItemCount.of(itemCount));
+  }
+
+  @Override
+  public URI getUri() {
+    return servicesContext.getUri().resolve(String.join("/", getData().getSubPath()));
   }
 
   private Optional<BoundingBox> transformSpatialExtent(

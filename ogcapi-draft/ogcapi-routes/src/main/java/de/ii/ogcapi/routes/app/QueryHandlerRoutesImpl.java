@@ -19,7 +19,6 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
@@ -498,7 +497,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
                 .toCompletableFuture()
                 .join();
 
-        result.getError().ifPresent(QueriesHandler::processStreamError);
+        result.getError().ifPresent(FeatureStream::processStreamError);
 
         if (result.isEmpty()) {
           throw new NotFoundException("The requested route could not be computed.");
