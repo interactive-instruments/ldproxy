@@ -110,6 +110,7 @@ public class EndpointRouteDelete extends Endpoint {
               operationSummary,
               operationDescription,
               Optional.empty(),
+              getOperationId("deleteRoute"),
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
       definitionBuilder.putResources(path, resourceBuilder.build());

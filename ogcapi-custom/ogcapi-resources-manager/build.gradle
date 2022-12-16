@@ -1,0 +1,6 @@
+
+maturity = 'CANDIDATE'
+
+dependencies {
+    provided project(":ogcapi-resources")
+}

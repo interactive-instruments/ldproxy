@@ -10,6 +10,7 @@ package de.ii.ogcapi.projections.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -17,13 +18,19 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
+import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
+import de.ii.xtraplatform.tiles.domain.TileGenerationSchema;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.inject.Inject;
@@ -39,7 +46,11 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterProperties extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterProperties extends ApiExtensionCache
+    implements OgcApiQueryParameter,
+        TypedQueryParameter<List<String>>,
+        FeatureQueryTransformer,
+        TileGenerationUserParameter {
 
   private final SchemaInfo schemaInfo;
   private final SchemaValidator schemaValidator;
@@ -121,28 +132,40 @@ public class QueryParameterProperties extends ApiExtensionCache implements OgcAp
   }
 
   @Override
+  public List<String> parse(String value, OgcApiDataV2 apiData) {
+    try {
+      return Splitter.on(',').omitEmptyStrings().trimResults().splitToList(value);
+    } catch (Throwable e) {
+      throw new IllegalArgumentException(
+          String.format("Invalid value for query parameter '%s'.", getName()), e);
+    }
+  }
+
+  @Override
   public ImmutableFeatureQuery.Builder transformQuery(
-      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
       ImmutableFeatureQuery.Builder queryBuilder,
       Map<String, String> parameters,
-      OgcApiDataV2 datasetData) {
-
-    if (!isExtensionEnabled(
-        datasetData.getCollections().get(featureTypeConfiguration.getId()),
-        ProjectionsConfiguration.class)) {
-      return queryBuilder;
-    }
+      OgcApiDataV2 datasetData,
+      FeatureTypeConfigurationOgcApi featureTypeConfiguration) {
     List<String> propertiesList = getPropertiesList(parameters);
 
     return queryBuilder.fields(propertiesList);
   }
 
+  @Override
+  public void applyTo(
+      ImmutableTileGenerationParametersTransient.Builder userParametersBuilder,
+      QueryParameterSet parameters,
+      Optional<TileGenerationSchema> generationSchema) {
+    parameters.getValue(this).ifPresent(userParametersBuilder::fields);
+  }
+
   private List<String> getPropertiesList(Map<String, String> parameters) {
-    if (parameters.containsKey("properties")) {
+    if (parameters.containsKey(getName())) {
       return Splitter.on(',')
           .omitEmptyStrings()
           .trimResults()
-          .splitToList(parameters.get("properties"));
+          .splitToList(parameters.get(getName()));
     } else {
       return ImmutableList.of("*");
     }

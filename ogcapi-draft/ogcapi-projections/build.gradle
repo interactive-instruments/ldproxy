@@ -1,2 +1,5 @@
 
-maturity = 'EXPERIMENTAL'
+maturity = 'CANDIDATE'
+
+dependencies {
+}

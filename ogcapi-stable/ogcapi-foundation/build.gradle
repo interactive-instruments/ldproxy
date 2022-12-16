@@ -1,8 +1,9 @@
 
-maturity = 'PRODUCTION'
+maturity = 'MATURE'
 
 dependencies {
-    embedded (group: 'com.networknt', name: 'json-schema-validator', version: '1.0.52') {
+    embedded (group: 'com.networknt', name: 'json-schema-validator', version: '1.0.73') {
+        exclude module: 'jackson-core'
         exclude module: 'jackson-databind'
         exclude module: 'commons-lang3'
         exclude module: 'slf4j-api'

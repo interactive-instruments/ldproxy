@@ -29,6 +29,7 @@ import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.services.domain.ImmutableServiceDataCommon;
 import de.ii.xtraplatform.services.domain.Service;
+import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.KeyPathAlias;
 import de.ii.xtraplatform.store.domain.entities.AbstractEntityFactory;
 import de.ii.xtraplatform.store.domain.entities.EntityData;
@@ -65,6 +66,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
   public OgcApiFactory(
       CrsTransformerFactory crsTransformerFactory,
       ExtensionRegistry extensionRegistry,
+      ServicesContext servicesContext,
       OgcApiFactoryAssisted ogcApiFactoryAssisted) {
     super(ogcApiFactoryAssisted);
     this.extensionRegistry = extensionRegistry;

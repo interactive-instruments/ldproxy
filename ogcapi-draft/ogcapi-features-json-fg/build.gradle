@@ -1,8 +1,0 @@
-
-maturity = 'EXPERIMENTAL'
-
-dependencies {
-    provided project(":ogcapi-collections-schema")
-
-    testImplementation(testFixtures(group: 'de.interactive_instruments', name: 'ogcapi-foundation'))
-}

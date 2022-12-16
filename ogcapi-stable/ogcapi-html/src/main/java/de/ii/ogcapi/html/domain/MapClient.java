@@ -49,7 +49,16 @@ public interface MapClient {
     return false;
   }
 
+  List<Double> getCenter();
+
+  Optional<Number> getZoom();
+
   Optional<Map<String, String>> getBounds();
+
+  @Value.Default
+  default boolean getUseBounds() {
+    return false;
+  }
 
   @Value.Default
   default boolean drawBounds() {

@@ -17,12 +17,12 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
-import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureChange;
 import de.ii.xtraplatform.features.domain.FeatureChange.Action;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.features.domain.FeatureTokenSource;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureChange;
@@ -82,7 +82,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
             .transactions()
             .createFeatures(queryInput.getFeatureType(), featureTokenSource, crs);
 
-    result.getError().ifPresent(QueriesHandler::processStreamError);
+    result.getError().ifPresent(FeatureStream::processStreamError);
 
     List<String> ids = result.getIds();
 
@@ -136,7 +136,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
                 crs,
                 false);
 
-    result.getError().ifPresent(QueriesHandler::processStreamError);
+    result.getError().ifPresent(FeatureStream::processStreamError);
 
     handleChange(
         queryInput.getFeatureProvider(),
@@ -180,7 +180,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
             .updateFeature(
                 queryInput.getFeatureType(), queryInput.getFeatureId(), mergedSource, crs, true);
 
-    result.getError().ifPresent(QueriesHandler::processStreamError);
+    result.getError().ifPresent(FeatureStream::processStreamError);
 
     handleChange(
         queryInput.getFeatureProvider(),
@@ -243,7 +243,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
             .transactions()
             .deleteFeature(queryInput.getCollectionId(), queryInput.getFeatureId());
 
-    result.getError().ifPresent(QueriesHandler::processStreamError);
+    result.getError().ifPresent(FeatureStream::processStreamError);
 
     handleChange(
         queryInput.getFeatureProvider(),
@@ -271,7 +271,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
             .boundingBox(bbox)
             .interval(interval)
             .build();
-    featureProvider.getFeatureChangeHandler().handle(change);
+    featureProvider.getChangeHandler().handle(change);
   }
 
   private Optional<Interval> convertTemporalExtent(Optional<Tuple<Long, Long>> interval) {

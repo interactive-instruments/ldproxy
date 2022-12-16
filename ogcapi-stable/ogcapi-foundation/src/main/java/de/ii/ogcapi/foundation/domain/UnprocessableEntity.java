@@ -7,23 +7,17 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
-public class UnprocessableEntity extends RuntimeException {
+import javax.ws.rs.WebApplicationException;
+
+public class UnprocessableEntity extends WebApplicationException {
 
   private static final long serialVersionUID = -2187376341627253652L;
 
   public UnprocessableEntity() {
-    super();
+    super(422);
   }
 
   public UnprocessableEntity(String message) {
-    super(message);
-  }
-
-  public UnprocessableEntity(String message, Throwable cause) {
-    super(message, cause);
-  }
-
-  public UnprocessableEntity(Throwable cause) {
-    super(cause);
+    super(message, 422);
   }
 }

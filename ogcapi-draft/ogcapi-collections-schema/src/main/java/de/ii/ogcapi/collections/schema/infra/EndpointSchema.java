@@ -152,6 +152,7 @@ public class EndpointSchema extends EndpointSubCollection {
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("getSchema", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));

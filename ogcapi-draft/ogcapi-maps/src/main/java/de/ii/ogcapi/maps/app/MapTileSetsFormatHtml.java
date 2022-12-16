@@ -26,8 +26,8 @@ import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSetsView;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSet;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import java.util.Map;
@@ -137,9 +137,6 @@ public class MapTileSetsFormatHtml implements TileSetsFormatExtension {
     return new TileSetsView(
         api.getData(),
         tiles,
-        collectionId,
-        api.getSpatialExtent(collectionId),
-        api.getTemporalExtent(collectionId),
         tileMatrixSets,
         breadCrumbs,
         requestContext.getStaticUrlPrefix(),
@@ -148,7 +145,6 @@ public class MapTileSetsFormatHtml implements TileSetsFormatExtension {
         false,
         htmlConfig.orElseThrow(),
         isNoIndexEnabledForApi(api.getData()),
-        requestContext.getUriCustomizer(),
         i18n,
         requestContext.getLanguage());
   }

@@ -16,8 +16,21 @@ import java.util.AbstractMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public interface FeaturesCoreProviders {
+
+  String API_URI = "apiUri";
+  String SERVICE_URL = "serviceUrl";
+  Function<String, Map<String, String>> DEFAULT_SUBSTITUTIONS =
+      apiUri -> ImmutableMap.of(API_URI, apiUri, SERVICE_URL, apiUri);
+  BiFunction<String, Map<String, String>, Map<String, String>> DEFAULT_SUBSTITUTIONS_PLUS =
+      (apiUri, plus) ->
+          ImmutableMap.<String, String>builder()
+              .putAll(DEFAULT_SUBSTITUTIONS.apply(apiUri))
+              .putAll(plus)
+              .build();
 
   boolean hasFeatureProvider(OgcApiDataV2 apiData);
 

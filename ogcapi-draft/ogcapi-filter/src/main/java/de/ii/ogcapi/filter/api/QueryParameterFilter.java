@@ -21,17 +21,27 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
+import de.ii.xtraplatform.cql.domain.Cql;
+import de.ii.xtraplatform.cql.domain.Cql.Format;
+import de.ii.xtraplatform.cql.domain.Cql2Expression;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
+import de.ii.xtraplatform.tiles.domain.TileGenerationSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -52,15 +62,18 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterFilter extends ApiExtensionCache
-    implements OgcApiQueryParameter, ItemTypeSpecificConformanceClass {
+    implements OgcApiQueryParameter, ItemTypeSpecificConformanceClass, TileGenerationUserParameter {
 
   private final FeaturesCoreProviders providers;
   private final SchemaValidator schemaValidator;
+  private final Cql cql;
 
   @Inject
-  public QueryParameterFilter(FeaturesCoreProviders providers, SchemaValidator schemaValidator) {
+  public QueryParameterFilter(
+      FeaturesCoreProviders providers, SchemaValidator schemaValidator, Cql cql) {
     this.providers = providers;
     this.schemaValidator = schemaValidator;
+    this.cql = cql;
   }
 
   @Override
@@ -211,7 +224,7 @@ public class QueryParameterFilter extends ApiExtensionCache
     if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record))
       builder.add(
           "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/features-filter",
-          "http://www.opengis.net/spec/ogcapi-records-1/0.0/req/cql-filter");
+          "http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/cql-filter");
 
     return builder.build();
   }
@@ -226,6 +239,63 @@ public class QueryParameterFilter extends ApiExtensionCache
       Set<String> filterParameters, OgcApiDataV2 apiData, String collectionId) {
     if (!isEnabledForApi(apiData)) return filterParameters;
 
-    return new ImmutableSet.Builder<String>().addAll(filterParameters).add("filter").build();
+    return new ImmutableSet.Builder<String>().addAll(filterParameters).add(getName()).build();
+  }
+
+  @Override
+  public void applyTo(
+      ImmutableTileGenerationParametersTransient.Builder userParametersBuilder,
+      QueryParameterSet parameters,
+      Optional<TileGenerationSchema> generationSchema) {
+    if (parameters.getValues().containsKey(getName()) && generationSchema.isPresent()) {
+      Cql.Format filterLang =
+          parameters.getDefinitions().stream()
+              .filter(def -> def instanceof QueryParameterFilterLang)
+              .findFirst()
+              .flatMap(
+                  filterLangDef -> parameters.getValue((QueryParameterFilterLang) filterLangDef))
+              .orElse(Format.TEXT);
+      EpsgCrs filterCrs =
+          parameters.getDefinitions().stream()
+              .filter(def -> def instanceof QueryParameterFilterCrs)
+              .findFirst()
+              .flatMap(filterCrsDef -> parameters.getValue((QueryParameterFilterCrs) filterCrsDef))
+              .orElse(OgcCrs.CRS84);
+
+      Cql2Expression filter =
+          parseFilter(
+              parameters.getValues().get(getName()),
+              filterLang,
+              filterCrs,
+              generationSchema.get().getProperties());
+
+      userParametersBuilder.addFilters(filter);
+    }
+  }
+
+  private Cql2Expression parseFilter(
+      String filter, Format filterLang, EpsgCrs filterCrs, Map<String, String> propertyTypes) {
+    Cql2Expression cql2Expression;
+    try {
+      cql2Expression = cql.read(filter, filterLang, filterCrs);
+    } catch (Throwable e) {
+      throw new IllegalArgumentException(
+          String.format("The parameter '%s' is invalid", getName()), e);
+    }
+
+    List<String> invalidProperties =
+        cql.findInvalidProperties(cql2Expression, propertyTypes.keySet());
+
+    if (!invalidProperties.isEmpty()) {
+      throw new IllegalArgumentException(
+          String.format(
+              "The parameter '%s' is invalid. Unknown or forbidden properties used: %s.",
+              getName(), String.join(", ", invalidProperties)));
+    }
+
+    // will throw an error
+    cql.checkTypes(cql2Expression, propertyTypes);
+
+    return cql2Expression;
   }
 }

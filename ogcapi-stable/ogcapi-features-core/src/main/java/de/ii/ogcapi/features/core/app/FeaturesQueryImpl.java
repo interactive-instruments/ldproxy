@@ -17,6 +17,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
 import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -142,7 +143,10 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             .eTag(withEtag);
 
     for (OgcApiQueryParameter parameter : allowedParameters) {
-      parameter.transformQuery(collectionData, queryBuilder, parameters, apiData);
+      if (parameter instanceof FeatureQueryTransformer) {
+        ((FeatureQueryTransformer) parameter)
+            .transformQuery(queryBuilder, parameters, apiData, collectionData);
+      }
     }
 
     return processCoordinatePrecision(queryBuilder, coordinatePrecision).build();
@@ -212,8 +216,11 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             .hitsOnly(hitsOnly);
 
     for (OgcApiQueryParameter parameter : allowedParameters) {
-      parameter.transformQuery(queryBuilder, parameters, apiData);
-      parameter.transformQuery(collectionData, queryBuilder, parameters, apiData);
+      if (parameter instanceof FeatureQueryTransformer) {
+        ((FeatureQueryTransformer) parameter).transformQuery(queryBuilder, parameters, apiData);
+        ((FeatureQueryTransformer) parameter)
+            .transformQuery(queryBuilder, parameters, apiData, collectionData);
+      }
     }
 
     if (!filters.isEmpty()) {
@@ -241,7 +248,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
                 .filterCrs(crs)
                 .nativeCrs(
                     providers
-                        .getFeatureProvider(apiData)
+                        .getFeatureProvider(apiData, collectionData)
                         .map(FeatureProvider2::getData)
                         .flatMap(FeatureProviderDataV2::getNativeCrs))
                 .build();
@@ -329,7 +336,9 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             .hitsOnly(false);
 
     for (OgcApiQueryParameter parameter : allowedParameters) {
-      parameter.transformQuery(queryBuilder, parameters, apiData);
+      if (parameter instanceof FeatureQueryTransformer) {
+        ((FeatureQueryTransformer) parameter).transformQuery(queryBuilder, parameters, apiData);
+      }
     }
 
     return processCoordinatePrecision(queryBuilder, coordinatePrecision).build();

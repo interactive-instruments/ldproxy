@@ -2,7 +2,7 @@ plugins {
     id "com.github.node-gradle.node" version "3.2.0"
 }
 
-maturity = 'EXPERIMENTAL'
+maturity = 'CANDIDATE'
 
 ext {
     generatedResourcesDir = new File(project.buildDir, 'generated/src/main/resources/')

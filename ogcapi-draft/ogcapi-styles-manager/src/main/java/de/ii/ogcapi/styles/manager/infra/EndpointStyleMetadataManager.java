@@ -133,6 +133,7 @@ public class EndpointStyleMetadataManager extends Endpoint {
             operationSummary,
             operationDescription,
             Optional.empty(),
+            getOperationId("replaceStyleMetadata"),
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(methodReplace.name(), operation));
     HttpMethods methodUpdate = HttpMethods.PATCH;
@@ -224,6 +225,7 @@ public class EndpointStyleMetadataManager extends Endpoint {
             operationSummary,
             operationDescription,
             Optional.empty(),
+            getOperationId("updateStyleMetadata"),
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(methodUpdate.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());

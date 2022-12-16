@@ -20,7 +20,7 @@ import de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration;
 import de.ii.ogcapi.features.geojson.ld.domain.ImmutableGeoJsonLdConfiguration;
 import de.ii.ogcapi.features.gml.domain.ImmutableGmlConfiguration;
 import de.ii.ogcapi.features.html.domain.ImmutableFeaturesHtmlConfiguration;
-import de.ii.ogcapi.features.json.fg.domain.ImmutableJsonFgConfiguration;
+import de.ii.ogcapi.features.jsonfg.domain.ImmutableJsonFgConfiguration;
 import de.ii.ogcapi.filter.domain.ImmutableFilterConfiguration;
 import de.ii.ogcapi.foundation.domain.ImmutableFoundationConfiguration;
 import de.ii.ogcapi.geometry.simplification.app.ImmutableGeometrySimplificationConfiguration;

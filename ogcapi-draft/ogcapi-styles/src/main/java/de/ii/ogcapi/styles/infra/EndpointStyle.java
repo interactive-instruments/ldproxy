@@ -159,6 +159,7 @@ public class EndpointStyle extends Endpoint {
               operationSummary,
               operationDescription,
               Optional.empty(),
+              getOperationId("getStyle"),
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
       definitionBuilder.putResources(path, resourceBuilder.build());

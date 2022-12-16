@@ -19,7 +19,6 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
@@ -250,8 +249,11 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         ImmutableFeatureTransformationContextRoutes.builder()
             .api(api)
             .apiData(api.getData())
-            .featureSchema(featureProvider.getData().getTypes().get(queryInput.getFeatureTypeId()))
-            .collectionId("not_applicable")
+            .featureSchemas(
+                ImmutableMap.of(
+                    "not_applicable",
+                    Optional.ofNullable(
+                        featureProvider.getData().getTypes().get(queryInput.getFeatureTypeId()))))
             .ogcApiRequest(requestContext)
             .crsTransformer(crsTransformer)
             .codelists(
@@ -264,7 +266,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             .isFeatureCollection(true)
             .isHitsOnly(query.hitsOnly())
             .isPropertyOnly(query.propertyOnly())
-            .fields(query.getFields())
+            .fields(ImmutableMap.of("not_applicable", query.getFields()))
             .limit(query.getLimit())
             .offset(query.getOffset())
             .maxAllowableOffset(query.getMaxAllowableOffset())
@@ -495,7 +497,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
                 .toCompletableFuture()
                 .join();
 
-        result.getError().ifPresent(QueriesHandler::processStreamError);
+        result.getError().ifPresent(FeatureStream::processStreamError);
 
         if (result.isEmpty()) {
           throw new NotFoundException("The requested route could not be computed.");

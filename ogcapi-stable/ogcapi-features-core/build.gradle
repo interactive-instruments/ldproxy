@@ -1,5 +1,5 @@
 
-maturity = 'EXPERIMENTAL'
+maturity = 'MATURE'
 
 dependencies {
     provided project(":ogcapi-foundation")
@@ -7,14 +7,7 @@ dependencies {
     provided project(":ogcapi-collections")
     provided project(":ogcapi-html")
     provided project(":ogcapi-json")
-
-    embeddedExport (group: 'org.locationtech.jts', name: 'jts-core', version: '1.18.2')
-    embeddedExport (group: 'org.locationtech.jts.io', name: 'jts-io-common', version: '1.18.2') {
-        exclude module: 'junit'
-    }
-    embedded (group: 'tec.units', name: 'unit-ri', version: '1.0.3') {
-        exclude module: 'unit-api'
-    }
+    provided project(":ogcapi-oas30")
 
     testImplementation(testFixtures(project(":ogcapi-foundation")))
     testImplementation project(":ogcapi-html")

@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.foundation.app;
 
+import com.google.common.collect.ImmutableList;
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
 import de.ii.ogcapi.foundation.domain.ApiExtension;
@@ -27,14 +28,17 @@ import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.services.domain.AbstractService;
+import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.entities.ChangingValue;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,15 +48,18 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
 
   private final CrsTransformerFactory crsTransformerFactory;
   private final ExtensionRegistry extensionRegistry;
+  private final ServicesContext servicesContext;
 
   @AssistedInject
   public OgcApiEntity(
       CrsTransformerFactory crsTransformerFactory,
       ExtensionRegistry extensionRegistry,
+      ServicesContext servicesContext,
       @Assisted OgcApiDataV2 data) {
     super(data);
     this.crsTransformerFactory = crsTransformerFactory;
     this.extensionRegistry = extensionRegistry;
+    this.servicesContext = servicesContext;
   }
 
   @Override
@@ -97,17 +104,22 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
   @Override
   public <T extends FormatExtension> Optional<T> getOutputFormat(
       Class<T> extensionType, ApiMediaType mediaType, String path, Optional<String> collectionId) {
-    return extensionRegistry.getExtensionsForType(extensionType).stream()
-        .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
-        .filter(
-            outputFormatExtension ->
-                mediaType.type().isCompatible(outputFormatExtension.getMediaType().type()))
-        .filter(
-            outputFormatExtension ->
-                collectionId
-                    .map(s -> outputFormatExtension.isEnabledForApi(getData(), s))
-                    .orElseGet(() -> outputFormatExtension.isEnabledForApi(getData())))
-        .findFirst();
+    List<T> candidates =
+        extensionRegistry.getExtensionsForType(extensionType).stream()
+            .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
+            .filter(
+                outputFormatExtension ->
+                    collectionId
+                        .map(s -> outputFormatExtension.isEnabledForApi(getData(), s))
+                        .orElseGet(() -> outputFormatExtension.isEnabledForApi(getData())))
+            .collect(Collectors.toUnmodifiableList());
+    MediaType selected =
+        ApiMediaType.negotiateMediaType(
+            ImmutableList.of(mediaType.type()),
+            candidates.stream()
+                .map(f -> f.getMediaType().type())
+                .collect(Collectors.toUnmodifiableList()));
+    return candidates.stream().filter(f -> f.getMediaType().type().equals(selected)).findFirst();
   }
 
   @Override
@@ -218,6 +230,11 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
   public boolean updateItemCount(String collectionId, Long itemCount) {
     return getChangingData()
         .update(ChangingItemCount.class, collectionId, ChangingItemCount.of(itemCount));
+  }
+
+  @Override
+  public URI getUri() {
+    return servicesContext.getUri().resolve(String.join("/", getData().getSubPath()));
   }
 
   private Optional<BoundingBox> transformSpatialExtent(

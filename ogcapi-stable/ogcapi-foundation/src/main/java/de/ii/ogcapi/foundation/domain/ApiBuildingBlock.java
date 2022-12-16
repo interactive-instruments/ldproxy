@@ -56,7 +56,7 @@ import de.ii.xtraplatform.docs.DocVar;
  *     <p>### Response language
  *     <p>For operations that return a response, the language for linguistic texts is chosen using
  *     standard HTTP content negiotiation with `Accept-Language` headers.
- *     <p>If enabled in [Common Core](common.md), GET operations additionally support the quer
+ *     <p>If enabled in [Common Core](common_core.md), GET operations additionally support the quer
  *     parameter `lang`, which allows to explicitely choose the language and override the result of
  *     the content negotiation. The supported languages depend on the affected resource and the
  *     configuration. Support for multilingualism is currently limited. There are four possible
@@ -77,9 +77,9 @@ import de.ii.xtraplatform.docs.DocVar;
  *     `https://example.com/pfad/zu/apis/{apiId}/collections`.
  *     <p><a name="transformations"></a>
  *     <p>### Property transformations
- *     <p>Modules related to feature encoding ([Core](features_core.md), [GeoJSON](geo_json.md),
- *     [HTML](features_html.md), [Vector Tiles](tiles.md)) support transforming feature properties
- *     for all or only for specific encodings.
+ *     <p>Modules related to feature encoding ([Core](features_core.md),
+ *     [GeoJSON](features_geojson.md), [HTML](features_html.md), [Vector Tiles](vector_tiles.md))
+ *     support transforming feature properties for all or only for specific encodings.
  *     <p>Transformations do not affect data sources, they are applied on-the-fly as part of the
  *     encoding.
  *     <p>Filter expressions do not take transformations into account, they have to be based on the
@@ -125,9 +125,9 @@ import de.ii.xtraplatform.docs.DocVar;
  *     <p><a name="transformations"></a>
  *     <p>### Transformationen
  *     <p>In den API-Modulen, die Features verarbeiten ([Core](features_core.md),
- *     [GeoJSON](geo_json.md), [JSON-FG](json_fg.md), [HTML](features_html.md), [Tiles](tiles.md)
- *     mit dem Features-Tile-Provider), können die Feature-Eigenschaften über Transformationen an
- *     die Anforderungen der Ausgabe angepasst werden.
+ *     [GeoJSON](features_geojson.md), [JSON-FG](features_json-fg.md), [HTML](features_html.md),
+ *     [Tiles](vector_tiles.md) mit dem Features-Tile-Provider), können die Feature-Eigenschaften
+ *     über Transformationen an die Anforderungen der Ausgabe angepasst werden.
  *     <p>Die Transformation der Werte erfolgt bei der Aufbereitung der Daten für die Rückgabe über
  *     die API. Die Datenhaltung selbst bleibt unverändert.
  *     <p>Alle Filterausdrücke (siehe `queryables` im [Modul "Features Core"](features_core.md))
@@ -182,8 +182,9 @@ import de.ii.xtraplatform.docs.DocVar;
     tables = {
       @DocTable(
           name = "overview",
-          rows = {@DocStep(type = Step.IMPLEMENTATIONS)
-            // @DocStep(type = Step.SORTED, params = "{@sortPriority}")
+          rows = {
+            @DocStep(type = Step.IMPLEMENTATIONS),
+            @DocStep(type = Step.SORTED, params = "{@title}")
           },
           columns = {
             @DocColumn(
@@ -197,7 +198,7 @@ import de.ii.xtraplatform.docs.DocVar;
                     @DocStep(
                         type = Step.TAG,
                         params =
-                            "<SplitBadge type=\"{@layer.nameSuffix}\" left=\"spec\" right=\"{@layer.nameSuffix}\" vertical=\"center\" /><span/><SplitBadge type=\"{@module.maturity}\" left=\"impl\" right=\"{@module.maturity}\" vertical=\"center\" />"),
+                            "<SplitBadge type=\"{@layer.nameSuffix}\" left=\"spec\" right=\"{@layer.nameSuffix}\" vertical=\"center\" style=\"margin-bottom: 5px;\" /><span/><SplitBadge type=\"{@module.maturity}\" left=\"impl\" right=\"{@module.maturity}\" vertical=\"center\" />"),
                 header = {
                   @DocI18n(language = "en", value = "Classification"),
                   @DocI18n(language = "de", value = "Klassifizierung")
@@ -223,12 +224,14 @@ import de.ii.xtraplatform.docs.DocVar;
                   + "<SplitBadge type=\"{@module.maturity}\" left=\"impl\" right=\"{@module.maturity}\" vertical=\"super\" />\n\n"
                   + "{@body}\n\n"
                   + "## Scope\n\n"
-                  + "{@scopeEn}\n\n"
+                  + "{@scopeEn |||}\n\n"
                   + "{@conformanceEn ### Conformance Classes\n\n|||}\n\n"
                   + "{@docTable:endpoints ### Resources\n\n|||}\n\n"
                   + "{@docTable:queryParams ### Query Parameters\n\n|||}\n\n"
                   + "## Configuration\n\n"
+                  + "{@configurationEn |||}\n\n"
                   + "{@docTable:properties ### Options\n\n||| This building block has no configuration options.}\n\n"
+                  + "{@propertiesEn |||}\n\n"
                   + "{@docVar:example ### Example\n\n|||}\n"),
       @DocI18n(
           language = "de",
@@ -238,12 +241,14 @@ import de.ii.xtraplatform.docs.DocVar;
                   + "<SplitBadge type=\"{@module.maturity}\" left=\"impl\" right=\"{@module.maturity}\" vertical=\"super\" />\n\n"
                   + "{@body}\n\n"
                   + "## Umfang\n\n"
-                  + "{@scopeDe}\n\n"
+                  + "{@scopeDe |||}\n\n"
                   + "{@conformanceDe ### Konformitätsklassen\n\n|||}\n\n"
                   + "{@docTable:endpoints ### Ressourcen\n\n|||}\n\n"
                   + "{@docTable:queryParams ### Query Parameter\n\n|||}\n\n"
                   + "## Konfiguration\n\n"
+                  + "{@configurationDe |||}\n\n"
                   + "{@docTable:properties ### Optionen\n\n||| Dieses Modul hat keine Konfigurationsoptionen.}\n\n"
+                  + "{@propertiesDe |||}\n\n"
                   + "{@docVar:example ### Beispiel\n\n|||}\n")
     },
     tables = {

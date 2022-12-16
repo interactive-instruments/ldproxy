@@ -11,6 +11,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
+import de.ii.xtraplatform.base.domain.ImmutableStoreSourceDefault32;
 import de.ii.xtraplatform.base.domain.Jackson;
 import de.ii.xtraplatform.base.domain.JacksonProvider;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
@@ -23,6 +25,7 @@ import de.ii.xtraplatform.features.sql.domain.FeatureProviderSqlData;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.app.EventStoreDefault;
+import de.ii.xtraplatform.store.app.StoreImpl;
 import de.ii.xtraplatform.store.app.ValueEncodingJackson;
 import de.ii.xtraplatform.store.app.entities.EntityDataDefaultsStoreImpl;
 import de.ii.xtraplatform.store.app.entities.EntityDataStoreImpl;
@@ -37,6 +40,7 @@ import de.ii.xtraplatform.store.domain.entities.EntityDataStore;
 import de.ii.xtraplatform.store.domain.entities.EntityFactory;
 import de.ii.xtraplatform.store.infra.EventStoreDriverFs;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
@@ -51,22 +55,38 @@ public class LdproxyCfg implements Cfg {
   private final RequiredIncludes requiredIncludes;
 
   public LdproxyCfg(Path dataDirectory) {
+    Path store = dataDirectory.resolve(StoreConfiguration.DEFAULT_LOCATION);
+    try {
+      Files.createDirectories(store);
+    } catch (IOException e) {
+      throw new IllegalStateException("Could not create " + store);
+    }
+
     this.requiredIncludes = new RequiredIncludes();
     this.builders = new Builders() {};
-    StoreConfiguration storeConfiguration = new StoreConfiguration();
+    StoreConfiguration storeConfiguration =
+        new ImmutableStoreConfiguration.Builder()
+            .addSources(new ImmutableStoreSourceDefault32.Builder().build())
+            .build();
     Jackson jackson = new JacksonProvider(JacksonSubTypes::ids);
     this.objectMapper = new ValueEncodingJackson<EntityData>(jackson, false).getMapper(FORMAT.YML);
-    EventStoreDriver storeDriver = new EventStoreDriverFs(dataDirectory, storeConfiguration);
+    EventStoreDriver storeDriver = new EventStoreDriverFs(dataDirectory);
     EventStore eventStore =
-        new EventStoreDefault(storeConfiguration, storeDriver, new EventSubscriptionsMock());
+        new EventStoreDefault(
+            new StoreImpl(dataDirectory, storeConfiguration),
+            storeDriver,
+            new EventSubscriptionsMock());
+    ((EventStoreDefault) eventStore).onStart();
     AppContext appContext = new AppContextCfg();
     OgcApiExtensionRegistry extensionRegistry = new OgcApiExtensionRegistry();
     Set<EntityFactory> factories = EntityFactories.factories(extensionRegistry);
     this.entityDataDefaultsStore =
         new EntityDataDefaultsStoreImpl(appContext, eventStore, jackson, () -> factories);
+    ((EntityDataDefaultsStoreImpl) entityDataDefaultsStore).onStart();
     this.entityDataStore =
         new EntityDataStoreImpl(
             appContext, eventStore, jackson, () -> factories, entityDataDefaultsStore);
+    ((EntityDataStoreImpl) entityDataStore).onStart();
   }
 
   @Override

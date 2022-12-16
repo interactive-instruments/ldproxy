@@ -10,6 +10,7 @@ package de.ii.ogcapi.foundation.domain;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.services.domain.Service;
+import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -56,6 +57,12 @@ public interface OgcApi extends Service {
    * @return the bounding box in the target CRS
    */
   Optional<BoundingBox> getSpatialExtent(String collectionId, EpsgCrs targetCrs);
+
+  default Optional<BoundingBox> getSpatialExtent(Optional<String> collectionId, EpsgCrs targetCrs) {
+    return collectionId.isPresent()
+        ? getSpatialExtent(collectionId.get(), targetCrs)
+        : getSpatialExtent(targetCrs);
+  }
 
   /**
    * Update spatial extent of a collection in the dataset.
@@ -155,4 +162,6 @@ public interface OgcApi extends Service {
   default Optional<Long> getItemCount(Optional<String> collectionId) {
     return collectionId.isPresent() ? getItemCount(collectionId.get()) : getItemCount();
   }
+
+  URI getUri();
 }

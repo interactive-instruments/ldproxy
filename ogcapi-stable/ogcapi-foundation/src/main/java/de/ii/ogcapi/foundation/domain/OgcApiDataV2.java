@@ -30,9 +30,9 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 /**
- * @langEn # Common
+ * @langEn # OGC API
  *     <p>Each API represents a deployment of a single OGC Web API.
- * @langDe # Allgemein
+ * @langDe # OGC API
  *     <p>Jede API stellt eine OGC Web API bereit.
  *     <p>Die Konfiguration einer API wird in einer Konfigurationsdatei in einem Objekt mit den
  *     folgenden Eigenschaften beschrieben.
@@ -215,13 +215,13 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
       return new ImmutableOgcApiDataV2.Builder().from(this).extensions(distinctExtensions).build();
     }
 
-    boolean collectionsHaveMissingParentExtensions =
+    boolean shouldUpdateParentExtensions =
         getCollections().values().stream()
             .anyMatch(
                 collection ->
-                    collection.getParentExtensions().size() < getMergedExtensions().size());
+                    !Objects.equals(collection.getParentExtensions(), distinctExtensions));
 
-    if (collectionsHaveMissingParentExtensions) {
+    if (shouldUpdateParentExtensions) {
       Map<String, FeatureTypeConfigurationOgcApi> mergedCollections =
           new LinkedHashMap<>(getCollections());
 

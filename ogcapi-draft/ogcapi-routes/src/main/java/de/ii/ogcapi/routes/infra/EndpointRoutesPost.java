@@ -39,7 +39,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableExample;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.routes.app.CapabilityRouting;
+import de.ii.ogcapi.routes.app.RoutingBuildingBlock;
 import de.ii.ogcapi.routes.domain.HtmlForm;
 import de.ii.ogcapi.routes.domain.HtmlFormDefaults;
 import de.ii.ogcapi.routes.domain.ImmutableQueryInputComputeRoute;
@@ -96,6 +96,8 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointRoutesPost.class);
   private static final List<String> TAGS = ImmutableList.of("Routing");
+  // TODO determine the appropriate segment limit
+  public static final int LIMIT = 250_000;
 
   private final QueryHandlerRoutes queryHandler;
   private final Schema<?> schemaRouteDefinition;
@@ -129,7 +131,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
 
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-    return ImmutableList.of(CapabilityRouting.CORE, CapabilityRouting.MODE);
+    return ImmutableList.of(RoutingBuildingBlock.CORE, RoutingBuildingBlock.MODE);
   }
 
   @Override
@@ -299,6 +301,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
             operationSummary,
             operationDescription,
             Optional.empty(),
+            getOperationId("computeRoute"),
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(method.toString(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
@@ -363,8 +366,8 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
             defaultCrs,
             coordinatePrecision,
             1,
-            Integer.MAX_VALUE,
-            Integer.MAX_VALUE,
+            LIMIT,
+            LIMIT,
             toFlatMap(uriInfo.getQueryParameters()),
             allowedParameters);
 

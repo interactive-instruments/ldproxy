@@ -154,6 +154,7 @@ public class EndpointSortables extends EndpointSubCollection /* implements Confo
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
+                getOperationId("getSortables", collectionId),
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));

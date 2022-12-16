@@ -13,7 +13,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-import de.ii.ogcapi.tiles.domain.tileMatrixSet.TileMatrixSetRepository;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
