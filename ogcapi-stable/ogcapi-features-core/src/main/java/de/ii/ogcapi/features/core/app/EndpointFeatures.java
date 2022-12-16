@@ -110,7 +110,7 @@ import org.slf4j.LoggerFactory;
  *     <p>Eine Beschreibung der zusätzlichen Abfrageparameter, die von dieser Ressource unterstützt
  *     werden, finden Sie in den Details dieser Operation.
  *     <p>Übersetzt mit www.DeepL.com/Translator (kostenlose Version)
- * @name Features
+ * @title Features
  * @path /{apiId}/collections/{collectionId}/items/{featureId}
  * @formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
  */

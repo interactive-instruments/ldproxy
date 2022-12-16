@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @langEn TODO
  * @langDe TODO
- * @name Features
+ * @title Features
  * @path /{apiId}/collections/{collectionId}/items
  * @formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
  */

@@ -18,7 +18,7 @@ import javax.inject.Singleton;
 /**
  * @langEn TODO
  * @langDe TODO
- * @name Datetime
+ * @title Datetime
  * @endpoints Features
  */
 @Singleton

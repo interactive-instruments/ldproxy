@@ -257,7 +257,7 @@ import de.ii.xtraplatform.docs.DocVar;
           rows = {@DocStep(type = Step.TAG_REFS, params = "{@queryParameterTable}")},
           columns = {
             @DocColumn(
-                value = @DocStep(type = Step.TAG, params = "`{@name}`"),
+                value = @DocStep(type = Step.TAG, params = "`{@title}`"),
                 header = {
                   @DocI18n(language = "en", value = "Name"),
                   @DocI18n(language = "de", value = "Name")
@@ -280,7 +280,7 @@ import de.ii.xtraplatform.docs.DocVar;
           rows = {@DocStep(type = Step.TAG_REFS, params = "{@endpointTable}")},
           columns = {
             @DocColumn(
-                value = @DocStep(type = Step.TAG, params = "{@name}"),
+                value = @DocStep(type = Step.TAG, params = "{@title}"),
                 header = {
                   @DocI18n(language = "en", value = "Resource"),
                   @DocI18n(language = "de", value = "Ressource")
@@ -308,7 +308,7 @@ import de.ii.xtraplatform.docs.DocVar;
                 value = {
                   @DocStep(type = Step.TAG_REFS, params = "{@formats}"),
                   @DocStep(type = Step.IMPLEMENTATIONS),
-                  @DocStep(type = Step.TAG, params = "{@format |||}"),
+                  @DocStep(type = Step.TAG, params = "{@title |||}"),
                   @DocStep(
                       type = Step.COLLECT,
                       params = {"DISTINCT", "SORTED", "SEPARATED:, "})

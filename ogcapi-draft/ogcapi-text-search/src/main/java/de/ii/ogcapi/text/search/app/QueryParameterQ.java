@@ -45,7 +45,7 @@ import javax.inject.Singleton;
  *     result set. Known limitation: The search should be case-insensitive, but currently is
  *     case-sensitive.
  * @langDe TODO
- * @name q
+ * @title q
  * @endpoints Features
  */
 @Singleton

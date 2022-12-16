@@ -21,7 +21,7 @@ import javax.inject.Singleton;
 /**
  * @langEn TODO
  * @langDe TODO
- * @name Features
+ * @title Features
  * @endpoints Features
  */
 @Singleton

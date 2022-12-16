@@ -29,7 +29,7 @@ import javax.inject.Singleton;
  *     geometries in the response. The maxAllowableOffset is in the units of the response coordinate
  *     reference system.
  * @langDe Todo
- * @name maxAllowableOffset
+ * @title maxAllowableOffset
  * @endpoints Feature
  */
 @Singleton

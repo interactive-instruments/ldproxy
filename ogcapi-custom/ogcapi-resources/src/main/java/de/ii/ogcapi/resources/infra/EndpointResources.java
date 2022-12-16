@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  *     used by reference, for example, in stylesheets. For each resource the id and a link to the
  *     resource is provided.
  * @langDe TODO
- * @name Resources
+ * @title Resources
  * @path /{apiId}/resources
  * @format {@link de.ii.ogcapi.resources.domain.ResourceFormatExtension}
  */

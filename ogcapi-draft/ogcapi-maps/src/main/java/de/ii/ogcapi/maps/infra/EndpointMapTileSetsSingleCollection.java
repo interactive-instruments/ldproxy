@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @langEn Access single-layer map tiles
  * @langDe TODO
- * @name Tilesets
+ * @title Tilesets
  * @path /{apiId}/collections/{collectionId}/map/tiles
  */
 

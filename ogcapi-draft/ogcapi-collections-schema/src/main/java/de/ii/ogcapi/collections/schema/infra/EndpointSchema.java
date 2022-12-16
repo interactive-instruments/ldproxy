@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @langEn Discover data collections
  * @langDe TODO
- * @name Feature Schema
+ * @title Feature Schema
  * @path /{apiId}/collections/{collectionId}/schemas/feature
  * @format {@link de.ii.ogcapi.collections.schema.domain.SchemaFormatExtension}
  */

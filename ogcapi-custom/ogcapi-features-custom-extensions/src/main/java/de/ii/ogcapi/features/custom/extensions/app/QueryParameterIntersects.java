@@ -46,7 +46,7 @@ import org.locationtech.jts.io.WKTReader;
  *     Geometrie kann entweder eine WKT-Geometrie angegeben werden oder eine URL für ein
  *     GeoJSON-Objekt mit einer Geometrie. Im Fall einer FeatureCollection wird die erste Geometrie
  *     verwendet.
- * @name intersects
+ * @title intersects
  * @endpoints Features, intersects
  */
 @Singleton

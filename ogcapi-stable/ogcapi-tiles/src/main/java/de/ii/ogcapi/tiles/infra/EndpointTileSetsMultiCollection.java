@@ -32,7 +32,7 @@ import javax.ws.rs.core.Response;
 /**
  * @langEn Access multi-layer tiles
  * @langDe TODO
- * @name Tilesets
+ * @title Tilesets
  * @path /{apiId}/tiles
  * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
  */

@@ -33,7 +33,7 @@ import javax.inject.Singleton;
 /**
  * @langEn TODO
  * @langDe TODO
- * @name limit
+ * @title limit
  * @endpoints Features
  */
 @Singleton

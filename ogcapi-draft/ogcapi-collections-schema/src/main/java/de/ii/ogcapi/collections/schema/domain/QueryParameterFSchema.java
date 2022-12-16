@@ -19,7 +19,7 @@ import javax.inject.Singleton;
 /**
  * @langEn Todo
  * @langDe Todo
- * @name fSchema
+ * @title fSchema
  * @endpoints fSchema
  */
 @Singleton

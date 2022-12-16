@@ -24,7 +24,7 @@ import javax.inject.Singleton;
 /**
  * @langEn Debug option in development environments: Log debug information for the GeoJSON output.
  * @langDe Todo
- * @name debug
+ * @title debug
  * @endpoints Features
  */
 @Singleton

@@ -18,7 +18,7 @@ import javax.inject.Singleton;
 /**
  * @langEn
  * @langDe
- * @name JSON-LD Context
+ * @title JSON-LD Context
  * @endpoints Todo
  */
 @Singleton

@@ -41,7 +41,7 @@ import javax.inject.Singleton;
  *     minimaler Breitengrad, maximaler Längengrad und maximaler Breitengrad. In den Fällen, in
  *     denen die Box den Antimeridian überspannt, ist der erste Wert (westlichster Boxrand) jedoch
  *     größer als der dritte Wert (östlichste Kante der Box).
- * @name bbox
+ * @title bbox
  * @endpoints Features
  */
 @Singleton

@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  *     `service-doc`), the Conformance declaration (path `/conformance`, link relation
  *     `conformance`), and other resources in the API.
  * @langDe TODO
- * @name Landing Page
+ * @title Landing Page
  * @path /{apiId}/
  * @formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
  */

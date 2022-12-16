@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  *     to the stylesheet of the style in each supported encoding, and the link to the metadata is
  *     provided.
  * @langDe TODO
- * @name Style
+ * @title Style
  * @path /{apiId}/styles/{styleId}
  * @format {@link de.ii.ogcapi.styles.domain.StylesFormatExtension}
  */

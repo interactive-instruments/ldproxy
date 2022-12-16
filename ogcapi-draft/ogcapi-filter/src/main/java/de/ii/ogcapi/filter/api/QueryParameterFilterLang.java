@@ -40,7 +40,7 @@ import javax.inject.Singleton;
  *     zeitliche und Array-Prädikate unterstützt. 'cql2-json' ist eine JSON-Kodierung der gleichen
  *     Grammatik, geeignet für die Verwendung als Teil eines JSON-Objekts, das eine Query darstellt.
  *     Die Verwendung von 'cql2-text' wird für Filterausdrücke im Parameter 'filter' empfohlen.
- * @name filter-lang
+ * @title filter-lang
  * @endpoints Features, Vector Tile
  */
 @Singleton

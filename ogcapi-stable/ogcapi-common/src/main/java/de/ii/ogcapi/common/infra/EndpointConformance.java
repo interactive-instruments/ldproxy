@@ -44,7 +44,7 @@ import javax.ws.rs.core.Response;
  *     general not relevant and the OpenAPI definition details the required information about the
  *     API.
  * @langDe TODO
- * @name Conformance Declaration
+ * @title Conformance Declaration
  * @path /{apiId}/conformance
  * @formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
  */

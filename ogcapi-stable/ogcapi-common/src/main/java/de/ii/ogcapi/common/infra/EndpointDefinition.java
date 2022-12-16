@@ -43,7 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @name API Definition
+ * @title API Definition
  * @path /{apiId}/api
  * @formats {@link de.ii.ogcapi.common.domain.ApiDefinitionFormatExtension}
  */

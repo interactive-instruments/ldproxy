@@ -43,7 +43,7 @@ import javax.ws.rs.core.UriInfo;
 /**
  * @langEn Access multi-layer map tiles
  * @langDe TODO
- * @name Tile
+ * @title Tile
  * @path /{apiId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
  * @formats {@link de.ii.ogcapi.maps.domain.MapTileFormatExtension}
  */

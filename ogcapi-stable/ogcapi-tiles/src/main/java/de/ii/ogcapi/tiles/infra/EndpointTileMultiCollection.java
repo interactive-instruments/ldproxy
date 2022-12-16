@@ -42,7 +42,7 @@ import javax.ws.rs.core.UriInfo;
 /**
  * @langEn Access multi-layer tiles
  * @langDe TODO
- * @name Tile
+ * @title Tile
  * @path /{apiId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
  * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
  */

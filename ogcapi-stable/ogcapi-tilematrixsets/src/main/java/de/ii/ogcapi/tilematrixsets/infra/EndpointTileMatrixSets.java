@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  * @langEn Returns the definition of the tiling scheme according to the [OGC Two Dimensional Tile
  *     Matrix Set standard](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html).
  * @langDe TODO
- * @name Tile Matrix Sets
+ * @title Tile Matrix Sets
  * @path /{apiId}/tileMatrixSets
  * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
  */

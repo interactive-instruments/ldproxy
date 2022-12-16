@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  *     style as a single document. The stylesheet of the style will typically include some the
  *     metadata, too.
  * @langDe TODO
- * @name Style Metadata
+ * @title Style Metadata
  * @path /{apiId}/styles/{styleId}/metadata"
  * @format {@link de.ii.ogcapi.styles.domain.StylesFormatExtension}
  */

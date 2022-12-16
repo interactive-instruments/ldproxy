@@ -24,7 +24,7 @@ import javax.inject.Singleton;
 /**
  * @langEn TODO
  * @langDe TODO
- * @name offset
+ * @title offset
  * @endpoints Features
  */
 @Singleton

@@ -44,7 +44,7 @@ import javax.inject.Singleton;
  *     sortiert zurückgegeben. Sortiert wird nach den in einer kommaseparierten Liste angegebenen
  *     Attributen. Dem Attributnamen kann ein `+` (aufsteigend, das Standardverhalten) oder ein `-`
  *     (absteigend) vorangestellt werden. Beispiel: `sortby=type,-name`.
- * @name sortby
+ * @title sortby
  * @endpoints Features, sortby
  */
 @Singleton

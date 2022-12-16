@@ -42,7 +42,7 @@ import javax.ws.rs.core.UriInfo;
 /**
  * @langEn Access single-layer map tiles
  * @langDe TODO
- * @name Tile
+ * @title Tile
  * @path
  *     /{apiId}/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol
  */

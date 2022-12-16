@@ -32,7 +32,7 @@ import javax.ws.rs.core.Response;
 /**
  * @langEn Access multi-layer map tiles
  * @langDe TODO
- * @name Tilesets
+ * @title Tilesets
  * @path /{apiId}/map/tiles
  */
 

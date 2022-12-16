@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
  *     OGC API Features to describe schemas for GeoJSON feature content including in OpenAPI
  *     documents.
  * @langDe TODO
- * @name sortables
+ * @title sortables
  * @path /collections/{collectionId}/sortables
  * @format {@link de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat}
  */

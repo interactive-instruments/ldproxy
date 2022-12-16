@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
  * @langEn Fetches the style with identifier `styleId`. The set of available styles can be retrieved
  *     at `/styles`. Not all styles are available in all style encodings.
  * @langDe TODO
- * @name Style Collection
+ * @title Style Collection
  * @path /{apiId}/collections/{collectionId}/styles/{styleId}
  * @formats {@link de.ii.ogcapi.styles.domain.StyleFormatExtension}
  */

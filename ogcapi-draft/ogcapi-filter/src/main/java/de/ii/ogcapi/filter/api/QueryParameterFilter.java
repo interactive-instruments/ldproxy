@@ -56,7 +56,7 @@ import javax.inject.Singleton;
  *     in the coordinate reference system declared in `filter-crs`.
  * @langDe Der Filterausdruck in der in `filter-lang` angegebenen Filtersprache. Die Koordinaten
  *     sind in dem in `filter-crs` angegebenen Koordinatenreferenzsystem.
- * @name filter
+ * @title filter
  * @endpoints Features, Vector Tile
  */
 @Singleton

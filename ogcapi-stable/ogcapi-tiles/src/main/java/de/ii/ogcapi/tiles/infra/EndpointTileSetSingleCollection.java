@@ -35,7 +35,7 @@ import javax.ws.rs.core.Response;
 /**
  * @langEn Access single-layer tiles
  * @langDe TODO
- * @name Tileset
+ * @title Tileset
  * @path /{apiId}/collections/{collectionId}/tiles/{tileMatrixSetId}
  * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
  */

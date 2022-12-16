@@ -19,7 +19,7 @@ import javax.inject.Singleton;
 /**
  * @langEn Todo
  * @langDe Todo
- * @name Style
+ * @title Style
  * @endpoints Style
  */
 @Singleton

@@ -21,7 +21,7 @@ import javax.inject.Singleton;
 /**
  * @langEn Todo
  * @langDe Todo
- * @name TileMatrixSets
+ * @title TileMatrixSets
  * @endpoints Tileset
  */
 @Singleton

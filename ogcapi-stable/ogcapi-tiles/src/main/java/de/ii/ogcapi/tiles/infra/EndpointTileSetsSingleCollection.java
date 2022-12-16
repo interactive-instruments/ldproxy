@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @langEn Access single-layer tiles
  * @langDe TODO
- * @name Tilesets
+ * @title Tilesets
  * @path /{apiId}/collections/{collectionId}/tiles
  * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
  */
