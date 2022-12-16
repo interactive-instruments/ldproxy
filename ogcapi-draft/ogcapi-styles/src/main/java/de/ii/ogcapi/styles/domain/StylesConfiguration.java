@@ -20,7 +20,7 @@ import org.immutables.value.Value;
 /**
  * @langEn Example of the specifications in the configuration file:
  * @langDe Beispiel für die Angaben in der Konfigurationsdatei:
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: STYLES
  *   enabled: true
@@ -37,7 +37,7 @@ import org.immutables.value.Value;
 /**
  * @langEn Example Mapbox stylesheet
  * @langDe Beispiel für ein Mapbox-Stylesheet:
- * @example <code>
+ * @examplesAll <code>
  * ```json
  * {
  *   "bearing" : 0.0,
@@ -89,7 +89,7 @@ import org.immutables.value.Value;
 /**
  * @langEn Example style information file
  * @langDe Beispiel für eine Style-Metadaten-Datei:
- * @example <code>
+ * @examplesAll <code>
  * ```json
  * {
  *   "id": "kitas",

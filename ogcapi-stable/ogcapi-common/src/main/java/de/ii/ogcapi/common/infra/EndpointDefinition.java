@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @title API Definition
  * @path /{apiId}/api
- * @formats {@link de.ii.ogcapi.common.domain.ApiDefinitionFormatExtension}
+ * @ref:formats {@link de.ii.ogcapi.common.domain.ApiDefinitionFormatExtension}
  */
 @Singleton
 @AutoBind

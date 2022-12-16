@@ -60,15 +60,15 @@ import javax.inject.Singleton;
  *     - ArcGIS Desktop: "lyr" - ArcGIS Pro: "lyrx - Die Style-Metadaten müssen unter dem relativen
  *     Pfad `api-resources/styles/{apiId}/{styleId}.metadata` liegen. Links können dabei Templates
  *     sein (d.h. `templated` ist `true`) und als Parameter `{serviceUrl}` enthalten.
- * @example {@link de.ii.ogcapi.styles.domain.StylesConfiguration}
- * @propertyTable {@link de.ii.ogcapi.styles.domain.ImmutableStylesConfiguration}
- * @endpointTable {@link de.ii.ogcapi.styles.infra.EndpointStyle}, {@link
+ * @ref:cfg {@link de.ii.ogcapi.styles.domain.StylesConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.styles.domain.ImmutableStylesConfiguration}
+ * @ref:endpoints {@link de.ii.ogcapi.styles.infra.EndpointStyle}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyleCollection}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyleMetadata}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyleMetadataCollection}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyles}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStylesCollection}
- * @queryParameterTable {@link de.ii.ogcapi.styles.domain.QueryParameterFStyle}, {@link
+ * @ref:queryParameters {@link de.ii.ogcapi.styles.domain.QueryParameterFStyle}, {@link
  *     de.ii.ogcapi.styles.domain.QueryParameterFStyles}
  * @todo de.ii.ogcapi.resources.infra.EndpointResource
  * @todo de.ii.ogcapi.resources.infra.EndpointResources

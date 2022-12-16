@@ -23,7 +23,7 @@ import javax.inject.Singleton;
  *     standardmäßig aktiviert. Soweit für eine Ressource keine speziellen Regelungen für die
  *     Ausgabeformate bestehen (wie zum Beispiel für [Features](features_geojson.md)) und die
  *     Ressource JSON unterstützt, können Clients das Ausgabeformat anfordern.
- * @propertyTable {@link de.ii.ogcapi.json.domain.ImmutableJsonConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.json.domain.ImmutableJsonConfiguration}
  */
 @Singleton
 @AutoBind

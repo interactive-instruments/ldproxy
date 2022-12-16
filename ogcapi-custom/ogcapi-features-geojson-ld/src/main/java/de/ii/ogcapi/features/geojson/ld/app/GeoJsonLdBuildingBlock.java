@@ -35,9 +35,9 @@ import javax.inject.Singleton;
  *     der Konfiguration angegeben URI-Template ergänzt. Dabei wird `{{serviceUrl}}` durch die
  *     Landing-Page-URI der API, `{{collectionId}}` durch die Collection-ID und `{{featureId}}`
  *     durch den Wert von "id" ersetzt.
- * @example {@link de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration}
- * @propertyTable {@link de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration}
- * @queryParameterTable {@link
+ * @ref:cfg {@link de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration}
+ * @ref:queryParameters {@link
  *     de.ii.ogcapi.features.geojson.ld.app.PathParameterCollectionIdGeoJsonLd}
  */
 @Singleton

@@ -69,7 +69,7 @@ import org.slf4j.LoggerFactory;
  * @langDe TODO
  * @title Features
  * @path /{apiId}/collections/{collectionId}/items
- * @formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
+ * @ref:formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
  */
 @Singleton
 @AutoBind

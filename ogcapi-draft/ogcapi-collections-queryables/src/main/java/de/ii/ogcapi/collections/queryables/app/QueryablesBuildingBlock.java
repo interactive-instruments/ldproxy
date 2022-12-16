@@ -32,9 +32,9 @@ import javax.inject.Singleton;
  * @conformanceDe Das Modul basiert auf den Vorgaben der Konformitätsklasse "Filter" aus dem
  *     [Entwurf von OGC API - Features - Part 3:
  *     Filtering](https://docs.ogc.org/DRAFTS/19-079r1.html#filter-queryables).
- * @propertyTable {@link
+ * @ref:cfgProperties {@link
  *     de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfiguration}
- * @endpointTable {@link de.ii.ogcapi.collections.queryables.app.EndpointQueryables}
+ * @ref:endpoints {@link de.ii.ogcapi.collections.queryables.app.EndpointQueryables}
  */
 @Singleton
 @AutoBind

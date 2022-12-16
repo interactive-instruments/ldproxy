@@ -33,9 +33,9 @@ import javax.inject.Singleton;
  * @conformanceDe Das Modul implementiert für die Ressourcen Features und Feature alle Vorgaben der
  *     Konformitätsklasse "GeoJSON" von [OGC API - Features - Part 1: Core
  *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_geojson).
- * @example {@link de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration}
- * @propertyTable {@link de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration}
- * @queryParameterTable {@link
+ * @ref:cfg {@link de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration}
+ * @ref:queryParameters {@link
  *     de.ii.ogcapi.features.geojson.app.QueryParameterDebugFeaturesGeoJson}, {@link
  *     de.ii.ogcapi.features.geojson.app.QueryParameterPrettyFeaturesGeoJson}
  */

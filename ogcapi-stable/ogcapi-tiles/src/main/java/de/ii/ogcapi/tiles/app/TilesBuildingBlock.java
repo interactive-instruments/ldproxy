@@ -130,9 +130,9 @@ import org.sqlite.SQLiteJDBCLoader;
  *     <p>{@docVar:provider}
  *     <p>#### Features
  *     <p>{@docTable:providerFeatures}
- * @example {@link de.ii.ogcapi.tiles.domain.TilesConfiguration}
- * @propertyTable {@link de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration}
- * @endpointTable {@link de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection}, {@link
+ * @ref:cfg {@link de.ii.ogcapi.tiles.domain.TilesConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration}
+ * @ref:endpoints {@link de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection}, {@link
  *     de.ii.ogcapi.tiles.infra.EndpointTileSetMultiCollection}, {@link
  *     de.ii.ogcapi.tiles.infra.EndpointTileSetSingleCollection}, {@link
  *     de.ii.ogcapi.tiles.infra.EndpointTileSetsMultiCollection}, {@link

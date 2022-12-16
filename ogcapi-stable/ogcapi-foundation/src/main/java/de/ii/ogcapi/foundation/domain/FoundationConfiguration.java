@@ -14,7 +14,7 @@ import org.immutables.value.Value;
 /**
  * @langEn The schema of the API Catalog resource:
  * @langDe Das Schema der API-Catalog-Ressource ist:
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * type: object
  * required:
@@ -46,7 +46,7 @@ import org.immutables.value.Value;
 /**
  * @langEn Example of the specifications in the configuration file:
  * @langDe Beispiel für die Angaben in der Konfigurationsdatei:
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: FOUNDATION
  *   includeLinkHeader: true

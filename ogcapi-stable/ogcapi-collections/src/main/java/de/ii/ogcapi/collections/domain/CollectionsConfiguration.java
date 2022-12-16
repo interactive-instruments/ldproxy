@@ -21,7 +21,7 @@ import org.immutables.value.Value;
 /**
  * /**
  *
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: COLLECTIONS
  *   additionalLinks:

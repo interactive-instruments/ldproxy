@@ -87,8 +87,8 @@ import javax.inject.Singleton;
  *     <p>Das Beispiel enthält eine Typdefinition für Gebäudeobjekte in einem
  *     PostgreSQL-Feature-Provider auf Grundlage des CityGML-Profils der deutschen
  *     Vermessungsverwaltung.
- * @example {@link de.ii.ogcapi.features.cityjson.domain.CityJsonConfiguration}
- * @propertyTable {@link de.ii.ogcapi.features.cityjson.domain.ImmutableCityJsonConfiguration}
+ * @ref:cfg {@link de.ii.ogcapi.features.cityjson.domain.CityJsonConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.features.cityjson.domain.ImmutableCityJsonConfiguration}
  */
 @Singleton
 @AutoBind

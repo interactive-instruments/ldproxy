@@ -28,8 +28,8 @@ import javax.inject.Singleton;
  *     "Features" aus dem [Entwurf von OGC API - Features - Part 4: Create, Replace, Update and
  *     Delete](https://docs.ogc.org/DRAFTS/20-002.html). Die Implementierung wird sich im Zuge der
  *     weiteren Standardisierung des Entwurfs noch ändern.
- * @propertyTable {@link ImmutableCrudConfiguration}
- * @endpointTable {@link EndpointCrud}
+ * @ref:cfgProperties {@link ImmutableCrudConfiguration}
+ * @ref:endpoints {@link EndpointCrud}
  */
 @Singleton
 @AutoBind

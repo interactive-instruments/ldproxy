@@ -28,8 +28,8 @@ import javax.inject.Singleton;
  * @conformanceDe Das Modul basiert auf den [Entwürfen für
  *     JSON-FG](https://github.com/opengeospatial/ogc-feat-geo-json). Die Implementierung wird sich
  *     im Zuge der weiteren Standardisierung des Entwurfs noch ändern.
- * @example {@link de.ii.ogcapi.features.jsonfg.domain.JsonFgConfiguration}
- * @propertyTable {@link de.ii.ogcapi.features.jsonfg.domain.ImmutableJsonFgConfiguration}
+ * @ref:cfg {@link de.ii.ogcapi.features.jsonfg.domain.JsonFgConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.features.jsonfg.domain.ImmutableJsonFgConfiguration}
  */
 @Singleton
 @AutoBind

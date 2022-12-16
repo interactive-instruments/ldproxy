@@ -16,8 +16,8 @@ import javax.inject.Inject;
  * @title Text Search
  * @langEn General text search in multiple text properties of the data.
  * @langDe Generelle Textsuche über mehrere Properties der Daten.
- * @propertyTable {@link de.ii.ogcapi.text.search.domain.ImmutableTextSearchConfiguration}
- * @queryParameterTable {@link de.ii.ogcapi.text.search.app.QueryParameterQ}
+ * @ref:cfgProperties {@link de.ii.ogcapi.text.search.domain.ImmutableTextSearchConfiguration}
+ * @ref:queryParameters {@link de.ii.ogcapi.text.search.app.QueryParameterQ}
  */
 public class TextSearchBuildingBlock implements ApiBuildingBlock {
   @Inject

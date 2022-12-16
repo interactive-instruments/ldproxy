@@ -50,7 +50,7 @@ import javax.inject.Singleton;
  *     Queryables"](collections_queryables.md) gesteuert. Ist "Filter / CQL2" aktiviert, dann muss
  *     "Collection Queryables" aktiviert sein, damit Clients die abfragbaren Objekteigenschaften
  *     bestimmen können.
- * @queryParameterTable {@link de.ii.ogcapi.filter.api.QueryParameterFilter}, {@link
+ * @ref:queryParameters {@link de.ii.ogcapi.filter.api.QueryParameterFilter}, {@link
  *     de.ii.ogcapi.filter.api.QueryParameterFilterCrs}, {@link
  *     de.ii.ogcapi.filter.api.QueryParameterFilterLang}
  */

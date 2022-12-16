@@ -52,9 +52,10 @@ import javax.inject.Singleton;
  *     OGC-Standard [Two Dimensional Tile Matrix Set and Tile Set Metadata
  *     2.0](https://docs.ogc.org/DRAFTS/17-083r3.html) im Datenverzeichnis unter
  *     `api-resources/tile-matrix-sets/{tileMatrixSetId}.json` konfiguriert werden.
- * @example {@link de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration}
- * @propertyTable {@link de.ii.ogcapi.tilematrixsets.domain.ImmutableTileMatrixSetsConfiguration}
- * @endpointTable {@link de.ii.ogcapi.tilematrixsets.infra.EndpointTileMatrixSets}
+ * @ref:cfg {@link de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration}
+ * @ref:cfgProperties {@link
+ *     de.ii.ogcapi.tilematrixsets.domain.ImmutableTileMatrixSetsConfiguration}
+ * @ref:endpoints {@link de.ii.ogcapi.tilematrixsets.infra.EndpointTileMatrixSets}
  * @queryParameter {@link de.ii.ogcapi.tilematrixsets.app.QueryParameterFTileMatrixSets}
  */
 @Singleton

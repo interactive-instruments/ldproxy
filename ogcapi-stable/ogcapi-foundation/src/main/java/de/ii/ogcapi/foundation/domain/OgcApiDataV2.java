@@ -90,8 +90,8 @@ import org.immutables.value.Value;
  * @langDe ## Speicherung
  *     <p>API-Konfigurationen liegen unter dem relativen Pfad `store/entities/services/{apiId}.yml`
  *     im Datenverzeichnis.
- * @propertyTable {@link de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2}
- * @propertyTable:collection {@link
+ * @ref:cfgProperties {@link de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2}
+ * @ref:cfgProperties:collection {@link
  *     de.ii.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi}
  */
 @DocFile(
@@ -101,14 +101,14 @@ import org.immutables.value.Value;
       @DocTable(
           name = "properties",
           rows = {
-            @DocStep(type = Step.TAG_REFS, params = "{@propertyTable}"),
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:cfgProperties}"),
             @DocStep(type = Step.JSON_PROPERTIES)
           },
           columnSet = ColumnSet.JSON_PROPERTIES),
       @DocTable(
           name = "collectionProperties",
           rows = {
-            @DocStep(type = Step.TAG_REFS, params = "{@propertyTable:collection}"),
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:cfgProperties:collection}"),
             @DocStep(type = Step.JSON_PROPERTIES)
           },
           columnSet = ColumnSet.JSON_PROPERTIES),

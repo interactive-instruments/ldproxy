@@ -19,8 +19,8 @@ import javax.inject.Singleton;
  *     Wesentliche interne Funktionalitäten für die übrigen API-Module bereit.
  *     <p>Zusätzlich wird auch die ldproxy-spezifische Ressource "API Catalog" als Liste der aktiven
  *     APIs in dem Deployment bereitgestellt.
- * @example {@link de.ii.ogcapi.foundation.domain.FoundationConfiguration}
- * @propertyTable {@link de.ii.ogcapi.foundation.domain.ImmutableFoundationConfiguration}
+ * @ref:cfg {@link de.ii.ogcapi.foundation.domain.FoundationConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.foundation.domain.ImmutableFoundationConfiguration}
  * @see ApiCatalog
  */
 @Singleton

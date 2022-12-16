@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * @langDe TODO
  * @title Style Collection
  * @path /{apiId}/collections/{collectionId}/styles/{styleId}
- * @formats {@link de.ii.ogcapi.styles.domain.StyleFormatExtension}
+ * @ref:formats {@link de.ii.ogcapi.styles.domain.StyleFormatExtension}
  */
 @Singleton
 @AutoBind

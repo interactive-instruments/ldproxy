@@ -45,7 +45,7 @@ import javax.ws.rs.core.UriInfo;
  * @langDe TODO
  * @title Tile
  * @path /{apiId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
- * @formats {@link de.ii.ogcapi.maps.domain.MapTileFormatExtension}
+ * @ref:formats {@link de.ii.ogcapi.maps.domain.MapTileFormatExtension}
  */
 
 /** Handle responses under '/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'. */

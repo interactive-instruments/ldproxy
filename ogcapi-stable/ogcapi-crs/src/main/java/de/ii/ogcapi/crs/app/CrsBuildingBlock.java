@@ -47,9 +47,9 @@ import javax.inject.Singleton;
  * @conformanceDe Das Modul implementiert alle Vorgaben der Konformitätsklasse "Coordinate Reference
  *     System by Reference" von [OGC API - Features - Part 2: Coordinate Reference System by
  *     Reference 1.0] (http://www.opengis.net/doc/IS/ogcapi-features-2/1.0).
- * @propertyTable {@link de.ii.ogcapi.crs.domain.ImmutableCrsConfiguration}
- * @example {@link de.ii.ogcapi.crs.domain.CrsConfiguration}
- * @queryParameterTable {@link de.ii.ogcapi.crs.app.QueryParameterBboxCrsFeatures}, {@link
+ * @ref:cfgProperties {@link de.ii.ogcapi.crs.domain.ImmutableCrsConfiguration}
+ * @ref:cfg {@link de.ii.ogcapi.crs.domain.CrsConfiguration}
+ * @ref:queryParameters {@link de.ii.ogcapi.crs.app.QueryParameterBboxCrsFeatures}, {@link
  *     de.ii.ogcapi.crs.app.QueryParameterCrsFeatures}
  */
 @Singleton

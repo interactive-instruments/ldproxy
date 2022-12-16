@@ -41,7 +41,7 @@ import javax.inject.Singleton;
  *     der Name des ldproxy-Templates ist. Die Standardtemplates liegen jeweils in den
  *     Resource-Verzeichnissen der Module, die sie verwenden ([Link zur Suche in
  *     GitHub](https://github.com/search?q=repo%3Ainteractive-instruments%2Fldproxy+extension%3Amustache&type=Code)).
- * @example {@link de.ii.ogcapi.html.domain.HtmlConfiguration}
+ * @ref:cfg {@link de.ii.ogcapi.html.domain.HtmlConfiguration}
  * @properyTable {@link de.ii.ogcapi.html.domain.ImmutableHtmlConfiguration}
  */
 @Singleton

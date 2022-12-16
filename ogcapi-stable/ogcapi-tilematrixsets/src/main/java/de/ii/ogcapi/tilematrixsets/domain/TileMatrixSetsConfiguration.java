@@ -18,7 +18,7 @@ import org.immutables.value.Value;
 /**
  * @langEn TODO
  * @langDe TODO
- * @example <code>
+ * @examplesAll <code>
  * TODO
  * </code>
  */

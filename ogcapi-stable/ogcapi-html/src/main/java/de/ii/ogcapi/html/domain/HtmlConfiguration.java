@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  *     data in Daraa, Syria](https://demo.ldproxy.net/daraa)):
  * @langDe Beispiel für die Angaben in der Konfigurationsdatei (aus der API für [Topographische
  *     Daten in Daraa, Syrien](https://demo.ldproxy.net/daraa)):
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: HTML
  *   enabled: true
@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  *     Rhineland-Palatinate](https://demo.ldproxy.net/vineyards)):
  * @langDe Beispiel für die Angaben in der Konfigurationsdatei (aus der API für [Weinlagen in
  *     Rheinland-Pfalz](https://demo.ldproxy.net/vineyards)):
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: HTML
  *   enabled: true

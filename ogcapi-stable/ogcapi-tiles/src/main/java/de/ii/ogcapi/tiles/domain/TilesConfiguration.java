@@ -42,7 +42,7 @@ import org.immutables.value.Value;
  * @langDe Beispiel für die Angaben in der Konfigurationsdatei aus der API für [Weinlagen in
  *     Rheinland-Pfalz](https://demo.ldproxy.net/vineyards).
  *     <p>Auf API-Ebene:
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: TILES
  *   enabled: true
@@ -66,7 +66,7 @@ import org.immutables.value.Value;
  * @langEn For the vineyard objects (aggregation of adjacent objects up to zoom level 9):
  * @langDe Für die Weinlagen-Objekte (Aggregation von aneinander angrenzenden Objekten bis Zoomstufe
  *     9):
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: TILES
  *   rules:
@@ -98,7 +98,7 @@ import org.immutables.value.Value;
  *     hour):
  * @langDe Beispiel für eine einfache Konfiguration (kein Seeding beim Start, Neuaufbau des Cache zu
  *     jeder Stunde):
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: TILES
  *   tileProvider:
@@ -114,7 +114,7 @@ import org.immutables.value.Value;
 /**
  * @langEn Example of using multiple threading for seeding:
  * @langDe Beispiel für die Verwendung von mehreren Threads für das Seeding:
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: TILES
  *   tileProvider:
@@ -130,7 +130,7 @@ import org.immutables.value.Value;
  *     configuration, for example:
  * @langDe Hierfür müssen in der globalen Konfiguration mindestens 4 Threads für Hintergrundprozesse
  *     konfiguriert sein, zum Beispiel:
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * backgroundTasks:
  *   maxThreads: 4
@@ -163,7 +163,7 @@ import org.immutables.value.Value;
  *     preview)](https://demo.ldproxy.net/openmaptiles)):
  * @langDe Beispielkonfiguration (aus der API[Satellitenbilder in niedriger Auflösung
  *     (OpenMapTiles-Preview)](https://demo.ldproxy.net/openmaptiles)):
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: TILES
  *   enabled: true
@@ -177,7 +177,7 @@ import org.immutables.value.Value;
 /**
  * @langEn Example configuration:
  * @langDe Beispielkonfiguration:
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: MAP_TILES
  *   enabled: true
@@ -196,7 +196,7 @@ import org.immutables.value.Value;
  *     als Datenquelle die Vector Tiles der API verwenden kann:
  * @langDe Ein Beispiel für eine TileServer-GL-Konfiguration mit dem Style "topographic", der z.B.
  *     als Datenquelle die Vector Tiles der API verwenden kann:
- * @example <code>
+ * @examplesAll <code>
  * ```json
  * {
  *   "options": {},

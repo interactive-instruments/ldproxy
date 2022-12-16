@@ -94,7 +94,7 @@ import org.slf4j.LoggerFactory;
  *     "Feature").
  * @title Feature Collection
  * @path /{apiId}/collections/{collectionId}
- * @formats {@link de.ii.ogcapi.collections.domain.CollectionsFormatExtension}
+ * @ref:formats {@link de.ii.ogcapi.collections.domain.CollectionsFormatExtension}
  */
 @Singleton
 @AutoBind

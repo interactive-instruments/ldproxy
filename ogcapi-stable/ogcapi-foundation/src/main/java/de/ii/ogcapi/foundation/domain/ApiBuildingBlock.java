@@ -225,14 +225,14 @@ import de.ii.xtraplatform.docs.DocVar;
                   + "{@body}\n\n"
                   + "## Scope\n\n"
                   + "{@scopeEn |||}\n\n"
+                  + "{@limitationsEn ### Limitierungen\n\n|||}\n\n"
                   + "{@conformanceEn ### Conformance Classes\n\n|||}\n\n"
                   + "{@docTable:endpoints ### Resources\n\n|||}\n\n"
                   + "{@docTable:queryParams ### Query Parameters\n\n|||}\n\n"
                   + "## Configuration\n\n"
-                  + "{@configurationEn |||}\n\n"
-                  + "{@docTable:properties ### Options\n\n||| This building block has no configuration options.}\n\n"
-                  + "{@propertiesEn |||}\n\n"
-                  + "{@docVar:example ### Example\n\n|||}\n"),
+                  + "{@docVar:cfgBody |||}\n\n"
+                  + "{@docTable:cfgProperties ### Options\n\n||| This building block has no configuration options.}\n\n"
+                  + "{@docVar:cfgExamples ### Examples\n\n|||}\n"),
       @DocI18n(
           language = "de",
           value =
@@ -242,19 +242,19 @@ import de.ii.xtraplatform.docs.DocVar;
                   + "{@body}\n\n"
                   + "## Umfang\n\n"
                   + "{@scopeDe |||}\n\n"
+                  + "{@limitationsDe ### Limitierungen\n\n|||}\n\n"
                   + "{@conformanceDe ### Konformitätsklassen\n\n|||}\n\n"
                   + "{@docTable:endpoints ### Ressourcen\n\n|||}\n\n"
                   + "{@docTable:queryParams ### Query Parameter\n\n|||}\n\n"
                   + "## Konfiguration\n\n"
-                  + "{@configurationDe |||}\n\n"
-                  + "{@docTable:properties ### Optionen\n\n||| Dieses Modul hat keine Konfigurationsoptionen.}\n\n"
-                  + "{@propertiesDe |||}\n\n"
-                  + "{@docVar:example ### Beispiel\n\n|||}\n")
+                  + "{@docVar:cfgBody |||}\n\n"
+                  + "{@docTable:cfgProperties ### Optionen\n\n||| Dieses Modul hat keine Konfigurationsoptionen.}\n\n"
+                  + "{@docVar:cfgExamples ### Beispiele\n\n|||}\n")
     },
     tables = {
       @DocTable(
           name = "queryParams",
-          rows = {@DocStep(type = Step.TAG_REFS, params = "{@queryParameterTable}")},
+          rows = {@DocStep(type = Step.TAG_REFS, params = "{@ref:queryParameters}")},
           columns = {
             @DocColumn(
                 value = @DocStep(type = Step.TAG, params = "`{@title}`"),
@@ -277,7 +277,7 @@ import de.ii.xtraplatform.docs.DocVar;
           }),
       @DocTable(
           name = "endpoints",
-          rows = {@DocStep(type = Step.TAG_REFS, params = "{@endpointTable}")},
+          rows = {@DocStep(type = Step.TAG_REFS, params = "{@ref:endpoints}")},
           columns = {
             @DocColumn(
                 value = @DocStep(type = Step.TAG, params = "{@title}"),
@@ -306,7 +306,7 @@ import de.ii.xtraplatform.docs.DocVar;
                 }),
             @DocColumn(
                 value = {
-                  @DocStep(type = Step.TAG_REFS, params = "{@formats}"),
+                  @DocStep(type = Step.TAG_REFS, params = "{@ref:formats}"),
                   @DocStep(type = Step.IMPLEMENTATIONS),
                   @DocStep(type = Step.TAG, params = "{@title |||}"),
                   @DocStep(
@@ -325,17 +325,17 @@ import de.ii.xtraplatform.docs.DocVar;
                 })
           }),
       @DocTable(
-          name = "properties",
+          name = "cfgProperties",
           rows = {
-            @DocStep(type = Step.TAG_REFS, params = "{@propertyTable}"),
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:cfgProperties}"),
             @DocStep(type = Step.JSON_PROPERTIES),
             @DocStep(type = Step.UNMARKED)
           },
           columnSet = ColumnSet.JSON_PROPERTIES),
       @DocTable(
-          name = "collectionProperties",
+          name = "cfgPropertiesCollection",
           rows = {
-            @DocStep(type = Step.TAG_REFS, params = "{@propertyTable}"),
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:cfgProperties}"),
             @DocStep(type = Step.JSON_PROPERTIES),
             @DocStep(type = Step.MARKED, params = "collectionOnly")
           },
@@ -343,11 +343,17 @@ import de.ii.xtraplatform.docs.DocVar;
     },
     vars = {
       @DocVar(
-          name = "example",
+          name = "cfgBody",
           value = {
-            @DocStep(type = Step.TAG_REFS, params = "{@example}"),
-            @DocStep(type = Step.TAG, params = "{@example}")
-          })
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:cfg}"),
+            @DocStep(type = Step.TAG, params = "{@bodyBlock}")
+          }),
+      @DocVar(
+          name = "cfgExamples",
+          value = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:cfg}"),
+            @DocStep(type = Step.TAG, params = "{@examples}")
+          }),
     })
 @AutoMultiBind
 public interface ApiBuildingBlock extends ApiExtension {

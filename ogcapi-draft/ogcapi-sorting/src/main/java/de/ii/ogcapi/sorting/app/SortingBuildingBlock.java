@@ -40,9 +40,9 @@ import org.slf4j.LoggerFactory;
  *     sorting.
  * @langDe Das Modul "Sorting" kann für jede über ldproxy bereitgestellte API mit einem
  *     Feature-Provider, der Sortierung unterstützt, aktiviert werden.
- * @endpointTable {@link de.ii.ogcapi.sorting.app.EndpointSortables}
- * @propertyTable {@link de.ii.ogcapi.sorting.domain.ImmutableSortingConfiguration}
- * @queryParameterTable {@link de.ii.ogcapi.sorting.app.QueryParameterSortbyFeatures}, {@link
+ * @ref:endpoints {@link de.ii.ogcapi.sorting.app.EndpointSortables}
+ * @ref:cfgProperties {@link de.ii.ogcapi.sorting.domain.ImmutableSortingConfiguration}
+ * @ref:queryParameters {@link de.ii.ogcapi.sorting.app.QueryParameterSortbyFeatures}, {@link
  *     de.ii.ogcapi.sorting.app.QueryParameterFSortables}
  */
 @Singleton

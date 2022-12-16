@@ -93,8 +93,8 @@ import javax.inject.Singleton;
  *     <p>Für SQL-Feature-Provider kann außerdem ein anderes Root-Element als `sf:FeatureCollection`
  *     für die *Features*-Ressource konfiguriert werden. In diesem Fall kann die API nicht konform
  *     zu einer der GML-Konformitätsklassen von OGC API Features sein.
- * @example {@link de.ii.ogcapi.features.gml.domain.GmlConfiguration}
- * @propertyTable {@link de.ii.ogcapi.features.gml.domain.ImmutableGmlConfiguration}
+ * @ref:cfg {@link de.ii.ogcapi.features.gml.domain.GmlConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.features.gml.domain.ImmutableGmlConfiguration}
  */
 @Singleton
 @AutoBind

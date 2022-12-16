@@ -34,8 +34,8 @@ import javax.inject.Singleton;
  *     die Eigenschaften, die in GeoJSON im `properties`-Objekt bzw. in Mapbox Vector Tiles im
  *     `tags`-Feld enthalten sind; * `skipGeometry` (Ressourcen "Features" und "Feature"): Bei
  *     `true` werden Geometrien in der Ausgabe unterdrückt.
- * @propertyTable {@link de.ii.ogcapi.projections.app.ImmutableProjectionsConfiguration}
- * @queryParameterTable {@link de.ii.ogcapi.projections.app.QueryParameterProperties}, {@link
+ * @ref:cfgProperties {@link de.ii.ogcapi.projections.app.ImmutableProjectionsConfiguration}
+ * @ref:queryParameters {@link de.ii.ogcapi.projections.app.QueryParameterProperties}, {@link
  *     de.ii.ogcapi.projections.app.QueryParameterSkipGeometry}
  */
 @Singleton

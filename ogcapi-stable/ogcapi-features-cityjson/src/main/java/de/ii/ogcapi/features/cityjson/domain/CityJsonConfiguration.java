@@ -14,7 +14,7 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 /**
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: CITY_JSON
  *   enabled: true

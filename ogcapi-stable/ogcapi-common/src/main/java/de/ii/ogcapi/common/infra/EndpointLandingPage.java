@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * @langDe TODO
  * @title Landing Page
  * @path /{apiId}/
- * @formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
+ * @ref:formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
  */
 @Singleton
 @AutoBind

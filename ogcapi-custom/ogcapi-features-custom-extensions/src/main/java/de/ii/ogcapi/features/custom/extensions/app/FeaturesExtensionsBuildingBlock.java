@@ -48,10 +48,10 @@ import javax.inject.Singleton;
  *     Geometrie kann entweder eine WKT-Geometrie angegeben werden oder eine URL für ein
  *     GeoJSON-Objekt mit einer Geometrie. Im Fall einer FeatureCollection wird die erste Geometrie
  *     verwendet.
- * @propertyTable {@link
+ * @ref:cfgProperties {@link
  *     de.ii.ogcapi.features.custom.extensions.domain.ImmutableFeaturesExtensionsConfiguration}
- * @endpointTable {@link de.ii.ogcapi.features.custom.extensions.infra.infra.EndpointPostOnItems}
- * @queryParameterTable {@link de.ii.ogcapi.features.custom.extensions.app.QueryParameterIntersects}
+ * @ref:endpoints {@link de.ii.ogcapi.features.custom.extensions.infra.infra.EndpointPostOnItems}
+ * @ref:queryParameters {@link de.ii.ogcapi.features.custom.extensions.app.QueryParameterIntersects}
  */
 @Singleton
 @AutoBind

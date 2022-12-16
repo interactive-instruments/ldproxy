@@ -25,9 +25,9 @@ import javax.inject.Singleton;
  *     Collection, die das Schema der GeoJSON Features veröffentlicht. Das Schema wird aus den
  *     Schemainformationen im Feature-Provider abgeleitet. Aktuell wird JSON Schema 2019-09 für die
  *     GeoJSON-Ausgabe unterstützt.
- * @propertyTable {@link de.ii.ogcapi.collections.schema.domain.ImmutableSchemaConfiguration}
- * @endpointTable {@link de.ii.ogcapi.collections.schema.infra.EndpointSchema},
- * @queryParameterTable {@link de.ii.ogcapi.collections.schema.domain.QueryParameterFSchema}, {@link
+ * @ref:cfgProperties {@link de.ii.ogcapi.collections.schema.domain.ImmutableSchemaConfiguration}
+ * @ref:endpoints {@link de.ii.ogcapi.collections.schema.infra.EndpointSchema},
+ * @ref:queryParameters {@link de.ii.ogcapi.collections.schema.domain.QueryParameterFSchema}, {@link
  *     de.ii.ogcapi.collections.schema.domain.QueryParameterProfileSchema}
  */
 @Singleton

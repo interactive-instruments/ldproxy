@@ -46,7 +46,7 @@ import javax.ws.rs.core.Response;
  * @langDe TODO
  * @title Conformance Declaration
  * @path /{apiId}/conformance
- * @formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
+ * @ref:formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
  */
 @Singleton
 @AutoBind

@@ -28,7 +28,7 @@ import org.immutables.value.Value;
  *     kann mit der Transformation `rename` festgelegt werden, die zum Ändern des Namens verwendet
  *     werden kann, aber auch das Hinzufügen eines Namensraumpräfixes unterstützt.
  * @default `{}`
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: GML
  *   enabled: true
@@ -76,7 +76,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    * @langDe Bestimmt die zu verwendende GML-Version: `GML32` für GML 3.2, `GML31` für GML 3.1 und
    *     `GML21` für GML 2.1.
    * @default `GML32`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -110,7 +110,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     `sf:FeatureCollection` in `featureCollectionElementName` konfiguriert ist, wird der Wert
    *     ignoriert und es wird keine Konformität zu einer GML-Konformitätsklasse erklärt.
    * @default `null`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -160,7 +160,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     Da Feature-Daten immer Elemente in anwendungsschemaspezifischen Namespaces verwenden, muss
    *     dieser Konfigurationsparameter immer angegeben werden.
    * @default `{}`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -184,7 +184,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     `applicationNamespaces` deklariertes Präfix sein. Dieser Namespace wird als
    *     Standard-Namespace des XML-Dokuments deklariert.
    * @default `null`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -215,7 +215,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     deklariert werden muss, um den XML-Schema-Validierungsanforderungen zu entsprechen, auch
    *     wenn der Namespace von einem anderen Schema importiert wird.
    * @default `null`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -245,7 +245,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     <p>Wenn das GML-Objektelement nicht im Standard-Namensraum liegt, spezifiziert dieser
    *     Konfigurationsparameter den Namensraumpräfix zu einem Objekttyp.
    * @default `{}`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -275,7 +275,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     `_type` die Feature-Eigenschaft mit drei verschiedenen Werten, die auf den qualifizierten
    *     Elementnamen abgebildet werden.
    * @default `{}`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -303,7 +303,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     Konfigurationsparameter bietet die Möglichkeit, dass ein anderes Feature-Collection-Element
    *     in der Rückgabe verwendet wird.
    * @default `sf:FeatureCollection`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -326,7 +326,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     bietet die Möglichkeit, den Elementnamen für das konfigurierte Feature-Collection-Element
    *     zu spezifizieren.
    * @default `sf:featureMember`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -348,7 +348,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     `numberReturned`) unterstützen. Dieser Konfigurationsparameter steuert, ob die Attribute
    *     als XML-Attribute in das Feature-Collection-Element aufgenommen werden.
    * @default `false`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -370,7 +370,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     die Eigenschaft auch als XML-Attribut des übergeordneten GML-Objektelements dargestellt
    *     werden. Dies ist nur für Eigenschaften vom Typ STRING, FLOAT, INTEGER oder BOOLEAN möglich.
    * @default `[]`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -396,7 +396,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     können, kann dieser Konfigurationsparameter verwendet werden, um ein konsistentes Präfix
    *     hinzuzufügen, um alle Werte auf gültige XML-IDs abzubilden.
    * @default `null`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true

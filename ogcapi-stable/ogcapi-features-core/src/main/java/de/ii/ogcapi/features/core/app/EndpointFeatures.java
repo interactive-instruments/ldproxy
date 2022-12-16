@@ -112,7 +112,7 @@ import org.slf4j.LoggerFactory;
  *     <p>Übersetzt mit www.DeepL.com/Translator (kostenlose Version)
  * @title Features
  * @path /{apiId}/collections/{collectionId}/items/{featureId}
- * @formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
+ * @ref:formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
  */
 @Singleton
 @AutoBind

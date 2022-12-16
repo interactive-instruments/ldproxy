@@ -38,9 +38,9 @@ import javax.inject.Singleton;
  *     ([Hausdorff-Abstand](https://en.wikipedia.org/wiki/Hausdorff_distance)). Der Wert ist in den
  *     Einheiten des Koordinatenreferenzsystems der Ausgabe (`CRS84` bzw. der Wert des Parameters
  *     Query-Parameters `crs`) angegeben.
- * @propertyTable {@link
+ * @ref:cfgProperties {@link
  *     de.ii.ogcapi.geometry.simplification.app.GeometrySimplificationConfiguration}
- * @queryParameterTable {@link
+ * @ref:queryParameters {@link
  *     de.ii.ogcapi.geometry.simplification.app.QueryParameterMaxAllowableOffsetFeatures}
  */
 @Singleton

@@ -36,7 +36,7 @@ import org.immutables.value.Value;
  * @langEn Example of specifications in the configuration file for the entire API (or in defaults):
  * @langDe Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (oder in den
  *     Defaults):
- * @example <code>
+ * @examplesAll <code>
  *
  * ```yaml
  * - buildingBlock: FEATURES_CORE
@@ -50,7 +50,7 @@ import org.immutables.value.Value;
 /**
  * @langEn Example of the specifications in the configuration file for a feature collection:
  * @langDe Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: FEATURES_CORE
  *   enabled: true

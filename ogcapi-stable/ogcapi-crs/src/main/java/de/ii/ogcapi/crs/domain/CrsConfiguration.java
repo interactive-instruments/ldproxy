@@ -17,7 +17,7 @@ import org.immutables.value.Value;
  * @langEn Todo
  * @langDe Das Default-Koordinatenreferenzsystem `CRS84` entspricht `code: 4326, forceAxisOrder:
  *     LON_LAT`, `CRS84h` entspricht `code: 4979, forceAxisOrder: LON_LAT`.
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: CRS
  *   additionalCrs:

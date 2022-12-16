@@ -34,9 +34,9 @@ import javax.inject.Singleton;
  *     zwei Teile von OGC API Common zu veröffentlichen. Die Module "Common Core" und "Feature
  *     Collections" bilden dies ab. :::
  *     <p>
- * @propertyTable {@link de.ii.ogcapi.common.domain.ImmutableCommonConfiguration}
- * @example {@link de.ii.ogcapi.common.domain.CommonConfiguration}
- * @endpointTable {@link de.ii.ogcapi.common.infra.EndpointLandingPage}, {@link
+ * @ref:cfgProperties {@link de.ii.ogcapi.common.domain.ImmutableCommonConfiguration}
+ * @ref:cfg {@link de.ii.ogcapi.common.domain.CommonConfiguration}
+ * @ref:endpoints {@link de.ii.ogcapi.common.infra.EndpointLandingPage}, {@link
  *     de.ii.ogcapi.common.infra.EndpointConformance}, {@link
  *     de.ii.ogcapi.common.infra.EndpointDefinition}
  */

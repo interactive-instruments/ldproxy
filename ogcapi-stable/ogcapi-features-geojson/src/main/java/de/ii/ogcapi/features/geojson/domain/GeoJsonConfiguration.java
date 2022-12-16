@@ -22,7 +22,7 @@ import org.immutables.value.Value;
 /**
  * @langEn An example of flattening. The non-flattened feature
  * @langDe Ein Beispiel zur Abflachung. Das nicht abgeflachte Feature
- * @example <code>
+ * @examplesAll <code>
  * ```json
  * {
  *   "type" : "Feature",
@@ -63,7 +63,7 @@ import org.immutables.value.Value;
 /**
  * @langEn looks like this flattened with the default separator:
  * @langDe sieht abgeflacht mit dem Standardtrennzeichen wie folgt aus:
- * @example <code>
+ * @examplesAll <code>
  * ```json
  * {
  *   "type" : "Feature",
@@ -95,7 +95,7 @@ import org.immutables.value.Value;
 /**
  * @langEn Example of the specifications in the configuration file:
  * @langDe Beispiel für die Angaben in der Konfigurationsdatei:
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: GEO_JSON
  *   transformations:

@@ -25,7 +25,7 @@ import javax.inject.Singleton;
  *     XML unterstützt, können Clients das Ausgabeformat anfordern. Allerdings unterstützen nur die
  *     folgenden Ressourcen XML: Landing Page, Conformance Declaration, Feature Collections und
  *     Feature Collection.
- * @propertyTable {@link de.ii.ogcapi.xml.domain.XmlConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.xml.domain.XmlConfiguration}
  */
 @Singleton
 @AutoBind

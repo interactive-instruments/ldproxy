@@ -36,11 +36,11 @@ import javax.inject.Singleton;
  *     <p>::: info Zusätzliche Links zu einer bestimmten Feature Collection einzelnen können bei der
  *     Konfiguration der Collection angegeben werden. :::
  *     <p>
- * @example {@link de.ii.ogcapi.collections.domain.CollectionsConfiguration}
- * @propertyTable {@link de.ii.ogcapi.collections.domain.ImmutableCollectionsConfiguration}
- * @endpointTable {@link de.ii.ogcapi.collections.infra.EndpointCollection}, {@link
+ * @ref:cfg {@link de.ii.ogcapi.collections.domain.CollectionsConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.collections.domain.ImmutableCollectionsConfiguration}
+ * @ref:endpoints {@link de.ii.ogcapi.collections.infra.EndpointCollection}, {@link
  *     de.ii.ogcapi.collections.infra.EndpointCollections}
- * @queryParameterTable {@link de.ii.ogcapi.collections.domain.QueryParameterFCollection}, {@link
+ * @ref:queryParameters {@link de.ii.ogcapi.collections.domain.QueryParameterFCollection}, {@link
  *     de.ii.ogcapi.collections.domain.QueryParameterFCollections}
  */
 @Singleton

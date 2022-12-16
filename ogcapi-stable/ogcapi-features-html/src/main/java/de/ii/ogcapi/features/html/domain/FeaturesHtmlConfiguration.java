@@ -29,7 +29,7 @@ import org.immutables.value.Value;
  *     for [Topographic Data in Daraa, Syria](https://demo.ldproxy.net/daraa)):
  * @langDe Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (aus der API für
  *     [Topographische Daten in Daraa, Syrien](https://demo.ldproxy.net/daraa)):
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: FEATURES_HTML
  *   enabled: true
@@ -41,7 +41,7 @@ import org.immutables.value.Value;
 /**
  * @langEn Example of the specifications in the configuration file for a feature collection:
  * @langDe Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: FEATURES_HTML
  *   itemLabelFormat: '{{ZI005_FNA}}'
@@ -73,7 +73,7 @@ import org.immutables.value.Value;
  *     components. The floor slab is used as a fallback:
  * @langDe Beispiel für die Verwendung von CesiumJS für Gebäudedaten, die teilweise aus Bauteilen
  *     zusammengesetzt sind. Als Fallback wird die Bodenplatte verwendet:
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: FEATURES_HTML
  *   mapClientType: CESIUM

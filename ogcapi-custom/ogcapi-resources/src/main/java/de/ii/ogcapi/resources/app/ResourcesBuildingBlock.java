@@ -21,11 +21,11 @@ import javax.inject.Singleton;
  * @langDe Das Modul *Resources* kann für jede über ldproxy bereitgestellte API aktiviert werden. Es
  *     ergänzt Ressourcen für die Bereitstellung und Verwaltung von Datei-Ressourcen, vor allem für
  *     Styles (Symbole, Sprites).
- * @example {@link de.ii.ogcapi.resources.domain.ResourcesConfiguration}
- * @propertyTable {@link de.ii.ogcapi.resources.domain.ImmutableResourcesConfiguration}
- * @endpointTable {@link de.ii.ogcapi.resources.infra.EndpointResource}, {@link
+ * @ref:cfg {@link de.ii.ogcapi.resources.domain.ResourcesConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.resources.domain.ImmutableResourcesConfiguration}
+ * @ref:endpoints {@link de.ii.ogcapi.resources.infra.EndpointResource}, {@link
  *     de.ii.ogcapi.resources.infra.EndpointResources}
- * @queryParameterTable {@link de.ii.ogcapi.resources.app.QueryParameterFResources}
+ * @ref:queryParameters {@link de.ii.ogcapi.resources.app.QueryParameterFResources}
  */
 @Singleton
 @AutoBind

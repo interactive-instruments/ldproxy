@@ -22,7 +22,7 @@ import org.immutables.value.Value;
  *     [Topographic Data in Daraa, Syria](https://demo.ldproxy.net/daraa)):
  * @langDe Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (aus der API für
  *     [Topographische Daten in Daraa, Syrien](https://demo.ldproxy.net/daraa)):
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: JSON_FG
  *   enabled: true
@@ -37,7 +37,7 @@ import org.immutables.value.Value;
  *     `role: TYPE` was set in the provider configuration) to set the object type:
  * @langDe Ergänzende Angaben pro Feature Collection mit einem Attribut `F_CODE` (für das in der
  *     Provider-Konfiguration `role: TYPE` gesetzt wurde), um die Objektart zu setzen:
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: JSON_FG
  *   featureType:
@@ -50,7 +50,7 @@ import org.immutables.value.Value;
  * @langEn This outputs the object type as follows for a value of "GB075" in the 'F_CODE' attrubut:
  * @langDe Hierdurch wird bei einem Wert von "GB075" im Attrubut `F_CODE` die Objektart wie folgt
  *     ausgegeben:
- * @example <code>
+ * @examplesAll <code>
  * ```json
  * {
  *   "type": "Feature",
