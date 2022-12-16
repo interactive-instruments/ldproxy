@@ -14,6 +14,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiBackgroundTask;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -21,16 +22,23 @@ import de.ii.ogcapi.tiles.domain.SeedingOptions;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
+import de.ii.xtraplatform.features.domain.DatasetChangeListener;
+import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.services.domain.TaskContext;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParameters;
 import de.ii.xtraplatform.tiles.domain.TileGenerationParameters;
 import de.ii.xtraplatform.tiles.domain.TileProvider;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -51,6 +59,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
   private final ExtensionRegistry extensionRegistry;
   private final FeaturesCoreProviders providers;
   private final TilesProviders tilesProviders;
+  private Consumer<OgcApi> trigger;
 
   @Inject
   public TileSeedingBackgroundTask(
@@ -102,6 +111,19 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
   }
 
   @Override
+  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+    providers
+        .getFeatureProvider(api.getData())
+        .ifPresent(
+            provider -> {
+              provider.getChangeHandler().addListener(onDatasetChange(api));
+              provider.getChangeHandler().addListener(onFeatureChange(api));
+            });
+
+    return ValidationResult.of();
+  }
+
+  @Override
   public boolean runOnStart(OgcApi api) {
     return isEnabledForApi(api.getData())
         && api.getData()
@@ -129,6 +151,11 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
         .flatMap(TilesConfiguration::getSeedingOptionsDerived)
         .map(SeedingOptions::getEffectiveMaxThreads)
         .orElse(1);
+  }
+
+  @Override
+  public void setTrigger(Consumer<OgcApi> trigger) {
+    this.trigger = trigger;
   }
 
   private boolean shouldPurge(OgcApi api) {
@@ -238,6 +265,78 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
     }
 
     tileProvider.seeding().seed(layers, formats, reseed, taskContext);
+  }
+
+  private DatasetChangeListener onDatasetChange(OgcApi api) {
+    return change -> {
+      for (String featureType : change.getFeatureTypes()) {
+        String collectionId = getCollectionId(api.getData().getCollections().values(), featureType);
+
+        try {
+          tilesProviders.deleteTiles(
+              api, Optional.of(collectionId), Optional.empty(), Optional.empty());
+        } catch (Exception e) {
+          if (LOGGER.isErrorEnabled()) {
+            LOGGER.error(
+                "Error while deleting tiles from the tile cache after a dataset change.", e);
+          }
+        }
+      }
+
+      if (Objects.nonNull(trigger)) {
+        trigger.accept(api);
+      }
+    };
+  }
+
+  private FeatureChangeListener onFeatureChange(OgcApi api) {
+    return change -> {
+      String collectionId =
+          getCollectionId(api.getData().getCollections().values(), change.getFeatureType());
+      switch (change.getAction()) {
+        case CREATE:
+        case UPDATE:
+          change
+              .getBoundingBox()
+              .ifPresent(
+                  bbox -> {
+                    try {
+                      tilesProviders.deleteTiles(
+                          api, Optional.of(collectionId), Optional.empty(), Optional.of(bbox));
+                    } catch (Exception e) {
+                      if (LOGGER.isErrorEnabled()) {
+                        LOGGER.error(
+                            "Error while deleting tiles from the tile cache after a feature change.",
+                            e);
+                      }
+                    }
+
+                    if (Objects.nonNull(trigger)) {
+                      trigger.accept(api);
+                    }
+                  });
+          break;
+        case DELETE:
+          // NOTE: we would need the extent of the deleted feature to update the cache
+          break;
+      }
+    };
+  }
+
+  // TODO centralize
+  private String getCollectionId(
+      Collection<FeatureTypeConfigurationOgcApi> collections, String featureType) {
+    return collections.stream()
+        .map(
+            collection ->
+                collection
+                    .getExtension(FeaturesCoreConfiguration.class)
+                    .flatMap(FeaturesCoreConfiguration::getFeatureType))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .filter(ft -> Objects.equals(ft, featureType))
+        .findFirst()
+        .orElse(featureType);
   }
 
   private Optional<TilesConfiguration> getTilesConfiguration(

@@ -1,5 +1,5 @@
 
-maturity = 'EXPERIMENTAL'
+maturity = 'MATURE'
 
 dependencies {
     provided project(":ogcapi-foundation")
@@ -9,6 +9,7 @@ dependencies {
     provided project(":ogcapi-features-geojson")
     provided project(":ogcapi-html")
     provided project(":ogcapi-json")
+    provided project(":ogcapi-oas30")
     provided project(":ogcapi-tilematrixsets")
 
     testImplementation(testFixtures(group: 'de.interactive_instruments', name: 'ogcapi-foundation'))

@@ -11,13 +11,20 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.oas30.domain.Oas30Configuration;
 import java.util.List;
 
 public class TilesConformance implements ConformanceClass {
 
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/oas30");
+    if (apiData
+        .getExtension(Oas30Configuration.class)
+        .map(ExtensionConfiguration::isEnabled)
+        .orElse(true)) {
+      return ImmutableList.of("http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/oas30");
+    }
+    return ImmutableList.of();
   }
 
   @Override

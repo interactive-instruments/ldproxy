@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ogcapi.crs.domain.CrsSupport;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -50,7 +51,6 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache
   public static final String BBOX = "bbox";
   public static final String BBOX_CRS = "bbox-crs";
   public static final String CRS84 = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
-  public static final String CRS84H = "http://www.opengis.net/def/crs/OGC/0/CRS84h";
 
   private final CrsInfo crsInfo;
   private final CrsSupport crsSupport;
@@ -88,6 +88,24 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
                 && "/collections/{collectionId}/items".equals(definitionPath));
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return super.isEnabledForApi(apiData)
+        && apiData
+            .getExtension(FeaturesCoreConfiguration.class)
+            .map(ExtensionConfiguration::isEnabled)
+            .orElse(true);
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return super.isEnabledForApi(apiData, collectionId)
+        && apiData
+            .getExtension(FeaturesCoreConfiguration.class, collectionId)
+            .map(ExtensionConfiguration::isEnabled)
+            .orElse(true);
   }
 
   @Override

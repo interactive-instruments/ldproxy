@@ -64,8 +64,11 @@ public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
-    return config.isPresent() && config.get().getTileProvider().requiresQuerySupport();
+    //noinspection ConstantConditions
+    return apiData
+        .getExtension(TilesConfiguration.class)
+        .filter(cfg -> cfg.isEnabled() && cfg.getTileProvider().requiresQuerySupport())
+        .isPresent();
   }
 
   @Override

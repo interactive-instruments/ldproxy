@@ -1,3 +1,6 @@
+
+maturity = 'CANDIDATE'
+
 dependencies {
     provided project(":ogcapi-foundation")
     provided project(":ogcapi-common")

@@ -1,5 +1,5 @@
 
-maturity = 'PRODUCTION'
+maturity = 'CANDIDATE'
 
 dependencies {
     provided project(":ogcapi-foundation")

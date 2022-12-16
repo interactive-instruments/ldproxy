@@ -46,6 +46,13 @@ public class FeaturesCore implements ItemTypeSpecificConformanceClass {
       builder.add("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30");
     }
 
+    if (apiData
+        .getExtension(Oas30Configuration.class)
+        .map(ExtensionConfiguration::isEnabled)
+        .orElse(true)) {
+      builder.add("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30");
+    }
+
     return builder.build();
   }
 }
