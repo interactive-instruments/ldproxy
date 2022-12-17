@@ -1,34 +1,39 @@
-const { path } = require('@vuepress/utils');
-const { createGroup } = require('./sidebar.helper.js');
+import { defineUserConfig, defaultTheme } from 'vuepress';
+import { docsearchPlugin } from '@vuepress/plugin-docsearch';
+import { mdEnhancePlugin } from "vuepress-plugin-md-enhance";
+import { themeDocs, createGroups } from 'vuepress-plugin-theme-extensions';
+
+//import { createGroup } from './sidebar.helper.js';
 
 const sidebar = lang => { 
+  const group = createGroups(__dirname);
   const root = lang == '/' ? '' : 'de';
   const prefix = lang == 'en' ? '' : 'de/';
 
   return [
-    createGroup({en: 'Getting Started', de: 'Erste Schritte'}[lang], root, {ignoreReadme: true}),
-    createGroup({en: 'Application', de: 'Applikation'}[lang], prefix + 'application'),
-    createGroup({en: 'APIs', de: 'APIs'}[lang], prefix + 'services', {
+    group({en: 'Getting Started', de: 'Erste Schritte'}[lang], root, {ignoreReadme: true}),
+    group({en: 'Application', de: 'Applikation'}[lang], prefix + 'application'),
+    group({en: 'APIs', de: 'APIs'}[lang], prefix + 'services', {
       children: [
-        createGroup({en: 'Building Blocks', de: 'Bausteine'}[lang], prefix + 'services/building-blocks', {collapsible: true, headerReadme: true})
+        group({en: 'Building Blocks', de: 'Bausteine'}[lang], prefix + 'services/building-blocks', {collapsible: true, headerReadme: true})
       ]
     }),
-    createGroup({en: 'Data Providers', de: 'Daten-Provider'}[lang], prefix + 'providers', {
+    group({en: 'Data Providers', de: 'Daten-Provider'}[lang], prefix + 'providers', {
       children: [
-        createGroup({en: 'Features', de: 'Features'}[lang], prefix + 'providers/feature', {headerReadme: true, 
+        group({en: 'Features', de: 'Features'}[lang], prefix + 'providers/feature', {headerReadme: true, 
           children: [
-            createGroup({en: 'Extensions', de: 'Erweiterungen'}[lang], prefix + 'providers/feature/extensions', {collapsible: true, headerReadme: true})
+            group({en: 'Extensions', de: 'Erweiterungen'}[lang], prefix + 'providers/feature/extensions', {collapsible: true, headerReadme: true})
           ]
         }),
-        createGroup({en: 'Tiles', de: 'Tiles'}[lang], prefix + 'providers/tile', {headerReadme: true}),
+        group({en: 'Tiles', de: 'Tiles'}[lang], prefix + 'providers/tile', {headerReadme: true}),
       ]
     }),
-    createGroup({en: 'Auxiliaries', de: 'Zubehör'}[lang], prefix + 'auxiliaries', {ignoreReadme: true}),
+    group({en: 'Auxiliaries', de: 'Zubehör'}[lang], prefix + 'auxiliaries', {ignoreReadme: true}),
     {text: {en: 'Advanced', de: 'Fortgeschritten'}[lang]},
   ]
 };
 
-module.exports = {
+export default defineUserConfig({
   base: '/',
   locales: {
     '/': {
@@ -43,14 +48,15 @@ module.exports = {
     },
   },
   plugins: [
-    ['vuepress-plugin-theme-extensions', {      
-    }],
-    ['vuepress-plugin-locale-redirect', {
-    }],
-    ['vuepress-plugin-md-enhance', {
+    docsearchPlugin({
+      appId: 'TNOB61BGZX',
+      apiKey: '75d89f7da0b2ccdd1078b38607739c2b',
+      indexName: 'ldproxy',
+    }),
+    mdEnhancePlugin({
       //container: true,
       mermaid: true,
-    }],
+    }),
     /*['@vuepress/plugin-shiki', {
       //theme: 'material-lighter',
       theme: 'hc-light',
@@ -61,18 +67,14 @@ module.exports = {
       lineNumbers: false,
     }
   },
-  theme: '@vuepress/theme-default',
-  //theme: path.resolve(__dirname, './theme'),
-  themeConfig: {
+  theme: themeDocs({
+    navbar: true,
+    tableRowHeight: true,
+    onThisPage: true,
     repo: 'interactive-instruments/ldproxy',
     //logo: 'https://vuejs.org/images/logo.png',
     editLink: false,
-    darkMode: true,
-    themeExtensions: {
-      navbar: true,
-      onThisPage: true,
-      tableRowHeight: true,
-    },
+    colorModeSwitch: false,
     themePlugins: {
       //prismjs: false,
     },
@@ -89,6 +91,17 @@ module.exports = {
           {
             text: 'Demo',
             link: 'https://demo.ldproxy.net',
+          },
+          {
+            text: `v3.x`,
+            children: [
+              {
+                text: 'v3.x',
+                link: '',
+                activeMatch: '/',
+              },
+            ],
+            group: "start",
           },
         ],
         sidebar: sidebar('en'),
@@ -121,7 +134,7 @@ module.exports = {
         }
       },
     },
-  },
+  }),
   host: '127.0.0.1'
-}
+});
 
