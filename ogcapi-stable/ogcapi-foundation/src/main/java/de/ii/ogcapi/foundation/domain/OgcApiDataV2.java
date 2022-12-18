@@ -17,6 +17,7 @@ import de.ii.xtraplatform.docs.DocStep;
 import de.ii.xtraplatform.docs.DocStep.Step;
 import de.ii.xtraplatform.docs.DocTable;
 import de.ii.xtraplatform.docs.DocTable.ColumnSet;
+import de.ii.xtraplatform.docs.DocVar;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaults;
@@ -32,10 +33,64 @@ import org.immutables.value.Value;
 /**
  * @langEn # OGC API
  *     <p>Each API represents a deployment of a single OGC Web API.
+ *     <p>## General rules
+ *     <p>### Response encoding
+ *     <p>For operations that return a response, the encoding is chosen using standard HTTP content
+ *     negotiation with `Accept` headers.
+ *     <p>GET operations additionally support the query parameter `f`, which allows to explicitely
+ *     choose the encoding and override the result of the content negotiation. The supported
+ *     encodings depend on the affected resource and the configuration.
+ *     <p>### Response language
+ *     <p>For operations that return a response, the language for linguistic texts is chosen using
+ *     standard HTTP content negiotiation with `Accept-Language` headers.
+ *     <p>If enabled in [Common Core](building-blocks/common_core.md), GET operations additionally
+ *     support the query parameter `lang`, which allows to explicitely choose the language and
+ *     override the result of the content negotiation. The supported languages depend on the
+ *     affected resource and the configuration. Support for multilingualism is currently limited.
+ *     There are four possible sources for linguistic texts:
+ *     <p><code>
+ * - Static texts: For example link labels or static texts in HTML represenations. Currently the languages English (`en`) and German (`de`) are supported.
+ * - Texts contained in the data: Currently not supported.
+ * - Texts set in the configuration: Currently not supported.
+ * - Error messages: These are always in english, the messages are currently hard-coded.
+ * </code>
+ *     <p>### Resource paths
+ *     <p>All resource paths in this documentation are relative to the base URI of the API. For
+ *     example given the base URI `https://example.com/pfad/zu/apis/{apiId}` and the resource path
+ *     `collections`, the full path would be `https://example.com/pfad/zu/apis/{apiId}/collections`.
  * @langDe # OGC API
  *     <p>Jede API stellt eine OGC Web API bereit.
- *     <p>Die Konfiguration einer API wird in einer Konfigurationsdatei in einem Objekt mit den
- *     folgenden Eigenschaften beschrieben.
+ *     <p>## Grundsätzliche Regeln
+ *     <p>### Auswahl des Antwortformats
+ *     <p>Bei Operationen, die eine Antwort zurückliefern, wird das Format nach den
+ *     Standard-HTTP-Regeln standardmäßig über Content-Negotiation und den `Accept`-Header
+ *     ermittelt.
+ *     <p>Alle GET-Operationen unterstützen zusätzlich den Query-Parameter `f`. Über diesen
+ *     Parameter kann das Ausgabeformat der Antwort auch direkt ausgewählt werden. Wenn kein Wert
+ *     angegeben wird, gelten die Standard-HTTP-Regeln, d.h. der `Accept`-Header wird zur Bestimmung
+ *     des Formats verwendet. Die unterstützten Formate hängen von der Ressource und von der
+ *     API-Konfiguration ab.
+ *     <p>### Auswahl der Antwortsprache
+ *     <p>Bei Operationen, die eine Antwort zurückliefern, wird die verwendete Sprache bei
+ *     linguistischen Texten nach den Standard-HTTP-Regeln standardmäßig über Content-Negotiation
+ *     und den `Accept-Language`-Header ermittelt.
+ *     <p>Sofern die entsprechende Option im Modul "Common Core" aktiviert ist, unterstützen alle
+ *     GET-Operationen zusätzlich den Query-Parameter `lang`. Über diesen Parameter kann die Sprache
+ *     auch direkt ausgewählt werden. Wenn kein Wert angegeben wird, gelten die
+ *     Standard-HTTP-Regeln, wie oben beschrieben. Die erlaubten Werte hängen von der Ressource und
+ *     von der API-Konfiguration ab. Die Unterstüzung für Mehrsprachigkeit ist derzeit begrenzt. Es
+ *     gibt vier Arten von Quellen für Texte:
+ *     <p><code>
+ * - Texte zu festen Elementen der API: Diese werden von ldproxy erzeugt, z.B. die Texte der Titel von Links oder feste Textbausteine in der HTML-Ausgabe. Derzeit werden die Sprachen "Deutsch" (de) und "Englisch" (en) unterstützt.
+ * - Texte aus Attributen in den Daten: Hier gibt es noch keine Unterstützung, wie die Rückgabe bei mehrsprachigen Daten in Abhängigkeit von der Ausgabesprache gesteuert werden kann.
+ * - Texte aus der API-Konfiguration, insbesondere zum Datenschema: Hier gibt es noch keine Unterstützung, wie die Rückgabe bei mehrsprachigen Daten in Abhängigkeit von der Ausgabesprache gesteuert werden kann.
+ * - Fehlermeldungen der API: Diese sind immer in Englisch, die Meldungen sind aktuell Bestandteil des Codes.
+ * </code>
+ *     <p>### Pfadangaben
+ *     <p>Alle Pfadangaben in dieser Dokumentation sind relativ zur Basis-URI der API. Ist dies zum
+ *     Beispiel `https://example.com/pfad/zu/apis/{apiId}` und lautet der Pfad einer Ressource
+ *     `collections` dann ist die URI der Ressource
+ *     `https://example.com/pfad/zu/apis/{apiId}/collections`.
  * @langEn ## Configuration
  *     <p>Details regarding the API modules can be found [here](building-blocks/README.md), see
  *     `api` in the table below.
@@ -76,11 +131,14 @@ import org.immutables.value.Value;
  * - Diese Werte können durch Angaben im Verzeichnis `overrides` überschrieben werden.
  * </code>
  *     <p>
- * @langEn ### Example
+ * @langAll ### Caching
+ *     <p>{@docVar:caching}
+ *     <p>{@docTable:cachingProperties}
+ * @langEn ### Examples
  *     <p>See the [API
  *     configuration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)
  *     of the API [Vineyards in Rhineland-Palatinate, Germany](https://demo.ldproxy.net/vineyards).
- * @langDe ### Beispiel
+ * @langDe ### Beispiele
  *     <p>Als Beispiel siehe die
  *     [API-Konfiguration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)
  *     der API [Weinlagen in Rheinland-Pfalz](https://demo.ldproxy.net/vineyards).
@@ -93,6 +151,8 @@ import org.immutables.value.Value;
  * @ref:cfgProperties {@link de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2}
  * @ref:cfgProperties:collection {@link
  *     de.ii.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi}
+ * @ref:caching {@link de.ii.ogcapi.foundation.domain.CachingConfiguration}
+ * @ref:cachingProperties {@link de.ii.ogcapi.foundation.domain.ImmutableCaching}
  */
 @DocFile(
     path = "services",
@@ -112,6 +172,22 @@ import org.immutables.value.Value;
             @DocStep(type = Step.JSON_PROPERTIES)
           },
           columnSet = ColumnSet.JSON_PROPERTIES),
+      @DocTable(
+          name = "cachingProperties",
+          rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:cachingProperties}"),
+            @DocStep(type = Step.JSON_PROPERTIES),
+            @DocStep(type = Step.UNMARKED)
+          },
+          columnSet = ColumnSet.JSON_PROPERTIES),
+    },
+    vars = {
+      @DocVar(
+          name = "caching",
+          value = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:caching}"),
+            @DocStep(type = Step.TAG, params = "{@bodyBlock}")
+          }),
     })
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableOgcApiDataV2.Builder.class)
@@ -160,6 +236,11 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
   @JsonMerge(OptBoolean.FALSE)
   public abstract Optional<CollectionExtent> getDefaultExtent();
 
+  /**
+   * @langEn Sets fixed values for [HTTP Caching Headers](caching) for the resources.
+   * @langDe Setzt feste Werte für [HTTP-Caching-Header](#caching) für die Ressourcen.
+   * @default {}
+   */
   public abstract Optional<Caching> getDefaultCaching();
 
   public abstract Optional<ApiSecurity> getAccessControl();

@@ -3,15 +3,12 @@ import { docsearchPlugin } from '@vuepress/plugin-docsearch';
 import { mdEnhancePlugin } from "vuepress-plugin-md-enhance";
 import { themeDocs, createGroups } from 'vuepress-plugin-theme-extensions';
 
-//import { createGroup } from './sidebar.helper.js';
-
 const sidebar = lang => { 
   const group = createGroups(__dirname);
-  const root = lang == '/' ? '' : 'de';
   const prefix = lang == 'en' ? '' : 'de/';
 
   return [
-    group({en: 'Getting Started', de: 'Erste Schritte'}[lang], root, {ignoreReadme: true}),
+    group({en: 'Getting Started', de: 'Erste Schritte'}[lang], prefix, {ignoreReadme: true}),
     group({en: 'Application', de: 'Applikation'}[lang], prefix + 'application'),
     group({en: 'APIs', de: 'APIs'}[lang], prefix + 'services', {
       children: [
@@ -122,6 +119,17 @@ export default defineUserConfig({
           {
             text: 'Demo',
             link: 'https://demo.ldproxy.net',
+          },
+          {
+            text: `v3.x`,
+            children: [
+              {
+                text: 'v3.x',
+                link: '',
+                activeMatch: '/',
+              },
+            ],
+            group: "start",
           },
         ],
         sidebar: sidebar('de'),
