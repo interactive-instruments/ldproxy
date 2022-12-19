@@ -19,8 +19,7 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 /**
- * /**
- *
+ * @buildingBlock COLLECTIONS
  * @examplesAll <code>
  * ```yaml
  * - buildingBlock: COLLECTIONS
@@ -62,7 +61,7 @@ public interface CollectionsConfiguration extends ExtensionConfiguration, Cachin
    * @langDe Erlaubt es, zusätzliche Links in der Ressource Feature Collections zu ergänzen. Der
    *     Wert ist ein Array von Link-Objekten. Anzugeben sind jeweils mindestens die URI (`href`),
    *     der anzuzeigende Text (`label`) und die Link-Relation (`rel`).
-   * @default `[]`
+   * @default []
    */
   @JsonMerge(OptBoolean.FALSE)
   List<Link> getAdditionalLinks();
@@ -79,7 +78,7 @@ public interface CollectionsConfiguration extends ExtensionConfiguration, Cachin
    *     wird (`true`). Bei `true` wird die API-Definition einfacher und kürzer, aber das Schema ist
    *     nicht mehr Collection-spezifisch und Collection-spezifische Query-Parameter können nicht
    *     mehr in der API-Definition spezifiziert werden.
-   * @default `false`
+   * @default false
    */
   Optional<Boolean> getCollectionIdAsParameter();
 
@@ -91,7 +90,7 @@ public interface CollectionsConfiguration extends ExtensionConfiguration, Cachin
    *     identisches Schema besitzen und dieselben Queryables haben, kann mit dem Wert `true`
    *     gesteuert werden, dass in der API-Definition Schema und Queryables aus einer beliebigen
    *     Collection bestimmt werden.
-   * @default `false`
+   * @default false
    */
   Optional<Boolean> getCollectionDefinitionsAreIdentical();
 

@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.common.domain;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -21,6 +20,7 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
+ * @buildingBlock COMMON
  * @examplesAll <code>
  * ```yaml
  * - buildingBlock: COMMON
@@ -41,26 +41,12 @@ public interface CommonConfiguration extends ExtensionConfiguration, CachingConf
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   /**
-   * @langEn Always `COMMON`.
-   * @langDe Immer `COMMON`.
-   */
-  @Override
-  @JsonAlias("extensionType")
-  @Value.Derived
-  default String getBuildingBlock() {
-    return ExtensionConfiguration.super.getBuildingBlock();
-  }
-
-  /**
    * @default true
    */
   @Nullable
   @Override
   Boolean getEnabled();
 
-  /**
-   * @since v3.0
-   */
   @Nullable
   @Override
   Caching getCaching();

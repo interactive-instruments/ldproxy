@@ -19,10 +19,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn TODO
- * @langDe TODO
- * @title Features
- * @endpoints Features
+ * @title f
+ * @endpoints Features, Feature
+ * @langAll Select the output format of the response. If no value is provided, the standard HTTP
+ *     rules apply, i.e., the accept header will be used to determine the format.
  */
 @Singleton
 @AutoBind

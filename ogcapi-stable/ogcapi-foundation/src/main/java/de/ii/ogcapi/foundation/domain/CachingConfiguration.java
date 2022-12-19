@@ -51,6 +51,7 @@ public interface CachingConfiguration {
    * @langDe Setzt feste Werte für [HTTP-Caching-Header](/de/services/README.md#caching) für die
    *     Ressourcen.
    * @default {}
+   * @since v3.0
    */
   @Nullable
   Caching getCaching();

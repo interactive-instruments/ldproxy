@@ -33,24 +33,18 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @langEn Example of specifications in the configuration file for the entire API (or in defaults):
- * @langDe Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (oder in den
- *     Defaults):
- * @examplesAll <code>
- *
+ * @buildingBlock FEATURES_CORE
+ * @examplesEn Example of specifications in the configuration file for the entire API (or in
+ *     defaults):
+ *     <p><code>
  * ```yaml
  * - buildingBlock: FEATURES_CORE
  *   coordinatePrecision:
  *     metre: 2
  *     degree: 7
  * ```
- * </code>
- */
-
-/**
- * @langEn Example of the specifications in the configuration file for a feature collection:
- * @langDe Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
- * @examplesAll <code>
+ *     </code>
+ *     <p>Example of the specifications in the configuration file for a feature collection:<code>
  * ```yaml
  * - buildingBlock: FEATURES_CORE
  *   enabled: true
@@ -74,7 +68,51 @@ import org.immutables.value.Value;
  *   embeddedFeatureLinkRels:
  *   - self
  * ```
- * </code>
+ *     </code>
+ * @examplesDe Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (oder in den
+ *     Defaults):
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: FEATURES_CORE
+ *   coordinatePrecision:
+ *     metre: 2
+ *     degree: 7
+ * ```
+ *     </code>
+ *     <p>Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: FEATURES_CORE
+ *   coordinatePrecision:
+ *     metre: 2
+ *     degree: 7
+ * ```
+ *     </code>
+ *     <p>Example of the specifications in the configuration file for a feature collection:<code>
+ * ```yaml
+ * - buildingBlock: FEATURES_CORE
+ *   enabled: true
+ *   itemType: feature
+ *   queryables:
+ *     spatial:
+ *     - geometry
+ *     temporal:
+ *     - date
+ *     q:
+ *     - name
+ *     - region
+ *     - subregion
+ *     - cluster
+ *     - village
+ *     - searchfield1
+ *     - searchfield2
+ *     other:
+ *     - registerId
+ *     - area_ha
+ *   embeddedFeatureLinkRels:
+ *   - self
+ * ```
+ *     </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new")

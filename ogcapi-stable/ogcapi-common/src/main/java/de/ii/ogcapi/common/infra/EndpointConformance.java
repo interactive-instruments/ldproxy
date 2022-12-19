@@ -38,14 +38,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 /**
- * @langEn The URIs of all conformance classes supported by the server. This information is provided
- *     to support 'generic' clients that want to access multiple OGC API implementations - and not
- *     'just' a specific API. For clients accessing only a single API, this information is in
- *     general not relevant and the OpenAPI definition details the required information about the
- *     API.
- * @langDe TODO
  * @title Conformance Declaration
- * @path /{apiId}/conformance
+ * @path conformance
+ * @langAll The URIs of all conformance classes supported by the server. This information is
+ *     provided to support 'generic' clients that want to access multiple OGC API implementations -
+ *     and not 'just' a specific API. For clients accessing only a single API, this information is
+ *     in general not relevant and the OpenAPI definition details the required information about the
+ *     API.
  * @ref:formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
  */
 @Singleton

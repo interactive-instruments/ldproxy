@@ -59,16 +59,16 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @title Features Core
- * @langEn The module *Features Core* has to be enabled for every API with a feature provider. It
- *     provides the resources *Features* and *Feature*.
- *     <p>*Features Core* implements all requirements of conformance class *Core* of [OGC API -
- *     Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) for
- *     the two mentioned resources.
- * @langDe Das Modul *Features Core* ist für jede über ldproxy bereitgestellte API mit einem
- *     Feature-Provider zu aktivieren. Es stellt die Ressourcen "Features" und "Feature" bereit.
- *     <p>"Features Core" implementiert alle Vorgaben der Konformitätsklasse "Core" von [OGC API -
- *     Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) für
- *     die zwei genannten Ressourcen.
+ * @langEn The core of OGC API Features.
+ * @langDe Der Kern von OGC API Features.
+ * @conformanceEn *Features Core* implements all requirements of conformance class *Core* of [OGC
+ *     API - Features - Part 1: Core
+ *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) for the two mentioned
+ *     resources.
+ * @conformanceDe *Features Core* implementiert alle Vorgaben der Konformitätsklasse "Core" von [OGC
+ *     API - Features - Part 1: Core
+ *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) für die zwei genannten
+ *     Ressourcen.
  * @ref:cfg {@link de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration}
  * @ref:endpoints {@link de.ii.ogcapi.features.core.app.EndpointFeatures}
