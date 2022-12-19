@@ -2876,9 +2876,9 @@ vuepress-plugin-sass-palette@2.0.0-beta.143:
     sass "^1.56.2"
     vuepress-shared "2.0.0-beta.143"
 
-vuepress-plugin-theme-extensions@azahnen/vuepress-plugin-theme-extensions#8dd6fa9:
+vuepress-plugin-theme-extensions@azahnen/vuepress-plugin-theme-extensions#66ad6d2:
   version "1.0.0"
-  resolved "https://codeload.github.com/azahnen/vuepress-plugin-theme-extensions/tar.gz/8dd6fa92a099381458e50770c9220798020c2f6f"
+  resolved "https://codeload.github.com/azahnen/vuepress-plugin-theme-extensions/tar.gz/66ad6d2911c0fff311bb310f5ad78d850d469a8a"
   dependencies:
     "@vuepress/plugin-active-header-links" "2.0.0-beta.59"
     "@vuepress/plugin-toc" "2.0.0-beta.59"
