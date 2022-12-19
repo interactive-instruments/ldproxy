@@ -39,15 +39,11 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
 /**
- * @langEn Todo
- * @langDe * `intersects` (Ressource "Features"): Ist der Parameter angegeben, werden die Features
- *     zusätzlich nach der als Wert angegeben Geometrie selektiert und es werden nur Features
- *     zurückgeliefert, deren primäre Geometrie sich mit der angegebenen Geometrie schneidet. Als
- *     Geometrie kann entweder eine WKT-Geometrie angegeben werden oder eine URL für ein
- *     GeoJSON-Objekt mit einer Geometrie. Im Fall einer FeatureCollection wird die erste Geometrie
- *     verwendet.
  * @title intersects
- * @endpoints Features, intersects
+ * @endpoints Features
+ * @langAll A Well Known Text representation of a geometry as defined in Simple Feature Access -
+ *     Part 1: Common Architecture or a URI that returns a GeoJSON feature with a geometry. Only
+ *     features are returned that intersect the geometry.
  */
 @Singleton
 @AutoBind

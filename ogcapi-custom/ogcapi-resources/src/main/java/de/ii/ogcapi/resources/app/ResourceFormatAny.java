@@ -26,6 +26,9 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+/**
+ * @title Any
+ */
 @Singleton
 @AutoBind
 public class ResourceFormatAny implements ResourceFormatExtension {

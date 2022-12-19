@@ -26,6 +26,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title HTML
+ */
 @Singleton
 @AutoBind
 public class ResourcesFormatHtml implements ResourcesFormatExtension {

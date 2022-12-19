@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
+ * @buildingBlock GEO_JSON_LD
  * @examplesAll <code>
  * ```yaml
  * - buildingBlock: GEO_JSON_LD
