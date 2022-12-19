@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.3.1 (19/12/2022)
+
+#### Fixed bugs
+
+- tile provider cache levels are ignored on deserialization [#850](https://github.com/interactive-instruments/ldproxy/issues/850)
+
+---
+
 ## v3.3.0 (16/12/2022)
 
 #### Implemented enhancements
