@@ -18,9 +18,41 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @langEn Example of the specifications in the configuration file:
- * @langDe Beispiel für die Angaben in der Konfigurationsdatei:
- * @examplesAll <code>
+ * @buildingBlock STYLES
+ * @langEn ### Storage
+ *     <p>The stylesheets, style metadata and style information all reside as files in the data
+ *     directory:
+ *     <p><code>
+ * - Stylesheets reside under the relative path `styles/{apiId}/{styleId}.{ext}`, where
+ *     `{ext}` is either `mbs` (Mapbox), `sld10` (SLD 1.0) or `sld11` (SLD 1.1). The URIs (Sprites,
+ *     Glyphs, Source.url, Source.tiles) used in Mapbox styles links might contain `{serviceUrl}`.
+ * - Style metadata reside under the relative path `styles/{apiId}/{styleId}.metadata`. Links
+ *     might be templates (by setting `templated` to `true`) containing `{serviceUrl}`.
+ * - Style information reside under the relative path `style-infos/{apiId}/{collectionId}.json`. Links
+ *     might be templates (by setting `templated` to `true`) containing `{serviceUrl}` and
+ *     `{collectionId}`.
+ *     </code>
+ * @langDe ### Storage
+ *     <p>Die Stylesheets, die Style-Metadaten und die Style-Informationen liegen als Dateien im
+ *     Datenverzeichnis:
+ *     <p><code>
+ * - Die Stylesheets müssen unter dem relativen Pfad
+ *      `api-resources/styles/{apiId}/{styleId}.{ext}` liegen. Die URIs (Sprites, Glyphs, Source.url,
+ *      Source.tiles) bei den Mapbox-Styles Links können dabei als Parameter `{serviceUrl}`
+ *      enthalten. Die Dateikennung `{ext}` muss den folgenden Wert in Abhängigkeit des Style-Formats
+ *      haben:
+ *   - Mapbox Style: `mbs`
+ *   - OGC SLD 1.0: `sld10`
+ *   - OGC SLD 1.1: `sld11`
+ *   - QGIS QML: `qml`
+ *   - ArcGIS Desktop: `lyr`
+ *   - ArcGIS Pro: `lyrxì
+ * - Die Style-Metadaten müssen unter dem relativen
+ *     Pfad `api-resources/styles/{apiId}/{styleId}.metadata` liegen. Links können dabei Templates
+ *     sein (d.h. `templated` ist `true`) und als Parameter `{serviceUrl}` enthalten.
+ *     </code>
+ * @examplesEn Example of the specifications in the configuration file:
+ *     <p><code>
  * ```yaml
  * - buildingBlock: STYLES
  *   enabled: true
@@ -31,13 +63,9 @@ import org.immutables.value.Value;
  *   managerEnabled: false
  *   validationEnabled: false
  * ```
- * </code>
- */
-
-/**
- * @langEn Example Mapbox stylesheet
- * @langDe Beispiel für ein Mapbox-Stylesheet:
- * @examplesAll <code>
+ *     </code>
+ *     <p>Example Mapbox stylesheet
+ *     <p><code>
  * ```json
  * {
  *   "bearing" : 0.0,
@@ -83,13 +111,9 @@ import org.immutables.value.Value;
  *   } ]
  * }
  * ```
- * </code>
- */
-
-/**
- * @langEn Example style information file
- * @langDe Beispiel für eine Style-Metadaten-Datei:
- * @examplesAll <code>
+ *     </code>
+ *     <p>Example style information file
+ *     <p><code>
  * ```json
  * {
  *   "id": "kitas",
@@ -136,7 +160,117 @@ import org.immutables.value.Value;
  *   ]
  * }
  * ```
- * </code>
+ *     </code>
+ * @examplesDe Beispiel für die Angaben in der Konfigurationsdatei:
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: STYLES
+ *   enabled: true
+ *   styleEncodings:
+ *   - Mapbox
+ *   - HTML
+ *   deriveCollectionStyles: true
+ *   managerEnabled: false
+ *   validationEnabled: false
+ * ```
+ *     </code>
+ *     <p>Beispiel für ein Mapbox-Stylesheet:
+ *     <p><code>
+ * ```json
+ * {
+ *   "bearing" : 0.0,
+ *   "version" : 8,
+ *   "pitch" : 0.0,
+ *   "name" : "kitas",
+ *   "center": [
+ *     10.0,
+ *     51.5
+ *   ],
+ *   "zoom": 12,
+ *   "sources" : {
+ *     "kindergarten" : {
+ *       "type" : "vector",
+ *       "tiles" : [ "{serviceUrl}/collections/governmentalservice/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt" ],
+ *       "maxzoom" : 16
+ *     },
+ *     "basemap" : {
+ *       "type" : "raster",
+ *       "tiles" : [ "https://sg.geodatenzentrum.de/wmts_topplus_open/tile/1.0.0/web_grau/default/WEBMERCATOR/{z}/{y}/{x}.png" ],
+ *       "attribution" : "&copy; <a href=\"http://www.bkg.bund.de\" class=\"link0\" target=\"_new\">Bundesamt f&uuml;r Kartographie und Geod&auml;sie</a> 2017, <a href=\"http://sg.geodatenzentrum.de/web_public/Datenquellen_TopPlus_Open.pdf\" class=\"link0\" target=\"_new\">Datenquellen</a>"
+ *     }
+ *   },
+ *   "sprite" : "{serviceUrl}/resources/sprites-kitas",
+ *   "glyphs": "https://go-spatial.github.io/carto-assets/fonts/{fontstack}/{range}.pbf",
+ *   "layers" : [ {
+ *       "id": "background",
+ *       "type": "raster",
+ *     "source" : "basemap"
+ *   }, {
+ *     "type" : "symbol",
+ *     "source-layer" : "governmentalservice",
+ *     "layout" : {
+ *       "icon-image" : "kita",
+ *       "icon-size" : 0.5
+ *     },
+ *     "paint" : {
+ *       "icon-halo-width" : 2,
+ *       "icon-opacity" : 1
+ *     },
+ *     "id" : "kita",
+ *     "source" : "kitas"
+ *   } ]
+ * }
+ * ```
+ *     </code>
+ *     <p>Beispiel für eine Style-Metadaten-Datei:
+ *     <p><code>
+ * ```json
+ * {
+ *   "id": "kitas",
+ *   "title": "Kindertageseinrichtungen",
+ *   "description": "(Hier steht eine Beschreibung des Styles...)",
+ *   "keywords": [ ],
+ *   "scope": "style",
+ *   "version": "0.0.1",
+ *   "stylesheets": [
+ *     {
+ *       "title": "Mapbox Style",
+ *       "version": "8",
+ *       "specification": "https://docs.mapbox.com/mapbox-gl-js/style-spec/",
+ *       "native": true,
+ *       "tilingScheme": "GoogleMapsCompatible",
+ *       "link": {
+ *         "href": "{serviceUrl}/styles/kitas?f=mbs",
+ *         "rel": "stylesheet",
+ *         "type": "application/vnd.mapbox.style+json",
+ *         "templated": true
+ *       }
+ *     }
+ *   ],
+ *   "layers": [
+ *     {
+ *       "id": "governmentalservice",
+ *       "type": "point",
+ *       "sampleData": {
+ *         "href": "{serviceUrl}/collections/governmentalservice/items?f=json",
+ *         "rel": "data",
+ *         "type": "application/geo+json",
+ *         "templated": true
+ *       }
+ *     }
+ *   ],
+ *   "links": [
+ *     {
+ *       "href": "{serviceUrl}/resources/kitas-thumbnail.png",
+ *       "rel": "preview",
+ *       "type": "image/png",
+ *       "title": "Thumbnail des Styles für Kindertagesstätten",
+ *       "templated": true
+ *     }
+ *   ]
+ * }
+ * ```
+ *     </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new")

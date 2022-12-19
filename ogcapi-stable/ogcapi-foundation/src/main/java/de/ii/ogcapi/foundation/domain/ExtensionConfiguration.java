@@ -41,8 +41,8 @@ public interface ExtensionConfiguration
   }
 
   /**
-   * @langEn Always `{@buildingBlock}`.
-   * @langDe Immer `{@buildingBlock}`.
+   * @langEn Always `{@buildingBlock}{@buildingBlockAlias ` or (*deprecated*) `|||}`.
+   * @langDe Immer `{@buildingBlock}{@buildingBlockAlias ` or (*deprecated*) `|||}`.
    */
   @JsonAlias("extensionType")
   @Value.Derived

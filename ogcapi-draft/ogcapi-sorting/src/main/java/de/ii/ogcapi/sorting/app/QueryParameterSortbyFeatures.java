@@ -36,16 +36,15 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn * `sortby` (resource *Features*): If the parameter is specified, the features are
- *     returned sorted according to the attributes specified in a comma-separated list. The
- *     attribute name can be preceded by `+` (ascending, the default behavior) or `-` (descending).
- *     Example: `sortby=type,-name`.
- * @langDe * `sortby` (Ressource "Features"): Ist der Parameter angegeben, werden die Features
- *     sortiert zurückgegeben. Sortiert wird nach den in einer kommaseparierten Liste angegebenen
- *     Attributen. Dem Attributnamen kann ein `+` (aufsteigend, das Standardverhalten) oder ein `-`
- *     (absteigend) vorangestellt werden. Beispiel: `sortby=type,-name`.
  * @title sortby
- * @endpoints Features, sortby
+ * @endpoints Features
+ * @langEn If the parameter is specified, the features are returned sorted according to the
+ *     attributes specified in a comma-separated list. The attribute name can be preceded by `+`
+ *     (ascending, the default behavior) or `-` (descending). Example: `sortby=type,-name`.
+ * @langDe Ist der Parameter angegeben, werden die Features sortiert zurückgegeben. Sortiert wird
+ *     nach den in einer kommaseparierten Liste angegebenen Attributen. Dem Attributnamen kann ein
+ *     `+` (aufsteigend, das Standardverhalten) oder ein `-` (absteigend) vorangestellt werden.
+ *     Beispiel: `sortby=type,-name`.
  */
 @Singleton
 @AutoBind

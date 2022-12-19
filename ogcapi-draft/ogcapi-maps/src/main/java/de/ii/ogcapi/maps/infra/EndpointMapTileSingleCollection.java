@@ -40,16 +40,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * @langEn Access single-layer map tiles
- * @langDe TODO
- * @title Tile
- * @path
- *     /{apiId}/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol
- */
-
-/**
- * Handle responses under
- * '/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'.
+ * @title Collection tiles
+ * @path collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
+ * @langAll Access collection map tiles
+ * @ref:formats {@link de.ii.ogcapi.maps.domain.MapTileFormatExtension}
  */
 @Singleton
 @AutoBind

@@ -19,10 +19,11 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @langEn See the [TileServer tile provider in the Tiles module](tiles.md#tile-provider-tileserver)
- *     for a sample configuration.
- * @langDe Siehe den [TileServer-Tile-Provider im Modul "Tiles"](tiles.md#tile-provider-tileserver)
- *     für eine Beispielkonfiguration.
+ * @buildingBlock MAP_TILES
+ * @examplesEn See the [TileServer tile provider in the Tiles
+ *     module](tiles.md#tile-provider-tileserver) for a sample configuration.
+ * @examplesDe Siehe den [TileServer-Tile-Provider im Modul
+ *     Tiles](tiles.md#tile-provider-tileserver) für eine Beispielkonfiguration.
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
@@ -36,7 +37,7 @@ public interface MapTilesConfiguration extends ExtensionConfiguration {
    *     [TileServer-Tile-Provider](tiles.md#tile-provider-tileserver) is supported.
    * @langDe Spezifiziert die Datenquelle für die Kacheln, unterstützt werden derzeit nur
    *     [TileServer-Tile-Provider](tiles.md#tile-provider-tileserver).
-   * @default `null`
+   * @default null
    */
   @Nullable
   TileProvider getMapProvider(); // TODO: must be TileServer, generalize and extend to MBTiles

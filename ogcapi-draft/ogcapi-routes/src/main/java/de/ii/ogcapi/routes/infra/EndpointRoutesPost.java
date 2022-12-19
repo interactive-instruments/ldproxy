@@ -82,7 +82,13 @@ import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** computes routes */
+/**
+ * @title Compute a route
+ * @path routes
+ * @langAll This creates a new route. The payload of the request specifies the definition of the new
+ *     route.
+ * @ref:formats {@link de.ii.ogcapi.routes.domain.RouteFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointRoutesPost extends Endpoint implements ConformanceClass {

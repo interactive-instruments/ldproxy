@@ -39,7 +39,6 @@ import de.ii.xtraplatform.docs.DocVar;
  *     </code>
  *     <p>## Overview
  *     <p>{@docTable:overview}
- *     <p>
  * @langDe # Bausteine
  *     <p>Die API-Funktionalität ist in Module aufgeteilt, die sich an den OGC API Standards
  *     orientieren.
@@ -63,36 +62,6 @@ import de.ii.xtraplatform.docs.DocVar;
  *     </code>
  *     <p>## Übersicht
  *     <p>{@docTable:overview}
- *     <p>
- * @langEn ## Property transformations
- *     <p>Modules related to feature encoding ([Core](features_core.md),
- *     [GeoJSON](features_geojson.md), [HTML](features_html.md), [Vector Tiles](vector_tiles.md))
- *     support transforming feature properties for all or only for specific encodings.
- *     <p>Transformations do not affect data sources, they are applied on-the-fly as part of the
- *     encoding.
- *     <p>Filter expressions do not take transformations into account, they have to be based on the
- *     source values. That means queryable properties (see `queryables` in [Features
- *     Core](features_core.md)) should not use transformations in most cases. The exception to the
- *     rule is the HTML encoding, where readability might be more important than filter support.
- *     <p>See [Transformations](../../providers/details/transformations.md) for supported
- *     transformations.
- * @langDe ## Transformationen
- *     <p>In den API-Modulen, die Features verarbeiten ([Core](features_core.md),
- *     [GeoJSON](features_geojson.md), [JSON-FG](features_json-fg.md), [HTML](features_html.md),
- *     [Tiles](vector_tiles.md) mit dem Features-Tile-Provider), können die Feature-Eigenschaften
- *     über Transformationen an die Anforderungen der Ausgabe angepasst werden.
- *     <p>Die Transformation der Werte erfolgt bei der Aufbereitung der Daten für die Rückgabe über
- *     die API. Die Datenhaltung selbst bleibt unverändert.
- *     <p>Alle Filterausdrücke (siehe `queryables` im [Modul "Features Core"](features_core.md))
- *     wirken unabhängig von etwaigen Transformationen bei der Ausgabe und müssen auf der Basis der
- *     Werte in der Datenhaltung formuliert sein - die Transformationen sind i.A. nicht umkehrbar
- *     und eine Berücksichtigung der inversen Transformationen bei Filterausdrücken wäre kompliziert
- *     und nur unvollständig möglich. Insofern sollten Eigenschaften, die queryable sein sollen,
- *     möglichst bereits in der Datenquelle transformiert sein. Eine Ausnahme sind typischerweise
- *     Transformationen in der HTML-Ausgabe, wo direkte Lesbarkeit i.d.R. wichtiger ist als die
- *     Filtermöglichkeit.
- *     <p>Siehe [Transformations](../../providers/details/transformations.md) für unterstützte
- *     Transformationen.
  */
 @DocFile(
     path = "services/building-blocks",
@@ -143,7 +112,7 @@ import de.ii.xtraplatform.docs.DocVar;
                   + "{@body}\n\n"
                   + "## Scope\n\n"
                   + "{@scopeEn |||}\n\n"
-                  + "{@limitationsEn ### Limitierungen\n\n|||}\n\n"
+                  + "{@limitationsEn ### Limitations\n\n|||}\n\n"
                   + "{@conformanceEn ### Conformance Classes\n\n|||}\n\n"
                   + "{@docTable:endpoints ### Resources\n\n|||}\n\n"
                   + "{@docTable:queryParams ### Query Parameters\n\n|||}\n\n"

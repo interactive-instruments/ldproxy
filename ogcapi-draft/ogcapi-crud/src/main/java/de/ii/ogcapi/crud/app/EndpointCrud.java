@@ -74,16 +74,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn The content of the request is a new feature in one of the supported encodings. The URI of
- *     the new feature is returned in the header `Location`.
- * @langDe TODO
- * @title Features
- * @path {apiId}/collection/{collectionId}/items
- * @format {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
- */
-
-/**
- * @author zahnen
+ * @title Features, Feature
+ * @path {collectionId}/items, {collectionId}/items/{featureId}
+ * @langAll Create, Replace, Update and Delete features.
+ * @ref:formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
  */
 @Singleton
 @AutoBind

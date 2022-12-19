@@ -12,6 +12,9 @@ import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
+/**
+ * @buildingBlock SCHEMA
+ */
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableSchemaConfiguration.Builder.class)

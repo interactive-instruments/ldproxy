@@ -40,7 +40,12 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** fetch the definition of a route */
+/**
+ * @title Route Definition
+ * @path routes/{routeId}/definition
+ * @langAll Fetch the definition of a route
+ * @ref:formats {@link de.ii.ogcapi.routes.domain.RouteDefinitionFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointRouteDefinition extends Endpoint {

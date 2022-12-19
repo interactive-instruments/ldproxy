@@ -47,14 +47,11 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** fetch the stylesheet of a style */
-
 /**
- * @langEn Fetches the style with identifier `styleId`. The set of available styles can be retrieved
- *     at `/styles`. Not all styles are available in all style encodings.
- * @langDe TODO
  * @title Style Collection
- * @path /{apiId}/collections/{collectionId}/styles/{styleId}
+ * @path collections/{collectionId}/styles/{styleId}
+ * @langAll Fetches the style with identifier `styleId`. The set of available styles can be
+ *     retrieved at `/styles`. Not all styles are available in all style encodings.
  * @ref:formats {@link de.ii.ogcapi.styles.domain.StyleFormatExtension}
  */
 @Singleton
