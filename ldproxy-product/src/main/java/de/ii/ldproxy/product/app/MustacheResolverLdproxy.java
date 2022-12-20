@@ -20,7 +20,9 @@ public class MustacheResolverLdproxy extends PerClassMustacheResolver
     implements PartialMustacheResolver {
 
   @Inject
-  MustacheResolverLdproxy() {}
+  MustacheResolverLdproxy() {
+    super();
+  }
 
   @Override
   public int getSortPriority() {

@@ -79,7 +79,7 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
     String rootTitle = i18n.get("root", requestContext.getLanguage());
     String routesTitle = i18n.get("routesTitle", requestContext.getLanguage());
 
-    final URICustomizer uriCustomizer = requestContext.getUriCustomizer().clearParameters();
+    final URICustomizer uriCustomizer = requestContext.getUriCustomizer().copy().clearParameters();
     final List<NavigationDTO> breadCrumbs =
         new ImmutableList.Builder<NavigationDTO>()
             .add(

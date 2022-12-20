@@ -24,7 +24,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.routes.app.CapabilityRouting;
+import de.ii.ogcapi.routes.app.RoutingBuildingBlock;
 import de.ii.ogcapi.routes.domain.ImmutableQueryInputRoute;
 import de.ii.ogcapi.routes.domain.QueryHandlerRoutes;
 import de.ii.ogcapi.routes.domain.RouteFormatExtension;
@@ -152,6 +152,6 @@ public class EndpointRouteGet extends Endpoint implements ConformanceClass {
 
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-    return ImmutableList.of(CapabilityRouting.MANAGE_ROUTES);
+    return ImmutableList.of(RoutingBuildingBlock.MANAGE_ROUTES);
   }
 }

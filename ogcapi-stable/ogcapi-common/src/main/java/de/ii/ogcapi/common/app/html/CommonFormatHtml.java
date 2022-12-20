@@ -129,7 +129,7 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
     String conformanceDeclarationTitle =
         i18n.get("conformanceDeclarationTitle", requestContext.getLanguage());
 
-    final URICustomizer uriCustomizer = requestContext.getUriCustomizer().clearParameters();
+    final URICustomizer uriCustomizer = requestContext.getUriCustomizer().copy().clearParameters();
     final List<NavigationDTO> breadCrumbs =
         new ImmutableList.Builder<NavigationDTO>()
             .add(

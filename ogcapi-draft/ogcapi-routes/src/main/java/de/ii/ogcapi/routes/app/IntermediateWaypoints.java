@@ -27,7 +27,7 @@ public class IntermediateWaypoints implements ConformanceClass {
 
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-    return ImmutableList.of(CapabilityRouting.INTERMEDIATE_WAYPOINTS);
+    return ImmutableList.of(RoutingBuildingBlock.INTERMEDIATE_WAYPOINTS);
   }
 
   @Override

@@ -10,7 +10,6 @@ package de.ii.ldproxy.cfg;
 import de.ii.xtraplatform.base.domain.AppConfiguration;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.Constants.ENV;
-import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
 import java.net.URI;
 import java.nio.file.Path;
 
@@ -42,16 +41,8 @@ class AppContextCfg implements AppContext {
   }
 
   @Override
-  public Path getConfigurationFile() {
-    return null;
-  }
-
-  @Override
   public AppConfiguration getConfiguration() {
-    AppConfiguration appConfiguration = new AppConfiguration(true);
-    appConfiguration.store =
-        new ImmutableStoreConfiguration.Builder().failOnUnknownProperties(false).build();
-    return appConfiguration;
+    return new AppConfigurationCfg();
   }
 
   @Override

@@ -11,7 +11,9 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.oas30.domain.Oas30Configuration;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -38,6 +40,13 @@ public class FeaturesCore implements ItemTypeSpecificConformanceClass {
       builder.add(
           "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
           "http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/records-api");
+
+    if (apiData
+        .getExtension(Oas30Configuration.class)
+        .map(ExtensionConfiguration::isEnabled)
+        .orElse(true)) {
+      builder.add("http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30");
+    }
 
     return builder.build();
   }

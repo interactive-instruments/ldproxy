@@ -125,7 +125,7 @@ class LandingPageSpec extends Specification {
     }
 
     static def createDatasetEntity() {
-        def entity = new OgcApiEntity(null, createExtensionRegistry(), datasetData)
+        def entity = new OgcApiEntity(null, createExtensionRegistry(), () -> "", datasetData)
         return entity
     }
 

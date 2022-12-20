@@ -1,12 +1,74 @@
 # Changelog
 
-## v3.2.4 (21/06/2022)
+## v3.3.1 (19/12/2022)
 
+#### Fixed bugs
+
+- tile provider cache levels are ignored on deserialization [#850](https://github.com/interactive-instruments/ldproxy/issues/850)
+
+---
+
+## v3.3.0 (16/12/2022)
+
+#### Implemented enhancements
+
+-  add support for PATCH [#839](https://github.com/interactive-instruments/ldproxy/issues/839)
+-  add support for CSV output [#838](https://github.com/interactive-instruments/ldproxy/issues/838)
+-  add unit to the JSON Schema of a feature property [#781](https://github.com/interactive-instruments/ldproxy/issues/781)
+-  introduce entity groups [#773](https://github.com/interactive-instruments/ldproxy/issues/773)
+-  support sql schema prefixes [#772](https://github.com/interactive-instruments/ldproxy/issues/772)
+-  support immutable tile caches [#735](https://github.com/interactive-instruments/ldproxy/issues/735)
+-  add auto-setup for db trigger [#734](https://github.com/interactive-instruments/ldproxy/issues/734)
+-  add dataset change listener [#733](https://github.com/interactive-instruments/ldproxy/issues/733)
+-  parallel db connection pools [#732](https://github.com/interactive-instruments/ldproxy/issues/732)
+-  add access control for GET operations [#718](https://github.com/interactive-instruments/ldproxy/issues/718)
+-  GML support for SQL feature providers [#681](https://github.com/interactive-instruments/ldproxy/issues/681)
+-  support for conditional requests and optimistic locking [#404](https://github.com/interactive-instruments/ldproxy/issues/404)
+
+#### Improvements
+
+-  align tiles building block with spec v1.0.0 [#785](https://github.com/interactive-instruments/ldproxy/issues/785)
+-  GML: add support for local bare name links [#752](https://github.com/interactive-instruments/ldproxy/issues/752)
+-  support JSON in query parameters [#751](https://github.com/interactive-instruments/ldproxy/issues/751)
+-  add var-base attribute to link templates [#750](https://github.com/interactive-instruments/ldproxy/issues/750)
+-  improve api request logging [#737](https://github.com/interactive-instruments/ldproxy/issues/737)
+-  align JSON-FG with draft v0.1 [#710](https://github.com/interactive-instruments/ldproxy/issues/710)
+-  align CRUD with latest draft [#703](https://github.com/interactive-instruments/ldproxy/issues/703)
+-  support docker platform linux/arm64 [#693](https://github.com/interactive-instruments/ldproxy/issues/693)
+-  improve exception handling/routing [#569](https://github.com/interactive-instruments/ldproxy/issues/569)
+
+#### Fixed bugs
+
+-  issues with MBTiles tile providers [#779](https://github.com/interactive-instruments/ldproxy/issues/779)
+-  configuring TILES in overrides [#775](https://github.com/interactive-instruments/ldproxy/issues/775)
+-  support both WKT MULTIPOINT encodings [#747](https://github.com/interactive-instruments/ldproxy/issues/747)
+-  paging with filter doesn't work when the filter contains the letters ÆØÅ [#728](https://github.com/interactive-instruments/ldproxy/issues/728)
+-  transformations on geometry properties are ignored [#719](https://github.com/interactive-instruments/ldproxy/issues/719)
+-  WFS: interior rings in polygons lead to bad request with Java RuntimeException [#716](https://github.com/interactive-instruments/ldproxy/issues/716)
+-  filters with degenerate envelopes return no features [#709](https://github.com/interactive-instruments/ldproxy/issues/709)
+-  GeoJSON: 'properties' is required, but missing when empty [#701](https://github.com/interactive-instruments/ldproxy/issues/701)
+-  WFS: fetching a single feature results in an exception [#698](https://github.com/interactive-instruments/ldproxy/issues/698)
+-  exceptions are not routed via the ldproxy exception handler [#697](https://github.com/interactive-instruments/ldproxy/issues/697)
+-  manager password change not working [#687](https://github.com/interactive-instruments/ldproxy/issues/687)
+-  tooltip labels for start/stop button are backwards [#686](https://github.com/interactive-instruments/ldproxy/issues/686)
+-  timeZone for logging has no effect [#685](https://github.com/interactive-instruments/ldproxy/issues/685)
+-  line breaks in stringFormat markdown do not work [#544](https://github.com/interactive-instruments/ldproxy/issues/544)
+
+#### Dependency updates
+
+-  upgrade jts, flatgeobuf, java-vector-tile and json-schema-validator [#799](https://github.com/interactive-instruments/ldproxy/issues/799)
+-  upgrade sqlite driver from 3.36.0.3 to 3.40.0.0 [#793](https://github.com/interactive-instruments/ldproxy/issues/793)
+-  upgrade postgresql driver from 42.3.3 to 42.5.1 [#792](https://github.com/interactive-instruments/ldproxy/issues/792)
+-  upgrade dropwizard from 2.0.28 to 2.0.34 [#788](https://github.com/interactive-instruments/ldproxy/issues/788)
+-  upgrade PROJ from 8.2.0 to 9.1.0 [#654](https://github.com/interactive-instruments/ldproxy/issues/654)
+
+---
+
+## v3.2.4 (21/06/2022)
 #### Fixed bugs
 
 -  paging error in HTML (f=html) when using a filter with a numeric character string [#634](https://github.com/interactive-instruments/ldproxy/issues/634)
 -  Tiles: NPE thrown if no spatial queryable is configured [#674](https://github.com/interactive-instruments/ldproxy/issues/674)
-
 ---
 
 ## v3.2.3 (04/05/2022)
@@ -30,7 +92,6 @@
 #### Fixed bugs
 
 -  unexpected postgresql error "Connection reset" [#622](https://github.com/interactive-instruments/ldproxy/issues/622)
-
 ---
 
 ## v3.2.0 (15/03/2022)
