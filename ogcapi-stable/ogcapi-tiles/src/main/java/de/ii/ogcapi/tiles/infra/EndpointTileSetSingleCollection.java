@@ -33,14 +33,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 /**
- * @langEn Access single-layer tiles
- * @langDe TODO
- * @title Tileset
- * @path /{apiId}/collections/{collectionId}/tiles/{tileMatrixSetId}
- * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
+ * @title Collection Tileset
+ * @path collections/{collectionId}/tiles/{tileMatrixSetId}
+ * @langAll Access collection tileset
+ * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetFormatExtension}
  */
-
-/** Handle responses under '/collections/{collectionId}/tiles/{tileMatrixSetId}'. */
 @Singleton
 @AutoBind
 public class EndpointTileSetSingleCollection extends AbstractEndpointTileSetSingleCollection

@@ -40,14 +40,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * @langEn Access multi-layer tiles
- * @langDe TODO
- * @title Tile
- * @path /{apiId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
- * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
+ * @title Dataset tiles
+ * @path tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
+ * @langAll Access dataset tiles
+ * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
  */
-
-/** Handle responses under '/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'. */
 @Singleton
 @AutoBind
 public class EndpointTileMultiCollection extends Endpoint

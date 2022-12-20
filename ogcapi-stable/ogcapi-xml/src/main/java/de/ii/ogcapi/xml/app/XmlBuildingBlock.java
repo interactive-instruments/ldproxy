@@ -16,16 +16,16 @@ import javax.inject.Singleton;
 
 /**
  * @title XML
- * @langEn The module *XML* may be enabled for every API with a feature provider. It is disabled by
- *     default. It provides the resources *Landing Page*, *Conformance Declaration*, *Feature
- *     Collections* and *Feature Collection* as XML.
- * @langDe Das Modul *XML* kann für jede über ldproxy bereitgestellte API aktiviert werden. Es ist
- *     standardmäßig deaktiviert. Soweit für eine Ressource keine speziellen Regelungen für die
- *     Ausgabeformate bestehen (wie zum Beispiel für [Features](features_gml.md)) und die Ressource
- *     XML unterstützt, können Clients das Ausgabeformat anfordern. Allerdings unterstützen nur die
- *     folgenden Ressourcen XML: Landing Page, Conformance Declaration, Feature Collections und
- *     Feature Collection.
- * @ref:cfgProperties {@link de.ii.ogcapi.xml.domain.XmlConfiguration}
+ * @langEn XML encoding for every supported resource.
+ * @langDe XML-Enkodierung für alle unterstützten Ressourcen.
+ * @scopeEn Only the resources *Landing Page*, *Conformance Declaration*, *Feature Collections* and
+ *     *Feature Collection* support XML.
+ * @scopeDe Nur die Ressourcen *Landing Page*, *Conformance Declaration*, *Feature Collections* and
+ *     *Feature Collection* unterstützen XML.
+ * @conformanceEn TODO_DOCS
+ * @conformanceDe TODO_DOCS
+ * @ref:cfg {@link de.ii.ogcapi.xml.domain.XmlConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.xml.domain.ImmutableXmlConfiguration}
  */
 @Singleton
 @AutoBind

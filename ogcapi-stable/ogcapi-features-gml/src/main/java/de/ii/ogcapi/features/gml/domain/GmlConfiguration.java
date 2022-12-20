@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
+ * @buildingBlock GML
  * @langEn By default, every GML property element will receive the property name from the feature
  *     schema. That is, the element will be in the default namespace. A different name can be set
  *     using the `rename` transformation, which can be used to change the name, but also supports to
@@ -27,7 +28,6 @@ import org.immutables.value.Value;
  *     Feature-Schema. Das heißt, das Element wird im Standard-Namensraum liegen. Ein anderer Name
  *     kann mit der Transformation `rename` festgelegt werden, die zum Ändern des Namens verwendet
  *     werden kann, aber auch das Hinzufügen eines Namensraumpräfixes unterstützt.
- * @default `{}`
  * @examplesAll <code>
  * ```yaml
  * - buildingBlock: GML
@@ -51,7 +51,7 @@ import org.immutables.value.Value;
  *         someOtherAtt:
  *           rename: 'ns2:someOtherAtt'
  * ```
- * </code>
+ *     </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)

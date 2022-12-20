@@ -93,40 +93,38 @@ import org.sqlite.SQLiteJDBCLoader;
 
 /**
  * @title Vector Tiles
- * @langEn The *Tiles* module can be activated for any API provided by ldproxy with an SQL feature
- *     provider or with an MBTiles tile provider. It enables the "Tilesets", "Tileset" and "Tile"
- *     resources.
- *     <p>The module is based on the draft of [OGC API - Tiles - Part 1:
+ * @langEn Publish vector tiles.
+ * @langDe Veröffentlichen von Vektor-Kacheln.
+ * @scopeEn The supported tile formats are:
+ *     <p><code>
+ * - MVT (Mapbox Vector Tile)
+ * - PNG
+ * - WebP
+ * - JPEG
+ * - TIFF
+ *     </code>
+ * @scopeDe Die unterstützten Kachelformate sind:
+ *     <p><code>
+ * - MVT (Mapbox Vector Tile)
+ * - PNG
+ * - WebP
+ * - JPEG
+ * - TIFF
+ *     </code>
+ * @conformanceEn The module is based on the draft of [OGC API - Tiles - Part 1:
  *     Core](https://github.com/opengeospatial/OGC-API-Tiles) and the draft of [OGC Two Dimensional
  *     Tile Matrix Set and Tile Set Metadata](https://docs.ogc.org/DRAFTS/17-083r4.html). The
  *     implementation will change as the draft is further standardized.
- *     <p>The supported tile formats are:
- *     <p>- MVT (Mapbox Vector Tile) - PNG - WebP - JPEG - TIFF
- *     <p>The *Tile Matrix Sets* module must be enabled.
- *     <p>The tile cache is located in the ldproxy data directory under the relative path
- *     `cache/tiles/{apiId}`. If the data for an API or tile configuration has been changed, then
- *     the cache directory for the API should be deleted so that the cache is rebuilt with the
- *     updated data or rules.
- * @langDe Das Modul *Tiles* kann für jede über ldproxy bereitgestellte API mit einem
- *     SQL-Feature-Provider oder mit einem MBTiles-Tile-Provider aktiviert werden. Es aktiviert die
- *     Ressourcen "Tilesets", "Tileset" und "Tile".
- *     <p>Das Modul basiert auf dem Entwurf von [OGC API - Tiles - Part 1:
+ * @conformanceDe Das Modul basiert auf dem Entwurf von [OGC API - Tiles - Part 1:
  *     Core](https://github.com/opengeospatial/OGC-API-Tiles) und dem Entwurf von [OGC Two
  *     Dimensional Tile Matrix Set and Tile Set
  *     Metadata](https://docs.ogc.org/DRAFTS/17-083r4.html). Die Implementierung wird sich im Zuge
  *     der weiteren Standardisierung des Entwurfs noch ändern.
- *     <p>Die unterstützten Kachelformate sind:
- *     <p>- MVT (Mapbox Vector Tile) - PNG - WebP - JPEG - TIFF
- *     <p>Das Modul *Tile Matrix Sets* müssen aktiviert sein.
- *     <p>Der Tile-Cache liegt im ldproxy-Datenverzeichnis unter dem relativen Pfad
- *     `cache/tiles/{apiId}`. Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden,
- *     dann sollte das Cache-Verzeichnis für die API gelöscht werden, damit der Cache mit den
- *     aktualisierten Daten oder Regeln neu aufgebaut wird.
- * @propertiesEn ### Tile Provider
+ * @cfgPropertiesAdditionalEn ### Tile Provider
  *     <p>{@docVar:provider}
  *     <p>#### Features
  *     <p>{@docTable:providerFeatures}
- * @propertiesDe ### Tile Provider
+ * @cfgPropertiesAdditionalDe ### Tile Provider
  *     <p>{@docVar:provider}
  *     <p>#### Features
  *     <p>{@docTable:providerFeatures}
@@ -138,7 +136,7 @@ import org.sqlite.SQLiteJDBCLoader;
  *     de.ii.ogcapi.tiles.infra.EndpointTileSetsMultiCollection}, {@link
  *     de.ii.ogcapi.tiles.infra.EndpointTileSetsSingleCollection}, {@link
  *     de.ii.ogcapi.tiles.infra.EndpointTileSingleCollection}
- * @queryParameter {@link de.ii.ogcapi.tiles.domain.QueryParameterCollections}, {@link
+ * @ref:queryParameters {@link de.ii.ogcapi.tiles.domain.QueryParameterCollections}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterDatetimeTile}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterFTile}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterFTileSet}, {@link

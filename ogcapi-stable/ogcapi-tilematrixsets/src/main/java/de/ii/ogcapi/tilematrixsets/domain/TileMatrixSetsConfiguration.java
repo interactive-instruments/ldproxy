@@ -16,11 +16,17 @@ import java.util.Objects;
 import org.immutables.value.Value;
 
 /**
- * @langEn TODO
- * @langDe TODO
- * @examplesAll <code>
- * TODO
- * </code>
+ * @buildingBlock TILE_MATRIX_SETS
+ * @langEn ### Custom Tiling Schemes
+ *     <p>Additional tile schemas can be configured as JSON files according to the current draft OGC
+ *     standard [Two Dimensional Tile Matrix Set and Tile Set Metadata
+ *     2.0](https://docs.ogc.org/DRAFTS/17-083r4.html) in the data directory at
+ *     `api-resources/tile-matrix-sets/{tileMatrixSetId}.json`.
+ * @langDe ### Benutzerdefinierte Kachelschemas
+ *     <p>Weitere Kachelschemas können als JSON-Datei gemäß dem aktuellen Entwurf für den
+ *     OGC-Standard [Two Dimensional Tile Matrix Set and Tile Set Metadata
+ *     2.0](https://docs.ogc.org/DRAFTS/17-083r3.html) im Datenverzeichnis unter
+ *     `api-resources/tile-matrix-sets/{tileMatrixSetId}.json` konfiguriert werden.
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")

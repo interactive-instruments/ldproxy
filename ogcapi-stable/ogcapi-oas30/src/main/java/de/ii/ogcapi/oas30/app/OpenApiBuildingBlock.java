@@ -16,17 +16,16 @@ import javax.inject.Singleton;
 
 /**
  * @title OpenAPI 3.0
- * @langEn The module *OpenAPI 3.0* may be enabled for every API with a feature provider. It
- *     provides the resource *API Definition*.
+ * @langEn Publish OpenAPI definitions.
+ * @langDe Veröffentlichung von OpenAPI-Definitionen.
  * @conformanceEn *OpenAPI 3.0* implements all requirements of conformance class *OpenAPI 3.0* from
  *     [OGC API - Features - Part 1: Core
  *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_oas30) for the mentioned
  *     resource.
- * @langDe Das Modul *OpenAPI 3.0* ist für jede über ldproxy bereitgestellte API aktiv. Es stellt
- *     die Ressource "API Definition" bereit.
  * @conformanceDe *OpenAPI 3.0* implementiert alle Vorgaben der gleichnamigen Konformitätsklasse von
  *     [OGC API - Features - Part 1: Core
  *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_oas30).
+ * @ref:cfg {@link de.ii.ogcapi.oas30.domain.Oas30Configuration}
  * @ref:cfgProperties {@link de.ii.ogcapi.oas30.domain.ImmutableOas30Configuration}
  */
 @Singleton

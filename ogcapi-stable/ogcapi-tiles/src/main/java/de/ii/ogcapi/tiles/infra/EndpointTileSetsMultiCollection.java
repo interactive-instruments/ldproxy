@@ -30,11 +30,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 /**
- * @langEn Access multi-layer tiles
- * @langDe TODO
- * @title Tilesets
- * @path /{apiId}/tiles
- * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
+ * @title Dataset Tilesets
+ * @path tiles
+ * @langAll Access dataset tilesets
+ * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetsFormatExtension}
  */
 
 /** Handle responses under '/tiles'. */

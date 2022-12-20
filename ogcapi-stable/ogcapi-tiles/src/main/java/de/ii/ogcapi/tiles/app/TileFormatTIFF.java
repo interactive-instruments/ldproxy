@@ -23,6 +23,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title TIFF
+ */
 @Singleton
 @AutoBind
 public class TileFormatTIFF extends TileFormatExtension implements ConformanceClass {

@@ -25,23 +25,18 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @langEn Example of the specifications in the configuration file for the entire API (from the API
- *     for [Topographic Data in Daraa, Syria](https://demo.ldproxy.net/daraa)):
- * @langDe Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (aus der API für
- *     [Topographische Daten in Daraa, Syrien](https://demo.ldproxy.net/daraa)):
- * @examplesAll <code>
+ * @buildingBlock FEATURES_HTML
+ * @examplesEn Example of the specifications in the configuration file for the entire API (from the
+ *     API for [Topographic Data in Daraa, Syria](https://demo.ldproxy.net/daraa)):
+ *     <p><code>
  * ```yaml
  * - buildingBlock: FEATURES_HTML
  *   enabled: true
  *   style: 'topographic-with-basemap'
  * ```
- * </code>
- */
-
-/**
- * @langEn Example of the specifications in the configuration file for a feature collection:
- * @langDe Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
- * @examplesAll <code>
+ *     </code>
+ *     <p>Example of the specifications in the configuration file for a feature collection:
+ *     <p><code>
  * ```yaml
  * - buildingBlock: FEATURES_HTML
  *   itemLabelFormat: '{{ZI005_FNA}}'
@@ -65,15 +60,10 @@ import org.immutables.value.Value;
  *     LOC:
  *       codelist: loc
  * ```
- * </code>
- */
-
-/**
- * @langEn Example of using CesiumJS for building data that is partially composed of building
+ *     </code>
+ *     <p>Example of using CesiumJS for building data that is partially composed of building
  *     components. The floor slab is used as a fallback:
- * @langDe Beispiel für die Verwendung von CesiumJS für Gebäudedaten, die teilweise aus Bauteilen
- *     zusammengesetzt sind. Als Fallback wird die Bodenplatte verwendet:
- * @examplesAll <code>
+ *     <p><code>
  * ```yaml
  * - buildingBlock: FEATURES_HTML
  *   mapClientType: CESIUM
@@ -82,7 +72,54 @@ import org.immutables.value.Value;
  *   - lod1Solid
  *   - lod1GroundSurface
  * ```
- * </code>
+ *     </code>
+ * @examplesDe Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (aus der API
+ *     für [Topographische Daten in Daraa, Syrien](https://demo.ldproxy.net/daraa)):
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: FEATURES_HTML
+ *   enabled: true
+ *   style: 'topographic-with-basemap'
+ * ```
+ *     </code>
+ *     <p>Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: FEATURES_HTML
+ *   itemLabelFormat: '{{ZI005_FNA}}'
+ *   transformations:
+ *     F_CODE:
+ *       codelist: f_code
+ *     ZI001_SDV:
+ *       dateFormat: MM/dd/yyyy[', 'HH:mm:ss[' 'z]]
+ *     RTY:
+ *       codelist: rty
+ *     FCSUBTYPE:
+ *       codelist: fcsubtype
+ *     TRS:
+ *       codelist: trs
+ *     RIN_ROI:
+ *       codelist: roi
+ *     ZI016_WTC:
+ *       codelist: wtc
+ *     RLE:
+ *       codelist: rle
+ *     LOC:
+ *       codelist: loc
+ * ```
+ *     </code>
+ *     <p>Beispiel für die Verwendung von CesiumJS für Gebäudedaten, die teilweise aus Bauteilen
+ *     zusammengesetzt sind. Als Fallback wird die Bodenplatte verwendet:
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: FEATURES_HTML
+ *   mapClientType: CESIUM
+ *   geometryProperties:
+ *   - consistsOfBuildingPart.lod1Solid
+ *   - lod1Solid
+ *   - lod1GroundSurface
+ * ```
+ *     </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new", attributeBuilderDetection = true)
@@ -101,6 +138,13 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
     TOP,
     RIGHT
   }
+
+  /**
+   * @default true
+   */
+  @Nullable
+  @Override
+  Boolean getEnabled();
 
   /**
    * @langEn *Deprecated* Superseded by `mapPosition` and the [`flattern`
