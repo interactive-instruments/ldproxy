@@ -134,6 +134,9 @@ import org.immutables.value.Value;
  * @langAll ### Caching
  *     <p>{@docVar:caching}
  *     <p>{@docTable:cachingProperties}
+ * @langAll ### Access Control
+ *     <p>{@docVar:security}
+ *     <p>{@docTable:securityProperties}
  * @langEn ### Examples
  *     <p>See the [API
  *     configuration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)
@@ -153,6 +156,8 @@ import org.immutables.value.Value;
  *     de.ii.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi}
  * @ref:caching {@link de.ii.ogcapi.foundation.domain.CachingConfiguration}
  * @ref:cachingProperties {@link de.ii.ogcapi.foundation.domain.ImmutableCaching}
+ * @ref:security {@link de.ii.ogcapi.foundation.domain.ApiSecurity}
+ * @ref:securityProperties {@link de.ii.ogcapi.foundation.domain.ImmutableApiSecurity}
  */
 @DocFile(
     path = "services",
@@ -180,12 +185,26 @@ import org.immutables.value.Value;
             @DocStep(type = Step.UNMARKED)
           },
           columnSet = ColumnSet.JSON_PROPERTIES),
+      @DocTable(
+          name = "securityProperties",
+          rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:securityProperties}"),
+            @DocStep(type = Step.JSON_PROPERTIES),
+            @DocStep(type = Step.UNMARKED)
+          },
+          columnSet = ColumnSet.JSON_PROPERTIES),
     },
     vars = {
       @DocVar(
           name = "caching",
           value = {
             @DocStep(type = Step.TAG_REFS, params = "{@ref:caching}"),
+            @DocStep(type = Step.TAG, params = "{@bodyBlock}")
+          }),
+      @DocVar(
+          name = "security",
+          value = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:security}"),
             @DocStep(type = Step.TAG, params = "{@bodyBlock}")
           }),
     })
@@ -212,6 +231,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     }
   }
 
+  @JsonIgnore
   @Value.Derived
   @Override
   public long getEntitySchemaVersion() {
@@ -223,28 +243,57 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     return Optional.of(SERVICE_TYPE);
   }
 
+  /**
+   * @langEn Always `OGC_API`.
+   * @langDe Immer `OGC_API`.
+   */
   @Value.Default
   @Override
   public String getServiceType() {
     return SERVICE_TYPE;
   }
 
+  /**
+   * @langEn TODO_DOCS
+   * @langDe TODO_DOCS
+   * @default {}
+   */
   public abstract Optional<ApiMetadata> getMetadata();
 
+  /**
+   * @langEn TODO_DOCS
+   * @langDe TODO_DOCS
+   * @default {}
+   */
   public abstract Optional<ExternalDocumentation> getExternalDocs();
 
+  /**
+   * @langEn TODO_DOCS
+   * @langDe TODO_DOCS
+   * @default {}
+   */
   @JsonMerge(OptBoolean.FALSE)
   public abstract Optional<CollectionExtent> getDefaultExtent();
 
   /**
-   * @langEn Sets fixed values for [HTTP Caching Headers](caching) for the resources.
+   * @langEn Sets fixed values for [HTTP Caching Headers](#caching) for the resources.
    * @langDe Setzt feste Werte für [HTTP-Caching-Header](#caching) für die Ressourcen.
    * @default {}
    */
   public abstract Optional<Caching> getDefaultCaching();
 
+  /**
+   * @langEn [Access Control](#access-control) configuration.
+   * @langDe [Access Control](#access-control) konfigurieren.
+   * @default {}
+   */
   public abstract Optional<ApiSecurity> getAccessControl();
 
+  /**
+   * @langEn TODO_DOCS
+   * @langDe TODO_DOCS
+   * @default NONE
+   */
   @Value.Default
   public MODE getApiValidation() {
     return MODE.NONE;
@@ -260,10 +309,15 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
    *     Query-Parameter `tags` zur Filterung der in der API-Katalog-Antwort zurückgelieferten APIs
    *     verwendet werden, z.B. `tags=INSPIRE`.<br>
    *     _seit Version 2.1_
-   * @default `null`
+   * @default []
    */
   public abstract List<String> getTags();
 
+  /**
+   * @langEn [Building Blocks](#building-blocks) configuration.
+   * @langDe [Bausteine](#building-blocks) konfigurieren.
+   * @default []
+   */
   @JsonProperty("api")
   @JsonMerge
   @Override
@@ -274,7 +328,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
    *     [Collection](#collection) below.
    * @langDe Ein Objekt mit der spezifischen Konfiguration zu jeder Objektart, der Name der
    *     Objektart ist der Schlüssel, der Wert ein [Collection-Objekt](#collection).
-   * @default `{}`
+   * @default {}
    */
   // behaves exactly like Map<String, FeatureTypeConfigurationOgcApi>,
   // but supports mergeable builder deserialization
