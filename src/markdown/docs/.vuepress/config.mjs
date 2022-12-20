@@ -53,6 +53,7 @@ export default defineUserConfig({
     mdEnhancePlugin({
       //container: true,
       mermaid: true,
+      linkCheck: 'always',
     }),
     /*['@vuepress/plugin-shiki', {
       //theme: 'material-lighter',

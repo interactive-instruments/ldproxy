@@ -19,7 +19,6 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQueryEncoder;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -281,16 +280,6 @@ public interface FeaturesCoreConfiguration
    * @default `{}`
    */
   Map<String, Integer> getCoordinatePrecision();
-
-  /**
-   * @langEn Optional transformations for feature properties for all media types, see
-   *     [transformations](general-rules.md#transformations).
-   * @langDe Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in allen
-   *     Datenformaten [transformiert](general-rules.md#transformations) werden.
-   * @default `{}`
-   */
-  @Override
-  Map<String, List<PropertyTransformation>> getTransformations();
 
   @JsonIgnore
   @Value.Derived

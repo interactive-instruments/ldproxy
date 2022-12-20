@@ -175,8 +175,9 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
    *     doppelt-geschweiften Klammern Ersetzungspunkte für die Attribute des Features verwendet
    *     werden. Es können nur Attribute verwendet werden, die nur einmal pro Feature vorkommen
    *     können. Neben einer direkten Ersetzung mit dem Attributwert können auch
-   *     [Filter](general-rules.md#String-Template-Filter) angewendet werden. Ist ein Attribut
-   *     `null`, dann wird der Ersetzungspunkt durch einen leeren String ersetzt.
+   *     [Filter](../../providers/details/transformations.html#examples-for-stringformat) angewendet
+   *     werden. Ist ein Attribut `null`, dann wird der Ersetzungspunkt durch einen leeren String
+   *     ersetzt.
    * @default `{{id}}`
    */
   @JsonAlias("itemLabelFormat")

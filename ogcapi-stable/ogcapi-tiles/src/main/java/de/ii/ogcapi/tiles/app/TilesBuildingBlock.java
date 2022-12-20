@@ -123,11 +123,25 @@ import org.sqlite.SQLiteJDBCLoader;
  * @cfgPropertiesAdditionalEn ### Tile Provider
  *     <p>{@docVar:provider}
  *     <p>#### Features
- *     <p>{@docTable:providerFeatures}
+ *     <p>{@docVar:providerFeatures}
+ *     <p>{@docTable:providerFeaturesProperties}
+ *     <p>#### MbTiles
+ *     <p>{@docVar:providerMbTiles}
+ *     <p>{@docTable:providerMbTilesProperties}
+ *     <p>#### TileServer
+ *     <p>{@docVar:providerTileServer}
+ *     <p>{@docTable:providerTileServerProperties}
  * @cfgPropertiesAdditionalDe ### Tile Provider
  *     <p>{@docVar:provider}
  *     <p>#### Features
- *     <p>{@docTable:providerFeatures}
+ *     <p>{@docVar:providerFeatures}
+ *     <p>{@docTable:providerFeaturesProperties}
+ *     <p>#### MbTiles
+ *     <p>{@docVar:providerMbTiles}
+ *     <p>{@docTable:providerMbTilesProperties}
+ *     <p>#### TileServer
+ *     <p>{@docVar:providerTileServer}
+ *     <p>{@docTable:providerTileServerProperties}
  * @ref:cfg {@link de.ii.ogcapi.tiles.domain.TilesConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration}
  * @ref:endpoints {@link de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection}, {@link
@@ -144,14 +158,34 @@ import org.sqlite.SQLiteJDBCLoader;
  *     de.ii.ogcapi.tiles.domain.QueryParameterLimitTile},
  * @see de.ii.ogcapi.tiles.domain.SeedingOptions
  * @ref:provider {@link de.ii.ogcapi.tiles.domain.TileProvider}
- * @ref:providerFeatures {@link de.ii.ogcapi.tiles.domain.ImmutableTileProviderFeatures}
+ * @ref:providerFeatures {@link de.ii.ogcapi.tiles.domain.TileProviderFeatures}
+ * @ref:providerFeaturesProperties {@link de.ii.ogcapi.tiles.domain.ImmutableTileProviderFeatures}
+ * @ref:providerMbTiles {@link de.ii.ogcapi.tiles.domain.TileProviderMbtiles}
+ * @ref:providerMbTilesProperties {@link de.ii.ogcapi.tiles.domain.ImmutableTileProviderMbtiles}
+ * @ref:providerTileServer {@link de.ii.ogcapi.tiles.domain.TileProviderTileServer}
+ * @ref:providerTileServerProperties {@link
+ *     de.ii.ogcapi.tiles.domain.ImmutableTileProviderTileServer}
  */
 @DocDefs(
     tables = {
       @DocTable(
-          name = "providerFeatures",
+          name = "providerFeaturesProperties",
           rows = {
-            @DocStep(type = Step.TAG_REFS, params = "{@ref:providerFeatures}"),
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:providerFeaturesProperties}"),
+            @DocStep(type = Step.JSON_PROPERTIES)
+          },
+          columnSet = ColumnSet.JSON_PROPERTIES),
+      @DocTable(
+          name = "providerMbTilesProperties",
+          rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:providerMbTilesProperties}"),
+            @DocStep(type = Step.JSON_PROPERTIES)
+          },
+          columnSet = ColumnSet.JSON_PROPERTIES),
+      @DocTable(
+          name = "providerTileServerProperties",
+          rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:providerTileServerProperties}"),
             @DocStep(type = Step.JSON_PROPERTIES)
           },
           columnSet = ColumnSet.JSON_PROPERTIES),
@@ -162,7 +196,25 @@ import org.sqlite.SQLiteJDBCLoader;
           value = {
             @DocStep(type = Step.TAG_REFS, params = "{@ref:provider}"),
             @DocStep(type = Step.TAG, params = "{@bodyBlock}")
-          })
+          }),
+      @DocVar(
+          name = "providerFeatures",
+          value = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:providerFeatures}"),
+            @DocStep(type = Step.TAG, params = "{@bodyBlock}")
+          }),
+      @DocVar(
+          name = "providerMbTiles",
+          value = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:providerMbTiles}"),
+            @DocStep(type = Step.TAG, params = "{@bodyBlock}")
+          }),
+      @DocVar(
+          name = "providerTileServer",
+          value = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:providerTileServer}"),
+            @DocStep(type = Step.TAG, params = "{@bodyBlock}")
+          }),
     })
 @Singleton
 @AutoBind

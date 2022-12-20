@@ -470,8 +470,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
 
   // TODO: always get from provider?
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default `[ 0, 0 ]`
    */
   @Deprecated
@@ -560,8 +560,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default `{}`
    */
   @Deprecated
@@ -579,8 +579,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default `{}`
    */
   @Deprecated
@@ -617,8 +617,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default 100000
    */
   @Deprecated
@@ -639,8 +639,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default `false`
    */
   @Deprecated
@@ -658,8 +658,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default `{}`
    */
   @Deprecated
@@ -677,8 +677,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default `{}`
    */
   @Deprecated
@@ -696,8 +696,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default 0.5
    */
   @Deprecated

@@ -20,10 +20,10 @@ import org.immutables.value.Value;
 
 /**
  * @buildingBlock MAP_TILES
- * @examplesEn See the [TileServer tile provider in the Tiles
- *     module](tiles.md#tile-provider-tileserver) for a sample configuration.
- * @examplesDe Siehe den [TileServer-Tile-Provider im Modul
- *     Tiles](tiles.md#tile-provider-tileserver) für eine Beispielkonfiguration.
+ * @examplesEn See the [TileServer tile provider in the Tiles module](vector_tiles.md#tileserver)
+ *     for a sample configuration.
+ * @examplesDe Siehe den [TileServer-Tile-Provider im Modul Tiles](vector_tiles.md#tileserver) für
+ *     eine Beispielkonfiguration.
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
@@ -34,9 +34,9 @@ public interface MapTilesConfiguration extends ExtensionConfiguration {
 
   /**
    * @langEn Specifies the data source for the tiles, currently only
-   *     [TileServer-Tile-Provider](tiles.md#tile-provider-tileserver) is supported.
+   *     [TileServer-Tile-Provider](vector_tiles.md#tileserver) is supported.
    * @langDe Spezifiziert die Datenquelle für die Kacheln, unterstützt werden derzeit nur
-   *     [TileServer-Tile-Provider](tiles.md#tile-provider-tileserver).
+   *     [TileServer-Tile-Provider](vector_tiles.md#tileserver).
    * @default null
    */
   @Nullable
