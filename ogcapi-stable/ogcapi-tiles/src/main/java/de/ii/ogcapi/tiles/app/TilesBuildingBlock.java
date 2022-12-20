@@ -145,11 +145,11 @@ import org.sqlite.SQLiteJDBCLoader;
  * @ref:cfg {@link de.ii.ogcapi.tiles.domain.TilesConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration}
  * @ref:endpoints {@link de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileSetMultiCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileSetSingleCollection}, {@link
+ *     de.ii.ogcapi.tiles.infra.EndpointTileSingleCollection}, {@link
  *     de.ii.ogcapi.tiles.infra.EndpointTileSetsMultiCollection}, {@link
  *     de.ii.ogcapi.tiles.infra.EndpointTileSetsSingleCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileSingleCollection}
+ *     de.ii.ogcapi.tiles.infra.EndpointTileSetMultiCollection}, {@link
+ *     de.ii.ogcapi.tiles.infra.EndpointTileSetSingleCollection}
  * @ref:queryParameters {@link de.ii.ogcapi.tiles.domain.QueryParameterCollections}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterDatetimeTile}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterFTile}, {@link

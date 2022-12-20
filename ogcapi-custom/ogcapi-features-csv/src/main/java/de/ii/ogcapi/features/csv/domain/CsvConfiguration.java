@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.features.csv.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.features.core.domain.SfFlatConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -45,6 +46,7 @@ public interface CsvConfiguration extends SfFlatConfiguration {
     return builder.build();
   }
 
+  @JsonIgnore
   @Value.Check
   default CsvConfiguration alwaysFlatten() {
     Map<String, List<PropertyTransformation>> transformations = extendWithFlattenIfMissing();

@@ -16,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.Link;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
@@ -53,6 +54,13 @@ import org.immutables.value.Value;
 public interface CollectionsConfiguration extends ExtensionConfiguration, CachingConfiguration {
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
+
+  /**
+   * @default true
+   */
+  @Nullable
+  @Override
+  Boolean getEnabled();
 
   /**
    * @langEn Add additional links to the *Collections* resource. The value is an array of link

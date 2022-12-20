@@ -42,6 +42,7 @@ public interface MapTilesConfiguration extends ExtensionConfiguration {
   @Nullable
   TileProvider getMapProvider(); // TODO: must be TileServer, generalize and extend to MBTiles
 
+  @JsonIgnore
   @Nullable
   TilesConfiguration.TileCacheType getCache(); // TODO: add caching support
 

@@ -25,7 +25,6 @@ import javax.inject.Singleton;
  * @conformanceDe *OpenAPI 3.0* implementiert alle Vorgaben der gleichnamigen Konformitätsklasse von
  *     [OGC API - Features - Part 1: Core
  *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_oas30).
- * @ref:cfg {@link de.ii.ogcapi.oas30.domain.Oas30Configuration}
  * @ref:cfgProperties {@link de.ii.ogcapi.oas30.domain.ImmutableOas30Configuration}
  */
 @Singleton

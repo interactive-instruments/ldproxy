@@ -85,7 +85,7 @@ import de.ii.xtraplatform.docs.DocVar;
                     @DocStep(
                         type = Step.TAG,
                         params =
-                            "<SplitBadge type=\"{@layer.nameSuffix}\" left=\"spec\" right=\"{@layer.nameSuffix}\" vertical=\"center\" style=\"margin-bottom: 5px;\" /><span/><SplitBadge type=\"{@module.maturity}\" left=\"impl\" right=\"{@module.maturity}\" vertical=\"center\" />"),
+                            "<SplitBadge type=\"{@layer.nameSuffix}\" left=\"spec\" right=\"{@layer.nameSuffix}\" vertical=\"center\" style=\"margin-bottom: 5px; margin-right: 5px;\" /><span/><SplitBadge type=\"{@module.maturity}\" left=\"impl\" right=\"{@module.maturity}\" vertical=\"center\" />"),
                 header = {
                   @DocI18n(language = "en", value = "Classification"),
                   @DocI18n(language = "de", value = "Klassifizierung")

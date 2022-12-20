@@ -20,7 +20,6 @@ import javax.inject.Singleton;
  * @langDe JSON-Enkodierung für alle unterstützten Ressourcen.
  * @conformanceEn TODO_DOCS
  * @conformanceDe TODO_DOCS
- * @ref:cfg {@link de.ii.ogcapi.json.domain.JsonConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.json.domain.ImmutableJsonConfiguration}
  */
 @Singleton

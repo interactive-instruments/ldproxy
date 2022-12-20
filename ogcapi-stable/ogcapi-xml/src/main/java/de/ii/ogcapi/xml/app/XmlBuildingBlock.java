@@ -18,13 +18,12 @@ import javax.inject.Singleton;
  * @title XML
  * @langEn XML encoding for every supported resource.
  * @langDe XML-Enkodierung für alle unterstützten Ressourcen.
- * @scopeEn Only the resources *Landing Page*, *Conformance Declaration*, *Feature Collections* and
- *     *Feature Collection* support XML.
- * @scopeDe Nur die Ressourcen *Landing Page*, *Conformance Declaration*, *Feature Collections* and
- *     *Feature Collection* unterstützen XML.
+ * @limitationsEn Only the resources *Landing Page*, *Conformance Declaration*, *Feature
+ *     Collections* and *Feature Collection* support XML.
+ * @limitationsDe Nur die Ressourcen *Landing Page*, *Conformance Declaration*, *Feature
+ *     Collections* and *Feature Collection* unterstützen XML.
  * @conformanceEn TODO_DOCS
  * @conformanceDe TODO_DOCS
- * @ref:cfg {@link de.ii.ogcapi.xml.domain.XmlConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.xml.domain.ImmutableXmlConfiguration}
  */
 @Singleton

@@ -27,6 +27,7 @@ import org.immutables.value.Value;
  *     OGC-Standard [Two Dimensional Tile Matrix Set and Tile Set Metadata
  *     2.0](https://docs.ogc.org/DRAFTS/17-083r3.html) im Datenverzeichnis unter
  *     `api-resources/tile-matrix-sets/{tileMatrixSetId}.json` konfiguriert werden.
+ * @examplesAll
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
@@ -39,6 +40,10 @@ public interface TileMatrixSetsConfiguration extends ExtensionConfiguration, Cac
     NONE
   }
 
+  /**
+   * @langEn TODO_DOCS
+   * @langDe TODO_DOCS
+   */
   List<String> getIncludePredefined();
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
