@@ -16,14 +16,11 @@ import javax.inject.Singleton;
 
 /**
  * @title JSON
- * @langEn The module *JSON* may be enabled for every API. It is enabled by default. Provides JSON
- *     encoding for every supported resource that does not have more specific rules (like
- *     [Features](features_geojson.md)).
- * @langDe Das Modul *JSON* kann für jede über ldproxy bereitgestellte API aktiviert werden und ist
- *     standardmäßig aktiviert. Soweit für eine Ressource keine speziellen Regelungen für die
- *     Ausgabeformate bestehen (wie zum Beispiel für [Features](features_geojson.md)) und die
- *     Ressource JSON unterstützt, können Clients das Ausgabeformat anfordern.
- * @propertyTable {@link de.ii.ogcapi.json.domain.ImmutableJsonConfiguration}
+ * @langEn JSON encoding for every supported resource.
+ * @langDe JSON-Enkodierung für alle unterstützten Ressourcen.
+ * @conformanceEn TODO_DOCS
+ * @conformanceDe TODO_DOCS
+ * @ref:cfgProperties {@link de.ii.ogcapi.json.domain.ImmutableJsonConfiguration}
  */
 @Singleton
 @AutoBind
@@ -34,6 +31,6 @@ public class JsonBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
-    return new Builder().enabled(true).useFormattedJsonOutput(false).build();
+    return new Builder().enabled(true).build();
   }
 }

@@ -60,7 +60,7 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
 /**
- * @author zahnen
+ * @title GeoJSON
  */
 @Singleton
 @AutoBind

@@ -28,6 +28,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title JSON
+ */
 @Singleton
 @AutoBind
 public class TileSetFormatJson implements TileSetFormatExtension {

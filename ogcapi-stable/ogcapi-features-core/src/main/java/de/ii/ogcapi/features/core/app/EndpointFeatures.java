@@ -77,42 +77,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * @title Features
+ * @path collections/{collectionId}/items[/{featureId}]
  * @langEn The response is a document consisting of features in the collection. The features
  *     included in the response are determined by the server based on the query parameters of the
  *     request.
- *     <p>To support access to larger collections without overloading the client, the API supports
- *     paged access with links to the next page, if more features are selected that the page size.
- *     <p>The `bbox` and `datetime` parameter can be used to select only a subset of the features in
- *     the collection (the features that are in the bounding box or time interval). The `bbox`
- *     parameter matches all features in the collection that are not associated with a location,
- *     too. The `datetime` parameter matches all features in the collection that are not associated
- *     with a time stamp or interval, too. The `limit` parameter may be used to control the subset
- *     of the selected features that should be returned in the response, the page size. Each page
- *     may include information about the number of selected and returned features (`numberMatched`
- *     and `numberReturned`) as well as links to support paging (link relation `next`).
- *     <p>See the details of this operation for a description of additional query parameters
- *     supported by this resource.
  * @langDe Die Antwort ist ein Dokument, das aus den Featuresn der Collection besteht. Die in der
  *     Antwort enthaltenen Features werden vom Server auf der Grundlage der Abfrageparameter der
  *     Anfrage bestimmt.
- *     <p>Um den Zugriff auf größere Collections zu unterstützen, ohne den Client zu überlasten,
- *     unterstützt die API den seitenweisen Zugriff mit Links zur nächsten Seite, wenn mehr Features
- *     ausgewählt sind, als die Seitengröße zulässt.
- *     <p>Die Parameter `bbox` und `datetime` können verwendet werden, um nur eine Teilmenge der
- *     Features in der Collection auszuwählen (die Features, die sich in der Bounding Box oder im
- *     Zeitintervall befinden). Der Parameter "bbox" entspricht allen Featuresn in der Collection,
- *     die nicht mit einem Ort verbunden sind. Der Parameter `datetime` passt zu allen Featuresn in
- *     der Collection, die nicht mit einem Zeitstempel oder Zeitintervall verknüpft sind. Der
- *     Parameter `limit` kann verwendet werden, um die Teilmenge der ausgewählten Features, die in
- *     der Antwort zurückgegeben werden soll, die Seitengröße. Jede Seite kann enthalten
- *     Informationen über die Anzahl der ausgewählten und zurückgegebenen Features (`numberMatched`
- *     und `numberReturned`) sowie Links zur Unterstützung des Blätterns (Link Relation `next`).
- *     <p>Eine Beschreibung der zusätzlichen Abfrageparameter, die von dieser Ressource unterstützt
- *     werden, finden Sie in den Details dieser Operation.
- *     <p>Übersetzt mit www.DeepL.com/Translator (kostenlose Version)
- * @name Features
- * @path /{apiId}/collections/{collectionId}/items/{featureId}
- * @formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
+ * @ref:formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
  */
 @Singleton
 @AutoBind

@@ -38,6 +38,9 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title CSV
+ */
 @Singleton
 @AutoBind
 public class FeaturesFormatCsv implements ConformanceClass, FeatureFormatExtension {

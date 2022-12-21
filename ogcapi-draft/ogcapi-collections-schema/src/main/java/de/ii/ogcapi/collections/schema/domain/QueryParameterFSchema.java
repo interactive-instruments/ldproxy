@@ -17,10 +17,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn Todo
- * @langDe Todo
- * @name fSchema
- * @endpoints fSchema
+ * @title fSchema
+ * @endpoints Feature Schema
+ * @langEn TODO_DOCS
+ * @langDe TODO_DOCS
  */
 @Singleton
 @AutoBind

@@ -42,12 +42,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn Fetches the file resource with identifier `resourceId`. The set of available resources
+ * @title Resource
+ * @path resources/{resourceId}
+ * @langAll Fetches the file resource with identifier `resourceId`. The set of available resources
  *     can be retrieved at `/resources`.
- * @langDe TODO
- * @name Resource
- * @path /{apiId}/resources/{resourceId}
- * @format {@link de.ii.ogcapi.resources.domain.ResourceFormatExtension}
+ * @ref:formats {@link de.ii.ogcapi.resources.domain.ResourceFormatExtension}
  */
 @Singleton
 @AutoBind

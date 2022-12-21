@@ -58,6 +58,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title GML
+ */
 @Singleton
 @AutoBind
 public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtension {

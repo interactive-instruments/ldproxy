@@ -20,15 +20,6 @@ import java.util.List;
 import java.util.Optional;
 import org.immutables.value.Value;
 
-/**
- * # Collection
- *
- * @langEn Every collection corresponds to a feature type defined in the feature provider (only
- *     *Feature Collections* are currently supported).
- * @langDe Jedes Collection-Objekt beschreibt eine Objektart aus einem Feature Provider (derzeit
- *     werden nur Feature Collections von ldproxy unterstützt). Es setzt sich aus den folgenden
- *     Eigenschaften zusammen:
- */
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableFeatureTypeConfigurationOgcApi.Builder.class)
 public interface FeatureTypeConfigurationOgcApi
@@ -51,6 +42,11 @@ public interface FeatureTypeConfigurationOgcApi
     return new ImmutableFeatureTypeConfigurationOgcApi.Builder().from(this);
   }
 
+  /**
+   * @langEn Enable the collection?
+   * @langDe Die Collection aktivieren?
+   * @default true
+   */
   @Value.Default
   default boolean getEnabled() {
     return true;
@@ -70,10 +66,15 @@ public interface FeatureTypeConfigurationOgcApi
    *     Konfiguriert und bei den Features kodiert werden. Hierfür ist ein Muster der Feature-URI
    *     anzugeben, wobei `{{value}}` als Ersetzungspunkt für den lokalen Identifikator des Features
    *     in der API angegeben werden kann.
-   * @default `null`
+   * @default null
    */
   Optional<String> getPersistentUriTemplate();
 
+  /**
+   * @langEn TODO_DOCS
+   * @langDe TODO_DOCS
+   * @default {}
+   */
   Optional<CollectionExtent> getExtent();
 
   /**
@@ -82,10 +83,15 @@ public interface FeatureTypeConfigurationOgcApi
    * @langDe Erlaubt es, zusätzliche Links bei jeder Objektart zu ergänzen. Der Wert ist ein Array
    *     von Link-Objekten. Anzugeben sind jeweils mindestens die URI (`href`), der anzuzeigende
    *     Text (`label`) und die Link-Relation (`rel`).
-   * @default `[]
+   * @default []
    */
   List<Link> getAdditionalLinks();
 
+  /**
+   * @langEn [Building Blocks](#building-blocks) configuration.
+   * @langDe [Bausteine](#bausteine) konfigurieren.
+   * @default []
+   */
   @JsonProperty("api")
   @JsonAlias("capabilities")
   @Override

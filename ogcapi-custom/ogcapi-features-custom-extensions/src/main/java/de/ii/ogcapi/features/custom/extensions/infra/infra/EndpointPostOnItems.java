@@ -65,11 +65,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn TODO
- * @langDe TODO
- * @name Features
- * @path /{apiId}/collections/{collectionId}/items
- * @formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
+ * @title Features
+ * @path collections/{collectionId}/items
+ * @langAll TODO_DOCS
+ * @ref:formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
  */
 @Singleton
 @AutoBind

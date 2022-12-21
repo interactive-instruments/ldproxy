@@ -40,6 +40,10 @@ public interface ExtensionConfiguration
         clazz.getSimpleName().replace("Immutable", "").replace("Configuration", ""));
   }
 
+  /**
+   * @langEn Always `{@buildingBlock}{@buildingBlockAlias ` or (*deprecated*) `|||}`.
+   * @langDe Immer `{@buildingBlock}{@buildingBlockAlias ` or (*deprecated*) `|||}`.
+   */
   @JsonAlias("extensionType")
   @Value.Derived
   default String getBuildingBlock() {

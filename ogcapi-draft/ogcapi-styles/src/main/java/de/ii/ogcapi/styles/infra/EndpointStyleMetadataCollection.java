@@ -43,7 +43,16 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** fetch list the metadata of a style */
+/**
+ * @title Collection Style Metadata
+ * @path collections/{collectionId}/styles/{styleId}/metadata"
+ * @langAll Style metadata is essential information about a style in order to support users to
+ *     discover and select styles for rendering their data and for visual style editors to create
+ *     user interfaces for editing a style. This operations returns the metadata for the requested
+ *     style as a single document. The stylesheet of the style will typically include some the
+ *     metadata, too.
+ * @ref:formats {@link de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointStyleMetadataCollection extends EndpointSubCollection {

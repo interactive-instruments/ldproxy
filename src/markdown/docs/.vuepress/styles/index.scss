@@ -13,9 +13,9 @@
   --c-badge-info: #3f9cff;
 /*  --code-bg-color: var(--c-bg-light);*/
 
-  @media (min-width: 1640px) {
+  /*@media (min-width: 1640px) {
     --content-width: 960px !important;
-  }
+  }*/
 }
 
 html.dark {
@@ -28,9 +28,9 @@ html.dark {
   cursor: pointer;
 }
 
-.toggle-dark-button {
+/*.toggle-dark-button {
   display: none !important;
-}
+}*/
 
 code {
   background-color: var(--c-bg-lighter);

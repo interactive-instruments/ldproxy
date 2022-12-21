@@ -28,6 +28,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title SLD 1.1
+ */
 @Singleton
 @AutoBind
 public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension {

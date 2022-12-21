@@ -47,6 +47,15 @@ import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title Queryables
+ * @path collections/{id}/queryables
+ * @langAll The Queryables resource identifies the properties that can be referenced in filter
+ *     expressions to select specific features that meet the criteria identified in the filter. The
+ *     response is a JSON Schema document that describes a single JSON object where each property is
+ *     a queryable.
+ * @ref:formats {@link de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat}
+ */
 @Singleton
 @AutoBind
 public class EndpointQueryables extends EndpointSubCollection /* implements ConformanceClass */ {

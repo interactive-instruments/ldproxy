@@ -18,6 +18,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title PNG
+ */
 @Singleton
 @AutoBind
 public class MapTileFormatPNG extends MapTileFormatExtension {

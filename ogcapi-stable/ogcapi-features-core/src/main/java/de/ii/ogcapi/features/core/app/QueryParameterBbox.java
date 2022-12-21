@@ -22,6 +22,8 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
+ * @title bbox
+ * @endpoints Features
  * @langEn Only features that have a geometry that intersects the bounding box are selected. The
  *     bounding box is provided as four numbers: * Lower left corner, coordinate axis 1 * Lower left
  *     corner, coordinate axis 2 * Upper right corner, coordinate axis 1 * Upper right corner,
@@ -41,8 +43,6 @@ import javax.inject.Singleton;
  *     minimaler Breitengrad, maximaler Längengrad und maximaler Breitengrad. In den Fällen, in
  *     denen die Box den Antimeridian überspannt, ist der erste Wert (westlichster Boxrand) jedoch
  *     größer als der dritte Wert (östlichste Kante der Box).
- * @name bbox
- * @endpoints Features
  */
 @Singleton
 @AutoBind

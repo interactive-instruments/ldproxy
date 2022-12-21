@@ -52,6 +52,9 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title Mapbox
+ */
 @Singleton
 @AutoBind
 public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtension {

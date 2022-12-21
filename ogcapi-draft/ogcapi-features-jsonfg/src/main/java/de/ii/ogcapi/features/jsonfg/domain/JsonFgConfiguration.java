@@ -18,39 +18,28 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @langEn Example of the information in the configuration file for the entire API (from the API for
- *     [Topographic Data in Daraa, Syria](https://demo.ldproxy.net/daraa)):
- * @langDe Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (aus der API für
- *     [Topographische Daten in Daraa, Syrien](https://demo.ldproxy.net/daraa)):
- * @example <code>
+ * @buildingBlock JSON_FG
+ * @examplesEn Example of the information in the configuration file for the entire API (from the API
+ *     for [Topographic Data in Daraa, Syria](https://demo.ldproxy.net/daraa)):
+ *     <p><code>
  * ```yaml
  * - buildingBlock: JSON_FG
  *   enabled: true
  *   featureType:
  *   - nas:{{type}}
  * ```
- * </code>
- */
-
-/**
- * @langEn Additional information per feature collection with an attribute `F_CODE` (for which
- *     `role: TYPE` was set in the provider configuration) to set the object type:
- * @langDe Ergänzende Angaben pro Feature Collection mit einem Attribut `F_CODE` (für das in der
- *     Provider-Konfiguration `role: TYPE` gesetzt wurde), um die Objektart zu setzen:
- * @example <code>
+ *     </code>
+ *     <p>Additional information per feature collection with an attribute `F_CODE` (for which `role:
+ *     TYPE` was set in the provider configuration) to set the object type:
+ *     <p><code>
  * ```yaml
  * - buildingBlock: JSON_FG
  *   featureType:
  *   - nas:{{type}}
  * ```
- * </code>
- */
-
-/**
- * @langEn This outputs the object type as follows for a value of "GB075" in the 'F_CODE' attrubut:
- * @langDe Hierdurch wird bei einem Wert von "GB075" im Attrubut `F_CODE` die Objektart wie folgt
- *     ausgegeben:
- * @example <code>
+ *     </code>
+ *     <p>This outputs the object type as follows for a value of "GB075" in the 'F_CODE' attribut:
+ *     <p><code>
  * ```json
  * {
  *   "type": "Feature",
@@ -59,14 +48,43 @@ import org.immutables.value.Value;
  *   ...
  * }
  * ```
- * </code>
+ *     </code>
+ * @examplesDe Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (aus der API
+ *     für [Topographische Daten in Daraa, Syrien](https://demo.ldproxy.net/daraa)):
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: JSON_FG
+ *   enabled: true
+ *   featureType:
+ *   - nas:{{type}}
+ * ```
+ *     </code>
+ *     <p>Ergänzende Angaben pro Feature Collection mit einem Attribut `F_CODE` (für das in der
+ *     Provider-Konfiguration `role: TYPE` gesetzt wurde), um die Objektart zu setzen:
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: JSON_FG
+ *   featureType:
+ *   - nas:{{type}}
+ * ```
+ *     </code>
+ *     <p>Hierdurch wird bei einem Wert von "GB075" im Attribut `F_CODE` die Objektart wie folgt
+ *     ausgegeben:
+ *     <p><code>
+ * ```json
+ * {
+ *   "type": "Feature",
+ *   "id": 1,
+ *   "featureType": "nas:GB075",
+ *   ...
+ * }
+ * ```
+ *     </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true)
 @JsonDeserialize(builder = Builder.class)
 public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTransformations {
-
-  abstract class Builder extends ExtensionConfiguration.Builder {}
 
   enum OPTION {
     describedby,
@@ -83,7 +101,7 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
    *     validation purposes.
    * @langDe Aktiviert die Ausgabe von Links auf JSON-Schema-Dokumente zu der JSON-Instant, z.B. zur
    *     Validierung
-   * @default `true`
+   * @default true
    */
   @Nullable
   Boolean getDescribedby();
@@ -91,7 +109,7 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
   /**
    * @langEn Activates the output of "coordRefSys" for features
    * @langDe Aktiviert die Ausgabe von "coordRefSys" bei Features
-   * @default `true`
+   * @default true
    */
   @Nullable
   Boolean getCoordRefSys();
@@ -99,7 +117,7 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
   /**
    * @langEn Activates support for the "compatibility=geojson" media type parameter
    * @langDe Aktiviert die Unterstützung für den "compatibility=geojson" Media-Type-Parameter
-   * @default `true`
+   * @default true
    */
   @Nullable
   Boolean getGeojsonCompatibility();
@@ -109,7 +127,7 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
    *     object type is specified, then a string is output, otherwise an array of strings.
    * @langDe Aktiviert die Ausgabe von "featureType" mit den angegebenen Werten bei Features. Ist
    *     eine Objektart angegeben, dann wird ein String ausgegeben, ansonsten ein Array von Strings.
-   * @default `[]`
+   * @default []
    */
   @Nullable
   List<String> getFeatureType();
@@ -119,7 +137,7 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
    *     be a valid link object with `href` and `rel`.
    * @langDe Ergänzt den "links"-Array von Features um die angegebenen Links. Alle Werte des Arrays
    *     müssen ein gültiges Link-Objekt mit `href` und `rel` sein.
-   * @default `[]`
+   * @default []
    */
   @Nullable
   List<Link> getLinks();
@@ -131,7 +149,7 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
    * @langDe Die Option ermöglicht, dass ausgewählte JSON-FG-Erweiterungen auch im GeoJSON-Encoding
    *     berücksichtigt werden. Erlaubte Werte sind: `describedby`, `featureType`, `time`, `place`,
    *     `coordRefSys`, `links``
-   * @default `[]`
+   * @default []
    */
   List<OPTION> getIncludeInGeoJson();
 
@@ -152,4 +170,6 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
 
     return builder.build();
   }
+
+  abstract class Builder extends ExtensionConfiguration.Builder {}
 }

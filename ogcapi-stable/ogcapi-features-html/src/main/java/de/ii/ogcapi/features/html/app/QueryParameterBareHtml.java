@@ -24,7 +24,7 @@ import javax.inject.Singleton;
 /**
  * @langEn Debug option in development environments: Bare HTML output for feature pages.
  * @langDe Todo
- * @name bare
+ * @title bare
  * @endpoints Feature
  */
 

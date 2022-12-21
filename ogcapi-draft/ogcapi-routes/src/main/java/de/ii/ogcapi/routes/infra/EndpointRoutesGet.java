@@ -50,7 +50,12 @@ import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** computes routes */
+/**
+ * @title Get Routes
+ * @path routes
+ * @langAll Fetch the list of routes
+ * @ref:formats {@link de.ii.ogcapi.routes.domain.RoutesFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointRoutesGet extends Endpoint {

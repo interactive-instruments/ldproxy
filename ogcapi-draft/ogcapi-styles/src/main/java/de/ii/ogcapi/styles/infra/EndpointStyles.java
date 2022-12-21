@@ -39,13 +39,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn This operation fetches the set of styles available. For each style the id, a title, links
- *     to the stylesheet of the style in each supported encoding, and the link to the metadata is
- *     provided.
- * @langDe TODO
- * @name Styles
- * @path /{apiId}/styles
- * @format {@link de.ii.ogcapi.styles.domain.StylesFormatExtension}
+ * @title Styles
+ * @path styles
+ * @langAll This operation fetches the set of styles available. For each style the id, a title,
+ *     links to the stylesheet of the style in each supported encoding, and the link to the metadata
+ *     is provided.
+ * @ref:formats {@link de.ii.ogcapi.styles.domain.StylesFormatExtension}
  */
 @Singleton
 @AutoBind

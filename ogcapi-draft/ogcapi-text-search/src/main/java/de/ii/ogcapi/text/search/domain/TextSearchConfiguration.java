@@ -13,6 +13,9 @@ import de.ii.ogcapi.text.search.domain.ImmutableTextSearchConfiguration.Builder;
 import java.util.List;
 import org.immutables.value.Value;
 
+/**
+ * @buildingBlock TEXT_SEARCH
+ */
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableTextSearchConfiguration.Builder.class)
