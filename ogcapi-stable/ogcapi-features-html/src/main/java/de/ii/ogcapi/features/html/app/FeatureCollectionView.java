@@ -356,7 +356,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
 
   @Override
   public Optional<String> getCanonicalUrl() throws URISyntaxException {
-    if (!isCollection() && PersistentUri() != null) return Optional.of(PersistentUri());
+    if (!isCollection() && PersistentUri() != null) return PersistentUri();
 
     URICustomizer canonicalUri = uriBuilder().copy().ensureNoTrailingSlash().clearParameters();
 

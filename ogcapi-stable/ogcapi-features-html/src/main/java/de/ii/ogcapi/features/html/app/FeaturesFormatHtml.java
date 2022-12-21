@@ -453,7 +453,7 @@ public class FeaturesFormatHtml
                           .copy()
                           .clearParameters()
                           .ensureParameter("f", MEDIA_TYPE.parameter()))
-                  .setTemporalExtent(
+                  .setRawTemporalExtent(
                       Optional.ofNullable(api.getTemporalExtent(featureType.getId()).orElse(null)));
 
       modifiableFeatureCollectionView =
@@ -491,7 +491,7 @@ public class FeaturesFormatHtml
                       .copy()
                       .clearParameters()
                       .ensureParameter("f", MEDIA_TYPE.parameter()))
-              .setTemporalExtent(
+              .setRawTemporalExtent(
                   Optional.ofNullable(api.getTemporalExtent(featureType.getId()).orElse(null)));
 
       modifiableFeatureCollectionView =
@@ -587,7 +587,7 @@ public class FeaturesFormatHtml
             .setAttribution(attribution)
             .setUrlPrefix(staticUrlPrefix)
             .setHtmlConfig(htmlConfig.orElse(null))
-            .setPersistentUri(persistentUri)
+            .setPersistentUri(Optional.of(persistentUri))
             .setNoIndex(noIndex)
             .setI18n(i18n)
             .setLanguage(language.orElse(Locale.ENGLISH))
@@ -598,7 +598,7 @@ public class FeaturesFormatHtml
             .setHideMap(hideMap)
             .setGeometryProperties(geometryProperties)
             .setTemplateName("featureDetails.mustache")
-            .setTemporalExtent(
+            .setRawTemporalExtent(
                 Optional.ofNullable(api.getTemporalExtent(featureType.getId()).orElse(null)))
             .setFormats(formats)
             .setUriBuilderWithFOnly(
