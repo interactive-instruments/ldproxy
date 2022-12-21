@@ -21,8 +21,8 @@ import javax.inject.Singleton;
  *     Collections* and *Feature Collection* as XML.
  * @langDe Das Modul *XML* kann für jede über ldproxy bereitgestellte API aktiviert werden. Es ist
  *     standardmäßig deaktiviert. Soweit für eine Ressource keine speziellen Regelungen für die
- *     Ausgabeformate bestehen (wie zum Beispiel für [Features](gml.md)) und die Ressource XML
- *     unterstützt, können Clients das Ausgabeformat anfordern. Allerdings unterstützen nur die
+ *     Ausgabeformate bestehen (wie zum Beispiel für [Features](features_gml.md)) und die Ressource
+ *     XML unterstützt, können Clients das Ausgabeformat anfordern. Allerdings unterstützen nur die
  *     folgenden Ressourcen XML: Landing Page, Conformance Declaration, Feature Collections und
  *     Feature Collection.
  * @propertyTable {@link de.ii.ogcapi.xml.domain.XmlConfiguration}

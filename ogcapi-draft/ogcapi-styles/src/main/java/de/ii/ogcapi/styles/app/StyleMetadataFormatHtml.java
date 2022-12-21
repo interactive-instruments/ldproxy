@@ -79,60 +79,41 @@ public class StyleMetadataFormatHtml implements StyleMetadataFormatExtension {
     String styleTitle = metadata.getTitle().orElse(metadata.getId().orElse("?"));
     String metadataTitle = i18n.get("metadataTitle", requestContext.getLanguage());
 
+    URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
     ImmutableList.Builder<NavigationDTO> breadCrumbBuilder =
         collectionId.isPresent()
             ? new ImmutableList.Builder<NavigationDTO>()
                 .add(
                     new NavigationDTO(
                         rootTitle,
-                        requestContext
-                            .getUriCustomizer()
+                        resourceUri
                             .copy()
                             .removeLastPathSegments(apiData.getSubPath().size() + 5)
                             .toString()))
                 .add(
                     new NavigationDTO(
                         apiData.getLabel(),
-                        requestContext
-                            .getUriCustomizer()
-                            .copy()
-                            .removeLastPathSegments(5)
-                            .toString()))
+                        resourceUri.copy().removeLastPathSegments(5).toString()))
                 .add(
                     new NavigationDTO(
-                        collectionsTitle,
-                        requestContext
-                            .getUriCustomizer()
-                            .copy()
-                            .removeLastPathSegments(4)
-                            .toString()))
+                        collectionsTitle, resourceUri.copy().removeLastPathSegments(4).toString()))
                 .add(
                     new NavigationDTO(
                         apiData.getCollections().get(collectionId.get()).getLabel(),
-                        requestContext
-                            .getUriCustomizer()
-                            .copy()
-                            .removeLastPathSegments(3)
-                            .toString()))
+                        resourceUri.copy().removeLastPathSegments(3).toString()))
             : new ImmutableList.Builder<NavigationDTO>()
                 .add(
                     new NavigationDTO(
                         rootTitle,
-                        requestContext
-                            .getUriCustomizer()
+                        resourceUri
                             .copy()
                             .removeLastPathSegments(apiData.getSubPath().size() + 3)
                             .toString()))
                 .add(
                     new NavigationDTO(
                         apiData.getLabel(),
-                        requestContext
-                            .getUriCustomizer()
-                            .copy()
-                            .removeLastPathSegments(3)
-                            .toString()));
+                        resourceUri.copy().removeLastPathSegments(3).toString()));
 
-    URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
     final List<NavigationDTO> breadCrumbs =
         breadCrumbBuilder
             .add(

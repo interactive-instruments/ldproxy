@@ -31,7 +31,7 @@ public class DefaultLinksGenerator {
                 new ImmutableLink.Builder()
                     .href(
                         alternateMediaTypes.isEmpty()
-                            ? uriBuilder.toString()
+                            ? uriBuilder.copy().clearParameters().toString()
                             : uriBuilder.copy().setParameter("f", mediaType.parameter()).toString())
                     .rel("self")
                     .type(mediaType.type().toString())

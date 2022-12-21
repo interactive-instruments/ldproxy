@@ -1,6 +1,0 @@
-
-maturity = 'EXPERIMENTAL'
-
-dependencies {
-    testImplementation(testFixtures(group: 'de.interactive_instruments', name: 'ogcapi-foundation'))
-}

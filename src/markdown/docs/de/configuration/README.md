@@ -4,15 +4,15 @@
 
 ## Manager
 
-Die Konfiguration von einfachen APIs kann  über den [Manager](./manager/README.md) im Webbrowser erfolgen. 
+Die Konfiguration von einfachen APIs kann  über den [Manager](../application/20-manager.md) im Webbrowser erfolgen. 
 
 ## Konfigurationsdateien
 
-Alle deployment-spezifischen Konfigurationseinstellungen und -dateien liegen im [Daten-Verzeichnis](../data-folder.md) (typischerweise "data"). Die Konfiguration von ldproxy und jeder API wird in YAML-Dateien gespeichert (`cfg.yml` und Dateien in `store`).
+Alle deployment-spezifischen Konfigurationseinstellungen und -dateien liegen im [Daten-Verzeichnis](../application/30-data-folder.md) (typischerweise "data"). Die Konfiguration von ldproxy und jeder API wird in YAML-Dateien gespeichert (`cfg.yml` und Dateien in `store`).
 
 ### Globale Konfiguration
 
-Die Datei `cfg.yml` im Daten-Verzeichnis enthält die [globale Konfiguration](global-configuration.md) für alle APIs in dem Deployment.
+Die Datei `cfg.yml` im Daten-Verzeichnis enthält die [globale Konfiguration](../application/70-reference.md) für alle APIs in dem Deployment.
 
 Hier eine einfache Beispielkonfiguration, die Änderungen durch ldproxy an den Konfigurationsdateien verbietet, eine externe URL konfiguriert, das Logging nur für die ldproxy/xtraplatform-Klassen auf der Konsole aktiviert (auf dem Level `INFO`) und die Zeitzone für die Zeitstempel vorgibt:
 
@@ -40,7 +40,7 @@ Es gibt in ldproxy drei Typen von [Konfigurationsobjekten](global-configuration.
 
 #### Provider
 
-Alle Provider in dieser ldproxy-Version sind [Feature-Provider](providers/README.md).
+Alle Provider in dieser ldproxy-Version sind [Feature-Provider](../providers/feature/README.md).
 
 Dieser Konfigurationsobjekt-Typ hat die folgenden Eigenschaften:
 
@@ -52,7 +52,7 @@ Dieser Konfigurationsobjekt-Typ hat die folgenden Eigenschaften:
 
 #### APIs
 
-Siehe [API-Konfigurationen](services/README.md).
+Siehe [API-Konfigurationen](../services/README.md).
 
 Dieser Konfigurationsobjekt-Typ hat die folgenden Eigenschaften:
 
@@ -64,7 +64,7 @@ Dieser Konfigurationsobjekt-Typ hat die folgenden Eigenschaften:
 
 #### Codelisten
 
-Siehe [Codelisten](codelists/README.md).
+Siehe [Codelisten](../auxiliaries/codelists.md).
 
 Dieser Konfigurationsobjekt-Typ hat die folgenden Eigenschaften:
 
@@ -86,4 +86,4 @@ Der [HTTP-Client](global-configuration.md#http-client) wird nur bei der Verwendu
 
 ## Beispiele
 
-Konfigurationsbeispiele in dieser Dokumentation sind i.d.R. Auszüge aus den Provider- und API-Konfigurationen der [ldproxy-Demo-APIs](../demos.md).
+Konfigurationsbeispiele in dieser Dokumentation sind i.d.R. Auszüge aus den Provider- und API-Konfigurationen der [ldproxy-Demo-APIs](https://demo.ldproxy.net).

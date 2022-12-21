@@ -421,7 +421,8 @@ public class FeaturesFormatHtml
      */
     ModifiableFeatureCollectionView modifiableFeatureCollectionView;
     if (!bare) {
-      modifiableFeatureCollectionView =
+      ModifiableFeatureCollectionFeatureCollectionView
+          modifiableFeatureCollectionFeatureCollectionView =
               ModifiableFeatureCollectionFeatureCollectionView.create()
                   .setApiData(apiData)
                   .setCollectionData(featureType)
@@ -455,8 +456,13 @@ public class FeaturesFormatHtml
                   .setTemporalExtent(
                       Optional.ofNullable(api.getTemporalExtent(featureType.getId()).orElse(null)));
 
+      modifiableFeatureCollectionView =
+          ModifiableFeatureCollectionView.create()
+              .from(modifiableFeatureCollectionFeatureCollectionView);
+
     } else {
-      modifiableFeatureCollectionView.create()
+      ModifiableFeatureCollectionBareView modifiableFeatureCollectionBareView =
+          ModifiableFeatureCollectionBareView.create()
               .setApiData(apiData)
               .setCollectionData(featureType)
               .setSpatialExtent(api.getSpatialExtent(featureType.getId()))
@@ -488,6 +494,14 @@ public class FeaturesFormatHtml
               .setTemporalExtent(
                   Optional.ofNullable(api.getTemporalExtent(featureType.getId()).orElse(null)));
 
+      modifiableFeatureCollectionView =
+          ModifiableFeatureCollectionView.create().from(modifiableFeatureCollectionBareView);
+    }
+
+    if (!bare) {
+      modifiableFeatureCollectionView.setTemplateName("featureCollection.mustache");
+    } else {
+      modifiableFeatureCollectionView.setTemplateName("featureCollectionBare.mustache");
     }
 
     return modifiableFeatureCollectionView;
@@ -560,8 +574,8 @@ public class FeaturesFormatHtml
             .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
             .collect(Collectors.toList());
 
-    ModifiableFeatureCollectionView modifiableFeatureCollectionView =
-        ModifiableFeatureCollectionView.create()
+    ModifiableFeatureCollectionDetailsView modifiableFeatureCollectionDetailsView =
+        ModifiableFeatureCollectionDetailsView.create()
             .setApiData(apiData)
             .setCollectionData(featureType)
             .setSpatialExtent(api.getSpatialExtent(featureType.getId()))
@@ -573,7 +587,7 @@ public class FeaturesFormatHtml
             .setAttribution(attribution)
             .setUrlPrefix(staticUrlPrefix)
             .setHtmlConfig(htmlConfig.orElse(null))
-            .setPersistentUri(Optional.ofNullable(persistentUri).orElse(null)
+            .setPersistentUri(persistentUri)
             .setNoIndex(noIndex)
             .setI18n(i18n)
             .setLanguage(language.orElse(Locale.ENGLISH))
@@ -613,6 +627,10 @@ public class FeaturesFormatHtml
                     .add(new NavigationDTO(featureId))
                     .build());
 
+    ModifiableFeatureCollectionView modifiableFeatureCollectionView = // Todo hier interface
+        ModifiableFeatureCollectionView.create().from(modifiableFeatureCollectionDetailsView);
+
+    modifiableFeatureCollectionView.setTemplateName("featureDetails.mustache");
     return modifiableFeatureCollectionView;
 
     /**

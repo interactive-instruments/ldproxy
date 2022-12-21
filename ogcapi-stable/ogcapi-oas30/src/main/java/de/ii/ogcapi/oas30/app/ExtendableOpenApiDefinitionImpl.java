@@ -18,7 +18,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.oas30.domain.OpenApiExtension;
 import de.ii.xtraplatform.base.domain.AppContext;
-import de.ii.xtraplatform.base.domain.AuthConfig;
+import de.ii.xtraplatform.base.domain.AuthConfiguration;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.core.util.Yaml;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -41,7 +41,7 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
 
   private static Logger LOGGER = LoggerFactory.getLogger(ExtendableOpenApiDefinitionImpl.class);
 
-  private final AuthConfig authConfig;
+  private final AuthConfiguration authConfig;
   private final ExtensionRegistry extensionRegistry;
   private final ClassSchemaCache classSchemaCache;
 
@@ -50,7 +50,7 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
       AppContext appContext,
       ExtensionRegistry extensionRegistry,
       ClassSchemaCache classSchemaCache) {
-    this.authConfig = appContext.getConfiguration().auth;
+    this.authConfig = appContext.getConfiguration().getAuth();
     this.extensionRegistry = extensionRegistry;
     this.classSchemaCache = classSchemaCache;
   }

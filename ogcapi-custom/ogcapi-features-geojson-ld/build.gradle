@@ -1,0 +1,6 @@
+
+maturity = 'CANDIDATE'
+
+dependencies {
+    testImplementation(testFixtures(group: 'de.interactive_instruments', name: 'ogcapi-foundation'))
+}

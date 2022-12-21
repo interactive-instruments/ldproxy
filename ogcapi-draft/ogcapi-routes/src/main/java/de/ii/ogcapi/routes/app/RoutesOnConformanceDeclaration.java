@@ -164,10 +164,10 @@ public class RoutesOnConformanceDeclaration implements ConformanceDeclarationExt
     builder.putExtensions(
         "properties",
         ImmutableMap.of(
-            CapabilityRouting.CORE,
+            RoutingBuildingBlock.CORE,
             ImmutableMap.of(
                 "preferences", preferences.stream().collect(ImmutableList.toImmutableList())),
-            CapabilityRouting.MODE,
+            RoutingBuildingBlock.MODE,
             ImmutableMap.of("modes", modes.stream().collect(ImmutableList.toImmutableList()))));
     return builder;
   }
