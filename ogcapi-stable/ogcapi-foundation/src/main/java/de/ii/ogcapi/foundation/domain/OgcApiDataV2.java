@@ -210,11 +210,11 @@ import org.immutables.value.Value;
     })
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableOgcApiDataV2.Builder.class)
-public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfiguration {
+public interface OgcApiDataV2 extends ServiceData, ExtendableConfiguration {
 
-  public static final String SERVICE_TYPE = "OGC_API";
+  String SERVICE_TYPE = "OGC_API";
 
-  abstract static class Builder implements EntityDataBuilder<OgcApiDataV2> {
+  abstract class Builder implements EntityDataBuilder<OgcApiDataV2> {
 
     // jackson should append to instead of replacing extensions
     @JsonIgnore
@@ -234,12 +234,12 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
   @JsonIgnore
   @Value.Derived
   @Override
-  public long getEntitySchemaVersion() {
+  default long getEntitySchemaVersion() {
     return 2;
   }
 
   @Override
-  public Optional<String> getEntitySubType() {
+  default Optional<String> getEntitySubType() {
     return Optional.of(SERVICE_TYPE);
   }
 
@@ -249,7 +249,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
    */
   @Value.Default
   @Override
-  public String getServiceType() {
+  default String getServiceType() {
     return SERVICE_TYPE;
   }
 
@@ -258,14 +258,14 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
    * @langDe TODO_DOCS
    * @default {}
    */
-  public abstract Optional<ApiMetadata> getMetadata();
+  Optional<ApiMetadata> getMetadata();
 
   /**
    * @langEn TODO_DOCS
    * @langDe TODO_DOCS
    * @default {}
    */
-  public abstract Optional<ExternalDocumentation> getExternalDocs();
+  Optional<ExternalDocumentation> getExternalDocs();
 
   /**
    * @langEn TODO_DOCS
@@ -273,21 +273,21 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
    * @default {}
    */
   @JsonMerge(OptBoolean.FALSE)
-  public abstract Optional<CollectionExtent> getDefaultExtent();
+  Optional<CollectionExtent> getDefaultExtent();
 
   /**
    * @langEn Sets fixed values for [HTTP Caching Headers](#caching) for the resources.
    * @langDe Setzt feste Werte für [HTTP-Caching-Header](#caching) für die Ressourcen.
    * @default {}
    */
-  public abstract Optional<Caching> getDefaultCaching();
+  Optional<Caching> getDefaultCaching();
 
   /**
    * @langEn [Access Control](#access-control) configuration.
    * @langDe [Access Control](#access-control) konfigurieren.
    * @default {}
    */
-  public abstract Optional<ApiSecurity> getAccessControl();
+  Optional<ApiSecurity> getAccessControl();
 
   /**
    * @langEn TODO_DOCS
@@ -295,7 +295,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
    * @default NONE
    */
   @Value.Default
-  public MODE getApiValidation() {
+  default MODE getApiValidation() {
     return MODE.NONE;
   }
 
@@ -311,17 +311,17 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
    *     _seit Version 2.1_
    * @default []
    */
-  public abstract List<String> getTags();
+  List<String> getTags();
 
   /**
    * @langEn [Building Blocks](#building-blocks) configuration.
-   * @langDe [Bausteine](#building-blocks) konfigurieren.
+   * @langDe [Bausteine](#bausteine) konfigurieren.
    * @default []
    */
   @JsonProperty("api")
   @JsonMerge
   @Override
-  public abstract List<ExtensionConfiguration> getExtensions();
+  List<ExtensionConfiguration> getExtensions();
 
   /**
    * @langEn Collection configurations, the key is the collection id, for the value see
@@ -333,16 +333,15 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
   // behaves exactly like Map<String, FeatureTypeConfigurationOgcApi>,
   // but supports mergeable builder deserialization
   // (immutables attributeBuilder does not work with maps yet)
-  public abstract BuildableMap<
-          FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder>
+  BuildableMap<FeatureTypeConfigurationOgcApi, ImmutableFeatureTypeConfigurationOgcApi.Builder>
       getCollections();
 
-  public Optional<FeatureTypeConfigurationOgcApi> getCollectionData(String collectionId) {
+  default Optional<FeatureTypeConfigurationOgcApi> getCollectionData(String collectionId) {
     return Optional.ofNullable(getCollections().get(collectionId));
   }
 
   @Value.Check
-  public OgcApiDataV2 mergeBuildingBlocks() {
+  default OgcApiDataV2 mergeBuildingBlocks() {
     List<ExtensionConfiguration> distinctExtensions = getMergedExtensions();
 
     // remove duplicates
@@ -377,14 +376,14 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
     return this;
   }
 
-  public boolean isCollectionEnabled(final String collectionId) {
+  default boolean isCollectionEnabled(final String collectionId) {
     return getCollections().containsKey(collectionId)
         && Objects.requireNonNull(getCollections().get(collectionId)).getEnabled();
   }
 
   @JsonIgnore
   @Value.Derived
-  public boolean isDataset() {
+  default boolean isDataset() {
     // return false if there no collection or no collection that is enabled
     return getCollections().values().stream().anyMatch(FeatureTypeConfigurationOgcApi::getEnabled);
   }
@@ -395,7 +394,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
    * @param collectionId the name of the feature type
    * @return the extent
    */
-  public Optional<CollectionExtent> getExtent(String collectionId) {
+  default Optional<CollectionExtent> getExtent(String collectionId) {
     return getCollections().values().stream()
         .filter(featureTypeConfiguration -> featureTypeConfiguration.getId().equals(collectionId))
         .filter(FeatureTypeConfigurationOgcApi::getEnabled)
@@ -421,7 +420,7 @@ public abstract class OgcApiDataV2 implements ServiceData, ExtendableConfigurati
             .build());
   }
 
-  public <T extends ExtensionConfiguration> Optional<T> getExtension(
+  default <T extends ExtensionConfiguration> Optional<T> getExtension(
       Class<T> clazz, String collectionId) {
     if (isCollectionEnabled(collectionId)) {
       return Objects.requireNonNull(getCollections().get(collectionId)).getExtension(clazz);

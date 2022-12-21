@@ -10,9 +10,13 @@ const sidebar = lang => {
   return [
     group({en: 'Getting Started', de: 'Erste Schritte'}[lang], prefix, {ignoreReadme: true}),
     group({en: 'Application', de: 'Applikation'}[lang], prefix + 'application'),
-    group({en: 'APIs', de: 'APIs'}[lang], prefix + 'services', {
+    group({en: 'APIs', de: 'APIs'}[lang], prefix + 'services', {ignoreReadme: true,
       children: [
-        group({en: 'Building Blocks', de: 'Bausteine'}[lang], prefix + 'services/building-blocks', {collapsible: true, headerReadme: true})
+        group({en: 'OGC API', de: 'OGC API'}[lang], prefix + 'services', {headerReadme: true, 
+          children: [
+            group({en: 'Building Blocks', de: 'Bausteine'}[lang], prefix + 'services/building-blocks', {collapsible: true, headerReadme: true})
+          ]
+        }),
       ]
     }),
     group({en: 'Data Providers', de: 'Daten-Provider'}[lang], prefix + 'providers', {
