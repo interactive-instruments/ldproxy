@@ -1,0 +1,77 @@
+{{> header}}
+
+<div>
+    <h1>{{title}}</h1>
+    <span>{{{description}}}</span>
+    <br/>
+    <br/>
+    <span>{{{tilesetDescription}}}</span>
+    <br/>
+    <br/>
+    <span id="howToUse">{{{howToUse}}}</span>
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{tileMatrixSetTitle}}</div>
+        <div class="col-md-10">
+            <select id="tilingScheme" onchange="changeTileMatrixSet(this.value)">
+                {{#tileMatrixSetIds}}<option value="{{.}}">{{.}}</option>{{/tileMatrixSetIds}}
+            </select>
+        </div>
+    </div>
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{templateTitle}}</div>
+        <div id="xyzTemplate" class="col-md-10">{{xyzTemplate}}</div>
+    </div>
+
+    {{#tileJsonLink}}
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{metadataTitle}}</div>
+        <div class="col-md-10">
+            <ul class="list-unstyled">
+                <li>
+                    <a id="tileJson" href="{{{.}}}" target="_blank">{{tileJsonTitle}}</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    {{/tileJsonLink}}
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{mapTitle}}</div>
+        <div class="col-md-10">
+            <div id="map" class="map-md"></div>
+        </div>
+    </div>
+</div>
+
+
+{{> app-common}}
+
+{{> mapClient}}
+
+<script type="text/javascript">
+    const xyzTemplates = {
+      {{#tileMatrixSetIds}}
+        '{{.}}': '{{{xyzTemplate}}}'.replace("WebMercatorQuad","{{.}}"),
+      {{/tileMatrixSetIds}}
+    };
+    const tileJsonLinks = {
+      {{#tileMatrixSetIds}}
+        '{{.}}': '{{{tileJsonLink}}}'.replace("WebMercatorQuad","{{.}}"),
+      {{/tileMatrixSetIds}}
+    };
+    function changeTileMatrixSet(id) {
+      globalThis._map.setCurrentTileMatrixSet(id);
+      document.getElementById("tileJson").href = tileJsonLinks[id];
+      document.getElementById("xyzTemplate").innerText = xyzTemplates[id];
+      if (id === "WebMercatorQuad") {
+          document.getElementById("howToUse").style.display = "block";
+      } else {
+          document.getElementById("howToUse").style.display = "none";
+      }
+    }
+    changeTileMatrixSet(Object.keys(tileJsonLinks)[0]);
+</script>
+
+{{> footer}}

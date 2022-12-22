@@ -239,7 +239,9 @@ public abstract class OgcApiCollectionView extends OgcApiDatasetView {
   }
 
   public Optional<Link> getMap() {
-    return getLinks().stream().filter(link -> Objects.equals(link.getRel(), "ldp-map")).findFirst();
+    return getLinks().stream()
+        .filter(link -> Objects.equals(link.getRel(), "ldp-map"))
+        .findFirst();
   }
 
   public Optional<String> getSchemaOrgDataset() {
