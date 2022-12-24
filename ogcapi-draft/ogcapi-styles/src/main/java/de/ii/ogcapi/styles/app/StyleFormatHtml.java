@@ -269,6 +269,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
         .styleId(styleId)
         .popup(popup)
         .layerControl(layerControl)
+        .noIndex(true)
         .urlPrefix(requestContext.getStaticUrlPrefix())
         .layerIds(
             "{"

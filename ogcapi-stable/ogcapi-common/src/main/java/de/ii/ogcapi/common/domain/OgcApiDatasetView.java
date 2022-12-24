@@ -197,8 +197,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
       Optional<FeatureTypeConfigurationOgcApi> collection,
       URICustomizer landingPageUriCustomizer,
       boolean embedded) {
-    ApiMetadata metadata =
-        getMetadata().orElse(new ImmutableApiMetadata.Builder().build());
+    ApiMetadata metadata = getMetadata().orElse(new ImmutableApiMetadata.Builder().build());
     String url =
         collection
             .map(

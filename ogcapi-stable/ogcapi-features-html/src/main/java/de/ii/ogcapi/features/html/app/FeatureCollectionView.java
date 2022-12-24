@@ -175,7 +175,6 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
     return new ArrayList<>();
   }
 
-  @Nullable
   public abstract Optional<String> PersistentUri();
 
   @Nullable
