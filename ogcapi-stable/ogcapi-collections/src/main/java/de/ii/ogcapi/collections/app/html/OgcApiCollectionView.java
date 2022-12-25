@@ -189,7 +189,7 @@ public abstract class OgcApiCollectionView extends OgcApiDatasetView {
   }
 
   public List<Link> getMetadataLinks() {
-    return getLinks().stream()
+    return rawLinks().stream()
         .filter(link -> link.getRel().matches("^(?:describedby)$"))
         .collect(Collectors.toList());
   }
@@ -199,7 +199,7 @@ public abstract class OgcApiCollectionView extends OgcApiDatasetView {
   }
 
   public List<Link> getLicenseLinks() {
-    return getLinks().stream()
+    return rawLinks().stream()
         .filter(link -> link.getRel().matches("^(?:license)$"))
         .collect(Collectors.toUnmodifiableList());
   }
@@ -209,13 +209,13 @@ public abstract class OgcApiCollectionView extends OgcApiDatasetView {
   }
 
   public List<Link> getDownloadLinks() {
-    return getLinks().stream()
+    return rawLinks().stream()
         .filter(link -> link.getRel().matches("^(?:enclosure)$"))
         .collect(Collectors.toUnmodifiableList());
   }
 
   public List<Link> getDistributionLinks() {
-    return getLinks().stream()
+    return rawLinks().stream()
         .filter(
             link ->
                 Objects.equals(link.getRel(), "items")
@@ -225,21 +225,21 @@ public abstract class OgcApiCollectionView extends OgcApiDatasetView {
   }
 
   public List<Link> getTiles() {
-    return getLinks().stream()
+    return rawLinks().stream()
         .filter(
             link -> link.getRel().startsWith("http://www.opengis.net/def/rel/ogc/1.0/tilesets-"))
         .collect(Collectors.toUnmodifiableList());
   }
 
   public Optional<Link> getStyles() {
-    return getLinks().stream()
+    return rawLinks().stream()
         .filter(
             link -> Objects.equals(link.getRel(), "http://www.opengis.net/def/rel/ogc/1.0/styles"))
         .findFirst();
   }
 
   public Optional<Link> getMap() {
-    return getLinks().stream().filter(link -> Objects.equals(link.getRel(), "ldp-map")).findFirst();
+    return rawLinks().stream().filter(link -> Objects.equals(link.getRel(), "ldp-map")).findFirst();
   }
 
   public Optional<String> getSchemaOrgDataset() {

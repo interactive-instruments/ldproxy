@@ -216,11 +216,11 @@ public abstract class RoutesView extends OgcApiView {
   }
 
   public boolean hasLinks() {
-    return links().stream().anyMatch(link -> Objects.equals(link.getRel(), "item"));
+    return rawLinks().stream().anyMatch(link -> Objects.equals(link.getRel(), "item"));
   }
 
   public List<Link> getItemLinks() {
-    return links().stream()
+    return rawLinks().stream()
         .filter(link -> Objects.equals(link.getRel(), "item"))
         .collect(Collectors.toUnmodifiableList());
   }

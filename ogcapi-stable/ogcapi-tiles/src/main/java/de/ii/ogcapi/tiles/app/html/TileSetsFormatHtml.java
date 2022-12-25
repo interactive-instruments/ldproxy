@@ -167,7 +167,7 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
         .collectionId(collectionId)
         .tileMatrixSets(tileMatrixSets)
         .breadCrumbs(breadCrumbs)
-        .links(tiles.getLinks())
+        .rawLinks(tiles.getLinks())
         .urlPrefix(requestContext.getStaticUrlPrefix())
         .mapClientType(mapClientType)
         .styleUrl(styleUrl)

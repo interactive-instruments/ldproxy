@@ -107,7 +107,7 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
             .breadCrumbs(breadCrumbs)
             .apiLandingPage(apiLandingPage)
             .urlPrefix(requestContext.getStaticUrlPrefix())
-            .links(apiLandingPage.getLinks())
+            .rawLinks(apiLandingPage.getLinks())
             .htmlConfig(htmlConfig)
             .uriCustomizer(requestContext.getUriCustomizer())
             .noIndex(isNoIndexEnabledForApi(api.getData()))
@@ -155,7 +155,7 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
             .htmlConfig(htmlConfig)
             .noIndex(isNoIndexEnabledForApi(api.getData()))
             .i18n(i18n)
-            .links(conformanceDeclaration.getLinks())
+            .rawLinks(conformanceDeclaration.getLinks())
             .description(
                 conformanceDeclaration
                     .getDescription()

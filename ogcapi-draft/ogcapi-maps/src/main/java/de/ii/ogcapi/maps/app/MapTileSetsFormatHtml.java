@@ -141,7 +141,7 @@ public class MapTileSetsFormatHtml implements TileSetsFormatExtension {
         .collectionId(collectionId)
         .tileMatrixSets(tileMatrixSets)
         .breadCrumbs(breadCrumbs)
-        .links(tiles.getLinks())
+        .rawLinks(tiles.getLinks())
         .urlPrefix(requestContext.getStaticUrlPrefix())
         .mapClientType(Type.MAP_LIBRE)
         .styleUrl(null)

@@ -184,14 +184,14 @@ public abstract class StyleMetadataView extends OgcApiView {
   }
 
   public Link getThumbnail() {
-    return links().stream()
+    return rawLinks().stream()
         .filter(link -> Objects.equals(link.getRel(), "preview"))
         .findFirst()
         .orElse(null);
   }
 
   public List<Link> getAdditionalLinks() {
-    return links().stream()
+    return rawLinks().stream()
         .filter(link -> !link.getRel().matches("^(?:self|alternate|preview)$"))
         .collect(Collectors.toList());
   }

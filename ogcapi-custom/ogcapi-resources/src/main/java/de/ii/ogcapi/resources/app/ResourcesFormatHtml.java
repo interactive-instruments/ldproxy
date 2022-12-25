@@ -91,7 +91,7 @@ public class ResourcesFormatHtml implements ResourcesFormatExtension {
         .htmlConfig(htmlConfig)
         .noIndex(isNoIndexEnabledForApi(apiData))
         .urlPrefix(requestContext.getStaticUrlPrefix())
-        .links(resources.getLinks())
+        .rawLinks(resources.getLinks())
         .title(i18n.get("resourcesTitle", requestContext.getLanguage()))
         .description(i18n.get("resourcesDescription", requestContext.getLanguage()))
         .language(requestContext.getLanguage())

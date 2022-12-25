@@ -138,7 +138,7 @@ public class CollectionPropertiesFormatHtml implements CollectionPropertiesForma
         .apiData(api.getData())
         .schemaCollectionProperties(schemaProperties)
         .type(type)
-        .links(links)
+        .rawLinks(links)
         .urlPrefix(requestContext.getStaticUrlPrefix())
         .htmlConfig(htmlConfig)
         .noIndex(isNoIndexEnabledForApi(api.getData()))

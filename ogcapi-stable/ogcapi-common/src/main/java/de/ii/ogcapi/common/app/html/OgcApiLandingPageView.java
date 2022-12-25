@@ -166,7 +166,7 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
   }
 
   public Optional<Link> getData() {
-    return links().stream()
+    return rawLinks().stream()
         .filter(
             link ->
                 Objects.equals(link.getRel(), "data")
@@ -175,38 +175,38 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
   }
 
   public List<Link> getTiles() {
-    return links().stream()
+    return rawLinks().stream()
         .filter(
             link -> link.getRel().startsWith("http://www.opengis.net/def/rel/ogc/1.0/tilesets-"))
         .collect(Collectors.toUnmodifiableList());
   }
 
   public Optional<Link> getStyles() {
-    return links().stream()
+    return rawLinks().stream()
         .filter(
             link -> Objects.equals(link.getRel(), "http://www.opengis.net/def/rel/ogc/1.0/styles"))
         .findFirst();
   }
 
   public Optional<Link> getRoutes() {
-    return links().stream()
+    return rawLinks().stream()
         .filter(
             link -> Objects.equals(link.getRel(), "http://www.opengis.net/def/rel/ogc/1.0/routes"))
         .findFirst();
   }
 
   public Optional<Link> getMap() {
-    return links().stream().filter(link -> Objects.equals(link.getRel(), "ldp-map")).findFirst();
+    return rawLinks().stream().filter(link -> Objects.equals(link.getRel(), "ldp-map")).findFirst();
   }
 
   public Optional<Link> getApiDefinition() {
-    return links().stream()
+    return rawLinks().stream()
         .filter(link -> Objects.equals(link.getRel(), "service-desc"))
         .findFirst();
   }
 
   public Optional<Link> getApiDocumentation() {
-    return links().stream()
+    return rawLinks().stream()
         .filter(link -> Objects.equals(link.getRel(), "service-doc"))
         .findFirst();
   }

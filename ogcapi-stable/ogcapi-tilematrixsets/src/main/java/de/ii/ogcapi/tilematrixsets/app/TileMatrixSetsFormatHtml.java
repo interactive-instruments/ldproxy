@@ -101,7 +101,7 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
         .language(requestContext.getLanguage().orElse(null))
         .description(i18n.get("tileMatrixSetsDescription", requestContext.getLanguage()))
         .title(i18n.get("tileMatrixSetsTitle", requestContext.getLanguage()))
-        .links(tileMatrixSets.getLinks())
+        .rawLinks(tileMatrixSets.getLinks())
         .build();
   }
 
@@ -137,7 +137,7 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
         .apiData(api.getData())
         .tileMatrixSet(tileMatrixSet)
         .breadCrumbs(breadCrumbs)
-        .links(tileMatrixSet.getLinks())
+        .rawLinks(tileMatrixSet.getLinks())
         .urlPrefix(requestContext.getStaticUrlPrefix())
         .htmlConfig(htmlConfig)
         .noIndex(isNoIndexEnabledForApi(api.getData()))

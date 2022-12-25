@@ -32,7 +32,7 @@ public abstract class OgcApiView extends View {
   public abstract List<NavigationDTO> breadCrumbs();
 
   @Value.Default
-  public List<Link> links() {
+  public List<Link> rawLinks() {
     return ImmutableList.of();
   }
 
@@ -52,7 +52,7 @@ public abstract class OgcApiView extends View {
   }
 
   public List<NavigationDTO> getFormats() {
-    return links().stream()
+    return rawLinks().stream()
         .filter(
             link -> Objects.equals(link.getRel(), "alternate") && !link.getTypeLabel().isBlank())
         .sorted(Comparator.comparing(link -> link.getTypeLabel().toUpperCase()))

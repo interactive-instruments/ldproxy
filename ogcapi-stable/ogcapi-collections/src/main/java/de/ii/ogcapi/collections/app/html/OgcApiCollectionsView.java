@@ -114,26 +114,26 @@ public abstract class OgcApiCollectionsView extends OgcApiView {
   }
 
   public List<Link> getLinks() {
-    return links().stream()
+    return rawLinks().stream()
         .filter(
             link -> !link.getRel().matches("^(?:self|alternate|describedby|license|enclosure)$"))
         .collect(Collectors.toList());
   }
 
   public List<Link> getMetadataLinks() {
-    return links().stream()
+    return rawLinks().stream()
         .filter(link -> link.getRel().matches("^(?:describedby)$"))
         .collect(Collectors.toList());
   }
 
   public List<Link> getLicenseLinks() {
-    return links().stream()
+    return rawLinks().stream()
         .filter(link -> link.getRel().matches("^(?:license)$"))
         .collect(Collectors.toList());
   }
 
   public List<Link> getDownloadLinks() {
-    return links().stream()
+    return rawLinks().stream()
         .filter(link -> link.getRel().matches("^(?:enclosure)$"))
         .collect(Collectors.toList());
   }

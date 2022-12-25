@@ -108,7 +108,7 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
                         .build())
                 .noIndex(getHtmlConfigurationDefaults().getNoIndexEnabled())
                 .urlPrefix(apiCatalog.getUrlPrefix())
-                .links(apiCatalog.getLinks())
+                .rawLinks(apiCatalog.getLinks())
                 .title(
                     apiCatalog
                         .getTitle()

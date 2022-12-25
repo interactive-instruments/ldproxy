@@ -124,7 +124,7 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
         .noIndex(isNoIndexEnabledForApi(api.getData()))
         .i18n(i18n)
         .language(requestContext.getLanguage())
-        .links(routes.getLinks())
+        .rawLinks(routes.getLinks())
         .title(i18n.get("routesTitle", requestContext.getLanguage()))
         .description(
             api.getData()

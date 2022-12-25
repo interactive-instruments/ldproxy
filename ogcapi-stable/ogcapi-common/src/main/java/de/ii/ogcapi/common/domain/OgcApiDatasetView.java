@@ -100,7 +100,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
             .add("ldp-map")
             .build();
 
-    return links().stream()
+    return rawLinks().stream()
         .filter(
             link ->
                 !link.getRel()
@@ -115,7 +115,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
   }
 
   public Optional<String> getCanonicalUrl() throws URISyntaxException {
-    return links().stream()
+    return rawLinks().stream()
         .filter(link -> Objects.equals(link.getRel(), "self"))
         .map(Link::getHref)
         .map(
