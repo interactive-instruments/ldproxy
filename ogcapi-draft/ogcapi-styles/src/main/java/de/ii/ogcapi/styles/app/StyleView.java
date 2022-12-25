@@ -54,6 +54,6 @@ public abstract class StyleView extends OgcApiView {
   }
 
   public StyleView() {
-    super("/templates/style.template");
+    super("style.mustache");
   }
 }
