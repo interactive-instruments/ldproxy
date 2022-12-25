@@ -13,9 +13,9 @@
           end: {{#end}}{{.}}{{/end}}{{^end}}Date.now(){{/end}}
       },
     {{/temporalExtent}}
-    {{#bbox}}
+    {{#mapBbox}}
       spatial: [[{{minLng}},{{minLat}}],[{{maxLng}},{{maxLat}}]],
-    {{/bbox}}
+    {{/mapBbox}}
     {{#backgroundUrl}}
       backgroundUrl: '{{{.}}}',
     {{/backgroundUrl}}
