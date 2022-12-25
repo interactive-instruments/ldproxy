@@ -129,6 +129,7 @@ public class StyleMetadataFormatHtml implements StyleMetadataFormatExtension {
     return new ImmutableStyleMetadataView.Builder()
         .apiData(apiData)
         .metadata(metadata)
+        .rawLinks(metadata.getLinks())
         .breadCrumbs(breadCrumbs)
         .urlPrefix(requestContext.getStaticUrlPrefix())
         .htmlConfig(htmlConfig)
@@ -136,6 +137,8 @@ public class StyleMetadataFormatHtml implements StyleMetadataFormatExtension {
         .uriCustomizer(requestContext.getUriCustomizer())
         .i18n(i18n)
         .language(requestContext.getLanguage())
+        .title(i18n.get("styleMetadataTitle", requestContext.getLanguage()))
+        .description(null)
         .build();
   }
 

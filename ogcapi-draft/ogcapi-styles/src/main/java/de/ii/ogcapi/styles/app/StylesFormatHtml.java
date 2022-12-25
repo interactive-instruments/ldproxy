@@ -122,13 +122,14 @@ public class StylesFormatHtml implements StylesFormatExtension {
         .apiData(apiData)
         .styles(styles)
         .urlPrefix(requestContext.getStaticUrlPrefix())
+        .rawLinks(styles.getLinks())
         .breadCrumbs(breadCrumbs)
         .htmlConfig(htmlConfig)
         .noIndex(isNoIndexEnabledForApi(apiData))
         .uriCustomizer(requestContext.getUriCustomizer())
         .i18n(i18n)
-        .description(apiData.getDescription().orElse(null))
-        .title(apiData.getLabel())
+        .description(i18n.get("stylesDescription", requestContext.getLanguage()))
+        .title(i18n.get("stylesTitle", requestContext.getLanguage()))
         .language(requestContext.getLanguage())
         .build();
   }
