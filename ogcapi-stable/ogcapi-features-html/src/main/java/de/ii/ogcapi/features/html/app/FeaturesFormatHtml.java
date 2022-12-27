@@ -446,7 +446,6 @@ public class FeaturesFormatHtml
                   .setQueryables(filterableFields)
                   .setGeometryProperties(geometryProperties)
                   .setUriCustomizer(uriCustomizer)
-                  .setTemplateName("featureCollection.mustache")
                   // Todo Derived
                   .setUriBuilderWithFOnly(
                       uriCustomizer
@@ -484,7 +483,6 @@ public class FeaturesFormatHtml
               .setQueryables(filterableFields)
               .setGeometryProperties(geometryProperties)
               .setUriCustomizer(uriCustomizer)
-              .setTemplateName("featureCollectionBare.mustache")
               // Todo Derived
               .setUriBuilderWithFOnly(
                   uriCustomizer
@@ -496,12 +494,6 @@ public class FeaturesFormatHtml
 
       modifiableFeatureCollectionView =
           ModifiableFeatureCollectionView.create().from(modifiableFeatureCollectionBareView);
-    }
-
-    if (!bare) {
-      modifiableFeatureCollectionView.setTemplateName("featureCollection.mustache");
-    } else {
-      modifiableFeatureCollectionView.setTemplateName("featureCollectionBare.mustache");
     }
 
     return modifiableFeatureCollectionView;
@@ -597,7 +589,6 @@ public class FeaturesFormatHtml
             .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
             .setHideMap(hideMap)
             .setGeometryProperties(geometryProperties)
-            .setTemplateName("featureDetails.mustache")
             .setRawTemporalExtent(
                 Optional.ofNullable(api.getTemporalExtent(featureType.getId()).orElse(null)))
             .setFormats(formats)
@@ -630,7 +621,7 @@ public class FeaturesFormatHtml
     ModifiableFeatureCollectionView modifiableFeatureCollectionView = // Todo hier interface
         ModifiableFeatureCollectionView.create().from(modifiableFeatureCollectionDetailsView);
 
-    modifiableFeatureCollectionView.setTemplateName("featureDetails.mustache");
+    // modifiableFeatureCollectionView.setTemplateName("featureDetails.mustache");
     return modifiableFeatureCollectionView;
 
     /**

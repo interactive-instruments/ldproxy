@@ -65,8 +65,6 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
     super("featureCollection.mustache");
   }
 
-  public abstract String templateName();
-
   public abstract Optional<FeatureTypeConfigurationOgcApi> collectionData();
 
   public abstract String name();

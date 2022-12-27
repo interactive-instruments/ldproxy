@@ -16,6 +16,7 @@ import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
 import de.ii.xtraplatform.web.domain.MustacheRenderer;
+import io.dropwizard.views.View;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.List;
@@ -232,14 +233,29 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
 
   @Override
   public void onEnd(ModifiableContext context) {
+    if (transformationContext.isFeatureCollection()) {
+      renderView(transformationContext.collectionView().toImmutable());
 
+    } else if (!transformationContext.collectionView().bare().orElse(false)) {
+
+      ModifiableFeatureCollectionDetailsView modifiableFeatureCollectionDetailsView =
+          ModifiableFeatureCollectionDetailsView.create()
+              .from(transformationContext.collectionView());
+
+      renderView(modifiableFeatureCollectionDetailsView.toImmutable());
+    } else if (transformationContext.collectionView().bare().get()) {
+      ModifiableFeatureCollectionBareView modifiableFeatureCollectionBareView =
+          ModifiableFeatureCollectionBareView.create().from(transformationContext.collectionView());
+
+      renderView(modifiableFeatureCollectionBareView.toImmutable());
+    }
+  }
+
+  private void renderView(View view) {
     // TODO: FeatureTokenEncoderBytes.getOutputStream
     OutputStreamWriter writer = new OutputStreamWriter(new OutputStreamToByteConsumer(this::push));
-    FeatureCollectionView featureCollectionView =
-        transformationContext.collectionView().toImmutable();
     try {
-      ((MustacheRenderer) transformationContext.mustacheRenderer())
-          .render(featureCollectionView, writer);
+      ((MustacheRenderer) transformationContext.mustacheRenderer()).render(view, writer);
       writer.flush();
     } catch (IOException e) {
       throw new IllegalStateException(e);
