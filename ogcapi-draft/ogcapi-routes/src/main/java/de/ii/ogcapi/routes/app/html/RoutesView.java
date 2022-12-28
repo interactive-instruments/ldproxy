@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.immutables.value.Value;
+import javax.annotation.Nullable;
 
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -38,6 +39,7 @@ public abstract class RoutesView extends OgcApiView {
 
   public abstract HtmlFormDefaults htmlDefaults();
 
+  @Nullable
   public abstract Map<String, String> bbox();
 
   public abstract I18n i18n();
