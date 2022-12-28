@@ -149,7 +149,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
 
   @Nullable
   @Value.Derived
-  public Map<String, String> mapBbox() {
+  public Map<String, String> bbox() {
     return spatialExtent()
         .map(
             boundingBox ->
@@ -177,14 +177,16 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
         && Objects.equals(htmlConfig().getSchemaOrgEnabled(), true));
   }
 
-  public MapClient getMapClient() {
+  @Value.Derived
+  public MapClient mapClient() {
     if (mapClientType().equals(MapClient.Type.MAP_LIBRE)) {
-      return new ImmutableMapClient.Builder()
+
+      MapClient map = new ImmutableMapClient.Builder()
           .backgroundUrl(
               Optional.ofNullable(htmlConfig().getLeafletUrl())
                   .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
           .attribution(getAttribution())
-          .bounds(Optional.ofNullable(mapBbox()))
+          .bounds(Optional.ofNullable(bbox()))
           .data(
               new ImmutableSource.Builder()
                   .type(TYPE.geojson)
@@ -194,6 +196,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
           .styleUrl(Optional.ofNullable(styleUrl()))
           .removeZoomLevelConstraints(removeZoomLevelConstraints())
           .build();
+      return map;
     } else if (mapClientType().equals(MapClient.Type.CESIUM)) {
       return new ImmutableMapClient.Builder()
           .type(mapClientType())
