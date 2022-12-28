@@ -108,47 +108,6 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
   public abstract URICustomizer uriBuilderWithFOnly();
 
   @Nullable
-  @Value.Derived
-  public MapClient rawMapClient() {
-    if (mapClientType().equals(MapClient.Type.MAP_LIBRE)) {
-      return new ImmutableMapClient.Builder()
-          .backgroundUrl(
-              Optional.ofNullable(htmlConfig().getLeafletUrl())
-                  .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
-          .attribution(getAttribution())
-          .bounds(Optional.ofNullable(mapBbox()))
-          .data(
-              new ImmutableSource.Builder()
-                  .type(TYPE.geojson)
-                  .url(uriBuilder().removeParameters("f").ensureParameter("f", "json").toString())
-                  .build())
-          .popup(Popup.HOVER_ID)
-          .styleUrl(Optional.ofNullable(styleUrl()))
-          .removeZoomLevelConstraints(removeZoomLevelConstraints())
-          .useBounds(true)
-          .build();
-    } else if (mapClientType().equals(MapClient.Type.CESIUM)) {
-      return new ImmutableMapClient.Builder()
-          .type(mapClientType())
-          .backgroundUrl(
-              Optional.ofNullable(htmlConfig().getLeafletUrl())
-                  .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl()))
-                  .map(
-                      url ->
-                          url.replace("{z}", "{TileMatrix}")
-                              .replace("{y}", "{TileRow}")
-                              .replace("{x}", "{TileCol}")))
-          .attribution(getAttribution())
-          .build();
-    } else {
-      LOGGER.error(
-          "Configuration error: {} is not a supported map client for the HTML representation of features.",
-          mapClientType());
-      return null;
-    }
-  }
-
-  @Nullable
   public abstract Object data();
 
   @Nullable
