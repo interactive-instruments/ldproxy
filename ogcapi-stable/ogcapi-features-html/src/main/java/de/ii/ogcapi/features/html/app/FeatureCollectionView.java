@@ -181,7 +181,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
   public MapClient mapClient() {
     if (mapClientType().equals(MapClient.Type.MAP_LIBRE)) {
 
-      MapClient map = new ImmutableMapClient.Builder()
+      return new ImmutableMapClient.Builder()
           .backgroundUrl(
               Optional.ofNullable(htmlConfig().getLeafletUrl())
                   .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
@@ -195,8 +195,8 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
           .popup(Popup.HOVER_ID)
           .styleUrl(Optional.ofNullable(styleUrl()))
           .removeZoomLevelConstraints(removeZoomLevelConstraints())
+          .useBounds(true)
           .build();
-      return map;
     } else if (mapClientType().equals(MapClient.Type.CESIUM)) {
       return new ImmutableMapClient.Builder()
           .type(mapClientType())
