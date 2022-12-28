@@ -121,6 +121,7 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
         .htmlDefaults(htmlDefaults)
         .breadCrumbs(breadCrumbs)
         .urlPrefix(requestContext.getStaticUrlPrefix())
+        .htmlConfig(htmlConfig)
         .noIndex(isNoIndexEnabledForApi(api.getData()))
         .i18n(i18n)
         .language(requestContext.getLanguage())
