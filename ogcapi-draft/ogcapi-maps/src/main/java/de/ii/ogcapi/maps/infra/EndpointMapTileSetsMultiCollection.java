@@ -30,13 +30,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 /**
- * @langEn Access multi-layer map tiles
- * @langDe TODO
- * @name Tilesets
- * @path /{apiId}/map/tiles
+ * @title Dataset Tilesets
+ * @path map/tiles
+ * @langAll Access dataset map tilesets
+ * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetsFormatExtension}
  */
-
-/** Handle responses under '/tiles'. */
 @Singleton
 @AutoBind
 public class EndpointMapTileSetsMultiCollection extends AbstractEndpointTileSetsMultiCollection

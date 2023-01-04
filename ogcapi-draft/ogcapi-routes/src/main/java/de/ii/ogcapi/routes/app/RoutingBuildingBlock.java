@@ -20,8 +20,18 @@ import javax.inject.Singleton;
 
 /**
  * @title Routing
- * @langEn TODO
- * @langDe TODO
+ * @langEn Calculate routes.
+ * @langDe Routen berechnen.
+ * @scopeEn TODO_DOCS
+ * @scopeDe TODO_DOCS
+ * @conformanceEn TODO_DOCS
+ * @conformanceDe TODO_DOCS
+ * @ref:cfgProperties {@link de.ii.ogcapi.routes.domain.ImmutableRoutingConfiguration}
+ * @ref:endpoints {@link de.ii.ogcapi.routes.infra.EndpointRouteDefinition}, {@link
+ *     de.ii.ogcapi.routes.infra.EndpointRouteDelete}, {@link
+ *     de.ii.ogcapi.routes.infra.EndpointRouteGet}, {@link
+ *     de.ii.ogcapi.routes.infra.EndpointRoutesGet}, {@link
+ *     de.ii.ogcapi.routes.infra.EndpointRoutesPost}
  */
 @Singleton
 @AutoBind

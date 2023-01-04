@@ -15,32 +15,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @author zahnen
- */
-
-/**
  * @title Geometry Simplification
- * @langEn The module *Geometry Simplification* may be enabled for every API with a feature
- *     provider. It adds the following query parameters:
- *     <p>* `maxAllowableOffset` (for resources *Features* and *Feature*): if set all geometries are
- *     simplified using the [Douglas Peucker
- *     algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm).
- *     The value defines the maximum distance between original and simplified geometry ([Hausdorff
- *     distance](https://en.wikipedia.org/wiki/Hausdorff_distance)). The value has to use the unit
- *     of the given coordinate reference system (`CRS84` or the value of parameter `crs`).
- * @langDe Das Modul *Geometry Simplification* kann für jede über ldproxy bereitgestellte API mit
- *     einem Feature-Provider aktiviert werden. Es ergänzt den Query-Parameter `maxAllowableOffset`
- *     für die Ressourcen "Features" und "Feature". Ist der Parameter angegeben, werden alle
- *     Geometrien mit dem
- *     [Douglas-Peucker-Algorithmus](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm)
- *     vereinfacht. Der Wert von `maxAllowableOffset` legt den maximalen Abstand zwischen der
- *     Originalgeometrie und der vereinfachten Geometrie fest
- *     ([Hausdorff-Abstand](https://en.wikipedia.org/wiki/Hausdorff_distance)). Der Wert ist in den
- *     Einheiten des Koordinatenreferenzsystems der Ausgabe (`CRS84` bzw. der Wert des Parameters
- *     Query-Parameters `crs`) angegeben.
- * @propertyTable {@link
- *     de.ii.ogcapi.geometry.simplification.app.GeometrySimplificationConfiguration}
- * @queryParameterTable {@link
+ * @langEn Simplification of geometries with Douglas Peucker.
+ * @langDe Vereinfachung von Geometrien mit Douglas-Peucker.
+ * @ref:cfgProperties {@link
+ *     de.ii.ogcapi.geometry.simplification.app.ImmutableGeometrySimplificationConfiguration}
+ * @ref:queryParameters {@link
  *     de.ii.ogcapi.geometry.simplification.app.QueryParameterMaxAllowableOffsetFeatures}
  */
 @Singleton

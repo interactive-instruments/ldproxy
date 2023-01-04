@@ -63,6 +63,9 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @title HTML
+ */
 @Singleton
 @AutoBind
 public class FeaturesFormatHtml extends FeaturesFormatBaseHtml

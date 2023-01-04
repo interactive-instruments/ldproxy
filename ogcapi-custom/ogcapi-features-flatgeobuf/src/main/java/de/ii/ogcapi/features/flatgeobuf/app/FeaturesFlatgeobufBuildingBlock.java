@@ -15,9 +15,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title Features Flatgeobuf
- * @langEn TODO
- * @langDe TODO
+ * @title Features FlatGeobuf
+ * @langEn Encode features as [FlatGeobuf](https://flatgeobuf.org).
+ * @langDe Enkodierung von Features als [FlatGeobuf](https://flatgeobuf.org).
+ * @ref:cfgProperties {@link
+ *     de.ii.ogcapi.features.flatgeobuf.domain.ImmutableFlatgeobufConfiguration}
  */
 @Singleton
 @AutoBind

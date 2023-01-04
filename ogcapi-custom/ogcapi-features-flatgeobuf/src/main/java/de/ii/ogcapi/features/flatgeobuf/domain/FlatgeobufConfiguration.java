@@ -16,6 +16,9 @@ import java.util.List;
 import java.util.Map;
 import org.immutables.value.Value;
 
+/**
+ * @title FLATGEOBUF
+ */
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
 @JsonDeserialize(builder = ImmutableFlatgeobufConfiguration.Builder.class)

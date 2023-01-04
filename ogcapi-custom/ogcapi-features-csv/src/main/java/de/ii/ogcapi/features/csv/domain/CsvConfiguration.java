@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.features.csv.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.features.core.domain.SfFlatConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -16,6 +17,9 @@ import java.util.List;
 import java.util.Map;
 import org.immutables.value.Value;
 
+/**
+ * @title CSV
+ */
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
 @JsonDeserialize(builder = ImmutableCsvConfiguration.Builder.class)
@@ -42,6 +46,7 @@ public interface CsvConfiguration extends SfFlatConfiguration {
     return builder.build();
   }
 
+  @JsonIgnore
   @Value.Check
   default CsvConfiguration alwaysFlatten() {
     Map<String, List<PropertyTransformation>> transformations = extendWithFlattenIfMissing();

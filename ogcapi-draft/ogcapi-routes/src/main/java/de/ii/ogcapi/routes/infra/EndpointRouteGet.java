@@ -43,6 +43,12 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title Get Route
+ * @path routes/{routeId}
+ * @langAll Fetch a route
+ * @ref:formats {@link de.ii.ogcapi.routes.domain.RouteFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointRouteGet extends Endpoint implements ConformanceClass {

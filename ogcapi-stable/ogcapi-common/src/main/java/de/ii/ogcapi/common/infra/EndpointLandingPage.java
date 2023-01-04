@@ -46,13 +46,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn The landing page provides links to the API definition (link relations `service-desc` and
+ * @title Landing Page
+ * @path /
+ * @langAll The landing page provides links to the API definition (link relations `service-desc` and
  *     `service-doc`), the Conformance declaration (path `/conformance`, link relation
  *     `conformance`), and other resources in the API.
- * @langDe TODO
- * @name Landing Page
- * @path /{apiId}/
- * @formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
+ * @ref:formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
  */
 @Singleton
 @AutoBind

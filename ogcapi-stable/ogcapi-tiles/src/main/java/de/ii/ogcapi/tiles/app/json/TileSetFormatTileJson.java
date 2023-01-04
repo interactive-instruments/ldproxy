@@ -33,6 +33,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title TileJSON
+ */
 @Singleton
 @AutoBind
 public class TileSetFormatTileJson implements TileSetFormatExtension {

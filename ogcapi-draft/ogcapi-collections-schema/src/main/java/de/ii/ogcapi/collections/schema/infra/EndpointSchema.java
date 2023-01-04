@@ -53,11 +53,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn Discover data collections
- * @langDe TODO
- * @name Feature Schema
- * @path /{apiId}/collections/{collectionId}/schemas/feature
- * @format {@link de.ii.ogcapi.collections.schema.domain.SchemaFormatExtension}
+ * @title Feature Schema
+ * @path collections/{collectionId}/schemas/feature
+ * @langAll JSON Schema for features
+ * @ref:formats {@link de.ii.ogcapi.collections.schema.domain.SchemaFormatExtension}
  */
 @Singleton
 @AutoBind

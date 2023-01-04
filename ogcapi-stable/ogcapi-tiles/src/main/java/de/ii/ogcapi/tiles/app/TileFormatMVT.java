@@ -23,6 +23,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title MVT
+ */
 @Singleton
 @AutoBind
 public class TileFormatMVT extends TileFormatExtension implements ConformanceClass {

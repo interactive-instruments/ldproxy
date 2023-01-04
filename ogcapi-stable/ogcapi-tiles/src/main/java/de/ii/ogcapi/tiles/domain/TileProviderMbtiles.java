@@ -22,8 +22,6 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * # Tile-Provider MBTILES
- *
  * @langEn With this tile provider, the tiles are provided via an [MBTiles
  *     file](https://github.com/mapbox/mbtiles-spec). The tile format and all other properties of
  *     the tileset resource are derived from the contents of the MBTiles file. Only the

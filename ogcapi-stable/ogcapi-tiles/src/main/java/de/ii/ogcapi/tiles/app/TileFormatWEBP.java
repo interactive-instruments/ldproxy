@@ -20,6 +20,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title WEBP
+ */
 @Singleton
 @AutoBind
 public class TileFormatWEBP extends TileFormatExtension {

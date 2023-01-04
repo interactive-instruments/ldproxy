@@ -20,6 +20,9 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
+/**
+ * @buildingBlock ROUTING
+ */
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableRoutingConfiguration.Builder.class)

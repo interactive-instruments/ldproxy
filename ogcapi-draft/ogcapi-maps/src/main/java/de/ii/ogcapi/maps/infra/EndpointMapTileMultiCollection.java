@@ -41,14 +41,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * @langEn Access multi-layer map tiles
- * @langDe TODO
- * @name Tile
- * @path /{apiId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
- * @formats {@link de.ii.ogcapi.maps.domain.MapTileFormatExtension}
+ * @title Dataset tiles
+ * @path map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
+ * @langAll Access dataset map tiles
+ * @ref:formats {@link de.ii.ogcapi.maps.domain.MapTileFormatExtension}
  */
-
-/** Handle responses under '/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'. */
 @Singleton
 @AutoBind
 public class EndpointMapTileMultiCollection extends Endpoint implements EndpointTileMixin {

@@ -16,32 +16,32 @@ import javax.inject.Singleton;
 
 /**
  * @title Feature Collections
- * @langEn The module *Feature Collections* has to be enabled for every API with a feature provider.
- *     It provides the resources *Feature Collections* and *Feature Collection*. Currently feature
- *     collections are the only supported type of collection.
+ * @langEn Feature Collections.
+ * @langDe Feature Collections.
+ * @scopeEn The module *Feature Collections* has to be enabled for every API with a feature
+ *     provider. It provides the resources *Feature Collections* and *Feature Collection*. Currently
+ *     feature collections are the only supported type of collection.
+ *     <p>::: info Additional links for a specific *Collection* can be defined in the collection
+ *     configuration. :::
+ *     <p>
+ * @scopeDe Das Modul *Feature Collections* ist für jede API mit einem Feature-Provider zu
+ *     aktivieren. Es stellt die Ressourcen *Collections* und *Collection* bereit. Derzeit sind
+ *     Feature Collections die einzige unterstütze Art von Collections.
+ *     <p>::: info Zusätzliche Links zu einer bestimmten Feature Collection einzelnen können bei der
+ *     Konfiguration der Collection angegeben werden. :::
+ *     <p>
  * @conformanceEn *Feature Collections* implements all requirements of conformance class *Core* of
  *     [OGC API - Features - Part 1: Core
  *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) for the two mentioned
  *     resources.
- *     <p>::: info additional links for a specific *Collection* can be defined in the collection
- *     configuration. :::
- *     <p>
- * @langDe Das Modul *Feature Collections* ist für jede über ldproxy bereitgestellte API mit einem
- *     Feature-Provider zu aktivieren. Es stellt die Ressourcen "Collections" und "Collection"
- *     bereit. Derzeit sind Feature Collections die einzige unterstütze Art von Collections.
  * @conformanceDe "Feature Collections" implementiert alle Vorgaben der Konformitätsklasse "Core"
  *     von [OGC API - Features - Part 1: Core
  *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) für die zwei genannten
  *     Ressourcen.
- *     <p>::: info Zusätzliche Links zu einer bestimmten Feature Collection einzelnen können bei der
- *     Konfiguration der Collection angegeben werden. :::
- *     <p>
- * @example {@link de.ii.ogcapi.collections.domain.CollectionsConfiguration}
- * @propertyTable {@link de.ii.ogcapi.collections.domain.ImmutableCollectionsConfiguration}
- * @endpointTable {@link de.ii.ogcapi.collections.infra.EndpointCollection}, {@link
+ * @ref:cfg {@link de.ii.ogcapi.collections.domain.CollectionsConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.collections.domain.ImmutableCollectionsConfiguration}
+ * @ref:endpoints {@link de.ii.ogcapi.collections.infra.EndpointCollection}, {@link
  *     de.ii.ogcapi.collections.infra.EndpointCollections}
- * @queryParameterTable {@link de.ii.ogcapi.collections.domain.QueryParameterFCollection}, {@link
- *     de.ii.ogcapi.collections.domain.QueryParameterFCollections}
  */
 @Singleton
 @AutoBind

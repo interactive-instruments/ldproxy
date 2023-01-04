@@ -22,8 +22,6 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * # Tile-Provider FEATURES
- *
  * @langEn In this tile provider, the tiles in Mapbox Vector Tiles format are derived from the
  *     features provided by the API in the area of the tile.
  * @langDe Bei diesem Tile-Provider werden die Kacheln im Format Mapbox Vector Tiles aus den von der

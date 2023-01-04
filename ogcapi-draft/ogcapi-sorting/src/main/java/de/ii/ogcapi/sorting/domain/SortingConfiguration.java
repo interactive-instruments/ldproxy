@@ -12,6 +12,9 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import java.util.List;
 import org.immutables.value.Value;
 
+/**
+ * @buildingBlock SORTING
+ */
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableSortingConfiguration.Builder.class)

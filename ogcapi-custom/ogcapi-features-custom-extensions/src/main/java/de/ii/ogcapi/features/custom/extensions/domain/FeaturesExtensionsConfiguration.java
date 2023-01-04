@@ -14,6 +14,9 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
+/**
+ * @buildingBlock FEATURES_EXTENSIONS
+ */
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFeaturesExtensionsConfiguration.Builder.class)

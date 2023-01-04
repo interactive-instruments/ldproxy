@@ -28,7 +28,7 @@ import javax.inject.Singleton;
 /**
  * @langEn This option can be used to return features with a different schema.
  * @langDe Todo
- * @name schema
+ * @title schema
  * @endpoints Feature
  */
 @Singleton

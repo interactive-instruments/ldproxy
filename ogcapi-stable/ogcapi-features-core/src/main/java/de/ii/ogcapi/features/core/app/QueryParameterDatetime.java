@@ -16,10 +16,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn TODO
- * @langDe TODO
- * @name Datetime
+ * @title datetime
  * @endpoints Features
+ * @langAll Either a date-time or an interval. Date and time expressions adhere to RFC 3339.
+ *     Intervals may be bounded or half-bounded (double-dots at start or end).
  */
 @Singleton
 @AutoBind

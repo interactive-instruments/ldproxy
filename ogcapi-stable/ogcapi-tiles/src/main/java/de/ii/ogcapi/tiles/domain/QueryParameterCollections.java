@@ -37,7 +37,7 @@ import javax.inject.Singleton;
  * @langEn The collections that should be included. The parameter value is a comma-separated list of
  *     collection names.
  * @langDe Todo
- * @name collections
+ * @title collections
  * @endpoints collections
  */
 @Singleton

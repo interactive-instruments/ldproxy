@@ -22,10 +22,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn TODO
- * @langDe TODO
- * @name offset
+ * @title offset
  * @endpoints Features
+ * @langAll The optional offset parameter identifies the index of the first feature in the response
+ *     in the overall result set.
  */
 @Singleton
 @AutoBind

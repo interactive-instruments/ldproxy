@@ -32,7 +32,7 @@ import javax.inject.Singleton;
 /**
  * @langEn The optional limit parameter limits the number of features that are included in the tile.
  * @langDe Todo
- * @name limit
+ * @title limit
  * @endpoints Tile
  */
 @Singleton

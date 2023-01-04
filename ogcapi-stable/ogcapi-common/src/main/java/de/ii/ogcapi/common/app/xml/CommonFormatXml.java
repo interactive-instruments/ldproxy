@@ -24,7 +24,7 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
 /**
- * @format XML
+ * @title XML
  */
 @Singleton
 @AutoBind
