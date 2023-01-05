@@ -21,6 +21,7 @@ import de.ii.xtraplatform.features.gml.domain.XMLNamespaceNormalizer;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -164,13 +165,24 @@ public class GmlWriterSkeleton implements GmlWriter {
                   }
                 }));
 
+    String rootElementPrefix =
+        rootElement.contains(":")
+            ? rootElement.substring(0, rootElement.indexOf(':'))
+            : context
+                .encoding()
+                .getDefaultNamespace()
+                .orElseThrow(
+                    () ->
+                        new IllegalStateException(
+                            "GML: root element is in a default namespace, but no default namespace has been configured."));
+
     // filter namespaces
     Map<String, String> effectiveNamespaces =
         context.encoding().getNamespaces().entrySet().stream()
             .filter(
                 entry ->
-                    (!"sf".equals(entry.getKey()) || rootElement.startsWith("sf:"))
-                        && (!"wfs".equals(entry.getKey()) || rootElement.startsWith("wfs:"))
+                    (!"sf".equals(entry.getKey()) || "sf".equals(rootElementPrefix))
+                        && (!"wfs".equals(entry.getKey()) || "wfs".equals(rootElementPrefix))
                         && (!"gml21".equals(entry.getKey())
                             || context.encoding().getGmlVersion().equals(GML21))
                         && (!"gml31".equals(entry.getKey())
@@ -194,9 +206,17 @@ public class GmlWriterSkeleton implements GmlWriter {
                   }
                 }));
 
+    Set<String> prefixesWithSchemaLocation =
+        effectiveNamespaces.keySet().stream()
+            .filter(
+                prefix ->
+                    !FeaturesFormatGml.STANDARD_NAMESPACES.containsKey(prefix)
+                        || prefix.equals(rootElementPrefix))
+            .collect(Collectors.toUnmodifiableSet());
+
     Map<String, String> effectiveSchemaLocations =
         context.encoding().getSchemaLocations().entrySet().stream()
-            .filter(entry -> effectiveNamespaces.containsKey(entry.getKey()))
+            .filter(entry -> prefixesWithSchemaLocation.contains(entry.getKey()))
             .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
     context.encoding().write(" xsi:schemaLocation=\"");
     context

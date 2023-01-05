@@ -202,15 +202,19 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
   /**
    * @langEn If any application namespace should be included in the `xsi:schemaLocation` attribute
    *     of the root element, the document URIs have to be provided.
-   *     <p>The pre-defined namespaces `sf` and `wfs` will only be added, if that namespace is used
-   *     for the feature collection root element.
+   *     <p>In addition, the schema location of the namespace of the root element will be added, if
+   *     known. For the pre-defined namespaces (`gml`, `sf` and `wfs`), the canonical schema
+   *     location in the OGC schema repository will be used unless another schema location for the
+   *     namespace is configured.
    *     <p>Note that to meet XML Schema validation requirements, the namespace of the root element
    *     must be declared in the `xsi:schemaLocation` attribute, even if the namespace is imported
    *     by another schema.
    * @langDe Wenn ein Anwendungsnamensraum in das Attribut `xsi:schemaLocation` des Root-Elements
    *     aufgenommen werden soll, müssen die Dokument-URIs angegeben werden.
-   *     <p>Die vordefinierten Namespaces `sf` und `wfs` werden nur hinzugefügt, wenn dieser
-   *     Namespace für das Root-Element der Feature Collection verwendet wird.
+   *     <p>Außerdem wird die Schema-URL des Namespaces des Root-Elements hinzugefügt, falls
+   *     bekannt. Für die vordefinierten Namespaces (`gml`, `sf` und `wfs`) wird die kanonische
+   *     Schema-URL im OGC-Schema-Repository verwendet, sofern keine andere Schema-URL für den
+   *     Namespace konfiguriert ist.
    *     <p>Beachten Sie, dass der Namespace des Root-Elements im Attribut `xsi:schemaLocation`
    *     deklariert werden muss, um den XML-Schema-Validierungsanforderungen zu entsprechen, auch
    *     wenn der Namespace von einem anderen Schema importiert wird.
