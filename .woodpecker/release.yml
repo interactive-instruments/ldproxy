@@ -61,16 +61,14 @@ pipeline:
     when:
       event: tag
 
-# TODO: fails because java is missing ???
   github:
-    image: node:18-alpine
+    image: node:18
     commands:
       - export HOME=$${CI_WORKSPACE}
-      - apk --no-cache add git libc6-compat
       - wget -O - https://github.com/cli/cli/releases/download/v1.2.0/gh_1.2.0_linux_amd64.tar.gz | tar xzvf -
       - chmod +x gh_1.2.0_linux_amd64/bin/gh
-      - npx github-release-notes@0.17.1 release --override --token=$GITHUB_TOKEN
-      - npx github-release-notes@0.17.1 changelog --override --token=$GITHUB_TOKEN
+      - npx --yes @cjbarth/github-release-notes@3.0.0 release -d --override --token=$GITHUB_TOKEN
+      - npx --yes @cjbarth/github-release-notes@3.0.0 changelog --override --token=$GITHUB_TOKEN
       - git config user.name $CI_COMMIT_AUTHOR
       - git config user.email $CI_COMMIT_AUTHOR_EMAIL
       - git checkout -B changelog-$CI_COMMIT_TAG
