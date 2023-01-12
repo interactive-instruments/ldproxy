@@ -66,7 +66,7 @@ public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
     if (hasRefsWithWrongVersion(schema)) {
       Map<String, JsonSchema> adjustedProperties = adjustRefs(schema.getProperties());
 
-      return ImmutableJsonSchemaObject.builder()
+      return new ImmutableJsonSchemaObject.Builder()
           .from(schema)
           .properties(adjustedProperties)
           .build();
@@ -77,7 +77,7 @@ public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
 
   static JsonSchemaArray adjustRefs(JsonSchemaArray schema) {
     if (hasRefsWithWrongVersion(schema)) {
-      return ImmutableJsonSchemaArray.builder()
+      return new ImmutableJsonSchemaArray.Builder()
           .from(schema)
           .items(adjustRef((JsonSchemaRef) schema.getItems()))
           .build();

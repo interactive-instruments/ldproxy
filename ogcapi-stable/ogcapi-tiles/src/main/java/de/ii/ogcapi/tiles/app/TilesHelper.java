@@ -273,7 +273,7 @@ public class TilesHelper {
                           final JsonSchemaObject properties =
                               (JsonSchemaObject) schema.getProperties().get("properties");
                           builder2.propertiesSchema(
-                              ImmutableJsonSchemaObject.builder()
+                              new ImmutableJsonSchemaObject.Builder()
                                   .required(properties.getRequired())
                                   .properties(properties.getProperties())
                                   .patternProperties(properties.getPatternProperties())
@@ -307,7 +307,7 @@ public class TilesHelper {
 
                           if (!vectorLayer.getFields().isEmpty()) {
                             builder2.propertiesSchema(
-                                ImmutableJsonSchemaObject.builder()
+                                new ImmutableJsonSchemaObject.Builder()
                                     .properties(
                                         vectorLayer.getFields().entrySet().stream()
                                             .collect(
@@ -316,14 +316,16 @@ public class TilesHelper {
                                                     entry -> {
                                                       if ("number"
                                                           .equalsIgnoreCase(entry.getValue())) {
-                                                        return ImmutableJsonSchemaNumber.builder()
+                                                        return new ImmutableJsonSchemaNumber
+                                                                .Builder()
                                                             .build();
                                                       } else if ("boolean"
                                                           .equalsIgnoreCase(entry.getValue())) {
-                                                        return ImmutableJsonSchemaBoolean.builder()
+                                                        return new ImmutableJsonSchemaBoolean
+                                                                .Builder()
                                                             .build();
                                                       }
-                                                      return ImmutableJsonSchemaString.builder()
+                                                      return new ImmutableJsonSchemaString.Builder()
                                                           .build();
                                                     })))
                                     .build());

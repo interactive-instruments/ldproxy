@@ -44,19 +44,19 @@ class SchemaDeriverJsonSpec extends Specification {
             ImmutableJsonSchemaDocument.builder()
                     .title("test-label")
                     .description("bar")
-                    .putProperties("geometry", ImmutableJsonSchemaRefExternal.builder()
+                    .putProperties("geometry", new ImmutableJsonSchemaRefExternal.Builder()
                             .ref("https://geojson.org/schema/MultiPolygon.json")
                             .build())
-                    .putProperties("datetime", ImmutableJsonSchemaString.builder()
+                    .putProperties("datetime", new ImmutableJsonSchemaString.Builder()
                             .format("date-time")
                             .title("foo")
                             .description("bar")
                             .build())
-                    .putProperties("objects.date", ImmutableJsonSchemaString.builder()
+                    .putProperties("objects.date", new ImmutableJsonSchemaString.Builder()
                             .title("foo > date")
                             .format("date")
                             .build())
-                    .additionalProperties(ImmutableJsonSchemaFalse.builder().build())
+                    .additionalProperties(new ImmutableJsonSchemaFalse.Builder().build())
                     .build();
 
     static JsonSchema EXPECTED_QUERYABLES_V7 =

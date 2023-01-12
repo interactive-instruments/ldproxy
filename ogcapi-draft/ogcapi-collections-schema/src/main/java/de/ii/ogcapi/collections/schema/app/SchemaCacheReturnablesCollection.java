@@ -44,25 +44,27 @@ public class SchemaCacheReturnablesCollection extends JsonSchemaCache {
     JsonSchemaRef linkRef =
         version == JsonSchemaDocument.VERSION.V7
             ? ImmutableJsonSchemaRefV7.builder().objectType("Link").build()
-            : ImmutableJsonSchemaRef.builder().objectType("Link").build();
+            : new ImmutableJsonSchemaRef.Builder().objectType("Link").build();
 
     String featureSchemaUri =
         schemaUri
             .map(uri -> uri.replace("/schemas/collection", "/schemas/feature"))
             .orElse("https://geojson.org/schema/Feature.json");
     JsonSchemaRefExternal featureRef =
-        ImmutableJsonSchemaRefExternal.builder().ref(featureSchemaUri).build();
+        new ImmutableJsonSchemaRefExternal.Builder().ref(featureSchemaUri).build();
 
     builder
         .id(schemaUri)
         .putDefinitions("Link", JsonSchemaBuildingBlocks.LINK_JSON)
         .putProperties(
-            "type", ImmutableJsonSchemaString.builder().addEnums("FeatureCollection").build())
-        .putProperties("links", ImmutableJsonSchemaArray.builder().items(linkRef).build())
-        .putProperties("timeStamp", ImmutableJsonSchemaString.builder().format("date-time").build())
-        .putProperties("numberMatched", ImmutableJsonSchemaInteger.builder().minimum(0).build())
-        .putProperties("numberReturned", ImmutableJsonSchemaInteger.builder().minimum(0).build())
-        .putProperties("features", ImmutableJsonSchemaArray.builder().items(featureRef).build())
+            "type", new ImmutableJsonSchemaString.Builder().addEnums("FeatureCollection").build())
+        .putProperties("links", new ImmutableJsonSchemaArray.Builder().items(linkRef).build())
+        .putProperties(
+            "timeStamp", new ImmutableJsonSchemaString.Builder().format("date-time").build())
+        .putProperties("numberMatched", new ImmutableJsonSchemaInteger.Builder().minimum(0).build())
+        .putProperties(
+            "numberReturned", new ImmutableJsonSchemaInteger.Builder().minimum(0).build())
+        .putProperties("features", new ImmutableJsonSchemaArray.Builder().items(featureRef).build())
         .addRequired("type", "features");
 
     return builder.build();

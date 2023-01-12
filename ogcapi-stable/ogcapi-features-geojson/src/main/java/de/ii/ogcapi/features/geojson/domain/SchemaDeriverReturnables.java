@@ -74,7 +74,7 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
     JsonSchemaRef linkRef =
         version == JsonSchemaDocument.VERSION.V7
             ? ImmutableJsonSchemaRefV7.builder().objectType("Link").build()
-            : ImmutableJsonSchemaRef.builder().objectType("Link").build();
+            : new ImmutableJsonSchemaRef.Builder().objectType("Link").build();
 
     builder.putDefinitions("Link", JsonSchemaBuildingBlocks.LINK_JSON);
 
@@ -85,9 +85,10 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
           }
         });
 
-    builder.putProperties("type", ImmutableJsonSchemaString.builder().addEnums("Feature").build());
+    builder.putProperties(
+        "type", new ImmutableJsonSchemaString.Builder().addEnums("Feature").build());
 
-    builder.putProperties("links", ImmutableJsonSchemaArray.builder().items(linkRef).build());
+    builder.putProperties("links", new ImmutableJsonSchemaArray.Builder().items(linkRef).build());
 
     findByRole(properties, Role.ID)
         .ifPresent(
@@ -114,7 +115,7 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
 
     builder.putProperties(
         "properties",
-        ImmutableJsonSchemaObject.builder()
+        new ImmutableJsonSchemaObject.Builder()
             .required(required)
             .properties(withoutFlattenedArrays(propertiesWithoutRoles))
             .patternProperties(onlyFlattenedArraysAsPatterns(propertiesWithoutRoles))

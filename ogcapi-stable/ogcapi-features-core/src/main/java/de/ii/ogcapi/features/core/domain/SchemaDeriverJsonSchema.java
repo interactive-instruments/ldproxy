@@ -120,7 +120,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
   protected JsonSchema buildObjectSchema(
       FeatureSchema schema, Map<String, JsonSchema> properties, List<String> requiredProperties) {
     ImmutableJsonSchemaObject.Builder builder =
-        ImmutableJsonSchemaObject.builder()
+        new ImmutableJsonSchemaObject.Builder()
             .name(schema.getName())
             .title(schema.getLabel())
             .description(schema.getDescription());
@@ -144,28 +144,31 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
       Type type, Optional<String> label, Optional<String> description, Optional<String> unit) {
     switch (type) {
       case INTEGER:
-        return ImmutableJsonSchemaInteger.builder()
+        return new ImmutableJsonSchemaInteger.Builder()
             .title(label)
             .description(description)
             .unit(unit)
             .build();
       case FLOAT:
-        return ImmutableJsonSchemaNumber.builder()
+        return new ImmutableJsonSchemaNumber.Builder()
             .title(label)
             .description(description)
             .unit(unit)
             .build();
       case BOOLEAN:
-        return ImmutableJsonSchemaBoolean.builder().title(label).description(description).build();
+        return new ImmutableJsonSchemaBoolean.Builder()
+            .title(label)
+            .description(description)
+            .build();
       case DATETIME:
-        return ImmutableJsonSchemaString.builder()
+        return new ImmutableJsonSchemaString.Builder()
             // validators will ignore this information as it isn't a well-known format value
             .format("date-time")
             .title(label)
             .description(description)
             .build();
       case DATE:
-        return ImmutableJsonSchemaString.builder()
+        return new ImmutableJsonSchemaString.Builder()
             // validators will ignore this information as it isn't a well-known format value
             .format("date")
             .title(label)
@@ -173,7 +176,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
             .build();
       case STRING:
       default:
-        return ImmutableJsonSchemaString.builder()
+        return new ImmutableJsonSchemaString.Builder()
             .title(label)
             .description(description)
             .unit(unit)
@@ -235,27 +238,27 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
     JsonSchema.Builder builder = null;
 
     if (jsonSchema instanceof JsonSchemaObject) {
-      builder = ImmutableJsonSchemaObject.builder().from(jsonSchema);
+      builder = new ImmutableJsonSchemaObject.Builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaOneOf) {
-      builder = ImmutableJsonSchemaOneOf.builder().from(jsonSchema);
+      builder = new ImmutableJsonSchemaOneOf.Builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaArray) {
-      builder = ImmutableJsonSchemaArray.builder().from(jsonSchema);
+      builder = new ImmutableJsonSchemaArray.Builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaRefV7) {
       builder = ImmutableJsonSchemaRefV7.builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaRef) {
-      builder = ImmutableJsonSchemaRef.builder().from(jsonSchema);
+      builder = new ImmutableJsonSchemaRef.Builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaRefExternal) {
-      builder = ImmutableJsonSchemaRefExternal.builder().from(jsonSchema);
+      builder = new ImmutableJsonSchemaRefExternal.Builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaNull) {
-      builder = ImmutableJsonSchemaNull.builder().from(jsonSchema);
+      builder = new ImmutableJsonSchemaNull.Builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaInteger) {
-      builder = ImmutableJsonSchemaInteger.builder().from(jsonSchema);
+      builder = new ImmutableJsonSchemaInteger.Builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaBoolean) {
-      builder = ImmutableJsonSchemaBoolean.builder().from(jsonSchema);
+      builder = new ImmutableJsonSchemaBoolean.Builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaNumber) {
-      builder = ImmutableJsonSchemaNumber.builder().from(jsonSchema);
+      builder = new ImmutableJsonSchemaNumber.Builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaString) {
-      builder = ImmutableJsonSchemaString.builder().from(jsonSchema);
+      builder = new ImmutableJsonSchemaString.Builder().from(jsonSchema);
     }
 
     if (Objects.nonNull(builder)) {
@@ -272,7 +275,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
       FeatureSchema property,
       List<Codelist> codelists) {
     if (schema instanceof JsonSchemaArray) {
-      return ImmutableJsonSchemaArray.builder()
+      return new ImmutableJsonSchemaArray.Builder()
           .from(schema)
           .minItems(constraints.getMinOccurrence())
           .maxItems(constraints.getMaxOccurrence())
@@ -293,11 +296,11 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
               : property.getType() != SchemaBase.Type.INTEGER;
       result =
           string
-              ? ImmutableJsonSchemaString.builder()
+              ? new ImmutableJsonSchemaString.Builder()
                   .from(result)
                   .enums(constraints.getEnumValues())
                   .build()
-              : ImmutableJsonSchemaInteger.builder()
+              : new ImmutableJsonSchemaInteger.Builder()
                   .from(result)
                   .enums(
                       constraints.getEnumValues().stream()
@@ -317,8 +320,8 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
         Set<String> values = codelist.get().getData().getEntries().keySet();
         result =
             string
-                ? ImmutableJsonSchemaString.builder().from(result).enums(values).build()
-                : ImmutableJsonSchemaInteger.builder()
+                ? new ImmutableJsonSchemaString.Builder().from(result).enums(values).build()
+                : new ImmutableJsonSchemaInteger.Builder()
                     .from(result)
                     .enums(
                         values.stream()
@@ -330,7 +333,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
     }
     if (constraints.getRegex().isPresent() && result instanceof ImmutableJsonSchemaString) {
       result =
-          ImmutableJsonSchemaString.builder()
+          new ImmutableJsonSchemaString.Builder()
               .from(result)
               .pattern(constraints.getRegex().get())
               .build();
@@ -338,7 +341,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
     if (constraints.getMin().isPresent() || constraints.getMax().isPresent()) {
       if (result instanceof ImmutableJsonSchemaInteger) {
         ImmutableJsonSchemaInteger.Builder builder =
-            ImmutableJsonSchemaInteger.builder().from(result);
+            new ImmutableJsonSchemaInteger.Builder().from(result);
         if (constraints.getMin().isPresent())
           builder.minimum(Math.round(constraints.getMin().get()));
         if (constraints.getMax().isPresent())
@@ -346,7 +349,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
         result = builder.build();
       } else if (result instanceof ImmutableJsonSchemaNumber) {
         ImmutableJsonSchemaNumber.Builder builder =
-            ImmutableJsonSchemaNumber.builder().from(result);
+            new ImmutableJsonSchemaNumber.Builder().from(result);
         if (constraints.getMin().isPresent()) builder.minimum(constraints.getMin().get());
         if (constraints.getMax().isPresent()) builder.maximum(constraints.getMax().get());
         result = builder.build();
@@ -362,19 +365,19 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
       return ImmutableJsonSchemaRefV7.builder()
           .name(schema.getName())
           .objectType(objectType)
-          .def(ImmutableJsonSchemaObject.builder().from(schema).name(objectType).build())
+          .def(new ImmutableJsonSchemaObject.Builder().from(schema).name(objectType).build())
           .build();
     }
 
-    return ImmutableJsonSchemaRef.builder()
+    return new ImmutableJsonSchemaRef.Builder()
         .name(schema.getName())
         .objectType(objectType)
-        .def(ImmutableJsonSchemaObject.builder().from(schema).name(objectType).build())
+        .def(new ImmutableJsonSchemaObject.Builder().from(schema).name(objectType).build())
         .build();
   }
 
   @Override
   protected JsonSchema withArrayWrapper(JsonSchema schema) {
-    return ImmutableJsonSchemaArray.builder().name(schema.getName()).items(schema).build();
+    return new ImmutableJsonSchemaArray.Builder().name(schema.getName()).items(schema).build();
   }
 }

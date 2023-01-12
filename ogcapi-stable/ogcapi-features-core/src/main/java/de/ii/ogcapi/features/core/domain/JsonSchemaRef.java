@@ -9,18 +9,22 @@ package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Style(jdkOnly = true, deepImmutablesDetection = true)
+@JsonDeserialize(builder = ImmutableJsonSchemaRef.Builder.class)
 public abstract class JsonSchemaRef extends JsonSchema {
 
-  @SuppressWarnings("UnstableApiUsage")
-  public static final Funnel<JsonSchemaRef> FUNNEL =
-      (from, into) -> into.putString(from.getRef(), StandardCharsets.UTF_8);
+  @JsonIgnore
+  @Nullable
+  @Value.Derived
+  public String getType() {
+    return null;
+  }
 
   @JsonProperty("$ref")
   @Value.Derived
@@ -44,4 +48,8 @@ public abstract class JsonSchemaRef extends JsonSchema {
   public abstract JsonSchema getDef();
 
   public abstract static class Builder extends JsonSchema.Builder {}
+
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaRef> FUNNEL =
+      (from, into) -> into.putString(from.getRef(), StandardCharsets.UTF_8);
 }
