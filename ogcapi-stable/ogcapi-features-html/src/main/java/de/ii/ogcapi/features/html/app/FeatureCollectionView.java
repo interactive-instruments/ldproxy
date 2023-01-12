@@ -162,7 +162,10 @@ public class FeatureCollectionView extends DatasetView {
                   Optional.ofNullable(htmlConfig.getLeafletUrl())
                       .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
               .attribution(htmlConfig.getBasemapAttribution())
-              .fields(queryables.entrySet())
+              .fields(
+                  queryables.entrySet().stream()
+                      .sorted(Map.Entry.comparingByValue())
+                      .collect(Collectors.toList()))
               .build();
     } else {
       this.filterEditor = null;
@@ -192,15 +195,19 @@ public class FeatureCollectionView extends DatasetView {
   public String getAttribution() {
     String basemapAttribution = super.getAttribution();
     if (Objects.nonNull(attribution)) {
-      if (Objects.nonNull(basemapAttribution))
+      if (Objects.nonNull(basemapAttribution)) {
         return String.join(" | ", attribution, basemapAttribution);
-      else return attribution;
+      } else {
+        return attribution;
+      }
     }
     return basemapAttribution;
   }
 
   public Optional<String> getCanonicalUrl() throws URISyntaxException {
-    if (!isCollection && persistentUri != null) return Optional.of(persistentUri);
+    if (!isCollection && persistentUri != null) {
+      return Optional.of(persistentUri);
+    }
 
     URICustomizer canonicalUri = uriBuilder.copy().ensureNoTrailingSlash().clearParameters();
 
@@ -216,7 +223,9 @@ public class FeatureCollectionView extends DatasetView {
   }
 
   public Optional<String> getPersistentUri() throws URISyntaxException {
-    if (!isCollection && persistentUri != null) return Optional.of(persistentUri);
+    if (!isCollection && persistentUri != null) {
+      return Optional.of(persistentUri);
+    }
 
     return Optional.empty();
   }
