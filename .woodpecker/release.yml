@@ -67,13 +67,13 @@ pipeline:
       - export HOME=$${CI_WORKSPACE}
       - wget -O - https://github.com/cli/cli/releases/download/v1.2.0/gh_1.2.0_linux_amd64.tar.gz | tar xzvf -
       - chmod +x gh_1.2.0_linux_amd64/bin/gh
-      - npx --yes @cjbarth/github-release-notes@3.0.0 release -d --override --token=$GITHUB_TOKEN
+      - npx --yes @cjbarth/github-release-notes@3.0.0 release -d --token=$GITHUB_TOKEN
       - npx --yes @cjbarth/github-release-notes@3.0.0 changelog --override --token=$GITHUB_TOKEN
       - git config user.name $CI_COMMIT_AUTHOR
       - git config user.email $CI_COMMIT_AUTHOR_EMAIL
       - git checkout -B changelog-$CI_COMMIT_TAG
       - git add CHANGELOG.md
-      - git commit -m "add changelog for $CI_COMMIT_TAG"
+      - git commit -m "add changelog for $CI_COMMIT_TAG" -n
       - git push -u https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$CI_REPO_NAME.git changelog-$CI_COMMIT_TAG > /dev/null 2>&1
       - GITHUB_TOKEN=$GITHUB_TOKEN ./gh_1.2.0_linux_amd64/bin/gh pr create --base master --head changelog-$CI_COMMIT_TAG --reviewer $CI_COMMIT_AUTHOR --title " add changelog for $CI_COMMIT_TAG" --body ""
     secrets: [ github_token, github_user ]
