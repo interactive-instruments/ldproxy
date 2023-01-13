@@ -1,12 +1,13 @@
 ---
-  dataSource: "issues"
+  dataSource: "milestones"
   prefix: ""
   ignoreIssuesWith: 
     - "duplicate"
     - "question"
     - "wontfix"
     - "nocl"
-  onlyMilestones: false
+  milestoneMatch: "{{tag_name}}"
+  onlyMilestones: true
   ignoreTagsWith: 
     - "v1"
     - "-beta"
