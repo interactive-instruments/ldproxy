@@ -65,10 +65,11 @@ pipeline:
     image: node:18
     commands:
       - export HOME=$${CI_WORKSPACE}
+      - npx --yes @cjbarth/github-release-notes@3.0.0 release -d --token=$GITHUB_TOKEN
+      - npx --yes @cjbarth/github-release-notes@3.0.0 changelog --override -f NEW.md --token=$GITHUB_TOKEN
+      - sed -i -e "/# Changelog/r NEW.md" -e "/# Changelog/a ---" -e '/# Changelog/d' CHANGELOG.md
       - wget -O - https://github.com/cli/cli/releases/download/v1.2.0/gh_1.2.0_linux_amd64.tar.gz | tar xzvf -
       - chmod +x gh_1.2.0_linux_amd64/bin/gh
-      - npx --yes @cjbarth/github-release-notes@3.0.0 release -d --token=$GITHUB_TOKEN
-      - npx --yes @cjbarth/github-release-notes@3.0.0 changelog --override --token=$GITHUB_TOKEN
       - git config user.name $CI_COMMIT_AUTHOR
       - git config user.email $CI_COMMIT_AUTHOR_EMAIL
       - git checkout -B changelog-$CI_COMMIT_TAG
