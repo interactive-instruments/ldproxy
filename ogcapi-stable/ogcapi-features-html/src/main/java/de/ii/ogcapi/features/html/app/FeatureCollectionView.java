@@ -73,7 +73,10 @@ public class FeatureCollectionView extends FeatureCollectionBaseView {
                   Optional.ofNullable(htmlConfig.getLeafletUrl())
                       .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
               .attribution(htmlConfig.getBasemapAttribution())
-              .fields(queryables.entrySet())
+              .fields(
+                  queryables.entrySet().stream()
+                      .sorted(Map.Entry.comparingByValue())
+                      .collect(Collectors.toList()))
               .build();
     }
   }
