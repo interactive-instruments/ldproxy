@@ -176,15 +176,19 @@ public abstract class FeatureCollectionBaseView extends DatasetView {
   public String getAttribution() {
     String basemapAttribution = super.getAttribution();
     if (Objects.nonNull(attribution)) {
-      if (Objects.nonNull(basemapAttribution))
+      if (Objects.nonNull(basemapAttribution)) {
         return String.join(" | ", attribution, basemapAttribution);
-      else return attribution;
+      } else {
+        return attribution;
+      }
     }
     return basemapAttribution;
   }
 
   public Optional<String> getCanonicalUrl() throws URISyntaxException {
-    if (!isCollection && persistentUri != null) return Optional.of(persistentUri);
+    if (!isCollection && persistentUri != null) {
+      return Optional.of(persistentUri);
+    }
 
     URICustomizer canonicalUri = uriBuilder.copy().ensureNoTrailingSlash().clearParameters();
 
@@ -200,7 +204,9 @@ public abstract class FeatureCollectionBaseView extends DatasetView {
   }
 
   public Optional<String> getPersistentUri() throws URISyntaxException {
-    if (!isCollection && persistentUri != null) return Optional.of(persistentUri);
+    if (!isCollection && persistentUri != null) {
+      return Optional.of(persistentUri);
+    }
 
     return Optional.empty();
   }
