@@ -52,7 +52,7 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
             (List<Link>) apiLandingPage().getExtensions().get("datasetDownloadLinks"),
             ImmutableList.<Link>of())
         .stream()
-        .sorted(Comparator.comparing(Link::getTypeLabel))
+        .sorted(Comparator.comparing(Link::getTitle))
         .collect(Collectors.toList());
   }
 
