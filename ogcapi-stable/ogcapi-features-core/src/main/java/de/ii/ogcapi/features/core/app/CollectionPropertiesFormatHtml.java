@@ -8,7 +8,6 @@
 package de.ii.ogcapi.features.core.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesType;
 import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
@@ -21,9 +20,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ogcapi.html.domain.NavigationDTO;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import javax.inject.Inject;
@@ -101,34 +98,6 @@ public class CollectionPropertiesFormatHtml implements CollectionPropertiesForma
       String collectionId,
       OgcApi api,
       ApiRequestContext requestContext) {
-    String rootTitle = i18n.get("root", requestContext.getLanguage());
-    String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
-    String collectionPropertiesTitle =
-        i18n.get(type.toString() + "Title", requestContext.getLanguage());
-
-    URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
-    final List<NavigationDTO> breadCrumbs =
-        new ImmutableList.Builder<NavigationDTO>()
-            .add(
-                new NavigationDTO(
-                    rootTitle,
-                    resourceUri
-                        .copy()
-                        .removeLastPathSegments(api.getData().getSubPath().size() + 3)
-                        .toString()))
-            .add(
-                new NavigationDTO(
-                    api.getData().getLabel(),
-                    resourceUri.copy().removeLastPathSegments(3).toString()))
-            .add(
-                new NavigationDTO(
-                    collectionsTitle, resourceUri.copy().removeLastPathSegments(2).toString()))
-            .add(
-                new NavigationDTO(
-                    api.getData().getCollections().get(collectionId).getLabel(),
-                    resourceUri.copy().removeLastPathSegments(1).toString()))
-            .add(new NavigationDTO(collectionPropertiesTitle))
-            .build();
 
     HtmlConfiguration htmlConfig =
         api.getData()
@@ -139,6 +108,7 @@ public class CollectionPropertiesFormatHtml implements CollectionPropertiesForma
 
     return new ImmutableCollectionPropertiesView.Builder()
         .apiData(api.getData())
+        .collectionId(collectionId)
         .schemaCollectionProperties(schemaProperties)
         .type(type)
         .rawLinks(links)

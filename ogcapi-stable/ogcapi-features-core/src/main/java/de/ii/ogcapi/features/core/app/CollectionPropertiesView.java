@@ -22,6 +22,7 @@ import de.ii.ogcapi.features.core.domain.JsonSchemaRefExternal;
 import de.ii.ogcapi.features.core.domain.JsonSchemaString;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.html.domain.OgcApiView;
 import java.util.List;
 import java.util.Locale;
@@ -35,6 +36,50 @@ import org.immutables.value.Value.Style.ImplementationVisibility;
 @Value.Immutable
 @Value.Style(builder = "new", visibility = ImplementationVisibility.PUBLIC)
 public abstract class CollectionPropertiesView extends OgcApiView {
+
+  public abstract String collectionId();
+
+  @Value.Derived
+  @Override
+  public String title() {
+    return i18n().get(type() + "Title", language());
+  }
+
+  @Value.Derived
+  @Override
+  public String description() {
+    return i18n().get(type() + "Description", language());
+  }
+
+  @Value.Derived
+  @Override
+  public List<NavigationDTO> breadCrumbs() {
+    String rootTitle = i18n().get("root", language());
+    String collectionsTitle = i18n().get("collectionsTitle", language());
+    String collectionPropertiesTitle = i18n().get(type().toString() + "Title", language());
+    URICustomizer resourceUri = uriCustomizer().copy().clearParameters();
+
+    return new ImmutableList.Builder<NavigationDTO>()
+        .add(
+            new NavigationDTO(
+                rootTitle,
+                resourceUri
+                    .copy()
+                    .removeLastPathSegments(apiData().getSubPath().size() + 3)
+                    .toString()))
+        .add(
+            new NavigationDTO(
+                apiData().getLabel(), resourceUri.copy().removeLastPathSegments(3).toString()))
+        .add(
+            new NavigationDTO(
+                collectionsTitle, resourceUri.copy().removeLastPathSegments(2).toString()))
+        .add(
+            new NavigationDTO(
+                apiData().getCollections().get(collectionId()).getLabel(),
+                resourceUri.copy().removeLastPathSegments(1).toString()))
+        .add(new NavigationDTO(collectionPropertiesTitle))
+        .build();
+  }
 
   @Value.Derived
   public List<CollectionProperty> collectionProperties() {
