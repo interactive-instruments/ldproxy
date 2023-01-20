@@ -23,6 +23,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.ImmutableMapClient;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.MapClient.Popup;
@@ -179,6 +180,13 @@ public class StyleFormatHtml implements StyleFormatExtension {
     }
   }
 
+  private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(HtmlConfiguration.class)
+        .map(HtmlConfiguration::getNoIndexEnabled)
+        .orElse(true);
+  }
+
   @Override
   public Object getStyleEntity(
       StylesheetContent stylesheetContent,
@@ -272,7 +280,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
         .styleId(styleId)
         .popup(popup)
         .layerControl(layerControl)
-        .noIndex(true)
+        .noIndex(isNoIndexEnabledForApi(apiData))
         .urlPrefix(requestContext.getStaticUrlPrefix())
         .layerIds(
             "{"
