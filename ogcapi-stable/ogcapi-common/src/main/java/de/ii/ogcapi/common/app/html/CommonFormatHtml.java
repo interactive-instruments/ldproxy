@@ -32,7 +32,7 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
 /**
- * @format HTML
+ * @title HTML
  */
 @Singleton
 @AutoBind

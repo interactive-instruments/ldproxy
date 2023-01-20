@@ -13,15 +13,10 @@ import javax.inject.Singleton;
 
 /**
  * @title Foundation
- * @langEn Adds an API catalog with all published APIs. Provides base functionality for all other
- *     modules and therefore cannot be disabled.
- * @langDe Das Modul *Foundation* ist für jede über ldproxy bereitgestellte API aktiv. Es stellt im
- *     Wesentliche interne Funktionalitäten für die übrigen API-Module bereit.
- *     <p>Zusätzlich wird auch die ldproxy-spezifische Ressource "API Catalog" als Liste der aktiven
- *     APIs in dem Deployment bereitgestellt.
- * @example {@link de.ii.ogcapi.foundation.domain.FoundationConfiguration}
- * @propertyTable {@link de.ii.ogcapi.foundation.domain.ImmutableFoundationConfiguration}
- * @see ApiCatalog
+ * @langEn Essentials, API catalog with all published APIs.
+ * @langDe Essenzielle Funktionalität, API-Katalog mit allen veröffentlichten APIs.
+ * @ref:cfg {@link de.ii.ogcapi.foundation.domain.FoundationConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.foundation.domain.ImmutableFoundationConfiguration}
  */
 @Singleton
 @AutoBind

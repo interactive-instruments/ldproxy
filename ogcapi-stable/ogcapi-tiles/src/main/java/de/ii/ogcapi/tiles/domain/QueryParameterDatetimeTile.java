@@ -36,7 +36,7 @@ import javax.inject.Singleton;
 /**
  * @langEn Todo
  * @langDe Todo
- * @name Datetime Tile
+ * @title Datetime Tile
  * @endpoints Tile
  */
 @Singleton

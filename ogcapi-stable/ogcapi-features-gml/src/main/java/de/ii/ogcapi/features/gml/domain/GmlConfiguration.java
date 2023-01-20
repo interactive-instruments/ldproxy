@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
+ * @buildingBlock GML
  * @langEn By default, every GML property element will receive the property name from the feature
  *     schema. That is, the element will be in the default namespace. A different name can be set
  *     using the `rename` transformation, which can be used to change the name, but also supports to
@@ -27,8 +28,7 @@ import org.immutables.value.Value;
  *     Feature-Schema. Das heißt, das Element wird im Standard-Namensraum liegen. Ein anderer Name
  *     kann mit der Transformation `rename` festgelegt werden, die zum Ändern des Namens verwendet
  *     werden kann, aber auch das Hinzufügen eines Namensraumpräfixes unterstützt.
- * @default `{}`
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: GML
  *   enabled: true
@@ -51,7 +51,7 @@ import org.immutables.value.Value;
  *         someOtherAtt:
  *           rename: 'ns2:someOtherAtt'
  * ```
- * </code>
+ *     </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
@@ -76,7 +76,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    * @langDe Bestimmt die zu verwendende GML-Version: `GML32` für GML 3.2, `GML31` für GML 3.1 und
    *     `GML21` für GML 2.1.
    * @default `GML32`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -110,7 +110,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     `sf:FeatureCollection` in `featureCollectionElementName` konfiguriert ist, wird der Wert
    *     ignoriert und es wird keine Konformität zu einer GML-Konformitätsklasse erklärt.
    * @default `null`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -160,7 +160,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     Da Feature-Daten immer Elemente in anwendungsschemaspezifischen Namespaces verwenden, muss
    *     dieser Konfigurationsparameter immer angegeben werden.
    * @default `{}`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -184,7 +184,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     `applicationNamespaces` deklariertes Präfix sein. Dieser Namespace wird als
    *     Standard-Namespace des XML-Dokuments deklariert.
    * @default `null`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -202,20 +202,24 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
   /**
    * @langEn If any application namespace should be included in the `xsi:schemaLocation` attribute
    *     of the root element, the document URIs have to be provided.
-   *     <p>The pre-defined namespaces `sf` and `wfs` will only be added, if that namespace is used
-   *     for the feature collection root element.
+   *     <p>In addition, the schema location of the namespace of the root element will be added, if
+   *     known. For the pre-defined namespaces (`gml`, `sf` and `wfs`), the canonical schema
+   *     location in the OGC schema repository will be used unless another schema location for the
+   *     namespace is configured.
    *     <p>Note that to meet XML Schema validation requirements, the namespace of the root element
    *     must be declared in the `xsi:schemaLocation` attribute, even if the namespace is imported
    *     by another schema.
    * @langDe Wenn ein Anwendungsnamensraum in das Attribut `xsi:schemaLocation` des Root-Elements
    *     aufgenommen werden soll, müssen die Dokument-URIs angegeben werden.
-   *     <p>Die vordefinierten Namespaces `sf` und `wfs` werden nur hinzugefügt, wenn dieser
-   *     Namespace für das Root-Element der Feature Collection verwendet wird.
+   *     <p>Außerdem wird die Schema-URL des Namespaces des Root-Elements hinzugefügt, falls
+   *     bekannt. Für die vordefinierten Namespaces (`gml`, `sf` und `wfs`) wird die kanonische
+   *     Schema-URL im OGC-Schema-Repository verwendet, sofern keine andere Schema-URL für den
+   *     Namespace konfiguriert ist.
    *     <p>Beachten Sie, dass der Namespace des Root-Elements im Attribut `xsi:schemaLocation`
    *     deklariert werden muss, um den XML-Schema-Validierungsanforderungen zu entsprechen, auch
    *     wenn der Namespace von einem anderen Schema importiert wird.
    * @default `null`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -245,7 +249,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     <p>Wenn das GML-Objektelement nicht im Standard-Namensraum liegt, spezifiziert dieser
    *     Konfigurationsparameter den Namensraumpräfix zu einem Objekttyp.
    * @default `{}`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -275,7 +279,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     `_type` die Feature-Eigenschaft mit drei verschiedenen Werten, die auf den qualifizierten
    *     Elementnamen abgebildet werden.
    * @default `{}`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -303,7 +307,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     Konfigurationsparameter bietet die Möglichkeit, dass ein anderes Feature-Collection-Element
    *     in der Rückgabe verwendet wird.
    * @default `sf:FeatureCollection`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -326,7 +330,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     bietet die Möglichkeit, den Elementnamen für das konfigurierte Feature-Collection-Element
    *     zu spezifizieren.
    * @default `sf:featureMember`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -348,7 +352,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     `numberReturned`) unterstützen. Dieser Konfigurationsparameter steuert, ob die Attribute
    *     als XML-Attribute in das Feature-Collection-Element aufgenommen werden.
    * @default `false`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -370,7 +374,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     die Eigenschaft auch als XML-Attribut des übergeordneten GML-Objektelements dargestellt
    *     werden. Dies ist nur für Eigenschaften vom Typ STRING, FLOAT, INTEGER oder BOOLEAN möglich.
    * @default `[]`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -396,7 +400,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     können, kann dieser Konfigurationsparameter verwendet werden, um ein konsistentes Präfix
    *     hinzuzufügen, um alle Werte auf gültige XML-IDs abzubilden.
    * @default `null`
-   * @example <code>
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true

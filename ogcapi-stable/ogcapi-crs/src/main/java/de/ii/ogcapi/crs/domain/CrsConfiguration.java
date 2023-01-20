@@ -14,10 +14,8 @@ import java.util.Set;
 import org.immutables.value.Value;
 
 /**
- * @langEn Todo
- * @langDe Das Default-Koordinatenreferenzsystem `CRS84` entspricht `code: 4326, forceAxisOrder:
- *     LON_LAT`, `CRS84h` entspricht `code: 4979, forceAxisOrder: LON_LAT`.
- * @example <code>
+ * @buildingBlock CRS
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: CRS
  *   additionalCrs:
@@ -31,10 +29,6 @@ import org.immutables.value.Value;
  *     forceAxisOrder: NONE
  * ```
  * </code>
- * @langEn Todo
- * @langDe Durch Angabe des Query-Parameters `crs` bei den Ressourcen "Features" und "Feature"
- *     können die Koordinaten in einem der konfigurierten Koordinatenreferenzsystemen angefordert
- *     werden.
  */
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -52,7 +46,7 @@ public interface CrsConfiguration extends ExtensionConfiguration {
    *     ist in `forceAxisOrder` die Reihenfolge der Koordinatenachsen anzugeben (`NONE`: wie im
    *     Koordinatenreferenzsystem, `LON_LAT` oder `LAT_LON`: die Reihenfolge im
    *     Koordinatenreferenzsystem wird ignoriert und die angegebene Reihenfolge wird verwendet).
-   * @default `{}`
+   * @default {}
    */
   Set<EpsgCrs> getAdditionalCrs();
 

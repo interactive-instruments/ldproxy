@@ -43,9 +43,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @name API Definition
- * @path /{apiId}/api
- * @formats {@link de.ii.ogcapi.common.domain.ApiDefinitionFormatExtension}
+ * @title API Definition
+ * @path api
+ * @langAll Provides the OpenAPI definition.
+ * @ref:formats {@link de.ii.ogcapi.common.domain.ApiDefinitionFormatExtension}
  */
 @Singleton
 @AutoBind

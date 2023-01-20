@@ -33,12 +33,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
+ * @title bbox-crs
+ * @endpoints Features
  * @langEn The coordinate reference system of the `bbox` parameter. Default is WGS84
  *     longitude/latitude.
- * @langDe Das Koordinatenreferenzsystem des Parameters "bbox". Default ist WGS84
+ * @langDe Das Koordinatenreferenzsystem des Parameters 'bbox'. Default ist WGS84
  *     longitude/latitude.
- * @name BBOX_CRS
- * @endpoints TODO
  */
 @Singleton
 @AutoBind

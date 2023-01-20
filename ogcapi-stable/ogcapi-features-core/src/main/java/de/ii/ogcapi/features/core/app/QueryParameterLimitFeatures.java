@@ -31,10 +31,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn TODO
- * @langDe TODO
- * @name limit
+ * @title limit
  * @endpoints Features
+ * @langAll The optional limit parameter limits the number of items that are presented in the
+ *     response document.
  */
 @Singleton
 @AutoBind

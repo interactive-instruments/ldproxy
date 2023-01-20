@@ -16,15 +16,41 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableCaching.Builder.class)
 public interface Caching {
 
+  /**
+   * @langEn TODO_DOCS
+   * @langDe Für die Ressourcen in dem Modul wird der `Last-Modified` Header auf den konfigurierten
+   *     Wert gesetzt. Der Wert überschreibt einen ggf. aus der Ressource bestimmten
+   *     Änderungszeitpunkt.
+   * @default null
+   */
   @Nullable
   Date getLastModified();
 
+  /**
+   * @langEn TODO_DOCS
+   * @langDe Für die Ressourcen in dem Modul wird der `Expires` Header auf den konfigurierten Wert
+   *     gesetzt.
+   * @default null
+   */
   @Nullable
   Date getExpires();
 
+  /**
+   * @langEn TODO_DOCS
+   * @langDe Für die Ressourcen in dem Modul wird der `Cache-Control` Header auf den konfigurierten
+   *     Wert gesetzt. Ausnahme sind die *Features* und *Feature* Ressourcen, bei denen
+   *     `cacheControlItems` zu verwenden ist.
+   * @default null
+   */
   @Nullable
   String getCacheControl();
 
+  /**
+   * @langEn TODO_DOCS
+   * @langDe Für die *Features* und *Feature* Ressourcen wird der `Cache-Control` Header auf den
+   *     konfigurierten Wert gesetzt.
+   * @default null
+   */
   @Nullable
   String getCacheControlItems();
 }

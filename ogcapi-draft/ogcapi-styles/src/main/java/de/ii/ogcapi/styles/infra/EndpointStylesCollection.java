@@ -44,7 +44,14 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** fetch list of styles associated with a collection */
+/**
+ * @title Collection Styles
+ * @path collections/{collectionId}/styles
+ * @langAll This operation fetches the set of styles available. For each style the id, a title,
+ *     links to the stylesheet of the style in each supported encoding, and the link to the metadata
+ *     is provided.
+ * @ref:formats {@link de.ii.ogcapi.styles.domain.StylesFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointStylesCollection extends EndpointSubCollection implements ConformanceClass {

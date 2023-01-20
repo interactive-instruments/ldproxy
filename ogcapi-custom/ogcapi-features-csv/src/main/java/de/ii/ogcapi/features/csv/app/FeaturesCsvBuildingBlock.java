@@ -16,8 +16,9 @@ import javax.inject.Singleton;
 
 /**
  * @title Features CSV
- * @langEn TODO
- * @langDe TODO
+ * @langEn Encode features as CSV.
+ * @langDe Enkodierung von Features als CSV.
+ * @ref:cfgProperties {@link de.ii.ogcapi.features.csv.domain.ImmutableCsvConfiguration}
  */
 @Singleton
 @AutoBind

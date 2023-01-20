@@ -36,13 +36,25 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @langEn Example of the specifications in the configuration file from the API for [Vineyards in
- *     Rhineland-Palatinate](https://demo.ldproxy.net/vineyards).
+ * @buildingBlock TILES
+ * @langEn ### Prerequisites
+ *     <p>The module *Tile Matrix Sets* must be enabled.
+ *     <p>### Storage
+ *     <p>The tile cache is located in the data directory under the relative path
+ *     `cache/tiles/{apiId}`. If the data for an API or tile configuration has been changed, then
+ *     the cache directory for the API should be deleted so that the cache is rebuilt with the
+ *     updated data or rules.
+ * @langDe ### Voraussetzungen
+ *     <p>Das Modul *Tile Matrix Sets* muss aktiviert sein.
+ *     <p>### Storage
+ *     <p>Der Tile-Cache liegt im Datenverzeichnis unter dem relativen Pfad `cache/tiles/{apiId}`.
+ *     Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden, dann sollte das
+ *     Cache-Verzeichnis für die API gelöscht werden, damit der Cache mit den aktualisierten Daten
+ *     oder Regeln neu aufgebaut wird.
+ * @examplesEn Example of the specifications in the configuration file from the API for [Vineyards
+ *     in Rhineland-Palatinate](https://demo.ldproxy.net/vineyards).
  *     <p>At API level:
- * @langDe Beispiel für die Angaben in der Konfigurationsdatei aus der API für [Weinlagen in
- *     Rheinland-Pfalz](https://demo.ldproxy.net/vineyards).
- *     <p>Auf API-Ebene:
- * @example <code>
+ *     <p><code>
  * ```yaml
  * - buildingBlock: TILES
  *   enabled: true
@@ -59,14 +71,9 @@ import org.immutables.value.Value;
  *         min: 5
  *         max: 11
  * ```
- * </code>
- */
-
-/**
- * @langEn For the vineyard objects (aggregation of adjacent objects up to zoom level 9):
- * @langDe Für die Weinlagen-Objekte (Aggregation von aneinander angrenzenden Objekten bis Zoomstufe
- *     9):
- * @example <code>
+ *     </code>
+ *     <p>For the vineyard objects (aggregation of adjacent objects up to zoom level 9):
+ *     <p><code>
  * ```yaml
  * - buildingBlock: TILES
  *   rules:
@@ -90,15 +97,10 @@ import org.immutables.value.Value;
  *       - subregion
  *       - cluster
  * ```
- * </code>
- */
-
-/**
- * @langEn Example of a simple configuration (no seeding at startup, rebuilding the cache every
+ *     </code>
+ *     <p>Example of a simple configuration (no seeding at startup, rebuilding the cache every
  *     hour):
- * @langDe Beispiel für eine einfache Konfiguration (kein Seeding beim Start, Neuaufbau des Cache zu
- *     jeder Stunde):
- * @example <code>
+ *     <p><code>
  * ```yaml
  * - buildingBlock: TILES
  *   tileProvider:
@@ -108,13 +110,9 @@ import org.immutables.value.Value;
  *       runPeriodic: '0 * * * *'
  *       purge: true
  * ```
- * </code>
- */
-
-/**
- * @langEn Example of using multiple threading for seeding:
- * @langDe Beispiel für die Verwendung von mehreren Threads für das Seeding:
- * @example <code>
+ *     </code>
+ *     <p>Example of using multiple threading for seeding:
+ *     <p><code>
  * ```yaml
  * - buildingBlock: TILES
  *   tileProvider:
@@ -122,21 +120,16 @@ import org.immutables.value.Value;
  *     seedingOptions:
  *       maxThreads: 2
  * ```
- * </code>
- */
-
-/**
- * @langEn For this, at least 4 threads must be configured for background processes in the global
+ *     </code>
+ *     <p>For this, at least 4 threads must be configured for background processes in the global
  *     configuration, for example:
- * @langDe Hierfür müssen in der globalen Konfiguration mindestens 4 Threads für Hintergrundprozesse
- *     konfiguriert sein, zum Beispiel:
- * @example <code>
+ *     <p><code>
  * ```yaml
  * backgroundTasks:
  *   maxThreads: 4
  * ```
- * </code>
- * @langEn These seedings make multiple background processes possible in the first place. So, even
+ *     </code>
+ *     <p>These settings make multiple background processes possible in the first place. So, even
  *     without changes to the seeding options, this would allow parallel execution of seeding for 4
  *     APIs.
  *     <p>If `maxThreads` in the seeding options is greater than 1, it means that the seeding will
@@ -146,24 +139,9 @@ import org.immutables.value.Value;
  *     will split the seeding into 2 parts if at least 2 of the 4 threads are available. If 3
  *     threads are used by other services, it will not be split. And if all 4 threads are busy, it
  *     will wait until at least 1 thread becomes available.
- * @langDe Durch diese Setzungen werden mehrere Hintergrundprozesse überhaupt erst ermöglicht.
- *     Selbst ohne Änderungen an den Seeding-Optionen würde dies also die parallele Ausführung des
- *     Seeding für 4 APIs ermöglichen.
- *     <p>Wenn `maxThreads` in den Seeding-Optionen größer als 1 ist, bedeutet das, dass das Seeding
- *     in n Teile geteilt wird, wobei n die Anzahl der verfügbaren Threads ist, wenn das Seeding
- *     beginnt, begrenzt durch `seedingOptions.maxThreads`.
- *     <p>Wenn man also zum Beispiel `seedingOptions.maxThreads` mit der angegebenen `cfg.yml` auf 2
- *     setzt, wird das Seeding in 2 Teile aufgeteilt, wenn mindestens 2 der 4 Threads verfügbar
- *     sind. Wenn 3 Threads von anderen Diensten benutzt werden, wird es nicht aufgeteilt. Und wenn
- *     alle 4 Threads belegt sind, wird gewartet, bis mindestens 1 Thread frei wird.
- */
-
-/**
- * @langEn Example configuration (from the API [Low resolution satellite imagery (OpenMapTiles
+ *     <p>Example configuration (from the API [Low resolution satellite imagery (OpenMapTiles
  *     preview)](https://demo.ldproxy.net/openmaptiles)):
- * @langDe Beispielkonfiguration (aus der API[Satellitenbilder in niedriger Auflösung
- *     (OpenMapTiles-Preview)](https://demo.ldproxy.net/openmaptiles)):
- * @example <code>
+ *     <p><code>
  * ```yaml
  * - buildingBlock: TILES
  *   enabled: true
@@ -171,13 +149,9 @@ import org.immutables.value.Value;
  *     type: MBTILES
  *     filename: satellite-lowres-v1.2-z0-z5.mbtiles
  * ```
- * </code>
- */
-
-/**
- * @langEn Example configuration:
- * @langDe Beispielkonfiguration:
- * @example <code>
+ *     </code>
+ *     <p>Example configuration:
+ *     <p><code>
  * ```yaml
  * - buildingBlock: MAP_TILES
  *   enabled: true
@@ -188,15 +162,10 @@ import org.immutables.value.Value;
  *       - WebP
  *       - PNG
  * ```
- * </code>
- */
-
-/**
- * @langEn Ein Beispiel für eine TileServer-GL-Konfiguration mit dem Style "topographic", der z.B.
+ *     </code>
+ *     <p>Ein Beispiel für eine TileServer-GL-Konfiguration mit dem Style "topographic", der z.B.
  *     als Datenquelle die Vector Tiles der API verwenden kann:
- * @langDe Ein Beispiel für eine TileServer-GL-Konfiguration mit dem Style "topographic", der z.B.
- *     als Datenquelle die Vector Tiles der API verwenden kann:
- * @example <code>
+ *     <p><code>
  * ```json
  * {
  *   "options": {},
@@ -212,7 +181,139 @@ import org.immutables.value.Value;
  *   "data": {}
  * }
  * ```
- * </code>
+ *     </code>
+ * @examplesDe Beispiel für die Angaben in der Konfigurationsdatei aus der API für [Weinlagen in
+ *     Rheinland-Pfalz](https://demo.ldproxy.net/vineyards).
+ *     <p>Auf API-Ebene:
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: TILES
+ *   enabled: true
+ *   cache: MBTILES
+ *   tileProvider:
+ *     type: FEATURES
+ *     multiCollectionEnabled: true
+ *     zoomLevels:
+ *       WebMercatorQuad:
+ *         min: 5
+ *         max: 16
+ *     seeding:
+ *       WebMercatorQuad:
+ *         min: 5
+ *         max: 11
+ * ```
+ *     </code>
+ *     <p>Für die Weinlagen-Objekte (Aggregation von aneinander angrenzenden Objekten bis Zoomstufe
+ *     9):
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: TILES
+ *   rules:
+ *     WebMercatorQuad:
+ *     - min: 5
+ *       max: 7
+ *       merge: true
+ *       groupBy:
+ *       - region
+ *     - min: 8
+ *       max: 8
+ *       merge: true
+ *       groupBy:
+ *       - region
+ *       - subregion
+ *     - min: 9
+ *       max: 9
+ *       merge: true
+ *       groupBy:
+ *       - region
+ *       - subregion
+ *       - cluster
+ * ```
+ *     </code>
+ *     <p>Beispiel für eine einfache Konfiguration (kein Seeding beim Start, Neuaufbau des Cache zu
+ *     jeder Stunde):
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: TILES
+ *   tileProvider:
+ *     type: FEATURES
+ *     seedingOptions:
+ *       runOnStartup: false
+ *       runPeriodic: '0 * * * *'
+ *       purge: true
+ * ```
+ *     </code>
+ *     <p>Beispiel für die Verwendung von mehreren Threads für das Seeding:
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: TILES
+ *   tileProvider:
+ *     type: FEATURES
+ *     seedingOptions:
+ *       maxThreads: 2
+ * ```
+ *     </code>
+ *     <p>Hierfür müssen in der globalen Konfiguration mindestens 4 Threads für Hintergrundprozesse
+ *     konfiguriert sein, zum Beispiel:
+ *     <p><code>
+ * ```yaml
+ * backgroundTasks:
+ *   maxThreads: 4
+ * ```
+ *     </code>
+ *     <p>Durch diese Setzungen werden mehrere Hintergrundprozesse überhaupt erst ermöglicht. Selbst
+ *     ohne Änderungen an den Seeding-Optionen würde dies also die parallele Ausführung des Seeding
+ *     für 4 APIs ermöglichen.
+ *     <p>Wenn `maxThreads` in den Seeding-Optionen größer als 1 ist, bedeutet das, dass das Seeding
+ *     in n Teile geteilt wird, wobei n die Anzahl der verfügbaren Threads ist, wenn das Seeding
+ *     beginnt, begrenzt durch `seedingOptions.maxThreads`.
+ *     <p>Wenn man also zum Beispiel `seedingOptions.maxThreads` mit der angegebenen `cfg.yml` auf 2
+ *     setzt, wird das Seeding in 2 Teile aufgeteilt, wenn mindestens 2 der 4 Threads verfügbar
+ *     sind. Wenn 3 Threads von anderen Diensten benutzt werden, wird es nicht aufgeteilt. Und wenn
+ *     alle 4 Threads belegt sind, wird gewartet, bis mindestens 1 Thread frei wird.
+ *     <p>Beispielkonfiguration (aus der API[Satellitenbilder in niedriger Auflösung
+ *     (OpenMapTiles-Preview)](https://demo.ldproxy.net/openmaptiles)):
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: TILES
+ *   enabled: true
+ *   tileProvider:
+ *     type: MBTILES
+ *     filename: satellite-lowres-v1.2-z0-z5.mbtiles
+ * ```
+ *     </code>
+ *     <p>Beispielkonfiguration:
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: MAP_TILES
+ *   enabled: true
+ *   mapProvider:
+ *     type: TILESERVER
+ *     urlTemplate: 'https://www.example.com/tileserver/styles/topographic/{tileMatrix}/{tileCol}/{tileRow}@2x.{fileExtension}'
+ *     tileEncodings:
+ *       - WebP
+ *       - PNG
+ * ```
+ *     </code>
+ *     <p>Ein Beispiel für eine TileServer-GL-Konfiguration mit dem Style "topographic", der z.B.
+ *     als Datenquelle die Vector Tiles der API verwenden kann:
+ *     <p><code>
+ * ```json
+ * {
+ *   "options": {},
+ *   "styles": {
+ *     "topographic": {
+ *       "style": "topographic.json",
+ *       "tilejson": {
+ *         "type": "overlay",
+ *         "bounds": [35.7550727, 32.3573507, 37.2052764, 33.2671397]
+ *       }
+ *     }
+ *   },
+ *   "data": {}
+ * }
+ * ```
+ *     </code>
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
@@ -369,8 +470,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
 
   // TODO: always get from provider?
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default `[ 0, 0 ]`
    */
   @Deprecated
@@ -459,8 +560,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default `{}`
    */
   @Deprecated
@@ -478,8 +579,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default `{}`
    */
   @Deprecated
@@ -516,8 +617,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default 100000
    */
   @Deprecated
@@ -538,8 +639,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default `false`
    */
   @Deprecated
@@ -557,8 +658,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default `{}`
    */
   @Deprecated
@@ -576,8 +677,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default `{}`
    */
   @Deprecated
@@ -595,8 +696,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#tile-provider-features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#tile-provider-features).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default 0.5
    */
   @Deprecated

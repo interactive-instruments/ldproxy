@@ -42,6 +42,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
+/**
+ * @title SLD 1.0
+ */
 @Singleton
 @AutoBind
 public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension, AppLifeCycle {

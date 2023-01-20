@@ -58,6 +58,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title GML
+ */
 @Singleton
 @AutoBind
 public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtension {
@@ -78,7 +81,7 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
   private static final String XSI_NS = "http://www.w3.org/2001/XMLSchema-instance";
   private static final String SF_NS = "http://www.opengis.net/ogcapi-features-1/1.0/sf";
   private static final String WFS_NS = "http://www.opengis.net/wfs/2.0";
-  private static final Map<String, String> STANDARD_NAMESPACES =
+  static final Map<String, String> STANDARD_NAMESPACES =
       ImmutableMap.of(
           GML, GML_NS, GML21, GML21_NS, GML31, GML31_NS, XLINK, XLINK_NS, XML, XML_NS, XSI, XSI_NS,
           SF, SF_NS, WFS, WFS_NS);
@@ -355,7 +358,10 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
             .putAllNamespaces(STANDARD_NAMESPACES)
             .defaultNamespace(Optional.ofNullable(config.getDefaultNamespace()))
             .putAllSchemaLocations(config.getSchemaLocations())
-            .putAllSchemaLocations(STANDARD_SCHEMA_LOCATIONS)
+            .putAllSchemaLocations(
+                STANDARD_SCHEMA_LOCATIONS.entrySet().stream()
+                    .filter(entry -> !config.getSchemaLocations().containsKey(entry.getKey()))
+                    .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue)))
             .objectTypeNamespaces(config.getObjectTypeNamespaces())
             .variableObjectElementNames(config.getVariableObjectElementNames())
             .featureCollectionElementName(

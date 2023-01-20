@@ -15,10 +15,8 @@ import javax.inject.Singleton;
 
 /**
  * @title Common Core
- * @langEn The module *Common Core* is always enabled. It provides the resources *Landing Page*,
- *     *Conformance Declaration* and *API Definition*.
- * @langDe Das Modul *Common Core* ist für jede über ldproxy bereitgestellte API aktiv. Es stellt
- *     die Ressourcen *Landing Page*, *Conformance Declaration* und *API Definition* bereit.
+ * @langEn The core of OGC API.
+ * @langDe Der Kern von OGC API.
  * @conformanceEn *Common Core* implements all requirements of conformance class *Core* of [OGC API
  *     - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core)
  *     for the three mentioned resources.
@@ -29,14 +27,14 @@ import javax.inject.Singleton;
  *     API - Features - Part 1: Core
  *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) für die drei genannten
  *     Ressourcen.
- *     <p>::: tip:Info Die Konformitätsklasse wurde in ldproxy auf drei Module aufgeteilt, da
- *     vorgesehen ist, die jeweiligen Anforderungen für die Nutzung in anderen OGC API Standards als
- *     zwei Teile von OGC API Common zu veröffentlichen. Die Module "Common Core" und "Feature
- *     Collections" bilden dies ab. :::
+ *     <p>::: info Die Konformitätsklasse wurde in ldproxy auf drei Module aufgeteilt, da vorgesehen
+ *     ist, die jeweiligen Anforderungen für die Nutzung in anderen OGC API Standards als zwei Teile
+ *     von OGC API Common zu veröffentlichen. Die Module "Common Core" und "Feature Collections"
+ *     bilden dies ab. :::
  *     <p>
- * @propertyTable {@link de.ii.ogcapi.common.domain.ImmutableCommonConfiguration}
- * @example {@link de.ii.ogcapi.common.domain.CommonConfiguration}
- * @endpointTable {@link de.ii.ogcapi.common.infra.EndpointLandingPage}, {@link
+ * @ref:cfg {@link de.ii.ogcapi.common.domain.CommonConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.common.domain.ImmutableCommonConfiguration}
+ * @ref:endpoints {@link de.ii.ogcapi.common.infra.EndpointLandingPage}, {@link
  *     de.ii.ogcapi.common.infra.EndpointConformance}, {@link
  *     de.ii.ogcapi.common.infra.EndpointDefinition}
  */

@@ -48,7 +48,6 @@ import org.slf4j.LoggerFactory;
 /**
  * @author zahnen
  */
-
 // Todo Look following classes: FeaturesFormatHtml
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -225,7 +224,10 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
               Optional.ofNullable(htmlConfig().getLeafletUrl())
                   .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
           .attribution(htmlConfig().getBasemapAttribution())
-          .fields(queryables().entrySet())
+          .fields(
+              queryables().entrySet().stream()
+                  .sorted(Map.Entry.comparingByValue())
+                  .collect(Collectors.toList()))
           .build();
     } else {
       return null;

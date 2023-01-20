@@ -19,7 +19,7 @@ import javax.inject.Singleton;
 /**
  * @langEn Todo
  * @langDe Todo
- * @name TileSets
+ * @title TileSets
  * @endpoints Tilesets
  */
 @Singleton

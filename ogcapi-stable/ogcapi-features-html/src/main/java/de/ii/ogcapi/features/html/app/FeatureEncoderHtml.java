@@ -9,7 +9,6 @@ package de.ii.ogcapi.features.html.app;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.features.domain.FeatureObjectEncoder;
 import de.ii.xtraplatform.features.domain.PropertyBase;
@@ -22,7 +21,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;

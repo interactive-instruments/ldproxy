@@ -41,6 +41,11 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title Delete Route
+ * @path routes/{routeId}
+ * @langAll Delete a route
+ */
 @Singleton
 @AutoBind
 public class EndpointRouteDelete extends Endpoint {

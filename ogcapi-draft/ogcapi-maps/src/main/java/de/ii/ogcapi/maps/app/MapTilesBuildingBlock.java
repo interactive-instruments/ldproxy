@@ -22,31 +22,37 @@ import javax.inject.Singleton;
 
 /**
  * @title Map Tiles
- * @langEn The *Map Tiles* module activates the "Map Tilesets", "Map Tileset" and "Map Tile"
- *     resources.
- *     <p>The module is based on the drafts of [OGC API -
- *     Maps](https://github.com/opengeospatial/OGC-API-Maps). The implementation will change as the
- *     drafts are further standardized.
- *     <p>The supported tile formats are:
- *     <p>- PNG - WebP - JPEG
+ * @langEn Publish raster image tiles.
+ * @langDe Veröffentlichung von Raster-Bild-Kacheln.
+ * @scopeEn The supported tile formats are:
+ *     <p><code>
+ * - PNG
+ * - WebP
+ * - JPEG
+ *     </code>
  *     <p>Only the [WebMercatorQuad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#62)
  *     tiling scheme is available.
- * @langDe Das Modul "Map Tiles" aktiviert die Ressourcen "Map Tilesets", "Map Tileset" und "Map
- *     Tile".
- *     <p>Das Modul basiert auf den Entwürfen von [OGC API -
- *     Maps](https://github.com/opengeospatial/OGC-API-Maps). Die Implementierung wird sich im Zuge
- *     der weiteren Standardisierung der Entwürfe noch ändern.
- *     <p>Die unterstützten Kachelformate sind:
- *     <p>- PNG - WebP - JPEG
+ * @scopeDe Die unterstützten Kachelformate sind:
+ *     <p><code>
+ * - PNG
+ * - WebP
+ * - JPEG
+ *     </code>
  *     <p>Es steht nur das Kachelschema
  *     [WebMercatorQuad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#62) zur Verfügung.
- * @propertyTable {@link de.ii.ogcapi.maps.domain.MapTilesConfiguration}
- * @endpointTable {@link de.ii.ogcapi.maps.infra.EndpointMapTileMultiCollection}, {@link
- *     de.ii.ogcapi.maps.infra.EndpointMapTileSetMultiCollection}, {@link
- *     de.ii.ogcapi.maps.infra.EndpointMapTileSetSingleCollection}, {@link
+ * @conformanceEn The module is based on the drafts of [OGC API -
+ *     Maps](https://github.com/opengeospatial/OGC-API-Maps). The implementation will change as the
+ *     drafts are further standardized.
+ * @conformanceDe Das Modul basiert auf den Entwürfen von [OGC API -
+ *     Maps](https://github.com/opengeospatial/OGC-API-Maps). Die Implementierung wird sich im Zuge
+ *     der weiteren Standardisierung der Entwürfe noch ändern.
+ * @ref:cfgProperties {@link de.ii.ogcapi.maps.domain.ImmutableMapTilesConfiguration}
+ * @ref:endpoints {@link de.ii.ogcapi.maps.infra.EndpointMapTileMultiCollection}, {@link
+ *     de.ii.ogcapi.maps.infra.EndpointMapTileSingleCollection}, {@link
  *     de.ii.ogcapi.maps.infra.EndpointMapTileSetsMultiCollection}, {@link
  *     de.ii.ogcapi.maps.infra.EndpointMapTileSetsSingleCollection}, {@link
- *     de.ii.ogcapi.maps.infra.EndpointMapTileSingleCollection}
+ *     de.ii.ogcapi.maps.infra.EndpointMapTileSetMultiCollection}, {@link
+ *     de.ii.ogcapi.maps.infra.EndpointMapTileSetSingleCollection}
  */
 @Singleton
 @AutoBind

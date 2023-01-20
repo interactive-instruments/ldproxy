@@ -19,7 +19,6 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQueryEncoder;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -33,24 +32,18 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @langEn Example of specifications in the configuration file for the entire API (or in defaults):
- * @langDe Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (oder in den
- *     Defaults):
- * @example <code>
- *
+ * @buildingBlock FEATURES_CORE
+ * @examplesEn Example of specifications in the configuration file for the entire API (or in
+ *     defaults):
+ *     <p><code>
  * ```yaml
  * - buildingBlock: FEATURES_CORE
  *   coordinatePrecision:
  *     metre: 2
  *     degree: 7
  * ```
- * </code>
- */
-
-/**
- * @langEn Example of the specifications in the configuration file for a feature collection:
- * @langDe Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
- * @example <code>
+ *     </code>
+ *     <p>Example of the specifications in the configuration file for a feature collection:<code>
  * ```yaml
  * - buildingBlock: FEATURES_CORE
  *   enabled: true
@@ -74,7 +67,51 @@ import org.immutables.value.Value;
  *   embeddedFeatureLinkRels:
  *   - self
  * ```
- * </code>
+ *     </code>
+ * @examplesDe Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (oder in den
+ *     Defaults):
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: FEATURES_CORE
+ *   coordinatePrecision:
+ *     metre: 2
+ *     degree: 7
+ * ```
+ *     </code>
+ *     <p>Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: FEATURES_CORE
+ *   coordinatePrecision:
+ *     metre: 2
+ *     degree: 7
+ * ```
+ *     </code>
+ *     <p>Example of the specifications in the configuration file for a feature collection:<code>
+ * ```yaml
+ * - buildingBlock: FEATURES_CORE
+ *   enabled: true
+ *   itemType: feature
+ *   queryables:
+ *     spatial:
+ *     - geometry
+ *     temporal:
+ *     - date
+ *     q:
+ *     - name
+ *     - region
+ *     - subregion
+ *     - cluster
+ *     - village
+ *     - searchfield1
+ *     - searchfield2
+ *     other:
+ *     - registerId
+ *     - area_ha
+ *   embeddedFeatureLinkRels:
+ *   - self
+ * ```
+ *     </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -101,6 +138,13 @@ public interface FeaturesCoreConfiguration
   String PARAMETER_BBOX = "bbox";
   String PARAMETER_DATETIME = "datetime";
   String DATETIME_INTERVAL_SEPARATOR = "/";
+
+  /**
+   * @default true
+   */
+  @Nullable
+  @Override
+  Boolean getEnabled();
 
   /**
    * @langEn Id of the feature provider to use. Normally the feature provider and API ids are the
@@ -134,7 +178,7 @@ public interface FeaturesCoreConfiguration
    *     `CRS84h` for datasets with 3D geometries.
    * @langDe Setzt das Standard-Koordinatenreferenzsystem, entweder 'CRS84' für einen Datensatz mit
    *     2D-Geometrien oder 'CRS84h' für einen Datensatz mit 3D-Geometrien.
-   * @default `CRS84h`
+   * @default CRS84h
    */
   @Nullable
   DefaultCrs getDefaultCrs();
@@ -172,7 +216,7 @@ public interface FeaturesCoreConfiguration
    *     sollen, sofern vorhanden. Die Werte sind die Link-Relation-Types, die berücksichtigt werden
    *     sollen. Standardmäßig werden Links wie `self` oder `alternate` bei den Features in einer
    *     FeatureCollection weggelassen, mit dieser Option können Sie bei Bedarf ergänzt werden.
-   * @default `[]`
+   * @default []
    */
   Set<String> getEmbeddedFeatureLinkRels();
 
@@ -180,7 +224,7 @@ public interface FeaturesCoreConfiguration
    * @langEn Always add `self` link to features, even in the *Features* resource.
    * @langDe Steuert, ob in Features immer, auch in der Features-Ressourcen, ein `self`-Link
    *     enthalten ist.
-   * @default `false`
+   * @default false
    */
   @Deprecated
   @Nullable
@@ -227,7 +271,7 @@ public interface FeaturesCoreConfiguration
    *     definiert ("*" kann als Wildcard verwendet werden). Auf diese Weise ist eine Selektion von
    *     Objekten bereits ohne zusätzliche Module möglich. Die Attribute unter `q` werden außerdem
    *     bei der freien Textsuche im Query-Parameter mit demselben Namen berücksichtigt.
-   * @default `{}`
+   * @default {}
    */
   Optional<FeaturesCollectionQueryables> getQueryables();
 
@@ -240,19 +284,9 @@ public interface FeaturesCoreConfiguration
    *     bestimmte Anzahl von Stellen begrenzt werden. Anzugeben ist die Maßeinheit und die
    *     zugehörige Anzahl der Nachkommastellen. Beispiel: `{ "metre" : 2, "degree" : 7 }`. Gültige
    *     Maßeinheiten sind "metre" (bzw. "meter") und "degree".
-   * @default `{}`
+   * @default {}
    */
   Map<String, Integer> getCoordinatePrecision();
-
-  /**
-   * @langEn Optional transformations for feature properties for all media types, see
-   *     [transformations](general-rules.md#transformations).
-   * @langDe Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in allen
-   *     Datenformaten [transformiert](general-rules.md#transformations) werden.
-   * @default `{}`
-   */
-  @Override
-  Map<String, List<PropertyTransformation>> getTransformations();
 
   @JsonIgnore
   @Value.Derived

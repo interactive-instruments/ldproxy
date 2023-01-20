@@ -34,13 +34,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn Access single-layer map tiles
- * @langDe TODO
- * @name Tilesets
- * @path /{apiId}/collections/{collectionId}/map/tiles
+ * @title Collection Tilesets
+ * @path collections/{collectionId}/map/tiles
+ * @langAll Access collection map tilesets
+ * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetsFormatExtension}
  */
-
-/** Handle responses under '/collections/{collectionId}/tiles'. */
 @Singleton
 @AutoBind
 public class EndpointMapTileSetsSingleCollection extends AbstractEndpointTileSetsSingleCollection

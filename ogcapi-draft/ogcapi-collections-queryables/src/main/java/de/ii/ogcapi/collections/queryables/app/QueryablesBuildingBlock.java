@@ -16,13 +16,9 @@ import javax.inject.Singleton;
 
 /**
  * @title Collections Queryables
- * @langEn The module *Collections Queryables* may be enabled for every API with a feature provider.
- *     It provides the sub-resource *Queryables* for the resource *Feature Collection* that
- *     publishes the feature properties that may be used in queries.
- * @langDe Das Modul "Collections Queryables" kann für jede über ldproxy bereitgestellte API mit
- *     einem Feature-Provider aktiviert werden. Es ergänzt eine Ressource als Sub-Ressource zu jeder
- *     Feature Collection, die die Objekteigenschaften, die zur Selektion in Queries verwendet
- *     werden können, in der API veröffentlicht.
+ * @langEn Metadata about properties that can be used in queries and filter expressions.
+ * @langDe Metadaten über Objekteigenschaften die in Queries und Filter-Ausdrücken verwendet werden
+ *     können.
  * @conformanceEn *Collections Queryables* implements all requirements of conformance class
  *     *Queryables* from the draft of [OGC API -
  *     Styles](http://docs.opengeospatial.org/DRAFTS/20-009.html#rc_queryables). The resource will
@@ -32,9 +28,9 @@ import javax.inject.Singleton;
  * @conformanceDe Das Modul basiert auf den Vorgaben der Konformitätsklasse "Filter" aus dem
  *     [Entwurf von OGC API - Features - Part 3:
  *     Filtering](https://docs.ogc.org/DRAFTS/19-079r1.html#filter-queryables).
- * @propertyTable {@link
+ * @ref:cfgProperties {@link
  *     de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfiguration}
- * @endpointTable {@link de.ii.ogcapi.collections.queryables.app.EndpointQueryables}
+ * @ref:endpoints {@link de.ii.ogcapi.collections.queryables.app.EndpointQueryables}
  */
 @Singleton
 @AutoBind

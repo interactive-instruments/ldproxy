@@ -23,6 +23,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title JSON-FG
+ */
 @Singleton
 @AutoBind
 public class FeaturesFormatJsonFg implements FeaturesFormatJsonFgBase {

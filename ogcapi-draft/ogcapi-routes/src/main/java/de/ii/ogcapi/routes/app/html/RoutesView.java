@@ -28,8 +28,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.immutables.value.Value;
 import javax.annotation.Nullable;
+import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")

@@ -46,6 +46,9 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title HTML
+ */
 @Singleton
 @AutoBind
 public class StyleFormatHtml implements StyleFormatExtension {

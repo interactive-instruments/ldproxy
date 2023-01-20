@@ -48,7 +48,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn The sortables resources identifies the properties that can be referenced in the 'sortby'
+ * @title Sortables
+ * @path collections/{collectionId}/sortables
+ * @langAll The sortables resources identifies the properties that can be referenced in the 'sortby'
  *     parameter to order the features of the collection in the response to a query. The response is
  *     returned as a JSON Schema document that describes a single JSON object where each property is
  *     a sortable. Note that the sortables schema does not specify a schema of any object that can
@@ -56,10 +58,7 @@ import org.slf4j.LoggerFactory;
  *     approach for describing schema information and JSON Schema is/will be used in other parts of
  *     OGC API Features to describe schemas for GeoJSON feature content including in OpenAPI
  *     documents.
- * @langDe TODO
- * @name sortables
- * @path /collections/{collectionId}/sortables
- * @format {@link de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat}
+ * @ref:formats {@link de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat}
  */
 @Singleton
 @AutoBind
