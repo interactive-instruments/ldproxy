@@ -25,6 +25,7 @@ import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import java.net.URISyntaxException;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -107,6 +108,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                     .replace("http://www\\.opengis\\.net/def/rel/ogc/1\\.0/", "")
                     .replace("http://www\\.opengis\\.net/def/rel/ogc/0\\.0/", "")
                     .matches("^(?:" + String.join("|", ignoreRels) + ")$"))
+        .sorted(Comparator.comparing(Link::getTypeLabel))
         .collect(Collectors.toList());
   }
 

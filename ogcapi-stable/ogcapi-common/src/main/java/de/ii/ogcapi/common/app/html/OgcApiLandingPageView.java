@@ -18,6 +18,7 @@ import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.html.domain.ImmutableMapClient;
 import de.ii.ogcapi.html.domain.ImmutableStyle;
 import de.ii.ogcapi.html.domain.MapClient;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -48,8 +49,11 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
   @Value.Derived
   public List<Link> distributionLinks() {
     return Objects.requireNonNullElse(
-        (List<Link>) apiLandingPage().getExtensions().get("datasetDownloadLinks"),
-        ImmutableList.of());
+            (List<Link>) apiLandingPage().getExtensions().get("datasetDownloadLinks"),
+            ImmutableList.<Link>of())
+        .stream()
+        .sorted(Comparator.comparing(Link::getTypeLabel))
+        .collect(Collectors.toList());
   }
 
   @Value.Derived
