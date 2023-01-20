@@ -217,6 +217,7 @@ public abstract class FeatureCollectionView extends OgcApiDatasetView {
     }
   }
 
+  @Value.Derived
   public FilterEditor filterEditor() {
     if (Objects.nonNull(queryables())) {
       return new ImmutableFilterEditor.Builder()
