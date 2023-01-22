@@ -228,26 +228,19 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
       feature.itemType("http://schema.org/Place");
     }
 
-    transformationContext.collectionView().features().add(feature);
+    transformationContext.collectionView().addFeatures(feature);
   }
 
   @Override
   public void onEnd(ModifiableContext context) {
     if (transformationContext.isFeatureCollection()) {
-      renderView(transformationContext.collectionView().toImmutable());
+      renderView(transformationContext.collectionView());
 
-    } else if (!transformationContext.collectionView().bare().orElse(false)) {
-
-      ModifiableFeatureCollectionDetailsView modifiableFeatureCollectionDetailsView =
-          ModifiableFeatureCollectionDetailsView.create()
-              .from(transformationContext.collectionView());
-
-      renderView(modifiableFeatureCollectionDetailsView.toImmutable());
-    } else if (transformationContext.collectionView().bare().get()) {
-      ModifiableFeatureCollectionBareView modifiableFeatureCollectionBareView =
-          ModifiableFeatureCollectionBareView.create().from(transformationContext.collectionView());
-
-      renderView(modifiableFeatureCollectionBareView.toImmutable());
+    } else {
+      renderView(
+          new ImmutableFeatureCollectionDetailsView.Builder()
+              .from(transformationContext.collectionView())
+              .build());
     }
   }
 

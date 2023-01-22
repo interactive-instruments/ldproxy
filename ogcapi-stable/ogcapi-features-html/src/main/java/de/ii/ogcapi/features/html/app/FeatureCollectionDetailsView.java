@@ -13,9 +13,14 @@ import org.immutables.value.Value.Modifiable;
 @Value.Immutable
 @Value.Style(builder = "new")
 @Modifiable
-public abstract class FeatureCollectionDetailsView extends FeatureCollectionView {
+public abstract class FeatureCollectionDetailsView extends FeaturesView {
 
   FeatureCollectionDetailsView() {
     super("featureDetails.mustache");
+  }
+
+  @Value.Derived
+  public boolean isCollection() {
+    return false;
   }
 }
