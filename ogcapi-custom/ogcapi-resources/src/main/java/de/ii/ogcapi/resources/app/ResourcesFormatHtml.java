@@ -97,9 +97,8 @@ public class ResourcesFormatHtml implements ResourcesFormatExtension {
         .rawLinks(resources.getLinks())
         .title(i18n.get("resourcesTitle", requestContext.getLanguage()))
         .description(i18n.get("resourcesDescription", requestContext.getLanguage()))
-        .language(requestContext.getLanguage())
         .none(i18n.get("none", requestContext.getLanguage()))
-        .resourceList(resources.getResources())
+        .resources(resources.getResources())
         .build();
   }
 }
