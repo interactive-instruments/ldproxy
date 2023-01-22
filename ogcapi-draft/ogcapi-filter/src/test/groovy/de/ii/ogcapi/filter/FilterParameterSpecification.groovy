@@ -65,7 +65,7 @@ class FilterParameterSpecification extends Specification {
     @Shared
     def collection = getRequest(restClient, API_PATH_DARAA + "/collections/" + AERONAUTIC_CRV, null)
     @Shared
-    def envelopeCollection = "ENVELOPE(" + String.join(",", OgcApiDatasetView.getProcessedBbox[0].stream().map(n -> String.valueOf(n)).toList()) + ")"
+    def envelopeCollection = "ENVELOPE(" + String.join(",", collection.responseData.extent.spatial.bbox[0].stream().map(n -> String.valueOf(n)).toList()) + ")"
     @Shared
     def idPnt = allCulturePntFeatures.responseData.features[0].id
     @Shared

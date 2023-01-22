@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.features.core
 
-import de.ii.ogcapi.common.domain.OgcApiDatasetView
 import groovyx.net.http.ContentType
 import groovyx.net.http.Method
 import groovyx.net.http.RESTClient
@@ -47,10 +46,10 @@ class OgcApiCoreRestApiSpec extends Specification {
 
         and:
         response.responseData.containsKey("links")
-        response.responseData.getProcessedLinks.any{it.rel == "service-desc"}
-        response.responseData.getProcessedLinks.any{it.rel == "service-doc"}
-        response.responseData.getProcessedLinks.any{it.rel == "conformance"}
-        response.responseData.getProcessedLinks.any{it.rel == "data"}
+        response.responseData.links.any{it.rel == "service-desc"}
+        response.responseData.links.any{it.rel == "service-doc"}
+        response.responseData.links.any{it.rel == "conformance"}
+        response.responseData.links.any{it.rel == "data"}
     }
 
     def 'GET request to the API page'(){
@@ -107,21 +106,21 @@ class OgcApiCoreRestApiSpec extends Specification {
         response.responseData.containsKey("collections")
 
         and: "Requirement 13A: links property, relations 'self' and 'alternate'"
-        response.responseData.getProcessedLinks.any{ it.rel == "self" }
-        response.responseData.getProcessedLinks.any{ it.rel == "alternate" }
+        response.responseData.links.any{ it.rel == "self" }
+        response.responseData.links.any{ it.rel == "alternate" }
 
         and: "Requirement 13B: all links shall include the 'rel' and 'type' link parameters:"
-        response.responseData.getProcessedLinks.every{ it.rel?.trim() }
-        response.responseData.getProcessedLinks.every{ it.type?.trim() }
+        response.responseData.links.every{ it.rel?.trim() }
+        response.responseData.links.every{ it.type?.trim() }
 
         and: "Requirement 14, 15A: for each feature collection provided by the server, an item SHALL be provided in the property 'collections'"
-        response.responseData.getCollectionsMaps.every{ it.getProcessedLinks.any{ it.rel == 'items' } }
+        response.responseData.collections.every{ it.links.any{ it.rel == 'items' } }
 
         and: "Requirement 15B: all links SHALL include the rel and type properties"
-        response.responseData.getCollectionsMaps.every{ it.getProcessedLinks.every{ it.rel == 'items' ? it.type?.trim() : true} }
+        response.responseData.collections.every{ it.links.every{ it.rel == 'items' ? it.type?.trim() : true} }
 
         and: "Requirement 16A: extent property"
-        response.responseData.getCollectionsMaps.every{ it.containsKey("extent") ?
+        response.responseData.collections.every{ it.containsKey("extent") ?
                 it.extent.containsKey("spatial") || it.extent.containsKey("temporal") : true }
 
         }
@@ -137,7 +136,7 @@ class OgcApiCoreRestApiSpec extends Specification {
             uri.path = SUT_PATH + '/collections'
             headers.Accept = 'application/json'
         })
-        def collection = getCollection(SUT_COLLECTION, collectionsResponse.responseData.getCollectionsMaps)
+        def collection = getCollection(SUT_COLLECTION, collectionsResponse.responseData.collections)
 
         then: "Requirement 17, 18A: HTTP GET support at th path '/collections/{collectionId}'"
         response.status == 200
@@ -154,7 +153,7 @@ class OgcApiCoreRestApiSpec extends Specification {
         collection.description == response.responseData.description
         if (collection.extent.containsKey("spatial")) {
             collection.extent.spatial.crs == response.responseData.extent.spatial.crs
-            OgcApiDatasetView.getProcessedBbox == OgcApiDatasetView.getProcessedBbox
+            collection.extent.spatial.bbox == response.responseData.extent.spatial.bbox
         }
         if (collection.extent.containsKey("temporal")) {
             collection.extent.temporal.trs == response.responseData.extent.temporal.trs
@@ -184,8 +183,8 @@ class OgcApiCoreRestApiSpec extends Specification {
         response.responseData.containsKey("numberReturned")
         response.responseData.containsKey("features")
         and: "Requirement 27: include a link to this response document and a link to the response document in other supported formats"
-        response.responseData.getProcessedLinks.any{ it.rel == "self" }
-        response.responseData.getProcessedLinks.any{ it.rel == "alternate" }
+        response.responseData.links.any{ it.rel == "self" }
+        response.responseData.links.any{ it.rel == "alternate" }
         and: "Requirement 28: all links shall include the rel and type link parameters"
         response.responseData.link.every{ it.rel?.trim() }
         response.responseData.link.every{ it.type?.trim() }
@@ -316,12 +315,12 @@ class OgcApiCoreRestApiSpec extends Specification {
         response.responseData.containsKey("id")
         response.responseData.get("id") == SUT_ID
         and: "Requirement 34A: links with relations 'self', 'alternate', 'collection'"
-        response.responseData.getProcessedLinks.any{ it.rel == "self" }
-        response.responseData.getProcessedLinks.any{ it.rel == "alternate" }
-        response.responseData.getProcessedLinks.any{ it.rel == "collection" }
+        response.responseData.links.any{ it.rel == "self" }
+        response.responseData.links.any{ it.rel == "alternate" }
+        response.responseData.links.any{ it.rel == "collection" }
         and: "Requirement 34B: all links shall include the 'rel' and 'type' link parameters"
-        response.responseData.getProcessedLinks.every{ it.rel?.trim() }
-        response.responseData.getProcessedLinks.every{ it.type?.trim() }
+        response.responseData.links.every{ it.rel?.trim() }
+        response.responseData.links.every{ it.type?.trim() }
     }
 
     def 'Filter parameter with a valid property'() {
