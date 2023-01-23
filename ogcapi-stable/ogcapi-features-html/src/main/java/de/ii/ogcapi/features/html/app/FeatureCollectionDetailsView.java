@@ -10,21 +10,17 @@ package de.ii.ogcapi.features.html.app;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Modifiable;
 
-/**
- * @author zahnen
- */
-// Todo Look following classes: FeaturesFormatHtml
 @Value.Immutable
 @Value.Style(builder = "new")
 @Modifiable
-public abstract class FeatureCollectionView extends FeaturesView {
+public abstract class FeatureCollectionDetailsView extends FeaturesView {
 
-  FeatureCollectionView() {
-    super("featureCollection.mustache");
+  FeatureCollectionDetailsView() {
+    super("featureDetails.mustache");
   }
 
   @Value.Derived
   public boolean isCollection() {
-    return true;
+    return false;
   }
 }

@@ -21,7 +21,7 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 public interface FeatureTransformationContextHtml extends FeatureTransformationContext {
 
-  FeatureCollectionView collectionView();
+  ModifiableFeatureCollectionView collectionView();
 
   MustacheRenderer mustacheRenderer();
 

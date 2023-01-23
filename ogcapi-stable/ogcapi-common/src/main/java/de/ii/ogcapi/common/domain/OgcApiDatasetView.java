@@ -19,81 +19,67 @@ import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.html.domain.OgcApiView;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
-import java.nio.charset.Charset;
+import java.net.URISyntaxException;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
+import org.immutables.value.Value;
 
 public abstract class OgcApiDatasetView extends OgcApiView {
+
+  // Member before Immutable
 
   static final String INDENT = "  ";
   static final String NEW_LINE = "\n" + INDENT;
 
-  protected final Optional<BoundingBox> bbox;
-  protected final Optional<TemporalExtent> temporalExtent;
-  protected final Optional<OgcApiExtentTemporal> temporalExtentIso;
-  protected final URICustomizer uriCustomizer;
-  private final Optional<Locale> language;
+  public abstract URICustomizer uriCustomizer();
 
-  protected OgcApiDatasetView(
-      String templateName,
-      @Nullable Charset charset,
-      @Nullable OgcApiDataV2 apiData,
-      List<NavigationDTO> breadCrumbs,
-      HtmlConfiguration htmlConfig,
-      boolean noIndex,
-      String urlPrefix,
-      @Nullable List<Link> links,
-      @Nullable String title,
-      @Nullable String description,
-      URICustomizer uriCustomizer,
-      Optional<OgcApiExtent> extent,
-      Optional<Locale> language) {
-    super(
-        templateName,
-        charset,
-        apiData,
-        breadCrumbs,
-        htmlConfig,
-        noIndex,
-        urlPrefix,
-        links,
-        title,
-        description);
-    this.bbox =
-        extent
-            .flatMap(OgcApiExtent::getSpatial)
-            .map(OgcApiExtentSpatial::getBbox)
-            .map(
-                v ->
-                    v[0].length == 4
-                        ? BoundingBox.of(v[0][0], v[0][1], v[0][2], v[0][3], OgcCrs.CRS84)
-                        : BoundingBox.of(
-                            v[0][0], v[0][1], v[0][2], v[0][3], v[0][4], v[0][5], OgcCrs.CRS84h));
-    this.temporalExtentIso = extent.flatMap(OgcApiExtent::getTemporal);
-    this.temporalExtent =
-        temporalExtentIso
-            .map(v -> v.getInterval()[0])
-            .map(
-                v -> {
-                  ImmutableTemporalExtent.Builder builder = new ImmutableTemporalExtent.Builder();
-                  if (Objects.nonNull(v[0])) builder.start(Instant.parse(v[0]).toEpochMilli());
-                  if (Objects.nonNull(v[1])) builder.end(Instant.parse(v[1]).toEpochMilli());
-                  return builder.build();
-                });
-    this.uriCustomizer = uriCustomizer;
-    this.language = language;
+  public abstract Optional<Locale> language();
+
+  public abstract Optional<OgcApiExtent> extent();
+
+  @Value.Derived
+  Optional<OgcApiExtentTemporal> temporalExtentIso() {
+    return extent().flatMap(OgcApiExtent::getTemporal);
+  }
+
+  @Value.Default
+  public Optional<TemporalExtent> rawTemporalExtent() {
+    return temporalExtentIso()
+        .map(v -> v.getInterval()[0])
+        .map(
+            v -> {
+              ImmutableTemporalExtent.Builder builder = new ImmutableTemporalExtent.Builder();
+              if (Objects.nonNull(v[0])) builder.start(Instant.parse(v[0]).toEpochMilli());
+              if (Objects.nonNull(v[1])) builder.end(Instant.parse(v[1]).toEpochMilli());
+              return builder.build();
+            });
+  }
+
+  @Value.Derived
+  public Optional<BoundingBox> rawBbox() {
+    return extent()
+        .flatMap(OgcApiExtent::getSpatial)
+        .map(OgcApiExtentSpatial::getBbox)
+        .map(
+            v ->
+                v[0].length == 4
+                    ? BoundingBox.of(v[0][0], v[0][1], v[0][2], v[0][3], OgcCrs.CRS84)
+                    : BoundingBox.of(
+                        v[0][0], v[0][1], v[0][2], v[0][3], v[0][4], v[0][5], OgcCrs.CRS84h));
+  }
+
+  protected OgcApiDatasetView(String templateName) {
+    super(templateName);
   }
 
   public abstract List<Link> getDistributionLinks();
@@ -115,22 +101,23 @@ public abstract class OgcApiDatasetView extends OgcApiView {
             .add("ldp-map")
             .build();
 
-    return links.stream()
+    return rawLinks().stream()
         .filter(
             link ->
                 !link.getRel()
                     .replace("http://www\\.opengis\\.net/def/rel/ogc/1\\.0/", "")
                     .replace("http://www\\.opengis\\.net/def/rel/ogc/0\\.0/", "")
                     .matches("^(?:" + String.join("|", ignoreRels) + ")$"))
+        .sorted(Comparator.comparing(Link::getTitle))
         .collect(Collectors.toList());
   }
 
   public Optional<ApiMetadata> getMetadata() {
-    return apiData.getMetadata();
+    return apiData().getMetadata();
   }
 
-  public Optional<String> getCanonicalUrl() {
-    return links.stream()
+  public Optional<String> getCanonicalUrl() throws URISyntaxException {
+    return rawLinks().stream()
         .filter(link -> Objects.equals(link.getRel(), "self"))
         .map(Link::getHref)
         .map(
@@ -140,31 +127,33 @@ public abstract class OgcApiDatasetView extends OgcApiView {
   }
 
   public Map<String, String> getTemporalExtent() {
-    if (temporalExtent.isEmpty()) return null;
-    else if (Objects.isNull(temporalExtent.get().getStart())
-        && Objects.isNull(temporalExtent.get().getEnd())) return ImmutableMap.of();
-    else if (Objects.isNull(temporalExtent.get().getStart()))
-      return ImmutableMap.of("end", String.valueOf(temporalExtent.get().getEnd()));
-    else if (Objects.isNull(temporalExtent.get().getEnd()))
-      return ImmutableMap.of("start", String.valueOf(temporalExtent.get().getStart()));
+    if (rawTemporalExtent().isEmpty()) return null;
+    else if (Objects.isNull(rawTemporalExtent().get().getStart())
+        && Objects.isNull(rawTemporalExtent().get().getEnd())) return ImmutableMap.of();
+    else if (Objects.isNull(rawTemporalExtent().get().getStart()))
+      return ImmutableMap.of("end", String.valueOf(rawTemporalExtent().get().getEnd()));
+    else if (Objects.isNull(rawTemporalExtent().get().getEnd()))
+      return ImmutableMap.of("start", String.valueOf(rawTemporalExtent().get().getStart()));
     else
       return ImmutableMap.of(
           "start",
-          String.valueOf(temporalExtent.get().getStart()),
+          String.valueOf(rawTemporalExtent().get().getStart()),
           "end",
-          String.valueOf(temporalExtent.get().getEnd()));
+          String.valueOf(rawTemporalExtent().get().getEnd()));
   }
 
   public Optional<String> getTemporalCoverage() {
-    return temporalExtentIso.map(v -> v.getFirstIntervalIso8601());
+    return temporalExtentIso().map(v -> v.getFirstIntervalIso8601());
   }
 
   public Optional<String> getTemporalCoverageHtml() {
-    return temporalExtent.map(extent -> extent.humanReadable(language.orElse(Locale.getDefault())));
+    return rawTemporalExtent()
+        .map(extent -> extent.humanReadable(language().orElse(Locale.getDefault())));
   }
 
   public Map<String, String> getBbox() {
-    return bbox.map(
+    return rawBbox()
+        .map(
             v ->
                 ImmutableMap.of(
                     "minLng",
@@ -179,10 +168,11 @@ public abstract class OgcApiDatasetView extends OgcApiView {
   }
 
   public Optional<String> getSpatialCoverage() {
-    return bbox.map(
-        v ->
-            String.format(
-                Locale.US, "%f %f %f %f", v.getYmin(), v.getXmin(), v.getYmax(), v.getXmax()));
+    return rawBbox()
+        .map(
+            v ->
+                String.format(
+                    Locale.US, "%f %f %f %f", v.getYmin(), v.getXmin(), v.getYmax(), v.getXmax()));
   }
 
   public Optional<String> getDistributionsAsString() {
@@ -237,13 +227,13 @@ public abstract class OgcApiDatasetView extends OgcApiView {
         + "\"name\": \""
         + collection
             .map(FeatureTypeConfiguration::getLabel)
-            .orElse(apiData.getLabel())
+            .orElse(apiData().getLabel())
             .replace("\"", "\\\"")
         + "\","
         + NEW_LINE
         + collection
             .map(FeatureTypeConfiguration::getDescription)
-            .orElse(apiData.getDescription())
+            .orElse(apiData().getDescription())
             .map(
                 s ->
                     (embedded ? INDENT : "")
@@ -481,13 +471,13 @@ public abstract class OgcApiDatasetView extends OgcApiView {
                 // for cases with a single collection, that collection is not reported as a
                 // sub-dataset
                 .orElse(
-                    (apiData.getCollections().size() > 1
+                    (apiData().getCollections().size() > 1
                             ? (","
                                 + NEW_LINE
                                 + "\"hasPart\": [ "
                                 + String.join(
                                     ", ",
-                                    apiData.getCollections().values().stream()
+                                    apiData().getCollections().values().stream()
                                         .filter(col -> col.getEnabled())
                                         .map(
                                             s ->

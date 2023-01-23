@@ -7,13 +7,9 @@
  */
 package de.ii.ogcapi.html.app;
 
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiCatalog;
 import de.ii.ogcapi.foundation.domain.ApiCatalogEntry;
 import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.html.domain.OgcApiView;
 import java.net.URI;
 import java.util.Collection;
@@ -21,46 +17,56 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.immutables.value.Value;
+import org.immutables.value.Value.Style.ImplementationVisibility;
 
 /**
  * @author zahnen
  */
-public class ServiceOverviewView extends OgcApiView {
-  public URI uri;
-  public boolean isApiCatalog = true;
-  public String tagsTitle;
-  public String canonicalUrl;
-  public List<ApiCatalogEntry> data;
-  public Optional<String> googleSiteVerification;
+@Value.Immutable
+@Value.Style(builder = "new", visibility = ImplementationVisibility.PUBLIC)
+public abstract class ServiceOverviewView extends OgcApiView {
 
-  public ServiceOverviewView(
-      URI uri,
-      ApiCatalog apiCatalog,
-      HtmlConfiguration htmlConfig,
-      I18n i18n,
-      Optional<Locale> language) {
-    super(
-        "services.mustache",
-        Charsets.UTF_8,
-        null,
-        new ImmutableList.Builder<NavigationDTO>()
-            .add(new NavigationDTO(i18n.get("root", language), true))
-            .build(),
-        htmlConfig,
-        htmlConfig.getNoIndexEnabled(),
-        apiCatalog.getUrlPrefix(),
-        apiCatalog.getLinks(),
-        apiCatalog.getTitle().orElse(i18n.get("rootTitle", language)),
-        apiCatalog.getDescription().orElse(i18n.get("rootDescription", language)));
-    this.data = apiCatalog.getApis();
-    this.uri = uri;
-    this.canonicalUrl = apiCatalog.getCatalogUri().toString();
-    this.googleSiteVerification = apiCatalog.getGoogleSiteVerification();
-    this.tagsTitle = i18n.get("tagsTitle", language);
+  public abstract ApiCatalog apiCatalog();
+
+  public abstract URI uri();
+
+  public abstract I18n i18n();
+
+  public abstract Optional<Locale> language();
+
+  @Value.Default
+  public boolean isApiCatalog() {
+
+    return true;
+  }
+
+  @Value.Derived
+  public String tagsTitle() {
+    return i18n().get("tagsTitle", language());
+  }
+
+  @Value.Derived
+  public String canonicalUrl() {
+    return apiCatalog().getCatalogUri().toString();
+  }
+
+  @Value.Derived
+  public List<ApiCatalogEntry> data() {
+    return apiCatalog().getApis();
+  }
+
+  @Value.Derived
+  public Optional<String> googleSiteVerification() {
+    return apiCatalog().getGoogleSiteVerification();
+  }
+
+  public ServiceOverviewView() {
+    super("services.mustache");
   }
 
   public String getDatasetsAsString() {
-    return data.stream()
+    return data().stream()
         .filter(ApiCatalogEntry::isDataset)
         .map(
             api ->
@@ -78,16 +84,16 @@ public class ServiceOverviewView extends OgcApiView {
         .collect(Collectors.joining(", "));
   }
 
-  public boolean hasTags() {
-    return !getAllTags().isEmpty();
-  }
-
   public List<String> getAllTags() {
-    return data.stream()
+    return data().stream()
         .map(api -> api.getTags())
         .flatMap(Collection::stream)
         .distinct()
         .sorted()
         .collect(Collectors.toList());
+  }
+
+  public boolean hasTags() {
+    return !getAllTags().isEmpty();
   }
 }

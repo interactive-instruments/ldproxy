@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.common.app.html;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.common.domain.LandingPage;
@@ -16,125 +15,162 @@ import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.ImmutableMapClient;
 import de.ii.ogcapi.html.domain.ImmutableStyle;
 import de.ii.ogcapi.html.domain.MapClient;
-import de.ii.ogcapi.html.domain.NavigationDTO;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.immutables.value.Value;
+import org.immutables.value.Value.Style.ImplementationVisibility;
 
-public class OgcApiLandingPageView extends OgcApiDatasetView {
+@Value.Immutable
+@Value.Style(builder = "new", visibility = ImplementationVisibility.PUBLIC)
+public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
 
-  private final LandingPage apiLandingPage;
-  public final String mainLinksTitle;
-  public final String apiInformationTitle;
-  public List<Link> distributionLinks;
-  public String dataSourceUrl;
-  public String keywords;
-  public String keywordsWithQuotes;
-  public boolean spatialSearch;
-  public String dataTitle;
-  public String apiDefinitionTitle;
-  public String apiDocumentationTitle;
-  public String providerTitle;
-  public String licenseTitle;
-  public String spatialExtentTitle;
-  public String temporalExtentTitle;
-  public String dataSourceTitle;
-  public String additionalLinksTitle;
-  public String expertInformationTitle;
-  public String externalDocsTitle;
-  public String attributionTitle;
-  public String none;
-  public boolean isDataset;
-  public MapClient mapClient;
+  public abstract I18n i18n();
 
-  public OgcApiLandingPageView(
-      OgcApiDataV2 apiData,
-      LandingPage apiLandingPage,
-      final List<NavigationDTO> breadCrumbs,
-      String urlPrefix,
-      HtmlConfiguration htmlConfig,
-      boolean noIndex,
-      URICustomizer uriCustomizer,
-      I18n i18n,
-      Optional<Locale> language) {
-    super(
-        "landingPage.mustache",
-        Charsets.UTF_8,
-        apiData,
-        breadCrumbs,
-        htmlConfig,
-        noIndex,
-        urlPrefix,
-        apiLandingPage.getLinks(),
-        apiLandingPage.getTitle().orElse(apiData.getId()),
-        apiLandingPage.getDescription().orElse(null),
-        uriCustomizer,
-        apiLandingPage.getExtent(),
-        language);
-    this.apiLandingPage = apiLandingPage;
+  public abstract LandingPage apiLandingPage();
 
-    this.spatialSearch = false;
-    this.isDataset =
-        apiData.isDataset()
-            && Objects.nonNull(htmlConfig)
-            && Objects.equals(htmlConfig.getSchemaOrgEnabled(), true);
+  public abstract Optional<String> dataSourceUrl();
 
-    this.keywords =
-        apiData
-            .getMetadata()
-            .map(ApiMetadata::getKeywords)
-            .map(v -> Joiner.on(',').skipNulls().join(v))
-            .orElse(null);
-    distributionLinks =
-        Objects.requireNonNullElse(
-            (List<Link>) apiLandingPage.getExtensions().get("datasetDownloadLinks"),
-            ImmutableList.of());
+  @Value.Derived
+  public String mainLinksTitle() {
+    return i18n().get("mainLinksTitle", language());
+  }
 
-    this.dataTitle = i18n.get("dataTitle", language);
-    this.apiDefinitionTitle = i18n.get("apiDefinitionTitle", language);
-    this.apiDocumentationTitle = i18n.get("apiDocumentationTitle", language);
-    this.providerTitle = i18n.get("providerTitle", language);
-    this.licenseTitle = i18n.get("licenseTitle", language);
-    this.spatialExtentTitle = i18n.get("spatialExtentTitle", language);
-    this.temporalExtentTitle = i18n.get("temporalExtentTitle", language);
-    this.dataSourceTitle = i18n.get("dataSourceTitle", language);
-    this.additionalLinksTitle = i18n.get("additionalLinksTitle", language);
-    this.expertInformationTitle = i18n.get("expertInformationTitle", language);
-    this.apiInformationTitle = i18n.get("apiInformationTitle", language);
-    this.mainLinksTitle = i18n.get("mainLinksTitle", language);
-    this.externalDocsTitle = i18n.get("externalDocsTitle", language);
-    this.attributionTitle = i18n.get("attributionTitle", language);
-    this.none = i18n.get("none", language);
-    this.mapClient =
-        new ImmutableMapClient.Builder()
-            .backgroundUrl(
-                Optional.ofNullable(htmlConfig.getLeafletUrl())
-                    .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
-            .attribution(
-                Optional.ofNullable(htmlConfig.getLeafletAttribution())
-                    .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
-            .bounds(Optional.ofNullable(this.getBbox()))
-            .drawBounds(true)
-            .isInteractive(false)
-            .defaultStyle(new ImmutableStyle.Builder().color("red").build())
-            .build();
+  @Value.Derived
+  public String apiInformationTitle() {
+    return i18n().get("apiInformationTitle", language());
+  }
+
+  @Value.Derived
+  public List<Link> distributionLinks() {
+    return Objects.requireNonNullElse(
+            (List<Link>) apiLandingPage().getExtensions().get("datasetDownloadLinks"),
+            ImmutableList.<Link>of())
+        .stream()
+        .sorted(Comparator.comparing(Link::getTitle))
+        .collect(Collectors.toList());
+  }
+
+  @Value.Derived
+  public String keywords() {
+    return apiData()
+        .getMetadata()
+        .map(ApiMetadata::getKeywords)
+        .map(v -> Joiner.on(',').skipNulls().join(v))
+        .orElse(null);
+  }
+
+  public abstract Optional<String> keywordsWithQuotes();
+
+  @Value.Derived
+  public boolean spatialSearch() {
+    return false;
+  }
+
+  @Value.Derived
+  public String dataTitle() {
+    return i18n().get("dataTitle", language());
+  }
+
+  @Value.Derived
+  public String apiDefinitionTitle() {
+    return i18n().get("apiDefinitionTitle", language());
+  }
+
+  @Value.Derived
+  public String apiDocumentationTitle() {
+    return i18n().get("apiDocumentationTitle", language());
+  }
+
+  @Value.Derived
+  public String providerTitle() {
+
+    return i18n().get("providerTitle", language());
+  }
+
+  @Value.Derived
+  public String licenseTitle() {
+    return i18n().get("licenseTitle", language());
+  }
+
+  @Value.Derived
+  public String spatialExtentTitle() {
+    return i18n().get("spatialExtentTitle", language());
+  }
+
+  @Value.Derived
+  public String temporalExtentTitle() {
+    return i18n().get("temporalExtentTitle", language());
+  }
+
+  @Value.Derived
+  public String dataSourceTitle() {
+    return i18n().get("dataSourceTitle", language());
+  }
+
+  @Value.Derived
+  public String additionalLinksTitle() {
+    return i18n().get("additionalLinksTitle", language());
+  }
+
+  @Value.Derived
+  public String expertInformationTitle() {
+    return i18n().get("expertInformationTitle", language());
+  }
+
+  @Value.Derived
+  public String externalDocsTitle() {
+    return i18n().get("externalDocsTitle", language());
+  }
+
+  @Value.Derived
+  public String attributionTitle() {
+    return i18n().get("attributionTitle", language());
+  }
+
+  @Value.Derived
+  public String none() {
+    return i18n().get("none", language());
+  }
+
+  @Value.Derived
+  public boolean isDataset() {
+    return apiData().isDataset()
+        && Objects.nonNull(htmlConfig())
+        && Objects.equals(htmlConfig().getSchemaOrgEnabled(), true);
+  }
+
+  @Value.Derived
+  public MapClient mapClient() {
+    return new ImmutableMapClient.Builder()
+        .backgroundUrl(
+            Optional.ofNullable(htmlConfig().getLeafletUrl())
+                .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
+        .attribution(
+            Optional.ofNullable(htmlConfig().getLeafletAttribution())
+                .or(() -> Optional.ofNullable(htmlConfig().getBasemapAttribution())))
+        .bounds(Optional.ofNullable(this.getBbox()))
+        .drawBounds(true)
+        .isInteractive(false)
+        .defaultStyle(new ImmutableStyle.Builder().color("red").build())
+        .build();
+  }
+
+  public OgcApiLandingPageView() {
+    super("landingPage.mustache");
   }
 
   public List<Link> getDistributionLinks() {
-    return distributionLinks;
+    return distributionLinks();
   }
-  ;
 
   public Optional<Link> getData() {
-    return links.stream()
+    return rawLinks().stream()
         .filter(
             link ->
                 Objects.equals(link.getRel(), "data")
@@ -143,44 +179,49 @@ public class OgcApiLandingPageView extends OgcApiDatasetView {
   }
 
   public List<Link> getTiles() {
-    return links.stream()
+    return rawLinks().stream()
         .filter(
             link -> link.getRel().startsWith("http://www.opengis.net/def/rel/ogc/1.0/tilesets-"))
         .collect(Collectors.toUnmodifiableList());
   }
 
   public Optional<Link> getStyles() {
-    return links.stream()
+    return rawLinks().stream()
         .filter(
             link -> Objects.equals(link.getRel(), "http://www.opengis.net/def/rel/ogc/1.0/styles"))
         .findFirst();
   }
 
   public Optional<Link> getRoutes() {
-    return links.stream()
+    return rawLinks().stream()
         .filter(
             link -> Objects.equals(link.getRel(), "http://www.opengis.net/def/rel/ogc/1.0/routes"))
         .findFirst();
   }
 
   public Optional<Link> getMap() {
-    return links.stream().filter(link -> Objects.equals(link.getRel(), "ldp-map")).findFirst();
+    return rawLinks().stream().filter(link -> Objects.equals(link.getRel(), "ldp-map")).findFirst();
   }
 
   public Optional<Link> getApiDefinition() {
-    return links.stream().filter(link -> Objects.equals(link.getRel(), "service-desc")).findFirst();
+    return rawLinks().stream()
+        .filter(link -> Objects.equals(link.getRel(), "service-desc"))
+        .findFirst();
   }
 
   public Optional<Link> getApiDocumentation() {
-    return links.stream().filter(link -> Objects.equals(link.getRel(), "service-doc")).findFirst();
+    return rawLinks().stream()
+        .filter(link -> Objects.equals(link.getRel(), "service-doc"))
+        .findFirst();
   }
 
   public Optional<ExternalDocumentation> getExternalDocs() {
-    return apiLandingPage.getExternalDocs();
+    return apiLandingPage().getExternalDocs();
   }
 
   public Optional<String> getSchemaOrgDataset() {
-    return Optional.of(getSchemaOrgDataset(apiData, Optional.empty(), uriCustomizer.copy(), false));
+    return Optional.of(
+        getSchemaOrgDataset(apiData(), Optional.empty(), uriCustomizer().copy(), false));
   }
 
   public boolean getContactInfo() {
