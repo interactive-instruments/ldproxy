@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import de.ii.xtraplatform.docs.DocIgnore;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.Buildable;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableBuilder;
@@ -62,19 +63,16 @@ public interface FeatureTypeConfigurationOgcApi
    *     verwendet werden kann, allerdings ist die URI nur so lange stabil, wie die API stabil
    *     bleibt. Um von Veränderungen in der URI unabhängig zu sein, kann es sinnvoll oder gewünscht
    *     sein, API-unabhängige URIs für die Features zu definieren und von diesen URIs auf die
-   *     jeweils gültige API-URI weiterzuleiten. Diese kananosche URI kann auch in ldproxy
-   *     Konfiguriert und bei den Features kodiert werden. Hierfür ist ein Muster der Feature-URI
+   *     jeweils gültige API-URI weiterzuleiten. Diese kanonische URI kann auch in ldproxy
+   *     konfiguriert und bei den Features kodiert werden. Hierfür ist ein Muster der Feature-URI
    *     anzugeben, wobei `{{value}}` als Ersetzungspunkt für den lokalen Identifikator des Features
    *     in der API angegeben werden kann.
    * @default null
    */
   Optional<String> getPersistentUriTemplate();
 
-  /**
-   * @langEn TODO_DOCS
-   * @langDe TODO_DOCS
-   * @default {}
-   */
+  // this option is only set at runtime
+  @DocIgnore
   Optional<CollectionExtent> getExtent();
 
   /**
@@ -89,7 +87,7 @@ public interface FeatureTypeConfigurationOgcApi
 
   /**
    * @langEn [Building Blocks](#building-blocks) configuration.
-   * @langDe [Bausteine](#bausteine) konfigurieren.
+   * @langDe [Module](#module) konfigurieren.
    * @default []
    */
   @JsonProperty("api")

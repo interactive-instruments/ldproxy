@@ -35,7 +35,8 @@ import org.slf4j.LoggerFactory;
 /**
  * @title Collection Tilesets
  * @path collections/{collectionId}/tiles
- * @langAll Access collection tilesets
+ * @langEn Access collection tilesets
+ * @langDe Zugriff auf Kachelsätze einer Feature Collection
  * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetsFormatExtension}
  */
 @Singleton

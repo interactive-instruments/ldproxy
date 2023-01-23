@@ -18,8 +18,10 @@ import javax.inject.Singleton;
 /**
  * @title datetime
  * @endpoints Features
- * @langAll Either a date-time or an interval. Date and time expressions adhere to RFC 3339.
- *     Intervals may be bounded or half-bounded (double-dots at start or end).
+ * @langEn Select only features that have a primary instant or interval that intersects the provided
+ *     instant or interval.
+ * @langDe Es werden nur Features ausgewählt, deren primäre zeitliche Eigenschaft den angegebenen
+ *     Wert (Zeitstempel, Datum oder Intervall) schneidet.
  */
 @Singleton
 @AutoBind

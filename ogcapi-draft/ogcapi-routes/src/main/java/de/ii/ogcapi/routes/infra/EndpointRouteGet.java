@@ -44,9 +44,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @title Get Route
+ * @title Route
  * @path routes/{routeId}
- * @langAll Fetch a route
+ * @langEn Fetches a route.
+ * @langDe Holt eine Route.
  * @ref:formats {@link de.ii.ogcapi.routes.domain.RouteFormatExtension}
  */
 @Singleton

@@ -188,7 +188,7 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
    *     [transformations](README.md#transformations).
    * @langDe Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in der
    *     HTML-Ausgabe [transformiert](README.md#transformations) werden.
-   * @default `{}`
+   * @default {}
    */
   @JsonSerialize(converter = IgnoreLinksWildcardSerializer.class)
   @Override
@@ -233,7 +233,7 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
    *     angezeigt werden. Diese Option sollte nicht gewählt werden, wenn der Style unterschiedliche
    *     Präsentationen je nach Zoomstufe vorsieht, da ansonsten alle Layer auf allen Zoomstufen
    *     gleichzeitig angezeigt werden.
-   * @default `false`
+   * @default false
    */
   @Nullable
   Boolean getRemoveZoomLevelConstraints();
@@ -248,7 +248,7 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
    *     Diese Option ermöglicht es, mehrere Geometrieeigenschaften anzugeben in einer Liste
    *     anzugeben. Die erste Geometrieeigenschaft, die für ein Feature gesetzt ist, wird dabei
    *     verwendet.
-   * @default `[]`
+   * @default []
    */
   @Nullable
   List<String> getGeometryProperties();
@@ -261,7 +261,7 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
    *     `limit` gesetzt werden. Sofern kein Wert angegeben ist, so gilt der Wert aus dem Modul
    *     "Features Core". Bei der Verwendung von CesiumJS als Map-Client wird ein Wert von 100
    *     empfohlen.
-   * @default `null`
+   * @default null
    */
   @Nullable
   Integer getMaximumPageSize();

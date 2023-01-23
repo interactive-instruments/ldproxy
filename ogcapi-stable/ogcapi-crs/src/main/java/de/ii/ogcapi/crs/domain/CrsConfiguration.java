@@ -38,7 +38,13 @@ public interface CrsConfiguration extends ExtensionConfiguration {
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   /**
-   * @langEn Add additonal coordinate reference systems to an API or a collection.
+   * @langEn Lists additional coordinate reference systems to be supported in the API or for a
+   *     feature collection. The native coordinate reference system of the data and the default
+   *     coordinate reference system of the API are automatically enabled. Coordinate reference
+   *     systems are identified by their EPSG code (`code`). Additionally, the order of the
+   *     coordinate axes must be specified in `forceAxisOrder` (`NONE`: as in the coordinate
+   *     reference system, `LON_LAT` or `LAT_LON`: the order in the coordinate reference system is
+   *     ignored and the specified order is used).
    * @langDe Steuert, welche weitere Koordinatenreferenzsysteme in einer API oder für eine Feature
    *     Collection unterstützt werden sollen. Das native Koordinatenreferenzsystem der Daten und
    *     das Default-Koordinatenreferenzsystem der API sind automatisch aktiviert.

@@ -15,10 +15,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title Features Custom Extensions
+ * @title Features - Custom Extensions
  * @langEn POST on `/items` and filter by geometry intersection.
  * @langDe POST für `/items` und Filterung durch Geometrie-Überschneidung.
- * @scopeEn The module *Features Custom Extensions* adds support for the HTTP method POST on the
+ * @scopeEn The module *Features - Custom Extensions* adds support for the HTTP method POST on the
  *     features resource. The difference to calling with GET is that the query parameters are passed
  *     as content in the request. This may be desired for two reasons:
  *     <p><code>
@@ -35,7 +35,7 @@ import javax.inject.Singleton;
  *     WKT geometry or a URL for a GeoJSON object with a geometry. In case of a FeatureCollection
  *     the first geometry is used.
  *     </code>
- * @scopeDe Das Modul *Features Custom Extensions* ergänzt die Unterstützung der HTTP-Methode POST
+ * @scopeDe Das Modul *Features - Custom Extensions* ergänzt die Unterstützung der HTTP-Methode POST
  *     auf der Features-Ressource. Der Unterschied zum Aufruf mit GET ist, dass die Query-Parameter
  *     als Content im Aufruf übergeben werden. Dies kann aus zwei Gründen gewünscht sein:
  *     <p><code>
@@ -55,9 +55,11 @@ import javax.inject.Singleton;
  *     GeoJSON-Objekt mit einer Geometrie. Im Fall einer FeatureCollection wird die erste Geometrie
  *     verwendet.
  *     </code>
+ * @ref:cfg {@link de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration}
  * @ref:cfgProperties {@link
  *     de.ii.ogcapi.features.custom.extensions.domain.ImmutableFeaturesExtensionsConfiguration}
- * @ref:endpoints {@link de.ii.ogcapi.features.custom.extensions.infra.infra.EndpointPostOnItems}
+ * @ref:endpoints {@link de.ii.ogcapi.features.custom.extensions.infra.EndpointPostOnItems}
+ * @ref:pathParameters {@link de.ii.ogcapi.features.core.domain.PathParameterCollectionIdFeatures}
  * @ref:queryParameters {@link de.ii.ogcapi.features.custom.extensions.app.QueryParameterIntersects}
  */
 @Singleton

@@ -43,7 +43,8 @@ import org.slf4j.LoggerFactory;
 /**
  * @title Route Definition
  * @path routes/{routeId}/definition
- * @langAll Fetch the definition of a route
+ * @langEn Fetch the definition of a stored route.
+ * @langDe Holt die Definition einer gespeicherten Route.
  * @ref:formats {@link de.ii.ogcapi.routes.domain.RouteDefinitionFormatExtension}
  */
 @Singleton

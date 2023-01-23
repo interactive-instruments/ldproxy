@@ -14,6 +14,12 @@ import org.immutables.value.Value;
 /**
  * @buildingBlock CRUD
  * @buildingBlockAlias TRANSACTIONAL
+ * @examplesAll <code>
+ * ```yaml
+ * - buildingBlock: CRUD
+ *   enabled: true
+ * ```
+ * </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new")

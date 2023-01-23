@@ -18,7 +18,68 @@ import java.util.Map;
 import org.immutables.value.Value;
 
 /**
- * @title CSV
+ * @buildingBlock CSV
+ * @examplesEn The following configuration enables CSV as a feature encoding, where all objects and
+ *     arrays are flattened with an underscore as a separator and two properties per array property.
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: CSV
+ *   enabled: true
+ *   transformations:
+ *     '*':
+ *       flatten: '_'
+ *   maxMultiplicity: 2
+ * ```
+ *     <p>For a feature with the following "properties" member in GeoJSON:
+ *     <p><code>
+ * ```yaml
+ * {
+ *   "att1": "foo",
+ *   "att2": [ "bar1", "bar2", "bar3" ]
+ *   "att3": {
+ *     "value": 123,
+ *     "values": [ 456, 789, 0 ]
+ *   }
+ * }
+ * ```
+ *     </code>
+ *     <p>The resulting CSV file would be:
+ *     <p><code>
+ * ```csv
+ * att1,att2_1,att2_2,att3_value,att3_values_1,att3_values_2
+ * foo,bar1,bar2,123,456,789
+ * ```
+ *     </code>
+ * @examplesDe Die folgende Konfiguration aktiviert CSV als Feature-Kodierung, bei der alle Objekte und Arrays mit einem Unterstrich als Trennzeichen und zwei Eigenschaften pro Array-Eigenschaft abgeflacht werden.
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: CSV
+ *   enabled: true
+ *   transformations:
+ *     '*':
+ *       flatten: '_'
+ *   maxMultiplicity: 2
+ * ```
+ *     <p>Für ein Feature mit den folgenden GeoJSON-"properties":
+ *     <p><code>
+ * ```yaml
+ * {
+ *   "att1": "foo",
+ *   "att2": [ "bar1", "bar2", "bar3" ]
+ *   "att3": {
+ *     "value": 123,
+ *     "values": [ 456, 789, 0 ]
+ *   }
+ * }
+ * ```
+ * </code>
+ *     <p>Die resultierende CSV-Datei würde wie folgt aussehen:
+ *     <p><code>
+ * ```csv
+ * att1,att2_1,att2_2,att3_value,att3_values_1,att3_values_2
+ * foo,bar1,bar2,123,456,789
+ * ```
+ *     </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)

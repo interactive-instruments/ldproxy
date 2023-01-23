@@ -23,7 +23,7 @@ import javax.inject.Singleton;
 
 /**
  * @langEn Debug option in development environments: Pretty print the GeoJSON output.
- * @langDe Todo
+ * @langDe Debug-Option in Entwicklungsumgebungen: Formatierte GeoJSON-Ausgabe.
  * @title pretty
  * @endpoints Features
  */

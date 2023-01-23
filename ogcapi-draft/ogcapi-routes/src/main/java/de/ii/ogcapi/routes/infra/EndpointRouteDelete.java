@@ -42,9 +42,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @title Delete Route
+ * @title Route
  * @path routes/{routeId}
- * @langAll Delete a route
+ * @langEn Delete a stored route.
+ * @langDe Löscht eine gespeicherte Route.
  */
 @Singleton
 @AutoBind

@@ -35,6 +35,7 @@ import javax.ws.rs.core.Response;
  * @title Dataset Tileset
  * @path tiles/{tileMatrixSetId}
  * @langEn Access dataset tileset
+ * @langDe Zugriff auf einen Kachelsatz zum Datensatz
  * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetFormatExtension}
  */
 @Singleton

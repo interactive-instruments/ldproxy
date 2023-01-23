@@ -16,12 +16,21 @@ import javax.inject.Singleton;
 
 /**
  * @title Resources
- * @langEn Publish and manage file resources, especially for styles (icons, sprites).
- * @langDe Bereitstellung und Verwaltung von Datei-Ressourcen, vor allem für Styles (Symbole,
- *     Sprites).
+ * @langEn Publish and manage file resources.
+ * @langDe Bereitstellung und Verwaltung von Datei-Ressourcen.
+ * @scopeEn Typical file resources are resources referenced from styles (icons, sprites) or schema
+ *     documents referenced from feature data. The files are located in the folder
+ *     `api-resources/resources/{apiId}`.
+ * @scopeDe Typische Dateiressourcen sind Ressourcen, die von Styles referenziert werden (Icons,
+ *     Sprites) oder Schemadokumente, die aus Daten referenziert werden. Die Dateien befinden sich
+ *     im Ordner `api-resources/resources/{apiId}`.
+ * @ref:cfg {@link de.ii.ogcapi.resources.domain.ResourcesConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.resources.domain.ImmutableResourcesConfiguration}
- * @ref:endpoints {@link de.ii.ogcapi.resources.infra.EndpointResource}, {@link
- *     de.ii.ogcapi.resources.infra.EndpointResources}
+ * @ref:endpoints {@link de.ii.ogcapi.resources.infra.EndpointResources}, {@link
+ *     de.ii.ogcapi.resources.infra.EndpointResource}, {@link
+ *     de.ii.ogcapi.resources.infra.EndpointResourcesManager}
+ * @ref:queryParameters {@link de.ii.ogcapi.resources.app.QueryParameterFResources}
+ * @ref:pathParameters {@link de.ii.ogcapi.resources.app.PathParameterResourceId}
  */
 @Singleton
 @AutoBind

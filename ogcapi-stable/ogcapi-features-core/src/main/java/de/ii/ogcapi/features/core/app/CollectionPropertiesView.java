@@ -169,7 +169,7 @@ public abstract class CollectionPropertiesView extends OgcApiView {
             .orElse(0);
     return Math.min(Math.max(2, 1 + maxIdLength / 10), 6);
   }
-  // Todo idCols needs to be calculated first
+  // TODO idCols needs to be calculated first
   @Value.Derived
   public Integer descCols() {
     if (idCols() != null) {
@@ -188,7 +188,7 @@ public abstract class CollectionPropertiesView extends OgcApiView {
 
   public abstract Optional<Locale> language();
 
-  // Todo Delete after the View class problem is solved
+  // TODO Delete after the View class problem is solved
   public CollectionPropertiesView() {
     super("collectionProperties.mustache");
   }

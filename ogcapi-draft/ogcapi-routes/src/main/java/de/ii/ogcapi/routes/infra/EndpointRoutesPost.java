@@ -83,10 +83,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @title Compute a route
+ * @title Route
  * @path routes
- * @langAll This creates a new route. The payload of the request specifies the definition of the new
- *     route.
+ * @langEn This operation creates a new route. The payload of the request specifies the definition
+ *     of the new route.
+ * @langDe Diese Operation erstellt eine neue Route. Die Nutzlast der Anfrage gibt die Definition
+ *     der neuen Route an.
  * @ref:formats {@link de.ii.ogcapi.routes.domain.RouteFormatExtension}
  */
 @Singleton

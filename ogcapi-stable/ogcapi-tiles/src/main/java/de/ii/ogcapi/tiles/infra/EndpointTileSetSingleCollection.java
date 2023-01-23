@@ -35,7 +35,8 @@ import javax.ws.rs.core.Response;
 /**
  * @title Collection Tileset
  * @path collections/{collectionId}/tiles/{tileMatrixSetId}
- * @langAll Access collection tileset
+ * @langEn Access collection tileset
+ * @langDe Zugriff auf einen Kachelsatz einer Feature Collection
  * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetFormatExtension}
  */
 @Singleton

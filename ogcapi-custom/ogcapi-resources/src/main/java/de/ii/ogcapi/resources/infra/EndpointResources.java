@@ -42,9 +42,10 @@ import org.slf4j.LoggerFactory;
 /**
  * @title Resources
  * @path resources
- * @langAll This operation fetches the set of file resources that have been created and that may be
- *     used by reference, for example, in stylesheets. For each resource the id and a link to the
- *     resource is provided.
+ * @langEn This operation fetches the set of file resources. For each resource the id and a link to
+ *     the file is provided.
+ * @langDe Die Operation ruft die Liste der Dateiressourcen in der API ab. Für jede Ressource werden
+ *     die ID und ein Link zur Datei angegeben.
  * @ref:formats {@link de.ii.ogcapi.resources.domain.ResourcesFormatExtension}
  */
 @Singleton

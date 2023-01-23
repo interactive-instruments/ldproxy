@@ -41,9 +41,12 @@ import org.locationtech.jts.io.WKTReader;
 /**
  * @title intersects
  * @endpoints Features
- * @langAll A Well Known Text representation of a geometry as defined in Simple Feature Access -
- *     Part 1: Common Architecture or a URI that returns a GeoJSON feature with a geometry. Only
- *     features are returned that intersect the geometry.
+ * @langEn A Well Known Text representation of a geometry as defined in Simple Feature Access - Part
+ *     1: Common Architecture or a URI that returns a GeoJSON feature with a geometry. Only features
+ *     are returned that intersect the geometry.
+ * @langDe Eine Well-Known-Text-Geometrie gemäß der Definition in Simple Feature Access - Part 1:
+ *     Common Architecture oder eine URI, die ein GeoJSON-Feature mit einer Geometrie zurückgibt. Es
+ *     werden nur Features zurückgegeben, die die Geometrie schneiden.
  */
 @Singleton
 @AutoBind

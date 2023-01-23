@@ -32,11 +32,10 @@ import javax.ws.rs.core.Response;
 /**
  * @title Dataset Tilesets
  * @path tiles
- * @langAll Access dataset tilesets
+ * @langEn Access dataset tilesets
+ * @langDe Zugriff auf die Kachelsätze zum Datensatz
  * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetsFormatExtension}
  */
-
-/** Handle responses under '/tiles'. */
 @Singleton
 @AutoBind
 public class EndpointTileSetsMultiCollection extends AbstractEndpointTileSetsMultiCollection

@@ -24,7 +24,7 @@ import org.immutables.value.Value;
  *     </code>
  *     <p>To support authenticated users, a bearer token has to be included in the `Authorization`
  *     header in requests to the API. Validation and evaluation of these tokens has to be configured
- *     in the [global configuration](../../70-reference.md).
+ *     in the [global configuration](../application/70-reference.md).
  * @langDe Absicherung für alle API Operationen (Kombination aus Endpunkt und HTTP-Methode).
  *     <p>Die Absicherung basiert auf Scopes, aktuell existieren nur zwei:
  *     <p><code>
@@ -33,7 +33,7 @@ import org.immutables.value.Value;
  *     </code>
  *     <p>Um authentifizierte Benutzer zu unterstützen, muss ein Bearer-Token im
  *     `Authorization`-Header in Anfragen an die API inkludiert werden. Die Validierung und
- *     Auswertung dieser Tokens muss in der [globalen Konfiguration](../../70-reference.md)
+ *     Auswertung dieser Tokens muss in der [globalen Konfiguration](../application/70-reference.md)
  *     konfiguriert werden.
  */
 @Value.Immutable

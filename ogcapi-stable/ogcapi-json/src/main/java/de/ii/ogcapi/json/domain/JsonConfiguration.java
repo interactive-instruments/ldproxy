@@ -14,6 +14,12 @@ import org.immutables.value.Value;
 
 /**
  * @buildingBlock JSON
+ * @examplesAll <code>
+ * ```yaml
+ * - buildingBlock: JSON
+ *   enabled: false
+ * ```
+ * </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new")

@@ -15,13 +15,12 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 /**
- * # `externalDocs`
- *
- * @langEn |External document with additional information about this API, required keys are `url`
- *     and `description`.
- * @langDe Es kann externes Dokument mit weiteren Informationen angegeben werden, auf das aus der
- *     API verlinkt wird. Anzugeben sind die Eigenschaften `url` und `description`.
- * @default `{}`
+ * @langEn External document with additional information about this API, the `url` key is required,
+ *     the `description` key is recommended.
+ * @langDe Es kann ein externes Dokument mit weiteren Informationen angegeben werden, auf das aus
+ *     der API verlinkt wird. Anzugeben ist die `url` des Dokuments, die Angabe von `description`
+ *     wird empfohlen.
+ * @default {}
  */
 @Value.Immutable
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -36,7 +35,17 @@ public abstract class ExternalDocumentation {
         into.putString(from.getUrl(), StandardCharsets.UTF_8);
       };
 
+  /**
+   * @langEn Description of the content of the document or website.
+   * @langDe Beschreibung des Inhalts des Dokuments oder der Website.
+   * @since v2.1
+   */
   public abstract Optional<String> getDescription();
 
+  /**
+   * @langEn URL of the document or website.
+   * @langDe URL des Dokuments oder der Website.
+   * @since v2.1
+   */
   public abstract String getUrl();
 }

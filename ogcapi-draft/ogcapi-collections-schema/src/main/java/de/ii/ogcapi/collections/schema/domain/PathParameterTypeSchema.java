@@ -22,6 +22,16 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @title type
+ * @endpoints Feature Schema
+ * @langEn The type of the resource that the schema describes. Either `feature` for the schema of
+ *     the GeoJSON features in the collection or `collection` for the schema of the GeoJSON feature
+ *     collection that contains the features in the collection.
+ * @langDe Die Art der Ressource, die das Schema beschreibt. Entweder `feature` (Schema der
+ *     GeoJSON-Features der Collection) oder `collection` (Schema der GeoJSON-Feature-Collection aus
+ *     GeoJSON-Features der Collection).
+ */
 @Singleton
 @AutoBind
 public class PathParameterTypeSchema extends PathParameterType {

@@ -50,9 +50,11 @@ import org.slf4j.LoggerFactory;
 /**
  * @title Style
  * @path styles/{styleId}
- * @langAll This operation fetches the set of styles available. For each style the id, a title,
- *     links to the stylesheet of the style in each supported encoding, and the link to the metadata
- *     is provided.
+ * @langEn This operation fetches the list of styles. For each style the id, a title, links to the
+ *     stylesheet of the style in each supported encoding, and the link to the metadata is provided.
+ * @langDe Mit dieser Operation wird die Liste der Stylee abgerufen. Für jeden Style werden die ID,
+ *     ein Titel, Links zum Stylesheet des Styles in jeder unterstützten Kodierung und der Link zu
+ *     den Metadaten bereitgestellt.
  * @ref:formats {@link de.ii.ogcapi.styles.domain.StyleFormatExtension}
  */
 @Singleton

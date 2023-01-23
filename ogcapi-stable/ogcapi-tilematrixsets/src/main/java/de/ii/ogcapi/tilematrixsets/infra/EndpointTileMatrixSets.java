@@ -13,7 +13,6 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.Endpoint;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -47,15 +46,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @title Tile Matrix Sets
- * @path tileMatrixSets
- * @langAll Returns the definition of the tiling scheme according to the [OGC Two Dimensional Tile
- *     Matrix Set standard](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html).
+ * @title Tile Matrix Sets, Tile Matrix Set
+ * @path tileMatrixSets, tileMatrixSets/{tileMatrixSetId}
+ * @langEn Returns the list of tiling schemes or the definition of a tiling scheme respectively.
+ * @langDe Liefert die Liste der Kachelschemas bzw. die Definition eines Kachelschemas.
  * @ref:formats {@link de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsFormatExtension}
  */
 @Singleton
 @AutoBind
-public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass {
+public class EndpointTileMatrixSets extends Endpoint {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileMatrixSets.class);
   private static final List<String> TAGS = ImmutableList.of("Discover and fetch tiling schemes");
@@ -71,13 +70,6 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
     super(extensionRegistry);
     this.queryHandler = queryHandler;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
-  }
-
-  @Override
-  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-    return ImmutableList.of(
-        "http://www.opengis.net/spec/tms/2.0/conf/tilematrixset",
-        "http://www.opengis.net/spec/tms/2.0/conf/json-tilematrixset");
   }
 
   @Override
@@ -144,7 +136,7 @@ public class EndpointTileMatrixSets extends Endpoint implements ConformanceClass
       operationSummary = "fetch information about the tiling scheme `{tileMatrixSetId}`";
       operationDescription =
           Optional.of(
-              "Returns the definition of the tiling scheme according to the [OGC Two Dimensional Tile Matrix Set standard](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html).");
+              "Returns the definition of the tiling scheme according to the [OGC Two Dimensional Tile Matrix Set standard](https://docs.ogc.org/is/17-083r2/17-083r2.html).");
       ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
           new ImmutableOgcApiResourceAuxiliary.Builder().path(path).pathParameters(pathParameters);
       ApiOperation.getResource(

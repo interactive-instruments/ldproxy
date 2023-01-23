@@ -182,7 +182,6 @@ public class FeatureEncoderRoutes extends FeatureObjectEncoder<PropertyRoutes, F
 
     lastPoint = Geometry.Point.of(coordinates.get(coordCount - 1));
     lastAngle = computeAngle(coordinates.get(coordCount - 2), coordinates.get(coordCount - 1));
-    ;
 
     feature
         .findPropertyByPath("cost")
