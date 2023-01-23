@@ -20,10 +20,70 @@ import org.immutables.value.Value;
 
 /**
  * @buildingBlock MAP_TILES
- * @examplesEn See the [TileServer tile provider in the Tiles module](vector_tiles.md#tileserver)
- *     for a sample configuration.
- * @examplesDe Siehe den [TileServer-Tile-Provider im Modul Tiles](vector_tiles.md#tileserver) für
- *     eine Beispielkonfiguration.
+ * @examplesEn Example configuration:
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: MAP_TILES
+ *   enabled: true
+ *   mapProvider:
+ *     type: TILESERVER
+ *     urlTemplate: 'https://www.example.com/tileserver/styles/topographic/{tileMatrix}/{tileCol}/{tileRow}@2x.{fileExtension}'
+ *     tileEncodings:
+ *       - WebP
+ *       - PNG
+ * ```
+ *     </code>
+ *     <p>An example of a TileServer-GL configuration with the style "topographic", which can use,
+ *     e.g., the vector tiles provided by the API as the data source:
+ *     <p><code>
+ * ```json
+ * {
+ *   "options": {},
+ *   "styles": {
+ *     "topographic": {
+ *       "style": "topographic.json",
+ *       "tilejson": {
+ *         "type": "overlay",
+ *         "bounds": [35.7550727, 32.3573507, 37.2052764, 33.2671397]
+ *       }
+ *     }
+ *   },
+ *   "data": {}
+ * }
+ * ```
+ *     </code>
+ * @examplesDe Beispielkonfiguration:
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: MAP_TILES
+ *   enabled: true
+ *   mapProvider:
+ *     type: TILESERVER
+ *     urlTemplate: 'https://www.example.com/tileserver/styles/topographic/{tileMatrix}/{tileCol}/{tileRow}@2x.{fileExtension}'
+ *     tileEncodings:
+ *       - WebP
+ *       - PNG
+ * ```
+ *     </code>
+ *     <p>Ein Beispiel für eine TileServer-GL-Konfiguration mit dem Style "topographic", der z.B.
+ *     als Datenquelle die Vector Tiles der API verwenden kann:
+ *     <p><code>
+ * ```json
+ * {
+ *   "options": {},
+ *   "styles": {
+ *     "topographic": {
+ *       "style": "topographic.json",
+ *       "tilejson": {
+ *         "type": "overlay",
+ *         "bounds": [35.7550727, 32.3573507, 37.2052764, 33.2671397]
+ *       }
+ *     }
+ *   },
+ *   "data": {}
+ * }
+ * ```
+ *     </code>
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
@@ -34,9 +94,9 @@ public interface MapTilesConfiguration extends ExtensionConfiguration {
 
   /**
    * @langEn Specifies the data source for the tiles, currently only
-   *     [TileServer-Tile-Provider](vector_tiles.md#tileserver) is supported.
+   *     [TileServer-Tile-Provider](tiles.md#tileserver) is supported.
    * @langDe Spezifiziert die Datenquelle für die Kacheln, unterstützt werden derzeit nur
-   *     [TileServer-Tile-Provider](vector_tiles.md#tileserver).
+   *     [TileServer-Tile-Provider](tiles.md#tileserver).
    * @default null
    */
   @Nullable

@@ -38,14 +38,16 @@ import org.immutables.value.Value;
 /**
  * @buildingBlock TILES
  * @langEn ### Prerequisites
- *     <p>The module *Tile Matrix Sets* must be enabled.
+ *     <p>The building block *Tile Matrix Sets* must be enabled. If that building block is not
+ *     configured, it is automatically enabled if *Tiles* is enabled.
  *     <p>### Storage
  *     <p>The tile cache is located in the data directory under the relative path
  *     `cache/tiles/{apiId}`. If the data for an API or tile configuration has been changed, then
  *     the cache directory for the API should be deleted so that the cache is rebuilt with the
  *     updated data or rules.
  * @langDe ### Voraussetzungen
- *     <p>Das Modul *Tile Matrix Sets* muss aktiviert sein.
+ *     <p>Das Modul *Tile Matrix Sets* muss aktiviert sein. Wenn dieses Modul nicht konfiguriert
+ *     ist, wird es automatisch aktiviert, wenn *Tiles* aktiviert ist.
  *     <p>### Storage
  *     <p>Der Tile-Cache liegt im Datenverzeichnis unter dem relativen Pfad `cache/tiles/{apiId}`.
  *     Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden, dann sollte das
@@ -58,71 +60,94 @@ import org.immutables.value.Value;
  * ```yaml
  * - buildingBlock: TILES
  *   enabled: true
- *   cache: MBTILES
- *   tileProvider:
- *     type: FEATURES
- *     multiCollectionEnabled: true
- *     zoomLevels:
- *       WebMercatorQuad:
- *         min: 5
- *         max: 16
- *     seeding:
- *       WebMercatorQuad:
- *         min: 5
- *         max: 11
- * ```
- *     </code>
- *     <p>For the vineyard objects (aggregation of adjacent objects up to zoom level 9):
- *     <p><code>
- * ```yaml
- * - buildingBlock: TILES
- *   rules:
+ *   zoomLevels:
  *     WebMercatorQuad:
- *     - min: 5
- *       max: 7
- *       merge: true
- *       groupBy:
- *       - region
- *     - min: 8
- *       max: 8
- *       merge: true
- *       groupBy:
- *       - region
- *       - subregion
- *     - min: 9
- *       max: 9
- *       merge: true
- *       groupBy:
- *       - region
- *       - subregion
- *       - cluster
+ *       min: 5
+ *       max: 16
+ *       default: 8
+ *   seedingOptions:
+ *     maxThreads: 1
  * ```
  *     </code>
- *     <p>Example of a simple configuration (no seeding at startup, rebuilding the cache every
- *     hour):
+ *     <p>For the vineyard features (aggregation of adjacent features up to zoom level 9):
+ *     <p><code>
+ * ```yaml
+ *     - buildingBlock: TILES
+ *       rules:
+ *         WebMercatorQuad:
+ *         - min: 5
+ *           max: 7
+ *           merge: true
+ *           groupBy:
+ *           - region
+ *         - min: 8
+ *           max: 8
+ *           merge: true
+ *           groupBy:
+ *           - region
+ *           - subregion
+ *         - min: 9
+ *           max: 9
+ *           merge: true
+ *           groupBy:
+ *           - region
+ *           - subregion
+ *           - cluster
+ * ```
+ *     </code>
+ *     <p>The tile provider, includes configuration for caches and seeding:
+ *     <p><code>
+ * ```yaml
+ * id: vineyards-tiles
+ * providerType: TILE
+ * providerSubType: FEATURES
+ * caches:
+ * - type: IMMUTABLE
+ *   storage: MBTILES
+ *   levels:
+ *     WebMercatorQuad:
+ *       min: 5
+ *       max: 11
+ * - type: DYNAMIC
+ *   storage: MBTILES
+ *   seeded: false
+ *   levels:
+ *     WebMercatorQuad:
+ *       min: 12
+ *       max: 16
+ * layerDefaults:
+ *   levels:
+ *     WebMercatorQuad:
+ *       min: 5
+ *       max: 16
+ * layers:
+ *   __all__:
+ *     id: __all__
+ *     combine: ['*']
+ *   vineyards:
+ *     id: vineyards
+ * ```
+ *     </code>
+ *     <p>Seeding example (no seeding at startup, rebuilding the cache every hour):
  *     <p><code>
  * ```yaml
  * - buildingBlock: TILES
- *   tileProvider:
- *     type: FEATURES
- *     seedingOptions:
- *       runOnStartup: false
- *       runPeriodic: '0 * * * *'
- *       purge: true
+ *   seedingOptions:
+ *     runOnStartup: false
+ *     runPeriodic: '0 * * * *'
+ *     purge: true
  * ```
  *     </code>
- *     <p>Example of using multiple threading for seeding:
+ *     <p>Example of using four threads for seeding:
  *     <p><code>
  * ```yaml
  * - buildingBlock: TILES
- *   tileProvider:
- *     type: FEATURES
- *     seedingOptions:
- *       maxThreads: 2
+ *   seedingOptions:
+ *     maxThreads: 4
  * ```
  *     </code>
  *     <p>For this, at least 4 threads must be configured for background processes in the global
- *     configuration, for example:
+ *     configuration (`cfg.yml`), for example:
  *     <p><code>
  * ```yaml
  * backgroundTasks:
@@ -139,47 +164,15 @@ import org.immutables.value.Value;
  *     will split the seeding into 2 parts if at least 2 of the 4 threads are available. If 3
  *     threads are used by other services, it will not be split. And if all 4 threads are busy, it
  *     will wait until at least 1 thread becomes available.
- *     <p>Example configuration (from the API [Low resolution satellite imagery (OpenMapTiles
- *     preview)](https://demo.ldproxy.net/openmaptiles)):
+ *     <p>Example configuration (from the API [Earth at
+ *     Night](https://demo.ldproxy.net/earthatnight)):
  *     <p><code>
  * ```yaml
  * - buildingBlock: TILES
  *   enabled: true
  *   tileProvider:
  *     type: MBTILES
- *     filename: satellite-lowres-v1.2-z0-z5.mbtiles
- * ```
- *     </code>
- *     <p>Example configuration:
- *     <p><code>
- * ```yaml
- * - buildingBlock: MAP_TILES
- *   enabled: true
- *   mapProvider:
- *     type: TILESERVER
- *     urlTemplate: 'https://www.example.com/tileserver/styles/topographic/{tileMatrix}/{tileCol}/{tileRow}@2x.{fileExtension}'
- *     tileEncodings:
- *       - WebP
- *       - PNG
- * ```
- *     </code>
- *     <p>Ein Beispiel für eine TileServer-GL-Konfiguration mit dem Style "topographic", der z.B.
- *     als Datenquelle die Vector Tiles der API verwenden kann:
- *     <p><code>
- * ```json
- * {
- *   "options": {},
- *   "styles": {
- *     "topographic": {
- *       "style": "topographic.json",
- *       "tilejson": {
- *         "type": "overlay",
- *         "bounds": [35.7550727, 32.3573507, 37.2052764, 33.2671397]
- *       }
- *     }
- *   },
- *   "data": {}
- * }
+ *     filename: dnb_land_ocean_ice.2012.54000x27000_geo.mbtiles
  * ```
  *     </code>
  * @examplesDe Beispiel für die Angaben in der Konfigurationsdatei aus der API für [Weinlagen in
@@ -189,71 +182,94 @@ import org.immutables.value.Value;
  * ```yaml
  * - buildingBlock: TILES
  *   enabled: true
- *   cache: MBTILES
- *   tileProvider:
- *     type: FEATURES
- *     multiCollectionEnabled: true
- *     zoomLevels:
- *       WebMercatorQuad:
- *         min: 5
- *         max: 16
- *     seeding:
- *       WebMercatorQuad:
- *         min: 5
- *         max: 11
+ *   zoomLevels:
+ *     WebMercatorQuad:
+ *       min: 5
+ *       max: 16
+ *       default: 8
+ *   seedingOptions:
+ *     maxThreads: 1
  * ```
  *     </code>
  *     <p>Für die Weinlagen-Objekte (Aggregation von aneinander angrenzenden Objekten bis Zoomstufe
  *     9):
  *     <p><code>
  * ```yaml
- * - buildingBlock: TILES
- *   rules:
- *     WebMercatorQuad:
- *     - min: 5
- *       max: 7
- *       merge: true
- *       groupBy:
- *       - region
- *     - min: 8
- *       max: 8
- *       merge: true
- *       groupBy:
- *       - region
- *       - subregion
- *     - min: 9
- *       max: 9
- *       merge: true
- *       groupBy:
- *       - region
- *       - subregion
- *       - cluster
+ *     - buildingBlock: TILES
+ *       rules:
+ *         WebMercatorQuad:
+ *         - min: 5
+ *           max: 7
+ *           merge: true
+ *           groupBy:
+ *           - region
+ *         - min: 8
+ *           max: 8
+ *           merge: true
+ *           groupBy:
+ *           - region
+ *           - subregion
+ *         - min: 9
+ *           max: 9
+ *           merge: true
+ *           groupBy:
+ *           - region
+ *           - subregion
+ *           - cluster
  * ```
  *     </code>
- *     <p>Beispiel für eine einfache Konfiguration (kein Seeding beim Start, Neuaufbau des Cache zu
- *     jeder Stunde):
+ *     <p>Der Tile Provider, mit der Konfiguration für Caches und das Seeding von Kacheln:
+ *     <p><code>
+ * ```yaml
+ * id: vineyards-tiles
+ * providerType: TILE
+ * providerSubType: FEATURES
+ * caches:
+ * - type: IMMUTABLE
+ *   storage: MBTILES
+ *   levels:
+ *     WebMercatorQuad:
+ *       min: 5
+ *       max: 11
+ * - type: DYNAMIC
+ *   storage: MBTILES
+ *   seeded: false
+ *   levels:
+ *     WebMercatorQuad:
+ *       min: 12
+ *       max: 16
+ * layerDefaults:
+ *   levels:
+ *     WebMercatorQuad:
+ *       min: 5
+ *       max: 16
+ * layers:
+ *   __all__:
+ *     id: __all__
+ *     combine: ['*']
+ *   vineyards:
+ *     id: vineyards
+ * ```
+ *     </code>
+ *     <p>Seeding-Beispiel (kein Seeding beim Start, Neuaufbau des Cache zu jeder Stunde)
  *     <p><code>
  * ```yaml
  * - buildingBlock: TILES
- *   tileProvider:
- *     type: FEATURES
- *     seedingOptions:
- *       runOnStartup: false
- *       runPeriodic: '0 * * * *'
- *       purge: true
+ *   seedingOptions:
+ *     runOnStartup: false
+ *     runPeriodic: '0 * * * *'
+ *     purge: true
  * ```
  *     </code>
  *     <p>Beispiel für die Verwendung von mehreren Threads für das Seeding:
  *     <p><code>
  * ```yaml
  * - buildingBlock: TILES
- *   tileProvider:
- *     type: FEATURES
- *     seedingOptions:
- *       maxThreads: 2
+ *   seedingOptions:
+ *     maxThreads: 4
  * ```
  *     </code>
- *     <p>Hierfür müssen in der globalen Konfiguration mindestens 4 Threads für Hintergrundprozesse
+ *     <p>Hierfür müssen in der globalen Konfiguration (`cfg.yml`) mindestens 4 Threads für Hintergrundprozesse
  *     konfiguriert sein, zum Beispiel:
  *     <p><code>
  * ```yaml
@@ -271,49 +287,16 @@ import org.immutables.value.Value;
  *     setzt, wird das Seeding in 2 Teile aufgeteilt, wenn mindestens 2 der 4 Threads verfügbar
  *     sind. Wenn 3 Threads von anderen Diensten benutzt werden, wird es nicht aufgeteilt. Und wenn
  *     alle 4 Threads belegt sind, wird gewartet, bis mindestens 1 Thread frei wird.
- *     <p>Beispielkonfiguration (aus der API[Satellitenbilder in niedriger Auflösung
- *     (OpenMapTiles-Preview)](https://demo.ldproxy.net/openmaptiles)):
+ *     <p>Beispielkonfiguration (from the API [Earth at
+ *     Night](https://demo.ldproxy.net/earthatnight)):
  *     <p><code>
  * ```yaml
  * - buildingBlock: TILES
  *   enabled: true
  *   tileProvider:
  *     type: MBTILES
- *     filename: satellite-lowres-v1.2-z0-z5.mbtiles
+ *     filename: dnb_land_ocean_ice.2012.54000x27000_geo.mbtiles
  * ```
- *     </code>
- *     <p>Beispielkonfiguration:
- *     <p><code>
- * ```yaml
- * - buildingBlock: MAP_TILES
- *   enabled: true
- *   mapProvider:
- *     type: TILESERVER
- *     urlTemplate: 'https://www.example.com/tileserver/styles/topographic/{tileMatrix}/{tileCol}/{tileRow}@2x.{fileExtension}'
- *     tileEncodings:
- *       - WebP
- *       - PNG
- * ```
- *     </code>
- *     <p>Ein Beispiel für eine TileServer-GL-Konfiguration mit dem Style "topographic", der z.B.
- *     als Datenquelle die Vector Tiles der API verwenden kann:
- *     <p><code>
- * ```json
- * {
- *   "options": {},
- *   "styles": {
- *     "topographic": {
- *       "style": "topographic.json",
- *       "tilejson": {
- *         "type": "overlay",
- *         "bounds": [35.7550727, 32.3573507, 37.2052764, 33.2671397]
- *       }
- *     }
- *   },
- *   "data": {}
- * }
- * ```
- *     </code>
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
@@ -472,7 +455,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   /**
    * @langEn *Deprecated* See [Tile-Provider Features](#features).
    * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
-   * @default `[ 0, 0 ]`
+   * @default [ 0, 0 ]
    */
   @Deprecated
   List<Double> getCenter();
@@ -495,7 +478,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
    *     level to use as default.
    * @langDe Steuert die Zoomstufen, die für jedes aktive Kachelschema verfügbar sind sowie welche
    *     Zoomstufe als Default bei verwendet werden soll.
-   * @default `{ "WebMercatorQuad" : { "min": 0, "max": 23 } }`
+   * @default { "WebMercatorQuad" : { "min": 0, "max": 23 } }
    */
   Map<String, MinMax> getZoomLevels();
 
@@ -562,7 +545,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   /**
    * @langEn *Deprecated* See [Tile-Provider Features](#features).
    * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
-   * @default `{}`
+   * @default {}
    */
   @Deprecated
   Map<String, MinMax> getZoomLevelsCache();
@@ -581,7 +564,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   /**
    * @langEn *Deprecated* See [Tile-Provider Features](#features).
    * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
-   * @default `{}`
+   * @default {}
    */
   @Deprecated
   Map<String, MinMax> getSeeding();
@@ -641,7 +624,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   /**
    * @langEn *Deprecated* See [Tile-Provider Features](#features).
    * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
-   * @default `false`
+   * @default false
    */
   @Deprecated
   @Nullable
@@ -660,7 +643,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   /**
    * @langEn *Deprecated* See [Tile-Provider Features](#features).
    * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
-   * @default `{}`
+   * @default {}
    */
   @Deprecated
   Map<String, List<LevelFilter>> getFilters();
@@ -679,7 +662,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   /**
    * @langEn *Deprecated* See [Tile-Provider Features](#features).
    * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
-   * @default `{}`
+   * @default {}
    */
   @Deprecated
   Map<String, List<LevelTransformation>> getRules();

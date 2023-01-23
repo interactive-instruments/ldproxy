@@ -41,9 +41,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * @title Dataset tiles
+ * @title Dataset Map Tiles
  * @path map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
- * @langAll Access dataset map tiles
+ * @langEn Access dataset map tiles
+ * @langDe Zugriff auf Kartenkacheln eines Datensatzes.
  * @ref:formats {@link de.ii.ogcapi.maps.domain.MapTileFormatExtension}
  */
 @Singleton

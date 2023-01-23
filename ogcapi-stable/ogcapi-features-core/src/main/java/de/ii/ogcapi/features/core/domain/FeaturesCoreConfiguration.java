@@ -151,7 +151,7 @@ public interface FeaturesCoreConfiguration
    *     same.
    * @langDe Identifiziert den verwendeten Feature-Provider. Standardmäßig besitzt der
    *     Feature-Provider dieselbe ID wie die API.
-   * @default API-ID
+   * @default apiId
    */
   Optional<String> getFeatureProvider();
 
@@ -159,9 +159,8 @@ public interface FeaturesCoreConfiguration
    * @langEn Id of the feature type to use as defined in the given feature provider. Normally the
    *     feature type and collection ids are the same.
    * @langDe Identifiziert die verwendete Objektart im Feature-Provider. Standardmäßig besitzt die
-   *     Objektart dieselbe ID wie die Collection Diese Option ist nur im Kontext einer Feature
-   *     Collection relevant.
-   * @default Collection id
+   *     Objektart dieselbe ID wie die Collection.
+   * @default collectionId
    */
   Optional<String> getFeatureType();
 
@@ -178,7 +177,7 @@ public interface FeaturesCoreConfiguration
    *     `CRS84h` for datasets with 3D geometries.
    * @langDe Setzt das Standard-Koordinatenreferenzsystem, entweder 'CRS84' für einen Datensatz mit
    *     2D-Geometrien oder 'CRS84h' für einen Datensatz mit 3D-Geometrien.
-   * @default CRS84h
+   * @default CRS84
    */
   @Nullable
   DefaultCrs getDefaultCrs();
@@ -240,34 +239,34 @@ public interface FeaturesCoreConfiguration
   Optional<ItemType> getItemType();
 
   /**
-   * @langEn Feature properties that can be used in queries to select the returned features, split
-   *     into `spatial`, `temporal` and `other`. Properties in `spatial` have to be of type
-   *     `GEOMETRY` in the provider, properties in `temporal` of type `DATETIME`. Properties are
-   *     listed in an array by name. Queryables can be used in filter expressions ([Filter -
-   *     CQL](filter.md)) or as filter parameters according to [OGC API - Features - Part 1: Core
-   *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0). The parameter
-   *     [bbox](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#_parameter_bbox) acts on the
-   *     first spatial property. The parameter
-   *     [datetime](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#_parameter_datetime) acts on
-   *     the first two temporal properties, which are interpreted as start and end of an interval.
-   *     If only one temporal property is given, it is interpreted as instant. Other properties are
-   *     added as [additional
-   *     parameters](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#_parameters_for_filtering_on_feature_properties)
-   *     for the collection ("*" can be used as wildcard). Using the described parameters allows
-   *     selection of features without additional modules.
+   * @langEn Controls which of the attributes in queries can be used for filtering data. A
+   *     distinction is made between spatial (`spatial`), temporal (`temporal`) and "regular" (`q`,
+   *     `other`) attributes. The attributes under `spatial` must be of type `GEOMETRY` in the
+   *     provider schema, the attributes under `temporal` of type `DATETIME` or `DATE`. The
+   *     searchable attributes are each listed by their name in an array. The queryables can be used
+   *     in filter expressions ([building block "filter"](filter.md)). The primary spatial and
+   *     temporal attributes (see provider configuration) can be used for selection via the
+   *     [parameters `bbox`](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_bbox) and
+   *     [parameters
+   *     `datetime`](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_datetime),
+   *     respectively. The remaining attributes are defined as [additional parameters for the
+   *     respective feature
+   *     collections](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties)
+   *     ("*" can be used as wildcard). In this way a selection of objects is already possible
+   *     without additional building blocks. The attributes under `q` are also taken into account in
+   *     the free text search in the query parameter with the same name.
    * @langDe Steuert, welche der Attribute in Queries für die Filterung von Daten verwendet werden
    *     können. Unterschieden werden räumliche (`spatial`), zeitliche (`temporal`) und "normale"
    *     (`q`, `other`) Attribute. Die Attribute unter `spatial` müssen im Provider-Schema vom Typ
    *     `GEOMETRY`, die Attribute unter `temporal` vom Typ `DATETIME` oder `DATE` sein. Die
    *     suchbaren Attribute werden jeweils über ihren Namen in einem Array aufgelistet. Die
-   *     Queryables können in Filter-Ausdrücken ([Modul "Filter - CQL"](filter.md)) genutzt werden.
-   *     Die primären räumlichen und zeitlichen Attribute (siehe Provider-Konfiguration) können über
-   *     die [Parameter `bbox`](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#_parameter_bbox)
-   *     bzw. [Parameter
-   *     `datetime`](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#_parameter_datetime) für
-   *     die Selektion verwendet werden. Die übrigen Attribute werden als [zusätzliche Parameter für
-   *     die jeweilige Feature
-   *     Collections](http://docs.opengeospatial.org/is/17-069r3/17-069r3.html#_parameters_for_filtering_on_feature_properties)
+   *     Queryables können in Filter-Ausdrücken ([Modul "Filter"](filter.md)) genutzt werden. Die
+   *     primären räumlichen und zeitlichen Attribute (siehe Provider-Konfiguration) können über die
+   *     [Parameter `bbox`](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_bbox) bzw.
+   *     [Parameter `datetime`](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_datetime)
+   *     für die Selektion verwendet werden. Die übrigen Attribute werden als [zusätzliche Parameter
+   *     für die jeweilige Feature
+   *     Collections](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties)
    *     definiert ("*" kann als Wildcard verwendet werden). Auf diese Weise ist eine Selektion von
    *     Objekten bereits ohne zusätzliche Module möglich. Die Attribute unter `q` werden außerdem
    *     bei der freien Textsuche im Query-Parameter mit demselben Namen berücksichtigt.

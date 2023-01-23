@@ -36,7 +36,7 @@ import org.immutables.value.Value;
  *     "inspireId" : "https://example.org/id/soziales/kindergarten/1",
  *     "serviceType" : {
  *       "title" : "Kinderbetreuung",
- *       "href" : "http://inspire.ec.europa.eu/codelist/ServiceTypeValue/childCareService"
+ *       "href" : "https://inspire.ec.europa.eu/codelist/ServiceTypeValue/childCareService"
  *     },
  *     "pointOfContact" : {
  *       "address" : {
@@ -72,7 +72,7 @@ import org.immutables.value.Value;
  *     "name" : "Beispiel",
  *     "inspireId" : "https://example.org/id/soziales/kindergarten/1",
  *     "serviceType.title" : "Kinderbetreuung",
- *     "serviceType.href" : "http://inspire.ec.europa.eu/codelist/ServiceTypeValue/childCareService",
+ *     "serviceType.href" : "https://inspire.ec.europa.eu/codelist/ServiceTypeValue/childCareService",
  *     "pointOfContact.address.thoroughfare" : "Otto-Pankok-Str.",
  *     "pointOfContact.address.locatorDesignator" : "29",
  *     "pointOfContact.address.postCode" : "40231",
@@ -86,7 +86,7 @@ import org.immutables.value.Value;
  * }
  * ```
  *     </code>
- *     <p>Example of the specifications in the configuration file:
+ *     <p>The relevant options in the configuration file:
  *     <p><code>
  * ```yaml
  * - buildingBlock: GEO_JSON
@@ -110,7 +110,7 @@ import org.immutables.value.Value;
  *     "inspireId" : "https://example.org/id/soziales/kindergarten/1",
  *     "serviceType" : {
  *       "title" : "Kinderbetreuung",
- *       "href" : "http://inspire.ec.europa.eu/codelist/ServiceTypeValue/childCareService"
+ *       "href" : "https://inspire.ec.europa.eu/codelist/ServiceTypeValue/childCareService"
  *     },
  *     "pointOfContact" : {
  *       "address" : {
@@ -146,7 +146,7 @@ import org.immutables.value.Value;
  *     "name" : "Beispiel",
  *     "inspireId" : "https://example.org/id/soziales/kindergarten/1",
  *     "serviceType.title" : "Kinderbetreuung",
- *     "serviceType.href" : "http://inspire.ec.europa.eu/codelist/ServiceTypeValue/childCareService",
+ *     "serviceType.href" : "https://inspire.ec.europa.eu/codelist/ServiceTypeValue/childCareService",
  *     "pointOfContact.address.thoroughfare" : "Otto-Pankok-Str.",
  *     "pointOfContact.address.locatorDesignator" : "29",
  *     "pointOfContact.address.postCode" : "40231",
@@ -160,7 +160,7 @@ import org.immutables.value.Value;
  * }
  * ```
  *     </code>
- *     <p>Beispiel für die Angaben in der Konfigurationsdatei:
+ *     <p>Die entsprechenden Angaben in der Konfigurationsdatei:
  *     <p><code>
  * ```yaml
  * - buildingBlock: GEO_JSON
@@ -199,7 +199,7 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
    *     transformation](../../providers/details/transformations.md) instead.
    * @langDe *Deprecated* Wird abgelöst durch die
    *     [`flatten`-Transformation](../../providers/details/transformations.md).
-   * @default `FLATTEN
+   * @default FLATTEN
    */
   @Deprecated(since = "3.1.0")
   @Nullable
@@ -210,7 +210,7 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
    *     transformation](../../providers/details/transformations.md) instead.
    * @langDe *Deprecated* Wird abgelöst durch die
    *     [`flatten`-Transformation](../../providers/details/transformations.md).
-   * @default `SUFFIX`
+   * @default SUFFIX
    */
   @Deprecated(since = "3.1.0")
   @Nullable

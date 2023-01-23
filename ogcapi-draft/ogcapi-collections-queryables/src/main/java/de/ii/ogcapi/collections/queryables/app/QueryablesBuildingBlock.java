@@ -15,22 +15,30 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title Collections Queryables
- * @langEn Metadata about properties that can be used in queries and filter expressions.
- * @langDe Metadaten über Objekteigenschaften die in Queries und Filter-Ausdrücken verwendet werden
- *     können.
- * @conformanceEn *Collections Queryables* implements all requirements of conformance class
- *     *Queryables* from the draft of [OGC API -
- *     Styles](http://docs.opengeospatial.org/DRAFTS/20-009.html#rc_queryables). The resource will
- *     change in the future due to the harmonization with the requirements for *Queryables* from the
- *     draft of [OGC API - Features - Part 3: Common Query
- *     Language](http://docs.opengeospatial.org/DRAFTS/19-079.html#filter-queryables).
- * @conformanceDe Das Modul basiert auf den Vorgaben der Konformitätsklasse "Filter" aus dem
- *     [Entwurf von OGC API - Features - Part 3:
+ * @title Feature Collections - Queryables
+ * @langEn Metadata about the properties of the features in a feature collection that can be used in
+ *     filter expressions.
+ * @langDe Metadaten über die Eigenschaften von Objekten aus einer Feature Collection, die in
+ *     Filter-Ausdrücken verwendet werden können.
+ * @scopeEn The queryables are represented as a schema where each queryable is a property. The
+ *     schema for each queryable is automatically derived from the definition of the property in the
+ *     feature provider. Supported encodings are JSON Schema 2019-09 and HTML.
+ * @scopeDe Die Queryables werden als Schema kodiert, wobei jede Queryable eine Objekteigenschaft
+ *     ist. Das Schema für jede abfragbare Eigenschaft wird automatisch aus der Definition der
+ *     Eigenschaft im Feature-Provider abgeleitet. Unterstützte Kodierungen sind JSON Schema 2019-09
+ *     und HTML.
+ * @conformanceEn *Feature Collections - Queryables* implements all requirements and recommendations
+ *     of section 6.2 ("Queryables") of the [draft OGC API - Features - Part 3:
+ *     Filtering](https://docs.ogc.org/DRAFTS/19-079r1.html#filter-queryables).
+ * @conformanceDe Das Modul implementiert die Vorgaben und Empfehlungen aus Abschnitt 6.2
+ *     ("Queryables") des [Entwurfs von OGC API - Features - Part 3:
  *     Filtering](https://docs.ogc.org/DRAFTS/19-079r1.html#filter-queryables).
  * @ref:cfgProperties {@link
  *     de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfiguration}
  * @ref:endpoints {@link de.ii.ogcapi.collections.queryables.app.EndpointQueryables}
+ * @ref:queryParameters {@link de.ii.ogcapi.collections.queryables.app.QueryParameterFQueryables}
+ * @ref:pathParameters {@link
+ *     de.ii.ogcapi.collections.queryables.app.PathParameterCollectionIdQueryables}
  */
 @Singleton
 @AutoBind

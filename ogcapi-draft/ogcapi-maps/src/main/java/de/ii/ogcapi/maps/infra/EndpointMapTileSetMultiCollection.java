@@ -31,7 +31,8 @@ import javax.ws.rs.core.Response;
 /**
  * @title Dataset Tileset
  * @path map/tiles/{tileMatrixSetId}
- * @langAll Access dataset map tileset
+ * @langEn Access dataset map tileset
+ * @langDe Zugriff auf ein Kartenkachelset zum Datensatz
  * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetFormatExtension}
  */
 @Singleton

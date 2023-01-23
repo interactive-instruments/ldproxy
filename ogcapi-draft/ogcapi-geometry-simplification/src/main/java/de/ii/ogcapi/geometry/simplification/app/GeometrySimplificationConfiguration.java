@@ -14,6 +14,12 @@ import org.immutables.value.Value;
 
 /**
  * @buildingBlock GEOMETRY_SIMPLIFICATION
+ * @examplesAll <code>
+ * ```yaml
+ * - buildingBlock: GEOMETRY_SIMPLIFICATION
+ *   enabled: true
+ * ```
+ * </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new")

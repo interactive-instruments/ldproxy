@@ -27,6 +27,9 @@ import javax.inject.Singleton;
  *     *CQL2 JSON encoding* from the draft specification [Common Query Language
  *     (CQL2](https://docs.ogc.org/DRAFTS/21-065.html). The implementation is subject to change in
  *     the course of the development and approval process of the draft.
+ *     <p>The publication of queryables is controlled via [Feature Collections -
+ *     Queryables](feature_collections_-_queryables.md) and is a prerequisite for clients to be able
+ *     to determine the queryable feature properties.
  * @conformanceDe Dieses Modul implementiert die Anforderungen der Konformitätsklassen *Filter* und
  *     *Features Filter* aus dem Entwurf der Spezifikation [OGC API - Features - Part 3: Common
  *     Query Language](https://docs.ogc.org/DRAFTS/19-079r1.html) sowie die Konformitätsklassen
@@ -34,11 +37,11 @@ import javax.inject.Singleton;
  *     *Accent-insensitive Comparisons*, *Basic Spatial Operators*, *Spatial Operators*, *Temporal
  *     Operators*, *Array Operators*, *Property-Property Comparisons*, *CQL2 Text encoding*, und
  *     *CQL2 JSON encoding* aus dem Entwurf der Spezifikation [Common Query Language
- *     (CQL2](https://docs.ogc.org/DRAFTS/21-065.html). Die Implementierung kann sich im Zuge der
- *     weiteren Standardisierung des Entwurfs noch ändern.
- *     <p>Die Veröffentlichung der Queryables wird über [Collections
- *     Queryables](collections_queryables.md) gesteuert und ist Voraussetzung, damit Clients die
- *     abfragbaren Objekteigenschaften bestimmen können.
+ *     (CQL2](https://docs.ogc.org/DRAFTS/21-065.html). Die Implementierung wird sich im Zuge der
+ *     weiteren Standardisierung der Spezifikation noch ändern.
+ *     <p>Die Veröffentlichung der Queryables wird über [Feature Collections -
+ *     Queryables](feature_collections_-_queryables.md) gesteuert und ist Voraussetzung, damit
+ *     Clients die abfragbaren Objekteigenschaften bestimmen können.
  * @ref:cfgProperties {@link de.ii.ogcapi.filter.domain.ImmutableFilterConfiguration}
  * @ref:queryParameters {@link de.ii.ogcapi.filter.api.QueryParameterFilter}, {@link
  *     de.ii.ogcapi.filter.api.QueryParameterFilterCrs}, {@link

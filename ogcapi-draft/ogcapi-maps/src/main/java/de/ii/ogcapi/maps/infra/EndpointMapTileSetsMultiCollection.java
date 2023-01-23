@@ -32,7 +32,8 @@ import javax.ws.rs.core.Response;
 /**
  * @title Dataset Tilesets
  * @path map/tiles
- * @langAll Access dataset map tilesets
+ * @langEn Access dataset map tilesets
+ * @langDe Zugriff auf die Kartenkachelsätze zum Datensatz
  * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetsFormatExtension}
  */
 @Singleton

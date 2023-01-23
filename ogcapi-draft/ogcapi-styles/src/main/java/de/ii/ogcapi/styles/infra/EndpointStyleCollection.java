@@ -48,10 +48,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @title Style Collection
+ * @title Collection Style
  * @path collections/{collectionId}/styles/{styleId}
- * @langAll Fetches the style with identifier `styleId`. The set of available styles can be
- *     retrieved at `/styles`. Not all styles are available in all style encodings.
+ * @langEn Fetches the style with identifier `styleId`. The set of available styles can be retrieved
+ *     at `/styles`. Not all styles are available in all style encodings.
+ * @langDe Holt den Stil mit den Identifikator `styleId`. Die Liste der verfügbaren Stile kann unter
+ *     `/styles` abgerufen werden. Nicht alle Stile sind in allen Formaten verfügbar.
  * @ref:formats {@link de.ii.ogcapi.styles.domain.StyleFormatExtension}
  */
 @Singleton

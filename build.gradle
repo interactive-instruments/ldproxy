@@ -64,5 +64,10 @@ task spotlessApply {
 tasks.register('docsExtract', de.interactive_instruments.xtraplatform.docs.MarkdownTask) {
     docsName 'docs'
 }
+
+tasks.named('dockerRun') {
+    commandLine = commandLine.plus(commandLine.size()-1, ['-e', 'EXTERNAL_URL', '-e', 'DB_HOST', '-e', 'ENABLE_ZOOMSTACK'])
+}
+
 apply from: 'docs.gradle'
 

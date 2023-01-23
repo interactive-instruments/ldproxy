@@ -23,11 +23,10 @@ import javax.inject.Singleton;
 
 /**
  * @langEn Debug option in development environments: Bare HTML output for feature pages.
- * @langDe Todo
+ * @langDe Debug-Option in Entwicklungsumgebungen: "Nackte" HTML-Ausgabe für Features.
  * @title bare
  * @endpoints Feature
  */
-
 // TODO: this was not meant for debugging but is needed for the nearby functionality, so it could be
 // moved to community
 @Singleton

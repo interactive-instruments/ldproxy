@@ -17,6 +17,13 @@ import org.immutables.value.Value;
 
 /**
  * @buildingBlock RESOURCES
+ * @examplesAll <code>
+ * ```yaml
+ * - buildingBlock: RESOURCES
+ *   enabled: true
+ *   managerEnabled: true
+ * ```
+ * </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -30,7 +37,7 @@ public interface ResourcesConfiguration extends ExtensionConfiguration, CachingC
    *     DELETE through the API.
    * @langDe Steuert, ob die Ressourcen über PUT und DELETE über die API erzeugt und gelöscht werden
    *     können sollen.
-   * @default `false`
+   * @default false
    */
   @Nullable
   Boolean getManagerEnabled();

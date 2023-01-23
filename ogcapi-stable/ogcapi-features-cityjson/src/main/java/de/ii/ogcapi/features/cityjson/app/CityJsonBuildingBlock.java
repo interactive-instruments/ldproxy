@@ -20,9 +20,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title Features CityJSON
+ * @title Features - CityJSON
  * @langEn Encode features as CityJSON.
- * @langDe Enkodierung von Features als CityJSON.
+ * @langDe Kodierung von Features als CityJSON.
  * @scopeEn The module *Features CityJSON* adds support for CityJSON 1.0 and 1.1 as a feature
  *     encoding. Supported are the feature types `Building` and `BuildingPart`.
  * @scopeDe Das Modul *Features CityJSON* unterstützt CityJSON 1.0 und 1.1 als Kodierung für

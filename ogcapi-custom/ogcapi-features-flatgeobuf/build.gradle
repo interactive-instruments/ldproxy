@@ -1,5 +1,5 @@
 
-maturity = 'PROPOSAL'
+maturity = 'CANDIDATE'
 
 dependencies {
     embedded (group: 'com.google.flatbuffers', name: 'flatbuffers-java', version: '22.10.26')

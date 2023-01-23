@@ -39,7 +39,7 @@ import de.ii.xtraplatform.docs.DocVar;
  *     </code>
  *     <p>## Overview
  *     <p>{@docTable:overview}
- * @langDe # Bausteine
+ * @langDe # Module
  *     <p>Die API-Funktionalität ist in Module aufgeteilt, die sich an den OGC API Standards
  *     orientieren.
  *     <p>Die Module sind klassifiziert nach:
@@ -114,7 +114,8 @@ import de.ii.xtraplatform.docs.DocVar;
                   + "{@scopeEn |||}\n\n"
                   + "{@limitationsEn ### Limitations\n\n|||}\n\n"
                   + "{@conformanceEn ### Conformance Classes\n\n|||}\n\n"
-                  + "{@docTable:endpoints ### Resources\n\n|||}\n\n"
+                  + "{@docTable:endpoints ### Operations\n\n|||}\n\n"
+                  + "{@docTable:pathParams ### Path Parameters\n\n|||}\n\n"
                   + "{@docTable:queryParams ### Query Parameters\n\n|||}\n\n"
                   + "## Configuration\n\n"
                   + "{@docVar:cfgBody |||}\n\n"
@@ -132,7 +133,8 @@ import de.ii.xtraplatform.docs.DocVar;
                   + "{@scopeDe |||}\n\n"
                   + "{@limitationsDe ### Limitierungen\n\n|||}\n\n"
                   + "{@conformanceDe ### Konformitätsklassen\n\n|||}\n\n"
-                  + "{@docTable:endpoints ### Ressourcen\n\n|||}\n\n"
+                  + "{@docTable:endpoints ### Operationen\n\n|||}\n\n"
+                  + "{@docTable:pathParams ### Pfad-Parameter\n\n|||}\n\n"
                   + "{@docTable:queryParams ### Query Parameter\n\n|||}\n\n"
                   + "## Konfiguration\n\n"
                   + "{@docVar:cfgBody |||}\n\n"
@@ -144,6 +146,29 @@ import de.ii.xtraplatform.docs.DocVar;
       @DocTable(
           name = "queryParams",
           rows = {@DocStep(type = Step.TAG_REFS, params = "{@ref:queryParameters}")},
+          columns = {
+            @DocColumn(
+                value = @DocStep(type = Step.TAG, params = "`{@title}`"),
+                header = {
+                  @DocI18n(language = "en", value = "Name"),
+                  @DocI18n(language = "de", value = "Name")
+                }),
+            @DocColumn(
+                value = @DocStep(type = Step.TAG, params = "{@endpoints}"),
+                header = {
+                  @DocI18n(language = "en", value = "Resources"),
+                  @DocI18n(language = "de", value = "Ressourcen")
+                }),
+            @DocColumn(
+                value = @DocStep(type = Step.TAG, params = "{@body}"),
+                header = {
+                  @DocI18n(language = "en", value = "Description"),
+                  @DocI18n(language = "de", value = "Beschreibung")
+                })
+          }),
+      @DocTable(
+          name = "pathParams",
+          rows = {@DocStep(type = Step.TAG_REFS, params = "{@ref:pathParameters}")},
           columns = {
             @DocColumn(
                 value = @DocStep(type = Step.TAG, params = "`{@title}`"),

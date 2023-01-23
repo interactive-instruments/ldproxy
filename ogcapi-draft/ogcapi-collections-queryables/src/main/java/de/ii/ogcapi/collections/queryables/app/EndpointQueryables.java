@@ -49,11 +49,14 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @title Queryables
- * @path collections/{id}/queryables
- * @langAll The Queryables resource identifies the properties that can be referenced in filter
- *     expressions to select specific features that meet the criteria identified in the filter. The
- *     response is a JSON Schema document that describes a single JSON object where each property is
- *     a queryable.
+ * @path collections/{collectionId}/queryables
+ * @langEn The Queryables resource identifies and describes the properties that can be referenced in
+ *     filter expressions to select specific features that meet the criteria identified in the
+ *     filter. The response is a JSON Schema document that describes a single JSON object where each
+ *     property is a queryable.
+ * @langDe Die Ressource Queryables identifiziert und beschreibt die Eigenschaften, auf die in
+ *     Filterausdrücken verwiesen werden kann. Die Antwort ist ein JSON-Schema-Dokument, das ein
+ *     einzelnes JSON-Objekt beschreibt, bei dem jede Eigenschaft eine abfragbare Eigenschaft ist.
  * @ref:formats {@link de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat}
  */
 @Singleton

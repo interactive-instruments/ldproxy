@@ -42,6 +42,7 @@ import javax.annotation.Nullable;
  *     <p>In jedem Modul, das Ressourcen bereitstellt und nicht nur Query-Parameter oder
  *     Ausgabeformate realisiert, ist eine Konfigurationsoption `caching`, deren Wert ein Objekt mit
  *     den folgenden, optionalen Einträgen ist.
+ * @since v3.1
  */
 public interface CachingConfiguration {
 
@@ -51,7 +52,7 @@ public interface CachingConfiguration {
    * @langDe Setzt feste Werte für [HTTP-Caching-Header](/de/services/README.md#caching) für die
    *     Ressourcen.
    * @default {}
-   * @since v3.0
+   * @since v3.1
    */
   @Nullable
   Caching getCaching();

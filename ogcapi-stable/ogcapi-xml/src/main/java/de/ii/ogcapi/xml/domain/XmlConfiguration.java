@@ -13,6 +13,12 @@ import org.immutables.value.Value;
 
 /**
  * @buildingBlock XML
+ * @examplesAll <code>
+ * ```yaml
+ * - buildingBlock: XML
+ *   enabled: true
+ * ```
+ * </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new")

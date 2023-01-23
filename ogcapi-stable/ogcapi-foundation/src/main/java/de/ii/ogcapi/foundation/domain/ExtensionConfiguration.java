@@ -52,7 +52,7 @@ public interface ExtensionConfiguration
 
   /**
    * @langEn Enable the building block?
-   * @langDe Das Modul aktivieren?
+   * @langDe Soll das Modul aktiviert werden?
    * @default false
    */
   @Nullable

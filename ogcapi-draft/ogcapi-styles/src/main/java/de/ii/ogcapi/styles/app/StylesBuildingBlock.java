@@ -22,7 +22,15 @@ import javax.inject.Singleton;
  * @title Styles
  * @langEn Publish styles.
  * @langDe Veröffentlichung von Styles.
- * @scopeEn TODO_DOCS
+ * @scopeEn Supported stylesheet encodings are:
+ *     <p><code>
+ *  - Mapbox Style
+ *  - OGC SLD 1.0
+ *  - OGC SLD 1.1
+ *  - QGIS QML
+ *  - ArcGIS Desktop (lyr)
+ *  - ArcGIS Pro (lyrx)
+ *     </code>
  * @scopeDe Unterstützte Style-Formate sind:
  *     <p><code>
  * - Mapbox Style
@@ -35,20 +43,29 @@ import javax.inject.Singleton;
  * @conformanceEn This module implements requirements of the conformance classes *Core*, *Manage
  *     Styles*, *Validation of styles*, *Resources*, *Manage resources*, *Mapbox Style*, *OGC SLD
  *     1.0*, *OGC SLD 1.1*, *HTML* and *Style information* from the draft specification [OGC API -
- *     Styles](http://docs.opengeospatial.org/DRAFTS/20-009.html). The implementation is subject to
- *     change in the course of the development and approval process of the draft.
+ *     Styles](https://docs.ogc.org/DRAFTS/20-009.html). The implementation is subject to change in
+ *     the course of the development and approval process of the draft.
  * @conformanceDe Das Modul basiert auf den Vorgaben der Konformitätsklassen *Core*, *Manage
  *     styles*, *Validation of styles*, *Mapbox Style*, *OGC SLD 1.0* und *OGC SLD 1.1* aus dem
  *     [Entwurf von OGC API - Styles](https://docs.ogc.org/DRAFTS/20-009.html). Die Implementierung
- *     wird sich im Zuge der weiteren Standardisierung des Entwurfs noch ändern.
+ *     wird sich im Zuge der weiteren Standardisierung der Spezifikation noch ändern.
  * @ref:cfg {@link de.ii.ogcapi.styles.domain.StylesConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.styles.domain.ImmutableStylesConfiguration}
- * @ref:endpoints {@link de.ii.ogcapi.styles.infra.EndpointStyle}, {@link
- *     de.ii.ogcapi.styles.infra.EndpointStyleCollection}, {@link
+ * @ref:endpoints {@link de.ii.ogcapi.styles.infra.EndpointStyles}, {@link
+ *     de.ii.ogcapi.styles.infra.EndpointStyle}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyleMetadata}, {@link
+ *     de.ii.ogcapi.styles.infra.EndpointStylesCollection}, {@link
+ *     de.ii.ogcapi.styles.infra.EndpointStyleCollection}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyleMetadataCollection}, {@link
- *     de.ii.ogcapi.styles.infra.EndpointStyles}, {@link
- *     de.ii.ogcapi.styles.infra.EndpointStylesCollection}
+ *     de.ii.ogcapi.styles.infra.manager.EndpointStylesManager}, {@link
+ *     de.ii.ogcapi.styles.infra.manager.EndpointStyleMetadataManager}, {@link
+ *     de.ii.ogcapi.styles.infra.manager.EndpointStylesManagerCollection}, {@link
+ *     de.ii.ogcapi.styles.infra.manager.EndpointStyleMetadataManagerCollection}
+ * @ref:pathParameters {@link de.ii.ogcapi.styles.domain.PathParameterCollectionIdStyles}, {@link
+ *     de.ii.ogcapi.styles.domain.PathParameterStyleId}
+ * @ref:queryParameters {@link de.ii.ogcapi.styles.domain.QueryParameterFStyles}, {@link
+ *     de.ii.ogcapi.styles.domain.QueryParameterFStyle}, {@link
+ *     de.ii.ogcapi.styles.app.manager.QueryParameterDryRunStylesManager}
  */
 @Singleton
 @AutoBind

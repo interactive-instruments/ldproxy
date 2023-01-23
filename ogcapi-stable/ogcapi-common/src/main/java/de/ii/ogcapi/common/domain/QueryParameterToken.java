@@ -22,6 +22,15 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @title token
+ * @endpoints *
+ * @langEn Set the authorization token for the request. If no value is provided, the standard HTTP
+ *     rules apply, i.e., the authorization header will be used to determine the token.
+ * @langDe Setzt das Autorisierungs-Token für die Anfrage. Wird kein Wert angegeben, gelten die
+ *     Standard-HTTP-Regeln, d. h. der Autorisierungs-Header wird zur Bestimmung des Tokens
+ *     verwendet.
+ */
 @Singleton
 @AutoBind
 public class QueryParameterToken extends ApiExtensionCache implements OgcApiQueryParameter {
@@ -41,8 +50,7 @@ public class QueryParameterToken extends ApiExtensionCache implements OgcApiQuer
 
   @Override
   public String getDescription() {
-    return "Set the authorization token for the request. If no value is provided, "
-        + "the standard HTTP rules apply, i.e., the authorization header will be used to determine the token.";
+    return "Set the authorization token for the request. If no value is provided, the standard HTTP rules apply, i.e., the authorization header will be used to determine the token.";
   }
 
   @Override

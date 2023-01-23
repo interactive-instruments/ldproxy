@@ -40,9 +40,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * @title Collection tiles
+ * @title Collection Map Tiles
  * @path collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
- * @langAll Access collection map tiles
+ * @langEn Access dataset map tiles
+ * @langDe Zugriff auf Kartenkacheln einer Feature Collection.
  * @ref:formats {@link de.ii.ogcapi.maps.domain.MapTileFormatExtension}
  */
 @Singleton

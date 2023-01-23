@@ -20,16 +20,16 @@ import javax.inject.Singleton;
  */
 
 /**
- * @title Features GeoJSON
+ * @title Features - GeoJSON
  * @langEn Encode features as GeoJSON.
- * @langDe Enkodierung von Features als GeoJSON.
+ * @langDe Kodierung von Features als GeoJSON.
  * @conformanceEn *Features GeoJSON* implements all requirements of conformance class *GeoJSON* from
  *     [OGC API - Features - Part 1: Core
- *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_geojson) for the two mentioned
+ *     1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_geojson) for the two mentioned
  *     resources.
  * @conformanceDe Das Modul implementiert für die Ressourcen Features und Feature alle Vorgaben der
  *     Konformitätsklasse "GeoJSON" von [OGC API - Features - Part 1: Core
- *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_geojson).
+ *     1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_geojson).
  * @ref:cfg {@link de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration}
  */

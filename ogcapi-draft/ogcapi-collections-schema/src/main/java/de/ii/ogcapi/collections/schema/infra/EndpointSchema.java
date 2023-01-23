@@ -54,8 +54,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @title Feature Schema
- * @path collections/{collectionId}/schemas/feature
- * @langAll JSON Schema for features
+ * @path collections/{collectionId}/schemas/{type}
+ * @langEn JSON Schema of the GeoJSON features (`type`: "feature") or GeoJSON feature collection
+ *     (`type`: "collection") for the collection `collectionId`.
+ * @langDe JSON Schema der GeoJSON-Features (`type`: "feature") oder GeoJSON-Feature-Collection
+ *     (`type`: "collection") für die Collection `collectionId`.
  * @ref:formats {@link de.ii.ogcapi.collections.schema.domain.SchemaFormatExtension}
  */
 @Singleton

@@ -17,9 +17,15 @@ import javax.inject.Singleton;
 /**
  * @title HTML
  * @langEn HTML encoding for every supported resource.
- * @langDe HTML-Enkodierung für alle unterstützten Ressourcen.
- * @conformanceEn TODO_DOCS
- * @conformanceDe TODO_DOCS
+ * @langDe HTML-Kodierung für alle unterstützten Ressourcen.
+ * @conformanceEn *JSON* implements all requirements of conformance class *HTML* from [OGC API -
+ *     Features - Part 1: Core 1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_geojson) for
+ *     the resources *Landing Page*, *Conformance Declaration*, *Feature Collections*, and *Feature
+ *     Collection*.
+ * @conformanceDe Das Modul implementiert für die Ressourcen *Landing Page*, *Conformance
+ *     Declaration*, *Feature Collections* und *Feature Collection* alle Vorgaben der
+ *     Konformitätsklasse "HTML" von [OGC API - Features - Part 1: Core
+ *     1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html.0#rc_geojson).
  * @ref:cfg {@link de.ii.ogcapi.html.domain.HtmlConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.html.domain.ImmutableHtmlConfiguration}
  */

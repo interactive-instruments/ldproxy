@@ -44,8 +44,10 @@ import org.slf4j.LoggerFactory;
 /**
  * @title Resource
  * @path resources/{resourceId}
- * @langAll Fetches the file resource with identifier `resourceId`. The set of available resources
+ * @langEn Fetches the file resource with identifier `resourceId`. The set of available resources
  *     can be retrieved at `/resources`.
+ * @langDe Holt die Dateiressource mit dem Bezeichner `resourceId`. Die Menge der verfügbaren
+ *     Ressourcen kann unter `/resources` abgerufen werden.
  * @ref:formats {@link de.ii.ogcapi.resources.domain.ResourceFormatExtension}
  */
 @Singleton

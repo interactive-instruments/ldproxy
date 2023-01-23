@@ -20,11 +20,11 @@ import javax.inject.Singleton;
  * @langDe Veröffentlichung von OpenAPI-Definitionen.
  * @conformanceEn *OpenAPI 3.0* implements all requirements of conformance class *OpenAPI 3.0* from
  *     [OGC API - Features - Part 1: Core
- *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_oas30) for the mentioned
- *     resource.
+ *     1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_oas30) for the mentioned resource.
  * @conformanceDe *OpenAPI 3.0* implementiert alle Vorgaben der gleichnamigen Konformitätsklasse von
  *     [OGC API - Features - Part 1: Core
- *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_oas30).
+ *     1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_oas30).
+ * @ref:cfg {@link de.ii.ogcapi.oas30.domain.Oas30Configuration}
  * @ref:cfgProperties {@link de.ii.ogcapi.oas30.domain.ImmutableOas30Configuration}
  */
 @Singleton

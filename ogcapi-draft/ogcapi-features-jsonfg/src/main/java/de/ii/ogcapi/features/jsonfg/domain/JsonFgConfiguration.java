@@ -97,37 +97,78 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
   }
 
   /**
-   * @langEn Enables the output of links to JSON Schema documents to the JSON instant, e.g. for
-   *     validation purposes.
-   * @langDe Aktiviert die Ausgabe von Links auf JSON-Schema-Dokumente zu der JSON-Instant, z.B. zur
-   *     Validierung
+   * @langEn Enables that links to JSON Schema documents that specify the syntax of the JSON
+   *     document are added to the JSON-FG response document. The links have the link relation type
+   *     "describedby". The schemas can be used to validate the JSON document or to derive
+   *     additional information about the content of the JSON document, such as a textual
+   *     description of the feature properties or their value range.
+   * @langDe Aktiviert, dass Links zu JSON-Schema-Dokumenten, die die Syntax des JSON-Dokuments
+   *     spezifizieren, in das JSON-FG-Antwortdokument eingefügt werden. Die Links haben den
+   *     Relationstyp "describedby". Die Schemas können zur Validierung des JSON-Dokuments oder zur
+   *     Ableitung zusätzlicher Informationen über den Inhalt des JSON-Dokuments verwendet werden,
+   *     wie z. B. eine textuelle Beschreibung der Objekteigenschaften oder ihres Wertebereichs.
    * @default true
+   * @since v3.1
    */
   @Nullable
   Boolean getDescribedby();
 
   /**
-   * @langEn Activates the output of "coordRefSys" for features
-   * @langDe Aktiviert die Ausgabe von "coordRefSys" bei Features
+   * @langEn Activates the output of the coordinate reference system in a JSON member "coordRefSys"
+   *     for features and feature collections. The coordinate reference system is identified by its
+   *     OGC URI, for example, `http://www.opengis.net/def/crs/EPSG/0/25832` for ETRS89 / UTM 32N.
+   * @langDe Aktiviert die Ausgabe des Koordinatenreferenzsystems in einem JSON-Member "coordRefSys"
+   *     bei Features und Feature Collections. Das Koordinatenreferenzsystem wird identifiziert
+   *     durch seine OGC URI, zum Beispiel `http://www.opengis.net/def/crs/EPSG/0/25832` für ETRS89
+   *     / UTM 32N.
    * @default true
+   * @since v3.1
    */
   @Nullable
   Boolean getCoordRefSys();
 
   /**
-   * @langEn Activates support for the "compatibility=geojson" media type parameter
-   * @langDe Aktiviert die Unterstützung für den "compatibility=geojson" Media-Type-Parameter
+   * @langEn Activates support for the "compatibility=geojson" media type parameter. If the
+   *     parameter is provided, JSON-FG features with a "place" member that is not `null` will also
+   *     include a GeoJSON geometry in the "geometry" member in WGS 84. If the parameter is missing,
+   *     the "geometry" member of a JSON-FG feature will be `null`, if the "place" member is not
+   *     `null`.
+   * @langDe Aktiviert die Unterstützung für den "compatibility=geojson" Media-Type-Parameter. Wenn
+   *     der Parameter angegeben wird, enthalten JSON-FG-Features mit einem JSON-Member "place", das
+   *     nicht `null` ist, auch eine GeoJSON-Geometrie im JSON-Member "geometry" im
+   *     Koordinatenreferenzsystem WGS 84. Fehlt der Parameter, so ist "geometry" eines
+   *     JSON-FG-Features `null`, wenn "place" nicht `null` ist.
    * @default true
+   * @since v3.3
    */
   @Nullable
   Boolean getGeojsonCompatibility();
 
   /**
-   * @langEn Activates the output of "featureType" with the specified values for features. If an
-   *     object type is specified, then a string is output, otherwise an array of strings.
-   * @langDe Aktiviert die Ausgabe von "featureType" mit den angegebenen Werten bei Features. Ist
-   *     eine Objektart angegeben, dann wird ein String ausgegeben, ansonsten ein Array von Strings.
+   * @langEn Features are often categorized by type. Typically, all features of the same type have
+   *     the same schema and the same properties.
+   *     <p>Many GIS clients depend on knowledge about the feature type when processing feature
+   *     data. For example, when associating a style to a feature in order to render that feature on
+   *     a map.
+   *     <p>This option adds a "featureType" member with the specified values. If a single value is
+   *     specified, then a string is added, otherwise an array of strings.
+   *     <p>A value can include a template `{{type}}`, which will be replaced with the value of the
+   *     feature property with `role: TYPE` in the provider schema of the feature type of the
+   *     collection. The property must be of type `STRING`.
+   * @langDe Features werden oft nach der Objektart kategorisiert. In der Regel haben alle Features
+   *     derselben Art dasselbe Schema und dieselben Eigenschaften.
+   *     <p>Viele GIS-Clients sind bei der Verarbeitung von Features auf das Wissen über den
+   *     Objektart angewiesen. Zum Beispiel, wenn einem Feature ein Stil zugeordnet wird, um das
+   *     Feature auf einer Karte darzustellen.
+   *     <p>Diese Option fügt ein JSON-Member "featureType" mit den angegebenen Werten hinzu. Wenn
+   *     ein einzelner Wert angegeben wird, wird ein String hinzugefügt, andernfalls ein Array von
+   *     Strings.
+   *     <p>Ein Wert kann ein Template `{{type}}` enthalten, das durch den Wert der
+   *     Objekteigenschaft mit `role: TYPE` im Provider-Schema der Objektart der Collection ersetzt
+   *     wird. Die Eigenschaft muss vom Typ `STRING` sein.
    * @default []
+   * @examplesAll [ 'Building' ]
+   * @since v3.1
    */
   @Nullable
   List<String> getFeatureType();
@@ -138,6 +179,7 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
    * @langDe Ergänzt den "links"-Array von Features um die angegebenen Links. Alle Werte des Arrays
    *     müssen ein gültiges Link-Objekt mit `href` und `rel` sein.
    * @default []
+   * @since v3.1
    */
   @Nullable
   List<Link> getLinks();
@@ -150,6 +192,7 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
    *     berücksichtigt werden. Erlaubte Werte sind: `describedby`, `featureType`, `time`, `place`,
    *     `coordRefSys`, `links``
    * @default []
+   * @since v3.1
    */
   List<OPTION> getIncludeInGeoJson();
 

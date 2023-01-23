@@ -22,7 +22,7 @@ public interface SeedingOptions {
   /**
    * @langEn If disabled the seeding will not be run when the API starts.
    * @langDe Steuert, ob das Seeding beim Start einer API ausgeführt wird.
-   * @default `true`
+   * @default true
    */
   @Nullable
   Boolean getRunOnStartup();
@@ -40,7 +40,7 @@ public interface SeedingOptions {
    * @langDe Ein Crontab-Pattern für die regelmäßige Ausführung des Seedings. Das Seeding wird stets
    *     nur einmal pro API zur gleichen Zeit ausgeführt, d.h. falls eine weitere Ausführung
    *     ansteht, während die vorherige noch läuft, wird diese übersprungen.
-   * @default `null`
+   * @default null
    */
   @Nullable
   String getRunPeriodic();
@@ -60,7 +60,7 @@ public interface SeedingOptions {
   /**
    * @langEn If enabled the tile cache will be purged before the seeding starts.
    * @langDe Steuert, ob der Cache vor dem Seeding bereinigt wird.
-   * @default `false`
+   * @default false
    */
   @Nullable
   Boolean getPurge();
@@ -85,7 +85,7 @@ public interface SeedingOptions {
    *     [Hintergrundprozesse](../../global-configuration.md#background-tasks) konfiguriert sind. Es
    *     ist zu berücksichtigen, dass alle APIs um die vorhandenen Threads für
    *     [Hintergrundprozesse](../../global-configuration.md#background-tasks) konkurrieren.
-   * @default `1`
+   * @default 1
    */
   @Nullable
   Integer getMaxThreads();

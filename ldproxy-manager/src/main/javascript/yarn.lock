@@ -5872,7 +5872,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@xtraplatform/services@^2.0.1, @xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript":
+"@xtraplatform/services@^2.0.1, @xtraplatform/services@^2.0.2, @xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript":
   version: 0.0.0-use.local
   resolution: "@xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript"
   dependencies:
@@ -5923,32 +5923,6 @@ __metadata:
     styled-components: ^5
   languageName: unknown
   linkType: soft
-
-"@xtraplatform/services@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "@xtraplatform/services@npm:2.0.2"
-  dependencies:
-    apollo-link-rest: ^0.8.0-beta.0
-    deepmerge: ^4.2.2
-    graphql: ^15.5.3
-    graphql-anywhere: ^4.2.7
-  peerDependencies:
-    "@apollo/client": ^3
-    "@xtraplatform/core": ^2.0.0
-    "@xtraplatform/manager": ^2.0.0
-    feature-u: ^3
-    grommet: ^2
-    grommet-icons: ^4
-    prop-types: ^15
-    react: ^16
-    react-dom: ^16
-    react-i18next: ^11.8.5
-    react-is: ^16
-    react-router-dom: ^5
-    styled-components: ^5
-  checksum: aeae83d5a01dc50644f29aafd84a174c9ad908670fc9745922c66917544477e3a0fe85b04d084c2642d98d4fa9102ca7396aa479de11c05071d7d8a18fc671fb
-  languageName: node
-  linkType: hard
 
 "@xtuc/ieee754@npm:^1.2.0":
   version: 1.2.0

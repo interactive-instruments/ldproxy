@@ -432,7 +432,7 @@ public class FeaturesFormatHtml
         .setQueryables(filterableFields)
         .setGeometryProperties(geometryProperties)
         .setUriCustomizer(uriCustomizer)
-        // Todo Derived
+        // TODO Derived
         .setUriBuilderWithFOnly(
             uriCustomizer.copy().clearParameters().ensureParameter("f", MEDIA_TYPE.parameter()))
         .setRawTemporalExtent(
