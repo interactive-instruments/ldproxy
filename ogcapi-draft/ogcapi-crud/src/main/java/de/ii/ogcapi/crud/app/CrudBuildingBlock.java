@@ -32,6 +32,7 @@ import javax.inject.Singleton;
  *     und "Features" aus dem [Entwurf von OGC API - Features - Part 4: Create, Replace, Update and
  *     Delete](https://docs.ogc.org/DRAFTS/20-002.html). Die Implementierung wird sich im Zuge der
  *     weiteren Standardisierung der Spezifikation noch ändern.
+ * @ref:cfg {@link de.ii.ogcapi.crud.app.CrudConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.crud.app.ImmutableCrudConfiguration}
  * @ref:endpoints {@link de.ii.ogcapi.crud.app.EndpointCrud}
  * @ref:pathParameters {@link de.ii.ogcapi.features.core.domain.PathParameterCollectionIdFeatures}

@@ -33,6 +33,7 @@ import javax.inject.Singleton;
  * @conformanceDe Das Modul implementiert die Vorgaben und Empfehlungen aus Abschnitt 6.2
  *     ("Queryables") des [Entwurfs von OGC API - Features - Part 3:
  *     Filtering](https://docs.ogc.org/DRAFTS/19-079r1.html#filter-queryables).
+ * @ref:cfg {@link de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration}
  * @ref:cfgProperties {@link
  *     de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfiguration}
  * @ref:endpoints {@link de.ii.ogcapi.collections.queryables.app.EndpointQueryables}

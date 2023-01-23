@@ -42,6 +42,7 @@ import javax.inject.Singleton;
  *     <p>Die Veröffentlichung der Queryables wird über [Feature Collections -
  *     Queryables](feature_collections_-_queryables.md) gesteuert und ist Voraussetzung, damit
  *     Clients die abfragbaren Objekteigenschaften bestimmen können.
+ * @ref:cfg {@link de.ii.ogcapi.filter.domain.FilterConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.filter.domain.ImmutableFilterConfiguration}
  * @ref:queryParameters {@link de.ii.ogcapi.filter.api.QueryParameterFilter}, {@link
  *     de.ii.ogcapi.filter.api.QueryParameterFilterCrs}, {@link

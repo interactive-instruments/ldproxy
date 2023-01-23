@@ -29,6 +29,7 @@ import javax.inject.Singleton;
  * @conformanceDe Das Modul basiert auf dem [Vorschlag für einen neuen Teil 'Schemas' von OGC API
  *     Features](https://github.com/opengeospatial/ogcapi-features/tree/master/proposals/schemas)
  *     und [laufenden Diskussionen](https://github.com/opengeospatial/ogcapi-features/projects/11).
+ * @ref:cfg {@link de.ii.ogcapi.collections.schema.domain.SchemaConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.collections.schema.domain.ImmutableSchemaConfiguration}
  * @ref:endpoints {@link de.ii.ogcapi.collections.schema.infra.EndpointSchema},
  * @ref:queryParameters {@link de.ii.ogcapi.collections.schema.domain.QueryParameterFSchema}, {@link

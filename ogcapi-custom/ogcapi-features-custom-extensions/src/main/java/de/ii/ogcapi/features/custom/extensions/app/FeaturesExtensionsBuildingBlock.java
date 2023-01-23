@@ -55,6 +55,7 @@ import javax.inject.Singleton;
  *     GeoJSON-Objekt mit einer Geometrie. Im Fall einer FeatureCollection wird die erste Geometrie
  *     verwendet.
  *     </code>
+ * @ref:cfg {@link de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration}
  * @ref:cfgProperties {@link
  *     de.ii.ogcapi.features.custom.extensions.domain.ImmutableFeaturesExtensionsConfiguration}
  * @ref:endpoints {@link de.ii.ogcapi.features.custom.extensions.infra.EndpointPostOnItems}
