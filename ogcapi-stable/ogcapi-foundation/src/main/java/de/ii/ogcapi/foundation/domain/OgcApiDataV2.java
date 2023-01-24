@@ -32,14 +32,16 @@ import org.immutables.value.Value;
 
 /**
  * @langEn # OGC API
- *     <p>Each API represents a deployment of a single OGC Web API.
+ *     <p>Each API represents a deployment of a single OGC Web API, i.e., an API that implements
+ *     conformance classes from OGC API standards.
  *     <p>## General rules
  *     <p>### Response encoding
  *     <p>For operations that return a response, the encoding is chosen using standard HTTP content
  *     negotiation with `Accept` headers.
- *     <p>GET operations additionally support the query parameter `f`, which allows to explicitely
- *     choose the encoding and override the result of the content negotiation. The supported
- *     encodings depend on the affected resource and the configuration.
+ *     <p>GET operations that support more than one encoding additionally support the query
+ *     parameter `f`, which allows to explicitly choose the encoding and override the result of the
+ *     content negotiation. The supported encodings depend on the affected resource and the
+ *     configuration.
  *     <p>### Response language
  *     <p>For operations that return a response, the language for linguistic texts is chosen using
  *     standard HTTP content negiotiation with `Accept-Language` headers.
@@ -56,20 +58,22 @@ import org.immutables.value.Value;
  * </code>
  *     <p>### Resource paths
  *     <p>All resource paths in this documentation are relative to the base URI of the API. For
- *     example given the base URI `https://example.com/pfad/zu/apis/{apiId}` and the resource path
- *     `collections`, the full path would be `https://example.com/pfad/zu/apis/{apiId}/collections`.
+ *     example given the base URI `https://example.com/pfad/zu/apis/{apiId}` and the relative
+ *     resource path `collections`, the full path would be
+ *     `https://example.com/pfad/zu/apis/{apiId}/collections`.
  * @langDe # OGC API
- *     <p>Jede API stellt eine OGC Web API bereit.
+ *     <p>Jede API stellt eine OGC Web API bereit, d.h., eine API, die Konformitätsklassen aus
+ *     OGC-API-Standards implementiert.
  *     <p>## Grundsätzliche Regeln
  *     <p>### Auswahl des Antwortformats
  *     <p>Bei Operationen, die eine Antwort zurückliefern, wird das Format nach den
  *     Standard-HTTP-Regeln standardmäßig über Content-Negotiation und den `Accept`-Header
  *     ermittelt.
- *     <p>Alle GET-Operationen unterstützen zusätzlich den Query-Parameter `f`. Über diesen
- *     Parameter kann das Ausgabeformat der Antwort auch direkt ausgewählt werden. Wenn kein Wert
- *     angegeben wird, gelten die Standard-HTTP-Regeln, d.h. der `Accept`-Header wird zur Bestimmung
- *     des Formats verwendet. Die unterstützten Formate hängen von der Ressource und von der
- *     API-Konfiguration ab.
+ *     <p>Alle GET-Operationen mit mehr als einem Ausgabeformat unterstützen zusätzlich den
+ *     Query-Parameter `f`. Über diesen Parameter kann das Ausgabeformat der Antwort auch direkt
+ *     ausgewählt werden. Wenn kein Wert angegeben wird, gelten die Standard-HTTP-Regeln, d.h. der
+ *     `Accept`-Header wird zur Bestimmung des Formats verwendet. Die unterstützten Formate hängen
+ *     von der Ressource und von der API-Konfiguration ab.
  *     <p>### Auswahl der Antwortsprache
  *     <p>Bei Operationen, die eine Antwort zurückliefern, wird die verwendete Sprache bei
  *     linguistischen Texten nach den Standard-HTTP-Regeln standardmäßig über Content-Negotiation
@@ -88,8 +92,8 @@ import org.immutables.value.Value;
  * </code>
  *     <p>### Pfadangaben
  *     <p>Alle Pfadangaben in dieser Dokumentation sind relativ zur Basis-URI der API. Ist dies zum
- *     Beispiel `https://example.com/pfad/zu/apis/{apiId}` und lautet der Pfad einer Ressource
- *     `collections` dann ist die URI der Ressource
+ *     Beispiel `https://example.com/pfad/zu/apis/{apiId}` und lautet der relative Pfad einer
+ *     Ressource `collections` dann ist die URI der Ressource
  *     `https://example.com/pfad/zu/apis/{apiId}/collections`.
  * @langEn ## Configuration
  *     <p>Details regarding the API modules can be found [here](building-blocks/README.md), see
@@ -119,18 +123,36 @@ import org.immutables.value.Value;
  * - Optional deployment overrides in the `overrides` directory.
  * </code>
  *     <p>
- * @langDe ### Bausteine
- *     <p>Ein Array dieser Baustein-Konfigurationen steht auf der Ebene der gesamten API und für
- *     jede Collection zur Verfügung. Die jeweils gültige Konfiguration ergibt sich aus der
+ * @langDe ### Module
+ *     <p>Ein Array dieser Modul-Konfigurationen steht auf der Ebene der gesamten API und für jede
+ *     Collection zur Verfügung. Die jeweils gültige Konfiguration ergibt sich aus der
  *     Priorisierung:
  *     <p><code>
- * - Ist nichts angegeben, dann gelten die im ldproxy-Code vordefinierten Standardwerte. Diese sind bei den jeweiligen [Bausteinen](building-blocks/README.md) spezifiziert.
+ * - Ist nichts angegeben, dann gelten die im ldproxy-Code vordefinierten Standardwerte. Diese sind bei den jeweiligen [Modulen](building-blocks/README.md) spezifiziert.
  * - Diese systemseitigen Standardwerte können von den Angaben im Verzeichnis `defaults` überschrieben werden.
  * - Diese deploymentweiten Standardwerte können von den Angaben in der API-Definition auf Ebene der API überschrieben werden.
  * - Diese API-weiten Standardwerte können bei den Collection-Ressourcen und untergeordneten Ressourcen von den Angaben in der API-Definition auf Ebene der Collection überschrieben werden.
  * - Diese Werte können durch Angaben im Verzeichnis `overrides` überschrieben werden.
  * </code>
  *     <p>
+ * @langEn ### Metadata
+ *     <p>{@docVar:metadata}
+ *     <p>{@docTable:metadataProperties}
+ * @langDe ### Metadaten
+ *     <p>{@docVar:metadata}
+ *     <p>{@docTable:metadataProperties}
+ * @langEn ### External document
+ *     <p>{@docVar:externalDocument}
+ *     <p>{@docTable:externalDocumentProperties}
+ * @langDe ### Externes Dokument
+ *     <p>{@docVar:externalDocument}
+ *     <p>{@docTable:externalDocumentProperties}
+ * @langEn ### Default extent
+ *     <p>{@docVar:extent}
+ *     <p>{@docTable:extentProperties}
+ * @langDe ### Ausdehnung der Daten
+ *     <p>{@docVar:extent}
+ *     <p>{@docTable:extentProperties}
  * @langAll ### Caching
  *     <p>{@docVar:caching}
  *     <p>{@docTable:cachingProperties}
@@ -154,6 +176,13 @@ import org.immutables.value.Value;
  * @ref:cfgProperties {@link de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2}
  * @ref:cfgProperties:collection {@link
  *     de.ii.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi}
+ * @ref:metadata {@link de.ii.ogcapi.foundation.domain.ApiMetadata}
+ * @ref:metadataProperties {@link de.ii.ogcapi.foundation.domain.ImmutableApiMetadata}
+ * @ref:externalDocument {@link de.ii.ogcapi.foundation.domain.ExternalDocumentation}
+ * @ref:externalDocumentProperties {@link
+ *     de.ii.ogcapi.foundation.domain.ImmutableExternalDocumentation}
+ * @ref:extent {@link de.ii.ogcapi.foundation.domain.CollectionExtent}
+ * @ref:extentProperties {@link de.ii.ogcapi.foundation.domain.ImmutableCollectionExtent}
  * @ref:caching {@link de.ii.ogcapi.foundation.domain.CachingConfiguration}
  * @ref:cachingProperties {@link de.ii.ogcapi.foundation.domain.ImmutableCaching}
  * @ref:security {@link de.ii.ogcapi.foundation.domain.ApiSecurity}
@@ -178,6 +207,30 @@ import org.immutables.value.Value;
           },
           columnSet = ColumnSet.JSON_PROPERTIES),
       @DocTable(
+          name = "metadataProperties",
+          rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:metadataProperties}"),
+            @DocStep(type = Step.JSON_PROPERTIES),
+            @DocStep(type = Step.UNMARKED)
+          },
+          columnSet = ColumnSet.JSON_PROPERTIES),
+      @DocTable(
+          name = "externalDocumentProperties",
+          rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:externalDocumentProperties}"),
+            @DocStep(type = Step.JSON_PROPERTIES),
+            @DocStep(type = Step.UNMARKED)
+          },
+          columnSet = ColumnSet.JSON_PROPERTIES),
+      @DocTable(
+          name = "extentProperties",
+          rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:extentProperties}"),
+            @DocStep(type = Step.JSON_PROPERTIES),
+            @DocStep(type = Step.UNMARKED)
+          },
+          columnSet = ColumnSet.JSON_PROPERTIES),
+      @DocTable(
           name = "cachingProperties",
           rows = {
             @DocStep(type = Step.TAG_REFS, params = "{@ref:cachingProperties}"),
@@ -195,6 +248,24 @@ import org.immutables.value.Value;
           columnSet = ColumnSet.JSON_PROPERTIES),
     },
     vars = {
+      @DocVar(
+          name = "metadata",
+          value = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:metadata}"),
+            @DocStep(type = Step.TAG, params = "{@bodyBlock}")
+          }),
+      @DocVar(
+          name = "externalDocument",
+          value = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:externalDocument}"),
+            @DocStep(type = Step.TAG, params = "{@bodyBlock}")
+          }),
+      @DocVar(
+          name = "extent",
+          value = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:extent}"),
+            @DocStep(type = Step.TAG, params = "{@bodyBlock}")
+          }),
       @DocVar(
           name = "caching",
           value = {
@@ -246,6 +317,7 @@ public interface OgcApiDataV2 extends ServiceData, ExtendableConfiguration {
   /**
    * @langEn Always `OGC_API`.
    * @langDe Immer `OGC_API`.
+   * @default `OGC_API`
    */
   @Value.Default
   @Override
@@ -254,23 +326,29 @@ public interface OgcApiDataV2 extends ServiceData, ExtendableConfiguration {
   }
 
   /**
-   * @langEn TODO_DOCS
-   * @langDe TODO_DOCS
+   * @langEn General [Metadata](#metadata) for the API.
+   * @langDe Allgemeine [Metadaten](#metadaten) für die API.
    * @default {}
    */
   Optional<ApiMetadata> getMetadata();
 
   /**
-   * @langEn TODO_DOCS
-   * @langDe TODO_DOCS
+   * @langEn Link to a [document or website](#external-document) with more information about this
+   *     API.
+   * @langDe Verweis auf [ein Dokument oder eine Website](#externes-dokument) mit weiteren
+   *     Informationen über diese API.
    * @default {}
+   * @since v2.1
    */
   Optional<ExternalDocumentation> getExternalDocs();
 
   /**
-   * @langEn TODO_DOCS
-   * @langDe TODO_DOCS
-   * @default {}
+   * @langEn By default, the spatial and temporal extent of data is derived from the data when
+   *     starting the API, but the [Default Extent](#default-extent) can also be configured.
+   * @langDe Die räumliche und zeitliche Ausdehnung der Daten wird normalerweise aus den Daten
+   *     während des Starts der API abgeleitet, aber die [Angaben](#ausdehnung-der-daten) können
+   *     auch in der Konfiguration gesetzt werden.
+   * @default { "spatialComputed": true, "temporalComputed": true }
    */
   @JsonMerge(OptBoolean.FALSE)
   Optional<CollectionExtent> getDefaultExtent();
@@ -279,6 +357,7 @@ public interface OgcApiDataV2 extends ServiceData, ExtendableConfiguration {
    * @langEn Sets fixed values for [HTTP Caching Headers](#caching) for the resources.
    * @langDe Setzt feste Werte für [HTTP-Caching-Header](#caching) für die Ressourcen.
    * @default {}
+   * @since v3.1
    */
   Optional<Caching> getDefaultCaching();
 
@@ -286,13 +365,30 @@ public interface OgcApiDataV2 extends ServiceData, ExtendableConfiguration {
    * @langEn [Access Control](#access-control) configuration.
    * @langDe [Access Control](#access-control) konfigurieren.
    * @default {}
+   * @since v3.3
    */
   Optional<ApiSecurity> getAccessControl();
 
   /**
-   * @langEn TODO_DOCS
-   * @langDe TODO_DOCS
+   * @langEn During startup of an API, the configuration can be validated. The supported values are
+   *     `NONE`, `LAX`, and `STRICT`. `STRICT` will block the start of an API with warnings, while
+   *     an API with warnings, but no errors will start with `LAX`. If the value is set to `NONE`,
+   *     no validation will occur. Warnings are issued for problems in the configuration that can
+   *     affect the use of the API while errors are issued for cases where the API cannot be used.
+   *     Typically, API validation during startup will only be used in development and testing
+   *     environments since the API validating results in a slower startup time and should not be
+   *     necessary in production environments.
+   * @langDe Beim Start einer API kann die Konfiguration validiert werden. Die unterstützten Werte
+   *     sind `NONE`, `LAX` und `STRICT`. Bei `STRICT` wird der Start einer API mit Warnungen
+   *     blockiert, während eine API mit Warnungen, aber ohne Fehler mit `LAX` startet. Wenn der
+   *     Wert auf `NONE` gesetzt wird, findet keine Überprüfung statt. Warnungen werden für Probleme
+   *     in der Konfiguration ausgegeben, die die Verwendung der API beeinträchtigen können, während
+   *     Fehler für Fälle ausgegeben werden, in denen die API nicht verwendet werden kann.
+   *     Normalerweise wird die API-Validierung während des Starts nur in Entwicklungs- und
+   *     Testumgebungen verwendet, da die API-Validierung zu einer langsameren Startzeit führt und
+   *     in Produktionsumgebungen nicht notwendig sein sollte.
    * @default NONE
+   * @since v2.1
    */
   @Value.Default
   default MODE getApiValidation() {
@@ -302,20 +398,19 @@ public interface OgcApiDataV2 extends ServiceData, ExtendableConfiguration {
   /**
    * @langEn Tags for this API. Every tag is a string without white space. Tags are shown in the
    *     *API Catalog* and can be used to filter the catalog response with the query parameter
-   *     `tags`, e.g. `tags=INSPIRE`.<br>
-   *     _since version 2.1_
+   *     `tags`, e.g. `tags=INSPIRE`.
    * @langDe Ordnet der API die aufgelisteten Tags zu. Die Tags müssen jeweils Strings ohne
    *     Leerzeichen sein. Die Tags werden im API-Katalog angezeigt und können über den
    *     Query-Parameter `tags` zur Filterung der in der API-Katalog-Antwort zurückgelieferten APIs
-   *     verwendet werden, z.B. `tags=INSPIRE`.<br>
-   *     _seit Version 2.1_
+   *     verwendet werden, z.B. `tags=INSPIRE`.
    * @default []
+   * @since v2.1
    */
   List<String> getTags();
 
   /**
-   * @langEn [Building Blocks](#building-blocks) configuration.
-   * @langDe [Bausteine](#bausteine) konfigurieren.
+   * @langEn [API Building Blocks](#building-blocks) configuration.
+   * @langDe [Module](#module) der API konfigurieren.
    * @default []
    */
   @JsonProperty("api")

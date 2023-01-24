@@ -14,6 +14,12 @@ import org.immutables.value.Value;
 
 /**
  * @buildingBlock QUERYABLES
+ * @examplesAll <code>
+ * ```yaml
+ * - buildingBlock: QUERYABLES
+ *   enabled: true
+ * ```
+ * </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new")

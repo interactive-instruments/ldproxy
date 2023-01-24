@@ -17,13 +17,22 @@ import javax.inject.Singleton;
 /**
  * @title XML
  * @langEn XML encoding for every supported resource.
- * @langDe XML-Enkodierung für alle unterstützten Ressourcen.
+ * @langDe XML-Kodierung für alle unterstützten Ressourcen.
  * @limitationsEn Only the resources *Landing Page*, *Conformance Declaration*, *Feature
  *     Collections* and *Feature Collection* support XML.
  * @limitationsDe Nur die Ressourcen *Landing Page*, *Conformance Declaration*, *Feature
  *     Collections* and *Feature Collection* unterstützen XML.
- * @conformanceEn TODO_DOCS
- * @conformanceDe TODO_DOCS
+ * @conformanceEn *JSON* implements all requirements of conformance classes *Geography Markup
+ *     Language (GML), Simple Features Profile, Level 0* and *Geography Markup Language (GML),
+ *     Simple Features Profile, Level 2* from [OGC API - Features - Part 1: Core
+ *     1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_geojson) for the resources *Landing
+ *     Page*, *Conformance Declaration*, *Feature Collections*, and *Feature Collection*.
+ * @conformanceDe Das Modul implementiert für die Ressourcen *Landing Page*, *Conformance
+ *     Declaration*, *Feature Collections* und *Feature Collection* alle Vorgaben der
+ *     Konformitätsklassen "Geography Markup Language (GML), Simple Features Profile, Level 0" and
+ *     "Geography Markup Language (GML), Simple Features Profile, Level 2" von [OGC API - Features -
+ *     Part 1: Core 1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html.0#rc_geojson).
+ * @ref:cfg {@link de.ii.ogcapi.xml.domain.XmlConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.xml.domain.ImmutableXmlConfiguration}
  */
 @Singleton

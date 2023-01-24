@@ -19,6 +19,12 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @title tileMatrix
+ * @endpoints Dataset Tile, Collection Tile
+ * @langEn The zoom level of the tile in the tiling scheme.
+ * @langDe Die Zoomstufe der Kachel im Kachelschema.
+ */
 @Singleton
 @AutoBind
 public class PathParameterTileMatrix implements OgcApiPathParameter {

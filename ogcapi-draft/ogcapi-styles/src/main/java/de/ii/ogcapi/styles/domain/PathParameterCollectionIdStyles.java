@@ -18,6 +18,12 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @title collectionId
+ * @endpoints Styles, Style, Style Metadata
+ * @langEn The identifier of the feature collection.
+ * @langDe Der Identifikator der Feature Collection.
+ */
 @Singleton
 @AutoBind
 public class PathParameterCollectionIdStyles extends AbstractPathParameterCollectionId {

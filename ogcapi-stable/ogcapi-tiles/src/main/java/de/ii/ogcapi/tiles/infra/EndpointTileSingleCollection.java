@@ -42,7 +42,8 @@ import javax.ws.rs.core.UriInfo;
 /**
  * @title Collection tiles
  * @path collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
- * @langAll Access collection tiles
+ * @langEn Access tiles of a collection.
+ * @langDe Zugriff auf Kacheln einer Feature Collection.
  * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
  */
 @Singleton

@@ -23,6 +23,14 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @title lang
+ * @endpoints *
+ * @langEn Select the language of the response. If no value is provided, the standard HTTP rules
+ *     apply, i.e., the "Accept-Language" header will be used to determine the language.
+ * @langDe Wählt die Sprache der Antwort. Wenn kein Wert angegeben wird, gelten die Standard-HTTP
+ *     Regeln, d.h. der "Accept-Language"-Header wird zur Bestimmung der Sprache verwendet.
+ */
 @Singleton
 @AutoBind
 public class QueryParameterLang extends ApiExtensionCache implements OgcApiQueryParameter {
@@ -42,8 +50,8 @@ public class QueryParameterLang extends ApiExtensionCache implements OgcApiQuery
 
   @Override
   public String getDescription() {
-    return "Select the language of the response. If no value is provided, "
-        + "the standard HTTP rules apply, i.e., the accept-lang header will be used to determine the format.";
+    return "Select the language of the response. If no value is provided, the standard HTTP rules "
+        + "apply, i.e., the accept-language header will be used to determine the format.";
   }
 
   @Override

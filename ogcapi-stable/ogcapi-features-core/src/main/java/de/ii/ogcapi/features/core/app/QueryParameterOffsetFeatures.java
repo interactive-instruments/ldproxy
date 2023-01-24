@@ -24,8 +24,10 @@ import javax.inject.Singleton;
 /**
  * @title offset
  * @endpoints Features
- * @langAll The optional offset parameter identifies the index of the first feature in the response
- *     in the overall result set.
+ * @langEn The index of the first feature in the response in the overall result set. This parameter
+ *     is used for response paging.
+ * @langDe Der Index des ersten Features in der Antwort in der Gesamtergebnismenge. Dieser Parameter
+ *     wird für das Paging verwendet.
  */
 @Singleton
 @AutoBind

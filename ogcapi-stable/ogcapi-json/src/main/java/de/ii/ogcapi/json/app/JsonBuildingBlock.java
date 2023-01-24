@@ -17,9 +17,16 @@ import javax.inject.Singleton;
 /**
  * @title JSON
  * @langEn JSON encoding for every supported resource.
- * @langDe JSON-Enkodierung für alle unterstützten Ressourcen.
- * @conformanceEn TODO_DOCS
- * @conformanceDe TODO_DOCS
+ * @langDe JSON-Kodierung für alle unterstützten Ressourcen.
+ * @conformanceEn *JSON* implements all requirements of conformance class *GeoJSON* from [OGC API -
+ *     Features - Part 1: Core 1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_geojson) for
+ *     the resources *Landing Page*, *Conformance Declaration*, *Feature Collections*, and *Feature
+ *     Collection*.
+ * @conformanceDe Das Modul implementiert für die Ressourcen *Landing Page*, *Conformance
+ *     Declaration*, *Feature Collections* und *Feature Collection* alle Vorgaben der
+ *     Konformitätsklasse "GeoJSON" von [OGC API - Features - Part 1: Core
+ *     1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html.0#rc_geojson).
+ * @ref:cfg {@link de.ii.ogcapi.json.domain.JsonConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.json.domain.ImmutableJsonConfiguration}
  */
 @Singleton

@@ -34,9 +34,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @title Collection Tilesets
+ * @title Collection Map Tilesets
  * @path collections/{collectionId}/map/tiles
- * @langAll Access collection map tilesets
+ * @langEn Access collection map tilesets
+ * @langDe Zugriff auf Kartenkachelsätze einer Feature Collection
  * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetsFormatExtension}
  */
 @Singleton

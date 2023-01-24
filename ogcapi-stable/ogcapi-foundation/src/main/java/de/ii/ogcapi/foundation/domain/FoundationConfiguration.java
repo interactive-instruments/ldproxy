@@ -123,10 +123,10 @@ public interface FoundationConfiguration extends ExtensionConfiguration {
 
   /**
    * @langEn Return links contained in API responses also as [HTTP
-   *     header](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#_link_headers).
+   *     header](https://docs.ogc.org/is/17-069r4/17-069r4.html#_link_headers).
    * @langDe Steuert, ob die in Antworten der API enthaltenen Links auch als
-   *     [HTTP-Header](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#_link_headers)
-   *     zurückgegeben werden.
+   *     [HTTP-Header](https://docs.ogc.org/is/17-069r4/17-069r4.html#_link_headers) zurückgegeben
+   *     werden.
    * @default true
    */
   @Nullable

@@ -92,16 +92,20 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
 
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
-    return new TileMatrixSetsView(
-        api.getData(),
-        tileMatrixSets,
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        htmlConfig,
-        isNoIndexEnabledForApi(api.getData()),
-        requestContext.getUriCustomizer(),
-        i18n,
-        requestContext.getLanguage());
+    return ImmutableTileMatrixSetsView.builder()
+        .apiData(api.getData())
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .tileMatrixSets(tileMatrixSets.getTileMatrixSets())
+        .breadCrumbs(breadCrumbs)
+        .htmlConfig(htmlConfig)
+        .noIndex(isNoIndexEnabledForApi(api.getData()))
+        .uriCustomizer(requestContext.getUriCustomizer())
+        .i18n(i18n)
+        .language(requestContext.getLanguage().orElse(null))
+        .description(i18n.get("tileMatrixSetsDescription", requestContext.getLanguage()))
+        .title(i18n.get("tileMatrixSetsTitle", requestContext.getLanguage()))
+        .rawLinks(tileMatrixSets.getLinks())
+        .build();
   }
 
   @Override
@@ -132,16 +136,17 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
             .build();
 
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
-
-    return new TileMatrixSetView(
-        api.getData(),
-        tileMatrixSet,
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        htmlConfig,
-        isNoIndexEnabledForApi(api.getData()),
-        requestContext.getUriCustomizer(),
-        i18n,
-        requestContext.getLanguage());
+    return ImmutableTileMatrixSetView.builder()
+        .apiData(api.getData())
+        .tileMatrixSet(tileMatrixSet)
+        .breadCrumbs(breadCrumbs)
+        .rawLinks(tileMatrixSet.getLinks())
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .htmlConfig(htmlConfig)
+        .noIndex(isNoIndexEnabledForApi(api.getData()))
+        .uriCustomizer(requestContext.getUriCustomizer())
+        .i18n(i18n)
+        .language(requestContext.getLanguage())
+        .build();
   }
 }

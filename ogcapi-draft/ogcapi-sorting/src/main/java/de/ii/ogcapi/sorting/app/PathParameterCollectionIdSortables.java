@@ -15,6 +15,12 @@ import de.ii.ogcapi.sorting.domain.SortingConfiguration;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @title collectionId
+ * @endpoints Sortables
+ * @langEn The identifier of the feature collection.
+ * @langDe Der Identifikator der Feature Collection.
+ */
 @Singleton
 @AutoBind
 public class PathParameterCollectionIdSortables extends AbstractPathParameterCollectionId {

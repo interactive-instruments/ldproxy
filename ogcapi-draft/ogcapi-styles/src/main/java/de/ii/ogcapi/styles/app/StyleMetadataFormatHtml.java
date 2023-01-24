@@ -129,17 +129,20 @@ public class StyleMetadataFormatHtml implements StyleMetadataFormatExtension {
             .build();
 
     HtmlConfiguration htmlConfig = apiData.getExtension(HtmlConfiguration.class).orElse(null);
-
-    return new StyleMetadataView(
-        apiData,
-        metadata,
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        htmlConfig,
-        isNoIndexEnabledForApi(apiData),
-        requestContext.getUriCustomizer(),
-        i18n,
-        requestContext.getLanguage());
+    return new ImmutableStyleMetadataView.Builder()
+        .apiData(apiData)
+        .metadata(metadata)
+        .rawLinks(metadata.getLinks())
+        .breadCrumbs(breadCrumbs)
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .htmlConfig(htmlConfig)
+        .noIndex(isNoIndexEnabledForApi(apiData))
+        .uriCustomizer(requestContext.getUriCustomizer())
+        .i18n(i18n)
+        .language(requestContext.getLanguage())
+        .title(i18n.get("styleMetadataTitle", requestContext.getLanguage()))
+        .description(null)
+        .build();
   }
 
   @Override

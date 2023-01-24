@@ -40,7 +40,7 @@ public abstract class TileProviderTileServer extends TileProvider {
   /**
    * @langEn Fixed value, identifies the tile provider type.
    * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
-   * @default `TILESERVER`
+   * @default TILESERVER
    */
   @Value.Derived
   public String getType() {
@@ -54,7 +54,7 @@ public abstract class TileProviderTileServer extends TileProvider {
    *     `{tileCol}` and `{fileExtension}`.
    * @langDe URL-Template für den Zugriff auf Kacheln. Zu verwenden sind die Parameter
    *     `{tileMatrix}`, `{tileRow}`, `{tileCol}` und `{fileExtension}`.
-   * @default `null`
+   * @default null
    */
   @Nullable
   public abstract String getUrlTemplate();
@@ -62,7 +62,7 @@ public abstract class TileProviderTileServer extends TileProvider {
   /**
    * @langEn URL template for accessing tiles for a collection.
    * @langDe URL-Template für den Zugriff auf Kacheln für eine Collection.
-   * @default `null`
+   * @default null
    */
   @Nullable
   public abstract String getUrlTemplateSingleCollection();
@@ -70,7 +70,7 @@ public abstract class TileProviderTileServer extends TileProvider {
   /**
    * @langEn List of tile formats to be supported, allowed are `PNG`, `WebP` and `JPEG`.
    * @langDe Liste der zu unterstützenden Kachelformate, erlaubt sind `PNG`, `WebP` und `JPEG`.
-   * @default `[]`
+   * @default []
    */
   @Override
   public abstract List<String> getTileEncodings();

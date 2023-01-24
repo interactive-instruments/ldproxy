@@ -102,16 +102,21 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
     OgcApiLandingPageView landingPageView =
-        new OgcApiLandingPageView(
-            api.getData(),
-            apiLandingPage,
-            breadCrumbs,
-            requestContext.getStaticUrlPrefix(),
-            htmlConfig,
-            isNoIndexEnabledForApi(api.getData()),
-            requestContext.getUriCustomizer(),
-            i18n,
-            requestContext.getLanguage());
+        new ImmutableOgcApiLandingPageView.Builder()
+            .apiData(api.getData())
+            .breadCrumbs(breadCrumbs)
+            .apiLandingPage(apiLandingPage)
+            .urlPrefix(requestContext.getStaticUrlPrefix())
+            .rawLinks(apiLandingPage.getLinks())
+            .htmlConfig(htmlConfig)
+            .uriCustomizer(requestContext.getUriCustomizer())
+            .noIndex(isNoIndexEnabledForApi(api.getData()))
+            .i18n(i18n)
+            .title(apiLandingPage.getTitle().orElse(api.getData().getId()))
+            .description(apiLandingPage.getDescription().orElse(null))
+            .extent(apiLandingPage.getExtent())
+            .language(requestContext.getLanguage())
+            .build();
 
     return landingPageView;
   }
@@ -144,14 +149,27 @@ public class CommonFormatHtml implements CommonFormatExtension, ConformanceClass
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
     OgcApiConformanceDeclarationView ogcApiConformanceDeclarationView =
-        new OgcApiConformanceDeclarationView(
-            conformanceDeclaration,
-            breadCrumbs,
-            requestContext.getStaticUrlPrefix(),
-            htmlConfig,
-            isNoIndexEnabledForApi(api.getData()),
-            i18n,
-            requestContext.getLanguage());
+        new ImmutableOgcApiConformanceDeclarationView.Builder()
+            .conformanceDeclaration(conformanceDeclaration)
+            .urlPrefix(requestContext.getStaticUrlPrefix())
+            .htmlConfig(htmlConfig)
+            .noIndex(isNoIndexEnabledForApi(api.getData()))
+            .i18n(i18n)
+            .rawLinks(conformanceDeclaration.getLinks())
+            .description(
+                conformanceDeclaration
+                    .getDescription()
+                    .orElse(
+                        i18n.get(
+                            "conformanceDeclarationDescription", requestContext.getLanguage())))
+            .title(
+                conformanceDeclaration
+                    .getTitle()
+                    .orElse(i18n.get("conformanceDeclarationTitle", requestContext.getLanguage())))
+            .language(requestContext.getLanguage())
+            .breadCrumbs(breadCrumbs)
+            .build();
+
     return ogcApiConformanceDeclarationView;
   }
 }

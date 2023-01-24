@@ -40,9 +40,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * @title Dataset tiles
+ * @title Dataset Tiles
  * @path tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
- * @langAll Access dataset tiles
+ * @langEn Access tiles of a dataset.
+ * @langDe Zugriff auf Kacheln eines Datensatzes.
  * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
  */
 @Singleton

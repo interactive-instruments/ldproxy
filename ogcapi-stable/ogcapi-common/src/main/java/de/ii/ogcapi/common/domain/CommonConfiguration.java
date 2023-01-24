@@ -21,9 +21,32 @@ import org.immutables.value.Value;
 
 /**
  * @buildingBlock COMMON
- * @examplesAll <code>
+ * @examplesEn <code>
  * ```yaml
  * - buildingBlock: COMMON
+ *   enabled: true
+ *   caching:
+ *     lastModified: '2021-07-01T00:00:00Z'
+ *     expires: '2023-06-30T23:59:59Z'
+ *     cacheControl: max-age=86400
+ *     cacheControlItems: max-age=3600
+ *   additionalLinks:
+ *   - rel: describedby
+ *     type: text/html
+ *     title: Website with additional information
+ *     href: 'https://example.com/path/to/document'
+ *     hreflang: en
+ * ```
+ * </code>
+ * @examplesDe <code>
+ * ```yaml
+ * - buildingBlock: COMMON
+ *   enabled: true
+ *   caching:
+ *     lastModified: '2021-07-01T00:00:00Z'
+ *     expires: '2023-06-30T23:59:59Z'
+ *     cacheControl: max-age=86400
+ *     cacheControlItems: max-age=3600
  *   additionalLinks:
  *   - rel: describedby
  *     type: text/html

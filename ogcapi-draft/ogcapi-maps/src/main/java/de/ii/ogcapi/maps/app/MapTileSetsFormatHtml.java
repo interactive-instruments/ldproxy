@@ -21,11 +21,11 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ogcapi.html.domain.MapClient;
+import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.ogcapi.html.domain.NavigationDTO;
+import de.ii.ogcapi.tiles.domain.ImmutableTileSetsView;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
-import de.ii.ogcapi.tiles.domain.TileSetsView;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -67,12 +67,13 @@ public class MapTileSetsFormatHtml implements TileSetsFormatExtension {
 
   @Override
   public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.equals("/map/tiles") || path.equals("/collections/{collectionId}/map/tiles"))
+    if (path.equals("/map/tiles") || path.equals("/collections/{collectionId}/map/tiles")) {
       return new ImmutableApiMediaTypeContent.Builder()
           .schema(new StringSchema().example("<html>...</html>"))
           .schemaRef("#/components/schemas/htmlSchema")
           .ogcApiMediaType(MEDIA_TYPE)
           .build();
+    }
 
     return null;
   }
@@ -137,18 +138,24 @@ public class MapTileSetsFormatHtml implements TileSetsFormatExtension {
 
     Map<String, TileMatrixSet> tileMatrixSets = tileMatrixSetRepository.getAll();
 
-    return new TileSetsView(
-        api.getData(),
-        tiles,
-        tileMatrixSets,
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        MapClient.Type.MAP_LIBRE,
-        null,
-        false,
-        htmlConfig.orElseThrow(),
-        isNoIndexEnabledForApi(api.getData()),
-        i18n,
-        requestContext.getLanguage());
+    return new ImmutableTileSetsView.Builder()
+        .apiData(api.getData())
+        .tiles(tiles)
+        .collectionId(collectionId)
+        .tileMatrixSets(tileMatrixSets)
+        .breadCrumbs(breadCrumbs)
+        .rawLinks(tiles.getLinks())
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .mapClientType(Type.MAP_LIBRE)
+        .styleUrl(null)
+        .removeZoomLevelConstraints(false)
+        .htmlConfig(htmlConfig.orElseThrow())
+        .noIndex(isNoIndexEnabledForApi(api.getData()))
+        .uriCustomizer(requestContext.getUriCustomizer())
+        .i18n(i18n)
+        .description(tiles.getDescription().orElse(null))
+        .title(tiles.getTitle().orElse(null))
+        .language(requestContext.getLanguage())
+        .build();
   }
 }

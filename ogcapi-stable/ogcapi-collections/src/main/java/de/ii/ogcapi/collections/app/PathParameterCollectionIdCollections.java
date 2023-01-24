@@ -13,6 +13,12 @@ import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @title collectionId
+ * @endpoints Feature Collection
+ * @langEn The identifier of the feature collection.
+ * @langDe Der Identifikator der Feature Collection.
+ */
 @Singleton
 @AutoBind
 public class PathParameterCollectionIdCollections extends AbstractPathParameterCollectionId {

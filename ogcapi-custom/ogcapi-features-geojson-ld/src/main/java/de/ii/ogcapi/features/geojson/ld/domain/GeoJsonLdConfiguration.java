@@ -36,9 +36,11 @@ public interface GeoJsonLdConfiguration extends ExtensionConfiguration {
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   /**
-   * @langEn File name of the JSON-LD context document in the folder `json-ld-contexts/{apiId}`.
-   * @langDe Dateiname des JSON-LD-Context-Dokuments im Verzeichnis `json-ld-contexts/{apiId}`.
-   * @default `null
+   * @langEn File name of the JSON-LD context document in the folder
+   *     `api-resources/json-ld-contexts/{apiId}`.
+   * @langDe Dateiname des JSON-LD-Context-Dokuments im Verzeichnis
+   *     `api-resources/json-ld-contexts/{apiId}`.
+   * @default null
    */
   @Nullable
   String getContextFileName();
@@ -52,7 +54,7 @@ public interface GeoJsonLdConfiguration extends ExtensionConfiguration {
    *     Landing-Page-URI der API und `{{collectionId}}` durch die Collection-ID ersetzt. Sofern der
    *     Context nicht extern liegt, sollte der Wert
    *     "{{serviceUrl}}/collections/{{collectionId}}/context" sein.
-   * @default `null`
+   * @default null
    */
   @Nullable
   String getContext();
@@ -61,7 +63,7 @@ public interface GeoJsonLdConfiguration extends ExtensionConfiguration {
    * @langEn Value of `@type` that is added to every feature.
    * @langDe Der Wert von "@type" bei den Features der Collection. Dabei wird `{{type}}` durch den
    *     Wert der Property mit `role: TYPE` ersetzt.
-   * @default `[ "geojson:Feature" ]`
+   * @default [ "geojson:Feature" ]
    */
   List<String> getTypes();
 
@@ -72,7 +74,7 @@ public interface GeoJsonLdConfiguration extends ExtensionConfiguration {
    * @langDe Der Wert von "@id" bei den Features der Collection. Dabei wird `{{serviceUrl}}` durch
    *     die Landing-Page-URI der API, `{{collectionId}}` durch die Collection-ID und
    *     `{{featureId}}` durch den Wert von "id" ersetzt.
-   * @default `null`
+   * @default
    */
   Optional<String> getIdTemplate();
 

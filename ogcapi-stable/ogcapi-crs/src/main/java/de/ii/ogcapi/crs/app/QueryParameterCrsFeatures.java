@@ -36,7 +36,7 @@ import javax.inject.Singleton;
  * @title crs
  * @endpoints Features, Feature
  * @langEn The coordinate reference system of the returned features. Default is WGS84
- *     longitude/latitude (with or without height).
+ *     longitude/latitude (with or without ellipsoidal height).
  * @langDe Das Koordinatenreferenzsystem der zurückgegebenen Features. Default ist WGS84
  *     longitude/latitude (mit oder ohne Höhe).
  */

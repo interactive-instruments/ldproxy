@@ -92,10 +92,12 @@ import org.slf4j.LoggerFactory;
 import org.sqlite.SQLiteJDBCLoader;
 
 /**
- * @title Vector Tiles
- * @langEn Publish vector tiles.
- * @langDe Veröffentlichen von Vektor-Kacheln.
- * @scopeEn The supported tile formats are:
+ * @title Tiles
+ * @langEn Publish geographic data as tiles.
+ * @langDe Veröffentlichen von Geodaten als Kacheln.
+ * @scopeEn This building block supports tiles derived from feature data or tiles that are provided
+ *     by an external source.
+ *     <p>The supported tile formats are:
  *     <p><code>
  * - MVT (Mapbox Vector Tile)
  * - PNG
@@ -103,7 +105,11 @@ import org.sqlite.SQLiteJDBCLoader;
  * - JPEG
  * - TIFF
  *     </code>
- * @scopeDe Die unterstützten Kachelformate sind:
+ *     <p>For tiles that are derived from feature data, only Mapbox Vector Tiles are supported as a
+ *     file format.
+ * @scopeDe Dieses Modul unterstützt Kacheln, die aus Features abgeleitet sind, oder Kacheln, die
+ *     von einer externen Quelle bereitgestellt werden.
+ *     <p>Die unterstützten Kachelformate sind:
  *     <p><code>
  * - MVT (Mapbox Vector Tile)
  * - PNG
@@ -111,15 +117,23 @@ import org.sqlite.SQLiteJDBCLoader;
  * - JPEG
  * - TIFF
  *     </code>
- * @conformanceEn The module is based on the draft of [OGC API - Tiles - Part 1:
- *     Core](https://github.com/opengeospatial/OGC-API-Tiles) and the draft of [OGC Two Dimensional
- *     Tile Matrix Set and Tile Set Metadata](https://docs.ogc.org/DRAFTS/17-083r4.html). The
- *     implementation will change as the draft is further standardized.
- * @conformanceDe Das Modul basiert auf dem Entwurf von [OGC API - Tiles - Part 1:
- *     Core](https://github.com/opengeospatial/OGC-API-Tiles) und dem Entwurf von [OGC Two
- *     Dimensional Tile Matrix Set and Tile Set
- *     Metadata](https://docs.ogc.org/DRAFTS/17-083r4.html). Die Implementierung wird sich im Zuge
- *     der weiteren Standardisierung des Entwurfs noch ändern.
+ *     <p>Für Kacheln, die aus Features abgeleitet werden, wird nur Mapbox Vector Tiles als
+ *     Kachelformat unterstützt.
+ * @conformanceEn The module implements the conformance classes "Core", "TileSet", "TileSets List",
+ *     "Dataset TileSets", "GeoData TileSets", "Collections Selection", "DateTime", "OpenAPI
+ *     Specification 3.0 API definition", "Mapbox Vector Tiles", "PNG", "JPEG", and "TIFF" of the
+ *     [OGC API - Tiles - Part 1: Core 1.0 Standard](https://docs.ogc.org/is/20-057/20-057.html) and
+ *     the conformance classes "TileSetMetadata", "TileMatrixSetLimits", and
+ *     "JSONTileMatrixSetLimits" of the [OGC Two Dimensional Tile Matrix Set and Tile Set Metadata
+ *     2.0 Standard](https://docs.ogc.org/is/17-083r4/17-083r4.html).
+ * @conformanceDe Das Modul implementiert die Konformitätsklassen "Core", "TileSet", "TileSets
+ *     List", * "Dataset TileSets", "GeoData TileSets", "Collections Selection", "DateTime",
+ *     "OpenAPI * Specification 3.0 API definition", "Mapbox Vector Tiles", "PNG", "JPEG" und "TIFF"
+ *     des Standards [OGC API - Tiles - Part 1: Core
+ *     1.0](https://docs.ogc.org/is/20-057/20-057.html) und die Konformitätsklassen
+ *     "TileSetMetadata", "TileMatrixSetLimits" und "JSONTileMatrixSetLimits" des Standards [OGC Two
+ *     * Dimensional Tile Matrix Set and Tile Set Metadata
+ *     2.0](https://docs.ogc.org/is/17-083r4/17-083r4.html).
  * @cfgPropertiesAdditionalEn ### Tile Provider
  *     <p>{@docVar:provider}
  *     <p>#### Features
@@ -144,18 +158,23 @@ import org.sqlite.SQLiteJDBCLoader;
  *     <p>{@docTable:providerTileServerProperties}
  * @ref:cfg {@link de.ii.ogcapi.tiles.domain.TilesConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration}
- * @ref:endpoints {@link de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileSingleCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileSetsMultiCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileSetsSingleCollection}, {@link
+ * @ref:endpoints {@link de.ii.ogcapi.tiles.infra.EndpointTileSetsMultiCollection}, {@link
  *     de.ii.ogcapi.tiles.infra.EndpointTileSetMultiCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileSetSingleCollection}
+ *     de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection}, {@link
+ *     de.ii.ogcapi.tiles.infra.EndpointTileSetsSingleCollection}, {@link
+ *     de.ii.ogcapi.tiles.infra.EndpointTileSetSingleCollection}, {@link
+ *     de.ii.ogcapi.tiles.infra.EndpointTileSingleCollection}
  * @ref:queryParameters {@link de.ii.ogcapi.tiles.domain.QueryParameterCollections}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterDatetimeTile}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterFTile}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterFTileSet}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterFTileSets}, {@link
- *     de.ii.ogcapi.tiles.domain.QueryParameterLimitTile},
+ *     de.ii.ogcapi.tiles.domain.QueryParameterLimitTile}
+ * @ref:pathParameters {@link de.ii.ogcapi.tiles.domain.PathParameterCollectionIdTiles}, {@link
+ *     de.ii.ogcapi.tiles.domain.PathParameterTileMatrixSetId}, {@link
+ *     de.ii.ogcapi.tiles.domain.PathParameterTileMatrix}, {@link
+ *     de.ii.ogcapi.tiles.domain.PathParameterTileRow}, {@link
+ *     de.ii.ogcapi.tiles.domain.PathParameterTileCol}
  * @see de.ii.ogcapi.tiles.domain.SeedingOptions
  * @ref:provider {@link de.ii.ogcapi.tiles.domain.TileProvider}
  * @ref:providerFeatures {@link de.ii.ogcapi.tiles.domain.TileProviderFeatures}

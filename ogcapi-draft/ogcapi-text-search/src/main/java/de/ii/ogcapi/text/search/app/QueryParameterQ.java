@@ -42,10 +42,15 @@ import javax.inject.Singleton;
 /**
  * @title q
  * @endpoints Features
- * @langAll General text search in multiple text properties of the data. Separate search terms by
- *     comma. If at least one of the search terms is included in an item, it is included in the
+ * @langEn General text search in multiple text properties of the data. Search terms are separated
+ *     by comma. If at least one of the search terms is included in an item, it is included in the
  *     result set. Known limitation: The search should be case-insensitive, but currently is
  *     case-sensitive.
+ * @langDe Allgemeine Textsuche in mehreren Texteigenschaften der Daten. Die Suchbegriffe werden
+ *     durch ein Komma getrennt. Wenn mindestens einer der Suchbegriffe in einem Objekt enthalten
+ *     ist, wird er in die Ergebnismenge aufgenommen. Bekannte Einschränkung: Die Suche sollte Groß-
+ *     und Kleinschreibung nicht berücksichtigen, derzeit wird jedoch zwischen Groß- und
+ *     Kleinschreibung unterschieden.
  */
 @Singleton
 @AutoBind

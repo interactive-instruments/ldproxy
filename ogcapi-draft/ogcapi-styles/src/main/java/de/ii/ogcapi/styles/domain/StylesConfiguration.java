@@ -290,7 +290,7 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
    *     Sinne einer Webmap und wird nur für Styles unterstützt, für die ein Stylesheet im Format
    *     Mapbox Style verfügbar ist. Siehe die Konformitätsklassen "Mapbox Style", "OGC SLD 1.0",
    *     "OGC SLD 1.1" und "HTML".
-   * @default `[ "Mapbox", "HTML" ]`
+   * @default [ "Mapbox", "HTML" ]
    */
   List<String> getStyleEncodings();
 
@@ -300,7 +300,7 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
    *     Konformitätsklasse "Manage styles".
    * @langDe Steuert, ob die Styles über POST, PUT und DELETE verwaltet werden können. Siehe die
    *     Konformitätsklasse "Manage styles".
-   * @default `false`
+   * @default false
    */
   @Nullable
   Boolean getManagerEnabled();
@@ -318,7 +318,7 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
    * @langDe Steuert, ob bei POST und PUT von Styles die Validierung der Styles über den
    *     Query-Parameter `validate` unterstützt werden soll. Siehe die Konformitätsklasse
    *     "Validation of styles".
-   * @default `false`
+   * @default false
    */
   @Nullable
   Boolean getValidationEnabled();
@@ -343,7 +343,7 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
   /**
    * @langEn *Deprecated* See `enabled` in [Modul Resources](resources.md).
    * @langDe *Deprecated* Siehe `enabled` in [Modul Resources](resources.md).
-   * @default `false`
+   * @default false
    */
   @Deprecated
   @Nullable
@@ -360,7 +360,7 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
   /**
    * @langEn *Deprecated* See `managerEnabled` in [Modul Resources](resources.md).
    * @langDe *Deprecated* Siehe `managerEnabled` in [Modul Resources](resources.md).
-   * @default `false`
+   * @default false
    */
   @Deprecated
   @Nullable
@@ -377,7 +377,7 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
   /**
    * @langEn *Deprecated* See `defaultStyle` in [Modul HTML](html.md).
    * @langDe *Deprecated* Siehe `defaultStyle` in [Modul HTML](html.md).
-   * @default `null`
+   * @default null
    */
   @Deprecated(since = "3.1.0")
   @Nullable
@@ -395,7 +395,7 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
    *     entspricht und der Name der `source-layer` der `{collectionId}`. Sofern ein Style für die
    *     Darstellung von Features im Modul FEATURES_HTML verwendet werden soll, sollte die Option
    *     aktiviert sein.
-   * @default `false`
+   * @default false
    */
   @Nullable
   Boolean getDeriveCollectionStyles();
@@ -405,7 +405,7 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
    *     the top-most object.
    * @langDe Steuert, ob bei Webkarten zu Styles im Format Mapbox Style ein Popup mit den Attributen
    *     zum obersten Objekt angezeigt werden soll.
-   * @default `true`
+   * @default true
    */
   @Nullable
   Boolean getWebmapWithPopup();
@@ -416,7 +416,7 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
    * @langDe Steuert, ob bei Webkarten zu Styles im Format Mapbox Style die Layer ein- und
    *     ausgeschaltet werden können. Ein- und ausgeschaltet werden können jeweils gebündelt alle
    *     Layer zu einer Feature Collection.
-   * @default `false`
+   * @default false
    */
   @Nullable
   Boolean getWebmapWithLayerControl();
@@ -427,7 +427,7 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
    * @langDe Nur wirksam bei `webmapWithLayerControl: true`. Steuert, ob auch Kartenlayer, die nicht
    *     aus den Vector Tiles dieser API, z.B. eine Hintergrundkarte, ein- und ausgeschaltet werden
    *     können.
-   * @default `false`
+   * @default false
    */
   @Nullable
   Boolean getLayerControlAllLayers();

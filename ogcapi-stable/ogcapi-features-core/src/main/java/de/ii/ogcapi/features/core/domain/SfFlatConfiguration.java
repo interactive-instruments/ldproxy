@@ -20,11 +20,14 @@ import javax.annotation.Nullable;
 public interface SfFlatConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
   /**
-   * @langEn If the data is flattened and the feature schema includes arrays, `maxMultiplicity`
-   *     properties will be created for each array property. If an instance has more values in an
-   *     array, only the first values are included in the data.
-   * @langDe TODO_DOCS
+   * @langEn If the feature schema includes array properties, `maxMultiplicity` properties will be
+   *     created for each array property. If an instance has more values in an array, only the first
+   *     values are included in the data.
+   * @langDe Wenn das Feature-Schema Array-Eigenschaften enthält, werden für jede Array-Eigenschaft
+   *     `maxMultiplicity` Eigenschaften erstellt. Wenn eine Instanz mehrere Werte in einem Array
+   *     hat, werden nur die ersten Werte in die Daten aufgenommen.
    * @default 3
+   * @since v3.2
    */
   @Nullable
   Integer getMaxMultiplicity();

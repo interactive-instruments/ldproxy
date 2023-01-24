@@ -19,10 +19,13 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title profileSchema
+ * @title profile
  * @endpoints Feature Schema
- * @langEn TODO_DOCS
- * @langDe TODO_DOCS
+ * @langEn Select the JSON Schema version of the response. Supported are "2019-09" (default) and
+ *     "07".
+ * @langDe Wählt die JSON-Schema-Version der Antwort. Unterstützt werden "2019-09" (Standard) und
+ *     "07".
+ * @default 2019-09
  */
 @Singleton
 @AutoBind

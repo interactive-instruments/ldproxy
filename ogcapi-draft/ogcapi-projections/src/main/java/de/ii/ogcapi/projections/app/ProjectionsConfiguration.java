@@ -14,6 +14,12 @@ import org.immutables.value.Value;
 
 /**
  * @buildingBlock PROJECTIONS
+ * @examplesAll <code>
+ * ```yaml
+ * - buildingBlock: PROJECTIONS
+ *   enabled: true
+ * ```
+ * </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new")

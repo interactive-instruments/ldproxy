@@ -37,12 +37,16 @@ import org.slf4j.LoggerFactory;
 /**
  * @title Sorting
  * @langEn Sort features in a response.
- * @langDe Sortierung von Features in Rückgaben.
- * @conformanceEn TODO_DOCS
- * @conformanceDe TODO_DOCS
+ * @langDe Sortieren von Features in Rückgaben.
+ * @conformanceEn *Sorting* implements the conformance class "Sorting" of the [draft OGC API -
+ *     Records - Part 1: Core](https://docs.ogc.org/DRAFTS/20-004.html#rc_sorting).
+ * @conformanceDe Das Modul implementiert die Konformitätsklasse "Sorting" des [Entwurfs von OGC API
+ *     - Records - Part 1: Core](https://docs.ogc.org/DRAFTS/20-004.html#rc_sorting).
  * @ref:endpoints {@link de.ii.ogcapi.sorting.app.EndpointSortables}
+ * @ref:cfg {@link de.ii.ogcapi.sorting.domain.SortingConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.sorting.domain.ImmutableSortingConfiguration}
- * @ref:queryParameters {@link de.ii.ogcapi.sorting.app.QueryParameterSortbyFeatures}
+ * @ref:queryParameters {@link de.ii.ogcapi.sorting.app.QueryParameterSortbyFeatures}, {@link
+ *     de.ii.ogcapi.sorting.app.QueryParameterFSortables}
  */
 @Singleton
 @AutoBind

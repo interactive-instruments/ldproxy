@@ -15,28 +15,31 @@ import javax.inject.Singleton;
 
 /**
  * @title Common Core
- * @langEn The core of OGC API.
- * @langDe Der Kern von OGC API.
+ * @langEn The common resources of all OGC Web APIs.
+ * @langDe Gemeinsame Ressourcen aller OGC Web APIs.
  * @conformanceEn *Common Core* implements all requirements of conformance class *Core* of [OGC API
- *     - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core)
- *     for the three mentioned resources.
- *     <p>::: info The conformance class *Core* was split up into multiple modules in anticipation
- *     of the upcoming standard *OGC API Common*. :::
+ *     - Features - Part 1: Core 1.0.1](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_core) for
+ *     the three mentioned resources.
+ *     <p>::: info The conformance class has been split into three building blocks in ldproxy, since
+ *     other OGC API standards reuse parts. The modules "Common Core" and "Feature Collections"
+ *     reflect this. :::
  *     <p>
  * @conformanceDe *Common Core* implementiert alle Vorgaben der Konformitätsklasse *Core* von [OGC
- *     API - Features - Part 1: Core
- *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) für die drei genannten
- *     Ressourcen.
- *     <p>::: info Die Konformitätsklasse wurde in ldproxy auf drei Module aufgeteilt, da vorgesehen
- *     ist, die jeweiligen Anforderungen für die Nutzung in anderen OGC API Standards als zwei Teile
- *     von OGC API Common zu veröffentlichen. Die Module "Common Core" und "Feature Collections"
- *     bilden dies ab. :::
+ *     API - Features - Part 1: Core 1.0.1](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_core)
+ *     für die drei genannten Ressourcen.
+ *     <p>::: info Die Konformitätsklasse wurde in ldproxy auf drei Module aufgeteilt, da auch
+ *     andere OGC API Standards bestimmte Teile wiederverwenden. Die Module "Common Core" und
+ *     "Feature Collections" bilden dies ab. :::
  *     <p>
  * @ref:cfg {@link de.ii.ogcapi.common.domain.CommonConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.common.domain.ImmutableCommonConfiguration}
  * @ref:endpoints {@link de.ii.ogcapi.common.infra.EndpointLandingPage}, {@link
  *     de.ii.ogcapi.common.infra.EndpointConformance}, {@link
  *     de.ii.ogcapi.common.infra.EndpointDefinition}
+ * @ref:queryParameters {@link de.ii.ogcapi.common.domain.QueryParameterFCommon}, {@link
+ *     de.ii.ogcapi.common.domain.QueryParameterFApiDefinition}, {@link
+ *     de.ii.ogcapi.common.domain.QueryParameterLang}, {@link
+ *     de.ii.ogcapi.common.domain.QueryParameterToken}
  */
 @Singleton
 @AutoBind

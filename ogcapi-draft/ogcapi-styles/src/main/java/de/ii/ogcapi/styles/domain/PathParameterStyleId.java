@@ -21,6 +21,12 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title styleId
+ * @endpoints Style, Style Metadata, Collection Style, Collection Style Metadata
+ * @langEn The local identifier of the resource.
+ * @langDe Der lokale Identifikator der Dateiressource.
+ */
 @Singleton
 @AutoBind
 public class PathParameterStyleId implements OgcApiPathParameter {

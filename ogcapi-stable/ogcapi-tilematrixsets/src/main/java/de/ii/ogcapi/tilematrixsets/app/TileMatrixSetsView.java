@@ -7,45 +7,36 @@
  */
 package de.ii.ogcapi.tilematrixsets.app;
 
-import com.google.common.base.Charsets;
 import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.html.domain.OgcApiView;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLinks;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import org.immutables.value.Value;
 
-public class TileMatrixSetsView extends OgcApiView {
-  public List<TileMatrixSetLinks> tileMatrixSets;
-  public String none;
+@Value.Immutable
+public abstract class TileMatrixSetsView extends OgcApiView {
+  public abstract List<TileMatrixSetLinks> tileMatrixSets();
 
-  public TileMatrixSetsView(
-      OgcApiDataV2 apiData,
-      TileMatrixSets tileMatrixSets,
-      List<NavigationDTO> breadCrumbs,
-      String staticUrlPrefix,
-      HtmlConfiguration htmlConfig,
-      boolean noIndex,
-      URICustomizer uriCustomizer,
-      I18n i18n,
-      Optional<Locale> language) {
-    super(
-        "tileMatrixSets.mustache",
-        Charsets.UTF_8,
-        apiData,
-        breadCrumbs,
-        htmlConfig,
-        noIndex,
-        staticUrlPrefix,
-        tileMatrixSets.getLinks(),
-        i18n.get("tileMatrixSetsTitle", language),
-        i18n.get("tileMatrixSetsDescription", language));
-    this.tileMatrixSets = tileMatrixSets.getTileMatrixSets();
-    this.none = i18n.get("none", language);
+  @Value.Derived
+  public String none() {
+    return i18n().get("none", Optional.ofNullable(language()));
+  }
+
+  public abstract URICustomizer uriCustomizer();
+
+  public abstract I18n i18n();
+
+  public abstract Locale language();
+
+  public TileMatrixSetsView() {
+    super("tileMatrixSets.mustache");
+    // tileMatrixSets.getLinks(),
+    // i18n.get("tileMatrixSetsTitle", language),
+    // i18n.get("tileMatrixSetsDescription", language));
+    // this.tileMatrixSets = tileMatrixSets.getTileMatrixSets();
+
   }
 }

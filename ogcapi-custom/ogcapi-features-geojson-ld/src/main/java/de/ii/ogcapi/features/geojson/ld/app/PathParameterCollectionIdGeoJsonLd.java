@@ -16,10 +16,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn
- * @langDe
- * @title JSON-LD Context
- * @endpoints Todo
+ * @title collectionId
+ * @endpoints JSON-LD Context
+ * @langEn The identifier of the feature collection.
+ * @langDe Der Identifikator der Feature Collection.
  */
 @Singleton
 @AutoBind

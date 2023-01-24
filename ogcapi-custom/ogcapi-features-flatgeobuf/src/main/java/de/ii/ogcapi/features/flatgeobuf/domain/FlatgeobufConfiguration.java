@@ -17,7 +17,13 @@ import java.util.Map;
 import org.immutables.value.Value;
 
 /**
- * @title FLATGEOBUF
+ * @buildingBlock FLATGEOBUF
+ * @examplesAll <code>
+ * ```yaml
+ * - buildingBlock: FLATGEOBUF
+ *   enabled: true
+ * ```
+ *     </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)

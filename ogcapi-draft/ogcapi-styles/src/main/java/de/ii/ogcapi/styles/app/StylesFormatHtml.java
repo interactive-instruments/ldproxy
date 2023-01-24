@@ -121,15 +121,19 @@ public class StylesFormatHtml implements StylesFormatExtension {
 
     HtmlConfiguration htmlConfig = apiData.getExtension(HtmlConfiguration.class).orElse(null);
 
-    return new StylesView(
-        apiData,
-        styles,
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        htmlConfig,
-        isNoIndexEnabledForApi(apiData),
-        requestContext.getUriCustomizer(),
-        i18n,
-        requestContext.getLanguage());
+    return new ImmutableStylesView.Builder()
+        .apiData(apiData)
+        .styles(styles)
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .rawLinks(styles.getLinks())
+        .breadCrumbs(breadCrumbs)
+        .htmlConfig(htmlConfig)
+        .noIndex(isNoIndexEnabledForApi(apiData))
+        .uriCustomizer(requestContext.getUriCustomizer())
+        .i18n(i18n)
+        .description(i18n.get("stylesDescription", requestContext.getLanguage()))
+        .title(i18n.get("stylesTitle", requestContext.getLanguage()))
+        .language(requestContext.getLanguage())
+        .build();
   }
 }

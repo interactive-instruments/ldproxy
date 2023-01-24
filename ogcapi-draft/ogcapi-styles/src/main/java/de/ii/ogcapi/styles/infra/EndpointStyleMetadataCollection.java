@@ -46,11 +46,16 @@ import org.slf4j.LoggerFactory;
 /**
  * @title Collection Style Metadata
  * @path collections/{collectionId}/styles/{styleId}/metadata"
- * @langAll Style metadata is essential information about a style in order to support users to
+ * @langEn Style metadata is essential information about a style in order to support users to
  *     discover and select styles for rendering their data and for visual style editors to create
  *     user interfaces for editing a style. This operations returns the metadata for the requested
  *     style as a single document. The stylesheet of the style will typically include some the
  *     metadata, too.
+ * @langDe Style-Metadaten sind wichtige Informationen über einen Style, damit Benutzer Styles für
+ *     die Darstellung ihrer Daten erkennen und auswählen können und visuelle Style-Editoren
+ *     Benutzeroberflächen für die Bearbeitung eines Styles bereitstellen können. Diese Operation
+ *     gibt die Metadaten für den angeforderten Style als ein einziges Dokument zurück. Das
+ *     Stylesheet des Styles enthält in der Regel auch einige der Metadaten.
  * @ref:formats {@link de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension}
  */
 @Singleton

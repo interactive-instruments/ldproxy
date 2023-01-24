@@ -24,6 +24,12 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @title tileMatrixSetId
+ * @endpoints Tile Matrix Set
+ * @langEn The identifier of the tiling scheme.
+ * @langDe Der Identifikator des Kachelschemas.
+ */
 @Singleton
 @AutoBind
 public class PathParameterTileMatrixSetId implements OgcApiPathParameter {

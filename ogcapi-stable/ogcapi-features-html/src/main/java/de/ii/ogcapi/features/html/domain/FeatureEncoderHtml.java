@@ -20,6 +20,7 @@ import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
 import de.ii.xtraplatform.web.domain.MustacheRenderer;
+import io.dropwizard.views.View;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.List;
@@ -214,8 +215,8 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
         }
       }
 
-      transformationContext.collectionView().pagination = pagination.build();
-      transformationContext.collectionView().metaPagination = metaPagination.build();
+      transformationContext.collectionView().setPagination(pagination.build());
+      transformationContext.collectionView().setMetaPagination(metaPagination.build());
 
     } else if (transformationContext.isFeatureCollection()) {
       LOGGER.error(
@@ -251,11 +252,11 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
     }
 
     if (!transformationContext.isFeatureCollection()) {
-      transformationContext.collectionView().title = feature.getName();
+      transformationContext.collectionView().setTitle(feature.getName());
       transformationContext
               .collectionView()
-              .breadCrumbs
-              .get(transformationContext.collectionView().breadCrumbs.size() - 1)
+              .breadCrumbs()
+              .get(transformationContext.collectionView().breadCrumbs().size() - 1)
               .label =
           feature.getName();
     } else {
@@ -266,18 +267,27 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
       feature.itemType("http://schema.org/Place");
     }
 
-    transformationContext.collectionView().features.add(feature);
+    transformationContext.collectionView().addFeatures(feature);
   }
 
   @Override
   public void onEnd(ModifiableContext context) {
+    if (transformationContext.isFeatureCollection()) {
+      renderView(transformationContext.collectionView());
 
+    } else {
+      renderView(
+          new ImmutableFeatureCollectionDetailsView.Builder()
+              .from(transformationContext.collectionView())
+              .build());
+    }
+  }
+
+  private void renderView(View view) {
     // TODO: FeatureTokenEncoderBytes.getOutputStream
     OutputStreamWriter writer = new OutputStreamWriter(new OutputStreamToByteConsumer(this::push));
-
     try {
-      ((MustacheRenderer) transformationContext.mustacheRenderer())
-          .render(transformationContext.collectionView(), writer);
+      ((MustacheRenderer) transformationContext.mustacheRenderer()).render(view, writer);
       writer.flush();
     } catch (IOException e) {
       throw new IllegalStateException(e);

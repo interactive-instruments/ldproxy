@@ -23,6 +23,10 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ogcapi.html.domain.ImmutableMapClient;
+import de.ii.ogcapi.html.domain.MapClient;
+import de.ii.ogcapi.html.domain.MapClient.Popup;
 import de.ii.ogcapi.styles.domain.ImmutableMbStyleStylesheet;
 import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.ogcapi.styles.domain.MbStyleVectorSource;
@@ -176,6 +180,13 @@ public class StyleFormatHtml implements StyleFormatExtension {
     }
   }
 
+  private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(HtmlConfiguration.class)
+        .map(HtmlConfiguration::getNoIndexEnabled)
+        .orElse(true);
+  }
+
   @Override
   public Object getStyleEntity(
       StylesheetContent stylesheetContent,
@@ -253,14 +264,39 @@ public class StyleFormatHtml implements StyleFormatExtension {
       }
     }
 
-    return new StyleView(
-        styleUrl,
-        apiData,
-        api.getSpatialExtent(),
-        styleId,
-        popup,
-        layerControl,
-        layerMap.asMap(),
-        requestContext.getStaticUrlPrefix());
+    MapClient mapClient =
+        new ImmutableMapClient.Builder()
+            .styleUrl(styleUrl)
+            .popup(popup ? Optional.of(Popup.CLICK_PROPERTIES) : Optional.empty())
+            .savePosition(true)
+            .layerGroupControl(
+                layerControl ? Optional.of(layerMap.asMap().entrySet()) : Optional.empty())
+            .build();
+
+    return new ImmutableStyleView.Builder()
+        .apiData(apiData)
+        .styleUrl(styleUrl)
+        .spatialExtent(api.getSpatialExtent())
+        .styleId(styleId)
+        .popup(popup)
+        .layerControl(layerControl)
+        .noIndex(isNoIndexEnabledForApi(apiData))
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .layerIds(
+            "{"
+                + layerMap.asMap().entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .map(
+                        entry ->
+                            "\""
+                                + entry.getKey()
+                                + "\": [ \""
+                                + String.join("\", \"", entry.getValue())
+                                + "\" ]")
+                    .collect(Collectors.joining(", "))
+                + "}")
+        .mapClient(mapClient)
+        .title("Style " + styleId)
+        .build();
   }
 }

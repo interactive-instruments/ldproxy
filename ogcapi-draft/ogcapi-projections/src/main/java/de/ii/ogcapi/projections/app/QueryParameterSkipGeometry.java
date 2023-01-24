@@ -27,8 +27,8 @@ import javax.inject.Singleton;
 /**
  * @title skipGeometry
  * @endpoints Features, Feature
- * @langEn Use this option to exclude geometries from the response for each feature.
- * @langDe TODO_DOCS
+ * @langEn Use this option to suppress geometries in the response.
+ * @langDe Verwenden Sie diese Option, um Geometrien in der Antwort zu unterdrücken.
  */
 @Singleton
 @AutoBind
