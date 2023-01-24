@@ -24,6 +24,12 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title queryId
+ * @endpoints Stored Query, Stored Query Definition, Stored Query Parameters, Stored Query Parameter
+ * @langEn The identifier of the stored query.
+ * @langDe Der Identifikator der gespeicherten Abfrage.
+ */
 @Singleton
 @AutoBind
 public class PathParameterQueryId implements OgcApiPathParameter {

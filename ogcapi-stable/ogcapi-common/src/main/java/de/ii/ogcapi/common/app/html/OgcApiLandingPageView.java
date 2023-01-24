@@ -186,7 +186,7 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
   }
 
   public Optional<Link> getQueries() {
-    return links.stream().filter(link -> Objects.equals(link.getRel(), "search")).findFirst();
+    return rawLinks().stream().filter(link -> Objects.equals(link.getRel(), "search")).findFirst();
   }
 
   public Optional<Link> getStyles() {

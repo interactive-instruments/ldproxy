@@ -45,7 +45,13 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** creates/updates and deletes a stored query */
+/**
+ * @title Stored Query Definition
+ * @path search/{queryId}/definition
+ * @langEn Get the definition of the stored query.
+ * @langDe Abrufen der Definition der gespeicherten Abfrage.
+ * @ref:formats {@link de.ii.ogcapi.features.search.domain.StoredQueryFormat}
+ */
 @Singleton
 @AutoBind
 public class EndpointStoredQueryDefinition extends Endpoint {

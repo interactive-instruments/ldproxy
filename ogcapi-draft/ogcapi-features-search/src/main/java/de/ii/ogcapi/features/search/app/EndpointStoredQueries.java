@@ -37,12 +37,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn This operation fetches the stored queries available on the server. For each stored query,
- *     the id, a title, links to the query ... TODO is provided.
- * @langDe TODO
- * @name Stored Queries
- * @path /{apiId}/search
- * @format {@link de.ii.ogcapi.features.search.domain.StoredQueriesFormat}
+ * @title Stored Queries
+ * @path search
+ * @langEn Fetch the stored queries available on the server.
+ * @langDe Abrufen der auf dem Server verfügbaren Abfragen.
+ * @ref:formats {@link de.ii.ogcapi.features.search.domain.StoredQueriesFormat}
  */
 @Singleton
 @AutoBind

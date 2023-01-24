@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.features.html.app;
 
+import de.ii.ogcapi.features.html.domain.FeaturesView;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Modifiable;
 

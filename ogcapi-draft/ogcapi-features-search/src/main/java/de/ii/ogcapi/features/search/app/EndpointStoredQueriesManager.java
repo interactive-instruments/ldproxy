@@ -57,7 +57,13 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** creates/updates and deletes a stored query */
+/**
+ * @title Stored Queries, Stored Query
+ * @path search, search/{queryId}
+ * @langEn Create, Replace and Delete stored queries.
+ * @langDe Erzeugen, Ersetzen und Löschen von Stored Queries.
+ * @ref:formats {@link de.ii.ogcapi.features.search.domain.StoredQueryFormat}
+ */
 @Singleton
 @AutoBind
 public class EndpointStoredQueriesManager extends Endpoint implements ConformanceClass {

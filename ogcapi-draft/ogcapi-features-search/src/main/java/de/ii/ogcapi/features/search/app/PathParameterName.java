@@ -23,6 +23,12 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title name
+ * @endpoints Stored Query Parameter
+ * @langEn The name of the query parameter.
+ * @langDe Der Name des Abfrageparameters.
+ */
 @Singleton
 @AutoBind
 public class PathParameterName implements OgcApiPathParameter {

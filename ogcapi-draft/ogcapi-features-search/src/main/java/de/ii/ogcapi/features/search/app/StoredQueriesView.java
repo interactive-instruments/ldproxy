@@ -7,70 +7,99 @@
  */
 package de.ii.ogcapi.features.search.app;
 
-import com.google.common.base.Charsets;
-import de.ii.ogcapi.features.search.domain.StoredQueries;
 import de.ii.ogcapi.features.search.domain.StoredQuery;
 import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.html.domain.OgcApiView;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import org.immutables.value.Value;
 
-public class StoredQueriesView extends OgcApiView {
-  public List<StoredQuery> queries;
-  public String typeTitle;
-  public String enumTitle;
-  public String parametersDescription;
-  public String patternTitle;
-  public String minTitle;
-  public String maxTitle;
-  public String defaultTitle;
-  public String valueTitle;
-  public String formatTitle;
-  public String executeQueryButton;
-  public String none;
-  public String baseUrl;
-  public boolean isForm;
+@Value.Immutable
+@Value.Style(builder = "new")
+public abstract class StoredQueriesView extends OgcApiView {
 
-  public StoredQueriesView(
-      OgcApiDataV2 apiData,
-      StoredQueries queries,
-      List<NavigationDTO> breadCrumbs,
-      String staticUrlPrefix,
-      HtmlConfiguration htmlConfig,
-      boolean noIndex,
-      URICustomizer uriCustomizer,
-      I18n i18n,
-      Optional<Locale> language) {
-    super(
-        "storedQueries.mustache",
-        Charsets.UTF_8,
-        apiData,
-        breadCrumbs,
-        htmlConfig,
-        noIndex,
-        staticUrlPrefix,
-        queries.getLinks(),
-        i18n.get("storedQueriesTitle", language),
-        i18n.get("storedQueriesDescription", language));
+  StoredQueriesView() {
+    super("storedQueries.mustache");
+  }
 
-    this.queries = queries.getQueries();
-    this.parametersDescription = i18n.get("parametersDescription", language);
-    this.typeTitle = i18n.get("typeTitle", language);
-    this.enumTitle = i18n.get("enumTitle", language);
-    this.patternTitle = i18n.get("patternTitle", language);
-    this.minTitle = i18n.get("minTitle", language);
-    this.maxTitle = i18n.get("maxTitle", language);
-    this.defaultTitle = i18n.get("defaultTitle", language);
-    this.valueTitle = i18n.get("valueTitle", language);
-    this.formatTitle = i18n.get("formatTitle", language);
-    this.executeQueryButton = i18n.get("executeQueryButton", language);
-    this.none = i18n.get("none", language);
-    this.baseUrl = uriCustomizer.copy().clearParameters().toString();
-    this.isForm = true;
+  public abstract List<StoredQuery> queries();
+
+  public abstract I18n i18n();
+
+  public abstract Optional<Locale> language();
+
+  public abstract String baseUrl();
+
+  @Value.Derived
+  public boolean isForm() {
+    return true;
+  }
+
+  @Value.Derived
+  @Override
+  public String title() {
+    return i18n().get("storedQueriesTitle", language());
+  }
+
+  @Value.Derived
+  @Override
+  public String description() {
+    return i18n().get("storedQueriesDescription", language());
+  }
+
+  @Value.Derived
+  public String typeTitle() {
+    return i18n().get("typeTitle", language());
+  }
+
+  @Value.Derived
+  public String enumTitle() {
+    return i18n().get("enumTitle", language());
+  }
+
+  @Value.Derived
+  public String parametersDescription() {
+    return i18n().get("parametersDescription", language());
+  }
+
+  @Value.Derived
+  public String patternTitle() {
+    return i18n().get("patternTitle", language());
+  }
+
+  @Value.Derived
+  public String minTitle() {
+    return i18n().get("minTitle", language());
+  }
+
+  @Value.Derived
+  public String maxTitle() {
+    return i18n().get("maxTitle", language());
+  }
+
+  @Value.Derived
+  public String defaultTitle() {
+    return i18n().get("defaultTitle", language());
+  }
+
+  @Value.Derived
+  public String valueTitle() {
+    return i18n().get("valueTitle", language());
+  }
+
+  @Value.Derived
+  public String formatTitle() {
+    return i18n().get("formatTitle", language());
+  }
+
+  @Value.Derived
+  public String executeQueryButton() {
+    return i18n().get("executeQueryButton", language());
+  }
+
+  @Value.Derived
+  public String none() {
+    return i18n().get("none", language());
   }
 }

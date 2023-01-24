@@ -22,10 +22,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn TODO
- * @langDe TODO
- * @name offset
- * @endpoints StoredQuery
+ * @title offset
+ * @endpoints Stored Query
+ * @langEn The index of the first feature in the response in the overall result set. This parameter
+ *     is used for response paging.
+ * @langDe Der Index des ersten Features in der Antwort in der Gesamtergebnismenge. Dieser Parameter
+ *     wird für das Paging verwendet.
  */
 @Singleton
 @AutoBind

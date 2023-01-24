@@ -16,12 +16,14 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @langEn TODO
- * @langDe TODO
- * @example <code>
+ * @buildingBlock SEARCH
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: SEARCH
  *   enabled: true
+ *   managerEnabled: true
+ *   validationEnabled: false
+ *   allLinksAreLocal: true
  * ```
  * </code>
  */
@@ -33,7 +35,7 @@ public interface SearchConfiguration extends ExtensionConfiguration, CachingConf
   /**
    * @langEn Option to manage stored queries using PUT and DELETE.
    * @langDe Steuert, ob Stored Queries über PUT und DELETE verwaltet werden können.
-   * @default `false`
+   * @default false
    */
   @Nullable
   Boolean getManagerEnabled();
@@ -50,7 +52,7 @@ public interface SearchConfiguration extends ExtensionConfiguration, CachingConf
    *     `handling=strict`.
    * @langDe Steuert, ob bei PUT von Stored Queries die Validierung über den Header `Prefer` (Wert
    *     `handling=strict`) unterstützt werden soll.
-   * @default `false`
+   * @default false
    */
   @Nullable
   Boolean getValidationEnabled();
@@ -64,8 +66,8 @@ public interface SearchConfiguration extends ExtensionConfiguration, CachingConf
 
   /**
    * @langEn Signals feature encoders whether all link targets are within the same document.
-   * @langDe Signalisiert Feature-Encoders, ob alle Links auf Objekte im selben Dokuments zeigen.
-   * @default `false`
+   * @langDe Signalisiert Feature-Encodern, ob alle Links auf Objekte im selben Dokuments zeigen.
+   * @default false
    */
   @Nullable
   Boolean getAllLinksAreLocal();

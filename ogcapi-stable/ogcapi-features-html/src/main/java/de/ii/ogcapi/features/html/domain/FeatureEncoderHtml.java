@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.html.domain;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.html.app.FeatureHtml;
+import de.ii.ogcapi.features.html.app.ImmutableFeatureCollectionDetailsView;
 import de.ii.ogcapi.features.html.app.ModifiableFeatureHtml;
 import de.ii.ogcapi.features.html.app.ModifiablePropertyHtml;
 import de.ii.ogcapi.features.html.app.PropertyHtml;

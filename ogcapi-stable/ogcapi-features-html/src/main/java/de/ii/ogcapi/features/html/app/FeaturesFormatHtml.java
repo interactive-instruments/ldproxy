@@ -342,50 +342,50 @@ public class FeaturesFormatHtml extends FeaturesFormatBaseHtml
     boolean removeZoomLevelConstraints =
         config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints).orElse(false);
 
-/* TODO
-    FeatureCollectionView featureTypeDataset =
-        new FeatureCollectionView(
-            api.getSpatialExtent(featureType.getId()),
-            bare ? "featureCollectionBare" : "featureCollection",
-            requestUri,
-            featureType.getId(),
-            featureType.getLabel(),
-            featureType.getDescription().orElse(null),
-            attribution,
-            staticUrlPrefix,
-            htmlConfig.orElse(null),
-            null,
-            noIndex,
-            mapPosition,
-            mapClientType,
-            styleUrl,
-            removeZoomLevelConstraints,
-            hideMap,
-            filterableFields,
-            geometryProperties);
+    /* TODO
+        FeatureCollectionView featureTypeDataset =
+            new FeatureCollectionView(
+                api.getSpatialExtent(featureType.getId()),
+                bare ? "featureCollectionBare" : "featureCollection",
+                requestUri,
+                featureType.getId(),
+                featureType.getLabel(),
+                featureType.getDescription().orElse(null),
+                attribution,
+                staticUrlPrefix,
+                htmlConfig.orElse(null),
+                null,
+                noIndex,
+                mapPosition,
+                mapClientType,
+                styleUrl,
+                removeZoomLevelConstraints,
+                hideMap,
+                filterableFields,
+                geometryProperties);
 
-    featureTypeDataset.temporalExtent = api.getTemporalExtent(featureType.getId()).orElse(null);
-    api.getSpatialExtent(featureType.getId())
-        .ifPresent(
-            bbox ->
-                featureTypeDataset.bbox =
-                    ImmutableMap.of(
-                        "minLng",
-                        Double.toString(bbox.getXmin()),
-                        "minLat",
-                        Double.toString(bbox.getYmin()),
-                        "maxLng",
-                        Double.toString(bbox.getXmax()),
-                        "maxLat",
-                        Double.toString(bbox.getYmax())));
+        featureTypeDataset.temporalExtent = api.getTemporalExtent(featureType.getId()).orElse(null);
+        api.getSpatialExtent(featureType.getId())
+            .ifPresent(
+                bbox ->
+                    featureTypeDataset.bbox =
+                        ImmutableMap.of(
+                            "minLng",
+                            Double.toString(bbox.getXmin()),
+                            "minLat",
+                            Double.toString(bbox.getYmin()),
+                            "maxLng",
+                            Double.toString(bbox.getXmax()),
+                            "maxLat",
+                            Double.toString(bbox.getYmax())));
 
-    featureTypeDataset.uriBuilder =
-        uriCustomizer.copy().ensureParameter("f", MEDIA_TYPE.parameter());
-    featureTypeDataset.uriBuilderWithFOnly =
-        uriCustomizer.copy().clearParameters().ensureParameter("f", MEDIA_TYPE.parameter());
+        featureTypeDataset.uriBuilder =
+            uriCustomizer.copy().ensureParameter("f", MEDIA_TYPE.parameter());
+        featureTypeDataset.uriBuilderWithFOnly =
+            uriCustomizer.copy().clearParameters().ensureParameter("f", MEDIA_TYPE.parameter());
 
-    return featureTypeDataset;
-*/
+        return featureTypeDataset;
+    */
     return ModifiableFeatureCollectionView.create()
         .setApiData(apiData)
         .setCollectionData(featureType)

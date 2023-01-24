@@ -5,12 +5,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.features.html.app;
+package de.ii.ogcapi.features.html.domain;
 
 import com.github.mustachejava.util.DecoratedCollection;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.common.domain.OgcApiDatasetView;
+import de.ii.ogcapi.features.html.app.CesiumData;
+import de.ii.ogcapi.features.html.app.FeatureHtml;
+import de.ii.ogcapi.features.html.app.FilterEditor;
+import de.ii.ogcapi.features.html.app.ImmutableFilterEditor.Builder;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration.POSITION;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.I18n;
@@ -136,6 +140,11 @@ public abstract class FeaturesView extends OgcApiDatasetView {
     return false;
   }
 
+  @Value.Derived
+  public boolean fromStoredQuery() {
+    return false;
+  }
+
   @Nullable
   @Value.Derived
   public Map<String, String> bbox() {
@@ -202,10 +211,11 @@ public abstract class FeaturesView extends OgcApiDatasetView {
     }
   }
 
-  @Value.Derived
+  @Value.Default
+  @Nullable
   public FilterEditor filterEditor() {
     if (Objects.nonNull(queryables())) {
-      return new ImmutableFilterEditor.Builder()
+      return new Builder()
           .backgroundUrl(
               Optional.ofNullable(htmlConfig().getLeafletUrl())
                   .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))

@@ -58,11 +58,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn TODO
- * @langDe TODO
- * @name StoredQuery
- * @path /{apiId}/search/{queryId}
- * @format {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
+ * @title Stored Query
+ * @path search/{queryId}
+ * @langEn Execute the stored query. Parameters are submitted as query parameters.
+ * @langDe Führt die gespeicherte Abfrage aus. Parameter werden als Abfrageparameter übergeben.
+ * @ref:formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
  */
 @Singleton
 @AutoBind

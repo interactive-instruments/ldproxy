@@ -47,11 +47,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn TODO
- * @langDe TODO
- * @name Parameters
- * @path /{apiId}/search/{queryId}/parameters
- * @format {@link de.ii.ogcapi.features.search.domain.ParametersFormat}
+ * @title Stored Query Parameters
+ * @path search/{queryId}/parameters
+ * @langEn Get the definition of the query parameters
+ * @langDe Abrufen der Definition der Abfrageparameter
+ * @ref:formats {@link de.ii.ogcapi.features.search.domain.ParametersFormat}
  */
 @Singleton
 @AutoBind

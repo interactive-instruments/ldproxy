@@ -20,6 +20,12 @@ import io.swagger.v3.oas.models.media.Schema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @title queryId
+ * @endpoints Stored Query
+ * @langEn The identifier of the stored query.
+ * @langDe Der Identifikator der gespeicherten Abfrage.
+ */
 @Singleton
 @AutoBind
 public class QueryParameterDryRunStoredQueriesManager extends ApiExtensionCache

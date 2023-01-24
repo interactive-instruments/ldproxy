@@ -111,15 +111,17 @@ public class StoredQueriesFormatHtml implements StoredQueriesFormat {
 
     HtmlConfiguration htmlConfig = apiData.getExtension(HtmlConfiguration.class).orElse(null);
 
-    return new StoredQueriesView(
-        apiData,
-        queries,
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        htmlConfig,
-        isNoIndexEnabledForApi(apiData),
-        requestContext.getUriCustomizer(),
-        i18n,
-        requestContext.getLanguage());
+    return new ImmutableStoredQueriesView.Builder()
+        .apiData(apiData)
+        .queries(queries.getQueries())
+        .breadCrumbs(breadCrumbs)
+        .i18n(i18n)
+        .language(requestContext.getLanguage())
+        .baseUrl(requestContext.getUriCustomizer().copy().clearParameters().toString())
+        .rawLinks(queries.getLinks())
+        .htmlConfig(htmlConfig)
+        .noIndex(isNoIndexEnabledForApi(apiData))
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .build();
   }
 }

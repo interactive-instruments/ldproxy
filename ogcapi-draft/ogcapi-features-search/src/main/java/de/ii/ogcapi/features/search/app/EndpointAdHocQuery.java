@@ -68,11 +68,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn TODO
- * @langDe TODO
- * @name Perform ad-hoc queries
- * @path /{apiId}/search
- * @formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
+ * @title Ad-hoc Query
+ * @path search
+ * @langEn Execute an ad-hoc query
+ * @langDe Eine Ad-hoc-Query ausführen
+ * @ref:formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
  */
 @Singleton
 @AutoBind
