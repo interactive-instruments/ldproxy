@@ -31,9 +31,6 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.util.List;
 import java.util.Optional;
 import javax.inject.Inject;
@@ -86,20 +83,6 @@ public class EndpointParameters extends Endpoint {
   public List<? extends FormatExtension> getFormats() {
     if (formats == null) formats = extensionRegistry.getExtensionsForType(ParametersFormat.class);
     return formats;
-  }
-
-  @Override
-  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
-    ValidationResult result = super.onStartup(api, apiValidation);
-
-    if (apiValidation == MODE.NONE) return result;
-
-    ImmutableValidationResult.Builder builder =
-        ImmutableValidationResult.builder().from(result).mode(apiValidation);
-
-    builder = repository.validate(builder, api.getData());
-
-    return builder.build();
   }
 
   @Override

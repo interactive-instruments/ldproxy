@@ -136,7 +136,8 @@ public class EndpointStoredQuery extends Endpoint {
     return builder.build();
   }
 
-  // TODO temporary fix
+  // TODO temporary fix, Endpoint.getDefinition() for now is no longer final;
+  //      update with https://github.com/interactive-instruments/ldproxy/issues/843
   @Override
   public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
     if (!isEnabledForApi(apiData)) {
@@ -144,7 +145,7 @@ public class EndpointStoredQuery extends Endpoint {
     }
 
     return apiDefinitions.computeIfAbsent(
-        // TODO temporary override to trigger update when stored queries have changed
+        // override to trigger update when stored queries have changed
         repository.getAll(apiData).hashCode(),
         ignore -> {
           if (LOGGER.isDebugEnabled()) {
@@ -173,11 +174,7 @@ public class EndpointStoredQuery extends Endpoint {
         .getAll(apiData)
         .forEach(
             query -> {
-              String queryId =
-                  query
-                      .getId()
-                      .orElseThrow(
-                          () -> new IllegalStateException("Found stored query without an id."));
+              String queryId = query.getId();
               String path = "/search/" + queryId;
               String definitionPath = "/search/{queryId}";
               Builder<OgcApiQueryParameter> paramsBuilder = ImmutableList.builder();
@@ -228,7 +225,8 @@ public class EndpointStoredQuery extends Endpoint {
               definitionBuilder.putResources(path, resourceBuilder.build());
             });
 
-    // TODO add POST
+    // TODO add POST, but wait for Features API SWG discussion whether the payload should be
+    //      JSON or URL-encoded query parameters
 
     return definitionBuilder.build();
   }

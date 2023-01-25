@@ -7,9 +7,8 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -26,7 +25,7 @@ public interface FeatureFormatExtension extends FormatExtension {
 
   default String getPathPattern() {
     return "^/?collections/"
-        + COLLECTION_ID_PATTERN
+        + AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN
         + "/items(?:/"
         + PathParameterFeatureIdFeatures.FEATURE_ID_PATTERN
         + ")?$"

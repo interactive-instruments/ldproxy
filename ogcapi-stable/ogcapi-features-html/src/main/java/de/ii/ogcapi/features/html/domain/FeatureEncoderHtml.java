@@ -74,7 +74,7 @@ public class FeatureEncoderHtml extends FeatureObjectEncoder<PropertyHtml, Featu
       LOGGER.debug("page {}", transformationContext.getPage());
       LOGGER.debug("pages {}", pages);
 
-      boolean includeLimit = !transformationContext.isStoredQuery();
+      boolean includeLimit = !transformationContext.isQueryExpression();
 
       ImmutableList.Builder<NavigationDTO> pagination = new ImmutableList.Builder<>();
       ImmutableList.Builder<NavigationDTO> metaPagination = new ImmutableList.Builder<>();

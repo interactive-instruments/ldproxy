@@ -7,11 +7,12 @@
  */
 package de.ii.ogcapi.features.search.app;
 
+import static de.ii.ogcapi.features.search.app.SearchBuildingBlock.QUERY_ID_PATTERN;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.search.domain.ParameterFormat;
 import de.ii.ogcapi.features.search.domain.SearchConfiguration;
-import de.ii.ogcapi.features.search.domain.StoredQueryFormat;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
@@ -45,7 +46,7 @@ public class PathParameterQueryId implements OgcApiPathParameter {
 
   @Override
   public String getPattern() {
-    return StoredQueryFormat.QUERY_ID_PATTERN
+    return QUERY_ID_PATTERN
         + "(/definition|/parameters[/"
         + ParameterFormat.PARAMETER_NAME_PATTERN
         + "]?)?/?";

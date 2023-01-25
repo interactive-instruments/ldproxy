@@ -15,9 +15,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title Search
- * @langEn The building block *Search* adds support for fetching features from multiple collections
- *     as well as for stored queries.
+ * @title Features - Search
+ * @langEn The building block *Features - Search* adds support for fetching features from multiple
+ *     collections as well as for stored queries.
  * @langDe Das Modul *Search* unterstützt den Abruf von Features aus mehreren Collections sowie für
  *     gespeicherte Abfragen.
  * @scopeEn This building block supports searching for features from one or more collections. That
@@ -68,6 +68,8 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class SearchBuildingBlock implements ApiBuildingBlock {
+
+  public static String QUERY_ID_PATTERN = "[\\w\\-]+";
 
   @Inject
   public SearchBuildingBlock() {}

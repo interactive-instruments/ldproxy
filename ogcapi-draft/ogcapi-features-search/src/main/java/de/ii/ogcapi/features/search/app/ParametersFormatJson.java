@@ -49,9 +49,10 @@ public class ParametersFormatJson implements ParametersFormat {
 
   @Inject
   public ParametersFormatJson(ClassSchemaCache classSchemaCache) {
-    // TODO temporary hack to set the schema for JSON Schema
+    // Set the schema for JSON Schema.
     // Note that setting a schema in onStartup has no effect since
     // that is executed *after* the API definition has been compiled.
+    // TODO find better solution
     classSchemaCache.registerSchema(
         Parameters.class,
         new ObjectSchema()

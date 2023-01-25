@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
+// TODO move to xtraplatform-spatial
 public interface StoredQueryRepository {
 
   /**

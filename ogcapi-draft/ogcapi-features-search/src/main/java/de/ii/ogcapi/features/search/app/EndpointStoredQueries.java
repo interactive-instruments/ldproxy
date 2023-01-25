@@ -13,6 +13,7 @@ import de.ii.ogcapi.features.search.domain.ImmutableQueryInputStoredQueries;
 import de.ii.ogcapi.features.search.domain.SearchConfiguration;
 import de.ii.ogcapi.features.search.domain.SearchQueriesHandler;
 import de.ii.ogcapi.features.search.domain.StoredQueriesFormat;
+import de.ii.ogcapi.features.search.domain.StoredQueryRepository;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -26,6 +27,9 @@ import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.util.List;
 import java.util.Optional;
 import javax.inject.Inject;
@@ -51,12 +55,16 @@ public class EndpointStoredQueries extends Endpoint implements ConformanceClass 
 
   private static final List<String> TAGS = ImmutableList.of("Discover and execute queries");
 
+  private final StoredQueryRepository repository;
   private final SearchQueriesHandler queryHandler;
 
   @Inject
   public EndpointStoredQueries(
-      ExtensionRegistry extensionRegistry, SearchQueriesHandler queryHandler) {
+      ExtensionRegistry extensionRegistry,
+      StoredQueryRepository repository,
+      SearchQueriesHandler queryHandler) {
     super(extensionRegistry);
+    this.repository = repository;
     this.queryHandler = queryHandler;
   }
 
@@ -68,6 +76,20 @@ public class EndpointStoredQueries extends Endpoint implements ConformanceClass 
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return SearchConfiguration.class;
+  }
+
+  @Override
+  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+    ValidationResult result = super.onStartup(api, apiValidation);
+
+    if (apiValidation == MODE.NONE) return result;
+
+    ImmutableValidationResult.Builder builder =
+        ImmutableValidationResult.builder().from(result).mode(apiValidation);
+
+    builder = repository.validate(builder, api.getData());
+
+    return builder.build();
   }
 
   @Override

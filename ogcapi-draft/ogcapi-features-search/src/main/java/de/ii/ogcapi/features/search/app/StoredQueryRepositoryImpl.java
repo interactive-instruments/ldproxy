@@ -17,12 +17,11 @@ import de.ii.ogcapi.features.search.domain.StoredQueryFormat;
 import de.ii.ogcapi.features.search.domain.StoredQueryRepository;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
 import de.ii.xtraplatform.base.domain.LogContext;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult.Builder;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -41,24 +40,21 @@ import javax.ws.rs.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO move to xtraplatform-spatial
 @Singleton
 @AutoBind
-public class StoredQueryRepositoryFiles implements StoredQueryRepository, AppLifeCycle {
+public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLifeCycle {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(StoredQueryRepositoryFiles.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(StoredQueryRepositoryImpl.class);
 
   private final ExtensionRegistry extensionRegistry;
+  private static final String QUERIES_DIR = "queries";
   private final Path store;
-  private final I18n i18n;
-  private final StoredQueriesLinkGenerator linkGenerator;
 
   @Inject
-  public StoredQueryRepositoryFiles(
-      AppContext appContext, ExtensionRegistry extensionRegistry, I18n i18n) {
-    this.store = appContext.getDataDir().resolve(API_RESOURCES_DIR).resolve("queries");
-    this.i18n = i18n;
+  public StoredQueryRepositoryImpl(AppContext appContext, ExtensionRegistry extensionRegistry) {
+    this.store = appContext.getDataDir().resolve(API_RESOURCES_DIR).resolve(QUERIES_DIR);
     this.extensionRegistry = extensionRegistry;
-    this.linkGenerator = new StoredQueriesLinkGenerator();
   }
 
   @Override
@@ -95,7 +91,7 @@ public class StoredQueryRepositoryFiles implements StoredQueryRepository, AppLif
 
   @Override
   public List<QueryExpression> getAll(OgcApiDataV2 apiData) {
-    if (!exists(apiData)) {
+    if (missing(apiData)) {
       return ImmutableList.of();
     }
 
@@ -154,8 +150,8 @@ public class StoredQueryRepositoryFiles implements StoredQueryRepository, AppLif
     return getPath(apiData, queryId).toFile().exists();
   }
 
-  private boolean exists(OgcApiDataV2 apiData) {
-    return getPath(apiData).toFile().exists();
+  private boolean missing(OgcApiDataV2 apiData) {
+    return !getPath(apiData).toFile().exists();
   }
 
   @Override
@@ -168,21 +164,47 @@ public class StoredQueryRepositoryFiles implements StoredQueryRepository, AppLif
 
   @Override
   public Date getLastModified(OgcApiDataV2 apiData) {
-    if (!exists(apiData)) {
+    if (missing(apiData)) {
       return null;
     }
     return Date.from(Instant.ofEpochMilli(getPath(apiData).getParent().toFile().lastModified()));
   }
 
   @Override
-  public Builder validate(Builder builder, OgcApiDataV2 apiData) {
+  public ImmutableValidationResult.Builder validate(
+      ImmutableValidationResult.Builder builder, OgcApiDataV2 apiData) {
+
+    if (missing(apiData)) {
+      return builder;
+    }
+
+    try (Stream<Path> paths = Files.walk(getPath(apiData))) {
+      paths
+          .filter(Files::isRegularFile)
+          .filter(p -> p.toString().endsWith(".json"))
+          .forEach(
+              path -> {
+                try {
+                  QueryExpression.of(Files.readAllBytes(path));
+                } catch (Exception e) {
+                  builder.addErrors(
+                      MessageFormat.format(
+                          "Could not parse stored query ''{0}''. Reason: {1}.",
+                          path.toString(), e.getMessage()));
+                }
+              });
+    } catch (IOException e) {
+      builder.addErrors(
+          MessageFormat.format("Could not parse stored queries. Reason: {0}.", e.getMessage()));
+    }
+
     return builder;
   }
 
   @Override
   public Set<String> getIds(OgcApiDataV2 apiData) {
     return getAll(apiData).stream()
-        .map(q -> q.getId().orElseThrow())
+        .map(QueryExpression::getId)
         .collect(Collectors.toUnmodifiableSet());
   }
 

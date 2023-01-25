@@ -53,6 +53,8 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableQueryExpression.Builder.class)
 public interface QueryExpression {
 
+  String ADHOC_QUERY_ID = "___adhoc___";
+
   enum FilterOperator {
     AND,
     OR
@@ -61,7 +63,7 @@ public interface QueryExpression {
   @SuppressWarnings("UnstableApiUsage")
   Funnel<QueryExpression> FUNNEL =
       (from, into) -> {
-        from.getId().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        into.putString(from.getId(), StandardCharsets.UTF_8);
         from.getTitle().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
         from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
         from.getQueries().forEach(q -> SingleQuery.FUNNEL.funnel(q, into));
@@ -101,7 +103,10 @@ public interface QueryExpression {
 
   @JsonIgnore String SCHEMA_REF = "#/components/schemas/QueryExpression";
 
-  Optional<String> getId();
+  @Value.Default
+  default String getId() {
+    return ADHOC_QUERY_ID;
+  }
 
   Optional<String> getTitle();
 

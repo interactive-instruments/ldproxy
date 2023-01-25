@@ -389,7 +389,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
         .getAll(apiData)
         .forEach(
             q -> {
-              String queryId = q.getId().orElseThrow();
+              String queryId = q.getId();
               builder.addQueries(
                   new ImmutableStoredQuery.Builder()
                       .id(queryId)
@@ -637,7 +637,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
         api,
         requestContext,
         queryInput,
-        query.getId().orElseThrow(),
+        query.getId(),
         query.getTitle(),
         query.getDescription(),
         finalQueryBuilder.build(),

@@ -45,16 +45,12 @@ public class QueryParameterFAdHocQuery extends QueryParameterF {
 
   @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return false
-        && computeIfAbsent(
-            this.getClass().getCanonicalName()
-                + apiData.hashCode()
-                + definitionPath
-                + method.name(),
-            () ->
-                isEnabledForApi(apiData)
-                    && method == HttpMethods.POST
-                    && isApplicable(apiData, definitionPath));
+    return computeIfAbsent(
+        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
+        () ->
+            isEnabledForApi(apiData)
+                && method == HttpMethods.POST
+                && isApplicable(apiData, definitionPath));
   }
 
   @Override

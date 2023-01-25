@@ -141,7 +141,7 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
   Optional<String> getQueryId();
 
   @Value.Derived
-  default boolean isStoredQuery() {
+  default boolean isQueryExpression() {
     return getQueryId().isPresent();
   }
 

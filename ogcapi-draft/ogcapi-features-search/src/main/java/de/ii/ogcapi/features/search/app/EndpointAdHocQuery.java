@@ -64,8 +64,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @title Ad-hoc Query
@@ -78,7 +76,6 @@ import org.slf4j.LoggerFactory;
 @AutoBind
 public class EndpointAdHocQuery extends Endpoint implements ConformanceClass {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointAdHocQuery.class);
   private static final List<String> TAGS = ImmutableList.of("Discover and execute queries");
   private static final ApiMediaType REQUEST_MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
@@ -126,8 +123,6 @@ public class EndpointAdHocQuery extends Endpoint implements ConformanceClass {
 
     ImmutableValidationResult.Builder builder =
         ImmutableValidationResult.builder().from(result).mode(apiValidation);
-
-    // TODO
 
     return builder.build();
   }
@@ -213,7 +208,7 @@ public class EndpointAdHocQuery extends Endpoint implements ConformanceClass {
     List<OgcApiQueryParameter> allowedParameters =
         getQueryParameters(extensionRegistry, api.getData(), "/search");
 
-    QueryExpression query = null;
+    QueryExpression query;
     try {
       query = QueryExpression.of(requestBody);
     } catch (IOException e) {
