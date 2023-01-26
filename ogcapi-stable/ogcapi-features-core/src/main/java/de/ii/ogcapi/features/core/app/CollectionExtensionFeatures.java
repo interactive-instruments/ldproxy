@@ -16,6 +16,7 @@ import de.ii.ogcapi.common.domain.OgcApiExtent;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -26,6 +27,8 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -39,11 +42,14 @@ public class CollectionExtensionFeatures implements CollectionExtension {
 
   private final I18n i18n;
   private final ExtensionRegistry extensionRegistry;
+  private final FeaturesCoreProviders providers;
 
   @Inject
-  public CollectionExtensionFeatures(ExtensionRegistry extensionRegistry, I18n i18n) {
+  public CollectionExtensionFeatures(
+      ExtensionRegistry extensionRegistry, I18n i18n, FeaturesCoreProviders providers) {
     this.extensionRegistry = extensionRegistry;
     this.i18n = i18n;
+    this.providers = providers;
   }
 
   @Override
@@ -137,16 +143,20 @@ public class CollectionExtensionFeatures implements CollectionExtension {
         featureType
             .getExtension(FeaturesCoreConfiguration.class)
             .flatMap(FeaturesCoreConfiguration::getQueryables);
+    Optional<FeatureSchema> featureSchema = providers.getFeatureSchema(api.getData(), featureType);
     boolean hasSpatialQueryable =
         queryables
-            .map(FeaturesCollectionQueryables::getSpatial)
-            .filter(spatial -> !spatial.isEmpty())
-            .isPresent();
+                .map(FeaturesCollectionQueryables::getSpatial)
+                .filter(spatial -> !spatial.isEmpty())
+                .isPresent()
+            || featureSchema.flatMap(SchemaBase::getPrimaryGeometry).isPresent();
     boolean hasTemporalQueryable =
         queryables
-            .map(FeaturesCollectionQueryables::getTemporal)
-            .filter(temporal -> !temporal.isEmpty())
-            .isPresent();
+                .map(FeaturesCollectionQueryables::getTemporal)
+                .filter(temporal -> !temporal.isEmpty())
+                .isPresent()
+            || featureSchema.flatMap(SchemaBase::getPrimaryInstant).isPresent()
+            || featureSchema.flatMap(SchemaBase::getPrimaryInterval).isPresent();
     Optional<BoundingBox> spatial = api.getSpatialExtent(featureType.getId());
     Optional<TemporalExtent> temporal = api.getTemporalExtent(featureType.getId());
     if (hasSpatialQueryable && hasTemporalQueryable) {

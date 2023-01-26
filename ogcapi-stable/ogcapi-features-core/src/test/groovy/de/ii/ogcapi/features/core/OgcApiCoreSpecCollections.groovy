@@ -8,6 +8,9 @@
 package de.ii.ogcapi.features.core
 
 import com.google.common.collect.ImmutableList
+import dagger.Lazy
+import de.ii.ogcapi.features.core.app.FeaturesCoreProvidersImpl
+import de.ii.ogcapi.features.core.domain.SchemaGeneratorFeatureOpenApi
 import de.ii.ogcapi.foundation.app.I18nDefault
 import de.ii.ogcapi.foundation.app.OgcApiEntity
 import de.ii.ogcapi.collections.app.QueriesHandlerCollectionsImpl
@@ -44,6 +47,8 @@ import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables
 import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.OgcCrs
+import de.ii.xtraplatform.store.app.entities.EntityRegistryImpl
+import de.ii.xtraplatform.store.domain.entities.EntityFactory
 import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType
@@ -202,7 +207,9 @@ class OgcApiCoreSpecCollections extends Specification {
                 }
 
                 if (extensionType == CollectionExtension.class) {
-                    CollectionExtensionFeatures collectionExtension = new CollectionExtensionFeatures(registry, new I18nDefault())
+                    Lazy<Set<EntityFactory>> factories = () -> [] as Set
+                    FeaturesCoreProvidersImpl providers = new FeaturesCoreProvidersImpl(new EntityRegistryImpl(factories))
+                    CollectionExtensionFeatures collectionExtension = new CollectionExtensionFeatures(registry, new I18nDefault(), providers)
                     return ImmutableList.of((T) collectionExtension)
                 }
 
