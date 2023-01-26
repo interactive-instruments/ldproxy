@@ -34,6 +34,7 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
@@ -51,14 +52,10 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true, builder = "new")
 @JsonDeserialize(builder = ImmutableQueryExpression.Builder.class)
+@SuppressWarnings("PMD.TooManyMethods")
 public interface QueryExpression {
 
-  String ADHOC_QUERY_ID = "___adhoc___";
-
-  enum FilterOperator {
-    AND,
-    OR
-  }
+  String ADHOC_QUERY_ID = "_adhoc_query_";
 
   @SuppressWarnings("UnstableApiUsage")
   Funnel<QueryExpression> FUNNEL =
@@ -68,11 +65,7 @@ public interface QueryExpression {
         from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
         from.getQueries().forEach(q -> SingleQuery.FUNNEL.funnel(q, into));
         from.getCollections().forEach(s -> into.putString(s, StandardCharsets.UTF_8));
-        from.getFilter()
-            .forEach(
-                (key, value) -> {
-                  into.putString(key, StandardCharsets.UTF_8);
-                });
+        from.getFilter().forEach((key, value) -> into.putString(key, StandardCharsets.UTF_8));
         from.getFilterOperator().ifPresent(v -> into.putString(v.name(), StandardCharsets.UTF_8));
         from.getSortby().forEach(s -> into.putString(s, StandardCharsets.UTF_8));
         from.getProperties().forEach(s -> into.putString(s, StandardCharsets.UTF_8));
@@ -89,6 +82,15 @@ public interface QueryExpression {
           .configure(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY, true)
           .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
+  String SCHEMA_REF = "#/components/schemas/QueryExpression";
+  String REF = "$ref";
+  String PARAMETER = "$parameter";
+
+  enum FilterOperator {
+    AND,
+    OR
+  }
+
   static QueryExpression of(byte[] requestBody) throws IOException {
     return MAPPER.readValue(requestBody, QueryExpression.class);
   }
@@ -97,11 +99,13 @@ public interface QueryExpression {
     return MAPPER.readValue(requestBody, QueryExpression.class);
   }
 
-  static void toFile(QueryExpression query, Path path) throws IOException {
-    MAPPER.writeValue(path.toFile(), query);
+  static QueryExpression of(Path path) throws IOException {
+    return MAPPER.readValue(Files.readAllBytes(path), QueryExpression.class);
   }
 
-  @JsonIgnore String SCHEMA_REF = "#/components/schemas/QueryExpression";
+  static void writeToFile(QueryExpression query, Path path) throws IOException {
+    MAPPER.writeValue(path.toFile(), query);
+  }
 
   @Value.Default
   default String getId() {
@@ -137,11 +141,18 @@ public interface QueryExpression {
   @Value.Check
   default void check() {
     Preconditions.checkState(
-        (getQueries().isEmpty() && getCollections().size() == 1)
-            || (!getQueries().isEmpty() && getCollections().isEmpty()),
+        getQueries().isEmpty() && getCollections().size() == 1
+            || !getQueries().isEmpty() && getCollections().isEmpty(),
         "Either one or more queries must be provided or a single collection. Query: %s. Collections: %s.",
         getQueries(),
         getCollections());
+  }
+
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  default boolean hasParameters() {
+    return !getParameterNames().isEmpty();
   }
 
   @JsonIgnore
@@ -175,11 +186,7 @@ public interface QueryExpression {
   @Value.Auxiliary
   default Map<String, Schema<?>> getParametersWithOpenApiSchema() {
     Builder<String, Schema<?>> paramBuilder = ImmutableMap.builder();
-    getParametersAsNodes()
-        .forEach(
-            (key, value) -> {
-              paramBuilder.put(key, deriveSchema(value));
-            });
+    getParametersAsNodes().forEach((key, value) -> paramBuilder.put(key, deriveSchema(value)));
     return paramBuilder.build();
   }
 
@@ -188,6 +195,8 @@ public interface QueryExpression {
     Map<String, JsonNode> params = getParametersAsNodes();
     if (!params.isEmpty()) {
       ImmutableMap.Builder<String, JsonNode> builder = ImmutableMap.builder();
+      JsonNode valueAsNode;
+      StringBuilder valueAsString = new StringBuilder();
       for (Map.Entry<String, JsonNode> entry : params.entrySet()) {
 
         // get the JSON Schema of the parameter as a string for validation
@@ -201,112 +210,16 @@ public interface QueryExpression {
               e);
         }
 
-        // get value
-        StringBuilder valueAsString;
-        JsonNode valueAsNode;
-        if (!requestParameters.containsKey(entry.getKey())) {
-          // no value provided, use default or throw an exception
-          valueAsNode = entry.getValue().get("default");
-          if (Objects.isNull(valueAsNode) || valueAsNode.isNull()) {
-            throw new BadRequestException(
-                String.format("No value provided for parameter '%s'.", entry.getKey()));
-          }
-          try {
-            // convert to string for validation
-            valueAsString = new StringBuilder(MAPPER.writeValueAsString(valueAsNode));
-          } catch (JsonProcessingException e) {
-            throw new IllegalStateException(
-                String.format(
-                    "The default value provided for parameter '%s' could not be converted to a value for the parameter.",
-                    entry.getKey()),
-                e);
-          }
+        // get value as string (for validation) and as node (for the result)
+        valueAsString.setLength(0);
+        if (requestParameters.containsKey(entry.getKey())) {
+          valueAsNode = getValue(requestParameters.get(entry.getKey()), valueAsString, entry);
         } else {
-          String value = requestParameters.get(entry.getKey());
-          Schema<?> schema = deriveSchema(entry.getValue());
-          if (schema instanceof ArraySchema && !value.trim().startsWith("[")) {
-            Schema<?> itemsSchema = ((ArraySchema) schema).getItems();
-            if (itemsSchema instanceof StringSchema) {
-              valueAsString =
-                  new StringBuilder(
-                      String.format(
-                          "[\"%s\"]",
-                          Splitter.on(',')
-                              .trimResults()
-                              .splitToStream(value)
-                              .map(s -> s.replace("\"", "\\\""))
-                              .collect(Collectors.joining("\",\""))));
-            } else {
-              valueAsString =
-                  new StringBuilder(
-                      String.format(
-                          "[%s]",
-                          Splitter.on(',')
-                              .trimResults()
-                              .splitToStream(value)
-                              .map(s -> s.replace("\"", "\\\""))
-                              .collect(Collectors.joining(","))));
-            }
-          } else if (schema instanceof ObjectSchema && !value.trim().startsWith("{")) {
-            Map<String, Schema> properties = schema.getProperties();
-            valueAsString = new StringBuilder("{");
-            String key = null;
-            for (String s : Splitter.on(',').trimResults().split(value)) {
-              if (Objects.isNull(key)) {
-                key = s;
-                valueAsString.append(String.format("\"%s\":", s));
-              } else {
-                if (properties.get(key) instanceof StringSchema) {
-                  valueAsString.append(String.format("\"%s\"", s));
-                } else {
-                  valueAsString.append(s);
-                }
-                key = null;
-              }
-            }
-            valueAsString.append("}");
-
-          } else {
-            if (schema instanceof StringSchema) {
-              valueAsString =
-                  new StringBuilder(String.format("\"%s\"", value.replace("\"", "\\\"")));
-            } else {
-              valueAsString = new StringBuilder(value);
-            }
-          }
-          try {
-            // convert to a JSON Node for processing
-            valueAsNode = MAPPER.readTree(valueAsString.toString());
-            // valueAsObject = MAPPER.treeToValue(valueAsNode, Object.class);
-          } catch (JsonProcessingException e) {
-            throw new BadRequestException(
-                String.format(
-                    "The value '%s' provided for parameter '%s' could not be converted to a value for the parameter.",
-                    requestParameters.get(entry.getKey()), entry.getKey()),
-                e);
-          }
+          // no value provided, use default or throw an exception
+          valueAsNode = useDefault(valueAsString, entry);
         }
 
-        // validate parameter
-        try {
-          String finalValueAsString = valueAsString.toString();
-          schemaValidator
-              .validate(schemaAsString, valueAsString.toString())
-              .ifPresent(
-                  error -> {
-                    throw new BadRequestException(
-                        String.format(
-                            "Parameter '%s' is invalid, the value '%s' does not conform to the schema '%s'. Reason: %s",
-                            entry.getKey(), finalValueAsString, schemaAsString, error));
-                  });
-        } catch (IOException e) {
-          throw new IllegalStateException(
-              String.format(
-                  "Could not validate value '%s' of parameter '%s' against its schema '%s'",
-                  valueAsString.toString(), entry.getKey(), schemaAsString),
-              e);
-        }
-
+        validateParameter(schemaValidator, valueAsString, entry, schemaAsString);
         builder.put(entry.getKey(), valueAsNode);
       }
 
@@ -322,209 +235,361 @@ public interface QueryExpression {
     return this;
   }
 
-  private Schema<?> deriveSchema(@NotNull JsonNode schemaNode) {
-    Schema<?> schema = null;
-
-    if (schemaNode.isObject() && Objects.nonNull(schemaNode.get("$ref"))) {
-      schema = new ObjectSchema();
-      schema.$ref(schemaNode.get("$ref").asText());
-    } else if (schemaNode.isObject() && Objects.isNull(schemaNode.get("type"))) {
-      // skip
-    } else if (schemaNode.isObject() && "object".equals(schemaNode.get("type").asText())) {
-      schema = new ObjectSchema();
-      ObjectNode properties = (ObjectNode) schemaNode.get("properties");
-      if (Objects.nonNull(properties)) {
-        JsonNode node = schemaNode.get("required");
-        if (Objects.nonNull(node)) {
-          Iterator<JsonNode> iter = node.elements();
-          while (iter.hasNext()) {
-            schema.addRequiredItem(iter.next().asText());
+  @SuppressWarnings({"UnstableApiUsage", "PMD.NullAssignment"})
+  private JsonNode getValue(
+      String value, StringBuilder valueAsString, Entry<String, JsonNode> entry) {
+    JsonNode valueAsNode;
+    Schema<?> schema = deriveSchema(entry.getValue());
+    if (schema instanceof ArraySchema && !value.trim().startsWith("[")) {
+      Schema<?> itemsSchema = ((ArraySchema) schema).getItems();
+      if (itemsSchema instanceof StringSchema) {
+        valueAsString.append(
+            String.format(
+                "[\"%s\"]",
+                Splitter.on(',')
+                    .trimResults()
+                    .splitToStream(value)
+                    .map(s -> s.replace("\"", "\\\""))
+                    .collect(Collectors.joining("\",\""))));
+      } else {
+        valueAsString.append(
+            String.format(
+                "[%s]",
+                Splitter.on(',')
+                    .trimResults()
+                    .splitToStream(value)
+                    .map(s -> s.replace("\"", "\\\""))
+                    .collect(Collectors.joining(","))));
+      }
+    } else if (schema instanceof ObjectSchema && !value.trim().startsWith("{")) {
+      Map<String, Schema> properties = schema.getProperties();
+      valueAsString.append('{');
+      String key = null;
+      for (String s : Splitter.on(',').trimResults().split(value)) {
+        if (Objects.isNull(key)) {
+          key = s;
+          valueAsString.append(String.format("\"%s\":", s));
+        } else {
+          if (properties.containsKey(key) && properties.get(key) instanceof StringSchema) {
+            valueAsString.append(String.format("\"%s\"", s));
+          } else {
+            valueAsString.append(s);
           }
-        }
-        Iterator<Entry<String, JsonNode>> iter = properties.fields();
-        while (iter.hasNext()) {
-          Map.Entry<String, JsonNode> entry = iter.next();
-          schema.addProperties(entry.getKey(), deriveSchema(entry.getValue()));
-        }
-        node = schemaNode.get("minProperties");
-        if (Objects.nonNull(node)) {
-          schema.minProperties(node.asInt());
-        }
-        node = schemaNode.get("maxProperties");
-        if (Objects.nonNull(node)) {
-          schema.maxProperties(node.asInt());
+          key = null;
         }
       }
-      // TODO patternProperties, additionalProperties, allOf, oneOf
-    } else if (schemaNode.isObject() && "array".equals(schemaNode.get("type").asText())) {
-      schema = new ArraySchema();
-      JsonNode node = schemaNode.get("items");
-      if (Objects.nonNull(node)) {
-        ((ArraySchema) schema).items(deriveSchema(node));
-      }
-      node = schemaNode.get("minItems");
-      if (Objects.nonNull(node)) {
-        schema.minItems(node.asInt());
-      }
-      node = schemaNode.get("maxItems");
-      if (Objects.nonNull(node)) {
-        schema.maxItems(node.asInt());
-      }
-      node = schemaNode.get("uniqueObject");
-      if (Objects.nonNull(node)) {
-        schema.uniqueItems(node.asBoolean());
-      }
-      // TODO prefixItems, additionalItems, items:false
-    } else if (schemaNode.isObject() && "string".equals(schemaNode.get("type").asText())) {
-      schema = new StringSchema();
-      JsonNode node = schemaNode.get("format");
-      if (Objects.nonNull(node)) {
-        schema.format(node.asText());
-      }
-      node = schemaNode.get("minLength");
-      if (Objects.nonNull(node)) {
-        schema.minLength(node.asInt());
-      }
-      node = schemaNode.get("maxLength");
-      if (Objects.nonNull(node)) {
-        schema.maxLength(node.asInt());
-      }
-      node = schemaNode.get("pattern");
-      if (Objects.nonNull(node)) {
-        schema.pattern(node.asText());
-      }
-      JsonNode enums = schemaNode.get("enum");
-      if (Objects.nonNull(enums)) {
-        Iterator<JsonNode> iter = enums.elements();
-        while (iter.hasNext()) {
-          ((StringSchema) schema).addEnumItem(iter.next().asText());
-        }
-      }
-    } else if (schemaNode.isObject() && "number".equals(schemaNode.get("type").asText())) {
-      schema = new NumberSchema();
-      JsonNode node = schemaNode.get("multipleOf");
-      if (Objects.nonNull(node)) {
-        schema.multipleOf(node.decimalValue());
-      }
-      node = schemaNode.get("minimum");
-      if (Objects.nonNull(node)) {
-        schema.minimum(node.decimalValue());
-      }
-      node = schemaNode.get("exclusiveMinimum");
-      if (Objects.nonNull(node)) {
-        schema.minimum(node.decimalValue());
-        schema.exclusiveMinimum(true);
-      }
-      node = schemaNode.get("maximum");
-      if (Objects.nonNull(node)) {
-        schema.maximum(node.decimalValue());
-      }
-      node = schemaNode.get("exclusiveMaximum");
-      if (Objects.nonNull(node)) {
-        schema.maximum(node.decimalValue());
-        schema.exclusiveMaximum(true);
-      }
-      JsonNode enums = schemaNode.get("enum");
-      if (Objects.nonNull(enums)) {
-        Iterator<JsonNode> iter = enums.elements();
-        while (iter.hasNext()) {
-          ((NumberSchema) schema).addEnumItem(iter.next().decimalValue());
-        }
-      }
-    } else if (schemaNode.isObject() && "integer".equals(schemaNode.get("type").asText())) {
-      schema = new IntegerSchema();
-      JsonNode node = schemaNode.get("multipleOf");
-      if (Objects.nonNull(node)) {
-        schema.multipleOf(node.decimalValue());
-      }
-      node = schemaNode.get("minimum");
-      if (Objects.nonNull(node)) {
-        schema.minimum(node.decimalValue());
-      }
-      node = schemaNode.get("exclusiveMinimum");
-      if (Objects.nonNull(node)) {
-        schema.minimum(node.decimalValue());
-        schema.exclusiveMinimum(true);
-      }
-      node = schemaNode.get("maximum");
-      if (Objects.nonNull(node)) {
-        schema.maximum(node.decimalValue());
-      }
-      node = schemaNode.get("exclusiveMaximum");
-      if (Objects.nonNull(node)) {
-        schema.maximum(node.decimalValue());
-        schema.exclusiveMaximum(true);
-      }
-      JsonNode enums = schemaNode.get("enum");
-      if (Objects.nonNull(enums)) {
-        Iterator<JsonNode> iter = enums.elements();
-        while (iter.hasNext()) {
-          ((IntegerSchema) schema).addEnumItem(iter.next().decimalValue());
-        }
-      }
-    } else if (schemaNode.isObject() && "boolean".equals(schemaNode.get("type").asText())) {
-      schema = new BooleanSchema();
-    }
+      valueAsString.append('}');
 
-    if (Objects.nonNull(schema)) {
-      JsonNode node = schemaNode.get("title");
-      if (Objects.nonNull(node)) {
-        schema.title(node.asText());
-      }
-      node = schemaNode.get("description");
-      if (Objects.nonNull(node)) {
-        schema.description(node.asText());
-      }
-      node = schemaNode.get("example");
-      if (Objects.nonNull(node)) {
-        try {
-          schema.example(MAPPER.treeToValue(node, Object.class));
-        } catch (JsonProcessingException e) {
-          throw new IllegalStateException(e);
-        }
-      }
-      node = schemaNode.get("default");
-      if (Objects.nonNull(node)) {
-        try {
-          schema.setDefault(MAPPER.treeToValue(node, Object.class));
-        } catch (JsonProcessingException e) {
-          throw new IllegalStateException(e);
-        }
+    } else {
+      if (schema instanceof StringSchema) {
+        valueAsString.append(String.format("\"%s\"", value.replace("\"", "\\\"")));
+      } else {
+        valueAsString.append(value);
       }
     }
+    try {
+      // convert to a JSON Node for processing
+      valueAsNode = MAPPER.readTree(valueAsString.toString());
+    } catch (JsonProcessingException e) {
+      throw new BadRequestException(
+          String.format(
+              "The value '%s' provided for parameter '%s' could not be converted to a value for the parameter.",
+              value, entry.getKey()),
+          e);
+    }
+    return valueAsNode;
+  }
 
+  private JsonNode useDefault(StringBuilder valueAsString, Entry<String, JsonNode> entry) {
+    JsonNode valueAsNode;
+    valueAsNode = entry.getValue().get("default");
+    if (Objects.isNull(valueAsNode) || valueAsNode.isNull()) {
+      throw new BadRequestException(
+          String.format("No value provided for parameter '%s'.", entry.getKey()));
+    }
+    try {
+      // convert to string for validation
+      valueAsString.append(MAPPER.writeValueAsString(valueAsNode));
+    } catch (JsonProcessingException e) {
+      throw new IllegalStateException(
+          String.format(
+              "The default value provided for parameter '%s' could not be converted to a value for the parameter.",
+              entry.getKey()),
+          e);
+    }
+    return valueAsNode;
+  }
+
+  private void validateParameter(
+      SchemaValidator schemaValidator,
+      StringBuilder valueAsString,
+      Entry<String, JsonNode> entry,
+      String schemaAsString) {
+    // validate parameter
+    try {
+      String finalValueAsString = valueAsString.toString();
+      schemaValidator
+          .validate(schemaAsString, valueAsString.toString())
+          .ifPresent(
+              error -> {
+                throw new BadRequestException(
+                    String.format(
+                        "Parameter '%s' is invalid, the value '%s' does not conform to the schema '%s'. Reason: %s",
+                        entry.getKey(), finalValueAsString, schemaAsString, error));
+              });
+    } catch (IOException e) {
+      throw new IllegalStateException(
+          String.format(
+              "Could not validate value '%s' of parameter '%s' against its schema '%s'",
+              valueAsString, entry.getKey(), schemaAsString),
+          e);
+    }
+  }
+
+  private Schema<?> deriveSchema(@NotNull JsonNode schemaNode) {
+    if (!schemaNode.isObject()) {
+      throw new IllegalArgumentException(
+          String.format("Found a parameter without a schema object. Found %s", schemaNode));
+    }
+
+    Schema<?> schema;
+    if (Objects.nonNull(schemaNode.get(REF))) {
+      schema = new ObjectSchema();
+      schema.$ref(schemaNode.get(REF).asText());
+    } else if (Objects.isNull(schemaNode.get("type"))) {
+      throw new IllegalArgumentException(
+          "Found a parameter without a 'type' member in the schema.");
+    } else {
+      switch (schemaNode.get("type").asText()) {
+        case "object":
+          schema = getObjectSchema(schemaNode);
+          break;
+        case "array":
+          schema = getArraySchema(schemaNode);
+          break;
+        case "string":
+          schema = getStringSchema(schemaNode);
+          break;
+        case "number":
+          schema = getNumberSchema(schemaNode);
+          break;
+        case "integer":
+          schema = getIntegerSchema(schemaNode);
+          break;
+        case "boolean":
+          schema = new BooleanSchema();
+          break;
+        default:
+          throw new IllegalArgumentException(
+              String.format(
+                  "Found unsupported 'type'. Found: %s", schemaNode.get("type").asText()));
+      }
+    }
+    setMetadata(schemaNode, schema);
     return schema;
   }
 
+  private Schema<?> getObjectSchema(JsonNode schemaNode) {
+    ObjectSchema schema = new ObjectSchema();
+    ObjectNode properties = (ObjectNode) schemaNode.get("properties");
+    if (Objects.nonNull(properties)) {
+      JsonNode node = schemaNode.get("required");
+      if (Objects.nonNull(node)) {
+        Iterator<JsonNode> iter = node.elements();
+        while (iter.hasNext()) {
+          schema.addRequiredItem(iter.next().asText());
+        }
+      }
+      Iterator<Entry<String, JsonNode>> iter = properties.fields();
+      while (iter.hasNext()) {
+        Entry<String, JsonNode> entry = iter.next();
+        schema.addProperties(entry.getKey(), deriveSchema(entry.getValue()));
+      }
+      node = schemaNode.get("minProperties");
+      if (Objects.nonNull(node)) {
+        schema.minProperties(node.asInt());
+      }
+      node = schemaNode.get("maxProperties");
+      if (Objects.nonNull(node)) {
+        schema.maxProperties(node.asInt());
+      }
+    }
+    // see limitation, not supported: patternProperties, additionalProperties, allOf, oneOf
+    return schema;
+  }
+
+  private Schema<?> getArraySchema(JsonNode schemaNode) {
+    ArraySchema schema = new ArraySchema();
+    JsonNode node = schemaNode.get("items");
+    if (Objects.nonNull(node)) {
+      schema.items(deriveSchema(node));
+    }
+    node = schemaNode.get("minItems");
+    if (Objects.nonNull(node)) {
+      schema.minItems(node.asInt());
+    }
+    node = schemaNode.get("maxItems");
+    if (Objects.nonNull(node)) {
+      schema.maxItems(node.asInt());
+    }
+    node = schemaNode.get("uniqueObject");
+    if (Objects.nonNull(node)) {
+      schema.uniqueItems(node.asBoolean());
+    }
+    // see limitation, not supported: prefixItems, additionalItems, items:false
+    return schema;
+  }
+
+  private Schema<?> getStringSchema(JsonNode schemaNode) {
+    StringSchema schema = new StringSchema();
+    JsonNode node = schemaNode.get("format");
+    if (Objects.nonNull(node)) {
+      schema.format(node.asText());
+    }
+    node = schemaNode.get("minLength");
+    if (Objects.nonNull(node)) {
+      schema.minLength(node.asInt());
+    }
+    node = schemaNode.get("maxLength");
+    if (Objects.nonNull(node)) {
+      schema.maxLength(node.asInt());
+    }
+    node = schemaNode.get("pattern");
+    if (Objects.nonNull(node)) {
+      schema.pattern(node.asText());
+    }
+    JsonNode enums = schemaNode.get("enum");
+    if (Objects.nonNull(enums)) {
+      Iterator<JsonNode> iter = enums.elements();
+      while (iter.hasNext()) {
+        schema.addEnumItem(iter.next().asText());
+      }
+    }
+    return schema;
+  }
+
+  private Schema<?> getNumberSchema(JsonNode schemaNode) {
+    NumberSchema schema = new NumberSchema();
+    JsonNode node = schemaNode.get("multipleOf");
+    if (Objects.nonNull(node)) {
+      schema.multipleOf(node.decimalValue());
+    }
+    node = schemaNode.get("minimum");
+    if (Objects.nonNull(node)) {
+      schema.minimum(node.decimalValue());
+    }
+    node = schemaNode.get("exclusiveMinimum");
+    if (Objects.nonNull(node)) {
+      schema.minimum(node.decimalValue());
+      schema.exclusiveMinimum(true);
+    }
+    node = schemaNode.get("maximum");
+    if (Objects.nonNull(node)) {
+      schema.maximum(node.decimalValue());
+    }
+    node = schemaNode.get("exclusiveMaximum");
+    if (Objects.nonNull(node)) {
+      schema.maximum(node.decimalValue());
+      schema.exclusiveMaximum(true);
+    }
+    JsonNode enums = schemaNode.get("enum");
+    if (Objects.nonNull(enums)) {
+      Iterator<JsonNode> iter = enums.elements();
+      while (iter.hasNext()) {
+        schema.addEnumItem(iter.next().decimalValue());
+      }
+    }
+    return schema;
+  }
+
+  private Schema<?> getIntegerSchema(JsonNode schemaNode) {
+    IntegerSchema schema = new IntegerSchema();
+    JsonNode node = schemaNode.get("multipleOf");
+    if (Objects.nonNull(node)) {
+      schema.multipleOf(node.decimalValue());
+    }
+    node = schemaNode.get("minimum");
+    if (Objects.nonNull(node)) {
+      schema.minimum(node.decimalValue());
+    }
+    node = schemaNode.get("exclusiveMinimum");
+    if (Objects.nonNull(node)) {
+      schema.minimum(node.decimalValue());
+      schema.exclusiveMinimum(true);
+    }
+    node = schemaNode.get("maximum");
+    if (Objects.nonNull(node)) {
+      schema.maximum(node.decimalValue());
+    }
+    node = schemaNode.get("exclusiveMaximum");
+    if (Objects.nonNull(node)) {
+      schema.maximum(node.decimalValue());
+      schema.exclusiveMaximum(true);
+    }
+    JsonNode enums = schemaNode.get("enum");
+    if (Objects.nonNull(enums)) {
+      Iterator<JsonNode> iter = enums.elements();
+      while (iter.hasNext()) {
+        schema.addEnumItem(iter.next().decimalValue());
+      }
+    }
+    return schema;
+  }
+
+  private void setMetadata(JsonNode schemaNode, Schema<?> schema) {
+    JsonNode node = schemaNode.get("title");
+    if (Objects.nonNull(node)) {
+      schema.title(node.asText());
+    }
+    node = schemaNode.get("description");
+    if (Objects.nonNull(node)) {
+      schema.description(node.asText());
+    }
+    node = schemaNode.get("example");
+    if (Objects.nonNull(node)) {
+      try {
+        schema.example(MAPPER.treeToValue(node, Object.class));
+      } catch (JsonProcessingException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+    node = schemaNode.get("default");
+    if (Objects.nonNull(node)) {
+      try {
+        schema.setDefault(MAPPER.treeToValue(node, Object.class));
+      } catch (JsonProcessingException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+  }
+
   private boolean isParameterNode(JsonNode node) {
-    return Objects.nonNull(node) && node.isObject() && Objects.nonNull(node.get("$parameter"));
+    return Objects.nonNull(node) && node.isObject() && Objects.nonNull(node.get(PARAMETER));
   }
 
   private String getParameterName(JsonNode valueNode) {
-    if (Objects.nonNull(valueNode)) {
-      if (valueNode.isObject()) {
-        if (valueNode.fields().hasNext()) {
-          Entry<String, JsonNode> firstMember = valueNode.fields().next();
-          String firstKey = firstMember.getKey();
-          if ("$ref".equals(firstMember.getKey())) {
-            if (firstMember.getValue().isTextual()
-                && firstMember.getValue().textValue().startsWith("#/parameters/")) {
-              return firstMember.getValue().textValue().substring(13);
-            } else {
-              throw new IllegalArgumentException(
-                  String.format(
-                      "Found '$ref' object where the value is not a JSON Reference to a member in '#/parameters'. Found: %s",
-                      firstMember.getValue()));
-            }
+    if (Objects.nonNull(valueNode) && valueNode.isObject()) {
+      if (valueNode.fields().hasNext()) {
+        Entry<String, JsonNode> firstMember = valueNode.fields().next();
+        if (REF.equals(firstMember.getKey())) {
+          if (firstMember.getValue().isTextual()
+              && firstMember.getValue().textValue().startsWith("#/parameters/")) {
+            return firstMember.getValue().textValue().substring(13);
           } else {
-            return firstMember.getKey();
+            throw new IllegalArgumentException(
+                String.format(
+                    "Found '$ref' object where the value is not a JSON Reference to a member in '#/parameters'. Found: %s",
+                    firstMember.getValue()));
           }
         } else {
-          throw new IllegalArgumentException(
-              "Found empty '$parameter' object. Either the JSON Schema of the parameter must be provided or a JSON Reference to the top-level 'parameters' member.");
+          return firstMember.getKey();
         }
+      } else {
+        throw new IllegalArgumentException(
+            "Found empty '$parameter' object. Either the JSON Schema of the parameter must be provided or a JSON Reference to the top-level 'parameters' member.");
       }
     }
+
     throw new IllegalArgumentException(
         String.format(
             "Illegal value of a '$parameter' key. The value must be either a local JSON Reference to a parameter defined in the 'parameters' member or a JSON Schema object. Found: %s",
@@ -537,7 +602,7 @@ public interface QueryExpression {
         ArrayNode arrayNode = (ArrayNode) node;
         for (int i = 0; i < arrayNode.size(); i++) {
           if (isParameterNode(arrayNode.get(i))) {
-            arrayNode.set(i, params.get(getParameterName(arrayNode.get(i).get("$parameter"))));
+            arrayNode.set(i, params.get(getParameterName(arrayNode.get(i).get(PARAMETER))));
           } else {
             replaceParameters(arrayNode.get(i), params);
           }
@@ -549,7 +614,7 @@ public interface QueryExpression {
           Map.Entry<String, JsonNode> entry = iter.next();
           if (isParameterNode(entry.getValue())) {
             objectNode.set(
-                entry.getKey(), params.get(getParameterName(entry.getValue().get("$parameter"))));
+                entry.getKey(), params.get(getParameterName(entry.getValue().get(PARAMETER))));
           } else {
             replaceParameters(entry.getValue(), params);
           }
@@ -574,7 +639,7 @@ public interface QueryExpression {
         params = mergeMaps(params, getParametersFromFilter(arrayNode.get(i), predefinedParameters));
       }
     } else if (node.isObject()) {
-      JsonNode param = node.get("$parameter");
+      JsonNode param = node.get(PARAMETER);
       if (Objects.isNull(param)) {
         ObjectNode objectNode = (ObjectNode) node;
         Iterator<Map.Entry<String, JsonNode>> iter = objectNode.fields();
@@ -588,7 +653,7 @@ public interface QueryExpression {
         // ignore multiple definitions of the same parameter
         if (!params.containsKey(name)) {
           Map.Entry<String, JsonNode> entry = param.fields().next();
-          if ("$ref".equals(entry.getKey())) {
+          if (REF.equals(entry.getKey())) {
             if (predefinedParameters.containsKey(name)) {
               params = mergeMaps(params, ImmutableMap.of(name, predefinedParameters.get(name)));
             } else {
@@ -624,7 +689,7 @@ public interface QueryExpression {
         builder.addAll(getParameterNamesFromFilter(arrayNode.get(i)));
       }
     } else if (node.isObject()) {
-      JsonNode param = node.get("$parameter");
+      JsonNode param = node.get(PARAMETER);
       if (Objects.isNull(param)) {
         ObjectNode objectNode = (ObjectNode) node;
         Iterator<Map.Entry<String, JsonNode>> iter = objectNode.fields();

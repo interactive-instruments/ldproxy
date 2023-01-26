@@ -60,31 +60,24 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.features.domain.FeatureStream.Result;
 import de.ii.xtraplatform.features.domain.FeatureStream.ResultBase;
-import de.ii.xtraplatform.features.domain.FeatureStream.ResultReduced;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableMultiFeatureQuery;
-import de.ii.xtraplatform.features.domain.ImmutableMultiFeatureQuery.Builder;
 import de.ii.xtraplatform.features.domain.ImmutableSubQuery;
 import de.ii.xtraplatform.features.domain.MultiFeatureQuery;
 import de.ii.xtraplatform.features.domain.MultiFeatureQuery.SubQuery;
-import de.ii.xtraplatform.features.domain.SchemaBase.Role;
 import de.ii.xtraplatform.features.domain.SortKey;
 import de.ii.xtraplatform.features.domain.SortKey.Direction;
 import de.ii.xtraplatform.features.domain.TypeQuery;
-import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
-import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.web.domain.ETag;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +91,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.measure.Unit;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
@@ -106,54 +99,14 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-import org.kortforsyningen.proj.Units;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
+@SuppressWarnings({"PMD.GodClass", "PMD.CouplingBetweenObjects"})
 public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SearchQueriesHandlerImpl.class);
-
-  class IdTransform implements PropertyTransformations {
-
-    private final Map<String, List<PropertyTransformation>> transformations;
-
-    IdTransform(FeatureProvider2 featureProvider, String featureTypeId, String collectionId) {
-      FeatureSchema schema =
-          Objects.requireNonNull(featureProvider.getData().getTypes().get(featureTypeId));
-      String idProperty = Objects.requireNonNull(findIdProperty(schema));
-      transformations =
-          ImmutableMap.of(
-              idProperty,
-              ImmutableList.of(
-                  new ImmutablePropertyTransformation.Builder()
-                      .stringFormat(String.format("%s.{{value}}", collectionId))
-                      .build()));
-    }
-
-    private String findIdProperty(FeatureSchema schema) {
-      return schema.getProperties().stream()
-          .flatMap(
-              property -> {
-                Collection<FeatureSchema> nestedProperties = property.getAllNestedProperties();
-                if (!nestedProperties.isEmpty()) {
-                  return nestedProperties.stream();
-                }
-                return Stream.of(property);
-              })
-          .filter(property -> property.getRole().isPresent() && property.getRole().get() == Role.ID)
-          .findFirst()
-          .map(FeatureSchema::getFullPathAsString)
-          .orElse(null);
-    }
-
-    @Override
-    public Map<String, List<PropertyTransformation>> getTransformations() {
-      return transformations;
-    }
-  }
+  public static final String MEDIA_TYPE_NOT_SUPPORTED =
+      "The requested media type ''{0}'' is not supported, the following media types are available: {1}";
 
   private final I18n i18n;
   private final CrsTransformerFactory crsTransformerFactory;
@@ -206,9 +159,9 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
     return queryHandlers;
   }
 
-  public static void ensureCollectionIdExists(OgcApiDataV2 apiData, String collectionId) {
+  private static void ensureCollectionIdExists(OgcApiDataV2 apiData, String collectionId) {
     if (!apiData.isCollectionEnabled(collectionId)) {
-      throw new NotFoundException(
+      throw new BadRequestException(
           MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
     }
   }
@@ -219,10 +172,39 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
     }
   }
 
+  @SuppressWarnings("PMD.ConfusingTernary")
   private Response writeStoredQuery(
       QueryInputStoredQueryCreateReplace queryInput, ApiRequestContext requestContext) {
     if (queryInput.getStrict()) {
-      // TODO which additional checks? parsing all filters?
+      QueryExpression query = queryInput.getQuery();
+
+      // check collections
+      query
+          .getQueries()
+          .forEach(
+              q ->
+                  q.getCollections()
+                      .forEach(
+                          collectionId ->
+                              ensureCollectionIdExists(
+                                  requestContext.getApi().getData(), collectionId)));
+      query
+          .getCollections()
+          .forEach(
+              collectionId ->
+                  ensureCollectionIdExists(requestContext.getApi().getData(), collectionId));
+
+      if (!query.hasParameters()) {
+        // if we do not have parameters, we can also check that the filters are valid CQL2 JSON
+        getCql2Expression(query.getFilter());
+        query.getQueries().forEach(q -> getCql2Expression(q.getFilter()));
+      } else if (query.getParametersWithOpenApiSchema().values().stream()
+          .allMatch(p -> Objects.nonNull(p.getDefault()))) {
+        // .. or if all parameters have default values
+        QueryExpression resolved = query.resolveParameters(ImmutableMap.of(), schemaValidator);
+        getCql2Expression(resolved.getFilter());
+        resolved.getQueries().forEach(q -> getCql2Expression(q.getFilter()));
+      }
     }
 
     if (!queryInput.getDryRun()) {
@@ -267,14 +249,6 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
               }
             });
 
-    List<Link> links =
-        linkGenerator.generateLinks(
-            requestContext.getUriCustomizer(),
-            requestContext.getMediaType(),
-            requestContext.getAlternateMediaTypes(),
-            i18n,
-            requestContext.getLanguage());
-
     builder.lastModified(Optional.ofNullable(repository.getLastModified(apiData)));
 
     Parameters parameters = builder.build();
@@ -287,27 +261,28 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                 () ->
                     new NotAcceptableException(
                         MessageFormat.format(
-                            "The requested media type ''{0}'' is not supported, the following media types are available: {1}",
+                            MEDIA_TYPE_NOT_SUPPORTED,
                             requestContext.getMediaType(),
                             extensionRegistry.getExtensionsForType(ParametersFormat.class).stream()
                                 .map(f -> f.getMediaType().type().toString())
                                 .collect(Collectors.joining(", ")))));
 
     Date lastModified = getLastModified(queryInput, parameters);
+    @SuppressWarnings("UnstableApiUsage")
     EntityTag etag =
-        !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
-                || apiData
-                    .getExtension(HtmlConfiguration.class)
-                    .map(HtmlConfiguration::getSendEtags)
-                    .orElse(false)
+        sendEtag(format.getMediaType(), apiData)
             ? ETag.from(parameters, Parameters.FUNNEL, format.getMediaType().label())
             : null;
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
 
     return prepareSuccessResponse(
             requestContext,
-            queryInput.getIncludeLinkHeader() ? links : null,
+            queryInput.getIncludeLinkHeader()
+                ? linkGenerator.generateLinks(requestContext, i18n)
+                : ImmutableList.of(),
             HeaderCaching.of(lastModified, etag, queryInput),
             null,
             HeaderContentDisposition.of(
@@ -331,13 +306,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
               throw new NotFoundException();
             });
 
-    builder.links(
-        linkGenerator.generateLinks(
-            requestContext.getUriCustomizer(),
-            requestContext.getMediaType(),
-            requestContext.getAlternateMediaTypes(),
-            i18n,
-            requestContext.getLanguage()));
+    builder.links(linkGenerator.generateLinks(requestContext, i18n));
 
     builder.lastModified(Optional.ofNullable(repository.getLastModified(apiData)));
 
@@ -351,27 +320,26 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                 () ->
                     new NotAcceptableException(
                         MessageFormat.format(
-                            "The requested media type ''{0}'' is not supported, the following media types are available: {1}",
+                            MEDIA_TYPE_NOT_SUPPORTED,
                             requestContext.getMediaType(),
                             extensionRegistry.getExtensionsForType(ParametersFormat.class).stream()
                                 .map(f -> f.getMediaType().type().toString())
                                 .collect(Collectors.joining(", ")))));
 
     Date lastModified = getLastModified(queryInput, parameter);
+    @SuppressWarnings("UnstableApiUsage")
     EntityTag etag =
-        !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
-                || apiData
-                    .getExtension(HtmlConfiguration.class)
-                    .map(HtmlConfiguration::getSendEtags)
-                    .orElse(false)
+        sendEtag(format.getMediaType(), apiData)
             ? ETag.from(parameter, Parameter.FUNNEL, format.getMediaType().label())
             : null;
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
 
     return prepareSuccessResponse(
             requestContext,
-            queryInput.getIncludeLinkHeader() ? parameter.getLinks() : null,
+            queryInput.getIncludeLinkHeader() ? parameter.getLinks() : ImmutableList.of(),
             HeaderCaching.of(lastModified, etag, queryInput),
             null,
             HeaderContentDisposition.of(
@@ -431,13 +399,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                       .build());
             });
 
-    builder.links(
-        linkGenerator.generateLinks(
-            requestContext.getUriCustomizer(),
-            requestContext.getMediaType(),
-            requestContext.getAlternateMediaTypes(),
-            i18n,
-            requestContext.getLanguage()));
+    builder.links(linkGenerator.generateLinks(requestContext, i18n));
 
     builder.lastModified(Optional.ofNullable(repository.getLastModified(apiData)));
 
@@ -452,7 +414,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                 () ->
                     new NotAcceptableException(
                         MessageFormat.format(
-                            "The requested media type ''{0}'' is not supported, the following media types are available: {1}",
+                            MEDIA_TYPE_NOT_SUPPORTED,
                             requestContext.getMediaType(),
                             repository
                                 .getStoredQueriesFormatStream(apiData)
@@ -460,26 +422,33 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                                 .collect(Collectors.joining(", ")))));
 
     Date lastModified = getLastModified(queryInput, storedQueries);
+    @SuppressWarnings("UnstableApiUsage")
     EntityTag etag =
-        !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
-                || apiData
-                    .getExtension(HtmlConfiguration.class)
-                    .map(HtmlConfiguration::getSendEtags)
-                    .orElse(false)
+        sendEtag(format.getMediaType(), apiData)
             ? ETag.from(storedQueries, StoredQueries.FUNNEL, format.getMediaType().label())
             : null;
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
 
     return prepareSuccessResponse(
             requestContext,
-            queryInput.getIncludeLinkHeader() ? storedQueries.getLinks() : null,
+            queryInput.getIncludeLinkHeader() ? storedQueries.getLinks() : ImmutableList.of(),
             HeaderCaching.of(lastModified, etag, queryInput),
             null,
             HeaderContentDisposition.of(
                 String.format("storedQueries.%s", format.getMediaType().fileExtension())))
         .entity(format.getEntity(storedQueries, apiData, requestContext))
         .build();
+  }
+
+  private boolean sendEtag(ApiMediaType format, OgcApiDataV2 apiData) {
+    return !format.type().equals(MediaType.TEXT_HTML_TYPE)
+        || apiData
+            .getExtension(HtmlConfiguration.class)
+            .map(HtmlConfiguration::getSendEtags)
+            .orElse(false);
   }
 
   private Response getQueryDefinition(
@@ -494,7 +463,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                 () ->
                     new NotAcceptableException(
                         MessageFormat.format(
-                            "The requested media type ''{0}'' is not supported, the following media types are available: {1}",
+                            MEDIA_TYPE_NOT_SUPPORTED,
                             requestContext.getMediaType(),
                             repository
                                 .getStoredQueryFormatStream(apiData)
@@ -502,28 +471,22 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                                 .collect(Collectors.joining(", ")))));
 
     Date lastModified = getLastModified(queryInput);
+    @SuppressWarnings("UnstableApiUsage")
     EntityTag etag =
-        !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
-                || apiData
-                    .getExtension(HtmlConfiguration.class)
-                    .map(HtmlConfiguration::getSendEtags)
-                    .orElse(false)
+        sendEtag(format.getMediaType(), apiData)
             ? ETag.from(
                 queryInput.getQuery(), QueryExpression.FUNNEL, format.getMediaType().label())
             : null;
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
 
     return prepareSuccessResponse(
             requestContext,
             queryInput.getIncludeLinkHeader()
-                ? linkGenerator.generateLinks(
-                    requestContext.getUriCustomizer(),
-                    requestContext.getMediaType(),
-                    requestContext.getAlternateMediaTypes(),
-                    i18n,
-                    requestContext.getLanguage())
-                : null,
+                ? linkGenerator.generateLinks(requestContext, i18n)
+                : ImmutableList.of(),
             HeaderCaching.of(lastModified, etag, queryInput),
             null,
             HeaderContentDisposition.of(
@@ -535,17 +498,46 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
 
   private Response executeQuery(QueryInputQuery queryInput, ApiRequestContext requestContext) {
 
-    OgcApi api = requestContext.getApi();
+    FeatureProvider2 featureProvider = queryInput.getFeatureProvider();
+    ensureFeatureProviderSupportsQueries(featureProvider);
 
-    QueryExpression query =
+    EntityTag etag = null;
+    Date lastModified = getLastModified(queryInput);
+
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
+
+    QueryExpression queryExpression =
         queryInput.getQuery().resolveParameters(requestContext.getParameters(), schemaValidator);
+    EpsgCrs crs =
+        queryExpression.getCrs().map(EpsgCrs::fromString).orElse(queryInput.getDefaultCrs());
 
-    FeatureFormatExtension outputFormat =
-        api.getOutputFormat(
-                FeatureFormatExtension.class,
+    MultiFeatureQuery query = getMultiFeatureQuery(requestContext.getApi(), queryExpression, crs);
+
+    List<String> collectionIds =
+        queryExpression.getCollections().size() == 1
+            ? ImmutableList.of(queryExpression.getCollections().get(0))
+            : queryExpression.getQueries().stream()
+                .map(q -> q.getCollections().get(0))
+                .collect(Collectors.toUnmodifiableList());
+    EpsgCrs targetCrs = query.getCrs().orElse(queryInput.getDefaultCrs());
+    List<Link> links =
+        new StoredQueriesLinkGenerator()
+            .generateFeaturesLinks(
+                requestContext.getUriCustomizer(),
+                query.getOffset(),
+                query.getLimit(),
                 requestContext.getMediaType(),
-                "/search",
-                Optional.empty())
+                requestContext.getAlternateMediaTypes(),
+                i18n,
+                requestContext.getLanguage());
+    FeatureFormatExtension outputFormat =
+        requestContext
+            .getApi()
+            .getOutputFormat(
+                FeatureFormatExtension.class, requestContext.getMediaType(), Optional.empty())
             .orElseThrow(
                 () ->
                     new NotAcceptableException(
@@ -553,144 +545,109 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                             "The requested media type ''{0}'' is not supported for this resource.",
                             requestContext.getMediaType())));
 
-    EpsgCrs crs = query.getCrs().map(EpsgCrs::fromString).orElse(queryInput.getDefaultCrs());
+    StreamingOutput streamingOutput =
+        getStreamingOutput(
+            requestContext,
+            queryExpression,
+            query,
+            queryInput.getAllLinksAreLocal(),
+            collectionIds,
+            featureProvider,
+            outputFormat,
+            queryInput.getShowsFeatureSelfLink(),
+            queryInput.getDefaultCrs(),
+            targetCrs,
+            links);
 
-    List<String> collectionIds =
-        query.getCollections().size() == 1
-            ? ImmutableList.of(query.getCollections().get(0))
-            : query.getQueries().stream()
-                .map(q -> q.getCollections().get(0))
-                .collect(Collectors.toUnmodifiableList());
-    QueryExpression finalQuery = query;
+    // same as in FeaturesCoreQueiriesHandlerImpl: numberMatched, numberReturned and next links
+    // are not known yet and cannot be written as headers;
+    // see https://github.com/interactive-instruments/ldproxy/issues/812
+    return prepareSuccessResponse(
+            requestContext,
+            queryInput.getIncludeLinkHeader()
+                ? links.stream()
+                    .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
+                    .collect(ImmutableList.toImmutableList())
+                : ImmutableList.of(),
+            HeaderCaching.of(lastModified, etag, queryInput),
+            targetCrs,
+            HeaderContentDisposition.of(
+                String.format(
+                    "%s.%s", queryExpression.getId(), outputFormat.getMediaType().fileExtension())))
+        .entity(streamingOutput)
+        .build();
+  }
+
+  private MultiFeatureQuery getMultiFeatureQuery(
+      OgcApi api, QueryExpression queryExpression, EpsgCrs crs) {
+    Optional<Cql2Expression> topLevelFilter = getCql2Expression(queryExpression.getFilter());
     List<SubQuery> queries =
-        query.getCollections().size() == 1
+        queryExpression.getCollections().size() == 1
             ? ImmutableList.of(
                 getSubQuery(
                     api.getData(),
-                    finalQuery.getCollections().get(0),
-                    finalQuery.getFilter(),
-                    ImmutableMap.of(),
+                    queryExpression.getCollections().get(0),
+                    topLevelFilter,
                     Optional.empty(),
-                    finalQuery.getSortby(),
-                    finalQuery.getProperties(),
+                    Optional.empty(),
+                    queryExpression.getSortby(),
+                    queryExpression.getProperties(),
                     ImmutableList.of()))
-            : query.getQueries().stream()
+            : queryExpression.getQueries().stream()
                 .map(
                     q ->
                         getSubQuery(
                             api.getData(),
                             q.getCollections().get(0),
-                            q.getFilter(),
-                            finalQuery.getFilter(),
-                            finalQuery.getFilterOperator(),
+                            getCql2Expression(q.getFilter()),
+                            topLevelFilter,
+                            queryExpression.getFilterOperator(),
                             q.getSortby(),
                             q.getProperties(),
-                            finalQuery.getProperties()))
+                            queryExpression.getProperties()))
                 .collect(Collectors.toUnmodifiableList());
 
-    Builder finalQueryBuilder =
+    ImmutableMultiFeatureQuery.Builder finalQueryBuilder =
         ImmutableMultiFeatureQuery.builder()
             .queries(queries)
-            .maxAllowableOffset(query.getMaxAllowableOffset().orElse(0.0))
+            .maxAllowableOffset(queryExpression.getMaxAllowableOffset().orElse(0.0))
             .crs(crs)
             .limit(
-                query
+                queryExpression
                     .getLimit()
                     .orElse(
                         api.getData()
                             .getExtension(FeaturesCoreConfiguration.class)
                             .map(FeaturesCoreConfiguration::getDefaultPageSize)
                             .orElseThrow()))
-            .offset(query.getOffset().orElse(0));
+            .offset(queryExpression.getOffset().orElse(0));
 
     api.getData()
         .getExtension(FeaturesCoreConfiguration.class)
         .map(FeaturesCoreConfiguration::getCoordinatePrecision)
         .ifPresent(
             coordinatePrecision -> {
-              // TODO centralize
-              Integer precision;
-              List<Unit<?>> units = crsInfo.getAxisUnits(crs);
-              ImmutableList.Builder<Integer> precisionListBuilder = new ImmutableList.Builder<>();
-              for (Unit<?> unit : units) {
-                if (unit.equals(Units.METRE)) {
-                  precision = coordinatePrecision.get("meter");
-                  if (Objects.isNull(precision)) precision = coordinatePrecision.get("metre");
-                } else if (unit.equals(Units.DEGREE)) {
-                  precision = coordinatePrecision.get("degree");
-                } else {
-                  LOGGER.debug(
-                      "Coordinate precision could not be set, unrecognised unit found: '{}'.",
-                      unit.getName());
-                  return;
-                }
-                precisionListBuilder.add(precision);
-              }
-              List<Integer> precisionList = precisionListBuilder.build();
+              List<Integer> precisionList = crsInfo.getPrecisionList(crs, coordinatePrecision);
               if (!precisionList.isEmpty()) {
                 finalQueryBuilder.geometryPrecision(precisionList);
               }
             });
 
-    return getResponse(
-        api,
-        requestContext,
-        queryInput,
-        query.getId(),
-        query.getTitle(),
-        query.getDescription(),
-        finalQueryBuilder.build(),
-        queryInput.getAllLinksAreLocal(),
-        collectionIds,
-        queryInput.getFeatureProvider(),
-        outputFormat,
-        queryInput.getShowsFeatureSelfLink(),
-        queryInput.getIncludeLinkHeader(),
-        queryInput.getDefaultCrs());
+    MultiFeatureQuery query = finalQueryBuilder.build();
+    return query;
   }
 
   private SubQuery getSubQuery(
       OgcApiDataV2 apiData,
       String collectionId,
-      Map<String, Object> filter,
-      Map<String, Object> globalFilter,
+      Optional<Cql2Expression> filter,
+      Optional<Cql2Expression> globalFilter,
       Optional<FilterOperator> filterOperator,
       List<String> sortby,
       List<String> properties,
       List<String> globalProperties) {
     {
       ensureCollectionIdExists(apiData, collectionId);
-
-      // TODO improve
-      Optional<Cql2Expression> cqlFilter = Optional.empty();
-      if (!filter.isEmpty()) {
-        try {
-          String jsonFilter = new ObjectMapper().writeValueAsString(filter);
-          cqlFilter = Optional.ofNullable(cql.read(jsonFilter, Format.JSON));
-        } catch (JsonProcessingException | CqlParseException e) {
-          throw new IllegalArgumentException(
-              String.format("The CQL2 JSON Filter '%s' is invalid.", filter), e);
-        }
-      }
-      if (!globalFilter.isEmpty()) {
-        try {
-          String jsonFilter = new ObjectMapper().writeValueAsString(globalFilter);
-          if (cqlFilter.isPresent()) {
-            // AND is the default
-            cqlFilter =
-                cqlFilter.map(
-                    f ->
-                        FilterOperator.OR.equals(filterOperator.orElse(FilterOperator.AND))
-                            ? Or.of(f, cql.read(jsonFilter, Format.JSON))
-                            : And.of(f, cql.read(jsonFilter, Format.JSON)));
-          } else {
-            cqlFilter = Optional.ofNullable(cql.read(jsonFilter, Format.JSON));
-          }
-        } catch (JsonProcessingException | CqlParseException e) {
-          throw new IllegalArgumentException(
-              String.format("The global CQL2 JSON Filter '%s' is invalid.", globalFilter), e);
-        }
-      }
 
       return ImmutableSubQuery.builder()
           .type(
@@ -706,7 +663,9 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                               ? SortKey.of(s.substring(1), Direction.DESCENDING)
                               : SortKey.of(s.replace("+", "")))
                   .collect(Collectors.toUnmodifiableList()))
-          .filters(cqlFilter.stream().collect(Collectors.toUnmodifiableList()))
+          .filters(
+              getEffectiveCql2Expression(filter, globalFilter, filterOperator).stream()
+                  .collect(Collectors.toUnmodifiableList()))
           .fields(
               globalProperties.isEmpty() && properties.isEmpty()
                   ? ImmutableList.of("*")
@@ -720,46 +679,58 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
     }
   }
 
-  // TODO consolidate
-  private Response getResponse(
-      OgcApi api,
+  private Optional<Cql2Expression> getEffectiveCql2Expression(
+      Optional<Cql2Expression> filter,
+      Optional<Cql2Expression> globalFilter,
+      Optional<FilterOperator> filterOperator) {
+    Optional<Cql2Expression> cqlFilter = Optional.empty();
+    if (filter.isPresent() && globalFilter.isPresent()) {
+      cqlFilter =
+          filter.map(
+              f ->
+                  FilterOperator.OR.equals(filterOperator.orElse(FilterOperator.AND))
+                      ? Or.of(f, globalFilter.get())
+                      : And.of(f, globalFilter.get()));
+    } else if (filter.isPresent()) {
+      cqlFilter = filter;
+    } else if (globalFilter.isPresent()) {
+      cqlFilter = globalFilter;
+    }
+    return cqlFilter;
+  }
+
+  private Optional<Cql2Expression> getCql2Expression(Map<String, Object> filter) {
+    if (!filter.isEmpty()) {
+      try {
+        String jsonFilter = new ObjectMapper().writeValueAsString(filter);
+        return Optional.ofNullable(cql.read(jsonFilter, Format.JSON));
+      } catch (JsonProcessingException | CqlParseException e) {
+        throw new IllegalArgumentException(
+            String.format("The CQL2 JSON Filter is invalid: %s", filter), e);
+      }
+    }
+    return Optional.empty();
+  }
+
+  private StreamingOutput getStreamingOutput(
       ApiRequestContext requestContext,
-      QueryInput queryInput,
-      String queryId,
-      Optional<String> queryTitle,
-      Optional<String> queryDescription,
+      QueryExpression queryExpression,
       MultiFeatureQuery query,
       boolean allLinksAreLocal,
       List<String> collectionIds,
       FeatureProvider2 featureProvider,
       FeatureFormatExtension outputFormat,
       boolean showsFeatureSelfLink,
-      boolean includeLinkHeader,
-      EpsgCrs defaultCrs) {
-
-    ensureFeatureProviderSupportsQueries(featureProvider);
-
-    Optional<CrsTransformer> crsTransformer = Optional.empty();
-
+      EpsgCrs defaultCrs,
+      EpsgCrs targetCrs,
+      List<Link> links) {
+    OgcApi api = requestContext.getApi();
     EpsgCrs sourceCrs = null;
-    EpsgCrs targetCrs = query.getCrs().orElse(defaultCrs);
+    Optional<CrsTransformer> crsTransformer = Optional.empty();
     if (featureProvider.supportsCrs()) {
       sourceCrs = featureProvider.crs().getNativeCrs();
       crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
     }
-
-    List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
-
-    List<Link> links =
-        new StoredQueriesLinkGenerator()
-            .generateFeaturesLinks(
-                requestContext.getUriCustomizer(),
-                query.getOffset(),
-                query.getLimit(),
-                requestContext.getMediaType(),
-                alternateMediaTypes,
-                i18n,
-                requestContext.getLanguage());
 
     Map<String, Optional<FeatureSchema>> schemas =
         query.getQueries().stream()
@@ -797,9 +768,9 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
             .fields(fields)
             .allLinksAreLocal(allLinksAreLocal)
             .idsIncludeCollectionId(collectionIds.size() > 1)
-            .queryId(queryId)
-            .queryTitle(queryTitle)
-            .queryDescription(queryDescription);
+            .queryId(queryExpression.getId())
+            .queryTitle(queryExpression.getTitle())
+            .queryDescription(queryExpression.getDescription());
 
     FeatureStream featureStream;
     FeatureTokenEncoder<?> encoder;
@@ -813,32 +784,16 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       encoder =
           outputFormat
               .getFeatureEncoder(transformationContextGeneric, requestContext.getLanguage())
-              .get();
+              .orElseThrow();
 
       propertyTransformations =
-          IntStream.range(0, collectionIds.size())
-              .boxed()
-              .collect(
-                  Collectors.toUnmodifiableMap(
-                      n -> getFeatureTypeId(query, n),
-                      n -> {
-                        String collectionId = collectionIds.get(n);
-                        PropertyTransformations pt =
-                            outputFormat
-                                .getPropertyTransformations(
-                                    Objects.requireNonNull(
-                                        api.getData().getCollections().get(collectionId)))
-                                .orElseThrow();
-                        if (collectionIds.size() > 1) {
-                          pt =
-                              new IdTransform(
-                                      featureProvider, getFeatureTypeId(query, n), collectionId)
-                                  .mergeInto(pt);
-                        }
-                        return pt.withSubstitutions(
-                            ImmutableMap.of(
-                                "serviceUrl", transformationContextGeneric.getServiceUrl()));
-                      }));
+          getIdTransformations(
+              query,
+              api.getData(),
+              collectionIds,
+              featureProvider,
+              outputFormat,
+              transformationContextGeneric.getServiceUrl());
     } else {
       throw new NotAcceptableException(
           MessageFormat.format(
@@ -846,34 +801,35 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
               requestContext.getMediaType().type()));
     }
 
-    Date lastModified;
-    EntityTag etag = null;
-    StreamingOutput streamingOutput;
+    return stream(featureStream, encoder, propertyTransformations);
+  }
 
-    streamingOutput = stream(featureStream, false, encoder, propertyTransformations);
-    lastModified = getLastModified(queryInput);
-
-    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
-
-    // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched
-    // and OGC-numberReturned headers
-    // TODO For now remove the "next" links from the headers since at this point we don't know,
-    // whether there will be a next page
-
-    return prepareSuccessResponse(
-            requestContext,
-            includeLinkHeader
-                ? links.stream()
-                    .filter(link -> !"next".equalsIgnoreCase(link.getRel()))
-                    .collect(ImmutableList.toImmutableList())
-                : null,
-            HeaderCaching.of(lastModified, etag, queryInput),
-            targetCrs,
-            HeaderContentDisposition.of(
-                String.format("%s.%s", queryId, outputFormat.getMediaType().fileExtension())))
-        .entity(streamingOutput)
-        .build();
+  private Map<String, PropertyTransformations> getIdTransformations(
+      MultiFeatureQuery query,
+      OgcApiDataV2 apiData,
+      List<String> collectionIds,
+      FeatureProvider2 featureProvider,
+      FeatureFormatExtension outputFormat,
+      String serviceUrl) {
+    return IntStream.range(0, collectionIds.size())
+        .boxed()
+        .collect(
+            Collectors.toUnmodifiableMap(
+                n -> getFeatureTypeId(query, n),
+                n -> {
+                  String collectionId = collectionIds.get(n);
+                  PropertyTransformations pt =
+                      outputFormat
+                          .getPropertyTransformations(
+                              Objects.requireNonNull(apiData.getCollections().get(collectionId)))
+                          .orElseThrow();
+                  if (collectionIds.size() > 1) {
+                    pt =
+                        new IdTransform(featureProvider, getFeatureTypeId(query, n), collectionId)
+                            .mergeInto(pt);
+                  }
+                  return pt.withSubstitutions(ImmutableMap.of("serviceUrl", serviceUrl));
+                }));
   }
 
   private String getFeatureTypeId(MultiFeatureQuery query, int queryIndex) {
@@ -882,7 +838,6 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
 
   private StreamingOutput stream(
       FeatureStream featureTransformStream,
-      boolean failIfEmpty,
       final FeatureTokenEncoder<?> encoder,
       Map<String, PropertyTransformations> propertyTransformations) {
 
@@ -896,39 +851,16 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                   .toCompletableFuture()
                   .join();
 
-      run(stream, failIfEmpty);
+      run(stream);
     };
   }
 
-  private ResultReduced<byte[]> reduce(
-      FeatureStream featureTransformStream,
-      boolean failIfEmpty,
-      final FeatureTokenEncoder<?> encoder,
-      Map<String, PropertyTransformations> propertyTransformations) {
-
-    SinkReduced<Object, byte[]> featureSink = encoder.to(Sink.reduceByteArray());
-
-    Supplier<ResultReduced<byte[]>> stream =
-        () ->
-            featureTransformStream
-                .runWith(featureSink, propertyTransformations)
-                .toCompletableFuture()
-                .join();
-
-    return run(stream, failIfEmpty);
-  }
-
-  private <U extends ResultBase> U run(Supplier<U> stream, boolean failIfEmpty) {
+  @SuppressWarnings("PMD.PreserveStackTrace")
+  private <U extends ResultBase> void run(Supplier<U> stream) {
     try {
       U result = stream.get();
 
       result.getError().ifPresent(FeatureStream::processStreamError);
-
-      if (result.isEmpty() && failIfEmpty) {
-        throw new NotFoundException("The requested feature does not exist.");
-      }
-
-      return result;
 
     } catch (CompletionException e) {
       if (e.getCause() instanceof WebApplicationException) {

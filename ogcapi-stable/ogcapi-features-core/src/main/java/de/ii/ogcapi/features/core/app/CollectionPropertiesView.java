@@ -37,6 +37,10 @@ import org.immutables.value.Value.Style.ImplementationVisibility;
 @Value.Style(builder = "new", visibility = ImplementationVisibility.PUBLIC)
 public abstract class CollectionPropertiesView extends OgcApiView {
 
+  public CollectionPropertiesView() {
+    super("collectionProperties.mustache");
+  }
+
   public abstract String collectionId();
 
   @Value.Derived
@@ -157,7 +161,8 @@ public abstract class CollectionPropertiesView extends OgcApiView {
   public String none() {
     return i18n().get("none", language());
   }
-  // sum must be 12 for bootstrap
+
+  // sum of idCols+descCols must be 12 for bootstrap
   @Value.Derived
   public Integer idCols() {
     int maxIdLength =
@@ -169,9 +174,10 @@ public abstract class CollectionPropertiesView extends OgcApiView {
             .orElse(0);
     return Math.min(Math.max(2, 1 + maxIdLength / 10), 6);
   }
-  // TODO idCols needs to be calculated first
+
   @Value.Derived
   public Integer descCols() {
+    // idCols will be calculated first
     if (idCols() != null) {
       return 12 - idCols();
     }
@@ -187,9 +193,4 @@ public abstract class CollectionPropertiesView extends OgcApiView {
   public abstract I18n i18n();
 
   public abstract Optional<Locale> language();
-
-  // TODO Delete after the View class problem is solved
-  public CollectionPropertiesView() {
-    super("collectionProperties.mustache");
-  }
 }

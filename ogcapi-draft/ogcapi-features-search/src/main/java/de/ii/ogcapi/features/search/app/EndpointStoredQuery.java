@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.search.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import de.ii.ogcapi.features.core.domain.EndpointRequiresFeatures;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -20,17 +21,13 @@ import de.ii.ogcapi.features.search.domain.SearchConfiguration;
 import de.ii.ogcapi.features.search.domain.SearchQueriesHandler;
 import de.ii.ogcapi.features.search.domain.SearchQueriesHandler.Query;
 import de.ii.ogcapi.features.search.domain.SearchQueriesHandler.QueryInputQuery;
-import de.ii.ogcapi.features.search.domain.StoredQueryFormat;
 import de.ii.ogcapi.features.search.domain.StoredQueryRepository;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
-import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.Endpoint;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -40,16 +37,12 @@ import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
-import java.io.File;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
@@ -66,7 +59,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointStoredQuery extends Endpoint {
+public class EndpointStoredQuery extends EndpointRequiresFeatures {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStoredQuery.class);
 
@@ -76,38 +69,19 @@ public class EndpointStoredQuery extends Endpoint {
   private final StoredQueryRepository repository;
   private final SearchQueriesHandler queryHandler;
   private final SchemaValidator schemaValidator;
-  private final I18n i18n;
 
   @Inject
   public EndpointStoredQuery(
       ExtensionRegistry extensionRegistry,
       FeaturesCoreProviders providers,
       StoredQueryRepository repository,
-      I18n i18n,
       SearchQueriesHandler queryHandler,
       SchemaValidator schemaValidator) {
     super(extensionRegistry);
     this.providers = providers;
     this.repository = repository;
-    this.i18n = i18n;
     this.queryHandler = queryHandler;
     this.schemaValidator = schemaValidator;
-  }
-
-  private Stream<StoredQueryFormat> getStoredQueryFormatStream(OgcApiDataV2 apiData) {
-    return extensionRegistry.getExtensionsForType(StoredQueryFormat.class).stream()
-        .filter(format -> format.isEnabledForApi(apiData));
-  }
-
-  private List<ApiMediaType> getStoredQueryMediaTypes(
-      OgcApiDataV2 apiData, File apiDir, String queryId) {
-    return getStoredQueryFormatStream(apiData)
-        .filter(
-            format ->
-                new File(apiDir + File.separator + queryId + "." + format.getFileExtension())
-                    .exists())
-        .map(StoredQueryFormat::getMediaType)
-        .collect(Collectors.toList());
   }
 
   @Override
@@ -117,8 +91,9 @@ public class EndpointStoredQuery extends Endpoint {
 
   @Override
   public List<? extends FormatExtension> getResourceFormats() {
-    if (formats == null)
+    if (formats == null) {
       formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class);
+    }
     return formats;
   }
 
@@ -126,7 +101,9 @@ public class EndpointStoredQuery extends Endpoint {
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     ValidationResult result = super.onStartup(api, apiValidation);
 
-    if (apiValidation == MODE.NONE) return result;
+    if (apiValidation == MODE.NONE) {
+      return result;
+    }
 
     ImmutableValidationResult.Builder builder =
         ImmutableValidationResult.builder().from(result).mode(apiValidation);
@@ -184,14 +161,15 @@ public class EndpointStoredQuery extends Endpoint {
                   .getParametersWithOpenApiSchema()
                   .forEach(
                       (name, schema) -> {
-                        String description = name;
+                        StringBuilder description = new StringBuilder(name);
                         if (Objects.nonNull(schema.getTitle()) && !schema.getTitle().isEmpty()) {
-                          description = schema.getTitle();
+                          description.append(schema.getTitle());
                           if (Objects.nonNull(schema.getDescription())
                               && !schema.getDescription().isEmpty()) {
-                            description += ": " + schema.getDescription();
+                            description.append(": ");
+                            description.append(schema.getDescription());
                           } else {
-                            description += ".";
+                            description.append('.');
                           }
                         }
                         paramsBuilder.add(
@@ -199,7 +177,7 @@ public class EndpointStoredQuery extends Endpoint {
                                 .apiId(apiData.getId())
                                 .queryId(queryId)
                                 .name(name)
-                                .description(description)
+                                .description(description.toString())
                                 .schema(schema)
                                 .schemaValidator(schemaValidator)
                                 .build());
@@ -225,9 +203,6 @@ public class EndpointStoredQuery extends Endpoint {
               definitionBuilder.putResources(path, resourceBuilder.build());
             });
 
-    // TODO add POST, but wait for Features API SWG discussion whether the payload should be
-    //      JSON or URL-encoded query parameters
-
     return definitionBuilder.build();
   }
 
@@ -245,6 +220,7 @@ public class EndpointStoredQuery extends Endpoint {
       @Context ApiRequestContext requestContext) {
 
     OgcApiDataV2 apiData = api.getData();
+    ensureSupportForFeatures(apiData);
     checkPathParameter(extensionRegistry, apiData, "/search/{queryId}", "queryId", queryId);
 
     QueryExpression query = repository.get(apiData, queryId);
@@ -258,16 +234,8 @@ public class EndpointStoredQuery extends Endpoint {
               .build();
     }
 
-    // TODO centralize in superclass or helper
     FeaturesCoreConfiguration coreConfiguration =
-        api.getData()
-            .getExtension(FeaturesCoreConfiguration.class)
-            .filter(ExtensionConfiguration::isEnabled)
-            .filter(
-                cfg ->
-                    cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature)
-                        != FeaturesCoreConfiguration.ItemType.unknown)
-            .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
+        api.getData().getExtension(FeaturesCoreConfiguration.class).orElseThrow();
 
     QueryInputQuery queryInput =
         new ImmutableQueryInputQuery.Builder()

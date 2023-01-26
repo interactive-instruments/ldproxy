@@ -7,8 +7,6 @@
  */
 package de.ii.ogcapi.styles.domain;
 
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -48,11 +46,6 @@ public interface StyleFormatExtension extends FormatExtension {
   @Override
   default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return StylesConfiguration.class;
-  }
-
-  @Override
-  default String getPathPattern() {
-    return "^(?:/collections/" + COLLECTION_ID_PATTERN + ")?/?styles/[^/]+/?$";
   }
 
   /**

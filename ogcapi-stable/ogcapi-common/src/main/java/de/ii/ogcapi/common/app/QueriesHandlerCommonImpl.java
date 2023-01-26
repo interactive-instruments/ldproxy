@@ -9,6 +9,7 @@ package de.ii.ogcapi.common.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ogcapi.common.domain.ApiDefinitionAuxiliaryFormatExtension;
 import de.ii.ogcapi.common.domain.ApiDefinitionFormatExtension;
 import de.ii.ogcapi.common.domain.ConformanceDeclaration;
 import de.ii.ogcapi.common.domain.ConformanceDeclarationExtension;
@@ -58,7 +59,8 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
   public enum Query implements QueryIdentifier {
     LANDING_PAGE,
     CONFORMANCE_DECLARATION,
-    API_DEFINITION
+    API_DEFINITION,
+    API_DEFINITION_FILE
   }
 
   @Value.Immutable
@@ -74,7 +76,7 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
   }
 
   @Value.Immutable
-  public interface Definition extends QueryInput {
+  public interface QueryInputFile extends QueryInput {
     Optional<String> getSubPath();
   }
 
@@ -89,11 +91,13 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
     this.queryHandlers =
         ImmutableMap.of(
             Query.LANDING_PAGE,
-                QueryHandler.with(QueryInputLandingPage.class, this::getLandingPageResponse),
+            QueryHandler.with(QueryInputLandingPage.class, this::getLandingPageResponse),
             Query.CONFORMANCE_DECLARATION,
-                QueryHandler.with(QueryInputConformance.class, this::getConformanceResponse),
+            QueryHandler.with(QueryInputConformance.class, this::getConformanceResponse),
             Query.API_DEFINITION,
-                QueryHandler.with(Definition.class, this::getApiDefinitionResponse));
+            QueryHandler.with(QueryInput.class, this::getApiDefinitionResponse),
+            Query.API_DEFINITION_FILE,
+            QueryHandler.with(QueryInputFile.class, this::getApiDefinitionFileResponse));
   }
 
   @Override
@@ -141,10 +145,7 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
 
     LandingPageFormatExtension outputFormatExtension =
         api.getOutputFormat(
-                LandingPageFormatExtension.class,
-                requestContext.getMediaType(),
-                "/",
-                Optional.empty())
+                LandingPageFormatExtension.class, requestContext.getMediaType(), Optional.empty())
             .orElseThrow(
                 () ->
                     new NotAcceptableException(
@@ -208,7 +209,6 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
             .getOutputFormat(
                 ConformanceDeclarationFormatExtension.class,
                 requestContext.getMediaType(),
-                "/conformance",
                 Optional.empty())
             .orElseThrow(
                 () ->
@@ -279,17 +279,42 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
   }
 
   private Response getApiDefinitionResponse(
-      Definition queryInput, ApiRequestContext requestContext) {
+      QueryInput queryInput, ApiRequestContext requestContext) {
 
-    String subPath = queryInput.getSubPath().orElse("");
     ApiDefinitionFormatExtension outputFormatExtension =
         requestContext
             .getApi()
             .getOutputFormat(
-                ApiDefinitionFormatExtension.class,
+                ApiDefinitionFormatExtension.class, requestContext.getMediaType(), Optional.empty())
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type ''{0}'' is not supported for this resource.",
+                            requestContext.getMediaType())));
+
+    Date lastModified = getLastModified(queryInput);
+    // TODO support ETag
+    EntityTag etag = null;
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
+
+    // TODO support headers
+    return outputFormatExtension.getResponse(requestContext.getApi().getData(), requestContext);
+  }
+
+  private Response getApiDefinitionFileResponse(
+      QueryInputFile queryInput, ApiRequestContext requestContext) {
+
+    String subPath = queryInput.getSubPath().orElse("");
+    ApiDefinitionAuxiliaryFormatExtension outputFormatExtension =
+        requestContext
+            .getApi()
+            .getOutputFormat(
+                ApiDefinitionAuxiliaryFormatExtension.class,
                 requestContext.getMediaType(),
-                "/api"
-                    + (subPath.isEmpty() ? "" : subPath.startsWith("/") ? subPath : "/" + subPath),
                 Optional.empty())
             .orElseThrow(
                 () ->
@@ -298,11 +323,6 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                             "The requested media type ''{0}'' is not supported for this resource.",
                             requestContext.getMediaType())));
 
-    if (subPath.matches("/?[^/]+")) {
-      return outputFormatExtension.getApiDefinitionFile(
-          requestContext.getApi().getData(), requestContext, subPath);
-    }
-
     Date lastModified = getLastModified(queryInput);
     // TODO support ETag
     EntityTag etag = null;
@@ -310,8 +330,8 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
     if (Objects.nonNull(response)) return response.build();
 
     // TODO support headers
-    return outputFormatExtension.getApiDefinitionResponse(
-        requestContext.getApi().getData(), requestContext);
+    return outputFormatExtension.getFile(
+        requestContext.getApi().getData(), requestContext, subPath);
   }
 
   private List<LandingPageExtension> getDatasetExtenders() {

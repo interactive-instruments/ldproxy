@@ -36,6 +36,7 @@ public interface SearchConfiguration extends ExtensionConfiguration, CachingConf
    * @langEn Option to manage stored queries using PUT and DELETE.
    * @langDe Steuert, ob Stored Queries über PUT und DELETE verwaltet werden können.
    * @default false
+   * @since v3.4
    */
   @Nullable
   Boolean getManagerEnabled();
@@ -53,6 +54,7 @@ public interface SearchConfiguration extends ExtensionConfiguration, CachingConf
    * @langDe Steuert, ob bei PUT von Stored Queries die Validierung über den Header `Prefer` (Wert
    *     `handling=strict`) unterstützt werden soll.
    * @default false
+   * @since v3.4
    */
   @Nullable
   Boolean getValidationEnabled();
@@ -68,6 +70,7 @@ public interface SearchConfiguration extends ExtensionConfiguration, CachingConf
    * @langEn Signals feature encoders whether all link targets are within the same document.
    * @langDe Signalisiert Feature-Encodern, ob alle Links auf Objekte im selben Dokuments zeigen.
    * @default false
+   * @since v3.4
    */
   @Nullable
   Boolean getAllLinksAreLocal();

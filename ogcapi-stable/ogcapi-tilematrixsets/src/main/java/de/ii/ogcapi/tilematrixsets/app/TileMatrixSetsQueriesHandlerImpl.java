@@ -87,7 +87,6 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
         api.getOutputFormat(
                 TileMatrixSetsFormatExtension.class,
                 requestContext.getMediaType(),
-                path,
                 Optional.empty())
             .orElseThrow(
                 () ->
@@ -160,10 +159,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
 
     TileMatrixSetFormatExtension outputFormat =
         api.getOutputFormat(
-                TileMatrixSetFormatExtension.class,
-                requestContext.getMediaType(),
-                path,
-                Optional.empty())
+                TileMatrixSetFormatExtension.class, requestContext.getMediaType(), Optional.empty())
             .orElseThrow(
                 () ->
                     new NotAcceptableException(

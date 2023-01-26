@@ -141,7 +141,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
     TileSetsFormatExtension outputFormat =
         api.getOutputFormat(
-                TileSetsFormatExtension.class, requestContext.getMediaType(), path, collectionId)
+                TileSetsFormatExtension.class, requestContext.getMediaType(), collectionId)
             .orElseThrow(
                 () ->
                     new NotAcceptableException(
@@ -267,7 +267,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
     TileSetFormatExtension outputFormat =
         api.getOutputFormat(
-                TileSetFormatExtension.class, requestContext.getMediaType(), path, collectionId)
+                TileSetFormatExtension.class, requestContext.getMediaType(), collectionId)
             .orElseThrow(
                 () ->
                     new NotAcceptableException(

@@ -8,19 +8,16 @@
 package de.ii.ogcapi.oas30.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.common.domain.ApiDefinitionFormatExtension;
+import de.ii.ogcapi.common.domain.ApiDefinitionAuxiliaryFormatExtension;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.FormatNotSupportedException;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.oas30.domain.Oas30Configuration;
 import de.ii.xtraplatform.openapi.domain.OpenApiViewerResource;
-import io.swagger.v3.oas.models.media.Schema;
-import java.text.MessageFormat;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -30,19 +27,16 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
-public class OpenApiFile implements ApiDefinitionFormatExtension {
+public class OpenApiFile implements ApiDefinitionAuxiliaryFormatExtension {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(OpenApiFile.class);
-  private static ApiMediaType MEDIA_TYPE =
+  private static final Logger LOGGER = LoggerFactory.getLogger(OpenApiFile.class);
+  private static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder().type(MediaType.WILDCARD_TYPE).build();
 
-  private final ExtendableOpenApiDefinition openApiDefinition;
   private final OpenApiViewerResource openApiViewerResource;
 
   @Inject
-  public OpenApiFile(
-      ExtendableOpenApiDefinition openApiDefinition, OpenApiViewerResource openApiViewerResource) {
-    this.openApiDefinition = openApiDefinition;
+  public OpenApiFile(OpenApiViewerResource openApiViewerResource) {
     this.openApiViewerResource = openApiViewerResource;
   }
 
@@ -60,30 +54,14 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
   @Override
   public ApiMediaTypeContent getContent() {
     return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new Schema())
-        .schemaRef("#/components/schemas/any")
+        .schema(BINARY_SCHEMA)
+        .schemaRef(BINARY_SCHEMA_REF)
         .ogcApiMediaType(MEDIA_TYPE)
         .build();
   }
 
   @Override
-  public String getPathPattern() {
-    // This is a special case and we need to override the default pattern to support
-    // auxiliary files accessed by the Swagger UI HTML output
-    return "^/api/[^/]+$";
-  }
-
-  @Override
-  public Response getApiDefinitionResponse(OgcApiDataV2 apiData, ApiRequestContext requestContext) {
-    throw new FormatNotSupportedException(
-        MessageFormat.format(
-            "The requested media type {0} cannot be generated.",
-            requestContext.getMediaType().type()));
-  }
-
-  @Override
-  public Response getApiDefinitionFile(
-      OgcApiDataV2 apiData, ApiRequestContext apiRequestContext, String file) {
+  public Response getFile(OgcApiDataV2 apiData, ApiRequestContext apiRequestContext, String file) {
     LOGGER.debug("FILE {}", file);
 
     if (openApiViewerResource == null) {
@@ -91,7 +69,6 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
           "The object to retrieve auxiliary files for the HTML API documentation is null, but should not be null.");
     }
 
-    Response response = openApiViewerResource.getFile(file);
-    return response;
+    return openApiViewerResource.getFile(file);
   }
 }

@@ -7,8 +7,6 @@
  */
 package de.ii.ogcapi.maps.domain;
 
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
@@ -73,11 +71,6 @@ public abstract class MapTileFormatExtension implements FormatExtension {
         && definitionPath.startsWith("/collections/{collectionId}/map/tiles")
         && ((formats.isEmpty() && isEnabledByDefault())
             || formats.contains(getMediaType().label()));
-  }
-
-  @Override
-  public String getPathPattern() {
-    return "^(?:/collections/" + COLLECTION_ID_PATTERN + ")?/map/tiles/\\w+/\\w+/\\w+/\\w+/?$";
   }
 
   public TileSet.DataType getDataType() {

@@ -7,8 +7,6 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
@@ -35,11 +33,6 @@ public abstract class TileFormatExtension implements FormatExtension {
         .filter(TilesConfiguration::hasCollectionTiles)
         .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
         .isPresent();
-  }
-
-  @Override
-  public String getPathPattern() {
-    return "^(?:/collections/" + COLLECTION_ID_PATTERN + ")?/tiles/\\w+/\\w+/\\w+/\\w+/?$";
   }
 
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {

@@ -95,29 +95,22 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
 
     HtmlConfiguration htmlConfig = api.getData().getExtension(HtmlConfiguration.class).orElse(null);
 
-    OgcApiCollectionsView collectionsView =
-        new ImmutableOgcApiCollectionsView.Builder()
-            .apiData(api.getData())
-            .breadCrumbs(breadCrumbs)
-            .htmlConfig(htmlConfig)
-            .noIndex(isNoIndexEnabledForApi(api.getData()))
-            .urlPrefix(requestContext.getStaticUrlPrefix())
-            .rawLinks(collections.getLinks())
-            .title(collections.getTitle().get())
-            .description(collections.getDescription().get())
-            .i18n(i18n)
-            .language(requestContext.getLanguage())
-            .rawCollections(collections.getCollections())
-            .spatialExtent(api.getSpatialExtent())
-            .showCollectionDescriptions(showCollectionDescriptionsInOverview(api.getData()))
-            .crs(collections.getCrs())
-            .dataSourceUrl(Optional.empty())
-            .build();
-    /* TODO no access to feature providers at this point
-    providers.getFeatureProvider(api.getData()).getData().getDataSourceUrl()
-
-    ); */
-
-    return collectionsView;
+    return new ImmutableOgcApiCollectionsView.Builder()
+        .apiData(api.getData())
+        .breadCrumbs(breadCrumbs)
+        .htmlConfig(htmlConfig)
+        .noIndex(isNoIndexEnabledForApi(api.getData()))
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .rawLinks(collections.getLinks())
+        .title(collections.getTitle().get())
+        .description(collections.getDescription().get())
+        .i18n(i18n)
+        .language(requestContext.getLanguage())
+        .rawCollections(collections.getCollections())
+        .spatialExtent(api.getSpatialExtent())
+        .showCollectionDescriptions(showCollectionDescriptionsInOverview(api.getData()))
+        .crs(collections.getCrs())
+        .dataSourceUrl(Optional.empty())
+        .build();
   }
 }

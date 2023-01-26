@@ -18,11 +18,6 @@ public interface ConformanceDeclarationFormatExtension extends GenericFormatExte
    * If a new subtype is created, add it to FORMAT_MAP in GenericFormatExtension.
    */
 
-  @Override
-  default String getPathPattern() {
-    return "^/?conformance/?$";
-  }
-
   Object getEntity(
       ConformanceDeclaration conformanceDeclaration, OgcApi api, ApiRequestContext requestContext);
 }

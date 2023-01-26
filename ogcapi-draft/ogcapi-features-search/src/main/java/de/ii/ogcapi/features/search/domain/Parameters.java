@@ -23,7 +23,7 @@ import org.immutables.value.Value;
 public abstract class Parameters extends PageRepresentation {
 
   @SuppressWarnings("UnstableApiUsage")
-  public static Funnel<Parameters> FUNNEL =
+  public static final Funnel<Parameters> FUNNEL =
       (from, into) -> {
         PageRepresentation.FUNNEL.funnel(from, into);
         from.getProperties()
@@ -34,7 +34,7 @@ public abstract class Parameters extends PageRepresentation {
                 });
       };
 
-  @JsonIgnore public static String SCHEMA_REF = "#/components/schemas/Parameters";
+  @JsonIgnore public static final String SCHEMA_REF = "#/components/schemas/Parameters";
 
   public final String getType() {
     return "object";

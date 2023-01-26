@@ -30,13 +30,10 @@ import javax.ws.rs.core.Response;
 @AutoBind
 public class OpenApiHtml implements ApiDefinitionFormatExtension {
 
-  private final ExtendableOpenApiDefinition openApiDefinition;
   private final OpenApiViewerResource openApiViewerResource;
 
   @Inject
-  public OpenApiHtml(
-      ExtendableOpenApiDefinition openApiDefinition, OpenApiViewerResource openApiViewerResource) {
-    this.openApiDefinition = openApiDefinition;
+  public OpenApiHtml(OpenApiViewerResource openApiViewerResource) {
     this.openApiViewerResource = openApiViewerResource;
   }
 
@@ -57,8 +54,7 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
   }
 
   @Override
-  public Response getApiDefinitionResponse(
-      OgcApiDataV2 apiData, ApiRequestContext apiRequestContext) {
+  public Response getResponse(OgcApiDataV2 apiData, ApiRequestContext apiRequestContext) {
     if (!apiRequestContext.getUriCustomizer().getPath().endsWith("/")) {
       try {
         return Response.status(Response.Status.MOVED_PERMANENTLY)

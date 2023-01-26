@@ -30,7 +30,6 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -96,28 +95,7 @@ public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLife
     }
 
     try (Stream<Path> paths = Files.walk(getPath(apiData))) {
-      return paths
-          .filter(Files::isRegularFile)
-          .filter(p -> p.toString().endsWith(".json"))
-          .map(
-              path -> {
-                try {
-                  return QueryExpression.of(Files.readAllBytes(path));
-                } catch (IOException e) {
-                  if (LOGGER.isErrorEnabled()) {
-                    LOGGER.error(
-                        MessageFormat.format(
-                            "Could not parse stored query ''{0}''. Reason: {1}.",
-                            path.toString(), e.getMessage()));
-                    if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
-                      LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
-                    }
-                  }
-                }
-                return null;
-              })
-          .filter(Objects::nonNull)
-          .collect(Collectors.toUnmodifiableList());
+      return getQueryExpressions(paths);
     } catch (IOException e) {
       if (LOGGER.isErrorEnabled()) {
         LOGGER.error(
@@ -128,6 +106,31 @@ public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLife
       }
     }
     return ImmutableList.of();
+  }
+
+  private List<QueryExpression> getQueryExpressions(Stream<Path> paths) {
+    return paths
+        .filter(Files::isRegularFile)
+        .filter(p -> p.toString().endsWith(".json"))
+        .map(
+            path -> {
+              try {
+                return QueryExpression.of(path);
+              } catch (IOException e) {
+                if (LOGGER.isErrorEnabled()) {
+                  LOGGER.error(
+                      MessageFormat.format(
+                          "Could not parse stored query ''{0}''. Reason: {1}.",
+                          path.toString(), e.getMessage()));
+                  if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+                    LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
+                  }
+                }
+              }
+              return null;
+            })
+        .filter(Objects::nonNull)
+        .collect(Collectors.toUnmodifiableList());
   }
 
   @Override
@@ -211,7 +214,7 @@ public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLife
   @Override
   public void writeStoredQueryDocument(OgcApiDataV2 apiData, String queryId, QueryExpression query)
       throws IOException {
-    QueryExpression.toFile(query, getPath(apiData, queryId));
+    QueryExpression.writeToFile(query, getPath(apiData, queryId));
   }
 
   @Override
@@ -225,11 +228,9 @@ public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLife
 
   private Path getPath(OgcApiDataV2 apiData, String queryId) {
     Path dir = getPath(apiData);
-    if (!dir.toFile().exists()) dir.toFile().mkdirs();
+    if (!dir.toFile().exists()) {
+      dir.toFile().mkdirs();
+    }
     return dir.resolve(String.format("%s.json", queryId));
-  }
-
-  private Optional<String> getTitle(OgcApiDataV2 apiData, String queryId) {
-    return get(apiData, queryId).getTitle();
   }
 }

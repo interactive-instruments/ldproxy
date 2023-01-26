@@ -22,13 +22,13 @@ import org.immutables.value.Value;
 public abstract class Parameter extends PageRepresentation {
 
   @SuppressWarnings("UnstableApiUsage")
-  public static Funnel<Parameter> FUNNEL =
+  public static final Funnel<Parameter> FUNNEL =
       (from, into) -> {
         PageRepresentation.FUNNEL.funnel(from, into);
         into.putString(from.getSchema().toString(), StandardCharsets.UTF_8);
       };
 
-  @JsonIgnore public static String SCHEMA_REF = "#/components/schemas/Parameter";
+  @JsonIgnore public static final String SCHEMA_REF = "#/components/schemas/Parameter";
 
   @JsonProperty("$parameter")
   public abstract JsonNode getSchema();

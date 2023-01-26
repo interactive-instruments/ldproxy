@@ -7,9 +7,6 @@
  */
 package de.ii.ogcapi.maps.domain;
 
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-import static de.ii.ogcapi.tiles.domain.PathParameterTileMatrixSetId.TMS_REGEX;
-
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -19,11 +16,6 @@ import java.util.Optional;
 
 @AutoMultiBind
 public interface MapTileSetFormatExtension extends GenericFormatExtension {
-
-  @Override
-  default String getPathPattern() {
-    return "^(?:/collections/" + COLLECTION_ID_PATTERN + ")?/map/tiles/" + TMS_REGEX + "/?$";
-  }
 
   Object getTileSetEntity(
       TileSet tileset,

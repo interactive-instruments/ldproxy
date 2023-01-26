@@ -22,8 +22,6 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @title queryId
@@ -34,8 +32,6 @@ import org.slf4j.LoggerFactory;
 @Singleton
 @AutoBind
 public class PathParameterQueryId implements OgcApiPathParameter {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterQueryId.class);
 
   protected final SchemaValidator schemaValidator;
 
@@ -80,10 +76,10 @@ public class PathParameterQueryId implements OgcApiPathParameter {
   @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
     return isEnabledForApi(apiData)
-        && (definitionPath.equals("/search/{queryId}")
-            || definitionPath.equals("/search/{queryId}/definition")
-            || definitionPath.equals("/search/{queryId}/parameters")
-            || definitionPath.equals("/search/{queryId}/parameters/{name}"));
+        && ("/search/{queryId}".equals(definitionPath)
+            || "/search/{queryId}/definition".equals(definitionPath)
+            || "/search/{queryId}/parameters".equals(definitionPath)
+            || "/search/{queryId}/parameters/{name}".equals(definitionPath));
   }
 
   @Override

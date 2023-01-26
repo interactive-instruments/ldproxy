@@ -9,8 +9,10 @@ package de.ii.ogcapi.common.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.common.app.ImmutableQueryInputFile;
+import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl;
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
-import de.ii.ogcapi.common.domain.ApiDefinitionFormatExtension;
+import de.ii.ogcapi.common.domain.ApiDefinitionAuxiliaryFormatExtension;
 import de.ii.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ogcapi.common.domain.QueriesHandlerCommon;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
@@ -24,7 +26,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import java.util.List;
@@ -32,24 +34,26 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 /**
- * @title API Definition
- * @path api
- * @langEn Provides the OpenAPI definition.
- * @langDe Stellt die OpenAPI-Definition bereit.
- * @ref:formats {@link de.ii.ogcapi.common.domain.ApiDefinitionFormatExtension}
+ * @title Auxiliary API Definition File
+ * @path api/*
+ * @langEn Provides auxiliary files referenced from the OpenAPI definition.
+ * @langDe Stellt zusätzliche Dateien zur OpenAPI-Definition bereit.
+ * @ref:formats {@link de.ii.ogcapi.common.domain.ApiDefinitionAuxiliaryFormatExtension}
  */
 @Singleton
 @AutoBind
-public class EndpointDefinition extends Endpoint {
+public class EndpointDefinitionFile extends Endpoint {
 
   private final QueriesHandlerCommon queryHandler;
 
   @Inject
-  public EndpointDefinition(
+  public EndpointDefinitionFile(
       ExtensionRegistry extensionRegistry, QueriesHandlerCommon queryHandler) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
@@ -63,7 +67,7 @@ public class EndpointDefinition extends Endpoint {
   @Override
   public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
-      formats = extensionRegistry.getExtensionsForType(ApiDefinitionFormatExtension.class);
+      formats = extensionRegistry.getExtensionsForType(ApiDefinitionAuxiliaryFormatExtension.class);
     return formats;
   }
 
@@ -73,37 +77,45 @@ public class EndpointDefinition extends Endpoint {
         new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("api")
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_API_DEFINITION);
-    List<OgcApiQueryParameter> queryParameters =
-        getQueryParameters(extensionRegistry, apiData, "/api");
-    String operationSummary = "API definition";
-    String path = "/api";
-    ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder1 =
-        new ImmutableOgcApiResourceAuxiliary.Builder().path(path);
+
+    String operationSummary = "support files for the API definition in HTML";
+    List<OgcApiPathParameter> pathParameters =
+        getPathParameters(extensionRegistry, apiData, "/api/{resource}");
+    String path = "/api/{resource}";
+    ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder2 =
+        new ImmutableOgcApiResourceAuxiliary.Builder().path(path).pathParameters(pathParameters);
     ApiOperation.getResource(
             apiData,
             path,
             false,
-            queryParameters,
+            ImmutableList.of(),
             ImmutableList.of(),
             getResponseContent(apiData),
             operationSummary,
             Optional.empty(),
             Optional.empty(),
-            getOperationId("getApiDefinition"),
+            getOperationId("getApiDefinitionSubResource"),
             ImmutableList.of())
-        .ifPresent(operation -> resourceBuilder1.putOperations("GET", operation));
-    definitionBuilder.putResources(path, resourceBuilder1.build());
+        .ifPresent(operation -> resourceBuilder2.putOperations("GET", operation));
+    definitionBuilder.putResources(path, resourceBuilder2.build());
 
     return definitionBuilder.build();
   }
 
   @GET
+  @Path("/{file}")
   public Response getApiDefinition(
       @Auth Optional<User> optionalUser,
       @Context OgcApi api,
-      @Context ApiRequestContext ogcApiContext) {
+      @Context ApiRequestContext ogcApiContext,
+      @PathParam("file") Optional<String> file) {
 
-    return queryHandler.handle(
-        Query.API_DEFINITION, getGenericQueryInput(api.getData()), ogcApiContext);
+    QueriesHandlerCommonImpl.QueryInputFile queryInputApiDefinition =
+        new ImmutableQueryInputFile.Builder()
+            .from(getGenericQueryInput(api.getData()))
+            .subPath(file)
+            .build();
+
+    return queryHandler.handle(Query.API_DEFINITION_FILE, queryInputApiDefinition, ogcApiContext);
   }
 }

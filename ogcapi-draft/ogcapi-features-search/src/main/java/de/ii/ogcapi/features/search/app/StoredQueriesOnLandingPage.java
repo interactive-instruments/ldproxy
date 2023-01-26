@@ -11,7 +11,6 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.common.domain.ImmutableLandingPage.Builder;
 import de.ii.ogcapi.common.domain.LandingPageExtension;
 import de.ii.ogcapi.features.search.domain.SearchConfiguration;
-import de.ii.ogcapi.features.search.domain.StoredQueryRepository;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.I18n;
@@ -31,12 +30,10 @@ import javax.inject.Singleton;
 public class StoredQueriesOnLandingPage implements LandingPageExtension {
 
   private final I18n i18n;
-  private final StoredQueryRepository repository;
 
   @Inject
-  public StoredQueriesOnLandingPage(I18n i18n, StoredQueryRepository repository) {
+  public StoredQueriesOnLandingPage(I18n i18n) {
     this.i18n = i18n;
-    this.repository = repository;
   }
 
   @Override

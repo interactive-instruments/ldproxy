@@ -55,7 +55,7 @@ public class QueryParameterFQueryDefinition extends QueryParameterF {
 
   @Override
   protected boolean matchesPath(String definitionPath) {
-    return definitionPath.equals("/search/{queryId}/definition");
+    return "/search/{queryId}/definition".equals(definitionPath);
   }
 
   @Override

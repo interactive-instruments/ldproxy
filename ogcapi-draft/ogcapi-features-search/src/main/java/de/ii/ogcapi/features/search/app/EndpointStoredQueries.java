@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.search.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.features.core.domain.EndpointRequiresFeatures;
 import de.ii.ogcapi.features.search.domain.ImmutableQueryInputStoredQueries;
 import de.ii.ogcapi.features.search.domain.SearchConfiguration;
 import de.ii.ogcapi.features.search.domain.SearchQueriesHandler;
@@ -18,7 +19,6 @@ import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
-import de.ii.ogcapi.foundation.domain.Endpoint;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
@@ -37,8 +37,6 @@ import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @title Stored Queries
@@ -49,9 +47,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointStoredQueries extends Endpoint implements ConformanceClass {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStoredQueries.class);
+public class EndpointStoredQueries extends EndpointRequiresFeatures implements ConformanceClass {
 
   private static final List<String> TAGS = ImmutableList.of("Discover and execute queries");
 
@@ -82,7 +78,9 @@ public class EndpointStoredQueries extends Endpoint implements ConformanceClass 
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     ValidationResult result = super.onStartup(api, apiValidation);
 
-    if (apiValidation == MODE.NONE) return result;
+    if (apiValidation == MODE.NONE) {
+      return result;
+    }
 
     ImmutableValidationResult.Builder builder =
         ImmutableValidationResult.builder().from(result).mode(apiValidation);
@@ -94,8 +92,9 @@ public class EndpointStoredQueries extends Endpoint implements ConformanceClass 
 
   @Override
   public List<? extends FormatExtension> getResourceFormats() {
-    if (formats == null)
+    if (formats == null) {
       formats = extensionRegistry.getExtensionsForType(StoredQueriesFormat.class);
+    }
     return formats;
   }
 
@@ -111,7 +110,8 @@ public class EndpointStoredQueries extends Endpoint implements ConformanceClass 
     Optional<String> operationDescription =
         Optional.of(
             "This operation fetches the set of stored queries available in this API. "
-                + "For each stored query the id, a title, links to the TODO is provided.");
+                + "For each stored query the id, a title, the description, information about "
+                + "any parameters, and links to the sub-resources are provided.");
     String path = "/search";
     ImmutableOgcApiResourceSet.Builder resourceBuilderSet =
         new ImmutableOgcApiResourceSet.Builder().path(path).subResourceType("QueryExpression");
@@ -140,6 +140,8 @@ public class EndpointStoredQueries extends Endpoint implements ConformanceClass 
    */
   @GET
   public Response getStoredQueries(@Context OgcApi api, @Context ApiRequestContext requestContext) {
+    ensureSupportForFeatures(api.getData());
+
     SearchQueriesHandler.QueryInputStoredQueries queryInput =
         new ImmutableQueryInputStoredQueries.Builder()
             .from(getGenericQueryInput(api.getData()))

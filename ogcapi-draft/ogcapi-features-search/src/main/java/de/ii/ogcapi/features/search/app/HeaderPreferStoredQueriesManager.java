@@ -33,6 +33,7 @@ public class HeaderPreferStoredQueriesManager extends ApiExtensionCache implemen
 
   @Inject
   HeaderPreferStoredQueriesManager(SchemaValidator schemaValidator) {
+    super();
     this.schemaValidator = schemaValidator;
   }
 
@@ -58,7 +59,8 @@ public class HeaderPreferStoredQueriesManager extends ApiExtensionCache implemen
         this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
         () ->
             isEnabledForApi(apiData)
-                && ((method == HttpMethods.PUT && definitionPath.equals("/search/{queryId}"))));
+                && method == HttpMethods.PUT
+                && "/search/{queryId}".equals(definitionPath));
   }
 
   @Override

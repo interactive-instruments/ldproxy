@@ -22,14 +22,10 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
 public class StoredQueryFormatJson implements StoredQueryFormat {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(StoredQueryFormatJson.class);
 
   static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()

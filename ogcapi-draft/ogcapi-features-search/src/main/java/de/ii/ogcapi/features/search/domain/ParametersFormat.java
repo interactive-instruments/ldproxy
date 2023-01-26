@@ -7,8 +7,6 @@
  */
 package de.ii.ogcapi.features.search.domain;
 
-import static de.ii.ogcapi.features.search.app.SearchBuildingBlock.QUERY_ID_PATTERN;
-
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -17,11 +15,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 
 @AutoMultiBind
 public interface ParametersFormat extends GenericFormatExtension {
-
-  @Override
-  default String getPathPattern() {
-    return "^(?:/search/" + QUERY_ID_PATTERN + "/parameters/?$";
-  }
 
   @Override
   default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {

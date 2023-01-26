@@ -96,8 +96,6 @@ public abstract class FeaturesView extends OgcApiDatasetView {
 
   public abstract Optional<BoundingBox> spatialExtent();
 
-  public abstract URICustomizer uriBuilderWithFOnly();
-
   @Nullable
   public abstract Object data();
 
@@ -305,8 +303,10 @@ public abstract class FeaturesView extends OgcApiDatasetView {
   @Value.Derived
   public Function<String, String> getCurrentUrlWithSegment() {
     return segment ->
-        uriBuilderWithFOnly()
+        uriCustomizer()
             .copy()
+            .clearParameters()
+            .ensureParameter("f", "html")
             .ensureLastPathSegment(segment)
             .ensureNoTrailingSlash()
             .toString();

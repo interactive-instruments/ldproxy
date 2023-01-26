@@ -21,10 +21,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title queryId
+ * @title dry-run
  * @endpoints Stored Query
- * @langEn The identifier of the stored query.
- * @langDe Der Identifikator der gespeicherten Abfrage.
+ * @langEn Set to `true` to only validate the request, but not alter the stored query.
+ * @langDe Bei `true` wird die Anfrage nur validiert, die gespeicherte Abfrage wird nicht geändert.
  */
 @Singleton
 @AutoBind
@@ -36,6 +36,7 @@ public class QueryParameterDryRunStoredQueriesManager extends ApiExtensionCache
 
   @Inject
   QueryParameterDryRunStoredQueriesManager(SchemaValidator schemaValidator) {
+    super();
     this.schemaValidator = schemaValidator;
   }
 
@@ -61,7 +62,8 @@ public class QueryParameterDryRunStoredQueriesManager extends ApiExtensionCache
         this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
         () ->
             isEnabledForApi(apiData)
-                && (method == HttpMethods.PUT && definitionPath.endsWith("/search/{queryId}")));
+                && method == HttpMethods.PUT
+                && "/search/{queryId}".equals(definitionPath));
   }
 
   @Override

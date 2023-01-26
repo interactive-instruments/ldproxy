@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.search.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.features.core.domain.EndpointRequiresFeatures;
 import de.ii.ogcapi.features.search.domain.ImmutableQueryInputParameter;
 import de.ii.ogcapi.features.search.domain.ParameterFormat;
 import de.ii.ogcapi.features.search.domain.QueryExpression;
@@ -20,11 +21,9 @@ import de.ii.ogcapi.features.search.domain.StoredQueryRepository;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.Endpoint;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -52,7 +51,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointParameter extends Endpoint {
+public class EndpointParameter extends EndpointRequiresFeatures {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointParameter.class);
 
@@ -60,17 +59,14 @@ public class EndpointParameter extends Endpoint {
 
   private final StoredQueryRepository repository;
   private final SearchQueriesHandler queryHandler;
-  private final I18n i18n;
 
   @Inject
   public EndpointParameter(
       ExtensionRegistry extensionRegistry,
       StoredQueryRepository repository,
-      I18n i18n,
       SearchQueriesHandler queryHandler) {
     super(extensionRegistry);
     this.repository = repository;
-    this.i18n = i18n;
     this.queryHandler = queryHandler;
   }
 
@@ -81,7 +77,9 @@ public class EndpointParameter extends Endpoint {
 
   @Override
   public List<? extends FormatExtension> getResourceFormats() {
-    if (formats == null) formats = extensionRegistry.getExtensionsForType(ParameterFormat.class);
+    if (formats == null) {
+      formats = extensionRegistry.getExtensionsForType(ParameterFormat.class);
+    }
     return formats;
   }
 
@@ -95,12 +93,12 @@ public class EndpointParameter extends Endpoint {
     String path = "/search/{queryId}/parameters/{name}";
     List<OgcApiQueryParameter> params = getQueryParameters(extensionRegistry, apiData, path);
     List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-    if (pathParameters.stream().noneMatch(param -> param.getName().equals("queryId"))) {
+    if (pathParameters.stream().noneMatch(param -> "queryId".equals(param.getName()))) {
       LOGGER.error(
           "Path parameter 'queryId' missing for resource at path '"
               + path
               + "'. The GET method will not be available.");
-    } else if (pathParameters.stream().noneMatch(param -> param.getName().equals("name"))) {
+    } else if (pathParameters.stream().noneMatch(param -> "name".equals(param.getName()))) {
       LOGGER.error(
           "Path parameter 'name' missing for resource at path '"
               + path
@@ -144,6 +142,7 @@ public class EndpointParameter extends Endpoint {
       @Context ApiRequestContext requestContext) {
 
     OgcApiDataV2 apiData = api.getData();
+    ensureSupportForFeatures(apiData);
     checkPathParameter(
         extensionRegistry, apiData, "/search/{queryId}/parameters/{name}", "queryId", queryId);
     checkPathParameter(

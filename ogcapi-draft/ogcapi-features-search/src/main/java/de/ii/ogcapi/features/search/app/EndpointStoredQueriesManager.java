@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ogcapi.features.core.domain.EndpointRequiresFeatures;
 import de.ii.ogcapi.features.search.domain.ImmutableQueryExpression;
 import de.ii.ogcapi.features.search.domain.ImmutableQueryInputStoredQueryCreateReplace;
 import de.ii.ogcapi.features.search.domain.ImmutableQueryInputStoredQueryDelete;
@@ -18,14 +19,12 @@ import de.ii.ogcapi.features.search.domain.QueryExpression;
 import de.ii.ogcapi.features.search.domain.SearchConfiguration;
 import de.ii.ogcapi.features.search.domain.SearchQueriesHandler;
 import de.ii.ogcapi.features.search.domain.StoredQueryFormat;
-import de.ii.ogcapi.features.search.domain.StoredQueryRepository;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
-import de.ii.ogcapi.foundation.domain.Endpoint;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
@@ -58,30 +57,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @title Stored Queries, Stored Query
- * @path search, search/{queryId}
+ * @title Stored Query
+ * @path search/{queryId}
  * @langEn Create, Replace and Delete stored queries.
  * @langDe Erzeugen, Ersetzen und Löschen von Stored Queries.
  * @ref:formats {@link de.ii.ogcapi.features.search.domain.StoredQueryFormat}
  */
 @Singleton
 @AutoBind
-public class EndpointStoredQueriesManager extends Endpoint implements ConformanceClass {
+public class EndpointStoredQueriesManager extends EndpointRequiresFeatures
+    implements ConformanceClass {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStoredQueriesManager.class);
   private static final List<String> TAGS = ImmutableList.of("Manage stored queries");
 
   private final SearchQueriesHandler queryHandler;
-  private final StoredQueryRepository repository;
 
   @Inject
   public EndpointStoredQueriesManager(
-      ExtensionRegistry extensionRegistry,
-      SearchQueriesHandler queryHandler,
-      StoredQueryRepository repository) {
+      ExtensionRegistry extensionRegistry, SearchQueriesHandler queryHandler) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
-    this.repository = repository;
   }
 
   @Override
@@ -107,11 +103,12 @@ public class EndpointStoredQueriesManager extends Endpoint implements Conformanc
 
   @Override
   public List<? extends FormatExtension> getResourceFormats() {
-    if (formats == null)
+    if (formats == null) {
       formats =
           extensionRegistry.getExtensionsForType(StoredQueryFormat.class).stream()
               .filter(StoredQueryFormat::canSupportTransactions)
               .collect(Collectors.toList());
+    }
     return formats;
   }
 
@@ -124,7 +121,7 @@ public class EndpointStoredQueriesManager extends Endpoint implements Conformanc
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_SEARCH_MANAGER);
     String path = "/search/{queryId}";
     List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-    if (pathParameters.stream().noneMatch(param -> param.getName().equals("queryId"))) {
+    if (pathParameters.stream().noneMatch(param -> "queryId".equals(param.getName()))) {
       LOGGER.error(
           "Path parameter 'queryId' missing for resource at path '"
               + path
@@ -134,18 +131,19 @@ public class EndpointStoredQueriesManager extends Endpoint implements Conformanc
           getQueryParameters(extensionRegistry, apiData, path, HttpMethods.PUT);
       List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, HttpMethods.PUT);
       String operationSummary = "create/replace a stored query";
-      String description =
-          "Creates a new or replaces an existing stored query with the id `queryId` ";
+      StringBuilder description =
+          new StringBuilder(149)
+              .append("Creates a new or replaces an existing stored query with the id `queryId` ");
       if (config.map(SearchConfiguration::isValidationEnabled).orElse(false)) {
-        description +=
+        description.append(
             " or just validates the query expression.\n"
                 + "If the header `Prefer` is set to `handling=strict`, the query will be validated before adding "
                 + "the query to the server. If the parameter `dry-run` is set to `true`, the server will "
-                + "not be changed and only any validation errors will be reported";
+                + "not be changed and only any validation errors will be reported");
       }
-      description +=
-          ".\nThe stored query definition at `/search/{queryId}/definition` " + "is updated.";
-      Optional<String> operationDescription = Optional.of(description);
+      description.append(
+          ".\nThe stored query definition at `/search/{queryId}/definition` " + "is updated.");
+      Optional<String> operationDescription = Optional.of(description.toString());
       ImmutableOgcApiResourceData.Builder resourceBuilder =
           new ImmutableOgcApiResourceData.Builder().path(path).pathParameters(pathParameters);
       Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData);
@@ -203,6 +201,7 @@ public class EndpointStoredQueriesManager extends Endpoint implements Conformanc
       byte[] requestBody) {
 
     OgcApiDataV2 apiData = api.getData();
+    ensureSupportForFeatures(apiData);
     checkPathParameter(extensionRegistry, apiData, "/search/{queryId}", "queryId", queryId);
 
     QueryExpression query;
@@ -215,7 +214,7 @@ public class EndpointStoredQueriesManager extends Endpoint implements Conformanc
               .build();
     } catch (IOException e) {
       throw new IllegalArgumentException(
-          String.format("The content of the query expression is invalid: %s", e.getMessage()));
+          String.format("The content of the query expression is invalid: %s", e.getMessage()), e);
     }
 
     // TODO recompute API definition of EndpointStoredQuery

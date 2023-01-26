@@ -25,6 +25,7 @@ public abstract class QueryParameterTemplateParameter extends ApiExtensionCache
 
   public abstract Schema<?> getSchema();
 
+  @Override
   public abstract SchemaValidator getSchemaValidator();
 
   @Override
@@ -57,7 +58,7 @@ public abstract class QueryParameterTemplateParameter extends ApiExtensionCache
         () ->
             apiData.getId().equals(getApiId())
                 && method == HttpMethods.GET
-                && definitionPath.equals("/search/{queryId}"));
+                && "/search/{queryId}".equals(definitionPath));
   }
 
   @Override

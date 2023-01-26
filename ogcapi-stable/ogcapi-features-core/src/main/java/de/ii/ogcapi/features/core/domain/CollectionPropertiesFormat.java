@@ -7,8 +7,6 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -27,10 +25,6 @@ public interface CollectionPropertiesFormat extends GenericFormatExtension {
           Arrays.stream(CollectionPropertiesType.values())
               .map(CollectionPropertiesType::toString)
               .collect(Collectors.joining("|")));
-
-  default String getPathPattern() {
-    return "^/?collections/" + COLLECTION_ID_PATTERN + "/" + RESOURCE_ID_PATTERN + "/?$";
-  }
 
   Object getEntity(
       JsonSchemaObject schemaCollectionProperties,

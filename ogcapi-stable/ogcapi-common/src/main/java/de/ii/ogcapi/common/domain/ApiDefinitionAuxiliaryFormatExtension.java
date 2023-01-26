@@ -5,22 +5,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.styles.domain;
+package de.ii.ogcapi.common.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
-import de.ii.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import java.util.Optional;
+import javax.ws.rs.core.Response;
 
 @AutoMultiBind
-public interface StyleMetadataFormatExtension extends GenericFormatExtension {
+public interface ApiDefinitionAuxiliaryFormatExtension extends FormatExtension {
 
-  Object getStyleMetadataEntity(
-      StyleMetadata metadata,
-      OgcApiDataV2 apiData,
-      Optional<String> collectionId,
-      ApiRequestContext requestContext);
-
-  StyleMetadata parse(byte[] content, boolean strict, boolean inStore);
+  Response getFile(OgcApiDataV2 apiData, ApiRequestContext apiRequestContext, String file);
 }

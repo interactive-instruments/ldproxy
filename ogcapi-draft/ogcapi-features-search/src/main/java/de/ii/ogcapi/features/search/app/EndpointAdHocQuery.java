@@ -7,14 +7,11 @@
  */
 package de.ii.ogcapi.features.search.app;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ogcapi.features.core.domain.EndpointRequiresFeatures;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -32,7 +29,6 @@ import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
-import de.ii.ogcapi.foundation.domain.Endpoint;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
@@ -59,7 +55,6 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
@@ -75,7 +70,7 @@ import javax.ws.rs.core.Response;
  */
 @Singleton
 @AutoBind
-public class EndpointAdHocQuery extends Endpoint implements ConformanceClass {
+public class EndpointAdHocQuery extends EndpointRequiresFeatures implements ConformanceClass {
 
   private static final List<String> TAGS = ImmutableList.of("Discover and execute queries");
   private static final ApiMediaType REQUEST_MEDIA_TYPE =
@@ -87,7 +82,6 @@ public class EndpointAdHocQuery extends Endpoint implements ConformanceClass {
 
   private final SearchQueriesHandler queryHandler;
   private final FeaturesCoreProviders providers;
-  private final ObjectMapper mapper;
   private final Schema<?> schema;
   private final Map<String, Schema<?>> referencedSchemas;
 
@@ -102,11 +96,6 @@ public class EndpointAdHocQuery extends Endpoint implements ConformanceClass {
     this.providers = providers;
     this.schema = classSchemaCache.getSchema(QueryExpression.class);
     this.referencedSchemas = classSchemaCache.getReferencedSchemas(QueryExpression.class);
-    this.mapper = new ObjectMapper();
-    mapper.registerModule(new Jdk8Module());
-    mapper.registerModule(new GuavaModule());
-    mapper.configure(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY, true);
-    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
   }
 
   @Override
@@ -168,8 +157,6 @@ public class EndpointAdHocQuery extends Endpoint implements ConformanceClass {
 
   @Override
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-    Optional<FeaturesCoreConfiguration> config =
-        apiData.getExtension(FeaturesCoreConfiguration.class);
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("search")
@@ -180,7 +167,51 @@ public class EndpointAdHocQuery extends Endpoint implements ConformanceClass {
         getQueryParameters(extensionRegistry, apiData, path, method);
     List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, method);
     String operationSummary = "execute an ad-hoc query";
-    String description = "TODO";
+    String description =
+        "An ad-hoc query expression is expressed as a JSON object. The query expression object "
+            + "can describe a single query (the properties \"collections\", \"filter\", "
+            + "\"properties\" and \"sortby\" are members of the query expression object) or "
+            + "multiple queries (a \"queries\" member with an array of query objects is present) "
+            + "in a single request.\n"
+            + "<p>For each query:</p>"
+            + "<ul><li>The value of \"collection\" is an array with one item, the identifier of the "
+            + "collection to query.\n"
+            + "<li>The value of \"filter\" is a CQL2 JSON filter expression.\n"
+            + "<li>The value of \"properties\" is an array with the names of properties to include "
+            + "in the response.\n"
+            + "<li>The value of \"sortby\" is used to sort the features in the response.\n</ul>"
+            + "<p>For multiple queries:</p>"
+            + "<ul><li>If multiple queries are specified, the results are concatenated. The response "
+            + "is a single feature collection. The feature ids in the response to a "
+            + "multi-collection query must be unique. Since the identifier of a feature only has to "
+            + "be unique per collection, they need to be combined with the collection identifier. "
+            + "A concatenation with \".\" as the joining character is used (e.g., "
+            + "\"apronelement.123456\").\n"
+            + "<li>The direct members \"filter\" and \"properties\" represent \"global\" "
+            + "constraints that must be combined with the corresponding member in each query. The "
+            + "global and local property selection list are concatenated and then the global and "
+            + "local filters are combined using the logical operator specified by the "
+            + "\"filterOperator\" member.\n"
+            + "<li>The global member \"filter\" must only reference queryables that are common to "
+            + "all collections being queried.\n"
+            + "<li>The global member \"properties\" must only reference presentables that are "
+            + "common to all collections being queried.\n</ul>"
+            + "<p>General remarks:</p>"
+            + "<ul><li>A \"title\" and \"description\" for the query expression can be added. "
+            + "Providing both is strongly recommended to explain the query to users.\n"
+            + "<li>The \"limit\" member applies to the entire result set.\n"
+            + "<li>\"sortby\" will only apply per query. A global \"sortby\" would require that "
+            + "the results of all queries are compiled first and then the combined result set is "
+            + "sorted. This would not support \"streaming\" the response.\n"
+            + "<li>In case of a parameterized stored query, the query expression may contain JSON "
+            + "objects with a member \"$parameter\". The value of \"$parameter\" is an object with "
+            + "a member where the key is the parameter name and the value is a JSON schema "
+            + "describing the parameter. When executing the stored query, all objects with a "
+            + "\"$parameter\" member are replaced with the value of the parameter for this query "
+            + "execution. Comma-separated parameter values are converted to an array, if the "
+            + "parameter is of type \"array\".\n"
+            + "<li>Parameters may also be provided in a member \"parameters\" in the query "
+            + "expression and referenced using \"$ref\".</ul>";
     Optional<String> operationDescription = Optional.of(description);
     ImmutableOgcApiResourceData.Builder resourceBuilder =
         new ImmutableOgcApiResourceData.Builder().path(path);
@@ -212,27 +243,18 @@ public class EndpointAdHocQuery extends Endpoint implements ConformanceClass {
       @Context HttpServletRequest request,
       InputStream requestBody) {
 
-    // TODO centralize in superclass or helper
-    FeaturesCoreConfiguration coreConfiguration =
-        api.getData()
-            .getExtension(FeaturesCoreConfiguration.class)
-            .filter(ExtensionConfiguration::isEnabled)
-            .filter(
-                cfg ->
-                    cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature)
-                        != FeaturesCoreConfiguration.ItemType.unknown)
-            .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
-
-    List<OgcApiQueryParameter> allowedParameters =
-        getQueryParameters(extensionRegistry, api.getData(), "/search");
+    ensureSupportForFeatures(api.getData());
 
     QueryExpression query;
     try {
       query = QueryExpression.of(requestBody);
     } catch (IOException e) {
       throw new IllegalArgumentException(
-          String.format("The content of the query expression is invalid: %s", e.getMessage()));
+          String.format("The content of the query expression is invalid: %s", e.getMessage()), e);
     }
+
+    FeaturesCoreConfiguration coreConfiguration =
+        api.getData().getExtension(FeaturesCoreConfiguration.class).orElseThrow();
 
     QueryInputQuery queryInput =
         new ImmutableQueryInputQuery.Builder()

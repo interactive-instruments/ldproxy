@@ -39,11 +39,6 @@ public interface FormatExtension extends ApiExtension {
   String BINARY_SCHEMA_REF = "#/components/schemas/binary";
 
   /**
-   * @return the path pattern (regex) for this format
-   */
-  String getPathPattern();
-
-  /**
    * @return the media type of this format
    */
   ApiMediaType getMediaType();

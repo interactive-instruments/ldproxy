@@ -27,7 +27,7 @@ import org.immutables.value.Value;
 public abstract class StoredQuery extends PageRepresentationWithId {
 
   @SuppressWarnings("UnstableApiUsage")
-  public static Funnel<StoredQuery> FUNNEL =
+  public static final Funnel<StoredQuery> FUNNEL =
       (from, into) -> {
         PageRepresentationWithId.FUNNEL.funnel(from, into);
         from.getParameters()
@@ -37,8 +37,6 @@ public abstract class StoredQuery extends PageRepresentationWithId {
                   into.putString(schema.toString(), StandardCharsets.UTF_8);
                 });
       };
-
-  @JsonIgnore String SCHEMA_REF = "#/components/schemas/StoredQuery";
 
   public abstract Map<String, JsonNode> getParameters();
 

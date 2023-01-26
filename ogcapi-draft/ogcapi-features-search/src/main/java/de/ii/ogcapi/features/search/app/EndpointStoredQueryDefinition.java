@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.search.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ogcapi.features.core.domain.EndpointRequiresFeatures;
 import de.ii.ogcapi.features.search.domain.ImmutableQueryInputQueryDefinition;
 import de.ii.ogcapi.features.search.domain.QueryExpression;
 import de.ii.ogcapi.features.search.domain.SearchConfiguration;
@@ -22,7 +23,6 @@ import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.Endpoint;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointStoredQueryDefinition extends Endpoint {
+public class EndpointStoredQueryDefinition extends EndpointRequiresFeatures {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStoredQueryDefinition.class);
   private static final List<String> TAGS = ImmutableList.of("Manage stored queries");
@@ -89,24 +89,24 @@ public class EndpointStoredQueryDefinition extends Endpoint {
 
   @Override
   public List<? extends FormatExtension> getResourceFormats() {
-    if (formats == null)
+    if (formats == null) {
       formats =
           extensionRegistry.getExtensionsForType(StoredQueryFormat.class).stream()
               .filter(StoredQueryFormat::canSupportTransactions)
               .collect(Collectors.toList());
+    }
     return formats;
   }
 
   @Override
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-    Optional<SearchConfiguration> config = apiData.getExtension(SearchConfiguration.class);
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("search")
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_SEARCH_MANAGER);
     String path = "/search/{queryId}/definition";
     List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-    if (pathParameters.stream().noneMatch(param -> param.getName().equals("queryId"))) {
+    if (pathParameters.stream().noneMatch(param -> "queryId".equals(param.getName()))) {
       LOGGER.error(
           "Path parameter 'queryId' missing for resource at path '"
               + path
@@ -153,6 +153,7 @@ public class EndpointStoredQueryDefinition extends Endpoint {
       @Context ApiRequestContext requestContext) {
 
     OgcApiDataV2 apiData = api.getData();
+    ensureSupportForFeatures(apiData);
     checkPathParameter(
         extensionRegistry, apiData, "/search/{queryId}/definition", "queryId", queryId);
 

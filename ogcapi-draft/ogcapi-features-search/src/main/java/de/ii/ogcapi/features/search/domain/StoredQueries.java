@@ -22,13 +22,13 @@ import org.immutables.value.Value;
 public abstract class StoredQueries extends PageRepresentation {
 
   @SuppressWarnings("UnstableApiUsage")
-  public static Funnel<StoredQueries> FUNNEL =
+  public static final Funnel<StoredQueries> FUNNEL =
       (from, into) -> {
         PageRepresentation.FUNNEL.funnel(from, into);
         from.getQueries().forEach(q -> StoredQuery.FUNNEL.funnel(q, into));
       };
 
-  @JsonIgnore public static String SCHEMA_REF = "#/components/schemas/StoredQueries";
+  @JsonIgnore public static final String SCHEMA_REF = "#/components/schemas/StoredQueries";
 
   @JsonInclude(Include.NON_NULL)
   public abstract List<StoredQuery> getQueries();

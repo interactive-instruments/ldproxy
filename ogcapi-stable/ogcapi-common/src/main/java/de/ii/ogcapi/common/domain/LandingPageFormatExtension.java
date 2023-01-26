@@ -18,10 +18,5 @@ public interface LandingPageFormatExtension extends GenericFormatExtension {
    * If a new subtype is created, add it to FORMAT_MAP in GenericFormatExtension.
    */
 
-  @Override
-  default String getPathPattern() {
-    return "^/?$";
-  }
-
   Object getEntity(LandingPage apiLandingPage, OgcApi api, ApiRequestContext requestContext);
 }

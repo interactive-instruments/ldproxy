@@ -135,10 +135,7 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
 
     CollectionsFormatExtension outputFormatExtension =
         api.getOutputFormat(
-                CollectionsFormatExtension.class,
-                requestContext.getMediaType(),
-                "/collections",
-                Optional.empty())
+                CollectionsFormatExtension.class, requestContext.getMediaType(), Optional.empty())
             .orElseThrow(
                 () ->
                     new NotAcceptableException(
@@ -199,7 +196,6 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
         api.getOutputFormat(
                 CollectionFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/" + collectionId,
                 Optional.of(collectionId))
             .orElseThrow(
                 () ->

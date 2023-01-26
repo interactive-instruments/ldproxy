@@ -7,8 +7,6 @@
  */
 package de.ii.ogcapi.maps.app;
 
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
@@ -47,11 +45,6 @@ public class MapTileSetsFormatHtml implements MapTileSetsFormatExtension {
   public MapTileSetsFormatHtml(I18n i18n, TileMatrixSetRepository tileMatrixSetRepository) {
     this.i18n = i18n;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
-  }
-
-  @Override
-  public String getPathPattern() {
-    return "^(?:/collections/" + COLLECTION_ID_PATTERN + ")?/map/tiles/?$";
   }
 
   @Override

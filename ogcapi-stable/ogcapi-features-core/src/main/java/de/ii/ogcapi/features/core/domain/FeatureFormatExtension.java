@@ -8,7 +8,6 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
-import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -21,18 +20,6 @@ import java.util.Optional;
 
 @AutoMultiBind
 public interface FeatureFormatExtension extends FormatExtension {
-
-  default String getPathPattern() {
-    return "^/?collections/"
-        + AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN
-        + "/items(?:/"
-        + PathParameterFeatureIdFeatures.FEATURE_ID_PATTERN
-        + ")?$"
-        + "|"
-        + "^/?search(?:/"
-        + "[\\w\\-]+" // TODO pattern
-        + ")?/?$";
-  }
 
   ApiMediaType getCollectionMediaType();
 
@@ -65,8 +52,7 @@ public interface FeatureFormatExtension extends FormatExtension {
     Optional<PropertyTransformations> coreTransformations =
         collectionData
             .getExtension(FeaturesCoreConfiguration.class)
-            .map(
-                featuresCoreConfiguration -> ((PropertyTransformations) featuresCoreConfiguration));
+            .map(featuresCoreConfiguration -> featuresCoreConfiguration);
 
     Optional<PropertyTransformations> formatTransformations =
         collectionData

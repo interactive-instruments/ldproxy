@@ -47,7 +47,7 @@ public interface SingleQuery {
   @Value.Check
   default void check() {
     Preconditions.checkState(
-        getCollections().size() > 0, "Each query must have a collection. Found no collection.");
+        !getCollections().isEmpty(), "Each query must have a collection. Found no collection.");
     Preconditions.checkState(
         getCollections().size() < 2,
         "Each query must be for a single collection. Join queries are currently not supported. Found collections: %s.",

@@ -17,11 +17,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 public interface StoredQueriesFormat extends GenericFormatExtension {
 
   @Override
-  default String getPathPattern() {
-    return "^(?:/search/?$";
-  }
-
-  @Override
   default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return SearchConfiguration.class;
   }

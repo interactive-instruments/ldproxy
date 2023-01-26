@@ -17,11 +17,6 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 public interface CollectionsFormatExtension extends GenericFormatExtension {
 
   @Override
-  default String getPathPattern() {
-    return "^/collections/?$";
-  }
-
-  @Override
   default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return CollectionsConfiguration.class;
   }

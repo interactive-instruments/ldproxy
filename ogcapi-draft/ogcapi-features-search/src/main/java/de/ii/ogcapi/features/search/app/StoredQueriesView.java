@@ -17,6 +17,7 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(builder = "new")
+@SuppressWarnings("PMD.TooManyMethods")
 public abstract class StoredQueriesView extends OgcApiView {
 
   StoredQueriesView() {

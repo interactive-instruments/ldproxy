@@ -57,7 +57,7 @@ public class QueryParameterFStoredQuery extends QueryParameterF {
 
   @Override
   protected boolean matchesPath(String definitionPath) {
-    return definitionPath.equals("/search/{queryId}");
+    return "/search/{queryId}".equals(definitionPath);
   }
 
   @Override

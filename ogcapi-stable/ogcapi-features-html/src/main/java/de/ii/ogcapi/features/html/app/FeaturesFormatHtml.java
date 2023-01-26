@@ -121,7 +121,6 @@ public class FeaturesFormatHtml
       if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record))
         builder.add("http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/html");
     }
-
     return builder.build();
   }
 
@@ -414,7 +413,8 @@ public class FeaturesFormatHtml
     String collectionsTitle = i18n.get("collectionsTitle", language);
     String itemsTitle = i18n.get("itemsTitle", language);
 
-    URICustomizer uriBuilder = uriCustomizer.clearParameters().removePathSegment("items", -1);
+    URICustomizer uriBuilder =
+        uriCustomizer.copy().clearParameters().removePathSegment("items", -1);
 
     return ModifiableFeatureCollectionView.create()
         .setApiData(apiData)
@@ -466,9 +466,6 @@ public class FeaturesFormatHtml
                 .sorted(Comparator.comparing(link -> link.getTypeLabel().toUpperCase()))
                 .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
                 .collect(Collectors.toList()))
-        // TODO Derived
-        .setUriBuilderWithFOnly(
-            uriCustomizer.copy().clearParameters().ensureParameter("f", getMediaType().parameter()))
         .setRawTemporalExtent(api.getTemporalExtent(featureType.getId()));
   }
 
@@ -560,8 +557,6 @@ public class FeaturesFormatHtml
         .setGeometryProperties(geometryProperties)
         .setRawTemporalExtent(api.getTemporalExtent(featureType.getId()))
         .setRawFormats(formats)
-        .setUriBuilderWithFOnly(
-            uriCustomizer.copy().clearParameters().ensureParameter("f", getMediaType().parameter()))
         .setBreadCrumbs(
             new ImmutableList.Builder<NavigationDTO>()
                 .add(
@@ -681,9 +676,6 @@ public class FeaturesFormatHtml
                 .sorted(Comparator.comparing(link -> link.getTypeLabel().toUpperCase()))
                 .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
                 .collect(Collectors.toList()))
-        // TODO Derived
-        .setUriBuilderWithFOnly(
-            uriCustomizer.copy().clearParameters().ensureParameter("f", getMediaType().parameter()))
         .setRawTemporalExtent(api.getTemporalExtent());
   }
 

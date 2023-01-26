@@ -287,8 +287,7 @@ public interface EndpointTileMixin {
     TileFormatExtension outputFormat =
         requestContext
             .getApi()
-            .getOutputFormat(
-                TileFormatExtension.class, requestContext.getMediaType(), path, collectionId)
+            .getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), collectionId)
             .orElseThrow(
                 () ->
                     new NotAcceptableException(

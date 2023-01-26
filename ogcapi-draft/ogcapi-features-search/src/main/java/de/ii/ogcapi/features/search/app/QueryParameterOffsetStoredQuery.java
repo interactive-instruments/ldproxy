@@ -34,10 +34,13 @@ import javax.inject.Singleton;
 public class QueryParameterOffsetStoredQuery extends ApiExtensionCache
     implements OgcApiQueryParameter {
 
+  private Schema<?> schema;
+
   private final SchemaValidator schemaValidator;
 
   @Inject
   QueryParameterOffsetStoredQuery(SchemaValidator schemaValidator) {
+    super();
     this.schemaValidator = schemaValidator;
   }
 
@@ -64,10 +67,8 @@ public class QueryParameterOffsetStoredQuery extends ApiExtensionCache
         () ->
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
-                && definitionPath.equals("/search/{queryId}"));
+                && "/search/{queryId}".equals(definitionPath));
   }
-
-  private Schema<?> schema = null;
 
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {
