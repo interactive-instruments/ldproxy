@@ -16,7 +16,6 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -57,33 +56,13 @@ public class RouteDefinitionFormatJson implements RouteDefinitionFormatExtension
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return getContent(apiData, path, HttpMethods.GET);
-  }
-
-  @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
-    if (path.equals("/routes/{routeId}/definition") && method.equals(HttpMethods.GET))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaRouteDefinition)
-          .schemaRef(RouteDefinition.SCHEMA_REF)
-          .referencedSchemas(referencedSchemas)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-    return null;
-  }
-
-  @Override
-  public ApiMediaTypeContent getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    if (path.equals("/routes") && method.equals(HttpMethods.POST))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaRouteDefinition)
-          .schemaRef(RouteDefinition.SCHEMA_REF)
-          .referencedSchemas(referencedSchemas)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-    return null;
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(schemaRouteDefinition)
+        .schemaRef(RouteDefinition.SCHEMA_REF)
+        .referencedSchemas(referencedSchemas)
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
   }
 
   @Override

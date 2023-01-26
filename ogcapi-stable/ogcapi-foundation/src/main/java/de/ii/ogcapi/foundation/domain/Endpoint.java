@@ -52,7 +52,7 @@ public abstract class Endpoint implements EndpointExtension {
       // compile and cache the API definition
       ApiEndpointDefinition definition = getDefinition(api.getData());
 
-      if (getFormats().isEmpty()
+      if (getResourceFormats().isEmpty()
           && definition.getResources().values().stream()
               .map(r -> r.getOperations().keySet())
               .flatMap(Collection::stream)
@@ -106,7 +106,16 @@ public abstract class Endpoint implements EndpointExtension {
   /**
    * @return the list of output format candidates for this endpoint
    */
-  public abstract List<? extends FormatExtension> getFormats();
+  public abstract List<? extends FormatExtension> getResourceFormats();
+
+  /**
+   * @return the list of input format candidates for this endpoint
+   */
+  public List<? extends FormatExtension> getRequestFormats() {
+    return getResourceFormats().stream()
+        .filter(FormatExtension::canSupportTransactions)
+        .collect(Collectors.toUnmodifiableList());
+  }
 
   public Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters) {
     return toFlatMap(queryParameters, false);
@@ -128,19 +137,18 @@ public abstract class Endpoint implements EndpointExtension {
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
-  public Map<MediaType, ApiMediaTypeContent> getContent(OgcApiDataV2 apiData, String path) {
-    return getFormats().stream()
+  public Map<MediaType, ApiMediaTypeContent> getResponseContent(OgcApiDataV2 apiData) {
+    return getResourceFormats().stream()
         .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-        .map(f -> f.getContent(apiData, path))
+        .map(FormatExtension::getContent)
         .filter(Objects::nonNull)
         .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
   }
 
-  protected Map<MediaType, ApiMediaTypeContent> getContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    return getFormats().stream()
-        .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-        .map(f -> f.getContent(apiData, path, method))
+  public Map<MediaType, ApiMediaTypeContent> getRequestContent(OgcApiDataV2 apiData) {
+    return getRequestFormats().stream()
+        .filter(inputFormatExtension -> inputFormatExtension.isEnabledForApi(apiData))
+        .map(FormatExtension::getContent)
         .filter(Objects::nonNull)
         .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
   }

@@ -421,8 +421,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                               .filter(
                                   f ->
                                       Objects.nonNull(
-                                          f.getContent(
-                                              apiData, String.format("/search/%s", queryId))))
+                                          f.getFeatureContent(apiData, Optional.empty(), true)))
                               .map(
                                   f ->
                                       new AbstractMap.SimpleImmutableEntry<>(

@@ -18,8 +18,7 @@ import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
@@ -34,8 +33,6 @@ import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
 import de.ii.xtraplatform.services.domain.ServicesContext;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
@@ -43,7 +40,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,21 +52,12 @@ public class StyleFormatHtml implements StyleFormatExtension {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StyleFormatHtml.class);
   public static final String MEDIA_TYPE_STRING = "application/vnd.mapbox.style+json";
-  static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(MediaType.TEXT_HTML_TYPE)
-          .label("HTML")
-          .parameter("html")
-          .build();
 
-  private final Schema schemaStyle;
   private final ClassSchemaCache classSchemaCache;
   private final URI servicesUri;
-  public static final String SCHEMA_REF_STYLE = "#/components/schemas/htmlSchema";
 
   @Inject
   public StyleFormatHtml(ClassSchemaCache classSchemaCache, ServicesContext servicesContext) {
-    schemaStyle = new StringSchema().example("<html>...</html>");
     this.classSchemaCache = classSchemaCache;
     this.servicesUri = servicesContext.getUri();
   }
@@ -92,17 +79,13 @@ public class StyleFormatHtml implements StyleFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(schemaStyle)
-        .schemaRef(SCHEMA_REF_STYLE)
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
+  public ApiMediaType getMediaType() {
+    return ApiMediaType.HTML_MEDIA_TYPE;
   }
 
   @Override
-  public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
+  public ApiMediaTypeContent getContent() {
+    return FormatExtension.HTML_CONTENT;
   }
 
   @Override

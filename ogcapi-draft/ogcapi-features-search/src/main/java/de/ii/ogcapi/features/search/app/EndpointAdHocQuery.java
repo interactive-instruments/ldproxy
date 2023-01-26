@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
@@ -128,16 +129,15 @@ public class EndpointAdHocQuery extends Endpoint implements ConformanceClass {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null) {
       formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class);
     }
     return formats;
   }
 
-  private Map<MediaType, ApiMediaTypeContent> getRequestContent(
-      Optional<FeaturesCoreConfiguration> config) {
-
+  @Override
+  public Map<MediaType, ApiMediaTypeContent> getRequestContent(OgcApiDataV2 apiData) {
     return ImmutableMap.of(
         REQUEST_MEDIA_TYPE.type(),
         new ImmutableApiMediaTypeContent.Builder()
@@ -145,8 +145,25 @@ public class EndpointAdHocQuery extends Endpoint implements ConformanceClass {
             .schema(schema)
             .schemaRef(QueryExpression.SCHEMA_REF)
             .referencedSchemas(referencedSchemas)
-            .examples(ImmutableList.of())
             .build());
+  }
+
+  public Map<MediaType, ApiMediaTypeContent> getFeatureContent(
+      List<? extends FormatExtension> formats,
+      OgcApiDataV2 apiData,
+      Optional<String> collectionId,
+      boolean featureCollection) {
+    return formats.stream()
+        .filter(f -> f instanceof FeatureFormatExtension)
+        .map(f -> (FeatureFormatExtension) f)
+        .filter(
+            f ->
+                collectionId
+                    .map(s -> f.isEnabledForApi(apiData, s))
+                    .orElseGet(() -> f.isEnabledForApi(apiData)))
+        .map(f -> f.getFeatureContent(apiData, collectionId, featureCollection))
+        .filter(Objects::nonNull)
+        .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
   }
 
   @Override
@@ -167,8 +184,9 @@ public class EndpointAdHocQuery extends Endpoint implements ConformanceClass {
     Optional<String> operationDescription = Optional.of(description);
     ImmutableOgcApiResourceData.Builder resourceBuilder =
         new ImmutableOgcApiResourceData.Builder().path(path);
-    Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(config);
-    Map<MediaType, ApiMediaTypeContent> responseContent = getContent(apiData, "/search", method);
+    Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData);
+    Map<MediaType, ApiMediaTypeContent> responseContent =
+        getFeatureContent(getResourceFormats(), apiData, Optional.empty(), true);
     ApiOperation.of(
             requestContent,
             responseContent,

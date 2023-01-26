@@ -13,7 +13,6 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -37,19 +36,9 @@ public interface FeatureFormatExtension extends FormatExtension {
 
   ApiMediaType getCollectionMediaType();
 
-  @Override
-  default ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
-    if (method.equals(HttpMethods.GET)) {
-      return getContent(apiData, path);
-
-    } else if (path.equals("/search") && method.equals(HttpMethods.POST)) {
-      return getContent(apiData, "/collections/{collectionId}/items");
-
-    } else if (path.matches("/search/[\\w\\-]+") /* TODO pattern */
-        && method.equals(HttpMethods.POST)) {
-      return getContent(apiData, "/collections/{collectionId}/items");
-    }
-    return null;
+  default ApiMediaTypeContent getFeatureContent(
+      OgcApiDataV2 apiData, Optional<String> collectionId, boolean featureCollection) {
+    return getContent();
   }
 
   default boolean canPassThroughFeatures() {

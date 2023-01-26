@@ -54,7 +54,7 @@ public class StoredQueriesFormatJson implements StoredQueriesFormat {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  public ApiMediaTypeContent getContent() {
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schema)
         .schemaRef(StoredQueries.SCHEMA_REF)

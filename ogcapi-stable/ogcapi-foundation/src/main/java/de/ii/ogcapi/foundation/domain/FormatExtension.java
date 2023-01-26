@@ -8,14 +8,35 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import io.swagger.v3.oas.models.media.BinarySchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
+import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
 
 @AutoMultiBind
 public interface FormatExtension extends ApiExtension {
 
-  /**
-   * @return the media type of this format
-   */
-  ApiMediaType getMediaType();
+  ApiMediaTypeContent HTML_CONTENT =
+      new ImmutableApiMediaTypeContent.Builder()
+          .schema(new StringSchema().example("<html>...</html>"))
+          .schemaRef("#/components/schemas/htmlSchema")
+          .ogcApiMediaType(ApiMediaType.HTML_MEDIA_TYPE)
+          .build();
+
+  ApiMediaTypeContent SCHEMA_CONTENT =
+      new ImmutableApiMediaTypeContent.Builder()
+          .schema(new ObjectSchema())
+          // TODO with OpenAPI 3.1 change to a link to a property schema
+          // "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v3.0/schema.json#/definitions/Schema"
+          .schemaRef("#/components/schemas/anyObject")
+          .ogcApiMediaType(ApiMediaType.JSON_SCHEMA_MEDIA_TYPE)
+          .build();
+
+  Schema<?> OBJECT_SCHEMA = new ObjectSchema();
+  String OBJECT_SCHEMA_REF = "#/components/schemas/anyObject";
+
+  Schema<?> BINARY_SCHEMA = new BinarySchema();
+  String BINARY_SCHEMA_REF = "#/components/schemas/binary";
 
   /**
    * @return the path pattern (regex) for this format
@@ -23,52 +44,15 @@ public interface FormatExtension extends ApiExtension {
   String getPathPattern();
 
   /**
-   * @param apiData information about the API
-   * @param path the resource path
+   * @return the media type of this format
+   */
+  ApiMediaType getMediaType();
+
+  /**
    * @return the Schema and an optional example object for this format and a GET operation on this
    *     resource in this API
    */
-  ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path);
-
-  /**
-   * @param apiData information about the API
-   * @param path the resource path
-   * @param method the HTTP method of the operation
-   * @return the Schema and an optional example object for this format and the resource in this API
-   */
-  default ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
-    if (method == HttpMethods.GET) {
-      return getContent(apiData, path);
-    }
-
-    return null;
-  }
-
-  /**
-   * @param apiData information about the API
-   * @param path the resource path
-   * @param method the HTTP method of the operation
-   * @return the Schema and an optional example object for a request body in this format and the
-   *     resource in this API
-   */
-  default ApiMediaTypeContent getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    return null;
-  }
-
-  /**
-   * @return {@code true}, if the response content varies from API to API
-   */
-  default boolean contentPerApi() {
-    return false;
-  }
-
-  /**
-   * @return {@code true}, if the response content varies from resource to resource
-   */
-  default boolean contentPerResource() {
-    return false;
-  }
+  ApiMediaTypeContent getContent();
 
   /**
    * @return {@code true}, if the format can be used in POST, PUT or PATCH requests

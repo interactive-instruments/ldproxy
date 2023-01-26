@@ -22,6 +22,7 @@ import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.tilematrixsets.domain.ImmutableTileMatrixSetLinks;
 import de.ii.ogcapi.tilematrixsets.domain.ImmutableTileMatrixSetOgcApi;
 import de.ii.ogcapi.tilematrixsets.domain.ImmutableTileMatrixSets;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetFormatExtension;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetOgcApi;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSets;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsFormatExtension;
@@ -147,7 +148,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
             null,
             HeaderContentDisposition.of(
                 String.format("tileMatrixSets.%s", outputFormat.getMediaType().fileExtension())))
-        .entity(outputFormat.getTileMatrixSetsEntity(tileMatrixSets, api, requestContext))
+        .entity(outputFormat.getEntity(tileMatrixSets, api, requestContext))
         .build();
   }
 
@@ -157,9 +158,9 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
     String tileMatrixSetId = queryInput.getTileMatrixSetId();
     String path = "/tileMatrixSets/" + tileMatrixSetId;
 
-    TileMatrixSetsFormatExtension outputFormat =
+    TileMatrixSetFormatExtension outputFormat =
         api.getOutputFormat(
-                TileMatrixSetsFormatExtension.class,
+                TileMatrixSetFormatExtension.class,
                 requestContext.getMediaType(),
                 path,
                 Optional.empty())
@@ -213,7 +214,7 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
             HeaderContentDisposition.of(
                 String.format(
                     "%s.%s", tileMatrixSetId, outputFormat.getMediaType().fileExtension())))
-        .entity(outputFormat.getTileMatrixSetEntity(tileMatrixSetData, api, requestContext))
+        .entity(outputFormat.getEntity(tileMatrixSetData, api, requestContext))
         .build();
   }
 }

@@ -10,13 +10,14 @@ package de.ii.ogcapi.common.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.common.domain.ApiDefinitionFormatExtension;
-import de.ii.ogcapi.common.domain.CommonFormatExtension;
 import de.ii.ogcapi.common.domain.ConformanceDeclaration;
 import de.ii.ogcapi.common.domain.ConformanceDeclarationExtension;
+import de.ii.ogcapi.common.domain.ConformanceDeclarationFormatExtension;
 import de.ii.ogcapi.common.domain.ImmutableConformanceDeclaration;
 import de.ii.ogcapi.common.domain.ImmutableLandingPage.Builder;
 import de.ii.ogcapi.common.domain.LandingPage;
 import de.ii.ogcapi.common.domain.LandingPageExtension;
+import de.ii.ogcapi.common.domain.LandingPageFormatExtension;
 import de.ii.ogcapi.common.domain.OgcApiExtent;
 import de.ii.ogcapi.common.domain.QueriesHandlerCommon;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
@@ -138,9 +139,12 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
               requestContext.getLanguage());
     }
 
-    CommonFormatExtension outputFormatExtension =
+    LandingPageFormatExtension outputFormatExtension =
         api.getOutputFormat(
-                CommonFormatExtension.class, requestContext.getMediaType(), "/", Optional.empty())
+                LandingPageFormatExtension.class,
+                requestContext.getMediaType(),
+                "/",
+                Optional.empty())
             .orElseThrow(
                 () ->
                     new NotAcceptableException(
@@ -151,8 +155,7 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
     LandingPage apiLandingPage = builder.build();
 
     Object entity =
-        outputFormatExtension.getLandingPageEntity(
-            apiLandingPage, requestContext.getApi(), requestContext);
+        outputFormatExtension.getEntity(apiLandingPage, requestContext.getApi(), requestContext);
 
     Date lastModified = getLastModified(queryInput);
     EntityTag etag =
@@ -199,11 +202,11 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
                 i18n,
                 requestContext.getLanguage());
 
-    CommonFormatExtension outputFormatExtension =
+    ConformanceDeclarationFormatExtension outputFormatExtension =
         requestContext
             .getApi()
             .getOutputFormat(
-                CommonFormatExtension.class,
+                ConformanceDeclarationFormatExtension.class,
                 requestContext.getMediaType(),
                 "/conformance",
                 Optional.empty())
@@ -243,7 +246,7 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
     ConformanceDeclaration conformanceDeclaration = builder.build();
 
     Object entity =
-        outputFormatExtension.getConformanceEntity(
+        outputFormatExtension.getEntity(
             conformanceDeclaration, requestContext.getApi(), requestContext);
     Date lastModified = getLastModified(queryInput);
     EntityTag etag =

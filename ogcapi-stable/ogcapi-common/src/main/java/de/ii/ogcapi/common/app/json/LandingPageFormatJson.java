@@ -9,16 +9,14 @@ package de.ii.ogcapi.common.app.json;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.common.domain.CommonFormatExtension;
-import de.ii.ogcapi.common.domain.ConformanceDeclaration;
 import de.ii.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ogcapi.common.domain.LandingPage;
+import de.ii.ogcapi.common.domain.LandingPageFormatExtension;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -28,34 +26,21 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 
 /**
  * @title JSON
  */
 @Singleton
 @AutoBind
-public class CommonFormatJson implements CommonFormatExtension, ConformanceClass {
-
-  public static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "json"))
-          .label("JSON")
-          .parameter("json")
-          .build();
+public class LandingPageFormatJson implements LandingPageFormatExtension, ConformanceClass {
 
   private final Schema<?> schemaLandingPage;
   private final Map<String, Schema<?>> referencedSchemasLandingPage;
-  private final Schema<?> schemaConformance;
-  private final Map<String, Schema<?>> referencedSchemasConformance;
 
   @Inject
-  public CommonFormatJson(ClassSchemaCache classSchemaCache) {
+  public LandingPageFormatJson(ClassSchemaCache classSchemaCache) {
     schemaLandingPage = classSchemaCache.getSchema(LandingPage.class);
     referencedSchemasLandingPage = classSchemaCache.getReferencedSchemas(LandingPage.class);
-    schemaConformance = classSchemaCache.getSchema(ConformanceDeclaration.class);
-    referencedSchemasConformance =
-        classSchemaCache.getReferencedSchemas(ConformanceDeclaration.class);
   }
 
   @Override
@@ -64,35 +49,22 @@ public class CommonFormatJson implements CommonFormatExtension, ConformanceClass
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-
-    // TODO add examples
-    if (path.equals("/")) {
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaLandingPage)
-          .schemaRef(LandingPage.SCHEMA_REF)
-          .referencedSchemas(referencedSchemasLandingPage)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-    } else if (path.equals("/conformance")) {
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaConformance)
-          .schemaRef(ConformanceDeclaration.SCHEMA_REF)
-          .referencedSchemas(referencedSchemasConformance)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-    }
-
-    throw new RuntimeException("Unexpected path: " + path);
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(schemaLandingPage)
+        .schemaRef(LandingPage.SCHEMA_REF)
+        .referencedSchemas(referencedSchemasLandingPage)
+        .ogcApiMediaType(getMediaType())
+        .build();
   }
 
   @Override
   public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
+    return ApiMediaType.JSON_MEDIA_TYPE;
   }
 
   @Override
-  public Object getLandingPageEntity(
+  public Object getEntity(
       LandingPage apiLandingPage, OgcApi api, ApiRequestContext requestContext) {
     return new ImmutableLandingPage.Builder()
         .from(apiLandingPage)
@@ -101,11 +73,5 @@ public class CommonFormatJson implements CommonFormatExtension, ConformanceClass
                 .filter(entry -> !entry.getKey().equals("datasetDownloadLinks"))
                 .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey, Map.Entry::getValue)))
         .build();
-  }
-
-  @Override
-  public Object getConformanceEntity(
-      ConformanceDeclaration conformanceDeclaration, OgcApi api, ApiRequestContext requestContext) {
-    return conformanceDeclaration;
   }
 }

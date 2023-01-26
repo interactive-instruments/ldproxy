@@ -15,25 +15,19 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.NavigationDTO;
-import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 
 @Singleton
 @AutoBind
 public class StoredQueriesFormatHtml implements StoredQueriesFormat {
-
-  static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder().type(MediaType.TEXT_HTML_TYPE).parameter("html").build();
 
   private final I18n i18n;
 
@@ -44,7 +38,12 @@ public class StoredQueriesFormatHtml implements StoredQueriesFormat {
 
   @Override
   public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
+    return ApiMediaType.HTML_MEDIA_TYPE;
+  }
+
+  @Override
+  public ApiMediaTypeContent getContent() {
+    return FormatExtension.HTML_CONTENT;
   }
 
   @Override
@@ -69,15 +68,6 @@ public class StoredQueriesFormatHtml implements StoredQueriesFormat {
             .getExtension(HtmlConfiguration.class, collectionId)
             .map(ExtensionConfiguration::isEnabled)
             .orElse(true);
-  }
-
-  @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new StringSchema().example("<html>...</html>"))
-        .schemaRef("#/components/schemas/htmlSchema")
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
   }
 
   private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {

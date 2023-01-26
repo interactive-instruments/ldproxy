@@ -14,37 +14,31 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.ogcapi.html.domain.NavigationDTO;
+import de.ii.ogcapi.maps.domain.MapTileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSetsView;
 import de.ii.ogcapi.tiles.domain.TileSets;
-import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
-import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 
 /**
  * @title HTML
  */
 @Singleton
 @AutoBind
-public class MapTileSetsFormatHtml implements TileSetsFormatExtension {
-
-  static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder().type(MediaType.TEXT_HTML_TYPE).parameter("html").build();
+public class MapTileSetsFormatHtml implements MapTileSetsFormatExtension {
 
   private final I18n i18n;
   private final TileMatrixSetRepository tileMatrixSetRepository;
@@ -56,26 +50,18 @@ public class MapTileSetsFormatHtml implements TileSetsFormatExtension {
   }
 
   @Override
-  public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
-  }
-
-  @Override
   public String getPathPattern() {
     return "^(?:/collections/" + COLLECTION_ID_PATTERN + ")?/map/tiles/?$";
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.equals("/map/tiles") || path.equals("/collections/{collectionId}/map/tiles")) {
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(new StringSchema().example("<html>...</html>"))
-          .schemaRef("#/components/schemas/htmlSchema")
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-    }
+  public ApiMediaType getMediaType() {
+    return ApiMediaType.HTML_MEDIA_TYPE;
+  }
 
-    return null;
+  @Override
+  public ApiMediaTypeContent getContent() {
+    return FormatExtension.HTML_CONTENT;
   }
 
   private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {

@@ -37,7 +37,6 @@ import static de.ii.ogcapi.features.cityjson.domain.CityJsonWriter.VERTICES;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
-import de.ii.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ogcapi.features.cityjson.domain.CityJsonConfiguration;
 import de.ii.ogcapi.features.cityjson.domain.CityJsonWriter;
 import de.ii.ogcapi.features.cityjson.domain.CityJsonWriterRegistry;
@@ -53,7 +52,6 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -86,17 +84,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.ws.rs.core.MediaType;
 
 public abstract class FeaturesFormatCityJsonBase implements FeatureFormatExtension {
 
-  public static final ApiMediaType COLLECTION_MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "json"))
-          .label("JSON")
-          .parameter("json")
-          .build();
-
+  public static final String IGNORE = "ignore";
   protected final FeaturesCoreProviders providers;
   protected final EntityRegistry entityRegistry;
   protected final FeaturesCoreValidation featuresCoreValidator;
@@ -128,11 +119,6 @@ public abstract class FeaturesFormatCityJsonBase implements FeatureFormatExtensi
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return CityJsonConfiguration.class;
-  }
-
-  @Override
-  public boolean canSupportTransactions() {
-    return false;
   }
 
   @Override
@@ -199,37 +185,23 @@ public abstract class FeaturesFormatCityJsonBase implements FeatureFormatExtensi
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    String schemaRef = "#/components/schemas/anyObject";
-    Schema<?> schema = new ObjectSchema();
-    String collectionId =
-        path.startsWith("/collections") ? path.split("/", 4)[2] : "{collectionId}";
-    if (collectionId.equals("{collectionId}")
-        && apiData
-            .getExtension(CollectionsConfiguration.class)
-            .filter(config -> config.getCollectionDefinitionsAreIdentical().orElse(false))
-            .isPresent()) {
-      collectionId = apiData.getCollections().keySet().iterator().next();
-    }
-    if (!collectionId.equals("{collectionId}")) {
-      if (path.matches("/collections/[^/]+/items/?")) {
-        schemaRef = getSchemaRef(collectionId);
-        schema = getSchema(collectionId);
-      } else if (path.matches("/collections/[^/]+/items/[^/]+/?")) {
-        schemaRef = getSchemaRef(collectionId);
-        schema = getSchema(collectionId);
-      }
-    }
+  public ApiMediaTypeContent getContent() {
     return new ImmutableApiMediaTypeContent.Builder()
-        .schema(schema)
-        .schemaRef(schemaRef)
+        .schema(getSchema(IGNORE))
+        .schemaRef(getSchemaRef(IGNORE))
         .ogcApiMediaType(getMediaType())
         .build();
   }
 
   @Override
+  public ApiMediaTypeContent getFeatureContent(
+      OgcApiDataV2 apiData, Optional<String> collectionId, boolean featureCollection) {
+    return getContent();
+  }
+
+  @Override
   public ApiMediaType getCollectionMediaType() {
-    return COLLECTION_MEDIA_TYPE;
+    return ApiMediaType.JSON_MEDIA_TYPE;
   }
 
   @Override

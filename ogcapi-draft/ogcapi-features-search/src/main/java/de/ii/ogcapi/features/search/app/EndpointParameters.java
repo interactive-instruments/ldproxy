@@ -80,7 +80,7 @@ public class EndpointParameters extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null) formats = extensionRegistry.getExtensionsForType(ParametersFormat.class);
     return formats;
   }
@@ -110,7 +110,7 @@ public class EndpointParameters extends Endpoint {
               false,
               params,
               ImmutableList.of(),
-              getContent(apiData, path),
+              getResponseContent(apiData),
               operationSummary,
               Optional.empty(),
               Optional.empty(),

@@ -29,9 +29,8 @@ import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -54,8 +53,6 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
 import de.ii.xtraplatform.web.domain.MustacheRenderer;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
@@ -73,7 +70,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 
 /**
  * @title HTML
@@ -83,21 +79,6 @@ import javax.ws.rs.core.MediaType;
 public class FeaturesFormatHtml
     implements FeatureFormatExtension, ItemTypeSpecificConformanceClass {
 
-  public static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(MediaType.TEXT_HTML_TYPE)
-          .label("HTML")
-          .parameter("html")
-          .build();
-  public static final ApiMediaType COLLECTION_MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(MediaType.TEXT_HTML_TYPE)
-          .label("HTML")
-          .parameter("html")
-          .build();
-
-  private static final Schema<?> schema = new StringSchema().example("<html>...</html>");
-  private static final String schemaRef = "#/components/schemas/htmlSchema";
   private static final WithTransformationsApplied SCHEMA_FLATTENER =
       new WithTransformationsApplied(
           ImmutableMap.of(
@@ -145,22 +126,18 @@ public class FeaturesFormatHtml
   }
 
   @Override
-  public ApiMediaType getCollectionMediaType() {
-    return COLLECTION_MEDIA_TYPE;
-  }
-
-  @Override
   public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
+    return ApiMediaType.HTML_MEDIA_TYPE;
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(schema)
-        .schemaRef(schemaRef)
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
+  public ApiMediaTypeContent getContent() {
+    return FormatExtension.HTML_CONTENT;
+  }
+
+  @Override
+  public ApiMediaType getCollectionMediaType() {
+    return getMediaType();
   }
 
   @Override
@@ -491,7 +468,7 @@ public class FeaturesFormatHtml
                 .collect(Collectors.toList()))
         // TODO Derived
         .setUriBuilderWithFOnly(
-            uriCustomizer.copy().clearParameters().ensureParameter("f", MEDIA_TYPE.parameter()))
+            uriCustomizer.copy().clearParameters().ensureParameter("f", getMediaType().parameter()))
         .setRawTemporalExtent(api.getTemporalExtent(featureType.getId()));
   }
 
@@ -584,7 +561,7 @@ public class FeaturesFormatHtml
         .setRawTemporalExtent(api.getTemporalExtent(featureType.getId()))
         .setRawFormats(formats)
         .setUriBuilderWithFOnly(
-            uriCustomizer.copy().clearParameters().ensureParameter("f", MEDIA_TYPE.parameter()))
+            uriCustomizer.copy().clearParameters().ensureParameter("f", getMediaType().parameter()))
         .setBreadCrumbs(
             new ImmutableList.Builder<NavigationDTO>()
                 .add(
@@ -706,7 +683,7 @@ public class FeaturesFormatHtml
                 .collect(Collectors.toList()))
         // TODO Derived
         .setUriBuilderWithFOnly(
-            uriCustomizer.copy().clearParameters().ensureParameter("f", MEDIA_TYPE.parameter()))
+            uriCustomizer.copy().clearParameters().ensureParameter("f", getMediaType().parameter()))
         .setRawTemporalExtent(api.getTemporalExtent());
   }
 

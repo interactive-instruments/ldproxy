@@ -17,12 +17,8 @@ public interface TileMatrixSetsFormatExtension extends GenericFormatExtension {
 
   @Override
   default String getPathPattern() {
-    return "^/tileMatrixSets(?:/\\w+)?/?$";
+    return "^/tileMatrixSets/?$";
   }
 
-  Object getTileMatrixSetsEntity(
-      TileMatrixSets tileMatrixSets, OgcApi api, ApiRequestContext requestContext);
-
-  Object getTileMatrixSetEntity(
-      TileMatrixSetOgcApi tileMatrixSet, OgcApi api, ApiRequestContext requestContext);
+  Object getEntity(TileMatrixSets tileMatrixSets, OgcApi api, ApiRequestContext requestContext);
 }

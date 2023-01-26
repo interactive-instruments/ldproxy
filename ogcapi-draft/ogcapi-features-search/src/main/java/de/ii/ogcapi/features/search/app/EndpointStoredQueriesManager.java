@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.search.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.features.search.domain.ImmutableQueryExpression;
 import de.ii.ogcapi.features.search.domain.ImmutableQueryInputStoredQueryCreateReplace;
@@ -39,7 +40,6 @@ import io.dropwizard.auth.Auth;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -106,22 +106,13 @@ public class EndpointStoredQueriesManager extends Endpoint implements Conformanc
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats =
           extensionRegistry.getExtensionsForType(StoredQueryFormat.class).stream()
               .filter(StoredQueryFormat::canSupportTransactions)
               .collect(Collectors.toList());
     return formats;
-  }
-
-  private Map<MediaType, ApiMediaTypeContent> getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    return getFormats().stream()
-        .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-        .map(f -> f.getRequestContent(apiData, path, method))
-        .filter(Objects::nonNull)
-        .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
   }
 
   @Override
@@ -157,8 +148,7 @@ public class EndpointStoredQueriesManager extends Endpoint implements Conformanc
       Optional<String> operationDescription = Optional.of(description);
       ImmutableOgcApiResourceData.Builder resourceBuilder =
           new ImmutableOgcApiResourceData.Builder().path(path).pathParameters(pathParameters);
-      Map<MediaType, ApiMediaTypeContent> requestContent =
-          getRequestContent(apiData, path, HttpMethods.PUT);
+      Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData);
       ApiOperation.of(
               path,
               HttpMethods.PUT,
@@ -176,11 +166,10 @@ public class EndpointStoredQueriesManager extends Endpoint implements Conformanc
       headers = getHeaders(extensionRegistry, apiData, path, HttpMethods.DELETE);
       operationSummary = "delete a stored query";
       operationDescription = Optional.of("Delete an existing stored query with the id `queryId`.");
-      requestContent = getRequestContent(apiData, path, HttpMethods.DELETE);
       ApiOperation.of(
               path,
               HttpMethods.DELETE,
-              requestContent,
+              ImmutableMap.of(),
               queryParameters,
               headers,
               operationSummary,

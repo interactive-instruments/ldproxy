@@ -62,16 +62,13 @@ public class TileSetFormatJson implements TileSetFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.endsWith("/tiles/{tileMatrixSetId}"))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaTileSetJson)
-          .schemaRef(TileSet.SCHEMA_REF)
-          .referencedSchemas(referencedSchemas)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-
-    throw new RuntimeException("Unexpected path: " + path);
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(schemaTileSetJson)
+        .schemaRef(TileSet.SCHEMA_REF)
+        .referencedSchemas(referencedSchemas)
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
   }
 
   @Override

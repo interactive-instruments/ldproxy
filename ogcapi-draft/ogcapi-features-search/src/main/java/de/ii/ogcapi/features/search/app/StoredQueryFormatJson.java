@@ -14,13 +14,11 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Map;
-import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -56,27 +54,13 @@ public class StoredQueryFormatJson implements StoredQueryFormat {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  public ApiMediaTypeContent getContent() {
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schema)
         .schemaRef(QueryExpression.SCHEMA_REF)
         .referencedSchemas(referencedSchemas)
         .ogcApiMediaType(MEDIA_TYPE)
         .build();
-  }
-
-  @Override
-  public ApiMediaTypeContent getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    if (Objects.equals(method, HttpMethods.PUT)) {
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schema)
-          .schemaRef(QueryExpression.SCHEMA_REF)
-          .referencedSchemas(referencedSchemas)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-    }
-    return null;
   }
 
   @Override

@@ -13,20 +13,15 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.oas30.domain.Oas30Configuration;
 import de.ii.xtraplatform.openapi.domain.OpenApiViewerResource;
-import io.swagger.v3.oas.models.media.StringSchema;
 import java.net.URISyntaxException;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @title HTML
@@ -34,14 +29,6 @@ import org.slf4j.LoggerFactory;
 @Singleton
 @AutoBind
 public class OpenApiHtml implements ApiDefinitionFormatExtension {
-
-  private static Logger LOGGER = LoggerFactory.getLogger(OpenApiHtml.class);
-  private static ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(MediaType.TEXT_HTML_TYPE)
-          .label("HTML")
-          .parameter("html")
-          .build();
 
   private final ExtendableOpenApiDefinition openApiDefinition;
   private final OpenApiViewerResource openApiViewerResource;
@@ -53,11 +40,6 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
     this.openApiViewerResource = openApiViewerResource;
   }
 
-  @Override
-  public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
-  }
-
   // always active, if OpenAPI 3.0 is active, since a service-doc link relation is mandatory
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
@@ -65,14 +47,13 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.startsWith("/api/")) return null;
+  public ApiMediaType getMediaType() {
+    return ApiMediaType.HTML_MEDIA_TYPE;
+  }
 
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new StringSchema().example("<html>...</html>"))
-        .schemaRef("#/components/schemas/htmlSchema")
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
+  @Override
+  public ApiMediaTypeContent getContent() {
+    return FormatExtension.HTML_CONTENT;
   }
 
   @Override

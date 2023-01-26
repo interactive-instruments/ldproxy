@@ -61,7 +61,8 @@ import javax.inject.Singleton;
  * @ref:cfg {@link de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration}
  * @ref:cfgProperties {@link
  *     de.ii.ogcapi.tilematrixsets.domain.ImmutableTileMatrixSetsConfiguration}
- * @ref:endpoints {@link de.ii.ogcapi.tilematrixsets.infra.EndpointTileMatrixSets}
+ * @ref:endpoints {@link de.ii.ogcapi.tilematrixsets.infra.EndpointTileMatrixSets}, {@link
+ *     de.ii.ogcapi.tilematrixsets.infra.EndpointTileMatrixSet}
  * @ref:pathParameters {@link de.ii.ogcapi.tilematrixsets.app.PathParameterTileMatrixSetId}
  * @ref:queryParameters {@link de.ii.ogcapi.tilematrixsets.app.QueryParameterFTileMatrixSets}
  */

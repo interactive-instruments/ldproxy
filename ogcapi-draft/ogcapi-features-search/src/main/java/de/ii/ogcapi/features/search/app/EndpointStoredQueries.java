@@ -93,7 +93,7 @@ public class EndpointStoredQueries extends Endpoint implements ConformanceClass 
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(StoredQueriesFormat.class);
     return formats;
@@ -121,7 +121,7 @@ public class EndpointStoredQueries extends Endpoint implements ConformanceClass 
             false,
             queryParameters,
             ImmutableList.of(),
-            getContent(apiData, path),
+            getResponseContent(apiData),
             operationSummary,
             operationDescription,
             Optional.empty(),

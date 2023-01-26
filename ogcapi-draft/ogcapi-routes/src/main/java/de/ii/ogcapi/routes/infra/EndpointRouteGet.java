@@ -81,7 +81,7 @@ public class EndpointRouteGet extends Endpoint implements ConformanceClass {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(RouteFormatExtension.class);
     return formats;
@@ -118,7 +118,7 @@ public class EndpointRouteGet extends Endpoint implements ConformanceClass {
               false,
               queryParameters,
               ImmutableList.of(),
-              getContent(apiData, path),
+              getResponseContent(apiData),
               operationSummary,
               operationDescription,
               Optional.empty(),

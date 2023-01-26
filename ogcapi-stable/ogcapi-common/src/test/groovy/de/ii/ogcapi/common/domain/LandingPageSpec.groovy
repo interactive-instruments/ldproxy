@@ -150,8 +150,8 @@ class LandingPageSpec extends Specification {
 
             @Override
             <T extends ApiExtension> List<T> getExtensionsForType(Class<T> extensionType) {
-                if (extensionType == CommonFormatExtension.class) {
-                    return ImmutableList.of((T) new CommonFormatExtension() {
+                if (extensionType == LandingPageFormatExtension.class) {
+                    return ImmutableList.of((T) new LandingPageFormatExtension() {
 
                         @Override
                         ApiMediaType getMediaType() {
@@ -161,7 +161,7 @@ class LandingPageSpec extends Specification {
                         }
 
                         @Override
-                        ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+                        ApiMediaTypeContent getContent() {
                             return new ImmutableApiMediaTypeContent.Builder()
                             .ogcApiMediaType(getMediaType())
                             .schema(new ObjectSchema())
@@ -175,12 +175,36 @@ class LandingPageSpec extends Specification {
                         }
 
                         @Override
-                        Object getLandingPageEntity(LandingPage apiLandingPage, OgcApi api, ApiRequestContext requestContext) {
+                        Object getEntity(LandingPage apiLandingPage, OgcApi api, ApiRequestContext requestContext) {
                             return apiLandingPage
+                        }
+                    })
+                } else if (extensionType == ConformanceDeclarationFormatExtension.class) {
+                    return ImmutableList.of((T) new ConformanceDeclarationFormatExtension() {
+
+                        @Override
+                        ApiMediaType getMediaType() {
+                            return new ImmutableApiMediaType.Builder()
+                                    .type(MediaType.APPLICATION_JSON_TYPE)
+                                    .build()
                         }
 
                         @Override
-                        Object getConformanceEntity(ConformanceDeclaration conformanceDeclaration, OgcApi api, ApiRequestContext requestContext) {
+                        ApiMediaTypeContent getContent() {
+                            return new ImmutableApiMediaTypeContent.Builder()
+                                    .ogcApiMediaType(getMediaType())
+                                    .schema(new ObjectSchema())
+                                    .schemaRef("#/")
+                                    .build()
+                        }
+
+                        @Override
+                        boolean isEnabledForApi(OgcApiDataV2 apiData) {
+                            return true
+                        }
+
+                        @Override
+                        Object getEntity(ConformanceDeclaration conformanceDeclaration, OgcApi api, ApiRequestContext requestContext) {
                             return conformanceDeclaration
                         }
                     })

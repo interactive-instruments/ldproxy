@@ -136,7 +136,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats =
           extensionRegistry.getExtensionsForType(FeatureFormatExtension.class).stream()
@@ -181,11 +181,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             new ImmutableOgcApiResourceData.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> requestContent =
-            collectionId.startsWith("{")
-                ? getRequestContent(apiData, Optional.empty(), subSubPath, HttpMethods.POST)
-                : getRequestContent(
-                    apiData, Optional.of(collectionId), subSubPath, HttpMethods.POST);
+        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData);
         ApiOperation.of(
                 resourcePath,
                 HttpMethods.POST,
@@ -232,11 +228,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             new ImmutableOgcApiResourceData.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> requestContent =
-            collectionId.startsWith("{")
-                ? getRequestContent(apiData, Optional.empty(), subSubPath, HttpMethods.PUT)
-                : getRequestContent(
-                    apiData, Optional.of(collectionId), subSubPath, HttpMethods.PUT);
+        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData);
         ApiOperation.of(
                 resourcePath,
                 HttpMethods.PUT,
@@ -258,11 +250,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
         operationDescription =
             Optional.of(
                 "The content of the request is a partial feature in one of the supported encodings. The id of updated feature is `{featureId}`.");
-        requestContent =
-            collectionId.startsWith("{")
-                ? getRequestContent(apiData, Optional.empty(), subSubPath, HttpMethods.PATCH)
-                : getRequestContent(
-                    apiData, Optional.of(collectionId), subSubPath, HttpMethods.PATCH);
+        requestContent = getRequestContent(apiData);
         ApiOperation.of(
                 resourcePath,
                 HttpMethods.PATCH,

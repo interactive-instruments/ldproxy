@@ -116,7 +116,7 @@ public class EndpointStoredQuery extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class);
     return formats;
@@ -215,7 +215,7 @@ public class EndpointStoredQuery extends Endpoint {
                       false,
                       paramsBuilder.build(),
                       ImmutableList.of(),
-                      getContent(apiData, path),
+                      getResponseContent(apiData),
                       operationSummary,
                       operationDescription,
                       Optional.empty(),

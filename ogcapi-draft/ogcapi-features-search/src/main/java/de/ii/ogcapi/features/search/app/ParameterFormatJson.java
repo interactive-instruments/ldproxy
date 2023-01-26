@@ -49,7 +49,7 @@ public class ParameterFormatJson implements ParameterFormat {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  public ApiMediaTypeContent getContent() {
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schema)
         .schemaRef(Parameter.SCHEMA_REF)

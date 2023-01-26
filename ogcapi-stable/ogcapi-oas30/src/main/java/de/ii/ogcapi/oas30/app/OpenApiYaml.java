@@ -61,9 +61,7 @@ public class OpenApiYaml implements ApiDefinitionFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.startsWith("/api/")) return null;
-
+  public ApiMediaTypeContent getContent() {
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(new ObjectSchema())
         .schemaRef("#/components/schemas/objectSchema")

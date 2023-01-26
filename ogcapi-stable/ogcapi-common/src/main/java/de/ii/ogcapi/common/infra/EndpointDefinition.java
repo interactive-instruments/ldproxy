@@ -70,7 +70,7 @@ public class EndpointDefinition extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(ApiDefinitionFormatExtension.class);
     return formats;
@@ -94,7 +94,7 @@ public class EndpointDefinition extends Endpoint {
             false,
             queryParameters,
             ImmutableList.of(),
-            getContent(apiData, path),
+            getResponseContent(apiData),
             operationSummary,
             Optional.empty(),
             Optional.empty(),
@@ -114,7 +114,7 @@ public class EndpointDefinition extends Endpoint {
             false,
             queryParameters,
             ImmutableList.of(),
-            getContent(apiData, path),
+            getResponseContent(apiData),
             operationSummary,
             Optional.empty(),
             Optional.empty(),

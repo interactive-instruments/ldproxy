@@ -29,7 +29,6 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -75,12 +74,6 @@ public class FeaturesFormatGeoJson
       new ImmutableApiMediaType.Builder()
           .type(new MediaType("application", "geo+json"))
           .label("GeoJSON")
-          .parameter("json")
-          .build();
-  public static final ApiMediaType COLLECTION_MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "json"))
-          .label("JSON")
           .parameter("json")
           .build();
 
@@ -225,71 +218,49 @@ public class FeaturesFormatGeoJson
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  public ApiMediaTypeContent getContent() {
+    Schema<?> schema = new ObjectSchema();
     String schemaRef = "https://geojson.org/schema/FeatureCollection.json";
-    Schema<?> schema = new ObjectSchema(); // TODO
-    String collectionId =
-        path.startsWith("/collections") ? path.split("/", 4)[2] : "{collectionId}";
-    if (collectionId.equals("{collectionId}")
-        && apiData
-            .getExtension(CollectionsConfiguration.class)
-            .filter(config -> config.getCollectionDefinitionsAreIdentical().orElse(false))
-            .isPresent()) {
-      collectionId = apiData.getCollections().keySet().iterator().next();
-    }
-    if (!collectionId.equals("{collectionId}")) {
-      if (path.matches("/collections/[^//]+/items/?")) {
-        schemaRef = schemaGeneratorFeatureCollection.getSchemaReference(collectionId);
-        schema = schemaGeneratorFeatureCollection.getSchema(apiData, collectionId);
-      } else if (path.matches("/collections/[^//]+/items/[^//]+/?")) {
-        schemaRef = schemaGeneratorFeature.getSchemaReference(collectionId);
-        schema = schemaGeneratorFeature.getSchema(apiData, collectionId);
-      }
-    }
     return new ImmutableApiMediaTypeContent.Builder()
-        .schema(schema)
-        .schemaRef(schemaRef)
-        .referencedSchemas(ImmutableMap.of())
-        .ogcApiMediaType(MEDIA_TYPE)
+        .schema(OBJECT_SCHEMA)
+        .schemaRef(OBJECT_SCHEMA_REF)
+        .ogcApiMediaType(getMediaType())
         .build();
   }
 
   @Override
-  public ApiMediaTypeContent getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    String schemaRef = "#/components/schemas/anyObject";
-    Schema schema = new ObjectSchema();
-    String collectionId =
-        path.startsWith("/collections") ? path.split("/", 4)[2] : "{collectionId}";
-    if ((path.matches("/collections/[^//]+/items/[^//]+/?") && method == HttpMethods.PUT)
-        || (path.matches("/collections/[^//]+/items/?") && method == HttpMethods.POST)
-        || (path.matches("/collections/[^//]+/items/[^//]+/?") && method == HttpMethods.PATCH)) {
-
-      if (collectionId.equals("{collectionId}")
-          && apiData
-              .getExtension(CollectionsConfiguration.class)
-              .filter(config -> config.getCollectionDefinitionsAreIdentical().orElse(false))
-              .isPresent()) {
-        collectionId = apiData.getCollections().keySet().iterator().next();
+  public ApiMediaTypeContent getFeatureContent(
+      OgcApiDataV2 apiData, Optional<String> collectionId, boolean featureCollection) {
+    String effectiveCollectionId;
+    if (collectionId.isEmpty()) {
+      if (apiData
+          .getExtension(CollectionsConfiguration.class)
+          .filter(config -> config.getCollectionDefinitionsAreIdentical().orElse(false))
+          .isPresent()) {
+        effectiveCollectionId = apiData.getCollections().keySet().iterator().next();
+      } else {
+        return getContent();
       }
-      if (!collectionId.equals("{collectionId}")) {
-        // TODO: implement getMutablesSchema with SchemaDeriverOpenApiMutables
-        schema = schemaGeneratorFeature.getSchema(apiData, collectionId);
-        schemaRef = schemaGeneratorFeature.getSchemaReference(collectionId);
-      }
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schema)
-          .schemaRef(schemaRef)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
+    } else {
+      effectiveCollectionId = collectionId.get();
     }
 
-    return null;
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(
+            featureCollection
+                ? schemaGeneratorFeatureCollection.getSchema(apiData, effectiveCollectionId)
+                : schemaGeneratorFeature.getSchema(apiData, effectiveCollectionId))
+        .schemaRef(
+            featureCollection
+                ? schemaGeneratorFeatureCollection.getSchemaReference(effectiveCollectionId)
+                : schemaGeneratorFeature.getSchemaReference(effectiveCollectionId))
+        .ogcApiMediaType(getMediaType())
+        .build();
   }
 
   @Override
   public ApiMediaType getCollectionMediaType() {
-    return COLLECTION_MEDIA_TYPE;
+    return ApiMediaType.JSON_MEDIA_TYPE;
   }
 
   @Override

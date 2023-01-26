@@ -58,9 +58,7 @@ public class OpenApiFile implements ApiDefinitionFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.equals("/api")) return null;
-
+  public ApiMediaTypeContent getContent() {
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(new Schema())
         .schemaRef("#/components/schemas/any")

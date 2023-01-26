@@ -34,7 +34,6 @@ import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -91,22 +90,13 @@ public class EndpointStyleMetadataManager extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats =
           extensionRegistry.getExtensionsForType(StyleMetadataFormatExtension.class).stream()
               .filter(StyleMetadataFormatExtension::canSupportTransactions)
               .collect(Collectors.toList());
     return formats;
-  }
-
-  private Map<MediaType, ApiMediaTypeContent> getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    return getFormats().stream()
-        .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-        .map(f -> f.getRequestContent(apiData, path, method))
-        .filter(Objects::nonNull)
-        .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
   }
 
   @Override
@@ -128,8 +118,7 @@ public class EndpointStyleMetadataManager extends Endpoint {
                 + "This operation updates the complete metadata document.");
     ImmutableOgcApiResourceData.Builder resourceBuilder =
         new ImmutableOgcApiResourceData.Builder().path(path).pathParameters(pathParameters);
-    Map<MediaType, ApiMediaTypeContent> requestContent =
-        getRequestContent(apiData, path, methodReplace);
+    Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData);
     ApiOperation.of(
             path,
             methodReplace,
@@ -221,7 +210,7 @@ public class EndpointStyleMetadataManager extends Endpoint {
                 + "\n"
                 + "The same applies to `stylesheets` and `layers`. To update "
                 + "these members, you have to send the complete new array value.");
-    requestContent = getRequestContent(apiData, path, methodUpdate);
+    requestContent = getRequestContent(apiData);
     ApiOperation.of(
             path,
             methodUpdate,

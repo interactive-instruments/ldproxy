@@ -44,7 +44,7 @@ public class QueryParameterFCommon extends QueryParameterF {
 
   @Override
   protected Class<? extends GenericFormatExtension> getFormatClass() {
-    return CommonFormatExtension.class;
+    return ConformanceDeclarationFormatExtension.class;
   }
 
   @Override

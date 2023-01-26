@@ -21,7 +21,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.maps.domain.MapTileFormatExtension;
 import de.ii.ogcapi.maps.domain.MapTilesConfiguration;
-import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import java.util.List;
@@ -87,7 +86,7 @@ public class MapTilesOnCollection implements CollectionExtension {
                           "/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
               .filter(
                   format -> format.isEnabledForApi(api.getData(), featureTypeConfiguration.getId()))
-              .map(TileFormatExtension::getDataType)
+              .map(MapTileFormatExtension::getDataType)
               .findAny();
       if (dataType.isEmpty())
         // no tile format is enabled
