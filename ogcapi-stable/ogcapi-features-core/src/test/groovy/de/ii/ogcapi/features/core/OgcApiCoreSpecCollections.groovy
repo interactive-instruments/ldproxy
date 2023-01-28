@@ -44,7 +44,6 @@ import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.OgcCrs
 import de.ii.xtraplatform.store.app.entities.EntityRegistryImpl
 import de.ii.xtraplatform.store.domain.entities.EntityFactory
-import de.ii.xtraplatform.store.domain.entities.EntityRegistry
 import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType
@@ -59,7 +58,6 @@ class OgcApiCoreSpecCollections extends Specification {
     static QueriesHandlerCollectionsImpl ogcApiQueriesHandlerCollections = new QueriesHandlerCollectionsImpl(registry, new I18nDefault())
     static final EndpointCollections collectionsEndpoint = createCollectionsEndpoint()
     static final EndpointCollection collectionEndpoint = createCollectionEndpoint()
-    static final FeaturesCoreProviders providers = createProvider()
 
     def 'Requirement 13 A: collections response'() {
         given: 'A request to the server at /collections'
@@ -231,6 +229,8 @@ class OgcApiCoreSpecCollections extends Specification {
                 }
 
                 if (extensionType == CollectionExtension.class) {
+                    Lazy<Set<EntityFactory>> factories = () -> [] as Set
+                    FeaturesCoreProviders providers = (FeaturesCoreProviders) new FeaturesCoreProvidersImpl(new EntityRegistryImpl(factories))
                     CollectionExtensionFeatures collectionExtension = new CollectionExtensionFeatures(registry, new I18nDefault(), providers)
                     return ImmutableList.of((T) collectionExtension)
                 }
@@ -337,12 +337,6 @@ class OgcApiCoreSpecCollections extends Specification {
 
     static def createCollectionEndpoint() {
         return new EndpointCollection(registry, ogcApiQueriesHandlerCollections)
-    }
-
-    static def createProvider() {
-        Lazy<Set<EntityFactory>> factories = () -> [] as Set
-        EntityRegistry entityRegistry = new EntityRegistryImpl(factories)
-        return new FeaturesCoreProvidersImpl(entityRegistry)
     }
 
 }
