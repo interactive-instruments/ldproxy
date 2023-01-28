@@ -342,7 +342,7 @@ class OgcApiCoreSpecCollections extends Specification {
     static def createProvider() {
         Lazy<Set<EntityFactory>> factories = () -> [] as Set
         EntityRegistry entityRegistry = new EntityRegistryImpl(factories)
-        return (FeaturesCoreProviders) new FeaturesCoreProvidersImpl(entityRegistry)
+        return new FeaturesCoreProvidersImpl(entityRegistry)
     }
 
 }
