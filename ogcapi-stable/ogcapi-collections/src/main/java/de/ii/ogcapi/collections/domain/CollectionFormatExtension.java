@@ -10,16 +10,10 @@ package de.ii.ogcapi.collections.domain;
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 
 @AutoMultiBind
 public interface CollectionFormatExtension extends GenericFormatExtension {
-
-  @Override
-  default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-    return CollectionsConfiguration.class;
-  }
 
   Object getEntity(OgcApiCollection ogcApiCollection, OgcApi api, ApiRequestContext requestContext);
 }
