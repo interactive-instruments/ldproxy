@@ -12,7 +12,6 @@ import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 
 @AutoMultiBind
@@ -21,11 +20,6 @@ public interface CollectionsFormatExtension extends GenericFormatExtension {
   @Override
   default String getPathPattern() {
     return "^/collections(?:/" + COLLECTION_ID_PATTERN + ")?/?$";
-  }
-
-  @Override
-  default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-    return CollectionsConfiguration.class;
   }
 
   Object getCollectionsEntity(
