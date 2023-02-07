@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.collections.app.xml;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import de.ii.ogcapi.collections.domain.Collections;
 import de.ii.ogcapi.common.domain.xml.OgcApiXml;
@@ -17,6 +19,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+@JsonInclude(Include.NON_NULL)
 @XmlRootElement(name = "Collections", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
 @XmlType(propOrder = {"links", "collections"})
 public class OgcApiCollectionsXml implements OgcApiXml {
