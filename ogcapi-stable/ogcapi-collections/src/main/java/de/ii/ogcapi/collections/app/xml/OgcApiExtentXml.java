@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.collections.app.xml;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import de.ii.ogcapi.common.domain.OgcApiExtent;
 import de.ii.ogcapi.common.domain.OgcApiExtentSpatial;
 import de.ii.ogcapi.common.domain.OgcApiExtentTemporal;
@@ -18,14 +20,20 @@ import javax.xml.bind.annotation.XmlType;
 /**
  * @author zahnen
  */
+@JsonInclude(Include.NON_NULL)
 @XmlType(propOrder = {"spatial", "temporal"})
 public class OgcApiExtentXml {
   private final OgcApiExtentSpatial spatial;
   private final OgcApiExtentTemporal temporal;
 
   public OgcApiExtentXml(OgcApiExtent extent) {
-    this.spatial = extent.getSpatial().orElse(null);
-    this.temporal = extent.getTemporal().orElse(null);
+    if (Objects.nonNull(extent)) {
+      this.spatial = extent.getSpatial().orElse(null);
+      this.temporal = extent.getTemporal().orElse(null);
+    } else {
+      this.spatial = null;
+      this.temporal = null;
+    }
   }
 
   @XmlElement(name = "Spatial", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
