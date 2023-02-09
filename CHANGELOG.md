@@ -1,5 +1,22 @@
 # Changelog
 
+## v3.3.3 (09/02/2023)
+
+#### Improvements
+
+-  support XACML JSON 1.0 [#893](https://github.com/interactive-instruments/ldproxy/issues/893)
+-  switch docker base image to temurin [#891](https://github.com/interactive-instruments/ldproxy/issues/891)
+
+#### Fixed bugs
+
+-  auto mode for WFS providers does not work for complex schemas [#895](https://github.com/interactive-instruments/ldproxy/issues/895)
+-  sortby does not work with GPKG provider [#894](https://github.com/interactive-instruments/ldproxy/issues/894)
+-  error message content in HTML is not escaped [#888](https://github.com/interactive-instruments/ldproxy/issues/888)
+-  XML content handling errors [#886](https://github.com/interactive-instruments/ldproxy/issues/886)
+-  Collections and Collection resources are always provided as XML [#885](https://github.com/interactive-instruments/ldproxy/issues/885)
+-  missing collection extents [#874](https://github.com/interactive-instruments/ldproxy/issues/874)
+
+---
 ## v3.3.2 (13/01/2023)
 
 #### Fixed bugs
