@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Style.ImplementationVisibility;
 
@@ -53,7 +54,8 @@ public abstract class ServiceOverviewView extends OgcApiView {
 
   @Value.Derived
   public List<ApiCatalogEntry> data() {
-    return apiCatalog().getApis();
+    return Stream.concat(apiCatalog().getApis().stream(), htmlConfig().getAdditionalApis().stream())
+        .collect(Collectors.toList());
   }
 
   @Value.Derived
