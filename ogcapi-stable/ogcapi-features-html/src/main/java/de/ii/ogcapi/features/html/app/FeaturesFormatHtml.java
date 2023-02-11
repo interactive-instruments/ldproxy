@@ -243,6 +243,14 @@ public class FeaturesFormatHtml
         .orElse(ImmutableList.of());
   }
 
+  private boolean getPropertyTooltips(
+      OgcApiDataV2 apiData, String collectionId, boolean isCollection) {
+    return apiData
+        .getExtension(FeaturesHtmlConfiguration.class, collectionId)
+        .map(cfg -> isCollection ? cfg.getPropertyTooltipsOnItems() : cfg.getPropertyTooltips())
+        .orElse(false);
+  }
+
   @Override
   public boolean canEncodeFeatures() {
     return true;
@@ -322,7 +330,8 @@ public class FeaturesFormatHtml
               isNoIndexEnabledForApi(apiData),
               getMapPosition(apiData, collectionName),
               hideMap,
-              getGeometryProperties(apiData, collectionName));
+              getGeometryProperties(apiData, collectionName),
+              getPropertyTooltips(apiData, collectionName, true));
 
       addDatasetNavigation(
           featureTypeDataset,
@@ -347,7 +356,8 @@ public class FeaturesFormatHtml
               apiData.getSubPath(),
               getMapPosition(apiData, collectionName),
               hideMap,
-              getGeometryProperties(apiData, collectionName));
+              getGeometryProperties(apiData, collectionName),
+              getPropertyTooltips(apiData, collectionName, false));
     }
 
     ImmutableFeatureTransformationContextHtml transformationContextHtml =
@@ -376,7 +386,8 @@ public class FeaturesFormatHtml
       boolean noIndex,
       POSITION mapPosition,
       boolean hideMap,
-      List<String> geometryProperties) {
+      List<String> geometryProperties,
+      boolean propertyTooltips) {
     OgcApiDataV2 apiData = api.getData();
     URI requestUri = null;
     try {
@@ -431,6 +442,7 @@ public class FeaturesFormatHtml
         .setHideMap(hideMap)
         .setQueryables(filterableFields)
         .setGeometryProperties(geometryProperties)
+        .setPropertyTooltips(propertyTooltips)
         .setUriCustomizer(uriCustomizer)
         // TODO Derived
         .setUriBuilderWithFOnly(
@@ -450,9 +462,10 @@ public class FeaturesFormatHtml
       Optional<Locale> language,
       boolean noIndex,
       List<String> subPathToLandingPage,
-      FeaturesHtmlConfiguration.POSITION mapPosition,
+      POSITION mapPosition,
       boolean hideMap,
-      List<String> geometryProperties) {
+      List<String> geometryProperties,
+      boolean propertyTooltips) {
     OgcApiDataV2 apiData = api.getData();
     String rootTitle = i18n.get("root", language);
     String collectionsTitle = i18n.get("collectionsTitle", language);
@@ -528,6 +541,7 @@ public class FeaturesFormatHtml
         .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
         .setHideMap(hideMap)
         .setGeometryProperties(geometryProperties)
+        .setPropertyTooltips(propertyTooltips)
         .setRawTemporalExtent(
             Optional.ofNullable(api.getTemporalExtent(featureType.getId()).orElse(null)))
         .setRawFormats(formats)

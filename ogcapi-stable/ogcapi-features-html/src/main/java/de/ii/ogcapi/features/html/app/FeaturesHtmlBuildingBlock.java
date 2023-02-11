@@ -37,6 +37,12 @@ public class FeaturesHtmlBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
-    return new Builder().enabled(true).mapPosition(POSITION.AUTO).style("DEFAULT").build();
+    return new Builder()
+        .enabled(true)
+        .mapPosition(POSITION.AUTO)
+        .style("DEFAULT")
+        .propertyTooltips(true)
+        .propertyTooltipsOnItems(false)
+        .build();
   }
 }

@@ -78,6 +78,8 @@ public abstract class FeaturesView extends OgcApiDatasetView {
 
   public abstract List<String> geometryProperties();
 
+  public abstract boolean propertyTooltips();
+
   @Nullable
   public abstract URI uri();
 
