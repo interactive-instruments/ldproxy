@@ -266,6 +266,26 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   @Nullable
   Integer getMaximumPageSize();
 
+  /**
+   * @langEn If `true`, on the single item page any property that has a description in the provider
+   *     schema will get an info icon with the description as a tooltip.
+   * @langDe Bei `true` werden auf der Seite für einzelne Items für jedes Property mit einer
+   *     Beschreibung im Provider-Schema Info-Icons mit einem Tooltip angezeigt.
+   * @default true
+   */
+  @Nullable
+  Boolean getPropertyTooltips();
+
+  /**
+   * @langEn If `true`, on the items page any property that has a description in the provider schema
+   *     will get an info icon with the description in a tooltip.
+   * @langDe Bei `true` werden auf der Seite für Items für jedes Property mit einer Beschreibung im
+   *     Provider-Schema Info-Icons mit einem Tooltip angezeigt.
+   * @default false
+   */
+  @Nullable
+  Boolean getPropertyTooltipsOnItems();
+
   @Value.Check
   default FeaturesHtmlConfiguration backwardsCompatibility() {
     if (getLayout() == LAYOUT.CLASSIC

@@ -50,6 +50,11 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
             .orElse(getSchema().map(FeatureSchema::getName).orElse(""));
   }
 
+  @Value.Default
+  default String getDescription() {
+    return getSchema().flatMap(FeatureSchema::getDescription).orElse("");
+  }
+
   @Value.Lazy
   default boolean hasValues() {
     return isValue()

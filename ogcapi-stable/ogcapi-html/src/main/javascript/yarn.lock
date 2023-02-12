@@ -3298,12 +3298,14 @@ __metadata:
     c137.js: ^1.84.0
     eslint: ^7
     eslint-plugin-babel: "*"
+    jquery: ^3
     maplibre-gl: ^2.1.1
     mocha: ^8
     moment: ^2.29.1
     neutrino: ^9.3.0
     ol: ^6.9.0
     pnp-webpack-plugin: ^1.6.4
+    popper.js: ^1.16.1
     proj4: ^2.7.5
     prop-types: ^15.7.2
     qs: ^6.5.1
@@ -11015,6 +11017,13 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"jquery@npm:^3":
+  version: 3.6.3
+  resolution: "jquery@npm:3.6.3"
+  checksum: 0fd366bdcaa0c84a7a8751ce20f8192290141913978b5059574426d9b01f4365daa675f95aab3eec94fd794d27b08d32078a2236bef404b8ba78073009988ce6
+  languageName: node
+  linkType: hard
+
 "js-string-escape@npm:^1.0.1":
   version: 1.0.1
   resolution: "js-string-escape@npm:1.0.1"
@@ -13412,7 +13421,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"popper.js@npm:^1.12.9":
+"popper.js@npm:^1.12.9, popper.js@npm:^1.16.1":
   version: 1.16.1
   resolution: "popper.js@npm:1.16.1"
   checksum: c56ae5001ec50a77ee297a8061a0221d99d25c7348d2e6bcd3e45a0d0f32a1fd81bca29d46cb0d4bdf13efb77685bd6a0ce93f9eb3c608311a461f945fffedbe

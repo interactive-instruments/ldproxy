@@ -223,6 +223,21 @@ public class FeaturesFormatHtml
             .orElse(true);
   }
 
+  private boolean getPropertyTooltips(OgcApiDataV2 apiData, boolean isCollection) {
+    return apiData
+        .getExtension(FeaturesHtmlConfiguration.class)
+        .map(cfg -> isCollection ? cfg.getPropertyTooltipsOnItems() : cfg.getPropertyTooltips())
+        .orElse(false);
+  }
+
+  private boolean getPropertyTooltips(
+      OgcApiDataV2 apiData, String collectionId, boolean isCollection) {
+    return apiData
+        .getExtension(FeaturesHtmlConfiguration.class, collectionId)
+        .map(cfg -> isCollection ? cfg.getPropertyTooltipsOnItems() : cfg.getPropertyTooltips())
+        .orElse(false);
+  }
+
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
     return apiData
@@ -271,6 +286,7 @@ public class FeaturesFormatHtml
               getMapPosition(apiData),
               hideMap,
               transformationContext.getQueryTitle().orElse("Search"),
+              getPropertyTooltips(apiData, true),
               transformationContext.getLinks());
     } else {
       // Features - Core
@@ -326,6 +342,7 @@ public class FeaturesFormatHtml
                 getMapPosition(apiData, collectionName),
                 hideMap,
                 getGeometryProperties(apiData, collectionName),
+                getPropertyTooltips(apiData, collectionName, true),
                 apiData.getLabel(),
                 transformationContext.getLinks(),
                 apiData.getSubPath());
@@ -344,7 +361,8 @@ public class FeaturesFormatHtml
                 apiData.getSubPath(),
                 getMapPosition(apiData, collectionName),
                 hideMap,
-                getGeometryProperties(apiData, collectionName));
+                getGeometryProperties(apiData, collectionName),
+                getPropertyTooltips(apiData, collectionName, true));
       }
     }
 
@@ -374,6 +392,7 @@ public class FeaturesFormatHtml
       POSITION mapPosition,
       boolean hideMap,
       List<String> geometryProperties,
+      boolean propertyTooltips,
       String apiLabel,
       List<Link> links,
       List<String> subPathToLandingPage) {
@@ -438,6 +457,7 @@ public class FeaturesFormatHtml
         .setHideMap(hideMap)
         .setQueryables(filterableFields)
         .setGeometryProperties(geometryProperties)
+        .setPropertyTooltips(propertyTooltips)
         .setUriCustomizer(uriCustomizer)
         .setBreadCrumbs(
             new ImmutableList.Builder<NavigationDTO>()
@@ -480,9 +500,10 @@ public class FeaturesFormatHtml
       Optional<Locale> language,
       boolean noIndex,
       List<String> subPathToLandingPage,
-      FeaturesHtmlConfiguration.POSITION mapPosition,
+      POSITION mapPosition,
       boolean hideMap,
-      List<String> geometryProperties) {
+      List<String> geometryProperties,
+      boolean propertyTooltips) {
     OgcApiDataV2 apiData = api.getData();
     String rootTitle = i18n.get("root", language);
     String collectionsTitle = i18n.get("collectionsTitle", language);
@@ -555,6 +576,7 @@ public class FeaturesFormatHtml
         .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
         .setHideMap(hideMap)
         .setGeometryProperties(geometryProperties)
+        .setPropertyTooltips(propertyTooltips)
         .setRawTemporalExtent(api.getTemporalExtent(featureType.getId()))
         .setRawFormats(formats)
         .setBreadCrumbs(
@@ -593,6 +615,7 @@ public class FeaturesFormatHtml
       POSITION mapPosition,
       boolean hideMap,
       String queryLabel,
+      boolean propertyTooltips,
       List<Link> links) {
     OgcApiDataV2 apiData = api.getData();
     URI requestUri = null;
@@ -644,6 +667,7 @@ public class FeaturesFormatHtml
         .setLanguage(language.orElse(Locale.ENGLISH))
         .setMapPosition(mapPosition)
         .setMapClientType(mapClientType)
+        .setPropertyTooltips(propertyTooltips)
         .setStyleUrl(styleUrl)
         .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
         .setHideMap(hideMap)
