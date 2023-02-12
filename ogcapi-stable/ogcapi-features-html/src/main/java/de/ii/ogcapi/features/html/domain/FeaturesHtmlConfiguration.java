@@ -278,7 +278,7 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
 
   /**
    * @langEn If `true`, on the items page any property that has a description in the provider schema
-   *     will get an info icon with the deescription in a tooltip.
+   *     will get an info icon with the description in a tooltip.
    * @langDe Bei `true` werden auf der Seite für Items für jedes Property mit einer Beschreibung im
    *     Provider-Schema Info-Icons mit einem Tooltip angezeigt.
    * @default false
