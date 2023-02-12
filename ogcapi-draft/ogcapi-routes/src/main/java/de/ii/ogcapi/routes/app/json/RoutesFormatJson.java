@@ -75,7 +75,7 @@ public class RoutesFormatJson implements RoutesFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  public ApiMediaTypeContent getContent() {
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schemaRoutes)
         .schemaRef(Routes.SCHEMA_REF)

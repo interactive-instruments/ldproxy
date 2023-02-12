@@ -13,7 +13,7 @@ import de.ii.ogcapi.common.app.ImmutableQueryInputConformance;
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl;
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
 import de.ii.ogcapi.common.domain.CommonConfiguration;
-import de.ii.ogcapi.common.domain.CommonFormatExtension;
+import de.ii.ogcapi.common.domain.ConformanceDeclarationFormatExtension;
 import de.ii.ogcapi.common.domain.QueriesHandlerCommon;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
@@ -49,7 +49,7 @@ import javax.ws.rs.core.Response;
  *     OGC-API-Implementierungen zugreifen wollen - und nicht "nur" auf eine bestimmte API. Für
  *     Clients, die nur auf eine einzige API zugreifen, ist diese Information im Allgemeinen nicht
  *     relevant und die OpenAPI-Definition beschreibt die API im Detail.
- * @ref:formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
+ * @ref:formats {@link de.ii.ogcapi.common.domain.ConformanceDeclarationFormatExtension}
  */
 @Singleton
 @AutoBind
@@ -72,9 +72,9 @@ public class EndpointConformance extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null) {
-      formats = extensionRegistry.getExtensionsForType(CommonFormatExtension.class);
+      formats = extensionRegistry.getExtensionsForType(ConformanceDeclarationFormatExtension.class);
     }
     return formats;
   }
@@ -104,7 +104,7 @@ public class EndpointConformance extends Endpoint {
             false,
             queryParameters,
             ImmutableList.of(),
-            getContent(apiData, path),
+            getResponseContent(apiData),
             operationSummary,
             operationDescription,
             Optional.empty(),

@@ -19,13 +19,10 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
-import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.tilematrixsets.domain.ImmutableQueryInputTileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.ImmutableQueryInputTileMatrixSets;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsFormatExtension;
@@ -38,18 +35,16 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @title Tile Matrix Sets, Tile Matrix Set
- * @path tileMatrixSets, tileMatrixSets/{tileMatrixSetId}
- * @langEn Returns the list of tiling schemes or the definition of a tiling scheme respectively.
- * @langDe Liefert die Liste der Kachelschemas bzw. die Definition eines Kachelschemas.
+ * @title Tile Matrix Sets
+ * @path tileMatrixSets
+ * @langEn Returns the list of tiling schemes.
+ * @langDe Liefert die Liste der Kachelschemas.
  * @ref:formats {@link de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsFormatExtension}
  */
 @Singleton
@@ -78,7 +73,7 @@ public class EndpointTileMatrixSets extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(TileMatrixSetsFormatExtension.class);
     return formats;
@@ -115,7 +110,7 @@ public class EndpointTileMatrixSets extends Endpoint {
             false,
             queryParameters,
             ImmutableList.of(),
-            getContent(apiData, path),
+            getResponseContent(apiData),
             operationSummary,
             operationDescription,
             Optional.empty(),
@@ -123,37 +118,6 @@ public class EndpointTileMatrixSets extends Endpoint {
             TAGS)
         .ifPresent(operation -> resourceBuilderSet.putOperations(method.name(), operation));
     definitionBuilder.putResources(path, resourceBuilderSet.build());
-
-    path = "/tileMatrixSets/{tileMatrixSetId}";
-    queryParameters = getQueryParameters(extensionRegistry, apiData, path);
-    List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-    if (pathParameters.stream().noneMatch(param -> param.getName().equals("tileMatrixSetId"))) {
-      LOGGER.error(
-          "Path parameter 'tileMatrixSetId' missing for resource at path '"
-              + path
-              + "'. The GET method will not be available.");
-    } else {
-      operationSummary = "fetch information about the tiling scheme `{tileMatrixSetId}`";
-      operationDescription =
-          Optional.of(
-              "Returns the definition of the tiling scheme according to the [OGC Two Dimensional Tile Matrix Set standard](https://docs.ogc.org/is/17-083r2/17-083r2.html).");
-      ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
-          new ImmutableOgcApiResourceAuxiliary.Builder().path(path).pathParameters(pathParameters);
-      ApiOperation.getResource(
-              apiData,
-              path,
-              false,
-              queryParameters,
-              ImmutableList.of(),
-              getContent(apiData, path),
-              operationSummary,
-              operationDescription,
-              Optional.empty(),
-              getOperationId("getTileMatrixSet"),
-              TAGS)
-          .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
-      definitionBuilder.putResources(path, resourceBuilder.build());
-    }
 
     return definitionBuilder.build();
   }
@@ -192,35 +156,5 @@ public class EndpointTileMatrixSets extends Endpoint {
 
     return queryHandler.handle(
         TileMatrixSetsQueriesHandler.Query.TILE_MATRIX_SETS, queryInput, requestContext);
-  }
-
-  /**
-   * retrieve one specific tile matrix set by id
-   *
-   * @param tileMatrixSetId the local identifier of a specific tile matrix set
-   * @return the tiling scheme in a json file
-   */
-  @Path("/{tileMatrixSetId}")
-  @GET
-  public Response getTileMatrixSet(
-      @PathParam("tileMatrixSetId") String tileMatrixSetId,
-      @Context OgcApi api,
-      @Context ApiRequestContext requestContext) {
-
-    checkPathParameter(
-        extensionRegistry,
-        api.getData(),
-        "/tileMatrixSets/{tileMatrixSetId}",
-        "tileMatrixSetId",
-        tileMatrixSetId);
-
-    TileMatrixSetsQueriesHandler.QueryInputTileMatrixSet queryInput =
-        new ImmutableQueryInputTileMatrixSet.Builder()
-            .from(getGenericQueryInput(api.getData()))
-            .tileMatrixSetId(tileMatrixSetId)
-            .build();
-
-    return queryHandler.handle(
-        TileMatrixSetsQueriesHandler.Query.TILE_MATRIX_SET, queryInput, requestContext);
   }
 }

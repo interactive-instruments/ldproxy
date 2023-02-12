@@ -9,6 +9,7 @@ package de.ii.ogcapi.styles.infra.manager;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
@@ -35,7 +36,6 @@ import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -98,22 +98,13 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats =
           extensionRegistry.getExtensionsForType(StyleFormatExtension.class).stream()
               .filter(StyleFormatExtension::canSupportTransactions)
               .collect(Collectors.toList());
     return formats;
-  }
-
-  private Map<MediaType, ApiMediaTypeContent> getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    return getFormats().stream()
-        .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-        .map(f -> f.getRequestContent(apiData, path, method))
-        .filter(Objects::nonNull)
-        .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
   }
 
   @Override
@@ -155,8 +146,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
     Optional<String> operationDescription = Optional.of(description);
     ImmutableOgcApiResourceData.Builder resourceBuilderCreate =
         new ImmutableOgcApiResourceData.Builder().path(path);
-    Map<MediaType, ApiMediaTypeContent> requestContent =
-        getRequestContent(apiData, path, HttpMethods.POST);
+    Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData);
     ApiOperation.of(
             path,
             HttpMethods.POST,
@@ -190,7 +180,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
     operationDescription = Optional.of(description);
     ImmutableOgcApiResourceData.Builder resourceBuilder =
         new ImmutableOgcApiResourceData.Builder().path(path).pathParameters(pathParameters);
-    requestContent = getRequestContent(apiData, path, HttpMethods.PUT);
+    requestContent = getRequestContent(apiData);
     ApiOperation.of(
             path,
             HttpMethods.PUT,
@@ -210,11 +200,10 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
         Optional.of(
             "Delete an existing style with the id `styleId`. "
                 + "Deleting a style also deletes the subordinate resources, i.e., the style metadata.");
-    requestContent = getRequestContent(apiData, path, HttpMethods.DELETE);
     ApiOperation.of(
             path,
             HttpMethods.DELETE,
-            requestContent,
+            ImmutableMap.of(),
             queryParameters,
             headers,
             operationSummary,

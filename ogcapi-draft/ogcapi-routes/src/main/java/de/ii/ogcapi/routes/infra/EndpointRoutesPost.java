@@ -155,7 +155,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(RouteFormatExtension.class);
     return formats;
@@ -178,7 +178,6 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
   private Map<MediaType, ApiMediaTypeContent> getRequestContent(
       Optional<RoutingConfiguration> config) {
     List<Example> examples = ImmutableList.of();
-    ;
     Optional<HtmlFormDefaults> defaults =
         config.map(RoutingConfiguration::getHtml).flatMap(HtmlForm::getDefaults);
     if (defaults.isPresent()) {
@@ -300,7 +299,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
     ImmutableOgcApiResourceData.Builder resourceBuilder =
         new ImmutableOgcApiResourceData.Builder().path(path);
     Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(config);
-    Map<MediaType, ApiMediaTypeContent> responseContent = getContent(apiData, "/routes", method);
+    Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
     ApiOperation.of(
             requestContent,
             responseContent,

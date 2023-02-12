@@ -118,7 +118,7 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(ContextFormatExtension.class);
     return formats;
@@ -171,7 +171,7 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
                 false,
                 queryParameters,
                 ImmutableList.of(),
-                getContent(apiData, resourcePath),
+                getResponseContent(apiData),
                 operationSummary,
                 operationDescription,
                 Optional.empty(),

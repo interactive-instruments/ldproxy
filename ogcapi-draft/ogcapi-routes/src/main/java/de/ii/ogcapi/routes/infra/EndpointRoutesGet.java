@@ -92,7 +92,7 @@ public class EndpointRoutesGet extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(RoutesFormatExtension.class);
     return formats;
@@ -132,7 +132,7 @@ public class EndpointRoutesGet extends Endpoint {
             false,
             queryParameters,
             headers,
-            getContent(apiData, path),
+            getResponseContent(apiData),
             operationSummary,
             operationDescription,
             Optional.empty(),

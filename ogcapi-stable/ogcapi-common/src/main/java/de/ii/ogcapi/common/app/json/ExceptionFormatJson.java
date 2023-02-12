@@ -16,7 +16,6 @@ import de.ii.ogcapi.foundation.domain.ExceptionFormatExtension;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import io.dropwizard.jersey.errors.ErrorEntityWriter;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
@@ -66,7 +65,7 @@ public class ExceptionFormatJson extends ErrorEntityWriter<ApiErrorMessage, ApiE
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  public ApiMediaTypeContent getContent() {
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schema)
         .schemaRef(SCHEMA_REF_EXCEPTIONS)

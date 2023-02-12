@@ -1,0 +1,19 @@
+{{> header}}
+
+<div>
+    <h1>{{title}}</h1>
+    <span>{{{description}}}</span>
+    <br/>
+
+    {{#hasParameters}}
+      <p>{{parametersDescription}}</p>
+    {{/hasParameters}}
+    {{#parameterList}}
+      {{> schemaProperty}}
+      <br/>
+    {{/parameterList}}
+
+</div>
+
+{{> footer}}
+

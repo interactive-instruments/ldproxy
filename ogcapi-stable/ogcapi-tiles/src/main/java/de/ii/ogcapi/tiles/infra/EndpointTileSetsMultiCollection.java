@@ -64,7 +64,7 @@ public class EndpointTileSetsMultiCollection extends AbstractEndpointTileSetsMul
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(TileSetsFormatExtension.class);
     return formats;

@@ -11,13 +11,11 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.Collections;
 import de.ii.ogcapi.collections.domain.CollectionsFormatExtension;
-import de.ii.ogcapi.collections.domain.OgcApiCollection;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -26,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 
 /**
  * @title JSON
@@ -35,24 +32,13 @@ import javax.ws.rs.core.MediaType;
 @AutoBind
 public class CollectionsFormatJson implements CollectionsFormatExtension, ConformanceClass {
 
-  public static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "json"))
-          .label("JSON")
-          .parameter("json")
-          .build();
-
   private final Schema<?> schemaCollections;
   private final Map<String, Schema<?>> referencedSchemasCollections;
-  private final Schema<?> schemaCollection;
-  private final Map<String, Schema<?>> referencedSchemasCollection;
 
   @Inject
   public CollectionsFormatJson(ClassSchemaCache classSchemaCache) {
     schemaCollections = classSchemaCache.getSchema(Collections.class);
     referencedSchemasCollections = classSchemaCache.getReferencedSchemas(Collections.class);
-    schemaCollection = classSchemaCache.getSchema(OgcApiCollection.class);
-    referencedSchemasCollection = classSchemaCache.getReferencedSchemas(OgcApiCollection.class);
   }
 
   @Override
@@ -61,42 +47,22 @@ public class CollectionsFormatJson implements CollectionsFormatExtension, Confor
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-
-    // TODO add examples
-    if (path.equals("/collections")) {
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaCollections)
-          .schemaRef(Collections.SCHEMA_REF)
-          .referencedSchemas(referencedSchemasCollections)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-    } else if (path.matches("^/collections/[^//]+/?")) {
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaCollection)
-          .schemaRef(OgcApiCollection.SCHEMA_REF)
-          .referencedSchemas(referencedSchemasCollection)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-    }
-
-    throw new RuntimeException("Unexpected path: " + path);
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(schemaCollections)
+        .schemaRef(Collections.SCHEMA_REF)
+        .referencedSchemas(referencedSchemasCollections)
+        .ogcApiMediaType(getMediaType())
+        .build();
   }
 
   @Override
   public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
+    return ApiMediaType.JSON_MEDIA_TYPE;
   }
 
   @Override
-  public Object getCollectionsEntity(
-      Collections collections, OgcApi api, ApiRequestContext requestContext) {
+  public Object getEntity(Collections collections, OgcApi api, ApiRequestContext requestContext) {
     return collections;
-  }
-
-  @Override
-  public Object getCollectionEntity(
-      OgcApiCollection ogcApiCollection, OgcApi api, ApiRequestContext requestContext) {
-    return ogcApiCollection;
   }
 }

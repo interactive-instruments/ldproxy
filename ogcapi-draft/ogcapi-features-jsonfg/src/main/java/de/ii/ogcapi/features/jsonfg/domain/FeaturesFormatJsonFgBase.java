@@ -9,7 +9,6 @@ package de.ii.ogcapi.features.jsonfg.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableSortedSet;
-import de.ii.ogcapi.collections.domain.CollectionsConfiguration;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.geojson.domain.FeatureEncoderGeoJson;
@@ -19,8 +18,6 @@ import de.ii.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContex
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -40,17 +37,9 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import javax.ws.rs.core.MediaType;
 
 @AutoMultiBind
 public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
-
-  ApiMediaType COLLECTION_MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "json"))
-          .label("JSON")
-          .parameter("json")
-          .build();
 
   @Override
   default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
@@ -81,70 +70,40 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
   String getSchemaReferenceCollection(String collectionId);
 
   @Override
-  default ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    String schemaRef = "#/components/schemas/anyObject";
-    Schema schema = new ObjectSchema();
-    String collectionId =
-        path.startsWith("/collections") ? path.split("/", 4)[2] : "{collectionId}";
-    if (collectionId.equals("{collectionId}")
-        && apiData
-            .getExtension(CollectionsConfiguration.class)
-            .filter(config -> config.getCollectionDefinitionsAreIdentical().orElse(false))
-            .isPresent()) {
-      collectionId = apiData.getCollections().keySet().iterator().next();
-    }
-    // TODO support JSON-FG extensions
-    if (!collectionId.equals("{collectionId}")) {
-      if (path.matches("/collections/[^//]+/items/?")) {
-        schemaRef = getSchemaReferenceCollection(collectionId);
-        schema = getSchemaCollection(apiData, collectionId);
-      } else if (path.matches("/collections/[^//]+/items/[^//]+/?")) {
-        schemaRef = getSchemaReference(collectionId);
-        schema = getSchema(apiData, collectionId);
-      }
-    }
+  default ApiMediaTypeContent getContent() {
+    Schema<?> schema = new ObjectSchema();
+    String schemaRef = "https://geojson.org/schema/FeatureCollection.json";
     return new ImmutableApiMediaTypeContent.Builder()
-        .schema(schema)
-        .schemaRef(schemaRef)
+        .schema(OBJECT_SCHEMA)
+        .schemaRef(OBJECT_SCHEMA_REF)
         .ogcApiMediaType(getMediaType())
         .build();
   }
 
   @Override
-  default ApiMediaTypeContent getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    String schemaRef = "#/components/schemas/anyObject";
-    Schema schema = new ObjectSchema();
-    String collectionId =
-        path.startsWith("/collections") ? path.split("/", 4)[2] : "{collectionId}";
-    if ((path.matches("/collections/[^//]+/items/[^//]+/?") && method == HttpMethods.PUT)
-        || (path.matches("/collections/[^//]+/items/?") && method == HttpMethods.POST)) {
-
-      if (collectionId.equals("{collectionId}")
-          && apiData
-              .getExtension(CollectionsConfiguration.class)
-              .filter(config -> config.getCollectionDefinitionsAreIdentical().orElse(false))
-              .isPresent()) {
-        collectionId = apiData.getCollections().keySet().iterator().next();
-      }
-      if (!collectionId.equals("{collectionId}")) {
-        // TODO: implement getMutablesSchema with SchemaDeriverOpenApiMutables
-        schema = getSchema(apiData, collectionId);
-        schemaRef = getSchemaReference(collectionId);
-      }
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schema)
-          .schemaRef(schemaRef)
-          .ogcApiMediaType(getMediaType())
-          .build();
+  default ApiMediaTypeContent getFeatureContent(
+      OgcApiDataV2 apiData, Optional<String> collectionId, boolean featureCollection) {
+    if (collectionId.isEmpty()) {
+      return getContent();
     }
 
-    return null;
+    // TODO support JSON-FG extensions
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(
+            featureCollection
+                ? getSchemaCollection(apiData, collectionId.get())
+                : getSchema(apiData, collectionId.get()))
+        .schemaRef(
+            featureCollection
+                ? getSchemaReferenceCollection(collectionId.get())
+                : getSchemaReference(collectionId.get()))
+        .ogcApiMediaType(getMediaType())
+        .build();
   }
 
   @Override
   default ApiMediaType getCollectionMediaType() {
-    return COLLECTION_MEDIA_TYPE;
+    return ApiMediaType.JSON_MEDIA_TYPE;
   }
 
   @Override

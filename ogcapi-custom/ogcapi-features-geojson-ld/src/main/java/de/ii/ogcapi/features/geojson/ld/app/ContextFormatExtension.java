@@ -7,8 +7,6 @@
  */
 package de.ii.ogcapi.features.geojson.ld.app;
 
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,10 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 public interface ContextFormatExtension extends FormatExtension {
-
-  default String getPathPattern() {
-    return "^/?collections/" + COLLECTION_ID_PATTERN + "/context/?$";
-  }
 
   default InputStream getInputStream(Path context) throws IOException {
     return Files.newInputStream(context);

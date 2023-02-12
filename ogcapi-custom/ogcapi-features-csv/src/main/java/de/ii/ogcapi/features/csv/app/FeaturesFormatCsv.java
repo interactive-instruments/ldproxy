@@ -90,7 +90,7 @@ public class FeaturesFormatCsv implements ConformanceClass, FeatureFormatExtensi
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  public ApiMediaTypeContent getContent() {
     // TODO Should we describe the schema? As an OpenAPI schema?
     String schemaRef = "#/components/schemas/csv";
     Schema<?> schema = new StringSchema();

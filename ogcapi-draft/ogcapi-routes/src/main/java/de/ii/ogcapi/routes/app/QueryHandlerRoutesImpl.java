@@ -147,10 +147,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
 
     RouteFormatExtension outputFormat =
         api.getOutputFormat(
-                RouteFormatExtension.class,
-                requestContext.getMediaType(),
-                "/routes",
-                Optional.empty())
+                RouteFormatExtension.class, requestContext.getMediaType(), Optional.empty())
             .orElseThrow(
                 () ->
                     new NotAcceptableException(
@@ -349,10 +346,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
 
     RoutesFormatExtension outputFormatExtension =
         api.getOutputFormat(
-                RoutesFormatExtension.class,
-                requestContext.getMediaType(),
-                "/routes",
-                Optional.empty())
+                RoutesFormatExtension.class, requestContext.getMediaType(), Optional.empty())
             .orElseThrow(
                 () ->
                     new NotAcceptableException(
@@ -401,10 +395,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
 
     RouteFormatExtension format =
         api.getOutputFormat(
-                RouteFormatExtension.class,
-                requestContext.getMediaType(),
-                "/routes/" + routeId,
-                Optional.empty())
+                RouteFormatExtension.class, requestContext.getMediaType(), Optional.empty())
             .orElseThrow(
                 () ->
                     new NotAcceptableException(
@@ -442,7 +433,6 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
         api.getOutputFormat(
                 RouteDefinitionFormatExtension.class,
                 requestContext.getMediaType(),
-                "/routes/" + routeId + "/definition",
                 Optional.empty())
             .orElseThrow(
                 () ->

@@ -11,6 +11,7 @@ import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURC
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -41,7 +42,6 @@ import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -115,22 +115,13 @@ public class EndpointResourcesManager extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats =
           extensionRegistry.getExtensionsForType(ResourceFormatExtension.class).stream()
               .filter(ResourceFormatExtension::canSupportTransactions)
               .collect(Collectors.toList());
     return formats;
-  }
-
-  private Map<MediaType, ApiMediaTypeContent> getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    return getFormats().stream()
-        .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-        .map(f -> f.getRequestContent(apiData, path, method))
-        .filter(Objects::nonNull)
-        .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
   }
 
   @Override
@@ -161,8 +152,7 @@ public class EndpointResourcesManager extends Endpoint {
                 + "automated conversions to other representations.");
     ImmutableOgcApiResourceData.Builder resourceBuilder =
         new ImmutableOgcApiResourceData.Builder().path(path).pathParameters(pathParameters);
-    Map<MediaType, ApiMediaTypeContent> requestContent =
-        getRequestContent(apiData, path, methodReplace);
+    Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData);
     ApiOperation.of(
             path,
             methodReplace,
@@ -182,11 +172,10 @@ public class EndpointResourcesManager extends Endpoint {
         Optional.of(
             "Delete an existing resource with the id `resourceId`. If no "
                 + "such resource exists, an error is returned.");
-    requestContent = getRequestContent(apiData, path, methodDelete);
     ApiOperation.of(
             path,
             methodDelete,
-            requestContent,
+            ImmutableMap.of(),
             queryParameters,
             ImmutableList.of(),
             operationSummary,
@@ -218,7 +207,7 @@ public class EndpointResourcesManager extends Endpoint {
       byte[] requestBody)
       throws IOException {
 
-    return getFormats().stream()
+    return getResourceFormats().stream()
         .filter(format -> requestContext.getMediaType().matches(format.getMediaType().type()))
         .findAny()
         .map(ResourceFormatExtension.class::cast)

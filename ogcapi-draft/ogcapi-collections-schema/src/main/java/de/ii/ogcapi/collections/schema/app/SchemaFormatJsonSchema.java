@@ -15,33 +15,17 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import io.swagger.v3.oas.models.media.ObjectSchema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 
 @Singleton
 @AutoBind
 public class SchemaFormatJsonSchema implements SchemaFormatExtension {
 
-  public static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "schema+json"))
-          .label("JSON")
-          .parameter("json")
-          .build();
-
   @Inject
   SchemaFormatJsonSchema() {}
-
-  @Override
-  public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
-  }
 
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
@@ -77,14 +61,13 @@ public class SchemaFormatJsonSchema implements SchemaFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new ObjectSchema())
-        .schemaRef("#/components/schemas/anyObject")
-        // TODO with OpenAPI 3.1 change to a link to a propert schema
-        // .schemaRef("https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v3.0/schema.json#/definitions/Schema")
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
+  public ApiMediaType getMediaType() {
+    return ApiMediaType.JSON_SCHEMA_MEDIA_TYPE;
+  }
+
+  @Override
+  public ApiMediaTypeContent getContent() {
+    return SCHEMA_CONTENT;
   }
 
   @Override

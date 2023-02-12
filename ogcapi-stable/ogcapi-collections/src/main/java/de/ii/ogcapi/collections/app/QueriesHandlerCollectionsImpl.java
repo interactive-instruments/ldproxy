@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.CollectionExtension;
+import de.ii.ogcapi.collections.domain.CollectionFormatExtension;
 import de.ii.ogcapi.collections.domain.Collections;
 import de.ii.ogcapi.collections.domain.CollectionsExtension;
 import de.ii.ogcapi.collections.domain.CollectionsFormatExtension;
@@ -134,10 +135,7 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
 
     CollectionsFormatExtension outputFormatExtension =
         api.getOutputFormat(
-                CollectionsFormatExtension.class,
-                requestContext.getMediaType(),
-                "/collections",
-                Optional.empty())
+                CollectionsFormatExtension.class, requestContext.getMediaType(), Optional.empty())
             .orElseThrow(
                 () ->
                     new NotAcceptableException(
@@ -169,7 +167,7 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
                 String.format(
                     "collections.%s", outputFormatExtension.getMediaType().fileExtension())))
         .entity(
-            outputFormatExtension.getCollectionsEntity(
+            outputFormatExtension.getEntity(
                 responseObject, requestContext.getApi(), requestContext))
         .build();
   }
@@ -194,11 +192,10 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
                 i18n,
                 requestContext.getLanguage());
 
-    CollectionsFormatExtension outputFormatExtension =
+    CollectionFormatExtension outputFormatExtension =
         api.getOutputFormat(
-                CollectionsFormatExtension.class,
+                CollectionFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/" + collectionId,
                 Optional.of(collectionId))
             .orElseThrow(
                 () ->
@@ -253,7 +250,7 @@ public class QueriesHandlerCollectionsImpl implements QueriesHandlerCollections 
             HeaderContentDisposition.of(
                 String.format(
                     "%s.%s", collectionId, outputFormatExtension.getMediaType().fileExtension())))
-        .entity(outputFormatExtension.getCollectionEntity(responseObject, api, requestContext))
+        .entity(outputFormatExtension.getEntity(responseObject, api, requestContext))
         .build();
   }
 

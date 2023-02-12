@@ -30,7 +30,6 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -113,10 +112,28 @@ public class EndpointPostOnItems extends EndpointSubCollection {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class);
     return formats;
+  }
+
+  public Map<MediaType, ApiMediaTypeContent> getFeatureContent(
+      List<? extends FormatExtension> formats,
+      OgcApiDataV2 apiData,
+      Optional<String> collectionId,
+      boolean featureCollection) {
+    return formats.stream()
+        .filter(f -> f instanceof FeatureFormatExtension)
+        .map(f -> (FeatureFormatExtension) f)
+        .filter(
+            f ->
+                collectionId
+                    .map(s -> f.isEnabledForApi(apiData, s))
+                    .orElseGet(() -> f.isEnabledForApi(apiData)))
+        .map(f -> f.getFeatureContent(apiData, collectionId, featureCollection))
+        .filter(Objects::nonNull)
+        .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
   }
 
   @Override
@@ -151,9 +168,11 @@ public class EndpointPostOnItems extends EndpointSubCollection {
                 String collectionId =
                     entry.getKey().replace("/collections/", "").replace("/items", "");
                 Map<MediaType, ApiMediaTypeContent> responseContent =
-                    collectionId.startsWith("{")
-                        ? getContent(apiData, Optional.empty(), "/items", HttpMethods.GET)
-                        : getContent(apiData, Optional.of(collectionId), "/items", HttpMethods.GET);
+                    getFeatureContent(
+                        getResourceFormats(),
+                        apiData,
+                        collectionId.startsWith("{") ? Optional.empty() : Optional.of(collectionId),
+                        true);
                 ApiOperation.getResource(
                         apiData,
                         entry.getKey(),

@@ -27,10 +27,5 @@ public interface RoutesFormatExtension extends FormatExtension {
     return RoutingConfiguration.class;
   }
 
-  @Override
-  default String getPathPattern() {
-    return "^/routes/?$";
-  }
-
   Object getRoutesEntity(Routes routes, OgcApi api, ApiRequestContext requestContext);
 }

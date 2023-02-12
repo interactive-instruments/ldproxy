@@ -84,7 +84,6 @@ public interface QueriesHandlerSchema extends QueriesHandler<Query> {
         api.getOutputFormat(
                 SchemaFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/" + collectionId + "/schemas/" + queryInput.getType(),
                 Optional.of(collectionId))
             .orElseThrow(
                 () ->

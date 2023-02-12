@@ -13,7 +13,7 @@ import de.ii.ogcapi.common.app.ImmutableQueryInputLandingPage.Builder;
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl.QueryInputLandingPage;
 import de.ii.ogcapi.common.domain.CommonConfiguration;
-import de.ii.ogcapi.common.domain.CommonFormatExtension;
+import de.ii.ogcapi.common.domain.LandingPageFormatExtension;
 import de.ii.ogcapi.common.domain.QueriesHandlerCommon;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
  * @langDe Die Landing Page bietet Links zur API-Definition (Link-Relationen `service-desc` und
  *     `service-doc`), zur Konformitätserklärung (Pfad `/conformance`, Link-Relation `conformance`)
  *     und zu anderen Ressourcen in der API.
- * @ref:formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
+ * @ref:formats {@link de.ii.ogcapi.common.domain.LandingPageFormatExtension}
  */
 @Singleton
 @AutoBind
@@ -97,9 +97,9 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null) {
-      formats = extensionRegistry.getExtensionsForType(CommonFormatExtension.class);
+      formats = extensionRegistry.getExtensionsForType(LandingPageFormatExtension.class);
     }
     return formats;
   }
@@ -127,7 +127,7 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
             false,
             queryParameters,
             ImmutableList.of(),
-            getContent(apiData, path),
+            getResponseContent(apiData),
             operationSummary,
             operationDescription,
             Optional.empty(),

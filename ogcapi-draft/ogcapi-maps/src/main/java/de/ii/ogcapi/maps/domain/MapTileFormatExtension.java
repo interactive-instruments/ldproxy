@@ -7,17 +7,15 @@
  */
 package de.ii.ogcapi.maps.domain;
 
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import java.util.List;
 
-public abstract class MapTileFormatExtension extends TileFormatExtension {
+public abstract class MapTileFormatExtension implements FormatExtension {
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
@@ -39,19 +37,18 @@ public abstract class MapTileFormatExtension extends TileFormatExtension {
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
     return apiData
             .getExtension(MapTilesConfiguration.class, collectionId)
-            .filter(MapTilesConfiguration::getEnabled)
+            .filter(MapTilesConfiguration::isEnabled)
             .filter(MapTilesConfiguration::isSingleCollectionEnabled)
             .filter(
                 config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
             .isPresent()
         && apiData
             .getExtension(TilesConfiguration.class, collectionId)
-            .filter(TilesConfiguration::getEnabled)
+            .filter(TilesConfiguration::isEnabled)
             .filter(TilesConfiguration::hasCollectionTiles)
             .isPresent();
   }
 
-  @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
     List<String> formats =
         apiData
@@ -64,7 +61,6 @@ public abstract class MapTileFormatExtension extends TileFormatExtension {
             || formats.contains(getMediaType().label()));
   }
 
-  @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String collectionId, String definitionPath) {
     List<String> formats =
         apiData
@@ -77,12 +73,6 @@ public abstract class MapTileFormatExtension extends TileFormatExtension {
             || formats.contains(getMediaType().label()));
   }
 
-  @Override
-  public String getPathPattern() {
-    return "^(?:/collections/" + COLLECTION_ID_PATTERN + ")?/map/tiles/\\w+/\\w+/\\w+/\\w+/?$";
-  }
-
-  @Override
   public TileSet.DataType getDataType() {
     return TileSet.DataType.map;
   }
@@ -91,4 +81,6 @@ public abstract class MapTileFormatExtension extends TileFormatExtension {
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return MapTilesConfiguration.class;
   }
+
+  public abstract String getExtension();
 }

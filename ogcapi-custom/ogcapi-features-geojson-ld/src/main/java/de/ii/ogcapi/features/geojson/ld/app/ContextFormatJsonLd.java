@@ -16,7 +16,6 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import io.swagger.v3.oas.models.media.ObjectSchema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -38,6 +37,15 @@ public class ContextFormatJsonLd implements ContextFormatExtension {
   @Override
   public ApiMediaType getMediaType() {
     return MEDIA_TYPE;
+  }
+
+  @Override
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(OBJECT_SCHEMA)
+        .schemaRef(OBJECT_SCHEMA_REF)
+        .ogcApiMediaType(getMediaType())
+        .build();
   }
 
   @Override
@@ -74,15 +82,5 @@ public class ContextFormatJsonLd implements ContextFormatExtension {
             .getExtension(GeoJsonConfiguration.class)
             .map(cfg -> cfg.isEnabled())
             .orElse(true);
-  }
-
-  @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new ObjectSchema())
-        .schemaRef("#/components/schemas/anyObject")
-        // TODO propert JSON-LD context schema
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
   }
 }

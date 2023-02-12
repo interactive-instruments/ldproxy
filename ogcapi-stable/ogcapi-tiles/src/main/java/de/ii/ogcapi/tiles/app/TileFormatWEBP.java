@@ -12,7 +12,6 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
@@ -43,17 +42,12 @@ public class TileFormatWEBP extends TileFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
-        || path.equals(
-            "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(SCHEMA_TILE)
-          .schemaRef(SCHEMA_REF_TILE)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-
-    return null;
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(BINARY_SCHEMA)
+        .schemaRef(BINARY_SCHEMA_REF)
+        .ogcApiMediaType(getMediaType())
+        .build();
   }
 
   @Override

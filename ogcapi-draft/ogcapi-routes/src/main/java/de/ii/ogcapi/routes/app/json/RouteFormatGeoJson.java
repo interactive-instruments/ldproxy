@@ -18,7 +18,6 @@ import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -70,21 +69,13 @@ public class RouteFormatGeoJson implements ConformanceClass, RouteFormatExtensio
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return getContent(apiData, path, HttpMethods.GET);
-  }
-
-  @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
-    if ((path.equals("/routes") && method.equals(HttpMethods.POST))
-        || (path.equals("/routes/{routeId}") && method.equals(HttpMethods.GET)))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaRouteExchangeModel)
-          .schemaRef(Route.SCHEMA_REF)
-          .referencedSchemas(referencedSchemas)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-    return null;
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(schemaRouteExchangeModel)
+        .schemaRef(Route.SCHEMA_REF)
+        .referencedSchemas(referencedSchemas)
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
   }
 
   @Override

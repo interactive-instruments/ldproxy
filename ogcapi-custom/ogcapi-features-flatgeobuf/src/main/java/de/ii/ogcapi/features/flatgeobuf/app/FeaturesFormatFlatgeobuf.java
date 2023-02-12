@@ -57,12 +57,6 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
           .label("FlatGeobuf")
           .parameter("fgb")
           .build();
-  public static final ApiMediaType COLLECTION_MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "json"))
-          .label("JSON")
-          .parameter("json")
-          .build();
 
   private final FeaturesCoreProviders providers;
   private final CrsInfo crsInfo;
@@ -92,18 +86,18 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
 
   @Override
   public ApiMediaType getCollectionMediaType() {
-    return COLLECTION_MEDIA_TYPE;
+    return ApiMediaType.JSON_MEDIA_TYPE;
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  public ApiMediaTypeContent getContent() {
     // TODO Should we describe the schema used in the binary file? As an OpenAPI schema?
     String schemaRef = "#/components/schemas/FlatGeobuf";
     Schema<?> schema = new BinarySchema();
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schema)
         .schemaRef(schemaRef)
-        .ogcApiMediaType(MEDIA_TYPE)
+        .ogcApiMediaType(getMediaType())
         .build();
   }
 

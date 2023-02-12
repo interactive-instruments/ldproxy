@@ -34,7 +34,6 @@ import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -92,22 +91,13 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats =
           extensionRegistry.getExtensionsForType(StyleMetadataFormatExtension.class).stream()
               .filter(StyleMetadataFormatExtension::canSupportTransactions)
               .collect(Collectors.toList());
     return formats;
-  }
-
-  private Map<MediaType, ApiMediaTypeContent> getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    return getFormats().stream()
-        .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-        .map(f -> f.getRequestContent(apiData, path, method))
-        .filter(Objects::nonNull)
-        .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
   }
 
   @Override
@@ -157,11 +147,7 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
             new ImmutableOgcApiResourceData.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> requestContent =
-            collectionId.startsWith("{")
-                ? getRequestContent(apiData, Optional.empty(), subSubPath, HttpMethods.PUT)
-                : getRequestContent(
-                    apiData, Optional.of(collectionId), subSubPath, HttpMethods.PUT);
+        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData);
         ApiOperation.of(
                 resourcePath,
                 HttpMethods.PUT,
@@ -267,11 +253,7 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
                 + "these members, you have to send the complete new array value.";
         // TODO document rules, e.g.wrt links
         operationDescription = Optional.of(description);
-        requestContent =
-            collectionId.startsWith("{")
-                ? getRequestContent(apiData, Optional.empty(), subSubPath, HttpMethods.PATCH)
-                : getRequestContent(
-                    apiData, Optional.of(collectionId), subSubPath, HttpMethods.PATCH);
+        requestContent = getRequestContent(apiData);
         ApiOperation.of(
                 resourcePath,
                 HttpMethods.PATCH,
