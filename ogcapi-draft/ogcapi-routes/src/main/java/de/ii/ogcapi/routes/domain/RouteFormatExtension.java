@@ -38,11 +38,6 @@ public interface RouteFormatExtension extends FormatExtension {
     return RoutingConfiguration.class;
   }
 
-  @Override
-  default String getPathPattern() {
-    return "^/routes(?:/" + PathParameterRouteId.ROUTE_ID_PATTERN + ")?/?$";
-  }
-
   default boolean canEncodeFeatures() {
     return false;
   }

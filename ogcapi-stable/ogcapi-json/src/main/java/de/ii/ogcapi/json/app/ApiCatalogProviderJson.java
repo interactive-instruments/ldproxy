@@ -13,7 +13,6 @@ import de.ii.ogcapi.foundation.domain.ApiCatalogProvider;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
@@ -31,13 +30,6 @@ import javax.ws.rs.core.Response;
 @AutoBind
 public class ApiCatalogProviderJson extends ApiCatalogProvider {
 
-  public static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "json"))
-          .label("JSON")
-          .parameter("json")
-          .build();
-
   @Inject
   public ApiCatalogProviderJson(
       ServicesContext servicesContext,
@@ -52,12 +44,12 @@ public class ApiCatalogProviderJson extends ApiCatalogProvider {
 
   @Override
   public ApiMediaType getApiMediaType() {
-    return MEDIA_TYPE;
+    return ApiMediaType.JSON_MEDIA_TYPE;
   }
 
   @Override
   public MediaType getMediaType() {
-    return MEDIA_TYPE.type();
+    return getApiMediaType().type();
   }
 
   // TODO: add locale parameter in ServiceListing.getServiceListing() in xtraplatform

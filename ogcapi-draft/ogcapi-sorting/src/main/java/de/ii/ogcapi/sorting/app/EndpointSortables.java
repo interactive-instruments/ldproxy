@@ -99,7 +99,7 @@ public class EndpointSortables extends EndpointSubCollection /* implements Confo
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(CollectionPropertiesFormat.class);
     return formats;
@@ -146,10 +146,7 @@ public class EndpointSortables extends EndpointSubCollection /* implements Confo
             new ImmutableOgcApiResourceData.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> responseContent =
-            collectionId.startsWith("{")
-                ? getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET)
-                : getContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+        Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
         ApiOperation.getResource(
                 apiData,
                 resourcePath,

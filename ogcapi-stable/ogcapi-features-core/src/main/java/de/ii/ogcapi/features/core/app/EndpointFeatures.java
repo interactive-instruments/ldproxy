@@ -17,7 +17,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
+import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeatures.Builder;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -104,7 +104,7 @@ public class EndpointFeatures extends EndpointFeaturesDefinition {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class);
     return formats;
@@ -318,7 +318,7 @@ public class EndpointFeatures extends EndpointFeaturesDefinition {
             toFlatMap(uriInfo.getQueryParameters()),
             allowedParameters);
     FeaturesCoreQueriesHandler.QueryInputFeatures queryInput =
-        new ImmutableQueryInputFeatures.Builder()
+        new Builder()
             .from(getGenericQueryInput(api.getData()))
             .collectionId(collectionId)
             .query(query)

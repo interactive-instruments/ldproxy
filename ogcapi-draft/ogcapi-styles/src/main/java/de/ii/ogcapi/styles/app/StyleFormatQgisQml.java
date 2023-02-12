@@ -10,17 +10,12 @@ package de.ii.ogcapi.styles.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
-import io.swagger.v3.oas.models.media.ObjectSchema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @title QGIS
@@ -28,8 +23,6 @@ import org.slf4j.LoggerFactory;
 @Singleton
 @AutoBind
 public class StyleFormatQgisQml implements StyleFormatExtension {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(StyleFormatQgisQml.class);
 
   static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
@@ -52,27 +45,17 @@ public class StyleFormatQgisQml implements StyleFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new ObjectSchema())
-        .schemaRef("#/components/schemas/anyObject")
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
-  }
-
-  @Override
-  public ApiMediaTypeContent getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new ObjectSchema())
-        .schemaRef("#/components/schemas/anyObject")
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
-  }
-
-  @Override
   public ApiMediaType getMediaType() {
     return MEDIA_TYPE;
+  }
+
+  @Override
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(BINARY_SCHEMA)
+        .schemaRef(BINARY_SCHEMA_REF)
+        .ogcApiMediaType(getMediaType())
+        .build();
   }
 
   @Override

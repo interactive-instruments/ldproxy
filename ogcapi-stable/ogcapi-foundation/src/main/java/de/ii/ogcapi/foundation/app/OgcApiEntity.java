@@ -103,10 +103,9 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
 
   @Override
   public <T extends FormatExtension> Optional<T> getOutputFormat(
-      Class<T> extensionType, ApiMediaType mediaType, String path, Optional<String> collectionId) {
+      Class<T> extensionType, ApiMediaType mediaType, Optional<String> collectionId) {
     List<T> candidates =
         extensionRegistry.getExtensionsForType(extensionType).stream()
-            .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
             .filter(
                 outputFormatExtension ->
                     collectionId
@@ -124,12 +123,11 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
 
   @Override
   public <T extends FormatExtension> List<T> getAllOutputFormats(
-      Class<T> extensionType, ApiMediaType mediaType, String path, Optional<T> excludeFormat) {
+      Class<T> extensionType, ApiMediaType mediaType, Optional<T> excludeFormat) {
     return extensionRegistry.getExtensionsForType(extensionType).stream()
         .filter(
             outputFormatExtension ->
                 !Objects.equals(outputFormatExtension, excludeFormat.orElse(null)))
-        .filter(outputFormatExtension -> path.matches(outputFormatExtension.getPathPattern()))
         .filter(
             outputFormatExtension ->
                 mediaType.type().isCompatible(outputFormatExtension.getMediaType().type()))

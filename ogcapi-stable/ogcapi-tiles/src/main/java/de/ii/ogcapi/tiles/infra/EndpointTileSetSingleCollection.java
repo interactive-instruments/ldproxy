@@ -70,7 +70,7 @@ public class EndpointTileSetSingleCollection extends AbstractEndpointTileSetSing
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(TileSetFormatExtension.class);
     return formats;

@@ -97,7 +97,6 @@ public class CollectionPropertiesQueriesHandlerImpl implements CollectionPropert
         api.getOutputFormat(
                 CollectionPropertiesFormat.class,
                 requestContext.getMediaType(),
-                "/collections/" + collectionId + "/" + type.toString(),
                 Optional.of(collectionId))
             .orElseThrow(
                 () ->

@@ -21,10 +21,10 @@ public interface OgcApi extends Service {
   OgcApiDataV2 getData();
 
   <T extends FormatExtension> Optional<T> getOutputFormat(
-      Class<T> extensionType, ApiMediaType mediaType, String path, Optional<String> collectionId);
+      Class<T> extensionType, ApiMediaType mediaType, Optional<String> collectionId);
 
   <T extends FormatExtension> List<T> getAllOutputFormats(
-      Class<T> extensionType, ApiMediaType mediaType, String path, Optional<T> excludeFormat);
+      Class<T> extensionType, ApiMediaType mediaType, Optional<T> excludeFormat);
 
   /**
    * Determine spatial extent of all collections in the dataset.

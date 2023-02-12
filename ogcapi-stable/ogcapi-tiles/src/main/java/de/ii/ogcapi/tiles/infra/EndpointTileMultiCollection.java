@@ -89,7 +89,7 @@ public class EndpointTileMultiCollection extends Endpoint
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(TileFormatExtension.class);
     return formats;

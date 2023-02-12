@@ -14,14 +14,12 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
-import io.swagger.v3.oas.models.media.ObjectSchema;
 import java.util.List;
 import java.util.Optional;
 import javax.inject.Inject;
@@ -62,27 +60,17 @@ public class StyleFormatSld11 implements ConformanceClass, StyleFormatExtension 
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new ObjectSchema())
-        .schemaRef("#/components/schemas/anyObject")
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
-  }
-
-  @Override
-  public ApiMediaTypeContent getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new ObjectSchema())
-        .schemaRef("#/components/schemas/anyObject")
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
-  }
-
-  @Override
   public ApiMediaType getMediaType() {
     return MEDIA_TYPE;
+  }
+
+  @Override
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(OBJECT_SCHEMA)
+        .schemaRef(OBJECT_SCHEMA_REF)
+        .ogcApiMediaType(getMediaType())
+        .build();
   }
 
   @Override

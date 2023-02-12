@@ -98,6 +98,7 @@ public abstract class OgcApiDatasetView extends OgcApiView {
             .add("tilesets-\\w+")
             .add("styles")
             .add("routes")
+            .add("search")
             .add("ldp-map")
             .build();
 

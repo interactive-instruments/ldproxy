@@ -42,7 +42,6 @@ import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
-import io.swagger.v3.oas.models.media.ObjectSchema;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -217,10 +216,19 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  public ApiMediaTypeContent getContent() {
     return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new ObjectSchema())
-        .schemaRef("#/components/schemas/anyObject")
+        .schema(OBJECT_SCHEMA)
+        .schemaRef(OBJECT_SCHEMA_REF)
+        .ogcApiMediaType(getMediaType())
+        .build();
+  }
+
+  @Override
+  public ApiMediaTypeContent getFeatureContent(
+      OgcApiDataV2 apiData, Optional<String> collectionId, boolean featureCollection) {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .from(getContent())
         .ogcApiMediaType(MEDIA_TYPE_MAP.get(getConformance(apiData)))
         .build();
   }

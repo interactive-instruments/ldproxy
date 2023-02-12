@@ -99,11 +99,7 @@ public interface EndpointTileMixin {
             new ImmutableOgcApiResourceData.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> responseContent =
-            collectionId.startsWith("{")
-                ? endpoint.getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET)
-                : endpoint.getContent(
-                    apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+        Map<MediaType, ApiMediaTypeContent> responseContent = endpoint.getResponseContent(apiData);
         Optional<String> operationId =
             collectionId.startsWith("{")
                 ? operationIdWithPlaceholders.map(
@@ -192,7 +188,7 @@ public interface EndpointTileMixin {
             false,
             queryParameters,
             ImmutableList.of(),
-            endpoint.getContent(apiData, path),
+            endpoint.getResponseContent(apiData),
             operationSummary,
             operationDescription,
             Optional.empty(),
@@ -291,8 +287,7 @@ public interface EndpointTileMixin {
     TileFormatExtension outputFormat =
         requestContext
             .getApi()
-            .getOutputFormat(
-                TileFormatExtension.class, requestContext.getMediaType(), path, collectionId)
+            .getOutputFormat(TileFormatExtension.class, requestContext.getMediaType(), collectionId)
             .orElseThrow(
                 () ->
                     new NotAcceptableException(

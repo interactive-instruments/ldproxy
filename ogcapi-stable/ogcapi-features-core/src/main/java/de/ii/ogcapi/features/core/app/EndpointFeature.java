@@ -13,7 +13,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeature;
+import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeature.Builder;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -145,8 +145,8 @@ public class EndpointFeature extends EndpointFeaturesDefinition {
             featureId,
             Optional.of(Type.STRONG));
 
-    ImmutableQueryInputFeature.Builder queryInputBuilder =
-        new ImmutableQueryInputFeature.Builder()
+    Builder queryInputBuilder =
+        new Builder()
             .from(getGenericQueryInput(api.getData()))
             .collectionId(collectionId)
             .featureId(featureId)

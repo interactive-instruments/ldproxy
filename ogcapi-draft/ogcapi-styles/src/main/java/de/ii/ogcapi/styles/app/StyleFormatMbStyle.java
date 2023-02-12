@@ -20,7 +20,6 @@ import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -91,23 +90,12 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  public ApiMediaTypeContent getContent() {
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schemaStyle)
         .schemaRef(MbStyleStylesheet.SCHEMA_REF)
         .referencedSchemas(referencedSchemas)
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
-  }
-
-  @Override
-  public ApiMediaTypeContent getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(schemaStyle)
-        .schemaRef(MbStyleStylesheet.SCHEMA_REF)
-        .referencedSchemas(referencedSchemas)
-        .ogcApiMediaType(MEDIA_TYPE)
+        .ogcApiMediaType(getMediaType())
         .build();
   }
 

@@ -25,7 +25,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyle.Builder;
+import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyle;
 import de.ii.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleRepository;
@@ -86,7 +86,7 @@ public class EndpointStyleCollection extends EndpointSubCollection {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(StyleFormatExtension.class);
     return formats;
@@ -144,10 +144,7 @@ public class EndpointStyleCollection extends EndpointSubCollection {
             new ImmutableOgcApiResourceAuxiliary.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> responseContent =
-            collectionId.startsWith("{")
-                ? getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET)
-                : getContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+        Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
         ApiOperation.getResource(
                 apiData,
                 resourcePath,
@@ -199,7 +196,7 @@ public class EndpointStyleCollection extends EndpointSubCollection {
     checkCollectionExists(apiData, collectionId);
 
     QueriesHandlerStyles.QueryInputStyle queryInput =
-        new Builder()
+        new ImmutableQueryInputStyle.Builder()
             .from(getGenericQueryInput(api.getData()))
             .collectionId(collectionId)
             .styleId(styleId)

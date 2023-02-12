@@ -49,12 +49,10 @@ import io.dropwizard.auth.Auth;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.measure.Unit;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -69,7 +67,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.kortforsyningen.proj.Units;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,7 +133,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats =
           extensionRegistry.getExtensionsForType(FeatureFormatExtension.class).stream()
@@ -181,11 +178,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             new ImmutableOgcApiResourceData.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> requestContent =
-            collectionId.startsWith("{")
-                ? getRequestContent(apiData, Optional.empty(), subSubPath, HttpMethods.POST)
-                : getRequestContent(
-                    apiData, Optional.of(collectionId), subSubPath, HttpMethods.POST);
+        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData);
         ApiOperation.of(
                 resourcePath,
                 HttpMethods.POST,
@@ -232,11 +225,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             new ImmutableOgcApiResourceData.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> requestContent =
-            collectionId.startsWith("{")
-                ? getRequestContent(apiData, Optional.empty(), subSubPath, HttpMethods.PUT)
-                : getRequestContent(
-                    apiData, Optional.of(collectionId), subSubPath, HttpMethods.PUT);
+        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData);
         ApiOperation.of(
                 resourcePath,
                 HttpMethods.PUT,
@@ -258,11 +247,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
         operationDescription =
             Optional.of(
                 "The content of the request is a partial feature in one of the supported encodings. The id of updated feature is `{featureId}`.");
-        requestContent =
-            collectionId.startsWith("{")
-                ? getRequestContent(apiData, Optional.empty(), subSubPath, HttpMethods.PATCH)
-                : getRequestContent(
-                    apiData, Optional.of(collectionId), subSubPath, HttpMethods.PATCH);
+        requestContent = getRequestContent(apiData);
         ApiOperation.of(
                 resourcePath,
                 HttpMethods.PATCH,
@@ -523,24 +508,8 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     // so we need to build the query to get the CRS
     ImmutableFeatureQuery query = queryBuilder.build();
     if (!coordinatePrecision.isEmpty() && query.getCrs().isPresent()) {
-      Integer precision;
-      List<Unit<?>> units = crsInfo.getAxisUnits(query.getCrs().get());
-      ImmutableList.Builder<Integer> precisionListBuilder = new ImmutableList.Builder<>();
-      for (Unit<?> unit : units) {
-        if (unit.equals(Units.METRE)) {
-          precision = coordinatePrecision.get("meter");
-          if (Objects.isNull(precision)) precision = coordinatePrecision.get("metre");
-        } else if (unit.equals(Units.DEGREE)) {
-          precision = coordinatePrecision.get("degree");
-        } else {
-          LOGGER.debug(
-              "Coordinate precision could not be set, unrecognised unit found: '{}'.",
-              unit.getName());
-          return queryBuilder;
-        }
-        precisionListBuilder.add(precision);
-      }
-      List<Integer> precisionList = precisionListBuilder.build();
+      List<Integer> precisionList =
+          crsInfo.getPrecisionList(query.getCrs().get(), coordinatePrecision);
       if (!precisionList.isEmpty()) {
         queryBuilder.geometryPrecision(precisionList);
       }

@@ -78,7 +78,7 @@ public class EndpointRouteDelete extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     return ImmutableList.of();
   }
 

@@ -125,7 +125,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         api.getOutputFormat(
                 FeatureFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/" + collectionId + "/items",
                 Optional.of(collectionId))
             .orElseThrow(
                 () ->
@@ -154,7 +153,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
   private Response getItemResponse(QueryInputFeature queryInput, ApiRequestContext requestContext) {
 
     OgcApi api = requestContext.getApi();
-    OgcApiDataV2 apiData = api.getData();
     String collectionId = queryInput.getCollectionId();
     String featureId = queryInput.getFeatureId();
     FeatureQuery query = queryInput.getQuery();
@@ -163,7 +161,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         api.getOutputFormat(
                 FeatureFormatExtension.class,
                 requestContext.getMediaType(),
-                "/collections/" + collectionId + "/items/" + featureId,
                 Optional.of(collectionId))
             .orElseThrow(
                 () ->

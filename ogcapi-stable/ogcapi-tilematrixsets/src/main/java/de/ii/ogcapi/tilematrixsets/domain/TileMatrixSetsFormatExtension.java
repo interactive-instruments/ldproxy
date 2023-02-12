@@ -15,14 +15,5 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 @AutoMultiBind
 public interface TileMatrixSetsFormatExtension extends GenericFormatExtension {
 
-  @Override
-  default String getPathPattern() {
-    return "^/tileMatrixSets(?:/\\w+)?/?$";
-  }
-
-  Object getTileMatrixSetsEntity(
-      TileMatrixSets tileMatrixSets, OgcApi api, ApiRequestContext requestContext);
-
-  Object getTileMatrixSetEntity(
-      TileMatrixSetOgcApi tileMatrixSet, OgcApi api, ApiRequestContext requestContext);
+  Object getEntity(TileMatrixSets tileMatrixSets, OgcApi api, ApiRequestContext requestContext);
 }

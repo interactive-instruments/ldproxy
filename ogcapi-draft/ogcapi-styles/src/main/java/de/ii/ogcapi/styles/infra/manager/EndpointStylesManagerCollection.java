@@ -36,7 +36,6 @@ import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -102,22 +101,12 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats =
           extensionRegistry.getExtensionsForType(StyleFormatExtension.class).stream()
-              .filter(StyleFormatExtension::canSupportTransactions)
               .collect(Collectors.toList());
     return formats;
-  }
-
-  private Map<MediaType, ApiMediaTypeContent> getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    return getFormats().stream()
-        .filter(outputFormatExtension -> outputFormatExtension.isEnabledForApi(apiData))
-        .map(f -> f.getRequestContent(apiData, path, method))
-        .filter(Objects::nonNull)
-        .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
   }
 
   @Override
@@ -179,11 +168,7 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
             new ImmutableOgcApiResourceData.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> requestContent =
-            collectionId.startsWith("{")
-                ? getRequestContent(apiData, Optional.empty(), subSubPath, HttpMethods.POST)
-                : getRequestContent(
-                    apiData, Optional.of(collectionId), subSubPath, HttpMethods.POST);
+        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData);
         ApiOperation.of(
                 resourcePath,
                 HttpMethods.POST,
@@ -238,11 +223,7 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
             new ImmutableOgcApiResourceData.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> requestContent =
-            collectionId.startsWith("{")
-                ? getRequestContent(apiData, Optional.empty(), subSubPath, HttpMethods.PUT)
-                : getRequestContent(
-                    apiData, Optional.of(collectionId), subSubPath, HttpMethods.PUT);
+        Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(apiData);
         ApiOperation.of(
                 resourcePath,
                 HttpMethods.PUT,

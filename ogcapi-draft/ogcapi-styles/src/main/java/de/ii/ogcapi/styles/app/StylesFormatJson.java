@@ -12,7 +12,6 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.domain.Styles;
@@ -22,7 +21,6 @@ import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 
 /**
  * @title JSON
@@ -30,13 +28,6 @@ import javax.ws.rs.core.MediaType;
 @Singleton
 @AutoBind
 public class StylesFormatJson implements StylesFormatExtension {
-
-  public static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "json"))
-          .label("JSON")
-          .parameter("json")
-          .build();
 
   private final Schema<?> schemaStyles;
   private final Map<String, Schema<?>> referencedSchemas;
@@ -49,7 +40,7 @@ public class StylesFormatJson implements StylesFormatExtension {
 
   @Override
   public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
+    return ApiMediaType.JSON_MEDIA_TYPE;
   }
 
   @Override
@@ -62,17 +53,12 @@ public class StylesFormatJson implements StylesFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-
-    // TODO add examples
-    if (path.endsWith("/styles"))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaStyles)
-          .schemaRef(Styles.SCHEMA_REF)
-          .referencedSchemas(referencedSchemas)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-
-    throw new RuntimeException("Unexpected path: " + path);
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(schemaStyles)
+        .schemaRef(Styles.SCHEMA_REF)
+        .referencedSchemas(referencedSchemas)
+        .ogcApiMediaType(getMediaType())
+        .build();
   }
 }

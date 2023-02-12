@@ -138,6 +138,17 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
     return false;
   }
 
+  Optional<String> getQueryId();
+
+  @Value.Derived
+  default boolean isQueryExpression() {
+    return getQueryId().isPresent();
+  }
+
+  Optional<String> getQueryTitle();
+
+  Optional<String> getQueryDescription();
+
   @Nullable
   State getState();
 

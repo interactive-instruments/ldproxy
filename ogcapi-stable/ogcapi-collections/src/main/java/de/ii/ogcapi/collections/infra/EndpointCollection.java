@@ -12,8 +12,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.collections.app.ImmutableQueryInputFeatureCollection;
 import de.ii.ogcapi.collections.app.QueriesHandlerCollectionsImpl;
+import de.ii.ogcapi.collections.domain.CollectionFormatExtension;
 import de.ii.ogcapi.collections.domain.CollectionsConfiguration;
-import de.ii.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.QueriesHandlerCollections;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
@@ -192,9 +192,9 @@ public class EndpointCollection extends EndpointSubCollection {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
-      formats = extensionRegistry.getExtensionsForType(CollectionsFormatExtension.class);
+      formats = extensionRegistry.getExtensionsForType(CollectionFormatExtension.class);
     return formats;
   }
 
@@ -248,10 +248,7 @@ public class EndpointCollection extends EndpointSubCollection {
             new ImmutableOgcApiResourceAuxiliary.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> responseContent =
-            collectionId.startsWith("{")
-                ? getContent(apiData, Optional.empty(), "", HttpMethods.GET)
-                : getContent(apiData, Optional.of(collectionId), "", HttpMethods.GET);
+        Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
         ApiOperation.getResource(
                 apiData,
                 resourcePath,
