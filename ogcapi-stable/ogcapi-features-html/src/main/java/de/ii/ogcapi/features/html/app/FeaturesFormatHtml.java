@@ -223,6 +223,13 @@ public class FeaturesFormatHtml
             .orElse(true);
   }
 
+  private boolean getPropertyTooltips(OgcApiDataV2 apiData, boolean isCollection) {
+    return apiData
+        .getExtension(FeaturesHtmlConfiguration.class)
+        .map(cfg -> isCollection ? cfg.getPropertyTooltipsOnItems() : cfg.getPropertyTooltips())
+        .orElse(false);
+  }
+
   private boolean getPropertyTooltips(
       OgcApiDataV2 apiData, String collectionId, boolean isCollection) {
     return apiData
@@ -279,6 +286,7 @@ public class FeaturesFormatHtml
               getMapPosition(apiData),
               hideMap,
               transformationContext.getQueryTitle().orElse("Search"),
+              getPropertyTooltips(apiData, true),
               transformationContext.getLinks());
     } else {
       // Features - Core
@@ -607,6 +615,7 @@ public class FeaturesFormatHtml
       POSITION mapPosition,
       boolean hideMap,
       String queryLabel,
+      boolean propertyTooltips,
       List<Link> links) {
     OgcApiDataV2 apiData = api.getData();
     URI requestUri = null;
@@ -658,6 +667,7 @@ public class FeaturesFormatHtml
         .setLanguage(language.orElse(Locale.ENGLISH))
         .setMapPosition(mapPosition)
         .setMapClientType(mapClientType)
+        .setPropertyTooltips(propertyTooltips)
         .setStyleUrl(styleUrl)
         .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
         .setHideMap(hideMap)
