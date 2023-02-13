@@ -10,6 +10,7 @@ package de.ii.ogcapi.foundation.domain;
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
@@ -34,6 +36,19 @@ public interface QueriesHandler<T extends QueryIdentifier> {
   Locale[] LANGUAGES =
       I18n.getLanguages().stream().collect(Collectors.toUnmodifiableList()).toArray(Locale[]::new);
   String[] ENCODINGS = {"gzip", "identity"};
+
+  static void ensureCollectionIdExists(OgcApiDataV2 apiData, String collectionId) {
+    if (!apiData.isCollectionEnabled(collectionId)) {
+      throw new NotFoundException(
+          MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
+    }
+  }
+
+  static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
+    if (!featureProvider.supportsQueries()) {
+      throw new IllegalStateException("Feature provider does not support queries.");
+    }
+  }
 
   Map<T, QueryHandler<? extends QueryInput>> getQueryHandlers();
 
@@ -186,5 +201,15 @@ public interface QueriesHandler<T extends QueryIdentifier> {
 
   default Date getLastModified(QueryInput queryInput) {
     return queryInput.getLastModified().orElse(null);
+  }
+
+  default List<Link> getLinks(ApiRequestContext requestContext, I18n i18n) {
+    return new DefaultLinksGenerator()
+        .generateLinks(
+            requestContext.getUriCustomizer(),
+            requestContext.getMediaType(),
+            requestContext.getAlternateMediaTypes(),
+            i18n,
+            requestContext.getLanguage());
   }
 }

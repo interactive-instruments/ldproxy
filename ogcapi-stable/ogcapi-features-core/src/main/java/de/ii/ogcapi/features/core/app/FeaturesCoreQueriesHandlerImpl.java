@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.core.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.io.Files;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureLinksGenerator;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
@@ -24,7 +25,7 @@ import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
@@ -47,6 +48,8 @@ import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
+import java.io.File;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -98,19 +101,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     return queryHandlers;
   }
 
-  public static void ensureCollectionIdExists(OgcApiDataV2 apiData, String collectionId) {
-    if (!apiData.isCollectionEnabled(collectionId)) {
-      throw new NotFoundException(
-          MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
-    }
-  }
-
-  private static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
-    if (!featureProvider.supportsQueries()) {
-      throw new IllegalStateException("Feature provider does not support queries.");
-    }
-  }
-
   private Response getItemsResponse(
       QueryInputFeatures queryInput, ApiRequestContext requestContext) {
 
@@ -147,7 +137,9 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         defaultPageSize,
         queryInput.getShowsFeatureSelfLink(),
         queryInput.getIncludeLinkHeader(),
-        queryInput.getDefaultCrs());
+        queryInput.getDefaultCrs(),
+        queryInput.sendResponseAsStream(),
+        queryInput.getSaveContentAsFile());
   }
 
   private Response getItemResponse(QueryInputFeature queryInput, ApiRequestContext requestContext) {
@@ -176,6 +168,13 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
     }
 
+    boolean sendResponseAsStream =
+        outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            && api.getData()
+                .getExtension(HtmlConfiguration.class, collectionId)
+                .map(HtmlConfiguration::getSendEtags)
+                .orElse(false);
+
     return getResponse(
         api,
         requestContext,
@@ -190,7 +189,9 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         Optional.empty(),
         false,
         queryInput.getIncludeLinkHeader(),
-        queryInput.getDefaultCrs());
+        queryInput.getDefaultCrs(),
+        sendResponseAsStream,
+        queryInput.getSaveContentAsFile());
   }
 
   private Response getResponse(
@@ -207,10 +208,12 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       Optional<Integer> defaultPageSize,
       boolean showsFeatureSelfLink,
       boolean includeLinkHeader,
-      EpsgCrs defaultCrs) {
+      EpsgCrs defaultCrs,
+      boolean sendResponseAsStream,
+      Optional<File> saveResponseAsFile) {
 
-    ensureCollectionIdExists(api.getData(), collectionId);
-    ensureFeatureProviderSupportsQueries(featureProvider);
+    QueriesHandler.ensureCollectionIdExists(api.getData(), collectionId);
+    QueriesHandler.ensureFeatureProviderSupportsQueries(featureProvider);
 
     Optional<CrsTransformer> crsTransformer = Optional.empty();
 
@@ -328,12 +331,12 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     byte[] bytes = null;
     StreamingOutput streamingOutput = null;
 
-    if (Objects.nonNull(featureId)
-        && (!outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
-            || api.getData()
-                .getExtension(HtmlConfiguration.class, collectionId)
-                .map(HtmlConfiguration::getSendEtags)
-                .orElse(false))) {
+    if (sendResponseAsStream && saveResponseAsFile.isEmpty()) {
+      streamingOutput =
+          stream(featureStream, Objects.nonNull(featureId), encoder, propertyTransformations);
+      lastModified = getLastModified(queryInput);
+
+    } else {
       ResultReduced<byte[]> result = reduce(featureStream, true, encoder, propertyTransformations);
 
       bytes = result.reduced();
@@ -342,10 +345,17 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         etag = result.getETag().get();
         LOGGER.debug("ETAG {}", etag);
       }
-    } else {
-      streamingOutput =
-          stream(featureStream, Objects.nonNull(featureId), encoder, propertyTransformations);
-      lastModified = getLastModified(queryInput);
+
+      if (saveResponseAsFile.isPresent() && Objects.nonNull(bytes)) {
+        try {
+          Files.write(bytes, saveResponseAsFile.get());
+        } catch (IOException e) {
+          if (LOGGER.isErrorEnabled()) {
+            LOGGER.error(
+                "Could not write feature response to file: {}", saveResponseAsFile.get(), e);
+          }
+        }
+      }
     }
 
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
@@ -364,7 +374,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                     .collect(ImmutableList.toImmutableList())
                 : null,
             HeaderCaching.of(lastModified, etag, queryInput),
-            targetCrs,
+            outputFormat.getContentCrs(targetCrs),
             HeaderContentDisposition.of(
                 String.format(
                     "%s.%s",

@@ -13,6 +13,7 @@ import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Locale;
@@ -22,6 +23,20 @@ import java.util.Optional;
 public interface FeatureFormatExtension extends FormatExtension {
 
   ApiMediaType getCollectionMediaType();
+
+  default EpsgCrs getContentCrs(EpsgCrs targetCrs) {
+    return targetCrs;
+  }
+
+  /* FIXME
+  @Override
+  default ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
+    if (method.equals(HttpMethods.GET)) {
+      return getContent(apiData, path);
+    }
+    return null;
+  }
+   */
 
   default ApiMediaTypeContent getFeatureContent(
       OgcApiDataV2 apiData, Optional<String> collectionId, boolean featureCollection) {

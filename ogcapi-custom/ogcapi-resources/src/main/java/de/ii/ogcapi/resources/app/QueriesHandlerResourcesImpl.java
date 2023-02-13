@@ -13,7 +13,6 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.ByteSource;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
 import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
@@ -109,14 +108,7 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
                                         requestContext.getUriCustomizer(), filename))
                                 .build())
                     .collect(Collectors.toList()))
-            .links(
-                new DefaultLinksGenerator()
-                    .generateLinks(
-                        requestContext.getUriCustomizer(),
-                        requestContext.getMediaType(),
-                        requestContext.getAlternateMediaTypes(),
-                        i18n,
-                        requestContext.getLanguage()))
+            .links(getLinks(requestContext, i18n))
             .build();
 
     ResourcesFormatExtension format =
