@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.3.4 (14/02/2023)
+
+#### Fixed bugs
+
+-  tile seeding fails with 'too many open files' [#902](https://github.com/interactive-instruments/ldproxy/issues/902)
+
+---
+
 ## v3.3.3 (09/02/2023)
 
 #### Improvements
