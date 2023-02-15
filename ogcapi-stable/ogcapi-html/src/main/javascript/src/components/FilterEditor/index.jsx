@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-import { Button, Row, Col } from 'reactstrap/dist/reactstrap.es';
+import { Button, Row, Col } from 'reactstrap';
 import qs from 'qs';
 
 import Badge from './Badge';
@@ -17,13 +17,18 @@ const toBounds = (filter) => {
 };
 
 const FilterEditor = ({
-    fields,
     backgroundUrl,
     attribution,
     spatial,
     temporal,
+    fields,
+    code, 
+    start,
+    end,
+    bounds,
+    titleForFilter
 }) => {
-    const [isOpen, setOpen] = useState(false);
+    const [isOpen, setOpen] = useState(true);
 
     const enabled = Object.keys(fields).length > 0 || spatial || temporal;
 
@@ -46,7 +51,7 @@ const FilterEditor = ({
                 }
                 return reduced;
             }, {})
-    );
+    ); 
 
     const toggle = (event) => {
         event.target.blur();
@@ -97,8 +102,16 @@ const FilterEditor = ({
         // eslint-disable-next-line no-undef
         window.location.search = qs.stringify(query, {
             addQueryPrefix: true,
-        });
+        }); 
     };
+
+    const deleteFilters = (field) => ()=> {
+        setFilters(current => {
+          const copy = {...current};
+          delete copy[field];
+          return copy;
+        })
+    }; 
 
     const cancel = (event) => {
         event.target.blur();
@@ -120,7 +133,7 @@ const FilterEditor = ({
     };
 
     return (
-        <>
+        <>  
             <Row className='mb-3'>
                 <Col
                     md='3'
@@ -171,6 +184,9 @@ const FilterEditor = ({
                 temporal={temporal}
                 filters={filters}
                 onAdd={onAdd}
+                deleteFilters={deleteFilters}
+                code={code}
+                titleForFilter={titleForFilter}
             />
         </>
     );
@@ -179,7 +195,7 @@ const FilterEditor = ({
 FilterEditor.displayName = 'FilterEditor';
 
 FilterEditor.propTypes = {
-    fields: PropTypes.objectOf(PropTypes.string),
+    fields: PropTypes.objectOf(PropTypes.string).isRequired,
     backgroundUrl: PropTypes.string,
     attribution: PropTypes.string,
     spatial: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
@@ -187,7 +203,8 @@ FilterEditor.propTypes = {
 };
 
 FilterEditor.defaultProps = {
-    fields: {},
+    fields: {lastname: "Nachname", firstname: "Vorname"},
+    filters: {absast: {value: "A", add: false, remove:false} },
     backgroundUrl: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution:
         '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',

@@ -5,7 +5,7 @@ import {
     Button,
     ButtonDropdown,
     DropdownToggle,
-} from 'reactstrap/dist/reactstrap.es';
+} from 'reactstrap';
 
 const FilterBadge = ({
     field,

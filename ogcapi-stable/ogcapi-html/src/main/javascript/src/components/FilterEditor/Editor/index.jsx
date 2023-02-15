@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-import { Row, Col, Collapse } from 'reactstrap/dist/reactstrap.es';
+import { Row, Col, Collapse } from 'reactstrap';
 
 import FieldFilter from './Fields';
 import TemporalFilter from './Temporal';
-import SpatialFilter, { MapSelect } from './Spatial';
+import SpatialFilter/*, { MapSelect } */from './Spatial'; 
 
 const EditorBody = ({
     isOpen,
@@ -16,6 +16,9 @@ const EditorBody = ({
     temporal,
     filters,
     onAdd,
+    deleteFilters,
+    code,
+    titleForFilter
 }) => {
     const [showMap, setShowMap] = useState(false);
     const [bounds, setBounds] = useState(spatial);
@@ -36,9 +39,13 @@ const EditorBody = ({
                                     {}
                                 )}
                             onAdd={onAdd}
+                            filters={filters}
+                            deleteFilters={deleteFilters}
+                            code={code}
+                            titleForFilter={titleForFilter}
                         />
-                    )}
-                    {spatial && (
+                    )} 
+                    { spatial && (
                         <SpatialFilter bounds={bounds} onChange={onAdd} />
                     )}
                     {temporal && (
@@ -50,18 +57,18 @@ const EditorBody = ({
                             }
                             onChange={onAdd}
                         />
-                    )}
+                    )} 
                 </Col>
                 <Col md='6'>
-                    {showMap && spatial && (
+                    {/*showMap && spatial && (
                         <MapSelect
                             backgroundUrl={backgroundUrl}
                             attribution={attribution}
                             bounds={spatial}
                             onChange={setBounds}
                         />
-                    )}
-                </Col>
+                    )*/} 
+                </Col>  
             </Row>
         </Collapse>
     );
@@ -76,7 +83,7 @@ EditorBody.propTypes = {
     attribution: PropTypes.string.isRequired,
     spatial: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
     temporal: PropTypes.objectOf(PropTypes.number),
-    filters: PropTypes.objectOf(PropTypes.string),
+    filters: PropTypes.object,
     onAdd: PropTypes.func,
 };
 
