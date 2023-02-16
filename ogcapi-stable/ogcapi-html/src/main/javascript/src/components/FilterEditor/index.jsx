@@ -195,7 +195,7 @@ FilterEditor.propTypes = {
   code: PropTypes.objectOf(PropTypes.string).isRequired,
   start: PropTypes.string.isRequired,
   end: PropTypes.string.isRequired,
-  bounds: PropTypes.arrayOf(PropTypes.number),
+  bounds: PropTypes.arrayOf(PropTypes.number).isRequired,
   titleForFilter: PropTypes.objectOf(PropTypes.string).isRequired,
   backgroundUrl: PropTypes.string,
   attribution: PropTypes.string,
@@ -204,8 +204,6 @@ FilterEditor.propTypes = {
 };
 
 FilterEditor.defaultProps = {
-  fields: {},
-  filters: {},
   backgroundUrl: "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png",
   attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
   spatial: null,

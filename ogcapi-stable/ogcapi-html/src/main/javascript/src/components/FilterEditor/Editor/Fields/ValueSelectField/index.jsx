@@ -1,42 +1,45 @@
-import React, { useState } from "react";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import PropTypes from "prop-types";
 
-import {
-  Button,
-  Form,
-  FormGroup,
-  Input,
-  FormText,
-  Row,
-  Col,
-} from 'reactstrap';
+import { Input } from "reactstrap";
 
-const ValueSelectField = ({code, field, filters, changedValue, setChangedValue}) => {
-  return(
+const ValueSelectField = ({ code, field, filters, changedValue, setChangedValue }) => {
+  return (
     <Input
-    type="select"
-    size="sm"
-    name="value"
-    className="mr-2"
-    defaultValue={filters[field].value}
-    onChange={(e) => 
-      setChangedValue({
-        ...changedValue,
-        [field]: {
-          field,
-          value: e.target.value
-        }
-      })
-    }
+      type="select"
+      size="sm"
+      name="value"
+      className="mr-2"
+      defaultValue={filters[field].value}
+      onChange={(e) =>
+        setChangedValue({
+          ...changedValue,
+          [field]: {
+            field,
+            value: e.target.value,
+          },
+        })
+      }
     >
-    {Object.keys(code[field]).map((key) => (
-      <option value={code[field][key]} key={key}>
-        {code[field][key]}
-      </option>
-    
-    ))}
+      {Object.keys(code[field]).map((key) => (
+        <option value={code[field][key]} key={key}>
+          {code[field][key]}
+        </option>
+      ))}
     </Input>
-  )
-}
+  );
+};
 
 export default ValueSelectField;
+
+ValueSelectField.propTypes = {
+  field: PropTypes.objectOf(PropTypes.string).isRequired,
+  filters: PropTypes.objectOf(PropTypes.oneOfType([PropTypes.number, PropTypes.string])).isRequired,
+  code: PropTypes.objectOf(PropTypes.string).isRequired,
+  changedValue: PropTypes.objectOf(PropTypes.oneOfType([PropTypes.number, PropTypes.string]))
+    .isRequired,
+  setChangedValue: PropTypes.func.isRequired,
+};
+
+ValueSelectField.defaultProps = {};

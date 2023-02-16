@@ -3,7 +3,7 @@ import FetchPropertiesEnum from "../FetchingPropertiesEnum";
 
 const FetchSpatialTemporal = () => {
   const baseUrl = "https://demo.ldproxy.net";
-  const [relativeUrl, setRelativeUrl] = useState("/strassen/collections/abschnitteaeste?f=json");
+  const [relativeUrl] = useState("/strassen/collections/abschnitteaeste?f=json");
 
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
@@ -17,17 +17,17 @@ const FetchSpatialTemporal = () => {
       })
 
       .then((obj) => {
-        const start = obj.extent.temporal.interval[0];
-        const end = obj.extent.temporal.interval[1];
-        setStart(start);
-        setEnd(end);
+        const starting = obj.extent.temporal.interval[0];
+        const ending = obj.extent.temporal.interval[1];
+        setStart(starting);
+        setEnd(ending);
 
-        const bounds = obj.extent.spatial.bbox;
-        setBounds(bounds);
+        const bound = obj.extent.spatial.bbox;
+        setBounds(bound);
       })
 
       .catch((error) => {
-        console.error(error);
+        return error;
       });
   }, [relativeUrl]);
 

@@ -79,9 +79,9 @@ EditorBody.propTypes = {
   attribution: PropTypes.string.isRequired,
   spatial: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
   temporal: PropTypes.objectOf(PropTypes.number),
-  filters: PropTypes.object,
+  filters: PropTypes.objectOf(PropTypes.oneOfType([PropTypes.number, PropTypes.string])).isRequired,
   onAdd: PropTypes.func,
-  deleteFilters: PropTypes.func,
+  deleteFilters: PropTypes.func.isRequired,
   code: PropTypes.objectOf(PropTypes.string).isRequired,
   titleForFilter: PropTypes.objectOf(PropTypes.string).isRequired,
 };
@@ -91,7 +91,6 @@ EditorBody.defaultProps = {
   fields: {},
   spatial: null,
   temporal: null,
-  filters: {},
   onAdd: () => {},
 };
 

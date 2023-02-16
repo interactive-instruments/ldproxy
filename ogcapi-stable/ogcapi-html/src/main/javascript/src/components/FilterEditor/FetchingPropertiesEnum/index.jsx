@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import FilterEditor from "..";
 
 const baseUrl = "https://demo.ldproxy.net";
@@ -13,9 +14,7 @@ const FetchPropertiesEnum = ({ start, end, bounds }) => {
     lastname: "Nachname",
   });
   const [code, setCode] = useState("");
-  const [relativeUrl, setRelativeUrl] = useState(
-    "/strassen/collections/abschnitteaeste/queryables?f=json"
-  );
+  const [relativeUrl] = useState("/strassen/collections/abschnitteaeste/queryables?f=json");
 
   useEffect(() => {
     fetch(baseUrl + relativeUrl)
@@ -25,6 +24,7 @@ const FetchPropertiesEnum = ({ start, end, bounds }) => {
 
       .then((obj) => {
         const streetProperties = {};
+        // eslint-disable-next-line no-restricted-syntax
         for (const key in obj.properties) {
           if (obj.properties[key].title) {
             streetProperties[key] = obj.properties[key].title;
@@ -34,6 +34,7 @@ const FetchPropertiesEnum = ({ start, end, bounds }) => {
         setTitleForFilter(streetProperties);
 
         const streetCode = {};
+        // eslint-disable-next-line no-restricted-syntax
         for (const key in obj.properties) {
           if (obj.properties[key].enum) {
             streetCode[key] = obj.properties[key].enum;
@@ -43,7 +44,7 @@ const FetchPropertiesEnum = ({ start, end, bounds }) => {
       })
 
       .catch((error) => {
-        console.error(error);
+        return error;
       });
   }, [relativeUrl]);
 
@@ -60,3 +61,9 @@ const FetchPropertiesEnum = ({ start, end, bounds }) => {
 };
 
 export default FetchPropertiesEnum;
+
+FetchPropertiesEnum.propTypes = {
+  start: PropTypes.string.isRequired,
+  end: PropTypes.string.isRequired,
+  bounds: PropTypes.arrayOf(PropTypes.number).isRequired,
+};

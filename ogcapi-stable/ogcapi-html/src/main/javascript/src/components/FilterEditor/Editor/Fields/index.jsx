@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
-//import "bootstrap/dist/css/bootstrap.min.css";
-import ValueSelectField from "./ValueSelectField";
-
+import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, Form, FormGroup, Input, FormText, Row, Col } from "reactstrap";
+import ValueSelectField from "./ValueSelectField";
 
 const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilter }) => {
   const [field, setField] = useState("");
@@ -14,8 +13,8 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
 
   const saveValue = (event) => setValue(event.target.value);
 
-  let filtersToMap = Object.keys(filters).filter((field) => filters[field].remove === false);
-  let enumKeys = Object.keys(code);
+  const filtersToMap = Object.keys(filters).filter((key) => filters[key].remove === false);
+  const enumKeys = Object.keys(code);
 
   const save = (event) => {
     event.preventDefault();
@@ -25,9 +24,9 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
     setValue("");
   };
 
-  const overwriteFilters = (field) => () => {
+  const overwriteFilters = (key) => () => {
     const updatedFilterValue = { ...changedValue };
-    onAdd(field, updatedFilterValue[field].value);
+    onAdd(field, updatedFilterValue[key].value);
   };
   return (
     <Form onSubmit={save}>
@@ -97,25 +96,25 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
         </Col>
       </Row>
       <>
-        {filtersToMap.map((field) => (
-          <Row key={field}>
+        {filtersToMap.map((item) => (
+          <Row key={item}>
             <Col md="5">
               <Input
                 type="text"
                 size="sm"
                 name="selectedField"
-                id={`input1-${field}`}
+                id={`input1-${item}`}
                 className="mr-2"
-                disabled={true}
-                defaultValue={titleForFilter[field]}
-              ></Input>
+                disabled="true"
+                defaultValue={titleForFilter[item]}
+              />
             </Col>
             <Col md="5">
               <FormGroup>
-                {enumKeys.includes(field) ? (
+                {enumKeys.includes(item) ? (
                   <ValueSelectField
                     code={code}
-                    field={field}
+                    field={item}
                     filters={filters}
                     setChangedValue={setChangedValue}
                     changedValue={changedValue}
@@ -125,20 +124,20 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
                     type="text"
                     size="sm"
                     name="selectedValue"
-                    id={`input-${field}`}
+                    id={`input-${item}`}
                     className="mr-2"
-                    placeholder={filters[field].value}
-                    defaultValue={filters[field].value}
+                    placeholder={filters[item].value}
+                    defaultValue={filters[item].value}
                     onChange={(e) =>
                       setChangedValue({
                         ...changedValue,
-                        [field]: {
-                          field,
+                        [item]: {
+                          item,
                           value: e.target.value,
                         },
                       })
                     }
-                  ></Input>
+                  />
                 )}
               </FormGroup>
             </Col>
@@ -177,10 +176,10 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
 FieldFilter.displayName = "FieldFilter";
 
 FieldFilter.propTypes = {
-  fields: PropTypes.objectOf(PropTypes.string),
-  onAdd: PropTypes.func,
-  filters: PropTypes.object,
-  deleteFilters: PropTypes.func,
+  fields: PropTypes.objectOf(PropTypes.string).isRequired,
+  onAdd: PropTypes.func.isRequired,
+  filters: PropTypes.objectOf(PropTypes.oneOfType([PropTypes.number, PropTypes.string])).isRequired,
+  deleteFilters: PropTypes.func.isRequired,
   code: PropTypes.objectOf(PropTypes.string).isRequired,
   titleForFilter: PropTypes.objectOf(PropTypes.string).isRequired,
 };
