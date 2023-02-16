@@ -1,7 +1,7 @@
 /* eslint-disable no-undef, no-underscore-dangle */
 import React from "react";
 import ReactDOM from "react-dom";
-import FilterEditor from "../../components/FilterEditor";
+import FilterEditor from "../../components/FilterEditor/FetchingSpatialTemporal";
 
 if (globalThis._filter && globalThis._filter.container) {
   ReactDOM.render(

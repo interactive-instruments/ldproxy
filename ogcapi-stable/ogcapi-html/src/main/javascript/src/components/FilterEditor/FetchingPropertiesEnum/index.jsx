@@ -2,7 +2,17 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import FilterEditor from "..";
 
-const baseUrl = "https://demo.ldproxy.net";
+let baseUrl = new URL(window.location.href);
+if (process.env.NODE_ENV !== "production") {
+  console.log("DEV");
+  baseUrl = new URL(
+    "https://demo.ldproxy.net/strassen/collections/abschnitteaeste/items?limit=10&offset=10"
+  );
+  // slash at the end should also work
+  /* baseUrl = new URL(
+    "https://demo.ldproxy.net/strassen/collections/abschnitteaeste/items/?limit=10&offset=10"
+  ); */
+}
 
 const FetchPropertiesEnum = ({ start, end, bounds }) => {
   const [fields, setFields] = useState({
@@ -13,11 +23,17 @@ const FetchPropertiesEnum = ({ start, end, bounds }) => {
     firstname: "Vorname",
     lastname: "Nachname",
   });
-  const [code, setCode] = useState("");
+  const [code, setCode] = useState({});
   const [relativeUrl] = useState("/strassen/collections/abschnitteaeste/queryables?f=json");
 
   useEffect(() => {
-    fetch(baseUrl + relativeUrl)
+    const url = new URL(
+      baseUrl.pathname.endsWith("/") ? "../queryables" : "./queryables",
+      baseUrl.href
+    );
+    url.search = "?f=json";
+
+    fetch(url)
       .then((response) => {
         return response.json();
       })
