@@ -180,6 +180,9 @@ const FilterEditor = ({
         deleteFilters={deleteFilters}
         code={code}
         titleForFilter={titleForFilter}
+        start={start}
+        end={end}
+        bounds={bounds}
       />
     </>
   );

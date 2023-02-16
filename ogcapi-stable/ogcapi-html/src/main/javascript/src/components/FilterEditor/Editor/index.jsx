@@ -81,6 +81,9 @@ EditorBody.propTypes = {
   temporal: PropTypes.objectOf(PropTypes.number),
   filters: PropTypes.object,
   onAdd: PropTypes.func,
+  deleteFilters: PropTypes.func,
+  code: PropTypes.objectOf(PropTypes.string).isRequired,
+  titleForFilter: PropTypes.objectOf(PropTypes.string).isRequired,
 };
 
 EditorBody.defaultProps = {

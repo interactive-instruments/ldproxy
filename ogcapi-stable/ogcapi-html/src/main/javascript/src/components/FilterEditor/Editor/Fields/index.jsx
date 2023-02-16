@@ -179,6 +179,10 @@ FieldFilter.displayName = "FieldFilter";
 FieldFilter.propTypes = {
   fields: PropTypes.objectOf(PropTypes.string),
   onAdd: PropTypes.func,
+  filters: PropTypes.object,
+  deleteFilters: PropTypes.func,
+  code: PropTypes.objectOf(PropTypes.string).isRequired,
+  titleForFilter: PropTypes.objectOf(PropTypes.string).isRequired,
 };
 
 FieldFilter.defaultProps = {};
