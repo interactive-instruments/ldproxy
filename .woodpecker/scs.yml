@@ -9,7 +9,7 @@ clone:
 
 pipeline:
   dtrack:
-    image: eclipse-temurin:11-alpine
+    image: openjdk:11-slim
     commands:
       - ./gradlew publishSbom -PdtrackApiUrl=https://dtrack.ldproxy.net/api/v1/bom -PdtrackApiKey=$DTRACK_API_KEY
     secrets: [ dtrack_api_key ]
