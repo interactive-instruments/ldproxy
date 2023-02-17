@@ -8,7 +8,7 @@ clone:
 pipeline:
 
   libs:
-    image: openjdk:11-slim
+    image: eclipse-temurin:11
     commands:
       - ./gradlew publish dockerContext -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
@@ -16,7 +16,7 @@ pipeline:
       event: tag
 
   dist-arm64:
-    image: openjdk:11-slim
+    image: eclipse-temurin:11
     commands:
       - ./gradlew dockerContext -Pplatform=linux-arm64 -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]

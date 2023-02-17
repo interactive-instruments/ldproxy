@@ -14,6 +14,8 @@ plugins {
     id "org.danilopianini.gradle-pre-commit-git-hooks" version "1.0.12"
 }
 
+apply from: 'catalog.gradle'
+
 rootProject.name = 'ldproxy'
 
 //include bundles
