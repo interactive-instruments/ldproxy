@@ -6,7 +6,7 @@
   "main": "index.js",
   "private": true,
   "scripts": {
-    "start": "webpack-dev-server --mode development",
+    "start": "APP=${0:-filtereditor} webpack-dev-server --mode development",
     "build": "webpack --mode production",
     "test": "mocha",
     "lint": "eslint --cache --format codeframe --ext mjs,jsx,js src test",
@@ -32,7 +32,7 @@
     "react-datetime-range-picker": "^1.0.5",
     "react-dom": "^16",
     "react-maplibre-ui": "^2.0.0",
-    "reactstrap": "^9.1.5",
+    "reactstrap": "^8.10.1",
     "rlayers": "^1.1.1"
   },
   "devDependencies": {

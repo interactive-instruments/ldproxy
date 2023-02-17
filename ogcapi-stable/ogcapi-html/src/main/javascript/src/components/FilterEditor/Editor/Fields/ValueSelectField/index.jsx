@@ -1,5 +1,4 @@
 import React from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
 import PropTypes from "prop-types";
 
 import { Input } from "reactstrap";
