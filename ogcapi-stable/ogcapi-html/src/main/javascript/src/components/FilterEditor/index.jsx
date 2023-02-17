@@ -7,7 +7,7 @@ import qs from "qs";
 import Badge from "./Badge";
 import Editor from "./Editor";
 
-const Local_Storage_Key = "appliedFilters";
+const localStorageKey = "appliedFilters";
 
 const toBounds = (filter) => {
   const a = filter.split(",");
@@ -40,12 +40,12 @@ const FilterEditor = ({
   });
 
   const [filters, setFilters] = useState(() => {
-    const appliedFilters = localStorage.getItem(Local_Storage_Key);
+    const appliedFilters = localStorage.getItem(localStorageKey);
     return appliedFilters ? JSON.parse(appliedFilters) : {};
   });
 
   useEffect(() => {
-    localStorage.setItem(Local_Storage_Key, JSON.stringify(filters));
+    localStorage.setItem(localStorageKey, JSON.stringify(filters));
   }, [filters]);
 
   const toggle = (event) => {
@@ -187,6 +187,7 @@ FilterEditor.displayName = "FilterEditor";
 
 FilterEditor.propTypes = {
   fields: PropTypes.objectOf(PropTypes.string).isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
   code: PropTypes.object.isRequired,
   start: PropTypes.string.isRequired,
   end: PropTypes.string.isRequired,

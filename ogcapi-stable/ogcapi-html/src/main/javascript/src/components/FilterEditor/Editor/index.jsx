@@ -21,7 +21,6 @@ const EditorBody = ({
   titleForFilter,
   start,
   end,
-  bounds,
 }) => {
   const [showMap, setShowMap] = useState(false);
   const [bounds, setBounds] = useState(spatial);
@@ -82,11 +81,15 @@ EditorBody.propTypes = {
   attribution: PropTypes.string.isRequired,
   spatial: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
   temporal: PropTypes.objectOf(PropTypes.number),
+  // eslint-disable-next-line react/forbid-prop-types
   filters: PropTypes.object.isRequired,
   onAdd: PropTypes.func,
   deleteFilters: PropTypes.func.isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
   code: PropTypes.object.isRequired,
   titleForFilter: PropTypes.objectOf(PropTypes.string).isRequired,
+  start: PropTypes.string.isRequired,
+  end: PropTypes.string.isRequired,
 };
 
 EditorBody.defaultProps = {

@@ -24,7 +24,7 @@ const FetchPropertiesEnum = ({ start, end, bounds }) => {
     lastname: "Nachname",
   });
   const [code, setCode] = useState({});
-
+  // eslint-disable-next-line
   useEffect(() => {
     const url = new URL(
       baseUrl.pathname.endsWith("/") ? "../queryables" : "./queryables",
@@ -41,6 +41,7 @@ const FetchPropertiesEnum = ({ start, end, bounds }) => {
       .then((response) => {
         return response.json();
       })
+      // eslint-disable-next-line
       .then((obj) => {
         if (!obj || !obj.properties) {
           return null;

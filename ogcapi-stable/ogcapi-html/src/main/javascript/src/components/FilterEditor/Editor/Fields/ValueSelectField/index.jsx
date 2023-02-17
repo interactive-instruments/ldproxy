@@ -34,9 +34,11 @@ export default ValueSelectField;
 
 ValueSelectField.propTypes = {
   field: PropTypes.string.isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
   filters: PropTypes.object.isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
   code: PropTypes.object.isRequired,
-  changedValue: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
+  changedValue: PropTypes.oneOfType([PropTypes.object, PropTypes.string]).isRequired,
   setChangedValue: PropTypes.func.isRequired,
 };
 

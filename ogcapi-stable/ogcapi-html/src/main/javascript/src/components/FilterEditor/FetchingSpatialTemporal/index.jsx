@@ -18,7 +18,7 @@ const FetchSpatialTemporal = () => {
   const [end, setEnd] = useState("");
 
   const [bounds, setBounds] = useState([]);
-
+  // eslint-disable-next-line
   useEffect(() => {
     const url = new URL(
       baseUrl.pathname.endsWith("/") ? "../queryables" : "./queryables",
@@ -35,7 +35,7 @@ const FetchSpatialTemporal = () => {
       .then((response) => {
         return response.json();
       })
-
+      // eslint-disable-next-line
       .then((obj) => {
         if (!obj || !obj.extent) {
           return null;

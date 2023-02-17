@@ -105,7 +105,7 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
                 name="selectedField"
                 id={`input1-${key}`}
                 className="mr-2"
-                disabled={true}
+                disabled="true"
                 defaultValue={titleForFilter[key]}
               />
             </Col>
@@ -173,8 +173,10 @@ FieldFilter.displayName = "FieldFilter";
 FieldFilter.propTypes = {
   fields: PropTypes.objectOf(PropTypes.string).isRequired,
   onAdd: PropTypes.func.isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
   filters: PropTypes.object.isRequired,
   deleteFilters: PropTypes.func.isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
   code: PropTypes.object.isRequired,
   titleForFilter: PropTypes.objectOf(PropTypes.string).isRequired,
 };
