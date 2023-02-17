@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.reflect.TypeToken;
 import io.swagger.v3.oas.models.media.Schema;
 import java.lang.annotation.Annotation;
@@ -91,6 +92,15 @@ public class ObjectSchema extends io.swagger.v3.oas.models.media.ObjectSchema {
 
   private String getPropertyName(Method m) {
     String name = m.getName();
+
+    if (Arrays.stream(m.getAnnotations())
+        .anyMatch(a -> Objects.equals(a.annotationType(), JsonProperty.class))) {
+      String value = m.getAnnotation(JsonProperty.class).value();
+      if (!value.isBlank()) {
+        name = value;
+      }
+    }
+
     if (name.startsWith("get")) {
       name = name.substring(3);
     } else if (name.startsWith("is")) {
