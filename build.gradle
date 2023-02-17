@@ -1,7 +1,7 @@
 plugins {
-    id 'de.interactive_instruments.xtraplatform-application' version '4.6.1'
-    id "com.diffplug.spotless" version "6.7.2" apply false
-    id "com.github.node-gradle.node" version "3.2.0" apply false
+    alias catalog.plugins.xtraplatform.application
+    alias catalog.plugins.spotless apply false
+    alias catalog.plugins.node apply false
 }
 
 allprojects {
