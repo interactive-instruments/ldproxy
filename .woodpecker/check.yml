@@ -8,7 +8,7 @@ clone:
 pipeline:
 
   code:
-    image: openjdk:11-slim
+    image: eclipse-temurin:11
     commands:
       - ./gradlew check docsVuepress -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]

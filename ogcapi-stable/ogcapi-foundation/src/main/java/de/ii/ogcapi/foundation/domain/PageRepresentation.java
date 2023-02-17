@@ -8,6 +8,7 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Funnel;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
@@ -41,9 +42,10 @@ public abstract class PageRepresentation {
 
   public abstract Optional<String> getDescription();
 
+  @JsonIgnore
   public abstract List<Link> getLinks();
 
-  @JsonIgnore
+  @JsonProperty("links")
   @Value.Derived
   public List<Link> getOrderedLinks() {
     return getLinks().stream()
