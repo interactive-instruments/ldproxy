@@ -24,9 +24,9 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
     setValue("");
   };
 
-  const overwriteFilters = (key) => () => {
+  const overwriteFilters = (item) => () => {
     const updatedFilterValue = { ...changedValue };
-    onAdd(field, updatedFilterValue[key].value);
+    onAdd(item, updatedFilterValue[item].value);
   };
   return (
     <Form onSubmit={save}>
@@ -67,9 +67,9 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
                 <option value="" className="d-none">
                   none
                 </option>
-                {Object.keys(code[field]).map((key) => (
-                  <option value={code[field][key]} key={key}>
-                    {code[field][key]}
+                {Object.keys(code[field]).map((item) => (
+                  <option value={code[field][item]} key={item}>
+                    {code[field][item]}
                   </option>
                 ))}
               </Input>
@@ -96,25 +96,25 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
         </Col>
       </Row>
       <>
-        {filtersToMap.map((item) => (
-          <Row key={item}>
+        {filtersToMap.map((key) => (
+          <Row key={key}>
             <Col md="5">
               <Input
                 type="text"
                 size="sm"
                 name="selectedField"
-                id={`input1-${item}`}
+                id={`input1-${key}`}
                 className="mr-2"
-                disabled="true"
-                defaultValue={titleForFilter[item]}
+                disabled={true}
+                defaultValue={titleForFilter[key]}
               />
             </Col>
             <Col md="5">
               <FormGroup>
-                {enumKeys.includes(item) ? (
+                {enumKeys.includes(key) ? (
                   <ValueSelectField
                     code={code}
-                    field={item}
+                    field={key}
                     filters={filters}
                     setChangedValue={setChangedValue}
                     changedValue={changedValue}
@@ -124,15 +124,15 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
                     type="text"
                     size="sm"
                     name="selectedValue"
-                    id={`input-${item}`}
+                    id={`input-${key}`}
                     className="mr-2"
-                    placeholder={filters[item].value}
-                    defaultValue={filters[item].value}
+                    placeholder={filters[key].value}
+                    defaultValue={filters[key].value}
                     onChange={(e) =>
                       setChangedValue({
                         ...changedValue,
-                        [item]: {
-                          item,
+                        [key]: {
+                          key,
                           value: e.target.value,
                         },
                       })
@@ -145,25 +145,20 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
               <Button
                 color="primary"
                 size="sm"
-                style={{
-                  width: "40px",
-                  height: "30px",
-                  margin: "1px",
-                  fontWeight: "bold",
-                }}
+                style={{ width: "40px", height: "30px", margin: "1px" }}
                 disabled={field === ""}
-                onClick={overwriteFilters(field)}
+                onClick={overwriteFilters(key)}
               >
-                +
+                {"\u2713"}
               </Button>
               <Button
                 color="danger"
                 size="sm"
                 style={{ width: "40px", height: "30px", margin: "1px" }}
                 disabled={field === ""}
-                onClick={deleteFilters(field)}
+                onClick={deleteFilters(key)}
               >
-                x
+                {"\u2716"}
               </Button>
             </Col>
           </Row>
@@ -178,9 +173,9 @@ FieldFilter.displayName = "FieldFilter";
 FieldFilter.propTypes = {
   fields: PropTypes.objectOf(PropTypes.string).isRequired,
   onAdd: PropTypes.func.isRequired,
-  filters: PropTypes.objectOf(PropTypes.oneOfType([PropTypes.number, PropTypes.string])).isRequired,
+  filters: PropTypes.object.isRequired,
   deleteFilters: PropTypes.func.isRequired,
-  code: PropTypes.objectOf(PropTypes.string).isRequired,
+  code: PropTypes.object.isRequired,
   titleForFilter: PropTypes.objectOf(PropTypes.string).isRequired,
 };
 

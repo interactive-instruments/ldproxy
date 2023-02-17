@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 import { Button, Row, Col } from "reactstrap";
@@ -6,6 +6,8 @@ import qs from "qs";
 
 import Badge from "./Badge";
 import Editor from "./Editor";
+
+const Local_Storage_Key = "appliedFilters";
 
 const toBounds = (filter) => {
   const a = filter.split(",");
@@ -37,21 +39,14 @@ const FilterEditor = ({
     ignoreQueryPrefix: true,
   });
 
-  const [filters, setFilters] = useState(
-    Object.keys(fields)
-      .concat(["bbox", "datetime"])
-      .reduce((reduced, field) => {
-        if (query[field]) {
-          // eslint-disable-next-line no-param-reassign
-          reduced[field] = {
-            value: query[field],
-            add: false,
-            remove: false,
-          };
-        }
-        return reduced;
-      }, {})
-  );
+  const [filters, setFilters] = useState(() => {
+    const appliedFilters = localStorage.getItem(Local_Storage_Key);
+    return appliedFilters ? JSON.parse(appliedFilters) : {};
+  });
+
+  useEffect(() => {
+    localStorage.setItem(Local_Storage_Key, JSON.stringify(filters));
+  }, [filters]);
 
   const toggle = (event) => {
     event.target.blur();
@@ -192,7 +187,7 @@ FilterEditor.displayName = "FilterEditor";
 
 FilterEditor.propTypes = {
   fields: PropTypes.objectOf(PropTypes.string).isRequired,
-  code: PropTypes.objectOf(PropTypes.string).isRequired,
+  code: PropTypes.object.isRequired,
   start: PropTypes.string.isRequired,
   end: PropTypes.string.isRequired,
   bounds: PropTypes.arrayOf(PropTypes.number).isRequired,

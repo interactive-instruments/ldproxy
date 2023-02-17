@@ -19,6 +19,9 @@ const EditorBody = ({
   deleteFilters,
   code,
   titleForFilter,
+  start,
+  end,
+  bounds,
 }) => {
   const [showMap, setShowMap] = useState(false);
   const [bounds, setBounds] = useState(spatial);
@@ -48,8 +51,8 @@ const EditorBody = ({
           {spatial && <SpatialFilter bounds={bounds} onChange={onAdd} />}
           {temporal && (
             <TemporalFilter
-              start={temporal.start}
-              end={temporal.end}
+              start={start}
+              end={end}
               filter={filters.datetime ? filters.datetime.value : null}
               onChange={onAdd}
             />
@@ -79,10 +82,10 @@ EditorBody.propTypes = {
   attribution: PropTypes.string.isRequired,
   spatial: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
   temporal: PropTypes.objectOf(PropTypes.number),
-  filters: PropTypes.objectOf(PropTypes.oneOfType([PropTypes.number, PropTypes.string])).isRequired,
+  filters: PropTypes.object.isRequired,
   onAdd: PropTypes.func,
   deleteFilters: PropTypes.func.isRequired,
-  code: PropTypes.objectOf(PropTypes.string).isRequired,
+  code: PropTypes.object.isRequired,
   titleForFilter: PropTypes.objectOf(PropTypes.string).isRequired,
 };
 

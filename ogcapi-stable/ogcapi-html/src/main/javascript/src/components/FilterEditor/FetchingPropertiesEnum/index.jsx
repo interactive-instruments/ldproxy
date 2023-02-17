@@ -24,21 +24,27 @@ const FetchPropertiesEnum = ({ start, end, bounds }) => {
     lastname: "Nachname",
   });
   const [code, setCode] = useState({});
-  const [relativeUrl] = useState("/strassen/collections/abschnitteaeste/queryables?f=json");
 
   useEffect(() => {
     const url = new URL(
       baseUrl.pathname.endsWith("/") ? "../queryables" : "./queryables",
       baseUrl.href
     );
+
+    if (!url.pathname.includes("queryables")) {
+      return null;
+    }
+
     url.search = "?f=json";
 
     fetch(url)
       .then((response) => {
         return response.json();
       })
-
       .then((obj) => {
+        if (!obj || !obj.properties) {
+          return null;
+        }
         const streetProperties = {};
         // eslint-disable-next-line no-restricted-syntax
         for (const key in obj.properties) {
@@ -46,6 +52,11 @@ const FetchPropertiesEnum = ({ start, end, bounds }) => {
             streetProperties[key] = obj.properties[key].title;
           }
         }
+
+        if (Object.keys(streetProperties).length === 0) {
+          return null;
+        }
+
         setFields(streetProperties);
         setTitleForFilter(streetProperties);
 
@@ -56,13 +67,18 @@ const FetchPropertiesEnum = ({ start, end, bounds }) => {
             streetCode[key] = obj.properties[key].enum;
           }
         }
+
+        if (Object.keys(streetCode).length === 0) {
+          return null;
+        }
+
         setCode(streetCode);
       })
 
       .catch((error) => {
         return error;
       });
-  }, [relativeUrl]);
+  }, []);
 
   return (
     <FilterEditor

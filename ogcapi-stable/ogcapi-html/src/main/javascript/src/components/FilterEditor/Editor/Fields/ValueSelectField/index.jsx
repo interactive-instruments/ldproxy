@@ -34,11 +34,10 @@ const ValueSelectField = ({ code, field, filters, changedValue, setChangedValue 
 export default ValueSelectField;
 
 ValueSelectField.propTypes = {
-  field: PropTypes.objectOf(PropTypes.string).isRequired,
-  filters: PropTypes.objectOf(PropTypes.oneOfType([PropTypes.number, PropTypes.string])).isRequired,
-  code: PropTypes.objectOf(PropTypes.string).isRequired,
-  changedValue: PropTypes.objectOf(PropTypes.oneOfType([PropTypes.number, PropTypes.string]))
-    .isRequired,
+  field: PropTypes.string.isRequired,
+  filters: PropTypes.object.isRequired,
+  code: PropTypes.object.isRequired,
+  changedValue: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
   setChangedValue: PropTypes.func.isRequired,
 };
 
