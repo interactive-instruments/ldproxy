@@ -8,7 +8,7 @@ clone:
 pipeline:
 
   libs:
-    image: openjdk:11-slim
+    image: eclipse-temurin:11
     commands:
       - ./gradlew publish dockerContext docsVuepress -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
@@ -27,7 +27,7 @@ pipeline:
       branch: master
 
   dist-arm64:
-    image: openjdk:11-slim
+    image: eclipse-temurin:11
     commands:
       - ./gradlew dockerContext -Pplatform=linux-arm64 -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
