@@ -17,7 +17,7 @@ const FetchSpatialTemporal = () => {
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
 
-  const [bounds, setBounds] = useState([]);
+  const [spatial, setSpatial] = useState([]);
   // eslint-disable-next-line
   useEffect(() => {
     const url = new URL(
@@ -49,11 +49,18 @@ const FetchSpatialTemporal = () => {
         setStart(starting);
         setEnd(ending);
 
-        const bound = obj.extent.spatial.bbox;
-        if (!bound) {
+        const bounds = obj.extent.spatial.bbox;
+        if (!bounds) {
           return null;
         }
-        setBounds(bound);
+
+        const transformedBounds = bounds.map((innerArray) => [
+          [innerArray[0], innerArray[1]],
+          [innerArray[2], innerArray[3]],
+        ]);
+        const flattenedBounds = transformedBounds.flat();
+
+        setSpatial(flattenedBounds);
       })
 
       .catch((error) => {
@@ -61,7 +68,7 @@ const FetchSpatialTemporal = () => {
       });
   }, []);
 
-  return <FetchPropertiesEnum start={start} end={end} bounds={bounds} />;
+  return <FetchPropertiesEnum start={start} end={end} spatial={spatial} />;
 };
 
 export default FetchSpatialTemporal;

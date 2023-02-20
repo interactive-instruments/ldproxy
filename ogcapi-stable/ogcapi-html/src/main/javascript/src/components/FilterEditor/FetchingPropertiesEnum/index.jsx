@@ -14,7 +14,7 @@ if (process.env.NODE_ENV !== "production") {
   ); */
 }
 
-const FetchPropertiesEnum = ({ start, end, bounds }) => {
+const FetchPropertiesEnum = ({ start, end, spatial }) => {
   const [fields, setFields] = useState({
     firstname: "Vorname",
     lastname: "Nachname",
@@ -87,7 +87,7 @@ const FetchPropertiesEnum = ({ start, end, bounds }) => {
       fields={fields}
       start={start}
       end={end}
-      bounds={bounds}
+      spatial={spatial}
       titleForFilter={titleForFilter}
     />
   );

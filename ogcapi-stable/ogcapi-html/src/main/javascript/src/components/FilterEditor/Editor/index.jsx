@@ -13,7 +13,6 @@ const EditorBody = ({
   backgroundUrl,
   attribution,
   spatial,
-  temporal,
   filters,
   onAdd,
   deleteFilters,
@@ -24,6 +23,8 @@ const EditorBody = ({
 }) => {
   const [showMap, setShowMap] = useState(false);
   const [bounds, setBounds] = useState(spatial);
+
+  const temporal = { start: start, end: end };
 
   return (
     <Collapse isOpen={isOpen} onEntered={() => setShowMap(true)}>
