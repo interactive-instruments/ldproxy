@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Button, Form, FormGroup, Input, FormText, Row, Col } from "reactstrap";
+import { Button, ButtonGroup, Form, FormGroup, Input, FormText, Row, Col } from "reactstrap";
 import ValueSelectField from "./ValueSelectField";
 
 const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilter }) => {
@@ -142,24 +142,26 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
               </FormGroup>
             </Col>
             <Col md="2">
-              <Button
-                color="primary"
-                size="sm"
-                style={{ width: "40px", height: "30px", margin: "1px" }}
-                disabled={field === ""}
-                onClick={overwriteFilters(key)}
-              >
-                {"\u2713"}
-              </Button>
-              <Button
-                color="danger"
-                size="sm"
-                style={{ width: "40px", height: "30px", margin: "1px" }}
-                disabled={field === ""}
-                onClick={deleteFilters(key)}
-              >
-                {"\u2716"}
-              </Button>
+              <ButtonGroup>
+                <Button
+                  color="primary"
+                  size="sm"
+                  style={{ width: "40px", height: "30px", margin: "1px" }}
+                  disabled={field === ""}
+                  onClick={overwriteFilters(key)}
+                >
+                  {"\u2713"}
+                </Button>
+                <Button
+                  color="danger"
+                  size="sm"
+                  style={{ width: "40px", height: "30px", margin: "1px" }}
+                  disabled={field === ""}
+                  onClick={deleteFilters(key)}
+                >
+                  {"\u2716"}
+                </Button>
+              </ButtonGroup>
             </Col>
           </Row>
         ))}

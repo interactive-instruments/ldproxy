@@ -7,8 +7,6 @@ import qs from "qs";
 import Badge from "./Badge";
 import Editor from "./Editor";
 
-const localStorageKey = "appliedFilters";
-
 const toBounds = (filter) => {
   const a = filter.split(",");
   const b = [
@@ -30,7 +28,7 @@ const FilterEditor = ({
   bounds,
   titleForFilter,
 }) => {
-  const [isOpen, setOpen] = useState(true);
+  const [isOpen, setOpen] = useState(false);
 
   const enabled = Object.keys(fields).length > 0 || spatial || temporal;
 
@@ -39,14 +37,25 @@ const FilterEditor = ({
     ignoreQueryPrefix: true,
   });
 
-  const [filters, setFilters] = useState(() => {
-    const appliedFilters = localStorage.getItem(localStorageKey);
-    return appliedFilters ? JSON.parse(appliedFilters) : {};
-  });
+  const [filters, setFilters] = useState({});
 
   useEffect(() => {
-    localStorage.setItem(localStorageKey, JSON.stringify(filters));
-  }, [filters]);
+    const parsedQuery = qs.parse(window.location.search, {
+      ignoreQueryPrefix: true,
+    });
+    const filterFields = Object.keys(fields).concat(["bbox", "datetime"]);
+    const existingFilters = filterFields.reduce((result, field) => {
+      if (parsedQuery[field]) {
+        result[field] = {
+          value: parsedQuery[field],
+          add: false,
+          remove: false,
+        };
+      }
+      return result;
+    }, {});
+    setFilters(existingFilters);
+  }, [fields]);
 
   const toggle = (event) => {
     event.target.blur();
