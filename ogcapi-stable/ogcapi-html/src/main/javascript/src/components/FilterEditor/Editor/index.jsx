@@ -24,7 +24,7 @@ const EditorBody = ({
   const [showMap, setShowMap] = useState(false);
   const [bounds, setBounds] = useState(spatial);
 
-  const temporal = { start: start, end: end };
+  const temporal = { start, end };
 
   return (
     <Collapse isOpen={isOpen} onEntered={() => setShowMap(true)}>
@@ -81,7 +81,6 @@ EditorBody.propTypes = {
   backgroundUrl: PropTypes.string.isRequired,
   attribution: PropTypes.string.isRequired,
   spatial: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
-  temporal: PropTypes.objectOf(PropTypes.number),
   // eslint-disable-next-line react/forbid-prop-types
   filters: PropTypes.object.isRequired,
   onAdd: PropTypes.func,
@@ -97,7 +96,6 @@ EditorBody.defaultProps = {
   isOpen: false,
   fields: {},
   spatial: null,
-  temporal: null,
   onAdd: () => {},
 };
 

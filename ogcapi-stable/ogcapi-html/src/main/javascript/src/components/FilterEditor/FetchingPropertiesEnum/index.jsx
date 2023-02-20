@@ -98,5 +98,5 @@ export default FetchPropertiesEnum;
 FetchPropertiesEnum.propTypes = {
   start: PropTypes.string.isRequired,
   end: PropTypes.string.isRequired,
-  bounds: PropTypes.arrayOf(PropTypes.number).isRequired,
+  spatial: PropTypes.arrayOf(PropTypes.number).isRequired,
 };

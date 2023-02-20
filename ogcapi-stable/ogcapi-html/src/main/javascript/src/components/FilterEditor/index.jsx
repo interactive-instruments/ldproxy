@@ -46,6 +46,7 @@ const FilterEditor = ({
     const filterFields = Object.keys(fields).concat(["bbox", "datetime"]);
     const existingFilters = filterFields.reduce((result, field) => {
       if (parsedQuery[field]) {
+        // eslint-disable-next-line no-param-reassign
         result[field] = {
           value: parsedQuery[field],
           add: false,
