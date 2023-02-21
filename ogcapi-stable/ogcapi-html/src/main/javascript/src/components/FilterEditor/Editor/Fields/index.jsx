@@ -13,7 +13,9 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
 
   const saveValue = (event) => setValue(event.target.value);
 
-  const filtersToMap = Object.keys(filters).filter((key) => filters[key].remove === false);
+  const filtersToMap = Object.keys(filters).filter(
+    (key) => filters[key].remove === false && key !== "bbox" && key !== "datetime"
+  );
   const enumKeys = Object.keys(code);
 
   const save = (event) => {
@@ -147,7 +149,6 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
                   color="primary"
                   size="sm"
                   style={{ width: "40px", height: "30px", margin: "1px" }}
-                  disabled={field === ""}
                   onClick={overwriteFilters(key)}
                 >
                   {"\u2713"}
@@ -156,7 +157,6 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
                   color="danger"
                   size="sm"
                   style={{ width: "40px", height: "30px", margin: "1px" }}
-                  disabled={field === ""}
                   onClick={deleteFilters(key)}
                 >
                   {"\u2716"}

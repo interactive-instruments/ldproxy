@@ -1,11 +1,28 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import qs from "qs";
 
 import { Button, Form, FormGroup, Input, Row, Col } from "reactstrap";
 
 export { default as MapSelect } from "./MapSelect";
 
 const SpatialFilter = ({ bounds, onChange }) => {
+  // eslint-disable-next-line
+  const [boundsChanged, setBoundsChanged] = useState(bounds);
+
+  useEffect(() => {
+    const parsedQuery = qs.parse(window.location.search, {
+      ignoreQueryPrefix: true,
+    });
+    if (parsedQuery.boundsChanged) {
+      const [minLng, minLat, maxLng, maxLat] = parsedQuery.boundsChanged.split(",");
+      setBoundsChanged([
+        [Number(minLng), Number(minLat)],
+        [Number(maxLng), Number(maxLat)],
+      ]);
+    }
+  }, []);
+
   const save = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -16,6 +33,12 @@ const SpatialFilter = ({ bounds, onChange }) => {
         4
       )},${bounds[1][1].toFixed(4)}`
     );
+
+    const parsedQuery = qs.parse(window.location.search, {
+      ignoreQueryPrefix: true,
+    });
+    const newQuery = qs.stringify({ ...parsedQuery, boundsChanged: onChange });
+    window.history.replaceState(null, "", `?${newQuery}`);
   };
 
   return (

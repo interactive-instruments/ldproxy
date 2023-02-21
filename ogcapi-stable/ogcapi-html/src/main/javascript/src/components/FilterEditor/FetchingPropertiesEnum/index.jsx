@@ -14,7 +14,7 @@ if (process.env.NODE_ENV !== "production") {
   ); */
 }
 
-const FetchPropertiesEnum = ({ start, end, spatial }) => {
+const FetchPropertiesEnum = ({ start, end, spatial, temporal }) => {
   const [fields, setFields] = useState({
     firstname: "Vorname",
     lastname: "Nachname",
@@ -80,7 +80,6 @@ const FetchPropertiesEnum = ({ start, end, spatial }) => {
         return error;
       });
   }, []);
-
   return (
     <FilterEditor
       code={code}
@@ -89,6 +88,7 @@ const FetchPropertiesEnum = ({ start, end, spatial }) => {
       end={end}
       spatial={spatial}
       titleForFilter={titleForFilter}
+      temporal={temporal}
     />
   );
 };
@@ -96,7 +96,8 @@ const FetchPropertiesEnum = ({ start, end, spatial }) => {
 export default FetchPropertiesEnum;
 
 FetchPropertiesEnum.propTypes = {
-  start: PropTypes.string.isRequired,
-  end: PropTypes.string.isRequired,
+  start: PropTypes.number.isRequired,
+  end: PropTypes.number.isRequired,
   spatial: PropTypes.arrayOf(PropTypes.number).isRequired,
+  temporal: PropTypes.objectOf(PropTypes.number).isRequired,
 };

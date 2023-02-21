@@ -25,10 +25,12 @@ const FilterEditor = ({
   code,
   start,
   end,
-  bounds,
   titleForFilter,
 }) => {
   const [isOpen, setOpen] = useState(false);
+
+  console.log(temporal);
+  console.log(spatial);
 
   const enabled = Object.keys(fields).length > 0 || spatial || temporal;
 
@@ -187,7 +189,7 @@ const FilterEditor = ({
         titleForFilter={titleForFilter}
         start={start}
         end={end}
-        bounds={bounds}
+        setFilters={setFilters}
       />
     </>
   );
@@ -199,21 +201,19 @@ FilterEditor.propTypes = {
   fields: PropTypes.objectOf(PropTypes.string).isRequired,
   // eslint-disable-next-line react/forbid-prop-types
   code: PropTypes.object.isRequired,
-  start: PropTypes.string.isRequired,
-  end: PropTypes.string.isRequired,
-  bounds: PropTypes.arrayOf(PropTypes.number).isRequired,
+  start: PropTypes.number.isRequired,
+  end: PropTypes.number.isRequired,
   titleForFilter: PropTypes.objectOf(PropTypes.string).isRequired,
   backgroundUrl: PropTypes.string,
   attribution: PropTypes.string,
   spatial: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
-  temporal: PropTypes.objectOf(PropTypes.number),
+  temporal: PropTypes.objectOf(PropTypes.number).isRequired,
 };
 
 FilterEditor.defaultProps = {
   backgroundUrl: "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png",
   attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
   spatial: null,
-  temporal: null,
 };
 
 export default FilterEditor;

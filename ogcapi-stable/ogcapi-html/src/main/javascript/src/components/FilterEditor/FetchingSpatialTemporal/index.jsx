@@ -13,47 +13,38 @@ if (process.env.NODE_ENV !== "production") {
   ); */
 }
 
+const parseTemporalExtent = (temporalExtent) => {
+  const starting = temporalExtent.interval[0][0];
+  const ending = temporalExtent.interval[0][1];
+  const startingUnix = new Date(starting).getTime();
+  const endingUnix = new Date(ending).getTime();
+
+  return { start: startingUnix, end: endingUnix };
+};
+
 const FetchSpatialTemporal = () => {
-  const [start, setStart] = useState("");
-  const [end, setEnd] = useState("");
+  const [start, setStart] = useState();
+  const [end, setEnd] = useState();
+  const [temporal, setTemporal] = useState();
+  const [spatial, setSpatial] = useState();
+  const [dataFetched, setDataFetched] = useState(false);
 
-  const [spatial, setSpatial] = useState([]);
-  // eslint-disable-next-line
   useEffect(() => {
-    const url = new URL(
-      baseUrl.pathname.endsWith("/") ? "../queryables" : "./queryables",
-      baseUrl.href
-    );
-
-    if (!url.pathname.includes("queryables")) {
-      return null;
-    }
+    const url = new URL(baseUrl.pathname.endsWith("/") ? "../" : "./", baseUrl.href);
 
     url.search = "?f=json";
 
     fetch(url)
-      .then((response) => {
-        return response.json();
-      })
-      // eslint-disable-next-line
-      .then((obj) => {
-        if (!obj || !obj.extent) {
-          return null;
-        }
-        const starting = obj.extent.temporal.interval[0];
-        const ending = obj.extent.temporal.interval[1];
+      .then((response) => response.json())
+      .then((data) => {
+        const { temporal: temporalExtent, spatial: spatialExtent } = data.extent;
+        const temporalValues = parseTemporalExtent(temporalExtent);
 
-        if (!starting || !ending) {
-          return null;
-        }
-        setStart(starting);
-        setEnd(ending);
+        setTemporal(temporalValues);
+        setStart(temporalValues.start);
+        setEnd(temporalValues.end);
 
-        const bounds = obj.extent.spatial.bbox;
-        if (!bounds) {
-          return null;
-        }
-
+        const bounds = spatialExtent.bbox;
         const transformedBounds = bounds.map((innerArray) => [
           [innerArray[0], innerArray[1]],
           [innerArray[2], innerArray[3]],
@@ -61,14 +52,28 @@ const FetchSpatialTemporal = () => {
         const flattenedBounds = transformedBounds.flat();
 
         setSpatial(flattenedBounds);
+        setDataFetched(true);
       })
-
-      .catch((error) => {
-        return error;
-      });
+      .catch((error) => console.log(error));
   }, []);
 
-  return <FetchPropertiesEnum start={start} end={end} spatial={spatial} />;
+  if (!dataFetched) {
+    return <div>Loading...</div>;
+  }
+
+  if (start === undefined || end === undefined) {
+    return <FetchPropertiesEnum start={null} end={null} spatial={spatial} temporal={temporal} />;
+  }
+
+  if (temporal === undefined) {
+    return <FetchPropertiesEnum start={start} end={end} spatial={spatial} temporal={null} />;
+  }
+
+  if (spatial === undefined || spatial === null) {
+    return <FetchPropertiesEnum start={start} end={end} spatial={null} temporal={temporal} />;
+  }
+
+  return <FetchPropertiesEnum start={start} end={end} spatial={spatial} temporal={temporal} />;
 };
 
 export default FetchSpatialTemporal;

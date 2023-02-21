@@ -20,11 +20,10 @@ const EditorBody = ({
   titleForFilter,
   start,
   end,
+  temporal,
 }) => {
   const [showMap, setShowMap] = useState(false);
   const [bounds, setBounds] = useState(spatial);
-
-  const temporal = { start, end };
 
   return (
     <Collapse isOpen={isOpen} onEntered={() => setShowMap(true)}>
@@ -88,8 +87,9 @@ EditorBody.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   code: PropTypes.object.isRequired,
   titleForFilter: PropTypes.objectOf(PropTypes.string).isRequired,
-  start: PropTypes.string.isRequired,
-  end: PropTypes.string.isRequired,
+  start: PropTypes.number.isRequired,
+  end: PropTypes.number.isRequired,
+  temporal: PropTypes.objectOf(PropTypes.number).isRequired,
 };
 
 EditorBody.defaultProps = {
