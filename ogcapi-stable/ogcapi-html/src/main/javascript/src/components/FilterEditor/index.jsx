@@ -39,26 +39,21 @@ const FilterEditor = ({
     ignoreQueryPrefix: true,
   });
 
-  const [filters, setFilters] = useState({});
-
-  useEffect(() => {
-    const parsedQuery = qs.parse(window.location.search, {
-      ignoreQueryPrefix: true,
-    });
-    const filterFields = Object.keys(fields).concat(["bbox", "datetime"]);
-    const existingFilters = filterFields.reduce((result, field) => {
-      if (parsedQuery[field]) {
-        // eslint-disable-next-line no-param-reassign
-        result[field] = {
-          value: parsedQuery[field],
-          add: false,
-          remove: false,
-        };
-      }
-      return result;
-    }, {});
-    setFilters(existingFilters);
-  }, [fields]);
+  const [filters, setFilters] = useState(
+    Object.keys(fields)
+      .concat(["bbox", "datetime"])
+      .reduce((reduced, field) => {
+        if (query[field]) {
+          // eslint-disable-next-line no-param-reassign
+          reduced[field] = {
+            value: query[field],
+            add: false,
+            remove: false,
+          };
+        }
+        return reduced;
+      }, {})
+  );
 
   const toggle = (event) => {
     event.target.blur();

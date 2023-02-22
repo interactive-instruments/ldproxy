@@ -148,7 +148,7 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
                 <Button
                   color="primary"
                   size="sm"
-                  style={{ width: "40px", height: "30px", margin: "1px" }}
+                  style={{ width: "40px", height: "30px" }}
                   onClick={overwriteFilters(key)}
                 >
                   {"\u2713"}
@@ -156,7 +156,7 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
                 <Button
                   color="danger"
                   size="sm"
-                  style={{ width: "40px", height: "30px", margin: "1px" }}
+                  style={{ width: "40px", height: "30px" }}
                   onClick={deleteFilters(key)}
                 >
                   {"\u2716"}

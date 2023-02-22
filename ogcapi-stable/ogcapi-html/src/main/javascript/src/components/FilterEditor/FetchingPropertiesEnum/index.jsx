@@ -24,6 +24,8 @@ const FetchPropertiesEnum = ({ start, end, spatial, temporal }) => {
     lastname: "Nachname",
   });
   const [code, setCode] = useState({});
+  const [dataFetched, setDataFetched] = useState(false);
+
   // eslint-disable-next-line
   useEffect(() => {
     const url = new URL(
@@ -41,56 +43,72 @@ const FetchPropertiesEnum = ({ start, end, spatial, temporal }) => {
       .then((response) => {
         return response.json();
       })
-      // eslint-disable-next-line
       .then((obj) => {
         if (!obj || !obj.properties) {
           return null;
         }
         const streetProperties = {};
+        const streetCode = {};
         // eslint-disable-next-line no-restricted-syntax
         for (const key in obj.properties) {
           if (obj.properties[key].title) {
             streetProperties[key] = obj.properties[key].title;
           }
-        }
-
-        if (Object.keys(streetProperties).length === 0) {
-          return null;
-        }
-
-        setFields(streetProperties);
-        setTitleForFilter(streetProperties);
-
-        const streetCode = {};
-        // eslint-disable-next-line no-restricted-syntax
-        for (const key in obj.properties) {
           if (obj.properties[key].enum) {
             streetCode[key] = obj.properties[key].enum;
           }
         }
 
-        if (Object.keys(streetCode).length === 0) {
-          return null;
+        if (Object.keys(streetProperties).length > 0 && Object.keys(streetCode).length > 0) {
+          setFields(streetProperties);
+          setTitleForFilter(streetProperties);
+          setCode(streetCode);
+          setDataFetched(true);
         }
-
-        setCode(streetCode);
       })
-
       .catch((error) => {
         return error;
       });
   }, []);
-  return (
-    <FilterEditor
-      code={code}
-      fields={fields}
-      start={start}
-      end={end}
-      spatial={spatial}
-      titleForFilter={titleForFilter}
-      temporal={temporal}
-    />
-  );
+
+  if (!dataFetched) {
+    return <div>Loading...</div>;
+  } else if (fields === null) {
+    return (
+      <FilterEditor
+        code={code}
+        start={start}
+        end={end}
+        spatial={spatial}
+        temporal={temporal}
+        fields={null}
+        titleForFilter={null}
+      />
+    );
+  } else if (code === null) {
+    return (
+      <FilterEditor
+        fields={fields}
+        titleForFilter={titleForFilter}
+        code={null}
+        start={start}
+        end={end}
+        spatial={spatial}
+        temporal={temporal}
+      />
+    );
+  } else
+    return (
+      <FilterEditor
+        code={code}
+        fields={fields}
+        start={start}
+        end={end}
+        spatial={spatial}
+        titleForFilter={titleForFilter}
+        temporal={temporal}
+      />
+    );
 };
 
 export default FetchPropertiesEnum;
