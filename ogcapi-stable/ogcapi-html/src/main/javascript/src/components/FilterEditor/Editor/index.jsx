@@ -47,8 +47,8 @@ const EditorBody = ({
               titleForFilter={titleForFilter}
             />
           )}
-          {spatial && <SpatialFilter bounds={bounds} onChange={onAdd} />}
-          {temporal && (
+          {spatial && spatial.length > 0 && <SpatialFilter bounds={bounds} onChange={onAdd} />}
+          {temporal && Object.keys(temporal).length > 0 && (
             <TemporalFilter
               start={start}
               end={end}
@@ -58,7 +58,7 @@ const EditorBody = ({
           )}
         </Col>
         <Col md="6">
-          {showMap && spatial && (
+          {showMap && spatial && spatial.length > 0 && (
             <MapSelect
               backgroundUrl={backgroundUrl}
               attribution={attribution}
