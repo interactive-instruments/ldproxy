@@ -43,13 +43,14 @@ const FetchPropertiesEnum = ({ start, end, spatial, temporal }) => {
       .then((response) => {
         return response.json();
       })
+      // eslint-disable-next-line
       .then((obj) => {
         if (!obj || !obj.properties) {
           return null;
         }
         const streetProperties = {};
         const streetCode = {};
-        // eslint-disable-next-line no-restricted-syntax
+        // eslint-disable-next-line
         for (const key in obj.properties) {
           if (obj.properties[key].title) {
             streetProperties[key] = obj.properties[key].title;
@@ -73,7 +74,8 @@ const FetchPropertiesEnum = ({ start, end, spatial, temporal }) => {
 
   if (!dataFetched) {
     return <div>Loading...</div>;
-  } else if (fields === null) {
+  }
+  if (fields === null) {
     return (
       <FilterEditor
         code={code}
@@ -85,7 +87,8 @@ const FetchPropertiesEnum = ({ start, end, spatial, temporal }) => {
         titleForFilter={null}
       />
     );
-  } else if (code === null) {
+  }
+  if (code === null) {
     return (
       <FilterEditor
         fields={fields}
@@ -97,18 +100,18 @@ const FetchPropertiesEnum = ({ start, end, spatial, temporal }) => {
         temporal={temporal}
       />
     );
-  } else
-    return (
-      <FilterEditor
-        code={code}
-        fields={fields}
-        start={start}
-        end={end}
-        spatial={spatial}
-        titleForFilter={titleForFilter}
-        temporal={temporal}
-      />
-    );
+  }
+  return (
+    <FilterEditor
+      code={code}
+      fields={fields}
+      start={start}
+      end={end}
+      spatial={spatial}
+      titleForFilter={titleForFilter}
+      temporal={temporal}
+    />
+  );
 };
 
 export default FetchPropertiesEnum;

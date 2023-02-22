@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import PropTypes from "prop-types";
-import qs from "qs";
 
 import { Button, Form, FormGroup, Input, Row, Col } from "reactstrap";
 
