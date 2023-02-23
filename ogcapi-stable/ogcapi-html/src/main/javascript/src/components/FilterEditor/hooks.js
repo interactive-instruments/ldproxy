@@ -27,7 +27,7 @@ export const useApiInfo = (relativeUrl) => {
         setObj(data);
         setIsLoaded(true);
       })
-      .catch((error) => setError(error));
+      .catch((errors) => setError(errors));
   }, [relativeUrl]);
 
   return { baseUrl, obj, isLoaded, error };

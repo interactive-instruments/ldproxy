@@ -205,6 +205,7 @@ FilterEditor.propTypes = {
   attribution: PropTypes.string,
   spatial: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
   temporal: PropTypes.objectOf(PropTypes.number).isRequired,
+  integerKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 FilterEditor.defaultProps = {

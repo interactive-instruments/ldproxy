@@ -92,6 +92,7 @@ EditorBody.propTypes = {
   start: PropTypes.number.isRequired,
   end: PropTypes.number.isRequired,
   temporal: PropTypes.objectOf(PropTypes.number).isRequired,
+  integerKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 EditorBody.defaultProps = {

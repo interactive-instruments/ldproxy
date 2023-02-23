@@ -65,48 +65,51 @@ const FieldFilter = ({
         </Col>
         <Col md="5">
           <FormGroup>
-            {enumKeys.includes(field) ? (
-              <Input
-                type="select"
-                size="sm"
-                name="value"
-                className="mr-2"
-                value={value}
-                onChange={saveValue}
-              >
-                <option value="" className="d-none">
-                  none
-                </option>
-                {Object.keys(code[field]).map((item) => (
-                  <option value={code[field][item]} key={item}>
-                    {code[field][item]}
-                  </option>
-                ))}
-              </Input>
-            ) : integerKeys.includes(field) ? (
-              <Input
-                type="number"
-                size="sm"
-                name="value"
-                placeholder="Enter Number"
-                className="mr-2"
-                value={value}
-                onChange={saveValue}
-              />
-            ) : (
-              <>
+            {
+              // eslint-disable-next-line no-nested-ternary
+              enumKeys.includes(field) ? (
                 <Input
-                  type="text"
+                  type="select"
                   size="sm"
                   name="value"
-                  placeholder="filter pattern"
+                  className="mr-2"
+                  value={value}
+                  onChange={saveValue}
+                >
+                  <option value="" className="d-none">
+                    none
+                  </option>
+                  {Object.keys(code[field]).map((item) => (
+                    <option value={code[field][item]} key={item}>
+                      {code[field][item]}
+                    </option>
+                  ))}
+                </Input>
+              ) : integerKeys.includes(field) ? (
+                <Input
+                  type="number"
+                  size="sm"
+                  name="value"
+                  placeholder="Enter Number"
                   className="mr-2"
                   value={value}
                   onChange={saveValue}
                 />
-                <FormText>Use * as wildcard</FormText>
-              </>
-            )}
+              ) : (
+                <>
+                  <Input
+                    type="text"
+                    size="sm"
+                    name="value"
+                    placeholder="filter pattern"
+                    className="mr-2"
+                    value={value}
+                    onChange={saveValue}
+                  />
+                  <FormText>Use * as wildcard</FormText>
+                </>
+              )
+            }
           </FormGroup>
         </Col>
         <Col md="2">
@@ -131,53 +134,56 @@ const FieldFilter = ({
             </Col>
             <Col md="5">
               <FormGroup>
-                {enumKeys.includes(key) ? (
-                  <ValueSelectField
-                    code={code}
-                    field={key}
-                    filters={filters}
-                    setChangedValue={setChangedValue}
-                    changedValue={changedValue}
-                  />
-                ) : integerKeys.includes(key) ? (
-                  <Input
-                    type="number"
-                    size="sm"
-                    name="value2"
-                    id={`input-${key}`}
-                    placeholder={filters[key].value}
-                    defaultValue={filters[key].value}
-                    className="mr-2"
-                    onChange={(e) =>
-                      setChangedValue({
-                        ...changedValue,
-                        [key]: {
-                          key,
-                          value: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                ) : (
-                  <Input
-                    type="text"
-                    size="sm"
-                    name="selectedValue"
-                    id={`input-${key}`}
-                    className="mr-2"
-                    placeholder={filters[key].value}
-                    defaultValue={filters[key].value}
-                    onChange={(e) =>
-                      setChangedValue({
-                        ...changedValue,
-                        [key]: {
-                          key,
-                          value: e.target.value,
-                        },
-                      })
-                    }
-                  />
-                )}
+                {
+                  // eslint-disable-next-line no-nested-ternary
+                  enumKeys.includes(key) ? (
+                    <ValueSelectField
+                      code={code}
+                      field={key}
+                      filters={filters}
+                      setChangedValue={setChangedValue}
+                      changedValue={changedValue}
+                    />
+                  ) : integerKeys.includes(key) ? (
+                    <Input
+                      type="number"
+                      size="sm"
+                      name="value2"
+                      id={`input-${key}`}
+                      placeholder={filters[key].value}
+                      defaultValue={filters[key].value}
+                      className="mr-2"
+                      onChange={(e) =>
+                        setChangedValue({
+                          ...changedValue,
+                          [key]: {
+                            key,
+                            value: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  ) : (
+                    <Input
+                      type="text"
+                      size="sm"
+                      name="selectedValue"
+                      id={`input-${key}`}
+                      className="mr-2"
+                      placeholder={filters[key].value}
+                      defaultValue={filters[key].value}
+                      onChange={(e) =>
+                        setChangedValue({
+                          ...changedValue,
+                          [key]: {
+                            key,
+                            value: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  )
+                }
               </FormGroup>
             </Col>
             <Col md="2">
@@ -218,6 +224,7 @@ FieldFilter.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   code: PropTypes.object.isRequired,
   titleForFilter: PropTypes.objectOf(PropTypes.string).isRequired,
+  integerKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 FieldFilter.defaultProps = {};

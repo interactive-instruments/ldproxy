@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useApiInfo } from "./hooks";
-import FilterEditor from "..";
+import FilterEditor from ".";
 
 export const ExtractFields = () => {
   const [fields, setFields] = useState({
@@ -23,7 +23,7 @@ export const ExtractFields = () => {
   url.search = "?f=json";
 
   const { obj, isLoaded, error } = useApiInfo(url);
-
+  // eslint-disable-next-line
   useEffect(() => {
     if (isLoaded && obj) {
       const streetProperties = {};
@@ -59,11 +59,12 @@ export const ExtractFields = () => {
         setDataFetched(true);
       }
     } else if (error) {
-      return <div>Error: {error.message}</div>;
+      return error.message;
     }
   }, [obj, isLoaded, error]);
 
   if (!dataFetched) {
+    // eslint-disable-next-line
     return <div>Loading...</div>;
   }
 
@@ -91,7 +92,7 @@ export const ExtractInterval = () => {
 
     return { start: startingUnix, end: endingUnix };
   };
-
+  // eslint-disable-next-line
   useEffect(() => {
     if (isLoaded && obj) {
       const { temporal: temporalExtent } = obj.extent;
@@ -137,7 +138,7 @@ export const Spatial = () => {
   url.search = "?f=json";
 
   const { obj, isLoaded, error } = useApiInfo(url);
-
+  // eslint-disable-next-line
   useEffect(() => {
     if (isLoaded && obj) {
       const { spatial: spatialExtent } = obj.extent;
