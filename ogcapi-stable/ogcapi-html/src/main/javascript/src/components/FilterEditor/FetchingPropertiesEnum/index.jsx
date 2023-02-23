@@ -33,10 +33,6 @@ const FetchPropertiesEnum = ({ start, end, spatial, temporal }) => {
       baseUrl.href
     );
 
-    if (!url.pathname.includes("queryables")) {
-      return null;
-    }
-
     url.search = "?f=json";
 
     fetch(url)
