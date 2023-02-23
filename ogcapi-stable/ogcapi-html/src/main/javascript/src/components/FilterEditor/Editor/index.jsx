@@ -21,6 +21,7 @@ const EditorBody = ({
   start,
   end,
   temporal,
+  integerKeys,
 }) => {
   const [showMap, setShowMap] = useState(false);
   const [bounds, setBounds] = useState(spatial);
@@ -45,6 +46,7 @@ const EditorBody = ({
               deleteFilters={deleteFilters}
               code={code}
               titleForFilter={titleForFilter}
+              integerKeys={integerKeys}
             />
           )}
           {spatial && spatial.length > 0 && <SpatialFilter bounds={bounds} onChange={onAdd} />}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export const useApiInfo = (relativeUrl) => {
   let baseUrl = new URL(window.location.href);
@@ -21,7 +21,7 @@ export const useApiInfo = (relativeUrl) => {
   const [error, setError] = useState();
 
   useEffect(() => {
-    fetch(url)
+    fetch(relativeUrl)
       .then((response) => response.json())
       .then((data) => {
         setObj(data);

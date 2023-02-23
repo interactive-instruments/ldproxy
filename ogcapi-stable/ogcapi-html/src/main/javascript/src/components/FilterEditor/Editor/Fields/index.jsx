@@ -4,7 +4,15 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { Button, ButtonGroup, Form, FormGroup, Input, FormText, Row, Col } from "reactstrap";
 import ValueSelectField from "./ValueSelectField";
 
-const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilter }) => {
+const FieldFilter = ({
+  fields,
+  onAdd,
+  filters,
+  deleteFilters,
+  code,
+  titleForFilter,
+  integerKeys,
+}) => {
   const [field, setField] = useState("");
   const [value, setValue] = useState("");
   const [changedValue, setChangedValue] = useState("");
@@ -75,6 +83,16 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
                   </option>
                 ))}
               </Input>
+            ) : integerKeys.includes(field) ? (
+              <Input
+                type="number"
+                size="sm"
+                name="value"
+                placeholder="Enter Number"
+                className="mr-2"
+                value={value}
+                onChange={saveValue}
+              />
             ) : (
               <>
                 <Input
@@ -120,6 +138,25 @@ const FieldFilter = ({ fields, onAdd, filters, deleteFilters, code, titleForFilt
                     filters={filters}
                     setChangedValue={setChangedValue}
                     changedValue={changedValue}
+                  />
+                ) : integerKeys.includes(key) ? (
+                  <Input
+                    type="number"
+                    size="sm"
+                    name="value2"
+                    id={`input-${key}`}
+                    placeholder={filters[key].value}
+                    defaultValue={filters[key].value}
+                    className="mr-2"
+                    onChange={(e) =>
+                      setChangedValue({
+                        ...changedValue,
+                        [key]: {
+                          key,
+                          value: e.target.value,
+                        },
+                      })
+                    }
                   />
                 ) : (
                   <Input

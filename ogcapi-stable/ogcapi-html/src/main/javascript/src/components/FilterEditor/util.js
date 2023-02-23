@@ -1,8 +1,8 @@
-/*import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useApiInfo } from "./hooks";
 import FilterEditor from "..";
 
-export const extractFields = ({ baseUrl }) => {
+export const ExtractFields = () => {
   const [fields, setFields] = useState({
     firstname: "Vorname",
     lastname: "Nachname",
@@ -14,6 +14,8 @@ export const extractFields = ({ baseUrl }) => {
   const [code, setCode] = useState({});
   const [dataFetched, setDataFetched] = useState(false);
 
+  const { baseUrl } = useApiInfo();
+
   const url = new URL(
     baseUrl.pathname.endsWith("/") ? "../queryables" : "./queryables",
     baseUrl.href
@@ -23,7 +25,7 @@ export const extractFields = ({ baseUrl }) => {
   const { obj, isLoaded, error } = useApiInfo(url);
 
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && obj) {
       const streetProperties = {};
       const streetCode = {};
 
@@ -59,7 +61,7 @@ export const extractFields = ({ baseUrl }) => {
     } else if (error) {
       return <div>Error: {error.message}</div>;
     }
-  }, []);
+  }, [obj, isLoaded, error]);
 
   if (!dataFetched) {
     return <div>Loading...</div>;
@@ -68,11 +70,13 @@ export const extractFields = ({ baseUrl }) => {
   return <FilterEditor code={code} fields={fields} titleForFilter={titleForFilter} />;
 };
 
-export const extractInterval = ({ baseUrl }) => {
+export const ExtractInterval = () => {
   const [start, setStart] = useState(10);
   const [end, setEnd] = useState(10);
   const [temporal, setTemporal] = useState({});
   const [dataFetched, setDataFetched] = useState(false);
+
+  const { baseUrl } = useApiInfo();
 
   const url = new URL(baseUrl.pathname.endsWith("/") ? "../" : "./", baseUrl.href);
   url.search = "?f=json";
@@ -89,7 +93,7 @@ export const extractInterval = ({ baseUrl }) => {
   };
 
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && obj) {
       const { temporal: temporalExtent } = obj.extent;
 
       let temporalValues = {};
@@ -114,7 +118,7 @@ export const extractInterval = ({ baseUrl }) => {
     } else if (error) {
       return <div>Error: {error.message}</div>;
     }
-  }, []);
+  }, [obj, isLoaded, error]);
 
   if (!dataFetched) {
     return <div>Loading...</div>;
@@ -123,9 +127,11 @@ export const extractInterval = ({ baseUrl }) => {
   return <FilterEditor start={start} end={end} temporal={temporal} />;
 };
 
-export const spatial = ({ baseUrl }) => {
+export const Spatial = () => {
   const [spatial, setSpatial] = useState([]);
   const [dataFetched, setDataFetched] = useState(false);
+
+  const { baseUrl } = useApiInfo();
 
   const url = new URL(baseUrl.pathname.endsWith("/") ? "../" : "./", baseUrl.href);
   url.search = "?f=json";
@@ -133,7 +139,7 @@ export const spatial = ({ baseUrl }) => {
   const { obj, isLoaded, error } = useApiInfo(url);
 
   useEffect(() => {
-    if (isLoaded) {
+    if (isLoaded && obj) {
       const { spatial: spatialExtent } = obj.extent;
 
       let flattenedBounds = [];
@@ -159,7 +165,7 @@ export const spatial = ({ baseUrl }) => {
     } else if (error) {
       return <div>Error: {error.message}</div>;
     }
-  }, []);
+  }, [obj, isLoaded, error]);
 
   if (!dataFetched) {
     return <div>Loading...</div>;
@@ -167,4 +173,6 @@ export const spatial = ({ baseUrl }) => {
 
   return <FilterEditor spatial={spatial} />;
 };
-*/
+
+const ExtractFunctions = { ExtractFields, ExtractInterval, Spatial };
+export default ExtractFunctions;

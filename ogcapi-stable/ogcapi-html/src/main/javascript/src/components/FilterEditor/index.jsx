@@ -26,6 +26,7 @@ const FilterEditor = ({
   start,
   end,
   titleForFilter,
+  integerKeys,
 }) => {
   const [isOpen, setOpen] = useState(false);
 
@@ -185,6 +186,7 @@ const FilterEditor = ({
         start={start}
         end={end}
         setFilters={setFilters}
+        integerKeys={integerKeys}
       />
     </>
   );

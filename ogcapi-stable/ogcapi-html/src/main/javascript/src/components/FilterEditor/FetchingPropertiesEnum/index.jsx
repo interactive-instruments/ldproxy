@@ -26,6 +26,8 @@ const FetchPropertiesEnum = ({ start, end, spatial, temporal }) => {
   const [code, setCode] = useState({});
   const [dataFetched, setDataFetched] = useState(false);
 
+  const [integerKeys, setIntegerKeys] = useState([]);
+
   // eslint-disable-next-line
   useEffect(() => {
     const url = new URL(
@@ -44,8 +46,10 @@ const FetchPropertiesEnum = ({ start, end, spatial, temporal }) => {
         if (!obj || !obj.properties) {
           return null;
         }
+
         const streetProperties = {};
         const streetCode = {};
+        const types = [];
 
         // eslint-disable-next-line
         for (const key in obj.properties) {
@@ -55,26 +59,53 @@ const FetchPropertiesEnum = ({ start, end, spatial, temporal }) => {
           if (obj.properties[key].enum) {
             streetCode[key] = obj.properties[key].enum;
           }
+          if (obj.properties[key].type === "integer") {
+            types.push(key);
+          }
         }
 
         const hasTitles = Object.keys(streetProperties).length > 0;
         const hasEnums = Object.keys(streetCode).length > 0;
+        const hasTypes = types.length > 0;
 
-        if (hasTitles && hasEnums) {
-          setFields(streetProperties);
-          setTitleForFilter(streetProperties);
-          setCode(streetCode);
-          setDataFetched(true);
-        } else if (!hasTitles) {
-          setFields({});
-          setTitleForFilter({});
-          setCode(streetCode);
-          setDataFetched(true);
-        } else if (!hasEnums) {
-          setFields(streetProperties);
-          setTitleForFilter(streetProperties);
-          setCode({});
-          setDataFetched(true);
+        switch (true) {
+          case hasTitles && hasEnums && hasTypes:
+            setFields(streetProperties);
+            setTitleForFilter(streetProperties);
+            setCode(streetCode);
+            setIntegerKeys(types);
+            setDataFetched(true);
+            break;
+          case hasTitles && hasEnums:
+            setFields(streetProperties);
+            setTitleForFilter(streetProperties);
+            setCode(streetCode);
+            setIntegerKeys([]);
+            setDataFetched(true);
+            break;
+          case hasTitles && hasTypes:
+            setFields(streetProperties);
+            setTitleForFilter(streetProperties);
+            setCode({});
+            setIntegerKeys(types);
+            setDataFetched(true);
+            break;
+          case hasTitles:
+            setFields(streetProperties);
+            setTitleForFilter(streetProperties);
+            setCode({});
+            setIntegerKeys([]);
+            setDataFetched(true);
+            break;
+          case !hasEnums && !hasTitles && !hasTypes:
+            setFields({});
+            setTitleForFilter({});
+            setCode({});
+            setIntegerKeys([]);
+            setDataFetched(true);
+            break;
+          default:
+            setDataFetched(false);
         }
       })
       .catch((error) => {
@@ -95,6 +126,7 @@ const FetchPropertiesEnum = ({ start, end, spatial, temporal }) => {
       spatial={spatial}
       titleForFilter={titleForFilter}
       temporal={temporal}
+      integerKeys={integerKeys}
     />
   );
 };
