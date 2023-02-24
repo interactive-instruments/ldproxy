@@ -1,6 +1,4 @@
 
-branches: [ master, maintenance-* ]
-
 clone: 
   git:
     image: woodpeckerci/plugin-git
@@ -15,3 +13,5 @@ pipeline:
     secrets: [ dtrack_api_key ]
     when:
       event: [ push, tag ]
+      branch: [ master, maintenance-* ]
+
