@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Button, ButtonGroup, Form, FormGroup, Input, FormText, Row, Col } from "reactstrap";
-import ValueSelectField from "./ValueSelectField";
+import { Button, ButtonGroup, Form, FormGroup, Input, Row, Col } from "reactstrap";
+import FilterValueField from "./FilterValueField";
+import ValueField from "./ValueField";
 
 const FieldFilter = ({
   fields,
@@ -65,51 +66,14 @@ const FieldFilter = ({
         </Col>
         <Col md="5">
           <FormGroup>
-            {
-              // eslint-disable-next-line no-nested-ternary
-              enumKeys.includes(field) ? (
-                <Input
-                  type="select"
-                  size="sm"
-                  name="value"
-                  className="mr-2"
-                  value={value}
-                  onChange={saveValue}
-                >
-                  <option value="" className="d-none">
-                    none
-                  </option>
-                  {Object.keys(code[field]).map((item) => (
-                    <option value={code[field][item]} key={item}>
-                      {code[field][item]}
-                    </option>
-                  ))}
-                </Input>
-              ) : integerKeys.includes(field) ? (
-                <Input
-                  type="number"
-                  size="sm"
-                  name="value"
-                  placeholder="Enter Number"
-                  className="mr-2"
-                  value={value}
-                  onChange={saveValue}
-                />
-              ) : (
-                <>
-                  <Input
-                    type="text"
-                    size="sm"
-                    name="value"
-                    placeholder="filter pattern"
-                    className="mr-2"
-                    value={value}
-                    onChange={saveValue}
-                  />
-                  <FormText>Use * as wildcard</FormText>
-                </>
-              )
-            }
+            <ValueField
+              valueKey={field}
+              value={value}
+              saveValue={saveValue}
+              code={code}
+              integerKeys={integerKeys}
+              enumKeys={enumKeys}
+            />
           </FormGroup>
         </Col>
         <Col md="2">
@@ -134,57 +98,15 @@ const FieldFilter = ({
             </Col>
             <Col md="5">
               <FormGroup>
-                {
-                  // eslint-disable-next-line no-nested-ternary
-                  enumKeys.includes(key) ? (
-                    <ValueSelectField
-                      code={code}
-                      field={key}
-                      filters={filters}
-                      setChangedValue={setChangedValue}
-                      changedValue={changedValue}
-                      enumKeys={enumKeys}
-                    />
-                  ) : integerKeys.includes(key) ? (
-                    <Input
-                      type="number"
-                      size="sm"
-                      name="value2"
-                      id={`input-${key}`}
-                      placeholder={filters[key].value}
-                      defaultValue={filters[key].value}
-                      className="mr-2"
-                      onChange={(e) =>
-                        setChangedValue({
-                          ...changedValue,
-                          [key]: {
-                            key,
-                            value: e.target.value,
-                          },
-                        })
-                      }
-                    />
-                  ) : (
-                    <Input
-                      type="text"
-                      size="sm"
-                      name="selectedValue"
-                      id={`input-${key}`}
-                      className="mr-2"
-                      placeholder={filters[key].value}
-                      defaultValue={filters[key].value}
-                      onChange={(e) =>
-                        setChangedValue({
-                          ...changedValue,
-                          [key]: {
-                            key,
-                            value: e.target.value,
-                          },
-                        })
-                      }
-                    />
-                  )
-                }
+                <FilterValueField
+                  code={code}
+                  filterKey={key}
+                  filters={filters}
+                  setChangedValue={setChangedValue}
+                  changedValue={changedValue}
+                  enumKeys={enumKeys}
+                  integerKeys={integerKeys}
+                />
               </FormGroup>
             </Col>
             <Col md="2">
