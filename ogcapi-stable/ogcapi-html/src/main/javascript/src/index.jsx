@@ -1,7 +1,7 @@
 /* eslint-disable no-undef, no-underscore-dangle */
 import React from "react";
 import ReactDOM from "react-dom";
-import FilterEditor from "./components/FilterEditor/FetchingSpatialTemporal";
+import FilterEditor from "./components/FilterEditor";
 import MapLibre from "./components/MapLibre";
 
 // TODO: enable other apps for dev server

@@ -1,11 +1,19 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 
-import { Button, Row, Col } from "reactstrap";
 import qs from "qs";
 
-import Badge from "./Badge";
 import Editor from "./Editor";
+import EditorHeader from "./Editor/Header";
+import { getBaseUrl, extractFields, extractInterval, extractSpatial } from "./util";
+import { useApiInfo } from "./hooks";
+
+const baseUrl = getBaseUrl();
+
+// eslint-disable-next-line no-undef
+const query = qs.parse(window.location.search, {
+  ignoreQueryPrefix: true,
+});
 
 const toBounds = (filter) => {
   const a = filter.split(",");
@@ -16,51 +24,62 @@ const toBounds = (filter) => {
   return b;
 };
 
-const FilterEditor = ({
-  backgroundUrl,
-  attribution,
-  spatial,
-  temporal,
-  fields,
-  code,
-  start,
-  end,
-  titleForFilter,
-  integerKeys,
-}) => {
+const FilterEditor = ({ backgroundUrl, attribution }) => {
+  const urlSpatialTemporal = new URL(baseUrl.pathname.endsWith("/") ? "../" : "./", baseUrl.href);
+  urlSpatialTemporal.search = "?f=json";
+
+  const {
+    obj: spatialTemporal,
+    isLoaded: loadedSpatialTemporal,
+    error: errorSpatialTemporal,
+  } = useApiInfo(urlSpatialTemporal);
+
+  const { start, end, temporal } = useMemo(
+    () => extractInterval(spatialTemporal),
+    [spatialTemporal]
+  );
+  const { spatial } = useMemo(() => extractSpatial(spatialTemporal), [spatialTemporal]);
+
+  const urlProperties = new URL(
+    baseUrl.pathname.endsWith("/") ? "../queryables" : "./queryables",
+    baseUrl.href
+  );
+  urlProperties.search = "?f=json";
+
+  const {
+    obj: properties,
+    isLoaded: loadedProperties,
+    error: errorProperties,
+  } = useApiInfo(urlProperties);
+
+  const { fields, code, integerKeys } = useMemo(() => extractFields(properties), [properties]);
+
   const [isOpen, setOpen] = useState(false);
 
-  console.log(temporal);
-  console.log(spatial);
+  const enabled =
+    loadedProperties &&
+    loadedSpatialTemporal &&
+    (Object.keys(fields).length > 0 || spatial || temporal);
 
-  const enabled = Object.keys(fields).length > 0 || spatial || temporal;
+  const [filters, setFilters] = useState({});
 
-  // eslint-disable-next-line no-undef
-  const query = qs.parse(window.location.search, {
-    ignoreQueryPrefix: true,
-  });
-
-  const [filters, setFilters] = useState(
-    Object.keys(fields)
-      .concat(["bbox", "datetime"])
-      .reduce((reduced, field) => {
-        if (query[field]) {
-          // eslint-disable-next-line no-param-reassign
-          reduced[field] = {
-            value: query[field],
-            add: false,
-            remove: false,
-          };
-        }
-        return reduced;
-      }, {})
-  );
-
-  const toggle = (event) => {
-    event.target.blur();
-
-    setOpen(!isOpen);
-  };
+  useEffect(() => {
+    setFilters(
+      Object.keys(fields)
+        .concat(["bbox", "datetime"])
+        .reduce((reduced, field) => {
+          if (query[field]) {
+            // eslint-disable-next-line no-param-reassign
+            reduced[field] = {
+              value: query[field],
+              add: false,
+              remove: false,
+            };
+          }
+          return reduced;
+        }, {})
+    );
+  }, [fields]);
 
   const onAdd = (field, value) => {
     setFilters((prev) => ({
@@ -106,6 +125,7 @@ const FilterEditor = ({
     window.location.search = qs.stringify(query, {
       addQueryPrefix: true,
     });
+    console.log(filters, newFilters, fields);
   };
 
   const deleteFilters = (field) => () => {
@@ -135,59 +155,43 @@ const FilterEditor = ({
     setOpen(false);
   };
 
+  const editorHeaderProps = {
+    isOpen,
+    setOpen,
+    isEnabled: enabled,
+    filters,
+    save,
+    cancel,
+    onRemove,
+  };
+
   return (
     <>
-      <Row className="mb-3">
-        <Col md="3" className="d-flex flex-row justify-content-start align-items-center flex-wrap">
-          <span className="mr-2 font-weight-bold">Filter</span>
-          {enabled && (
-            <Button
-              color={isOpen ? "primary" : "secondary"}
-              outline={!isOpen}
-              size="sm"
-              className="py-0"
-              onClick={isOpen ? save : toggle}
-            >
-              {isOpen ? "Apply" : "Edit"}
-            </Button>
-          )}
-          {isOpen && (
-            <Button color="danger" size="sm" className="ml-1 py-0" onClick={cancel}>
-              Cancel
-            </Button>
-          )}
-        </Col>
-        <Col md="9" className="d-flex flex-row justify-content-start align-items-center flex-wrap">
-          {Object.keys(filters).map((key) => (
-            <Badge
-              key={key}
-              field={key}
-              value={filters[key].value}
-              isAdd={filters[key].add}
-              isRemove={filters[key].remove}
-              isEditable={isOpen}
-              onRemove={onRemove}
-            />
-          ))}
-        </Col>
-      </Row>
-      <Editor
-        isOpen={isOpen}
-        fields={fields}
-        backgroundUrl={backgroundUrl}
-        attribution={attribution}
-        spatial={filters.bbox ? toBounds(filters.bbox.value) : spatial}
-        temporal={temporal}
-        filters={filters}
-        onAdd={onAdd}
-        deleteFilters={deleteFilters}
-        code={code}
-        titleForFilter={titleForFilter}
-        start={start}
-        end={end}
-        setFilters={setFilters}
-        integerKeys={integerKeys}
-      />
+      <EditorHeader {...editorHeaderProps} />
+      {enabled ? (
+        <Editor
+          isOpen={isOpen}
+          fields={fields}
+          backgroundUrl={backgroundUrl}
+          attribution={attribution}
+          spatial={filters.bbox ? toBounds(filters.bbox.value) : spatial}
+          temporal={temporal}
+          filters={filters}
+          onAdd={onAdd}
+          deleteFilters={deleteFilters}
+          code={code}
+          titleForFilter={fields}
+          start={start}
+          end={end}
+          setFilters={setFilters}
+          integerKeys={integerKeys}
+        />
+      ) : (
+        <>
+          {errorSpatialTemporal && <div>Error loading spatial-temporal data</div>}
+          {errorProperties && <div>Error loading properties data</div>}
+        </>
+      )}
     </>
   );
 };
@@ -195,23 +199,13 @@ const FilterEditor = ({
 FilterEditor.displayName = "FilterEditor";
 
 FilterEditor.propTypes = {
-  fields: PropTypes.objectOf(PropTypes.string).isRequired,
-  // eslint-disable-next-line react/forbid-prop-types
-  code: PropTypes.object.isRequired,
-  start: PropTypes.number.isRequired,
-  end: PropTypes.number.isRequired,
-  titleForFilter: PropTypes.objectOf(PropTypes.string).isRequired,
   backgroundUrl: PropTypes.string,
   attribution: PropTypes.string,
-  spatial: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
-  temporal: PropTypes.objectOf(PropTypes.number).isRequired,
-  integerKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 FilterEditor.defaultProps = {
   backgroundUrl: "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png",
   attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-  spatial: null,
 };
 
 export default FilterEditor;

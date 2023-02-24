@@ -143,6 +143,7 @@ const FieldFilter = ({
                       filters={filters}
                       setChangedValue={setChangedValue}
                       changedValue={changedValue}
+                      enumKeys={enumKeys}
                     />
                   ) : integerKeys.includes(key) ? (
                     <Input
