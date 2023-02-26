@@ -14,6 +14,7 @@ import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ogcapi.features.gltf.domain.FeatureTransformationContextGltf;
+import de.ii.ogcapi.features.gltf.domain.GltfAsset;
 import de.ii.ogcapi.features.gltf.domain.GltfConfiguration;
 import de.ii.ogcapi.features.gltf.domain.GltfSchema;
 import de.ii.ogcapi.features.gltf.domain.ImmutableFeatureTransformationContextGltf;
@@ -44,6 +45,7 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
+import java.io.IOException;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
@@ -372,5 +374,41 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
             .build();
 
     return Optional.of(new FeatureEncoderGltf(transformationContextGltf));
+  }
+
+  @Override
+  public boolean supportsHitsOnly() {
+    return true;
+  }
+
+  @Override
+  public Optional<Long> getNumberMatched(Object content) {
+    return getMetadata(content, "numberMatched");
+  }
+
+  @Override
+  public Optional<Long> getNumberReturned(Object content) {
+    return getMetadata(content, "numberReturned");
+  }
+
+  private Optional<Long> getMetadata(Object content, String key) {
+    if (content instanceof byte[]) {
+      try {
+        GltfAsset asset = GltfAsset.of((byte[]) content);
+        if (asset.getAsset().getExtras().containsKey(key)) {
+          Object value = asset.getAsset().getExtras().get(key);
+          if (value instanceof Long) {
+            return Optional.of((Long) value);
+          } else if (value instanceof Integer) {
+            return Optional.of(((Integer) value).longValue());
+          } else if (value instanceof String) {
+            return Optional.of(Long.parseLong((String) value));
+          }
+        }
+      } catch (IOException e) {
+        return Optional.empty();
+      }
+    }
+    return Optional.empty();
   }
 }

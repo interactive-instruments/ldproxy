@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.gltf.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
 
@@ -24,6 +25,14 @@ public interface AssetMetadata {
         into.putString(from.getVersion(), StandardCharsets.UTF_8);
         into.putString(from.getGenerator(), StandardCharsets.UTF_8);
         from.getCopyright().ifPresent(v -> into.putString(v, StandardCharsets.UTF_8));
+        from.getExtras()
+            .forEach(
+                (key, value) -> {
+                  into.putString(key, StandardCharsets.UTF_8);
+                  if (value instanceof Long) {
+                    into.putLong((Long) value);
+                  }
+                });
       };
 
   @Value.Default
@@ -37,4 +46,6 @@ public interface AssetMetadata {
   }
 
   Optional<String> getCopyright();
+
+  Map<String, Object> getExtras();
 }

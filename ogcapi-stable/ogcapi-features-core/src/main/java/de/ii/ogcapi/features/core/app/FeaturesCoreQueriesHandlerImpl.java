@@ -10,7 +10,6 @@ package de.ii.ogcapi.features.core.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Files;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureLinksGenerator;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
@@ -22,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
 import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
+import de.ii.ogcapi.foundation.domain.HeaderItems;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -48,8 +48,6 @@ import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
-import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -121,7 +119,14 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                     new NotAcceptableException(
                         MessageFormat.format(
                             "The requested media type ''{0}'' is not supported for this resource.",
-                            requestContext.getMediaType())));
+                            requestContext.getMediaType().type())));
+
+    if (query.hitsOnly() && !outputFormat.supportsHitsOnly()) {
+      throw new NotAcceptableException(
+          MessageFormat.format(
+              "The requested media type ''{0}'' does not support ''resultType=hits''.",
+              requestContext.getMediaType().type()));
+    }
 
     return getResponse(
         api,
@@ -138,8 +143,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         queryInput.getShowsFeatureSelfLink(),
         queryInput.getIncludeLinkHeader(),
         queryInput.getDefaultCrs(),
-        queryInput.sendResponseAsStream(),
-        queryInput.getSaveContentAsFile());
+        queryInput.sendResponseAsStream());
   }
 
   private Response getItemResponse(QueryInputFeature queryInput, ApiRequestContext requestContext) {
@@ -190,8 +194,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         false,
         queryInput.getIncludeLinkHeader(),
         queryInput.getDefaultCrs(),
-        sendResponseAsStream,
-        queryInput.getSaveContentAsFile());
+        sendResponseAsStream);
   }
 
   private Response getResponse(
@@ -209,8 +212,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       boolean showsFeatureSelfLink,
       boolean includeLinkHeader,
       EpsgCrs defaultCrs,
-      boolean sendResponseAsStream,
-      Optional<File> saveResponseAsFile) {
+      boolean sendResponseAsStream) {
 
     QueriesHandler.ensureCollectionIdExists(api.getData(), collectionId);
     QueriesHandler.ensureFeatureProviderSupportsQueries(featureProvider);
@@ -331,7 +333,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     byte[] bytes = null;
     StreamingOutput streamingOutput = null;
 
-    if (sendResponseAsStream && saveResponseAsFile.isEmpty()) {
+    if (sendResponseAsStream) {
       streamingOutput =
           stream(featureStream, Objects.nonNull(featureId), encoder, propertyTransformations);
       lastModified = getLastModified(queryInput);
@@ -345,24 +347,13 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         etag = result.getETag().get();
         LOGGER.debug("ETAG {}", etag);
       }
-
-      if (saveResponseAsFile.isPresent() && Objects.nonNull(bytes)) {
-        try {
-          Files.write(bytes, saveResponseAsFile.get());
-        } catch (IOException e) {
-          if (LOGGER.isErrorEnabled()) {
-            LOGGER.error(
-                "Could not write feature response to file: {}", saveResponseAsFile.get(), e);
-          }
-        }
-      }
     }
 
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
     if (Objects.nonNull(response)) return response.build();
 
     // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched
-    // and OGC-numberReturned headers
+    // and OGC-numberReturned headers also when streaming the response
     // TODO For now remove the "next" links from the headers since at this point we don't know,
     // whether there will be a next page
 
@@ -379,7 +370,10 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 String.format(
                     "%s.%s",
                     Objects.isNull(featureId) ? collectionId : featureId,
-                    outputFormat.getMediaType().fileExtension())))
+                    outputFormat.getMediaType().fileExtension())),
+            HeaderItems.of(
+                sendResponseAsStream ? Optional.empty() : outputFormat.getNumberMatched(bytes),
+                sendResponseAsStream ? Optional.empty() : outputFormat.getNumberReturned(bytes)))
         .entity(Objects.nonNull(bytes) ? bytes : streamingOutput)
         .build();
   }

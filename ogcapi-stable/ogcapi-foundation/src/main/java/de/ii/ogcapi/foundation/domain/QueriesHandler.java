@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.CacheControl;
@@ -112,6 +113,22 @@ public interface QueriesHandler<T extends QueryIdentifier> {
       HeaderCaching cacheInfo,
       EpsgCrs crs,
       HeaderContentDisposition dispositionInfo) {
+    return prepareSuccessResponse(
+        requestContext,
+        links,
+        cacheInfo,
+        crs,
+        dispositionInfo,
+        HeaderItems.of(Optional.empty(), Optional.empty()));
+  }
+
+  default Response.ResponseBuilder prepareSuccessResponse(
+      ApiRequestContext requestContext,
+      List<Link> links,
+      HeaderCaching cacheInfo,
+      EpsgCrs crs,
+      HeaderContentDisposition dispositionInfo,
+      HeaderItems itemsHeader) {
     Response.ResponseBuilder response = Response.ok().type(requestContext.getMediaType().type());
 
     cacheInfo.getLastModified().ifPresent(response::lastModified);
@@ -156,6 +173,11 @@ public interface QueriesHandler<T extends QueryIdentifier> {
         headerLinks.forEach(response::links);
         headerLinkTemplates.forEach(template -> response.header("Link-Template", template));
       }
+    }
+
+    if (Objects.nonNull(itemsHeader)) {
+      itemsHeader.getNumberReturned().ifPresent(n -> response.header("OGC-numberReturned", n));
+      itemsHeader.getNumberMatched().ifPresent(n -> response.header("OGC-numberMatched", n));
     }
 
     if (Objects.nonNull(crs)) {

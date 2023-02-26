@@ -9,15 +9,19 @@ package de.ii.ogcapi.features.gltf.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.hash.Funnel;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -31,6 +35,9 @@ public interface GltfAsset {
   ObjectMapper MAPPER =
       new ObjectMapper()
           .registerModule(new Jdk8Module())
+          .registerModule(new GuavaModule())
+          .configure(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY, true)
+          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
           // for debugging
           // .enable(SerializationFeature.INDENT_OUTPUT)
           .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
@@ -61,6 +68,36 @@ public interface GltfAsset {
         from.getExtensionsRequired().forEach(v -> into.putString(v, StandardCharsets.UTF_8));
         from.getExtensionsUsed().forEach(v -> into.putString(v, StandardCharsets.UTF_8));
       };
+
+  static GltfAsset of(byte[] glbBytes) throws IOException {
+    if (!Arrays.equals(Arrays.copyOfRange(glbBytes, 0, 4), MAGIC_GLTF)) {
+      throw new IllegalStateException(
+          String.format(
+              "Invalid glTF binary file, invalid magic number. Found: %s",
+              Arrays.toString(Arrays.copyOfRange(glbBytes, 0, 4))));
+    }
+
+    final int version = littleEndianIntToInt(glbBytes, 4);
+    if (version != 2) {
+      throw new IllegalStateException(
+          String.format(
+              "Unsupported glTF version, only version 2 is supported. Found: %d", version));
+    }
+
+    final int jsonLength = littleEndianIntToInt(glbBytes, 8);
+    final byte[] jsonContent = Arrays.copyOfRange(glbBytes, 20, 20 + jsonLength);
+    return MAPPER.readValue(jsonContent, GltfAsset.class);
+  }
+
+  private static int littleEndianIntToInt(byte[] array, int offset) {
+    ByteBuffer bb = ByteBuffer.allocate(4);
+    bb.order(ByteOrder.LITTLE_ENDIAN);
+    for (int i = 0; i < 4; i++) {
+      bb.put(array[offset + i]);
+    }
+    bb.rewind();
+    return bb.getInt();
+  }
 
   AssetMetadata getAsset();
 

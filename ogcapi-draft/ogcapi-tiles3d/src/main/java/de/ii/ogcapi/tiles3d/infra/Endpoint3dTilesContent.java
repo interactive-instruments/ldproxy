@@ -10,6 +10,7 @@ package de.ii.ogcapi.tiles3d.infra;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -252,17 +253,30 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
       TileResourceDescriptor r)
       throws URISyntaxException {
     try {
-      return Tiles3dContentUtil.getContent(
-          providers.getFeatureProviderOrThrow(
-              apiData, apiData.getCollectionData(collectionId).orElseThrow()),
-          queriesHandlerFeatures,
-          cql,
-          cfg,
-          r,
-          r.getQuery(featuresQuery),
-          tileResourceCache.getFile(r),
-          requestContext.getUriCustomizer(),
-          Optional.of(getGenericQueryInput(apiData)));
+      Response response =
+          Tiles3dContentUtil.getContent(
+              providers.getFeatureProviderOrThrow(
+                  apiData, apiData.getCollectionData(collectionId).orElseThrow()),
+              queriesHandlerFeatures,
+              cql,
+              cfg,
+              r,
+              r.getQuery(featuresQuery),
+              requestContext.getUriCustomizer(),
+              Optional.of(getGenericQueryInput(apiData)));
+
+      if (Objects.nonNull(response.getEntity())) {
+        try {
+          Files.write((byte[]) response.getEntity(), tileResourceCache.getFile(r));
+        } catch (IOException e) {
+          if (LOGGER.isErrorEnabled()) {
+            LOGGER.error(
+                "Could not write feature response to file: {}", tileResourceCache.getFile(r), e);
+          }
+        }
+      }
+
+      return response;
     } catch (IOException e) {
       throw new IllegalStateException(e);
     }

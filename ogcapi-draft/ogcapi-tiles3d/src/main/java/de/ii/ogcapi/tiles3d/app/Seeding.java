@@ -9,6 +9,7 @@ package de.ii.ogcapi.tiles3d.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
@@ -46,6 +47,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.ws.rs.core.Response;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.shape.fractal.MortonCode;
 import org.slf4j.Logger;
@@ -602,24 +604,37 @@ public class Seeding implements OgcApiBackgroundTask {
             apiData
                 .getExtension(Tiles3dConfiguration.class, content.getCollectionId())
                 .orElseThrow();
-        Tiles3dContentUtil.getContent(
-            providers.getFeatureProviderOrThrow(
-                apiData, apiData.getCollectionData(content.getCollectionId()).orElseThrow()),
-            queryHandlerFeatures,
-            cql,
-            cfg,
-            content,
-            content.getQuery(featuresQuery),
-            tileResourcesCache.getFile(content),
-            new URICustomizer(
-                String.format(
-                    "%s/collections/%s/3dtiles/content_%d_%d_%d",
-                    servicesUri.toString(),
-                    content.getCollectionId(),
-                    content.getLevel(),
-                    content.getX(),
-                    content.getY())),
-            Optional.empty());
+        Response response =
+            Tiles3dContentUtil.getContent(
+                providers.getFeatureProviderOrThrow(
+                    apiData, apiData.getCollectionData(content.getCollectionId()).orElseThrow()),
+                queryHandlerFeatures,
+                cql,
+                cfg,
+                content,
+                content.getQuery(featuresQuery),
+                new URICustomizer(
+                    String.format(
+                        "%s/collections/%s/3dtiles/content_%d_%d_%d",
+                        servicesUri.toString(),
+                        content.getCollectionId(),
+                        content.getLevel(),
+                        content.getX(),
+                        content.getY())),
+                Optional.empty());
+
+        if (Objects.nonNull(response.getEntity())) {
+          try {
+            Files.write((byte[]) response.getEntity(), tileResourcesCache.getFile(content));
+          } catch (IOException e) {
+            if (LOGGER.isErrorEnabled()) {
+              LOGGER.error(
+                  "Could not write feature response to file: {}",
+                  tileResourcesCache.getFile(content),
+                  e);
+            }
+          }
+        }
       }
     } catch (Exception e) {
       if (LOGGER.isWarnEnabled()) {

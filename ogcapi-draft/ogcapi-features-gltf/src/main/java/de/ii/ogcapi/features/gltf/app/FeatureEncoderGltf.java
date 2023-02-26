@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.slf4j.Logger;
@@ -113,7 +114,8 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private List<Integer> featureNodes;
   private final long transformerStart = System.nanoTime();
   private long processingStart;
-  private long featureFetched;
+  private long featuresFetched;
+  private OptionalLong featuresMatched;
   private int featureCount;
   private long featuresDuration;
 
@@ -138,9 +140,10 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   public void onStart(ModifiableContext context) {
     this.processingStart = System.nanoTime();
     if (transformationContext.isFeatureCollection()) {
-      featureFetched = context.metadata().getNumberReturned().orElseThrow();
-      if (featureFetched > WARNING_THRESHOLD_FEATURES_PER_FILE) {
-        LOGGER.warn("Fetching a large number of features for a tile: {}", featureFetched);
+      featuresFetched = context.metadata().getNumberReturned().orElseThrow();
+      featuresMatched = context.metadata().getNumberMatched();
+      if (featuresFetched > WARNING_THRESHOLD_FEATURES_PER_FILE) {
+        LOGGER.warn("Fetching a large number of features for a tile: {}", featuresFetched);
       }
       if (LOGGER.isTraceEnabled()) {
         context
@@ -210,7 +213,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       String text =
           String.format(
               "glTF features fetched: %d, returned: %d, total duration: %dms, processing: %dms, feature processing: %dms, average feature processing: %dms, writing: %dms.",
-              featureFetched,
+              featuresFetched,
               featureCount,
               transformerDuration,
               processingDuration,
@@ -309,16 +312,17 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   }
 
   private void initNewModel() {
-    builder =
-        ImmutableGltfAsset.builder()
-            .asset(
-                ImmutableAssetMetadata.builder()
-                    .copyright(
-                        transformationContext
-                            .getApiData()
-                            .getMetadata()
-                            .flatMap(ApiMetadata::getAttribution))
-                    .build());
+    ImmutableAssetMetadata.Builder metadataBuilder =
+        ImmutableAssetMetadata.builder()
+            .copyright(
+                transformationContext
+                    .getApiData()
+                    .getMetadata()
+                    .flatMap(ApiMetadata::getAttribution))
+            .putExtras("numberReturned", featuresFetched);
+    featuresMatched.ifPresent(n -> metadataBuilder.putExtras("numberMatched", n));
+
+    builder = ImmutableGltfAsset.builder().asset(metadataBuilder.build());
 
     featureNodes = new ArrayList<>(INITIAL_SIZE);
 

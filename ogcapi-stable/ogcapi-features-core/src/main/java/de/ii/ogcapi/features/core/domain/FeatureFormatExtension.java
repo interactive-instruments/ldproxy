@@ -28,16 +28,6 @@ public interface FeatureFormatExtension extends FormatExtension {
     return targetCrs;
   }
 
-  /* FIXME
-  @Override
-  default ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
-    if (method.equals(HttpMethods.GET)) {
-      return getContent(apiData, path);
-    }
-    return null;
-  }
-   */
-
   default ApiMediaTypeContent getFeatureContent(
       OgcApiDataV2 apiData, Optional<String> collectionId, boolean featureCollection) {
     return getContent();
@@ -82,5 +72,17 @@ public interface FeatureFormatExtension extends FormatExtension {
     return formatTransformations
         .map(ft -> coreTransformations.map(ft::mergeInto).orElse(ft))
         .or(() -> coreTransformations);
+  }
+
+  default boolean supportsHitsOnly() {
+    return false;
+  }
+
+  default Optional<Long> getNumberMatched(Object content) {
+    return Optional.empty();
+  }
+
+  default Optional<Long> getNumberReturned(Object content) {
+    return Optional.empty();
   }
 }

@@ -24,7 +24,6 @@ import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-import java.io.File;
 import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.Optional;
@@ -41,7 +40,6 @@ public final class Tiles3dContentUtil {
       Tiles3dConfiguration cfg,
       TileResourceDescriptor r,
       FeatureQuery featureQuery,
-      File cacheFile,
       URICustomizer uriCustomizer,
       Optional<QueryInput> queryInputGeneric)
       throws URISyntaxException {
@@ -57,7 +55,7 @@ public final class Tiles3dContentUtil {
                 cql);
 
     FeaturesCoreQueriesHandler.QueryInputFeatures queryInput =
-        getQueryInputFeatures(query, provider, cacheFile, r, queryInputGeneric);
+        getQueryInputFeatures(query, provider, r, queryInputGeneric);
 
     ApiRequestContext requestContextGltf =
         getFeaturesRequestContext(uriCustomizer, cfg, r, contentFilterString);
@@ -68,7 +66,6 @@ public final class Tiles3dContentUtil {
   private static FeaturesCoreQueriesHandler.QueryInputFeatures getQueryInputFeatures(
       FeatureQuery query,
       FeatureProvider2 provider,
-      File cacheFile,
       TileResourceDescriptor r,
       Optional<QueryInput> queryInputGeneric) {
     FeaturesCoreQueriesHandler.QueryInputFeatures queryInput;
@@ -82,7 +79,7 @@ public final class Tiles3dContentUtil {
             .defaultCrs(OgcCrs.CRS84h)
             .defaultPageSize(Optional.of(TileResourceDescriptor.MAX_FEATURES_PER_TILE))
             .showsFeatureSelfLink(false)
-            .saveContentAsFile(Optional.of(cacheFile))
+            .sendResponseAsStream(false)
             .build();
     return queryInput;
   }

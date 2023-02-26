@@ -46,13 +46,7 @@ public interface FeaturesCoreQueriesHandler
 
     @Value.Default
     default boolean sendResponseAsStream() {
-      return true;
-    }
-
-    // TODO rename and generalize when all file handling is moved to xtraplatform-spatial
-    @Value.Default
-    default Optional<File> getSaveContentAsFile() {
-      return Optional.empty();
+      return !getQuery().hitsOnly();
     }
 
     @Value.Default

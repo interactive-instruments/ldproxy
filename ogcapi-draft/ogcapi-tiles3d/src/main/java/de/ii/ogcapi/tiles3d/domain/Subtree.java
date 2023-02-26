@@ -26,8 +26,8 @@ import de.ii.ogcapi.features.gltf.domain.ImmutableBuffer;
 import de.ii.ogcapi.features.gltf.domain.ImmutableBufferView;
 import de.ii.ogcapi.features.gltf.domain.PropertyTable;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
-import de.ii.ogcapi.tiles3d.app.FeaturesFormatHits;
 import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles.QueryInputSubtree;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.immutables.value.Value;
 import org.locationtech.jts.shape.fractal.MortonCode;
@@ -476,35 +477,45 @@ public interface Subtree {
             .collectionId(queryInput.getCollectionId())
             .query(query)
             .featureProvider(queryInput.getFeatureProvider())
-            .defaultCrs(OgcCrs.CRS84)
+            .defaultCrs(OgcCrs.CRS84h)
             .defaultPageSize(1)
             .sendResponseAsStream(false)
-            .path("/_for_internal_use_only_")
             .showsFeatureSelfLink(false)
             .build();
 
     ApiRequestContext requestContext =
         new Builder()
-            .mediaType(FeaturesFormatHits.MEDIA_TYPE)
+            .mediaType(
+                new ImmutableApiMediaType.Builder()
+                    .type(new MediaType("model", "gltf-binary"))
+                    .label("glTF-Binary")
+                    .parameter("glb")
+                    .build())
             .alternateMediaTypes(ImmutableList.of())
             .language(Locale.ENGLISH)
             .api(queryInput.getApi())
             .request(Optional.empty())
-            .requestUri(queryInput.getServicesUri().resolve("/_for_internal_use_only_"))
+            .requestUri(
+                queryInput
+                    .getServicesUri()
+                    .resolve(
+                        String.join(
+                            "/",
+                            ImmutableList.of(
+                                "collections", queryInput.getCollectionId(), "items"))))
             .build();
 
-    byte[] entity = getResult(queriesHandler, queryInputHits, requestContext);
-
-    return entity.length == 1 && entity[0] == '1';
+    return getNumberReturned(queriesHandler, queryInputHits, requestContext) == 1L;
   }
 
-  private static byte[] getResult(
+  private static long getNumberReturned(
       FeaturesCoreQueriesHandler queriesHandler,
       FeaturesCoreQueriesHandler.QueryInputFeatures queryInputHits,
       ApiRequestContext requestContext) {
     try (Response response =
         queriesHandler.handle(Query.FEATURES, queryInputHits, requestContext)) {
-      return (byte[]) response.getEntity();
+      return Long.parseLong(
+          Objects.requireNonNullElse(response.getHeaderString("OGC-numberReturned"), "0"));
     }
   }
 

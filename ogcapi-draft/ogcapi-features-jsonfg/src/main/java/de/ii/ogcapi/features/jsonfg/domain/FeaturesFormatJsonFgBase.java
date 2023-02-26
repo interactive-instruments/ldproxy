@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.jsonfg.domain;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableSortedSet;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
@@ -31,6 +33,7 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -176,7 +179,7 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
                     JsonFgGeometryType.getGeometryDimension(
                         p.getGeometryType().orElse(SimpleFeatureGeometry.NONE),
                         p.getConstraints().map(SchemaConstraints::isComposite).orElse(false),
-                        p.getConstraints().map(SchemaConstraints::isComposite).orElse(false)))
+                        p.getConstraints().map(SchemaConstraints::isClosed).orElse(false)))
             .flatMap(Optional::stream)
             .distinct()
             .collect(Collectors.toUnmodifiableList());
@@ -184,5 +187,41 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
       return Optional.empty();
     }
     return Optional.of(dimensions.get(0));
+  }
+
+  @Override
+  default boolean supportsHitsOnly() {
+    return true;
+  }
+
+  @Override
+  default Optional<Long> getNumberMatched(Object content) {
+    return getMetadata(content, "numberMatched");
+  }
+
+  @Override
+  default Optional<Long> getNumberReturned(Object content) {
+    return getMetadata(content, "numberReturned");
+  }
+
+  private Optional<Long> getMetadata(Object content, String key) {
+    if (content instanceof byte[]) {
+      JsonNode jsonNode;
+      ObjectMapper mapper = new ObjectMapper();
+      try {
+        jsonNode = mapper.readTree((byte[]) content);
+      } catch (IOException e) {
+        throw new IllegalStateException(
+            String.format("Could not parse GeoJSON object: %s", e.getMessage()), e);
+      }
+      if (jsonNode.isObject()) {
+        jsonNode = jsonNode.get(key);
+        if (jsonNode.isNumber()) {
+          return Optional.of(jsonNode.longValue());
+        }
+      }
+    }
+
+    return Optional.empty();
   }
 }

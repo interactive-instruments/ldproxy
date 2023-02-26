@@ -179,7 +179,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     boolean hitsOnly =
         parameters.containsKey("resultType")
-            && parameters.get("resultType").toLowerCase().equals("hits");
+            && parameters.get("resultType").equalsIgnoreCase("hits");
 
     /**
      * NOTE: OGC API and ldproxy do not use the HTTP "Range" header for limit/offset for the
