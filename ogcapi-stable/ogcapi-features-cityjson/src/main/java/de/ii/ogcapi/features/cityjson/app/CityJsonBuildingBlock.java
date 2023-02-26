@@ -21,12 +21,22 @@ import javax.inject.Singleton;
 
 /**
  * @title Features - CityJSON
- * @langEn Encode features as CityJSON.
- * @langDe Kodierung von Features als CityJSON.
+ * @langEn Encode CityGML building features (LoD1, LoD2) as CityJSON.
+ * @langDe Kodierung von CityGML Gebäuden (LoD1, LoD2) als CityJSON.
  * @scopeEn The module *Features CityJSON* adds support for CityJSON 1.0 and 1.1 as a feature
  *     encoding. Supported are the feature types `Building` and `BuildingPart`.
  * @scopeDe Das Modul *Features CityJSON* unterstützt CityJSON 1.0 und 1.1 als Kodierung für
  *     Features. Unterstützt werden die Objektarten `Building` und `BuildingPart`.
+ * @conformanceEn *Features - CityJSON* implements support for [CityJSON
+ *     1.0](https://www.cityjson.org/specs/1.0.3/) and [CityJSON
+ *     1.1](https://www.cityjson.org/specs/1.1.3/).
+ * @conformanceDe *Features - CityJSON* implementiert Unterstützung für [CityJSON
+ *     1.0](https://www.cityjson.org/specs/1.0.3/) und [CityJSON
+ *     1.1](https://www.cityjson.org/specs/1.1.3/).
+ * @limitationsEn Support is restricted to LoD1 and LoD2 buildings with building parts. All other
+ *     object types including Appearance objects are not supported.
+ * @limitationsDe Die Unterstützung ist auf LoD1 und LoD2 Gebäude mit Gebäudeteilen beschränkt. Alle
+ *     anderen Objekttypen, einschließlich Appearance-Objekte, werden nicht unterstützt.
  * @ref:cfg {@link de.ii.ogcapi.features.cityjson.domain.CityJsonConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.features.cityjson.domain.ImmutableCityJsonConfiguration}
  */

@@ -68,7 +68,7 @@ public class SchemaInfoImpl implements SchemaInfo {
                           subProperty,
                           getPropertyName(property, basePath, withArrayBrackets),
                           withArrayBrackets,
-                          false)));
+                          withObjects)));
     } else {
       propertyNames.add(getPropertyName(property, basePath, withArrayBrackets));
     }

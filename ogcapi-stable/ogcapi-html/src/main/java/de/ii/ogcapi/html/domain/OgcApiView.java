@@ -15,6 +15,7 @@ import io.dropwizard.views.View;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
@@ -26,7 +27,10 @@ public abstract class OgcApiView extends View {
 
   public abstract String urlPrefix();
 
-  public abstract boolean noIndex();
+  @Value.Default
+  public boolean noIndex() {
+    return Optional.ofNullable(htmlConfig()).map(HtmlConfiguration::getNoIndexEnabled).orElse(true);
+  }
 
   @Nullable
   public abstract List<NavigationDTO> breadCrumbs();
@@ -89,11 +93,11 @@ public abstract class OgcApiView extends View {
   }
 
   public String getAttribution() {
+    if (Objects.isNull(htmlConfig())) {
+      return null;
+    }
     if (Objects.nonNull(htmlConfig().getLeafletAttribution())) {
       return htmlConfig().getLeafletAttribution();
-    }
-    if (Objects.nonNull(htmlConfig().getOpenLayersAttribution())) {
-      return htmlConfig().getOpenLayersAttribution();
     }
     return htmlConfig().getBasemapAttribution();
   }
