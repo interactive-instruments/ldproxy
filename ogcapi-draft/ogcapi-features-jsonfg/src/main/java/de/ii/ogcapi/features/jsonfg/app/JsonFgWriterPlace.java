@@ -42,7 +42,6 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
   private boolean additionalArray;
   private boolean hasPlaceGeometry;
   private boolean hasSecondaryGeometry;
-  private boolean primaryGeometryIsSimpleFeature;
   private boolean suppressPlace;
   private TokenBuffer json;
 
@@ -68,7 +67,7 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
     isEnabled = isEnabled(context.encoding());
     hasSecondaryGeometry =
         context.encoding().getFeatureSchema().orElseThrow().getSecondaryGeometry().isPresent();
-    primaryGeometryIsSimpleFeature =
+    boolean primaryGeometryIsSimpleFeature =
         context
             .encoding()
             .getFeatureSchema()
