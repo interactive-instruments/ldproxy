@@ -13,9 +13,9 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
-import de.ii.ogcapi.features.jsonfg.domain.FeaturesFormatJsonFgBase;
 import de.ii.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
 import de.ii.ogcapi.features.jsonfg.domain.JsonFgGeometryType;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import java.io.IOException;
@@ -40,7 +40,8 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
   boolean isEnabled;
   private boolean geometryOpen;
   private boolean additionalArray;
-  private boolean hasPrimaryGeometry;
+  private boolean hasPlaceGeometry;
+  private boolean hasSecondaryGeometry;
   private boolean suppressPlace;
   private TokenBuffer json;
 
@@ -51,7 +52,7 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
 
   private void reset(EncodingAwareContextGeoJson context) {
     this.geometryOpen = false;
-    this.hasPrimaryGeometry = false;
+    this.hasPlaceGeometry = false;
     this.additionalArray = false;
     this.json = new TokenBuffer(new ObjectMapper(), false);
     if (context.encoding().getPrettify()) {
@@ -64,16 +65,23 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
     isEnabled = isEnabled(context.encoding());
+    hasSecondaryGeometry =
+        context.encoding().getFeatureSchema().orElseThrow().getSecondaryGeometry().isPresent();
+    boolean primaryGeometryIsSimpleFeature =
+        context
+            .encoding()
+            .getFeatureSchema()
+            .orElseThrow()
+            .getPrimaryGeometry()
+            .filter(SchemaBase::isSimpleFeatureGeometry)
+            .isPresent();
 
     // set 'place' to null, if the geometry is in WGS84 (in this case it is in "geometry")
-    // and a simple feature geometry type
+    // and a simple feature geometry type unless a separate property is used for place
     suppressPlace =
-        context.encoding().getTargetCrs().equals(context.encoding().getDefaultCrs())
-            && context
-                .encoding()
-                .getFeatureSchema()
-                .map(FeaturesFormatJsonFgBase::hasSimpleFeatureGeometryType)
-                .orElse(true);
+        !hasSecondaryGeometry
+            && primaryGeometryIsSimpleFeature
+            && context.encoding().getTargetCrs().equals(context.encoding().getDefaultCrs());
 
     next.accept(context);
   }
@@ -95,8 +103,7 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
         && !suppressPlace
         && context.schema().filter(SchemaBase::isSpatial).isPresent()
         && context.geometryType().isPresent()
-        && context.schema().get().isPrimaryGeometry()) {
-
+        && isPlaceGeometry(context.schema().get())) {
       String type =
           JsonFgGeometryType.forSimpleFeatureType(
                   context.geometryType().get(),
@@ -121,7 +128,7 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
       }
 
       geometryOpen = true;
-      hasPrimaryGeometry = true;
+      hasPlaceGeometry = true;
     }
 
     next.accept(context);
@@ -189,7 +196,7 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
       throws IOException {
 
     if (isEnabled) {
-      if (!hasPrimaryGeometry) {
+      if (!hasPlaceGeometry) {
         // write null geometry if none was written for this feature
         json.writeFieldName(JSON_KEY);
         json.writeNull();
@@ -216,5 +223,19 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
                         .getMediaType()
                         .equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE))
         .isPresent();
+  }
+
+  private boolean hasSecondaryGeometry(FeatureSchema schema) {
+    return schema.getProperties().stream()
+        .filter(SchemaBase::isSecondaryGeometry)
+        .findFirst()
+        .map(property -> true)
+        .or(() -> schema.getProperties().stream().map(this::hasSecondaryGeometry).findFirst())
+        .orElse(false);
+  }
+
+  private boolean isPlaceGeometry(FeatureSchema property) {
+    return (hasSecondaryGeometry && property.isSecondaryGeometry())
+        || (!hasSecondaryGeometry && property.isPrimaryGeometry());
   }
 }

@@ -190,7 +190,7 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
    *     `links`.
    * @langDe Die Option ermöglicht, dass ausgewählte JSON-FG-Erweiterungen auch im GeoJSON-Encoding
    *     berücksichtigt werden. Erlaubte Werte sind: `describedby`, `featureType`, `time`, `place`,
-   *     `coordRefSys`, `links``
+   *     `coordRefSys`, `links`
    * @default []
    * @since v3.1
    */
