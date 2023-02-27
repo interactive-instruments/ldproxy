@@ -43,20 +43,6 @@ public interface FeatureGltf extends FeatureBase<PropertyGltf, FeatureSchema> {
         .findFirst();
   }
 
-  @Value.Lazy
-  default Optional<PropertyGltf> getGeometry() {
-    return getProperties().stream()
-        .filter(property -> property.getSchema().filter(SchemaBase::isSpatial).isPresent())
-        .findFirst()
-        .or(
-            () ->
-                getProperties().stream()
-                    .map(PropertyGltf::getGeometry)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .findFirst());
-  }
-
   default Optional<PropertyGltf> findPropertyByPath(String pathString) {
     return findPropertyByPath(PropertyGltf.PATH_SPLITTER.splitToList(pathString));
   }

@@ -54,7 +54,7 @@ public class SchemaDeriverOpenApiReturnables extends SchemaDeriverOpenApi {
             });
 
     findByRole(properties, Role.PRIMARY_GEOMETRY)
-        .or(() -> findByRole(properties, SECONDARY_GEOMETRY))
+        .or(() -> findByRole(properties, Role.SECONDARY_GEOMETRY))
         .ifPresentOrElse(
             property -> {
               requiredProperties.remove(property.getName());
