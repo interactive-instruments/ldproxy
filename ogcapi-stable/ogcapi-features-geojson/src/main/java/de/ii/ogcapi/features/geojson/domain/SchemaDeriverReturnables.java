@@ -100,7 +100,7 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
             });
 
     findByRole(properties, Role.PRIMARY_GEOMETRY)
-        .or(() -> findByRole(properties, SECONDARY_GEOMETRY))
+        .or(() -> findByRole(properties, Role.SECONDARY_GEOMETRY))
         .ifPresentOrElse(
             jsonSchema -> {
               if (jsonSchema.isRequired()) {

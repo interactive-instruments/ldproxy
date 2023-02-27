@@ -21,10 +21,11 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
 import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
+import de.ii.ogcapi.foundation.domain.HeaderItems;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
@@ -98,19 +99,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     return queryHandlers;
   }
 
-  public static void ensureCollectionIdExists(OgcApiDataV2 apiData, String collectionId) {
-    if (!apiData.isCollectionEnabled(collectionId)) {
-      throw new NotFoundException(
-          MessageFormat.format("The collection ''{0}'' does not exist in this API.", collectionId));
-    }
-  }
-
-  private static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
-    if (!featureProvider.supportsQueries()) {
-      throw new IllegalStateException("Feature provider does not support queries.");
-    }
-  }
-
   private Response getItemsResponse(
       QueryInputFeatures queryInput, ApiRequestContext requestContext) {
 
@@ -131,7 +119,14 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                     new NotAcceptableException(
                         MessageFormat.format(
                             "The requested media type ''{0}'' is not supported for this resource.",
-                            requestContext.getMediaType())));
+                            requestContext.getMediaType().type())));
+
+    if (query.hitsOnly() && !outputFormat.supportsHitsOnly()) {
+      throw new NotAcceptableException(
+          MessageFormat.format(
+              "The requested media type ''{0}'' does not support ''resultType=hits''.",
+              requestContext.getMediaType().type()));
+    }
 
     return getResponse(
         api,
@@ -147,7 +142,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         defaultPageSize,
         queryInput.getShowsFeatureSelfLink(),
         queryInput.getIncludeLinkHeader(),
-        queryInput.getDefaultCrs());
+        queryInput.getDefaultCrs(),
+        queryInput.sendResponseAsStream());
   }
 
   private Response getItemResponse(QueryInputFeature queryInput, ApiRequestContext requestContext) {
@@ -176,6 +172,13 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       persistentUri = StringTemplateFilters.applyTemplate(template.get(), featureId);
     }
 
+    boolean sendResponseAsStream =
+        outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+            && api.getData()
+                .getExtension(HtmlConfiguration.class, collectionId)
+                .map(HtmlConfiguration::getSendEtags)
+                .orElse(false);
+
     return getResponse(
         api,
         requestContext,
@@ -190,7 +193,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         Optional.empty(),
         false,
         queryInput.getIncludeLinkHeader(),
-        queryInput.getDefaultCrs());
+        queryInput.getDefaultCrs(),
+        sendResponseAsStream);
   }
 
   private Response getResponse(
@@ -207,10 +211,11 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       Optional<Integer> defaultPageSize,
       boolean showsFeatureSelfLink,
       boolean includeLinkHeader,
-      EpsgCrs defaultCrs) {
+      EpsgCrs defaultCrs,
+      boolean sendResponseAsStream) {
 
-    ensureCollectionIdExists(api.getData(), collectionId);
-    ensureFeatureProviderSupportsQueries(featureProvider);
+    QueriesHandler.ensureCollectionIdExists(api.getData(), collectionId);
+    QueriesHandler.ensureFeatureProviderSupportsQueries(featureProvider);
 
     Optional<CrsTransformer> crsTransformer = Optional.empty();
 
@@ -328,12 +333,12 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     byte[] bytes = null;
     StreamingOutput streamingOutput = null;
 
-    if (Objects.nonNull(featureId)
-        && (!outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
-            || api.getData()
-                .getExtension(HtmlConfiguration.class, collectionId)
-                .map(HtmlConfiguration::getSendEtags)
-                .orElse(false))) {
+    if (sendResponseAsStream) {
+      streamingOutput =
+          stream(featureStream, Objects.nonNull(featureId), encoder, propertyTransformations);
+      lastModified = getLastModified(queryInput);
+
+    } else {
       ResultReduced<byte[]> result = reduce(featureStream, true, encoder, propertyTransformations);
 
       bytes = result.reduced();
@@ -342,17 +347,13 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         etag = result.getETag().get();
         LOGGER.debug("ETAG {}", etag);
       }
-    } else {
-      streamingOutput =
-          stream(featureStream, Objects.nonNull(featureId), encoder, propertyTransformations);
-      lastModified = getLastModified(queryInput);
     }
 
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
     if (Objects.nonNull(response)) return response.build();
 
     // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched
-    // and OGC-numberReturned headers
+    // and OGC-numberReturned headers also when streaming the response
     // TODO For now remove the "next" links from the headers since at this point we don't know,
     // whether there will be a next page
 
@@ -364,12 +365,15 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                     .collect(ImmutableList.toImmutableList())
                 : null,
             HeaderCaching.of(lastModified, etag, queryInput),
-            targetCrs,
+            outputFormat.getContentCrs(targetCrs),
             HeaderContentDisposition.of(
                 String.format(
                     "%s.%s",
                     Objects.isNull(featureId) ? collectionId : featureId,
-                    outputFormat.getMediaType().fileExtension())))
+                    outputFormat.getMediaType().fileExtension())),
+            HeaderItems.of(
+                sendResponseAsStream ? Optional.empty() : outputFormat.getNumberMatched(bytes),
+                sendResponseAsStream ? Optional.empty() : outputFormat.getNumberReturned(bytes)))
         .entity(Objects.nonNull(bytes) ? bytes : streamingOutput)
         .build();
   }

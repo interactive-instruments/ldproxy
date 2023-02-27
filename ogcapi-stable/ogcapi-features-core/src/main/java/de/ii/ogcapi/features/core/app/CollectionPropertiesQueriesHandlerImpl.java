@@ -16,9 +16,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
-import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
 import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
@@ -106,16 +104,8 @@ public class CollectionPropertiesQueriesHandlerImpl implements CollectionPropert
                             requestContext.getMediaType())));
 
     checkCollectionId(api.getData(), collectionId);
-    List<ApiMediaType> alternateMediaTypes = requestContext.getAlternateMediaTypes();
 
-    List<Link> links =
-        new DefaultLinksGenerator()
-            .generateLinks(
-                requestContext.getUriCustomizer(),
-                requestContext.getMediaType(),
-                alternateMediaTypes,
-                i18n,
-                requestContext.getLanguage());
+    List<Link> links = getLinks(requestContext, i18n);
 
     Optional<String> schemaUri =
         links.stream()

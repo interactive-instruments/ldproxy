@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.geojson.app;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -36,6 +38,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -43,6 +46,7 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -139,6 +143,19 @@ public class FeaturesFormatGeoJson
         ImmutableValidationResult.builder().mode(apiValidation);
 
     Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(api.getData());
+
+    for (Map.Entry<String, FeatureSchema> entry : featureSchemas.entrySet()) {
+      if (entry
+          .getValue()
+          .getPrimaryGeometry()
+          .filter(SchemaBase::isSimpleFeatureGeometry)
+          .isEmpty()) {
+        builder.addStrictErrors(
+            String.format(
+                "Feature type '%s' does not have a primary geometry that is a Simple Feature geometry. GeoJSON only supports Simple Feature geometry types.",
+                entry.getKey()));
+      }
+    }
 
     // get GeoJSON configurations to process
     Map<String, GeoJsonConfiguration> geoJsonConfigurationMap =
@@ -310,5 +327,41 @@ public class FeaturesFormatGeoJson
             .build();
 
     return Optional.of(new FeatureEncoderGeoJson(transformationContextGeoJson, geoJsonWriters));
+  }
+
+  @Override
+  public boolean supportsHitsOnly() {
+    return true;
+  }
+
+  @Override
+  public Optional<Long> getNumberMatched(Object content) {
+    return getMetadata(content, "numberMatched");
+  }
+
+  @Override
+  public Optional<Long> getNumberReturned(Object content) {
+    return getMetadata(content, "numberReturned");
+  }
+
+  private Optional<Long> getMetadata(Object content, String key) {
+    if (content instanceof byte[]) {
+      JsonNode jsonNode;
+      ObjectMapper mapper = new ObjectMapper();
+      try {
+        jsonNode = mapper.readTree((byte[]) content);
+      } catch (IOException e) {
+        throw new IllegalStateException(
+            String.format("Could not parse GeoJSON object: %s", e.getMessage()), e);
+      }
+      if (jsonNode.isObject()) {
+        jsonNode = jsonNode.get(key);
+        if (jsonNode.isNumber()) {
+          return Optional.of(jsonNode.longValue());
+        }
+      }
+    }
+
+    return Optional.empty();
   }
 }

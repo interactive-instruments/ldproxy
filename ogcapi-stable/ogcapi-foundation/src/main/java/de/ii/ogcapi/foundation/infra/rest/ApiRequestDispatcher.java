@@ -187,6 +187,12 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
       @SuppressWarnings("unused") String entrypoint,
       String subPath,
       String method) {
+    if ("OPTIONS".equals(method)) {
+      return;
+    }
+    if (ogcApiEndpoint.shouldIgnoreParameters(apiData, subPath, method)) {
+      return;
+    }
     Set<String> parameters = requestContext.getUriInfo().getQueryParameters().keySet();
     List<OgcApiQueryParameter> knownParameters =
         ogcApiEndpoint.getParameters(apiData, subPath, method);

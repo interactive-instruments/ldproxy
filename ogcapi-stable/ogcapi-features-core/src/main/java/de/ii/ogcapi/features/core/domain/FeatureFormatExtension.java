@@ -13,6 +13,7 @@ import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Locale;
@@ -22,6 +23,10 @@ import java.util.Optional;
 public interface FeatureFormatExtension extends FormatExtension {
 
   ApiMediaType getCollectionMediaType();
+
+  default EpsgCrs getContentCrs(EpsgCrs targetCrs) {
+    return targetCrs;
+  }
 
   default ApiMediaTypeContent getFeatureContent(
       OgcApiDataV2 apiData, Optional<String> collectionId, boolean featureCollection) {
@@ -67,5 +72,17 @@ public interface FeatureFormatExtension extends FormatExtension {
     return formatTransformations
         .map(ft -> coreTransformations.map(ft::mergeInto).orElse(ft))
         .or(() -> coreTransformations);
+  }
+
+  default boolean supportsHitsOnly() {
+    return false;
+  }
+
+  default Optional<Long> getNumberMatched(Object content) {
+    return Optional.empty();
+  }
+
+  default Optional<Long> getNumberReturned(Object content) {
+    return Optional.empty();
   }
 }

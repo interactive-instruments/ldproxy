@@ -11,7 +11,7 @@ import com.github.mustachejava.util.DecoratedCollection;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.common.domain.OgcApiDatasetView;
-import de.ii.ogcapi.features.html.app.CesiumData;
+import de.ii.ogcapi.features.html.app.CesiumDataFeatures;
 import de.ii.ogcapi.features.html.app.FeatureHtml;
 import de.ii.ogcapi.features.html.app.FilterEditor;
 import de.ii.ogcapi.features.html.app.ImmutableFilterEditor.Builder;
@@ -178,7 +178,7 @@ public abstract class FeaturesView extends OgcApiDatasetView {
           .backgroundUrl(
               Optional.ofNullable(htmlConfig().getLeafletUrl())
                   .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
-          .attribution(getAttribution())
+          .attribution(getAttribution().replace("'", "\\'"))
           .bounds(Optional.ofNullable(bbox()))
           .data(
               new ImmutableSource.Builder()
@@ -201,7 +201,7 @@ public abstract class FeaturesView extends OgcApiDatasetView {
                           url.replace("{z}", "{TileMatrix}")
                               .replace("{y}", "{TileRow}")
                               .replace("{x}", "{TileCol}")))
-          .attribution(getAttribution())
+          .attribution(getAttribution().replace("'", "\\'"))
           .build();
     } else {
       LOGGER.error(
@@ -219,7 +219,9 @@ public abstract class FeaturesView extends OgcApiDatasetView {
           .backgroundUrl(
               Optional.ofNullable(htmlConfig().getLeafletUrl())
                   .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
-          .attribution(htmlConfig().getBasemapAttribution())
+          .attribution(
+              Optional.ofNullable(htmlConfig().getLeafletAttribution())
+                  .or(() -> Optional.ofNullable(htmlConfig().getBasemapAttribution())))
           .fields(
               queryables().entrySet().stream()
                   .sorted(Map.Entry.comparingByValue())
@@ -231,8 +233,16 @@ public abstract class FeaturesView extends OgcApiDatasetView {
   }
 
   @Value.Derived
-  public CesiumData cesiumData() {
-    return new CesiumData(features(), geometryProperties());
+  public CesiumDataFeatures cesiumData() {
+    return new CesiumDataFeatures(
+        features(),
+        uriBuilder()
+            .copy()
+            .removeParameters("f")
+            .ensureParameter("f", "glb")
+            // must be true as long as no terrain is used in the Cesium viewer
+            .ensureParameter("clampToEllipsoid", "true")
+            .toString());
   }
 
   @Value.Derived
