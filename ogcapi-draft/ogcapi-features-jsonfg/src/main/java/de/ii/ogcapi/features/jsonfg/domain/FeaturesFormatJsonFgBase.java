@@ -25,7 +25,6 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
-import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -157,30 +156,6 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
   }
 
   boolean includePrimaryGeometry(FeatureTransformationContext transformationContext);
-
-  static boolean primaryGeometryIsSimpleFeature(FeatureSchema schema) {
-    return schema.getProperties().stream()
-        .noneMatch(
-            p ->
-                p.isPrimaryGeometry()
-                    && SimpleFeatureGeometry.MULTI_POLYGON.equals(
-                        p.getGeometryType().orElse(SimpleFeatureGeometry.NONE))
-                    && p.getConstraints().map(SchemaConstraints::isComposite).orElse(false)
-                    && p.getConstraints().map(SchemaConstraints::isClosed).orElse(false));
-  }
-
-  static boolean hasSecondaryGeometry(FeatureSchema schema) {
-    return schema.getProperties().stream()
-        .filter(SchemaBase::isSecondaryGeometry)
-        .findFirst()
-        .map(property -> true)
-        .or(
-            () ->
-                schema.getProperties().stream()
-                    .map(FeaturesFormatJsonFgBase::hasSecondaryGeometry)
-                    .findFirst())
-        .orElse(false);
-  }
 
   static Optional<Integer> getGeometryDimension(FeatureSchema schema) {
     return schema.getProperties().stream()

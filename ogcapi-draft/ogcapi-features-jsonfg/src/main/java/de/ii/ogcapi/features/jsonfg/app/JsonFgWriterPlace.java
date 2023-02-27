@@ -13,7 +13,6 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
-import de.ii.ogcapi.features.jsonfg.domain.FeaturesFormatJsonFgBase;
 import de.ii.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
 import de.ii.ogcapi.features.jsonfg.domain.JsonFgGeometryType;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -68,10 +67,9 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
       throws IOException {
     isEnabled = isEnabled(context.encoding());
     hasSecondaryGeometry =
-        hasSecondaryGeometry(context.encoding().getFeatureSchema().orElseThrow());
+        context.encoding().getFeatureSchema().orElseThrow().getSecondaryGeometry().isPresent();
     primaryGeometryIsSimpleFeature =
-        FeaturesFormatJsonFgBase.primaryGeometryIsSimpleFeature(
-            context.encoding().getFeatureSchema().orElseThrow());
+        context.encoding().getFeatureSchema().orElseThrow().primaryGeometryIsSimpleFeature();
 
     // set 'place' to null, if the geometry is in WGS84 (in this case it is in "geometry")
     // and a simple feature geometry type unless a separate property is used for place

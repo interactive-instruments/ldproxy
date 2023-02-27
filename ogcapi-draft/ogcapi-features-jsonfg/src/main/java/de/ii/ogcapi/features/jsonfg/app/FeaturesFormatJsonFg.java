@@ -89,8 +89,8 @@ public class FeaturesFormatJsonFg implements FeaturesFormatJsonFgBase {
             .getFeatureSchema()
             .map(
                 schema ->
-                    FeaturesFormatJsonFgBase.primaryGeometryIsSimpleFeature(schema)
-                        && !FeaturesFormatJsonFgBase.hasSecondaryGeometry(schema))
+                    schema.primaryGeometryIsSimpleFeature()
+                        && schema.getSecondaryGeometry().isEmpty())
             .orElse(true);
   }
 }
