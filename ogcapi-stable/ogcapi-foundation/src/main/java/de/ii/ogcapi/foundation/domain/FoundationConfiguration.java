@@ -144,7 +144,7 @@ public interface FoundationConfiguration extends ExtensionConfiguration {
    * @langEn Description for resource *API Catalog*. May contain HTML elements.
    * @langDe Beschreibung für die API-Catalog-Ressource in diesem Deployment. HTML-Markup wird bei
    *     der HTML-Ausgabe aufbereitet.
-   * @default The following OGC APIs are available.
+   * @default The following OGC Web APIs are available.
    */
   @Nullable
   String getApiCatalogDescription();

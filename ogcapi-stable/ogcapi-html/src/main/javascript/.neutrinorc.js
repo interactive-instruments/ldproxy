@@ -94,6 +94,11 @@ module.exports = {
 
       //for cesium/c137
       neutrino.config.module
+        .rule("importmeta")
+        .test(new RegExp(`^.*?\\/\\.yarn\\/cache\\/c137.*?$`))
+        .use("im")
+        .loader(require.resolve('@open-wc/webpack-import-meta-loader'));
+      neutrino.config.module
         .rule("compile")
         .use("babel")
         .tap((options) => ({

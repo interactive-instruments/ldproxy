@@ -78,6 +78,23 @@ public interface EndpointExtension extends ApiExtension {
     return ImmutableList.of();
   }
 
+  default boolean shouldIgnoreParameters(
+      OgcApiDataV2 apiData, String requestSubPath, String method) {
+    ApiEndpointDefinition apiDef = getDefinition(apiData);
+    if (apiDef.getResources().isEmpty()) {
+      return false;
+    }
+
+    OgcApiResource resource = apiDef.getResource(apiDef.getPath(requestSubPath)).orElse(null);
+    if (resource != null) {
+      ApiOperation operation = apiDef.getOperation(resource, method).orElse(null);
+      if (operation != null && operation.getSuccess().isPresent()) {
+        return operation.ignoreUnknownQueryParameters();
+      }
+    }
+    return false;
+  }
+
   default ImmutableList<OgcApiPathParameter> getPathParameters(
       ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath) {
     return extensionRegistry.getExtensionsForType(OgcApiPathParameter.class).stream()
