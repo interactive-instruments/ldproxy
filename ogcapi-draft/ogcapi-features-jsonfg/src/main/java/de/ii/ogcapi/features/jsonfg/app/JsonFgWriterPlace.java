@@ -69,7 +69,13 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
     hasSecondaryGeometry =
         context.encoding().getFeatureSchema().orElseThrow().getSecondaryGeometry().isPresent();
     primaryGeometryIsSimpleFeature =
-        context.encoding().getFeatureSchema().orElseThrow().primaryGeometryIsSimpleFeature();
+        context
+            .encoding()
+            .getFeatureSchema()
+            .orElseThrow()
+            .getPrimaryGeometry()
+            .filter(SchemaBase::isSimpleFeatureGeometry)
+            .isPresent();
 
     // set 'place' to null, if the geometry is in WGS84 (in this case it is in "geometry")
     // and a simple feature geometry type unless a separate property is used for place

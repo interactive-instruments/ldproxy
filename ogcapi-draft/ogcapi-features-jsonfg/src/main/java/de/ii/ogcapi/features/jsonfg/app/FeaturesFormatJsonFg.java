@@ -17,6 +17,7 @@ import de.ii.ogcapi.features.jsonfg.domain.FeaturesFormatJsonFgBase;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
 import javax.inject.Inject;
@@ -89,7 +90,10 @@ public class FeaturesFormatJsonFg implements FeaturesFormatJsonFgBase {
             .getFeatureSchema()
             .map(
                 schema ->
-                    schema.primaryGeometryIsSimpleFeature()
+                    schema
+                            .getPrimaryGeometry()
+                            .filter(SchemaBase::isSimpleFeatureGeometry)
+                            .isPresent()
                         && schema.getSecondaryGeometry().isEmpty())
             .orElse(true);
   }

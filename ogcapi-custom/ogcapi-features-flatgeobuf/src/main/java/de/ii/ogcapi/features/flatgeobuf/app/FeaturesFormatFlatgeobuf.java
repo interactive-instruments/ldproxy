@@ -167,7 +167,11 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
     Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(api.getData());
 
     for (Map.Entry<String, FeatureSchema> entry : featureSchemas.entrySet()) {
-      if (!entry.getValue().primaryGeometryIsSimpleFeature()) {
+      if (entry
+          .getValue()
+          .getPrimaryGeometry()
+          .filter(SchemaBase::isSimpleFeatureGeometry)
+          .isEmpty()) {
         builder.addStrictErrors(
             String.format(
                 "Feature type '%s' does not have a primary geometry that is a Simple Feature geometry. FlatGeobuf only supports Simple Feature geometry types.",
