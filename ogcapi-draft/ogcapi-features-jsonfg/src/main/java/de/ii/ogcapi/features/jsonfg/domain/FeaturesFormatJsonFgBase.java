@@ -191,15 +191,14 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
       ObjectMapper mapper = new ObjectMapper();
       try {
         jsonNode = mapper.readTree((byte[]) content);
-      } catch (IOException e) {
-        throw new IllegalStateException(
-            String.format("Could not parse GeoJSON object: %s", e.getMessage()), e);
-      }
-      if (jsonNode.isObject()) {
-        jsonNode = jsonNode.get(key);
-        if (jsonNode.isNumber()) {
-          return Optional.of(jsonNode.longValue());
+        if (Objects.nonNull(jsonNode) && jsonNode.isObject()) {
+          jsonNode = jsonNode.get(key);
+          if (Objects.nonNull(jsonNode) && jsonNode.isNumber()) {
+            return Optional.of(jsonNode.longValue());
+          }
         }
+      } catch (IOException e) {
+        // ignore
       }
     }
 
