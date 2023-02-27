@@ -87,7 +87,10 @@ public class FeaturesFormatJsonFg implements FeaturesFormatJsonFgBase {
     return transformationContext.getTargetCrs().equals(transformationContext.getDefaultCrs())
         && transformationContext
             .getFeatureSchema()
-            .map(FeaturesFormatJsonFgBase::hasSimpleFeatureGeometryType)
+            .map(
+                schema ->
+                    FeaturesFormatJsonFgBase.primaryGeometryIsSimpleFeature(schema)
+                        && !FeaturesFormatJsonFgBase.hasSecondaryGeometry(schema))
             .orElse(true);
   }
 }

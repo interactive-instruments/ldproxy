@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @AutoMultiBind
 public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
@@ -159,7 +158,7 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
 
   boolean includePrimaryGeometry(FeatureTransformationContext transformationContext);
 
-  static boolean hasSimpleFeatureGeometryType(FeatureSchema schema) {
+  static boolean primaryGeometryIsSimpleFeature(FeatureSchema schema) {
     return schema.getProperties().stream()
         .noneMatch(
             p ->
@@ -170,23 +169,30 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
                     && p.getConstraints().map(SchemaConstraints::isClosed).orElse(false));
   }
 
+  static boolean hasSecondaryGeometry(FeatureSchema schema) {
+    return schema.getProperties().stream()
+        .filter(SchemaBase::isSecondaryGeometry)
+        .findFirst()
+        .map(property -> true)
+        .or(
+            () ->
+                schema.getProperties().stream()
+                    .map(FeaturesFormatJsonFgBase::hasSecondaryGeometry)
+                    .findFirst())
+        .orElse(false);
+  }
+
   static Optional<Integer> getGeometryDimension(FeatureSchema schema) {
-    List<Integer> dimensions =
-        schema.getProperties().stream()
-            .filter(SchemaBase::isPrimaryGeometry)
-            .map(
-                p ->
-                    JsonFgGeometryType.getGeometryDimension(
-                        p.getGeometryType().orElse(SimpleFeatureGeometry.NONE),
-                        p.getConstraints().map(SchemaConstraints::isComposite).orElse(false),
-                        p.getConstraints().map(SchemaConstraints::isClosed).orElse(false)))
-            .flatMap(Optional::stream)
-            .distinct()
-            .collect(Collectors.toUnmodifiableList());
-    if (dimensions.size() != 1) {
-      return Optional.empty();
-    }
-    return Optional.of(dimensions.get(0));
+    return schema.getProperties().stream()
+        .filter(p -> p.isPrimaryGeometry() || p.isSecondaryGeometry())
+        .map(
+            p ->
+                JsonFgGeometryType.getGeometryDimension(
+                    p.getGeometryType().orElse(SimpleFeatureGeometry.NONE),
+                    p.getConstraints().map(SchemaConstraints::isComposite).orElse(false),
+                    p.getConstraints().map(SchemaConstraints::isClosed).orElse(false)))
+        .flatMap(Optional::stream)
+        .max(Comparator.naturalOrder());
   }
 
   @Override
