@@ -143,6 +143,15 @@ public class FeaturesFormatGeoJson
 
     Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(api.getData());
 
+    for (Map.Entry<String, FeatureSchema> entry : featureSchemas.entrySet()) {
+      if (!entry.getValue().primaryGeometryIsSimpleFeature()) {
+        builder.addStrictErrors(
+            String.format(
+                "Feature type '%s' does not have a primary geometry that is a Simple Feature geometry. GeoJSON only supports Simple Feature geometry types.",
+                entry.getKey()));
+      }
+    }
+
     // get GeoJSON configurations to process
     Map<String, GeoJsonConfiguration> geoJsonConfigurationMap =
         api.getData().getCollections().entrySet().stream()
