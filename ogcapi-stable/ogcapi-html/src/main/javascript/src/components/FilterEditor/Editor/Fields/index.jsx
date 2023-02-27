@@ -13,6 +13,7 @@ const FieldFilter = ({
   code,
   titleForFilter,
   integerKeys,
+  booleanProperty,
 }) => {
   const [field, setField] = useState("");
   const [value, setValue] = useState("");
@@ -73,6 +74,7 @@ const FieldFilter = ({
               code={code}
               integerKeys={integerKeys}
               enumKeys={enumKeys}
+              booleanProperty={booleanProperty}
             />
           </FormGroup>
         </Col>
@@ -106,6 +108,7 @@ const FieldFilter = ({
                   changedValue={changedValue}
                   enumKeys={enumKeys}
                   integerKeys={integerKeys}
+                  booleanProperty={booleanProperty}
                 />
               </FormGroup>
             </Col>
@@ -148,6 +151,7 @@ FieldFilter.propTypes = {
   code: PropTypes.object.isRequired,
   titleForFilter: PropTypes.objectOf(PropTypes.string).isRequired,
   integerKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
+  booleanProperty: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 FieldFilter.defaultProps = {};

@@ -14420,12 +14420,12 @@ fsevents@^1.2.7:
   linkType: hard
 
 "react-onclickoutside@npm:^6.5.0":
-  version: 6.12.0
-  resolution: "react-onclickoutside@npm:6.12.0"
+  version: 6.12.2
+  resolution: "react-onclickoutside@npm:6.12.2"
   peerDependencies:
-    react: ^15.5.x || ^16.x || ^17.x
-    react-dom: ^15.5.x || ^16.x || ^17.x
-  checksum: f3d2f2fd0aaf05baaccc572895c6381bbbb01fd748a7e228f424b0f610af957fc3df748d7fefa09a88afdaedb09ffd563de04bc0614acb7a5e4031538251084b
+    react: ^15.5.x || ^16.x || ^17.x || ^18.x
+    react-dom: ^15.5.x || ^16.x || ^17.x || ^18.x
+  checksum: a0c7f4fbcf84e00d50b3fc18208e5fdc4e97b17daf910f176659e079038a560d2e299955804d20e6ca2bf375404d03fdb865dc7f5f85cab3e60b493be4375e77
   languageName: node
   linkType: hard
 

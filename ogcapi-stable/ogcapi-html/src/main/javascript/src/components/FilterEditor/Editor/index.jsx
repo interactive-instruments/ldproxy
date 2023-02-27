@@ -22,6 +22,7 @@ const EditorBody = ({
   end,
   temporal,
   integerKeys,
+  booleanProperty,
 }) => {
   const [showMap, setShowMap] = useState(false);
   const [bounds, setBounds] = useState(spatial);
@@ -47,15 +48,25 @@ const EditorBody = ({
               code={code}
               titleForFilter={titleForFilter}
               integerKeys={integerKeys}
+              booleanProperty={booleanProperty}
             />
           )}
-          {spatial && spatial.length > 0 && <SpatialFilter bounds={bounds} onChange={onAdd} />}
+          {spatial && spatial.length > 0 && (
+            <SpatialFilter
+              bounds={bounds}
+              onChange={onAdd}
+              filters={filters}
+              deleteFilters={deleteFilters}
+            />
+          )}
           {temporal && Object.keys(temporal).length > 0 && (
             <TemporalFilter
               start={start}
               end={end}
               filter={filters.datetime ? filters.datetime.value : null}
               onChange={onAdd}
+              filters={filters}
+              deleteFilters={deleteFilters}
             />
           )}
         </Col>
@@ -93,6 +104,7 @@ EditorBody.propTypes = {
   end: PropTypes.number.isRequired,
   temporal: PropTypes.objectOf(PropTypes.number).isRequired,
   integerKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
+  booleanProperty: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 EditorBody.defaultProps = {

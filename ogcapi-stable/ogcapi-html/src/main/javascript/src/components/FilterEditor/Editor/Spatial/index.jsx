@@ -1,11 +1,16 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-import { Button, Form, FormGroup, Input, Row, Col } from "reactstrap";
+import { Button, ButtonGroup, Form, FormGroup, Input, Row, Col } from "reactstrap";
 
 export { default as MapSelect } from "./MapSelect";
 
-const SpatialFilter = ({ bounds, onChange }) => {
+const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
+  const bBoxFilter = Object.keys(filters).filter(
+    (key) => filters[key].remove === false && key === "bbox" && key !== "datetime"
+  );
+  const hasBboxInFilters = bBoxFilter.length > 0;
+
   const save = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -76,11 +81,36 @@ const SpatialFilter = ({ bounds, onChange }) => {
             />
           </FormGroup>
         </Col>
-        <Col md="2">
-          <Button color="primary" size="sm" onClick={save}>
-            Add
-          </Button>
-        </Col>
+        {hasBboxInFilters ? (
+          <Row>
+            <Col md="2">
+              <ButtonGroup>
+                <Button
+                  color="primary"
+                  size="sm"
+                  style={{ width: "40px", height: "30px", left: "15px" }}
+                  onClick={save}
+                >
+                  {"\u2713"}
+                </Button>
+                <Button
+                  color="danger"
+                  size="sm"
+                  style={{ width: "40px", height: "30px", left: "15px" }}
+                  onClick={deleteFilters("bbox")}
+                >
+                  {"\u2716"}
+                </Button>
+              </ButtonGroup>
+            </Col>
+          </Row>
+        ) : (
+          <Col md="2">
+            <Button color="primary" size="sm" onClick={save}>
+              Add
+            </Button>
+          </Col>
+        )}
       </Row>
     </Form>
   );
@@ -91,6 +121,9 @@ SpatialFilter.displayName = "SpatialFilter";
 SpatialFilter.propTypes = {
   bounds: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
   onChange: PropTypes.func.isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
+  filters: PropTypes.object.isRequired,
+  deleteFilters: PropTypes.func.isRequired,
 };
 
 SpatialFilter.defaultProps = {

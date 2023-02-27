@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-import { Input } from "reactstrap";
+import { FormGroup, Label, Input } from "reactstrap";
 
 const FilterValueField = ({
   code,
@@ -11,76 +11,122 @@ const FilterValueField = ({
   setChangedValue,
   enumKeys,
   integerKeys,
+  booleanProperty,
 }) => {
-  return (
-    <>
-      {
-        // eslint-disable-next-line no-nested-ternary
-        enumKeys.includes(filterKey) ? (
-          <Input
-            type="select"
-            size="sm"
-            name="value"
-            className="mr-2"
-            defaultValue={filters[filterKey].value}
-            onChange={(e) =>
-              setChangedValue({
-                ...changedValue,
-                [filterKey]: {
-                  filterKey,
-                  value: e.target.value,
-                },
-              })
-            }
-          >
-            {Object.keys(code[filterKey]).map((item) => (
-              <option value={code[filterKey][item]} key={item}>
-                {code[filterKey][item]}
-              </option>
-            ))}
-          </Input>
-        ) : integerKeys.includes(filterKey) ? (
-          <Input
-            type="number"
-            size="sm"
-            name="value2"
-            id={`input-${filterKey}`}
-            placeholder={filters[filterKey].value}
-            defaultValue={filters[filterKey].value}
-            className="mr-2"
-            onChange={(e) =>
-              setChangedValue({
-                ...changedValue,
-                [filterKey]: {
-                  filterKey,
-                  value: e.target.value,
-                },
-              })
-            }
-          />
-        ) : (
-          <Input
-            type="text"
-            size="sm"
-            name="selectedValue"
-            id={`input-${filterKey}`}
-            className="mr-2"
-            placeholder={filters[filterKey].value}
-            defaultValue={filters[filterKey].value}
-            onChange={(e) =>
-              setChangedValue({
-                ...changedValue,
-                [filterKey]: {
-                  filterKey,
-                  value: e.target.value,
-                },
-              })
-            }
-          />
-        )
-      }
-    </>
-  );
+  switch (true) {
+    case enumKeys.includes(filterKey):
+      return (
+        <Input
+          type="select"
+          size="sm"
+          name="value"
+          className="mr-2"
+          defaultValue={filters[filterKey].value}
+          onChange={(e) =>
+            setChangedValue({
+              ...changedValue,
+              [filterKey]: {
+                filterKey,
+                value: e.target.value,
+              },
+            })
+          }
+        >
+          {Object.keys(code[filterKey]).map((item) => (
+            <option value={code[filterKey][item]} key={item}>
+              {code[filterKey][item]}
+            </option>
+          ))}
+        </Input>
+      );
+    case integerKeys.includes(filterKey):
+      return (
+        <Input
+          type="number"
+          size="sm"
+          name="value2"
+          id={`input-${filterKey}`}
+          placeholder={filters[filterKey].value}
+          defaultValue={filters[filterKey].value}
+          className="mr-2"
+          onChange={(e) =>
+            setChangedValue({
+              ...changedValue,
+              [filterKey]: {
+                filterKey,
+                value: e.target.value,
+              },
+            })
+          }
+        />
+      );
+    case booleanProperty.includes(filterKey):
+      return (
+        <FormGroup tag="fieldset">
+          <FormGroup check inline>
+            <Label check inline>
+              <Input
+                type="radio"
+                name="value"
+                value="true"
+                defaultChecked={filters[filterKey].value === "true"}
+                onChange={(e) =>
+                  setChangedValue({
+                    ...changedValue,
+                    [filterKey]: {
+                      filterKey,
+                      value: e.target.value,
+                    },
+                  })
+                }
+              />{" "}
+              True
+            </Label>
+          </FormGroup>
+          <FormGroup check inline>
+            <Label check>
+              <Input
+                type="radio"
+                name="value"
+                value="false"
+                defaultChecked={filters[filterKey].value === "false"}
+                onChange={(e) =>
+                  setChangedValue({
+                    ...changedValue,
+                    [filterKey]: {
+                      filterKey,
+                      value: e.target.value,
+                    },
+                  })
+                }
+              />{" "}
+              False
+            </Label>
+          </FormGroup>
+        </FormGroup>
+      );
+    default:
+      return (
+        <Input
+          type="text"
+          size="sm"
+          name="selectedValue"
+          id={`input-${filterKey}`}
+          className="mr-2"
+          placeholder={filters[filterKey].value}
+          defaultValue={filters[filterKey].value}
+          onChange={(e) =>
+            setChangedValue({
+              ...changedValue,
+              [filterKey]: {
+                filterKey,
+                value: e.target.value,
+              },
+            })
+          }
+        />
+      );
+  }
 };
 
 export default FilterValueField;
@@ -95,6 +141,7 @@ FilterValueField.propTypes = {
   setChangedValue: PropTypes.func.isRequired,
   enumKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
   integerKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
+  booleanProperty: PropTypes.arrayOf(PropTypes.string).isRequired,
 };
 
 FilterValueField.defaultProps = {};

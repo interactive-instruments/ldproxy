@@ -3,7 +3,7 @@ export const getBaseUrl = () => {
   if (process.env.NODE_ENV !== "production") {
     console.log("DEV");
     baseUrl = new URL(
-      "https://demo.ldproxy.net/strassen/collections/abschnitteaeste/items?limit=10&offset=10"
+      "https://demo.ldproxy.net/strassen/collections/nullpunkte/items?limit=10&offset=10"
     );
     // slash at the end should also work
     /* baseUrl = new URL(
@@ -17,7 +17,8 @@ export const extractFields = (obj) => {
   const fields = {};
   const code = {};
   const integerKeys = [];
-  if (obj) {
+  const booleanProperty = [];
+  if (obj && obj.properties) {
     // eslint-disable-next-line
     for (const key in obj.properties) {
       if (obj.properties[key].title) {
@@ -29,10 +30,13 @@ export const extractFields = (obj) => {
       if (obj.properties[key].type === "integer") {
         integerKeys.push(key);
       }
+      if (obj.properties[key].type === "boolean") {
+        booleanProperty.push(key);
+      }
     }
   }
 
-  return { fields, code, integerKeys };
+  return { fields, code, integerKeys, booleanProperty };
 };
 
 export const extractInterval = (obj) => {
@@ -49,7 +53,7 @@ export const extractInterval = (obj) => {
     return { start: startingUnix, end: endingUnix };
   };
 
-  if (obj) {
+  if (obj && obj.extent) {
     const { temporal: temporalExtent } = obj.extent;
 
     if (temporalExtent) {
@@ -66,7 +70,7 @@ export const extractInterval = (obj) => {
 export const extractSpatial = (obj) => {
   let spatial = [];
 
-  if (obj) {
+  if (obj && obj.extent) {
     const { spatial: spatialExtent } = obj.extent;
 
     if (spatialExtent) {

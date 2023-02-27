@@ -42,7 +42,12 @@ const formatDate = (date) => {
   return moment.utc(date).format();
 };
 
-const TemporalFilter = ({ start, end, filter, onChange }) => {
+const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }) => {
+  const dateTimeFilter = Object.keys(filters).filter(
+    (key) => filters[key].remove === false && key === "datetime"
+  );
+  const hasDateTimeInFilters = dateTimeFilter.length > 0;
+
   const extent = filter
     ? fromFilterString(filter)
     : {
@@ -145,11 +150,36 @@ const TemporalFilter = ({ start, end, filter, onChange }) => {
             onChange={(next) => setPeriod(next)}
           />
         )}
-        <Col md="2" className="d-flex align-items-end mb-3">
-          <Button color="primary" size="sm" onClick={save}>
-            Add
-          </Button>
-        </Col>
+        {hasDateTimeInFilters ? (
+          <Row>
+            <Col md="2" className="d-flex align-items-end mb-3">
+              <ButtonGroup>
+                <Button
+                  color="primary"
+                  size="sm"
+                  style={{ width: "40px", height: "30px", left: "15px" }}
+                  onClick={save}
+                >
+                  {"\u2713"}
+                </Button>
+                <Button
+                  color="danger"
+                  size="sm"
+                  style={{ width: "40px", height: "30px", left: "15px" }}
+                  onClick={deleteFilters("datetime")}
+                >
+                  {"\u2716"}
+                </Button>
+              </ButtonGroup>
+            </Col>
+          </Row>
+        ) : (
+          <Col md="2" className="d-flex align-items-end mb-3">
+            <Button color="primary" size="sm" onClick={save}>
+              Add
+            </Button>
+          </Col>
+        )}
       </Row>
     </Form>
   );
@@ -162,6 +192,9 @@ TemporalFilter.propTypes = {
   end: PropTypes.number,
   filter: PropTypes.string,
   onChange: PropTypes.func.isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
+  filters: PropTypes.object.isRequired,
+  deleteFilters: PropTypes.func.isRequired,
 };
 
 TemporalFilter.defaultProps = {

@@ -52,7 +52,10 @@ const FilterEditor = ({ backgroundUrl, attribution }) => {
     error: errorProperties,
   } = useApiInfo(urlProperties);
 
-  const { fields, code, integerKeys } = useMemo(() => extractFields(properties), [properties]);
+  const { fields, code, integerKeys, booleanProperty } = useMemo(
+    () => extractFields(properties),
+    [properties]
+  );
 
   const [isOpen, setOpen] = useState(false);
 
@@ -125,7 +128,6 @@ const FilterEditor = ({ backgroundUrl, attribution }) => {
     window.location.search = qs.stringify(query, {
       addQueryPrefix: true,
     });
-    console.log(filters, newFilters, fields);
   };
 
   const deleteFilters = (field) => () => {
@@ -185,6 +187,7 @@ const FilterEditor = ({ backgroundUrl, attribution }) => {
           end={end}
           setFilters={setFilters}
           integerKeys={integerKeys}
+          booleanProperty={booleanProperty}
         />
       ) : (
         <>
