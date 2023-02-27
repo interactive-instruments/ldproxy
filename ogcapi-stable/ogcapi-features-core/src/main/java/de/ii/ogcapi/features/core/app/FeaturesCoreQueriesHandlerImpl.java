@@ -371,9 +371,10 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                     "%s.%s",
                     Objects.isNull(featureId) ? collectionId : featureId,
                     outputFormat.getMediaType().fileExtension())),
-            HeaderItems.of(
-                sendResponseAsStream ? Optional.empty() : outputFormat.getNumberMatched(bytes),
-                sendResponseAsStream ? Optional.empty() : outputFormat.getNumberReturned(bytes)))
+            Objects.isNull(featureId) && !sendResponseAsStream
+                ? HeaderItems.of(
+                    outputFormat.getNumberMatched(bytes), outputFormat.getNumberReturned(bytes))
+                : HeaderItems.of())
         .entity(Objects.nonNull(bytes) ? bytes : streamingOutput)
         .build();
   }

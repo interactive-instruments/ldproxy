@@ -22,4 +22,8 @@ public interface HeaderItems {
         .numberReturned(numberReturned)
         .build();
   }
+
+  static HeaderItems of() {
+    return new ImmutableHeaderItems.Builder().build();
+  }
 }
