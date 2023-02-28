@@ -25,7 +25,6 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
-import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -39,7 +38,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @AutoMultiBind
 public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
@@ -159,34 +157,17 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
 
   boolean includePrimaryGeometry(FeatureTransformationContext transformationContext);
 
-  static boolean hasSimpleFeatureGeometryType(FeatureSchema schema) {
-    return schema.getProperties().stream()
-        .noneMatch(
-            p ->
-                p.isPrimaryGeometry()
-                    && SimpleFeatureGeometry.MULTI_POLYGON.equals(
-                        p.getGeometryType().orElse(SimpleFeatureGeometry.NONE))
-                    && p.getConstraints().map(SchemaConstraints::isComposite).orElse(false)
-                    && p.getConstraints().map(SchemaConstraints::isClosed).orElse(false));
-  }
-
   static Optional<Integer> getGeometryDimension(FeatureSchema schema) {
-    List<Integer> dimensions =
-        schema.getProperties().stream()
-            .filter(SchemaBase::isPrimaryGeometry)
-            .map(
-                p ->
-                    JsonFgGeometryType.getGeometryDimension(
-                        p.getGeometryType().orElse(SimpleFeatureGeometry.NONE),
-                        p.getConstraints().map(SchemaConstraints::isComposite).orElse(false),
-                        p.getConstraints().map(SchemaConstraints::isClosed).orElse(false)))
-            .flatMap(Optional::stream)
-            .distinct()
-            .collect(Collectors.toUnmodifiableList());
-    if (dimensions.size() != 1) {
-      return Optional.empty();
-    }
-    return Optional.of(dimensions.get(0));
+    return schema.getProperties().stream()
+        .filter(p -> p.isPrimaryGeometry() || p.isSecondaryGeometry())
+        .map(
+            p ->
+                JsonFgGeometryType.getGeometryDimension(
+                    p.getGeometryType().orElse(SimpleFeatureGeometry.NONE),
+                    p.getConstraints().map(SchemaConstraints::isComposite).orElse(false),
+                    p.getConstraints().map(SchemaConstraints::isClosed).orElse(false)))
+        .flatMap(Optional::stream)
+        .max(Comparator.naturalOrder());
   }
 
   @Override
@@ -210,15 +191,14 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
       ObjectMapper mapper = new ObjectMapper();
       try {
         jsonNode = mapper.readTree((byte[]) content);
-      } catch (IOException e) {
-        throw new IllegalStateException(
-            String.format("Could not parse GeoJSON object: %s", e.getMessage()), e);
-      }
-      if (jsonNode.isObject()) {
-        jsonNode = jsonNode.get(key);
-        if (jsonNode.isNumber()) {
-          return Optional.of(jsonNode.longValue());
+        if (Objects.nonNull(jsonNode) && jsonNode.isObject()) {
+          jsonNode = jsonNode.get(key);
+          if (Objects.nonNull(jsonNode) && jsonNode.isNumber()) {
+            return Optional.of(jsonNode.longValue());
+          }
         }
+      } catch (IOException e) {
+        // ignore
       }
     }
 

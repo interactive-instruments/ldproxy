@@ -406,7 +406,7 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
           }
         }
       } catch (IOException e) {
-        return Optional.empty();
+        // ignore
       }
     }
     return Optional.empty();

@@ -38,6 +38,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -142,6 +143,19 @@ public class FeaturesFormatGeoJson
         ImmutableValidationResult.builder().mode(apiValidation);
 
     Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(api.getData());
+
+    for (Map.Entry<String, FeatureSchema> entry : featureSchemas.entrySet()) {
+      if (entry
+          .getValue()
+          .getPrimaryGeometry()
+          .filter(SchemaBase::isSimpleFeatureGeometry)
+          .isEmpty()) {
+        builder.addStrictErrors(
+            String.format(
+                "Feature type '%s' does not have a primary geometry that is a Simple Feature geometry. GeoJSON only supports Simple Feature geometry types.",
+                entry.getKey()));
+      }
+    }
 
     // get GeoJSON configurations to process
     Map<String, GeoJsonConfiguration> geoJsonConfigurationMap =
@@ -336,15 +350,14 @@ public class FeaturesFormatGeoJson
       ObjectMapper mapper = new ObjectMapper();
       try {
         jsonNode = mapper.readTree((byte[]) content);
-      } catch (IOException e) {
-        throw new IllegalStateException(
-            String.format("Could not parse GeoJSON object: %s", e.getMessage()), e);
-      }
-      if (jsonNode.isObject()) {
-        jsonNode = jsonNode.get(key);
-        if (jsonNode.isNumber()) {
-          return Optional.of(jsonNode.longValue());
+        if (Objects.nonNull(jsonNode) && jsonNode.isObject()) {
+          jsonNode = jsonNode.get(key);
+          if (Objects.nonNull(jsonNode) && jsonNode.isNumber()) {
+            return Optional.of(jsonNode.longValue());
+          }
         }
+      } catch (IOException e) {
+        // ignore
       }
     }
 
