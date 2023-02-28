@@ -328,7 +328,14 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
                     .from(result)
                     .enums(
                         values.stream()
-                            .map(val -> Integer.valueOf(val))
+                            .flatMap(
+                                val -> {
+                                  try {
+                                    return Stream.of(Integer.valueOf(val));
+                                  } catch (Throwable e) {
+                                    return Stream.empty();
+                                  }
+                                })
                             .sorted()
                             .collect(Collectors.toList()))
                     .build();
