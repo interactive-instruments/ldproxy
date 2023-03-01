@@ -82,28 +82,21 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
           </FormGroup>
         </Col>
         {hasBboxInFilters ? (
-          <Row>
-            <Col md="2">
-              <ButtonGroup>
-                <Button
-                  color="primary"
-                  size="sm"
-                  style={{ width: "40px", height: "30px", left: "15px" }}
-                  onClick={save}
-                >
-                  {"\u2713"}
-                </Button>
-                <Button
-                  color="danger"
-                  size="sm"
-                  style={{ width: "40px", height: "30px", left: "15px" }}
-                  onClick={deleteFilters("bbox")}
-                >
-                  {"\u2716"}
-                </Button>
-              </ButtonGroup>
-            </Col>
-          </Row>
+          <Col md="2">
+            <ButtonGroup>
+              <Button color="primary" size="sm" style={{ minWidth: "40px" }} onClick={save}>
+                {"\u2713"}
+              </Button>
+              <Button
+                color="danger"
+                size="sm"
+                style={{ minWidth: "40px" }}
+                onClick={deleteFilters("bbox")}
+              >
+                {"\u2716"}
+              </Button>
+            </ButtonGroup>
+          </Col>
         ) : (
           <Col md="2">
             <Button color="primary" size="sm" onClick={save}>

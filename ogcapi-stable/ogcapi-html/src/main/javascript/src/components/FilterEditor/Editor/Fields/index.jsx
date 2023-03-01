@@ -128,7 +128,7 @@ const FieldFilter = ({
                 <Button
                   color="primary"
                   size="sm"
-                  style={{ width: "40px", height: "30px" }}
+                  style={{ minWidth: "40px" }}
                   onClick={overwriteFilters(key)}
                   disabled={
                     changedValue[key]
@@ -141,7 +141,7 @@ const FieldFilter = ({
                 <Button
                   color="danger"
                   size="sm"
-                  style={{ width: "40px", height: "30px" }}
+                  style={{ minWidth: "40px" }}
                   onClick={deleteFilters(key)}
                 >
                   {"\u2716"}
