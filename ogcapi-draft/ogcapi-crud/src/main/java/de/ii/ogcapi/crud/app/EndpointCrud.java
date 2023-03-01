@@ -75,7 +75,6 @@ import org.slf4j.LoggerFactory;
  * @path collections/{collectionId}/items, collections/{collectionId}/items/{featureId}
  * @langEn Create, Replace, Update and Delete features.
  * @langDe Erzeugen, Ersetzen, Aktualisieren und Löschen von Features.
- * @ref:formats {@link de.ii.ogcapi.features.core.domain.FeatureFormatExtension}
  */
 @Singleton
 @AutoBind

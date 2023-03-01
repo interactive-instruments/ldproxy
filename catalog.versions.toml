@@ -1,5 +1,5 @@
 [versions]
-xtraplatform-build = "4.6.2"
+xtraplatform-build = "4.6.4"
 spotless = "6.15.0"
 node = "3.5.1"
 

@@ -16,11 +16,11 @@ import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.features.domain.SchemaDeriver;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,18 +31,21 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
   private final Optional<String> schemaUri;
   private final String label;
   private final Optional<String> description;
+  private final boolean useCodelistKeys;
 
   public SchemaDeriverJsonSchema(
       VERSION version,
       Optional<String> schemaUri,
       String label,
       Optional<String> description,
-      List<Codelist> codelists) {
+      List<Codelist> codelists,
+      boolean useCodelistKeys) {
     super(codelists);
     this.version = version;
     this.schemaUri = schemaUri;
     this.label = label;
     this.description = description;
+    this.useCodelistKeys = useCodelistKeys;
   }
 
   @Override
@@ -314,7 +317,10 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
             property.isArray()
                 ? property.getValueType().orElse(SchemaBase.Type.UNKNOWN) != SchemaBase.Type.INTEGER
                 : property.getType() != SchemaBase.Type.INTEGER;
-        Set<String> values = codelist.get().getData().getEntries().keySet();
+        Collection<String> values =
+            useCodelistKeys
+                ? codelist.get().getData().getEntries().keySet()
+                : codelist.get().getData().getEntries().values();
         result =
             string
                 ? ImmutableJsonSchemaString.builder().from(result).enums(values).build()
@@ -322,7 +328,14 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
                     .from(result)
                     .enums(
                         values.stream()
-                            .map(val -> Integer.valueOf(val))
+                            .flatMap(
+                                val -> {
+                                  try {
+                                    return Stream.of(Integer.valueOf(val));
+                                  } catch (Throwable e) {
+                                    return Stream.empty();
+                                  }
+                                })
                             .sorted()
                             .collect(Collectors.toList()))
                     .build();

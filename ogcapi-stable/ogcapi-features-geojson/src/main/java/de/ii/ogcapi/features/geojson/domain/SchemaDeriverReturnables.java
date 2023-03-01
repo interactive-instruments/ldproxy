@@ -37,7 +37,7 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
       String label,
       Optional<String> description,
       List<Codelist> codelists) {
-    super(version, schemaUri, label, description, codelists);
+    super(version, schemaUri, label, description, codelists, true);
   }
 
   @Override
