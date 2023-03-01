@@ -281,15 +281,16 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
 
   /**
    * @langEn List of enabled stylesheet encodings. Supported are Mapbox Style (`Mapbox`), OGC SLD
-   *     1.0 (`SLD10`), OGC SLD 1.1 (`SLD11`) and HTML (`HTML`). HTML is an output only encoding for
-   *     web maps that requires a *Mapbox Style* stylesheet. For details see conformance classes
-   *     *Mapbox Style*, *OGC SLD 1.0*, *OGC SLD 1.1* und *HTML*.
+   *     1.0 (`SLD10`), OGC SLD 1.1 (`SLD11`), QGIS QML ("QML"), ArcGIS Layer ("lyr" und "lyrx"), 3D
+   *     Tiles ("3D Tiles") and HTML (`HTML`). HTML is an output only encoding for web maps that
+   *     requires a *Mapbox Style* stylesheet. For details see conformance classes *Mapbox Style*,
+   *     *OGC SLD 1.0*, *OGC SLD 1.1* und *HTML*.
    * @langDe Steuert, welche Formate für Stylesheets unterstützt werden sollen. Zur Verfügung stehen
    *     Mapbox Style ("Mapbox"), OGC SLD 1.0 ("SLD10"), OGC SLD 1.1 ("SLD11"), QGIS QML ("QML"),
-   *     ArcGIS Layer ("lyr" und "lyrx") und HTML ("HTML"). HTML ist ein reines Ausgabeformat im
-   *     Sinne einer Webmap und wird nur für Styles unterstützt, für die ein Stylesheet im Format
-   *     Mapbox Style verfügbar ist. Siehe die Konformitätsklassen "Mapbox Style", "OGC SLD 1.0",
-   *     "OGC SLD 1.1" und "HTML".
+   *     ArcGIS Layer ("lyr" und "lyrx"), 3D Tiles ("3D Tiles") und HTML ("HTML"). HTML ist ein
+   *     reines Ausgabeformat im Sinne einer Webmap und wird nur für Styles unterstützt, für die ein
+   *     Stylesheet im Format Mapbox Style verfügbar ist. Siehe die Konformitätsklassen "Mapbox
+   *     Style", "OGC SLD 1.0", "OGC SLD 1.1" und "HTML".
    * @default [ "Mapbox", "HTML" ]
    */
   List<String> getStyleEncodings();
