@@ -17,13 +17,21 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ogcapi.styles.domain.StyleFormatExtension;
+import de.ii.ogcapi.styles.domain.StyleRepository;
 import de.ii.ogcapi.tiles3d.domain.Format3dTilesTileset;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.ogcapi.tiles3d.domain.Tileset;
+import de.ii.xtraplatform.services.domain.ServicesContext;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -39,12 +47,17 @@ public class Format3DTilesTilesetHtml implements Format3dTilesTileset {
           .parameter("html")
           .build();
 
-  private final Schema<?> schema;
   private static final String SCHEMA_REF = "#/components/schemas/htmlSchema";
+  private final Schema<?> schema;
+  private final URI servicesUri;
+  private final StyleRepository styleRepository;
 
   @Inject
-  public Format3DTilesTilesetHtml() {
-    schema = new StringSchema().example("<html>...</html>");
+  public Format3DTilesTilesetHtml(
+      ServicesContext servicesContext, StyleRepository styleRepository) {
+    this.servicesUri = servicesContext.getUri();
+    this.styleRepository = styleRepository;
+    this.schema = new StringSchema().example("<html>...</html>");
   }
 
   @Override
@@ -87,12 +100,45 @@ public class Format3DTilesTilesetHtml implements Format3dTilesTileset {
       OgcApi api,
       ApiRequestContext requestContext) {
 
+    URICustomizer uriCustomizer =
+        new URICustomizer(servicesUri)
+            .ensureLastPathSegments(api.getData().getSubPath().toArray(String[]::new));
+    String serviceUrl = uriCustomizer.toString();
+    Tiles3dConfiguration tiles3dConfig =
+        api.getData().getExtension(Tiles3dConfiguration.class, collectionId).orElseThrow();
+    HtmlConfiguration htmlConfig =
+        api.getData().getExtension(HtmlConfiguration.class, collectionId).orElseThrow();
+    String styleId = tiles3dConfig.getStyle();
+    if (Objects.isNull(styleId) || "DEFAULT".equals(styleId)) {
+      styleId = htmlConfig.getDefaultStyle();
+    }
+
+    Optional<StyleFormatExtension> format =
+        styleRepository
+            .getStyleFormatStream(api.getData(), Optional.ofNullable(collectionId))
+            .filter(f -> "3dtiles".equals(f.getFileExtension()))
+            .findFirst();
+    Optional<String> style =
+        Objects.isNull(styleId) || "NONE".equals(styleId) || format.isEmpty()
+            ? Optional.empty()
+            : Optional.of(
+                new String(
+                    styleRepository
+                        .getStylesheet(
+                            api.getData(),
+                            Optional.ofNullable(collectionId),
+                            styleId,
+                            format.get(),
+                            requestContext)
+                        .getContent(),
+                    StandardCharsets.UTF_8));
     return ImmutableTilesetView.builder()
         .apiData(api.getData())
         .collectionId(collectionId)
         .tileset(tileset)
         .urlPrefix(requestContext.getStaticUrlPrefix())
-        .htmlConfig(api.getData().getExtension(HtmlConfiguration.class).orElseThrow())
+        .style(style)
+        .htmlConfig(htmlConfig)
         .rawLinks(links)
         .build();
   }

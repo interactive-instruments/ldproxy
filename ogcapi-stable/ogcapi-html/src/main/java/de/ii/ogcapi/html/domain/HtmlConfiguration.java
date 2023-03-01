@@ -10,6 +10,7 @@ package de.ii.ogcapi.html.domain;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.xtraplatform.base.domain.LogContext;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -262,20 +263,31 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
   }
 
   default String getStyle(
-      Optional<String> requestedStyle, Optional<String> collectionId, String serviceUrl) {
-    String styleUrl =
-        requestedStyle
-            .map(
-                s ->
-                    s.equals("DEFAULT") ? Objects.requireNonNullElse(getDefaultStyle(), "NONE") : s)
-            .filter(s -> !s.equals("NONE"))
-            .map(
-                s ->
-                    collectionId.isEmpty()
-                        ? String.format("%s/styles/%s?f=mbs", serviceUrl, s)
-                        : String.format(
-                            "%s/collections/%s/styles/%s?f=mbs", serviceUrl, collectionId.get(), s))
-            .orElse(null);
+      Optional<String> requestedStyle,
+      Optional<String> collectionId,
+      String serviceUrl,
+      MapClient.Type mapClientType) {
+    String f =
+        mapClientType == Type.MAP_LIBRE ? "mbs" : mapClientType == Type.CESIUM ? "3dtiles" : null;
+    String styleUrl = null;
+    if (Objects.nonNull(f)) {
+      styleUrl =
+          requestedStyle
+              .map(
+                  s ->
+                      s.equals("DEFAULT")
+                          ? Objects.requireNonNullElse(getDefaultStyle(), "NONE")
+                          : s)
+              .filter(s -> !s.equals("NONE"))
+              .map(
+                  s ->
+                      collectionId.isEmpty()
+                          ? String.format("%s/styles/%s?f=%s", serviceUrl, s, f)
+                          : String.format(
+                              "%s/collections/%s/styles/%s?f=%s",
+                              serviceUrl, collectionId.get(), s, f))
+              .orElse(null);
+    }
 
     // Check that the style exists
     if (Objects.nonNull(styleUrl)) {
@@ -289,7 +301,7 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
         http.setRequestMethod("HEAD");
         if (http.getResponseCode() == 404 && collectionId.isPresent()) {
           // Try fallback to the dataset style, if we have a collection style
-          return getStyle(requestedStyle, Optional.empty(), serviceUrl);
+          return getStyle(requestedStyle, Optional.empty(), serviceUrl, mapClientType);
         } else if (http.getResponseCode() != 200) {
           LOGGER.error(
               "Could not access style '{}', falling back to style 'NONE'. Response code: '{}'. Message: {}",
