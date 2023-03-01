@@ -12,6 +12,7 @@ const FilterValueField = ({
   enumKeys,
   integerKeys,
   booleanProperty,
+  overwriteFilters,
 }) => {
   switch (true) {
     case enumKeys.includes(filterKey):
@@ -46,7 +47,6 @@ const FilterValueField = ({
           size="sm"
           name="value2"
           id={`input-${filterKey}`}
-          placeholder={filters[filterKey].value}
           defaultValue={filters[filterKey].value}
           className="mr-2"
           onChange={(e) =>
@@ -58,6 +58,17 @@ const FilterValueField = ({
               },
             })
           }
+          onFocus={(e) => e.target.select()}
+          onKeyPress={(e) => {
+            if (
+              e.key === "Enter" &&
+              changedValue[filterKey] &&
+              changedValue[filterKey].value &&
+              changedValue[filterKey].value !== filters[filterKey].value
+            ) {
+              overwriteFilters(filterKey);
+            }
+          }}
         />
       );
     case booleanProperty.includes(filterKey):
@@ -113,7 +124,6 @@ const FilterValueField = ({
           name="selectedValue"
           id={`input-${filterKey}`}
           className="mr-2"
-          placeholder={filters[filterKey].value}
           defaultValue={filters[filterKey].value}
           onChange={(e) =>
             setChangedValue({
@@ -124,6 +134,17 @@ const FilterValueField = ({
               },
             })
           }
+          onFocus={(e) => e.target.select()}
+          onKeyPress={(e) => {
+            if (
+              e.key === "Enter" &&
+              changedValue[filterKey] &&
+              changedValue[filterKey].value &&
+              changedValue[filterKey].value !== filters[filterKey].value
+            ) {
+              overwriteFilters(filterKey);
+            }
+          }}
         />
       );
   }
@@ -142,6 +163,7 @@ FilterValueField.propTypes = {
   enumKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
   integerKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
   booleanProperty: PropTypes.arrayOf(PropTypes.string).isRequired,
+  overwriteFilters: PropTypes.func.isRequired,
 };
 
 FilterValueField.defaultProps = {};

@@ -11,6 +11,8 @@ const ValueField = ({
   integerKeys,
   enumKeys,
   booleanProperty,
+  save,
+  disabled,
 }) => {
   switch (true) {
     case enumKeys.includes(valueKey):
@@ -22,6 +24,7 @@ const ValueField = ({
           className="mr-2"
           value={value}
           onChange={saveValue}
+          disabled={disabled}
         >
           <option value="" className="d-none">
             none
@@ -42,7 +45,13 @@ const ValueField = ({
           placeholder="Enter Number"
           className="mr-2"
           value={value}
+          disabled={disabled}
           onChange={saveValue}
+          onKeyPress={(event) => {
+            if (event.key === "Enter" && valueKey !== "" && value !== "") {
+              save(event);
+            }
+          }}
         />
       );
     case booleanProperty.includes(valueKey):
@@ -54,6 +63,7 @@ const ValueField = ({
                 type="radio"
                 name="value"
                 value="true"
+                disabled={disabled}
                 checked={value === "true"}
                 onChange={saveValue}
               />{" "}
@@ -66,6 +76,7 @@ const ValueField = ({
                 type="radio"
                 name="value"
                 value="false"
+                disabled={disabled}
                 checked={value === "false"}
                 onChange={saveValue}
               />{" "}
@@ -84,8 +95,14 @@ const ValueField = ({
             name="value"
             placeholder="filter pattern"
             className="mr-2"
+            disabled={disabled}
             value={value}
             onChange={saveValue}
+            onKeyPress={(event) => {
+              if (event.key === "Enter" && valueKey !== "" && value !== "") {
+                save(event);
+              }
+            }}
           />
           <FormText>Use * as wildcard</FormText>
         </>
@@ -104,6 +121,8 @@ ValueField.propTypes = {
   value: PropTypes.string.isRequired,
   saveValue: PropTypes.func.isRequired,
   booleanProperty: PropTypes.arrayOf(PropTypes.string).isRequired,
+  save: PropTypes.func.isRequired,
+  disabled: PropTypes.bool.isRequired,
 };
 
 ValueField.defaultProps = {};

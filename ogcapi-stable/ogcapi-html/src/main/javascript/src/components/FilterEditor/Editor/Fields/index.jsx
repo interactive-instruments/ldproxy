@@ -21,7 +21,9 @@ const FieldFilter = ({
 
   const selectField = (event) => setField(event.option ? event.option.value : event.target.value);
 
-  const saveValue = (event) => setValue(event.target.value);
+  const saveValue = (event) => {
+    setValue(event.target.value);
+  };
 
   const filtersToMap = Object.keys(filters).filter(
     (key) => filters[key].remove === false && key !== "bbox" && key !== "datetime"
@@ -34,6 +36,12 @@ const FieldFilter = ({
 
     onAdd(field, value);
     setValue("");
+    setField("");
+  };
+
+  const noOp = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
   };
 
   const overwriteFilters = (item) => () => {
@@ -41,7 +49,7 @@ const FieldFilter = ({
     onAdd(item, updatedFilterValue[item].value);
   };
   return (
-    <Form onSubmit={save}>
+    <Form onSubmit={noOp}>
       <p className="text-muted text-uppercase">field</p>
       <Row>
         <Col md="5">
@@ -75,11 +83,13 @@ const FieldFilter = ({
               integerKeys={integerKeys}
               enumKeys={enumKeys}
               booleanProperty={booleanProperty}
+              save={save}
+              disabled={field === ""}
             />
           </FormGroup>
         </Col>
         <Col md="2">
-          <Button color="primary" size="sm" disabled={field === ""} onClick={save}>
+          <Button color="primary" size="sm" disabled={field === "" || value === ""} onClick={save}>
             Add
           </Button>
         </Col>
@@ -109,6 +119,7 @@ const FieldFilter = ({
                   enumKeys={enumKeys}
                   integerKeys={integerKeys}
                   booleanProperty={booleanProperty}
+                  overwriteFilters={overwriteFilters(key)}
                 />
               </FormGroup>
             </Col>
@@ -119,6 +130,11 @@ const FieldFilter = ({
                   size="sm"
                   style={{ width: "40px", height: "30px" }}
                   onClick={overwriteFilters(key)}
+                  disabled={
+                    changedValue[key]
+                      ? !changedValue[key].value || changedValue[key].value === filters[key].value
+                      : true
+                  }
                 >
                   {"\u2713"}
                 </Button>

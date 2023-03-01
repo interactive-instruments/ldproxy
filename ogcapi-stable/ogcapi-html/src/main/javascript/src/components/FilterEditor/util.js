@@ -1,14 +1,9 @@
 export const getBaseUrl = () => {
   let baseUrl = new URL(window.location.href);
   if (process.env.NODE_ENV !== "production") {
-    console.log("DEV");
     baseUrl = new URL(
       "https://demo.ldproxy.net/strassen/collections/nullpunkte/items?limit=10&offset=10"
     );
-    // slash at the end should also work
-    /* baseUrl = new URL(
-  "https://demo.ldproxy.net/strassen/collections/abschnitteaeste/items/?limit=10&offset=10"
-  ); */
   }
   return baseUrl;
 };
