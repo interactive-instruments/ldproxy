@@ -209,7 +209,7 @@ import de.ii.xtraplatform.docs.DocVar;
                 value = {
                   @DocStep(type = Step.METHODS),
                   @DocStep(type = Step.ANNOTATIONS),
-                  @DocStep(type = Step.FILTER, params = "ISIN:GET,POST"),
+                  @DocStep(type = Step.FILTER, params = "ISIN:GET,POST,PUT,DELETE,PATCH"),
                   @DocStep(
                       type = Step.COLLECT,
                       params = {"DISTINCT", "SORTED", "SEPARATED:, "})
