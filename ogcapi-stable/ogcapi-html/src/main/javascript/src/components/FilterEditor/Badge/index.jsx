@@ -3,7 +3,7 @@ import React from "react";
 
 import { Button } from "reactstrap";
 
-const FilterBadge = ({ field, value, isEditable, isAdd, isRemove }) => {
+const FilterBadge = ({ field, value, isAdd, isRemove }) => {
   const label = `${field}=${value}`;
 
   const button = (
@@ -12,7 +12,7 @@ const FilterBadge = ({ field, value, isEditable, isAdd, isRemove }) => {
       color={isAdd ? "success" : isRemove ? "danger" : "primary"}
       disabled
       size="sm"
-      className={isEditable ? "py-0" : "py-0 mr-1 my-1"}
+      className="py-0 mr-1 my-1"
       style={{ opacity: "1" }}
     >
       {label}
