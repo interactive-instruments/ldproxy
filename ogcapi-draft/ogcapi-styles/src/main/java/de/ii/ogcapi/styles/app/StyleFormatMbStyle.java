@@ -27,6 +27,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.styles.domain.ImmutableMbStyleStylesheet;
 import de.ii.ogcapi.styles.domain.MbStyleLayer;
+import de.ii.ogcapi.styles.domain.MbStyleLayer.LayerType;
 import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleLayer;
@@ -240,23 +241,12 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         throw new IllegalArgumentException("The Mapbox Style document has no sources.");
       }
       List<String> ids = new ArrayList<>();
-      List<String> types =
-          ImmutableList.of(
-              "fill",
-              "line",
-              "symbol",
-              "circle",
-              "heatmap",
-              "fill-extrusion",
-              "raster",
-              "hillshade",
-              "background");
       for (MbStyleLayer layer : stylesheet.getLayers()) {
         String id = layer.getId();
         if (Objects.isNull(id))
           throw new IllegalArgumentException("A layer in the Mapbox Style document has no id.");
 
-        String type = layer.getType();
+        LayerType type = layer.getType();
         if (Objects.isNull(type))
           throw new IllegalArgumentException(
               String.format("Layer '%s' in the Mapbox Style document has no type.", id));
@@ -266,12 +256,6 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
               String.format("Multiple layers in the Mapbox Style document have id '%s'.", id));
         }
         ids.add(id);
-
-        if (!types.contains(type)) {
-          throw new IllegalArgumentException(
-              String.format(
-                  "Layer '%s' in the Mapbox Style document has an invalid type: '%s'", id, type));
-        }
       }
     }
 

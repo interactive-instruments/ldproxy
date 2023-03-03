@@ -22,7 +22,7 @@ public abstract class MbStyleGeojsonSource extends MbStyleSource {
   public abstract Optional<Object> getData();
 
   @Value.Default
-  public Integer getMaxzoom() {
+  public Number getMaxzoom() {
     return 18;
   }
 
@@ -39,7 +39,11 @@ public abstract class MbStyleGeojsonSource extends MbStyleSource {
   public abstract Optional<Integer>
       getClusterMaxZoom(); // { return Optional.of(Integer.valueOf(getMaxzoom()-1)); }
 
+  public abstract Optional<Integer> getClusterMinPoints(); // { return Optional.of(2); }
+
   public abstract Optional<Object> getClusterProperties();
+
+  public abstract Optional<Object> getFilter(); // { return Optional.empty(); }
 
   public abstract Optional<Boolean> getLineMetrics(); // { return Optional.of(false); }
 
