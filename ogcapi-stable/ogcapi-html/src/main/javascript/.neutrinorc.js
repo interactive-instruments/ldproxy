@@ -34,9 +34,7 @@ fs.readdirSync(path.join(__dirname, "src/styles")).forEach(
         const favicon = Object.keys(compilation.assets).find(
           (key) => key.indexOf("assets/favicon.") === 0
         );
-        const files = favicon
-          ? { ...assets, favicon: `${options.publicPath}/${favicon}` }
-          : assets;
+        const files = favicon ? { ...assets, favicon: `${options.publicPath}/${favicon}` } : assets;
 
         return {
           compilation: compilation,
@@ -55,11 +53,16 @@ module.exports = {
   options: {
     root: __dirname,
     output: "../../../build/generated/src/main/resources/de/ii/ogcapi/html",
-    mains: mains,
+    mains: process.env.APP === undefined ? mains : undefined,
   },
   use: [
     airbnb(),
-    react(),
+    react({
+      html: {
+        title: `FOO`,
+      },
+      publicPath: "",
+    }),
     mocha(),
     xtraplatform({
       lib: false,
@@ -85,13 +88,9 @@ module.exports = {
         },
       });
 
-      neutrino.config.module
-        .rule("font")
-        .test(/\.(eot|ttf|woff|woff2|ico)(\?v=\d+\.\d+\.\d+)?$/);
+      neutrino.config.module.rule("font").test(/\.(eot|ttf|woff|woff2|ico)(\?v=\d+\.\d+\.\d+)?$/);
 
-      neutrino.config.performance
-        .maxEntrypointSize(2048000)
-        .maxAssetSize(1024000);
+      neutrino.config.performance.maxEntrypointSize(2048000).maxAssetSize(1024000);
 
       //for cesium/c137
       neutrino.config.module
@@ -104,14 +103,16 @@ module.exports = {
         .use("babel")
         .tap((options) => ({
           ...options,
-          plugins: [
-            ...options.plugins,
-            "@babel/plugin-proposal-nullish-coalescing-operator",
-          ],
+          plugins: [...options.plugins, "@babel/plugin-proposal-nullish-coalescing-operator"],
         }));
       neutrino.config.module
         .rule("compile")
         .include.add(new RegExp(`^.*?\\/\\.yarn\\/cache\\/c137.*?$`)); //TODO: add cache in addition to $$virtual in @xtraplatform/neutrino, use modulePrefixes
+
+      //for dev server
+      neutrino.config
+        .plugin("env")
+        .use(require.resolve("webpack/lib/EnvironmentPlugin"), [{ APP: process.env.APP }]);
     },
   ],
 };
