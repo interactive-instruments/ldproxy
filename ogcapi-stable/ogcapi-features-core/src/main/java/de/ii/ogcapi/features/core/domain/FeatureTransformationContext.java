@@ -104,11 +104,6 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
   }
 
   @Value.Default
-  default boolean isPropertyOnly() {
-    return false;
-  }
-
-  @Value.Default
   default Map<String, List<String>> getFields() {
     return ImmutableMap.of("*", ImmutableList.of("*"));
   }
