@@ -237,11 +237,11 @@ public interface Tiles3dConfiguration extends ExtensionConfiguration {
   /**
    * @langEn A style in the style repository of the collection to be used in maps with 3D Tiles.
    *     With `DEFAULT` the `defaultStyle` from [module HTML](html.md) is used. With `NONE` the
-   *     default Cesium style is used. The style must be available in the 3D Tiles Styling format.
+   *     default 3D Tiles style is used. The style must be available in the 3D Tiles Styling format.
    *     If no style is found, 'NONE' is used.
    * @langDe Ein Style im Style-Repository der Collection, der in Karten mit den 3D Tiles verwendet
    *     werden soll. Bei `DEFAULT` wird der `defaultStyle` aus [Modul HTML](html.md) verwendet. Bei
-   *     `NONE` wird der Standard-Style von Cesium verwendet. Der Style muss im Format 3D Tiles
+   *     `NONE` wird der Standard-Style von 3D Tiles verwendet. Der Style muss im Format 3D Tiles
    *     Styling verfügbar sein. Wird kein Style gefunden, wird `NONE` verwendet.
    * @default DEFAULT
    */

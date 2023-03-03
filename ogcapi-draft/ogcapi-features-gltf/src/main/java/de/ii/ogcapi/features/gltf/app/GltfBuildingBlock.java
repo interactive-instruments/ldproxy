@@ -35,8 +35,8 @@ import javax.inject.Singleton;
  *     werden die Objektarten `Building` und `BuildingPart`. Das Modul *Features - glTF* bietet
  *     Unterstützung für glTF 2.0 als Feature-Kodierung. Unterstützt werden die CityGML-Objektarten
  *     `Building` und `BuildingPart`.
- *     <p>Dieses Modul unterstützt die glTF 2.0 Erweiterung [KHR_mesh_quantization]
- *     (https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_mesh_quantization)
+ *     <p>Dieses Modul unterstützt die glTF 2.0 Erweiterung
+ *     [KHR_mesh_quantization](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_mesh_quantization)
  *     für eine kompakte Kodierung von Vertices und Normalen. Die Verwendung dieser Erweiterung wird
  *     empfohlen und ist standardmäßig aktiviert.
  *     <p>Jede Feature-Eigenschaft, die im glTF-Modell enthalten ist, aktiviert die Unterstützung

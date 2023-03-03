@@ -18,7 +18,7 @@ public abstract class Tiles3dStylesheet {
 
   public static final String SCHEMA_REF = "#/components/schemas/3dTilesStylesheet";
 
-  // TODO support 'defines'
+  // 'defines' is not yet supported
 
   // oneOf Tiles3dConditions, String, Boolean
   @Value.Default

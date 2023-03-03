@@ -23,9 +23,16 @@ import org.immutables.value.Value;
  *     <p>The stylesheets, style metadata and style information all reside as files in the data
  *     directory:
  *     <p><code>
- * - Stylesheets reside under the relative path `styles/{apiId}/{styleId}.{ext}`, where
- *     `{ext}` is either `mbs` (Mapbox), `sld10` (SLD 1.0) or `sld11` (SLD 1.1). The URIs (Sprites,
+ * - Stylesheets reside under the relative path `styles/{apiId}/{styleId}.{ext}`. The URIs (Sprites,
  *     Glyphs, Source.url, Source.tiles) used in Mapbox styles links might contain `{serviceUrl}`.
+ *     The file extension `{ext}` must have the following value depending on the style encoding:
+ *   - Mapbox Style: `mbs`
+ *   - OGC SLD 1.0: `sld10`
+ *   - OGC SLD 1.1: `sld11`
+ *   - QGIS QML: `qml`
+ *   - ArcGIS Desktop: `lyr`
+ *   - ArcGIS Pro: `lyrx`
+ *   - 3D Tiles Styling: `3dtiles`
  * - Style metadata reside under the relative path `styles/{apiId}/{styleId}.metadata`. Links
  *     might be templates (by setting `templated` to `true`) containing `{serviceUrl}`.
  * - Style information reside under the relative path `style-infos/{apiId}/{collectionId}.json`. Links
@@ -46,7 +53,8 @@ import org.immutables.value.Value;
  *   - OGC SLD 1.1: `sld11`
  *   - QGIS QML: `qml`
  *   - ArcGIS Desktop: `lyr`
- *   - ArcGIS Pro: `lyrxì
+ *   - ArcGIS Pro: `lyrx`
+ *   - 3D Tiles Styling: `3dtiles`
  * - Die Style-Metadaten müssen unter dem relativen
  *     Pfad `api-resources/styles/{apiId}/{styleId}.metadata` liegen. Links können dabei Templates
  *     sein (d.h. `templated` ist `true`) und als Parameter `{serviceUrl}` enthalten.

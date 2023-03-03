@@ -185,16 +185,18 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
 
   /**
    * @langEn A default style in the style repository that is used in maps in the HTML representation
-   *     of the features and tiles resources. If `NONE`, a simple wireframe style will be used with
-   *     OpenStreetMap as a basemap. If the value is not `NONE`, the API landing page (or the
-   *     collection page) will also contain a link to a web map with the style for the dataset (or
-   *     the collection).
+   *     of the feature and tile resources. If `NONE`, a simple wireframe style will be used with
+   *     OpenStreetMap as a basemap, if the map client is MapLibre; for Cesium, the default 3D Tiles
+   *     styling will be used with the basemap. If the value is not `NONE` and the map client is
+   *     MapLibre, the API landing page (or the collection page) will also contain a link to a web
+   *     map with the style for the dataset (or the collection).
    * @langDe Ein Style im Style-Repository, der standardmäßig in Karten mit Feature- und
    *     Tile-Ressourcen verwendet werden soll. Bei `NONE` wird ein einfacher Style mit
-   *     OpenStreetMap als Basiskarte verwendet. Wenn der Wert nicht `NONE` ist, enthält die
-   *     "Landing Page" bzw. die "Feature Collection" auch einen Link zu einer Webkarte mit dem Stil
-   *     für den Datensatz bzw. die Feature Collection. Der Style sollte alle Daten abdecken und
-   *     muss im Format Mapbox Style verfügbar sein.
+   *     OpenStreetMap als Basiskarte verwendet, wenn MapLibre der Map-Client ist; bei Cesium wird
+   *     das Standard-3D-Tiles-Styling verwendet. Wenn der Wert nicht `NONE` ist und MapLibre der
+   *     Map_Client ist, enthält die "Landing Page" bzw. die "Feature Collection" auch einen Link zu
+   *     einer Webkarte mit dem Stil für den Datensatz bzw. die Feature Collection. Der Style sollte
+   *     alle Daten abdecken und muss im Format Mapbox Style verfügbar sein.
    * @default NONE
    */
   @Nullable
