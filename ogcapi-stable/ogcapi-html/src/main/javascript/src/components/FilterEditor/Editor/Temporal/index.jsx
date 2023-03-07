@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import qs from "qs";
-
+import { subDays, addDays, startOfToday } from "date-fns";
 import { Button, ButtonGroup, Form, Input, Row, Col } from "reactstrap";
 import DatetimeRangePicker from "react-datetime-range-picker";
 import Datetime from "react-datetime";
 import moment from "moment";
-import SliderFunction from "./sliderFunction";
+import SliderInstant from "./sliderInstant";
+import SliderPeriod from "./sliderPeriod";
 
 const fromFilterString = (filter) => {
   if (filter.indexOf("/") === -1) {
@@ -44,6 +45,12 @@ const formatDate = (date) => {
 };
 
 const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }) => {
+  const min = subDays(start, 1);
+  const max = addDays(end, 1);
+
+  const minInstant = start;
+  const maxInstant = startOfToday();
+
   const dateTimeFilter = Object.keys(filters).filter(
     (key) => filters[key].remove === false && key === "datetime"
   );
@@ -62,6 +69,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
     end: new Date(extent.end ? extent.end : extent.start),
   });
   const [isInstant, setIsInstant] = useState(extent.end === null);
+  console.log("Initial Period:", period);
 
   useEffect(() => {
     const parsedQuery = qs.parse(window.location.search, {
@@ -175,14 +183,28 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
           </Col>
         )}
       </Row>
-      {extent.start && (
+      {extent.start && isInstant ? (
         <Col md="10">
-          <SliderFunction
+          <SliderInstant
+            instant={instant}
+            period={period}
+            isInstant={isInstant}
+            setInstant={setInstant}
+            setPeriod={setPeriod}
+            minInstant={minInstant}
+            maxInstant={maxInstant}
+          />
+        </Col>
+      ) : (
+        <Col md="10">
+          <SliderPeriod
             Instant={instant}
             period={period}
             isInstant={isInstant}
             setInstant={setInstant}
             setPeriod={setPeriod}
+            min={min}
+            max={max}
           />
         </Col>
       )}

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Slider, Rail, Handles, Tracks, Ticks } from "react-compound-slider";
 import {
   subDays,
-  startOfToday,
+  differenceInYears,
   addDays,
   format,
   differenceInMonths,
@@ -18,43 +18,47 @@ const sliderStyle = {
   width: "100%",
 };
 
-const formatTick = (ms) => {
-  return format(new Date(ms), "MMM dd");
-};
+function SliderPeriod({ isInstant, period, setPeriod, min, max }) {
+  const [updated, setUpdated] = useState([period.start, period.end]);
 
-function SliderFunction({ instant, isInstant, period, setInstant, setPeriod }) {
-  const [updated, setUpdated] = useState(period.start, period.end);
-  const min = period.start;
-  const max = !isInstant ? addDays(period.end, 1) : startOfToday();
-  console.log(updated);
-  /*
-  useEffect(() => {
-    if (period.end) {
-      setUpdated(period.start, period.end);
+  const formatTick = (ms) => {
+    let dateFormat;
+    if (differenceInYears(max, min) > 7) {
+      dateFormat = format(new Date(ms), "yyyy");
+    } else if (differenceInYears(max, min) > 3) {
+      dateFormat = format(new Date(ms), "MMM yyyy");
+    } else if (differenceInMonths(max, min) > 7) {
+      dateFormat = format(new Date(ms), "MMM");
+    } else if (differenceInHours(max, min) > 24) {
+      dateFormat = format(new Date(ms), "MMM dd");
+    } else if (differenceInHours(max, min) < 24) {
+      dateFormat = format(new Date(ms), "ddd HH:mm:ss");
     }
-  }, [period.start, period.end]);
-'/
-  /*
-  const dayDifference = differenceInHours(max, min);
-  max = !isInstant && dayDifference < 1 ? addDays(period.end, 1) : period.end;
-  min = !isInstant && dayDifference < 1 ? subDays(period.start, 1) : period.start;
- */
+    return dateFormat;
+  };
 
   const dateTicks = scaleTime()
     .domain([min, max])
     .ticks(8)
     .map((d) => +d);
 
-  const onUpdate = ([ms]) => {
-    setUpdated(new Date(ms));
-    setInstant(new Date(ms));
-    // isInstant ? setInstant(new Date(ms)) : setPeriod(new Date(ms));
+  const onUpdate = (updatedValues) => {
+    setPeriod((prevPeriod) => {
+      return {
+        ...prevPeriod,
+        start: new Date(updatedValues[0]),
+        end: new Date(updatedValues[1]),
+      };
+    });
+    setUpdated([new Date(updatedValues[0]), new Date(updatedValues[1])]);
   };
 
   const renderDateTime = (date, header) => {
     const diffInMonths = differenceInMonths(max, min);
-    const formattedDate =
-      diffInMonths > 1 ? format(date, "dd.MM.yyyy") : format(date, "dd.MM.yyyy HH:mm:ss");
+    const formattedDateStart =
+      diffInMonths > 1 ? format(date[0], "dd.MM.yyyy") : format(date[0], "dd.MM.yyyy HH:mm:ss");
+    const formattedDateEnd =
+      diffInMonths > 1 ? format(date[1], "dd.MM.yyyy") : format(date[1], "dd.MM.yyyy HH:mm:ss");
 
     return (
       <div
@@ -66,7 +70,9 @@ function SliderFunction({ instant, isInstant, period, setInstant, setPeriod }) {
         }}
       >
         <b>{header}:</b>
-        <div style={{ fontSize: 12 }}>{formattedDate}</div>
+        <div style={{ fontSize: 12 }}>
+          {formattedDateStart} -- {formattedDateEnd}
+        </div>
       </div>
     );
   };
@@ -78,10 +84,11 @@ function SliderFunction({ instant, isInstant, period, setInstant, setPeriod }) {
         <Slider
           mode={1}
           step={halfHour}
+          utc
           domain={[+min, +max]}
           rootStyle={sliderStyle}
           onUpdate={onUpdate}
-          values={[+updated]}
+          values={[+updated[0], +updated[1]]}
         >
           <Rail>{({ getRailProps }) => <SliderRail getRailProps={getRailProps} />}</Rail>
           <Handles>
@@ -98,7 +105,7 @@ function SliderFunction({ instant, isInstant, period, setInstant, setPeriod }) {
               </div>
             )}
           </Handles>
-          <Tracks right={false}>
+          <Tracks left={false} right={false}>
             {({ tracks, getTrackProps }) => (
               <div>
                 {tracks.map(({ id, source, target }) => (
@@ -123,4 +130,4 @@ function SliderFunction({ instant, isInstant, period, setInstant, setPeriod }) {
   );
 }
 
-export default SliderFunction;
+export default SliderPeriod;
