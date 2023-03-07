@@ -12,7 +12,7 @@ const railOuterStyle = {
   height: 40,
   transform: "translate(0%, -50%)",
   cursor: "pointer",
-  // border: "1px solid grey"
+  border: "1px solid white",
 };
 
 const railInnerStyle = {
