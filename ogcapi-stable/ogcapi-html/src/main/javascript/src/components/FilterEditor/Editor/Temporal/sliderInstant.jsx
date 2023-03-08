@@ -1,13 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import PropTypes from "prop-types";
+import moment from "moment";
 import { Slider, Rail, Handles, Tracks, Ticks } from "react-compound-slider";
-import {
-  differenceInYears,
-  startOfToday,
-  addDays,
-  format,
-  differenceInMonths,
-  differenceInHours,
-} from "date-fns";
+import { differenceInYears, format, differenceInMonths, differenceInHours } from "date-fns";
 import { scaleTime } from "d3-scale";
 import { SliderRail, Handle, Track, Tick } from "./components";
 
@@ -18,7 +13,7 @@ const sliderStyle = {
   width: "100%",
 };
 
-function SliderInstant({ minInstant, maxInstant, isInstant, period, setInstant, setPeriod }) {
+function SliderInstant({ minInstant, maxInstant, isInstant, period, setInstant }) {
   const [updated, setUpdated] = useState(period.start);
 
   const formatTick = (ms) => {
@@ -32,7 +27,7 @@ function SliderInstant({ minInstant, maxInstant, isInstant, period, setInstant, 
     } else if (differenceInHours(maxInstant, minInstant) > 24) {
       dateFormat = format(new Date(ms), "MMM dd");
     } else if (differenceInHours(maxInstant, minInstant) < 24) {
-      dateFormat = format(new Date(ms), "ddd HH:mm:ss");
+      dateFormat = format(new Date(ms), "HH:mm:ss");
     }
     return dateFormat;
   };
@@ -44,12 +39,10 @@ function SliderInstant({ minInstant, maxInstant, isInstant, period, setInstant, 
 
   const onUpdate = ([ms]) => {
     setUpdated(new Date(ms));
-    setInstant(new Date(ms));
-    // isInstant ? setInstant(new Date(ms)) : setPeriod(new Date(ms));
+    setInstant(moment(ms).utc(true));
   };
 
   const renderDateTime = (date, header) => {
-    console.log("Moin", date);
     const diffInMonths = differenceInMonths(maxInstant, minInstant);
     const formattedDate =
       diffInMonths > 1 ? format(date, "dd.MM.yyyy") : format(date, "dd.MM.yyyy HH:mm:ss");
@@ -122,3 +115,14 @@ function SliderInstant({ minInstant, maxInstant, isInstant, period, setInstant, 
 }
 
 export default SliderInstant;
+
+SliderInstant.propTypes = {
+  minInstant: PropTypes.number.isRequired,
+  maxInstant: PropTypes.instanceOf(Date).isRequired,
+  isInstant: PropTypes.bool.isRequired,
+  setInstant: PropTypes.func.isRequired,
+  period: PropTypes.shape({
+    start: PropTypes.instanceOf(Date).isRequired,
+    end: PropTypes.instanceOf(Date),
+  }).isRequired,
+};

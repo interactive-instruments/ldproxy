@@ -41,12 +41,7 @@ SliderRail.propTypes = {
 // *******************************************************
 // HANDLE COMPONENT
 // *******************************************************
-export function Handle({
-  domain: [min, max],
-  handle: { id, value, percent },
-  disabled,
-  getHandleProps,
-}) {
+export function Handle({ domain: [min, max], handle: { id, value, percent }, getHandleProps }) {
   return (
     <>
       <div
@@ -65,6 +60,7 @@ export function Handle({
         {...getHandleProps(id)}
       />
       <div
+        className="bg-primary"
         aria-label="Slider handle"
         role="slider"
         aria-valuemin={min}
@@ -79,7 +75,7 @@ export function Handle({
           height: 20,
           borderRadius: "50%",
           boxShadow: "1px 1px 1px 1px rgba(0, 0, 0, 0.3)",
-          backgroundColor: disabled ? "#666" : "#333",
+          //  backgroundColor: disabled ? "#666" : "#ff0000",
         }}
       />
     </>
@@ -104,15 +100,16 @@ Handle.defaultProps = {
 // *******************************************************
 // TRACK COMPONENT
 // *******************************************************
-export function Track({ source, target, getTrackProps, disabled }) {
+export function Track({ source, target, getTrackProps }) {
   return (
     <div
+      className="bg-primary"
       style={{
         position: "absolute",
         transform: "translate(0%, -50%)",
         height: 8,
         zIndex: 1,
-        backgroundColor: disabled ? "#999" : "#444",
+        // backgroundColor: disabled ? "#999" : "#444",
         borderRadius: 4,
         cursor: "pointer",
         left: `${source.percent}%`,

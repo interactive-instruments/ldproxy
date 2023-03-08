@@ -69,7 +69,6 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
     end: new Date(extent.end ? extent.end : extent.start),
   });
   const [isInstant, setIsInstant] = useState(extent.end === null);
-  console.log("Initial Period:", period);
 
   useEffect(() => {
     const parsedQuery = qs.parse(window.location.search, {
@@ -186,11 +185,9 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
       {extent.start && isInstant ? (
         <Col md="10">
           <SliderInstant
-            instant={instant}
             period={period}
             isInstant={isInstant}
             setInstant={setInstant}
-            setPeriod={setPeriod}
             minInstant={minInstant}
             maxInstant={maxInstant}
           />
@@ -198,10 +195,8 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
       ) : (
         <Col md="10">
           <SliderPeriod
-            Instant={instant}
             period={period}
             isInstant={isInstant}
-            setInstant={setInstant}
             setPeriod={setPeriod}
             min={min}
             max={max}
