@@ -70,10 +70,15 @@ export const extractSpatial = (obj) => {
 
     if (spatialExtent) {
       const bounds = spatialExtent.bbox;
-      const transformedBounds = bounds.map((innerArray) => [
-        [innerArray[0], innerArray[1]],
-        [innerArray[2], innerArray[3]],
-      ]);
+      const transformedBounds = bounds[0].length === 6
+        ? bounds.map((innerArray) => [
+            [innerArray[0], innerArray[1]],
+            [innerArray[3], innerArray[4]],
+          ])
+        : bounds.map((innerArray) => [
+            [innerArray[0], innerArray[1]],
+            [innerArray[2], innerArray[3]],
+          ]);
       spatial = transformedBounds.flat();
     }
   }

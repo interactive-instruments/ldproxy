@@ -23,9 +23,16 @@ import org.immutables.value.Value;
  *     <p>The stylesheets, style metadata and style information all reside as files in the data
  *     directory:
  *     <p><code>
- * - Stylesheets reside under the relative path `styles/{apiId}/{styleId}.{ext}`, where
- *     `{ext}` is either `mbs` (Mapbox), `sld10` (SLD 1.0) or `sld11` (SLD 1.1). The URIs (Sprites,
+ * - Stylesheets reside under the relative path `styles/{apiId}/{styleId}.{ext}`. The URIs (Sprites,
  *     Glyphs, Source.url, Source.tiles) used in Mapbox styles links might contain `{serviceUrl}`.
+ *     The file extension `{ext}` must have the following value depending on the style encoding:
+ *   - Mapbox Style: `mbs`
+ *   - OGC SLD 1.0: `sld10`
+ *   - OGC SLD 1.1: `sld11`
+ *   - QGIS QML: `qml`
+ *   - ArcGIS Desktop: `lyr`
+ *   - ArcGIS Pro: `lyrx`
+ *   - 3D Tiles Styling: `3dtiles`
  * - Style metadata reside under the relative path `styles/{apiId}/{styleId}.metadata`. Links
  *     might be templates (by setting `templated` to `true`) containing `{serviceUrl}`.
  * - Style information reside under the relative path `style-infos/{apiId}/{collectionId}.json`. Links
@@ -46,7 +53,8 @@ import org.immutables.value.Value;
  *   - OGC SLD 1.1: `sld11`
  *   - QGIS QML: `qml`
  *   - ArcGIS Desktop: `lyr`
- *   - ArcGIS Pro: `lyrxì
+ *   - ArcGIS Pro: `lyrx`
+ *   - 3D Tiles Styling: `3dtiles`
  * - Die Style-Metadaten müssen unter dem relativen
  *     Pfad `api-resources/styles/{apiId}/{styleId}.metadata` liegen. Links können dabei Templates
  *     sein (d.h. `templated` ist `true`) und als Parameter `{serviceUrl}` enthalten.
@@ -281,15 +289,16 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
 
   /**
    * @langEn List of enabled stylesheet encodings. Supported are Mapbox Style (`Mapbox`), OGC SLD
-   *     1.0 (`SLD10`), OGC SLD 1.1 (`SLD11`) and HTML (`HTML`). HTML is an output only encoding for
-   *     web maps that requires a *Mapbox Style* stylesheet. For details see conformance classes
-   *     *Mapbox Style*, *OGC SLD 1.0*, *OGC SLD 1.1* und *HTML*.
+   *     1.0 (`SLD10`), OGC SLD 1.1 (`SLD11`), QGIS QML ("QML"), ArcGIS Layer ("lyr" und "lyrx"), 3D
+   *     Tiles ("3D Tiles") and HTML (`HTML`). HTML is an output only encoding for web maps that
+   *     requires a *Mapbox Style* stylesheet. For details see conformance classes *Mapbox Style*,
+   *     *OGC SLD 1.0*, *OGC SLD 1.1* und *HTML*.
    * @langDe Steuert, welche Formate für Stylesheets unterstützt werden sollen. Zur Verfügung stehen
    *     Mapbox Style ("Mapbox"), OGC SLD 1.0 ("SLD10"), OGC SLD 1.1 ("SLD11"), QGIS QML ("QML"),
-   *     ArcGIS Layer ("lyr" und "lyrx") und HTML ("HTML"). HTML ist ein reines Ausgabeformat im
-   *     Sinne einer Webmap und wird nur für Styles unterstützt, für die ein Stylesheet im Format
-   *     Mapbox Style verfügbar ist. Siehe die Konformitätsklassen "Mapbox Style", "OGC SLD 1.0",
-   *     "OGC SLD 1.1" und "HTML".
+   *     ArcGIS Layer ("lyr" und "lyrx"), 3D Tiles ("3D Tiles") und HTML ("HTML"). HTML ist ein
+   *     reines Ausgabeformat im Sinne einer Webmap und wird nur für Styles unterstützt, für die ein
+   *     Stylesheet im Format Mapbox Style verfügbar ist. Siehe die Konformitätsklassen "Mapbox
+   *     Style", "OGC SLD 1.0", "OGC SLD 1.1" und "HTML".
    * @default [ "Mapbox", "HTML" ]
    */
   List<String> getStyleEncodings();

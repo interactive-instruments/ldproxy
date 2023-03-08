@@ -32,11 +32,11 @@ public abstract class MbStyleRasterSource extends MbStyleSource {
     return Scheme.xyz;
   }
 
-  public abstract Optional<Integer> getTilesize(); // { return Optional.of(512); }
+  public abstract Optional<Integer> getTileSize(); // { return Optional.of(512); }
 
-  public abstract Optional<Integer> getMinzoom(); // { return Optional.of(0); }
+  public abstract Optional<Number> getMinzoom(); // { return Optional.of(0); }
 
-  public abstract Optional<Integer> getMaxzoom(); // { return Optional.of(22); }
+  public abstract Optional<Number> getMaxzoom(); // { return Optional.of(22); }
 
   public abstract Optional<String> getAttribution();
 }
