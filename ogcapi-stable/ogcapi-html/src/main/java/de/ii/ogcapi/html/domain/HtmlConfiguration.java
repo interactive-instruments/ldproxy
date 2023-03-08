@@ -116,7 +116,7 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
 
   /**
    * @langEn Set `noIndex` for all sites to prevent search engines from indexing.
-   * @langDe Steuert, ob in allen Seiten "noIndex" gesetzt wird und Suchmaschinen angezeigt wird,
+   * @langDe Steuert, ob in allen Seiten `noIndex` gesetzt wird und Suchmaschinen angezeigt wird,
    *     dass sie die Seiten nicht indizieren sollen.
    * @default true
    */
@@ -219,7 +219,7 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
   String getBasemapAttribution();
 
   /**
-   * @langEn *Deprecated* See `mapBackgroundUrl`.
+   * @langEn *Deprecated* See `basemapUrl`.
    * @langDe *Deprecated* Siehe `basemapUrl`.
    * @default https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
    */
@@ -228,7 +228,7 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
   String getLeafletUrl();
 
   /**
-   * @langEn *Deprecated* See `mapAttribution`.
+   * @langEn *Deprecated* See `basemapAttribution`.
    * @langDe *Deprecated* Siehe `basemapAttribution`.
    * @default &copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors
    */
@@ -237,7 +237,7 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
   String getLeafletAttribution();
 
   /**
-   * @langEn *Deprecated* See `mapBackgroundUrl`.
+   * @langEn *Deprecated* See `basemapUrl`.
    * @langDe *Deprecated* Siehe `basemapUrl`.
    * @default https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png
    */
@@ -246,7 +246,7 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
   String getOpenLayersUrl();
 
   /**
-   * @langEn *Deprecated* See `mapAttribution`
+   * @langEn *Deprecated* See `basemapAttribution`
    * @langDe *Deprecated* Siehe `basemapAttribution`.
    * @default &copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors
    */
