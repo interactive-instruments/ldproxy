@@ -40,15 +40,7 @@ globalThis._cesium = {
     {{/customTerrainProviderUri}}
   }),
   {{/clampToEllipsoid}}
-  getStyle: (Cesium3DTileStyle) => new Cesium3DTileStyle({
-    color: {
-      conditions: [
-        ["${feature['surfaceType']} === 'roof'", "color('red')"],
-        ["${feature['surfaceType']} === 'ground'", "color('grey')"],
-        ["true", "color('white')"],
-      ],
-    },
-  }),
+  getStyle: (Cesium3DTileStyle) => new Cesium3DTileStyle({{#style}}{{{.}}}{{/style}}{{^style}}{}{{/style}}),
 }
 </script>
 

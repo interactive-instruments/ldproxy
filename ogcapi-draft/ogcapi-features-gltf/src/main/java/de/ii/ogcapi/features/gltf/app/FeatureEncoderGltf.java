@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.gltf.domain.FeatureTransformationContextGltf;
 import de.ii.ogcapi.features.gltf.domain.GltfAsset;
+import de.ii.ogcapi.features.gltf.domain.GltfConfiguration;
 import de.ii.ogcapi.features.gltf.domain.ImmutableAccessor;
 import de.ii.ogcapi.features.gltf.domain.ImmutableAssetMetadata;
 import de.ii.ogcapi.features.gltf.domain.ImmutableAttributes;
@@ -116,6 +117,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private long processingStart;
   private OptionalLong featuresFetched;
   private OptionalLong featuresMatched;
+  private boolean withSurfaceType;
   private int featureCount;
   private long featuresDuration;
 
@@ -159,6 +161,12 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       featuresFetched = OptionalLong.empty();
       featuresMatched = OptionalLong.empty();
     }
+    this.withSurfaceType =
+        transformationContext
+            .getApiData()
+            .getExtension(GltfConfiguration.class, transformationContext.getCollectionId())
+            .map(GltfConfiguration::includeSurfaceType)
+            .orElse(false);
 
     initNewModel();
   }
@@ -182,7 +190,8 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     if (!surfaces.isEmpty()) {
       try {
         boolean added =
-            addMultiPolygons(builder, transformationContext, state, feature, fid, surfaces);
+            addMultiPolygons(
+                builder, transformationContext, state, feature, fid, surfaces, withSurfaceType);
         if (added) {
           int nextNodeId = state.getNextNodeId();
           featureNodes.add(nextNodeId++);
@@ -621,7 +630,8 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       ModifiableStateGltf state,
       FeatureGltf feature,
       String featureName,
-      MeshSurfaceList surfaces)
+      MeshSurfaceList surfaces,
+      boolean withSurfaceType)
       throws IOException {
 
     double[][] minMax = surfaces.getMinMax();
@@ -662,7 +672,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       IntStream.range(0, vertexCountSurface).forEach(i -> featureIds.add(nextFeatureId - 1));
       state.setNextFeatureId(nextFeatureId);
 
-      if (context.getProperties().containsKey(SURFACE_TYPE)) {
+      if (withSurfaceType && context.getProperties().containsKey(SURFACE_TYPE)) {
         ByteArrayOutputStream buffer = buffers.get(PROPERTY_PREFIX + SURFACE_TYPE);
         buffer.write(SURFACE_TYPE_ENUMS.get(surface.getSurfaceType().orElse("unknown")));
       }

@@ -74,7 +74,12 @@ public class Metadata3dSchemaCacheImpl implements Metadata3dSchemaCache {
   protected GltfSchema deriveSchema(
       FeatureSchema schema, OgcApiDataV2 apiData, String collectionId, List<Codelist> codelists) {
 
-    boolean withSurfaceTypes = withSurfaceTypes(schema);
+    boolean withSurfaceTypes =
+        apiData
+                .getExtension(GltfConfiguration.class, collectionId)
+                .map(GltfConfiguration::includeSurfaceType)
+                .orElse(false)
+            && withSurfaceTypes(schema);
     Map<String, GltfPropertyDefinition> properties =
         apiData
             .getExtension(GltfConfiguration.class, collectionId)

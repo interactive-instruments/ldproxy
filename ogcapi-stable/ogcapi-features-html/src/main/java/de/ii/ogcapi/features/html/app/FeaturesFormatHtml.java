@@ -37,6 +37,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
+import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -52,9 +53,14 @@ import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
+import de.ii.xtraplatform.web.domain.Http;
+import de.ii.xtraplatform.web.domain.HttpClient;
 import de.ii.xtraplatform.web.domain.MustacheRenderer;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleImmutableEntry;
@@ -91,6 +97,7 @@ public class FeaturesFormatHtml
   private final FeaturesCoreValidation featuresCoreValidator;
   private final URI servicesUri;
   private final MustacheRenderer mustacheRenderer;
+  private final HttpClient httpClient;
 
   @Inject
   public FeaturesFormatHtml(
@@ -99,13 +106,15 @@ public class FeaturesFormatHtml
       I18n i18n,
       FeaturesCoreProviders providers,
       FeaturesCoreValidation featuresCoreValidator,
-      ServicesContext servicesContext) {
+      ServicesContext servicesContext,
+      Http http) {
     this.entityRegistry = entityRegistry;
     this.i18n = i18n;
     this.providers = providers;
     this.featuresCoreValidator = featuresCoreValidator;
     this.servicesUri = servicesContext.getUri();
     this.mustacheRenderer = mustacheRenderer;
+    this.httpClient = http.getDefaultClient();
   }
 
   @Override
@@ -423,8 +432,20 @@ public class FeaturesFormatHtml
                         cfg.getStyle(
                             config.map(FeaturesHtmlConfiguration::getStyle),
                             Optional.of(featureType.getId()),
-                            serviceUrl))
+                            serviceUrl,
+                            mapClientType))
                 .orElse(null));
+    Optional<String> style = Optional.empty();
+    if (mapClientType == Type.CESIUM && styleUrl.isPresent()) {
+      // TODO we currently use a HTTP request to avoid a dependency to STYLES. Once the
+      //  StyleRepository is part of xtraplatform, access the style directly.
+      InputStream styleStream = httpClient.getAsInputStream(styleUrl.get());
+      try {
+        style = Optional.of(new String(styleStream.readAllBytes(), StandardCharsets.UTF_8));
+      } catch (IOException e) {
+        // ignore
+      }
+    }
     boolean removeZoomLevelConstraints =
         config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints).orElse(false);
 
@@ -453,6 +474,7 @@ public class FeaturesFormatHtml
         .setMapPosition(mapPosition)
         .setMapClientType(mapClientType)
         .setStyleUrl(styleUrl.orElse(null))
+        .setStyle(style)
         .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
         .setHideMap(hideMap)
         .setQueryables(filterableFields)
@@ -541,7 +563,19 @@ public class FeaturesFormatHtml
                 cfg.getStyle(
                     config.map(FeaturesHtmlConfiguration::getStyle),
                     Optional.of(featureType.getId()),
-                    serviceUrl));
+                    serviceUrl,
+                    mapClientType));
+    Optional<String> style = Optional.empty();
+    if (mapClientType == Type.CESIUM && styleUrl.isPresent()) {
+      // TODO we currently use a HTTP request to avoid a dependency to STYLES. Once the
+      //  StyleRepository is part of xtraplatform, access the style directly.
+      InputStream styleStream = httpClient.getAsInputStream(styleUrl.get());
+      try {
+        style = Optional.of(new String(styleStream.readAllBytes(), StandardCharsets.UTF_8));
+      } catch (IOException e) {
+        // ignore
+      }
+    }
     boolean removeZoomLevelConstraints =
         config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints).orElse(false);
 
@@ -573,6 +607,7 @@ public class FeaturesFormatHtml
         .setMapPosition(mapPosition)
         .setMapClientType(mapClientType)
         .setStyleUrl(styleUrl.orElse(null))
+        .setStyle(style)
         .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
         .setHideMap(hideMap)
         .setGeometryProperties(geometryProperties)
@@ -643,8 +678,20 @@ public class FeaturesFormatHtml
                     cfg.getStyle(
                         config.map(FeaturesHtmlConfiguration::getStyle),
                         Optional.empty(),
-                        serviceUrl))
+                        serviceUrl,
+                        mapClientType))
             .orElse(null);
+    Optional<String> style = Optional.empty();
+    if (mapClientType == Type.CESIUM && Objects.nonNull(styleUrl)) {
+      // TODO we currently use a HTTP request to avoid a dependency to STYLES. Once the
+      //  StyleRepository is part of xtraplatform, access the style directly.
+      InputStream styleStream = httpClient.getAsInputStream(styleUrl);
+      try {
+        style = Optional.of(new String(styleStream.readAllBytes(), StandardCharsets.UTF_8));
+      } catch (IOException e) {
+        // ignore
+      }
+    }
     boolean removeZoomLevelConstraints =
         config.map(FeaturesHtmlConfiguration::getRemoveZoomLevelConstraints).orElse(false);
     URICustomizer resourceUri = uriCustomizer.copy().clearParameters();
@@ -669,6 +716,7 @@ public class FeaturesFormatHtml
         .setMapClientType(mapClientType)
         .setPropertyTooltips(propertyTooltips)
         .setStyleUrl(styleUrl)
+        .setStyle(style)
         .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
         .setHideMap(hideMap)
         .setUriCustomizer(uriCustomizer)

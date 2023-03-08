@@ -139,6 +139,25 @@ public interface GltfConfiguration extends ExtensionConfiguration, PropertyTrans
   Map<String, GltfPropertyDefinition> getProperties();
 
   /**
+   * @langEn If `true`, for buildings in Level-of-Detail 2 with information about the semantics of
+   *     each surface (wall, roof, etc.), a property "surfaceType" is added and available for each
+   *     vertex.
+   * @langDe Wenn `true`, wird für Gebäude in Level-of-Detail 2 mit Informationen über die Semantik
+   *     jeder Oberfläche (Wand, Dach, etc.) wird automatisch eine weitere Eigenschaft "surfaceType"
+   *     hinzugefügt, die für jeden Vertex verfügbar ist.
+   * @default false
+   * @since v3.4
+   */
+  @Nullable
+  Boolean getWithSurfaceType();
+
+  @Value.Derived
+  @DocIgnore
+  default boolean includeSurfaceType() {
+    return Boolean.TRUE.equals(getWithSurfaceType());
+  }
+
+  /**
    * @langEn If the data is flattened and the feature schema includes arrays, `maxMultiplicity`
    *     properties will be created for each array property. If an instance has more values in an
    *     array, only the first values are included in the data.

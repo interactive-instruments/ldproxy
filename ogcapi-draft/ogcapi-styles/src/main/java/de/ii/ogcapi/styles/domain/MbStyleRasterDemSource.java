@@ -32,11 +32,11 @@ public abstract class MbStyleRasterDemSource extends MbStyleSource {
   public abstract Optional<List<Double>>
       getBounds(); // { return Optional.of(ImmutableList.of(-180.0,-85.051129,180.0,85.051129)); }
 
-  public abstract Optional<Integer> getTilesize(); // { return Optional.of(512); }
+  public abstract Optional<Integer> getTileSize(); // { return Optional.of(512); }
 
-  public abstract Optional<Integer> getMinzoom(); // { return Optional.of(0); }
+  public abstract Optional<Number> getMinzoom(); // { return Optional.of(0); }
 
-  public abstract Optional<Integer> getMaxzoom(); // { return Optional.of(22); }
+  public abstract Optional<Number> getMaxzoom(); // { return Optional.of(22); }
 
   public abstract Optional<String> getAttribution();
 

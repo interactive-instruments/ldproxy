@@ -31,15 +31,12 @@ import javax.inject.Singleton;
  *     and
  *     [EXT_structural_metadata](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata).
  *     The properties are stored in binary tables.
- *     <p>For buildings in Level-of-Detail 2 with information about the semantics of each surface
- *     (wall, roof, etc.), another property "surfaceType" is automatically added and available for
- *     each vertex.
  * @scopeDe Das Modul *Features - glTF* unterstützt glTF 2.0 als Kodierung für Features. Unterstützt
  *     werden die Objektarten `Building` und `BuildingPart`. Das Modul *Features - glTF* bietet
  *     Unterstützung für glTF 2.0 als Feature-Kodierung. Unterstützt werden die CityGML-Objektarten
  *     `Building` und `BuildingPart`.
- *     <p>Dieses Modul unterstützt die glTF 2.0 Erweiterung [KHR_mesh_quantization]
- *     (https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_mesh_quantization)
+ *     <p>Dieses Modul unterstützt die glTF 2.0 Erweiterung
+ *     [KHR_mesh_quantization](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_mesh_quantization)
  *     für eine kompakte Kodierung von Vertices und Normalen. Die Verwendung dieser Erweiterung wird
  *     empfohlen und ist standardmäßig aktiviert.
  *     <p>Jede Feature-Eigenschaft, die im glTF-Modell enthalten ist, aktiviert die Unterstützung
@@ -48,9 +45,6 @@ import javax.inject.Singleton;
  *     und
  *     [EXT_structural_metadata](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata).
  *     Die Eigenschaften werden in binären Tabellen gespeichert.
- *     <p>Für Gebäude in Level-of-Detail 2 mit Informationen über die Semantik jeder Oberfläche
- *     (Wand, Dach, etc.) wird automatisch eine weitere Eigenschaft "surfaceType" hinzugefügt, die
- *     für jeden Vertex verfügbar ist.
  * @conformanceEn *Features - glTF* implements support for [glTF
  *     2.0](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html) with the extensions
  *     [KHR_mesh_quantization](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_mesh_quantization),
@@ -104,6 +98,7 @@ public class GltfBuildingBlock implements ApiBuildingBlock {
         .meshQuantization(true)
         .withNormals(true)
         .polygonOrientationNotGuaranteed(true)
+        .withSurfaceType(false)
         .maxMultiplicity(DEFAULT_MULTIPLICITY)
         .build();
   }

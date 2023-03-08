@@ -138,7 +138,10 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
             .map(
                 cfg ->
                     cfg.getStyle(
-                        tilesConfig.map(TilesConfiguration::getStyle), collectionId, serviceUrl))
+                        tilesConfig.map(TilesConfiguration::getStyle),
+                        collectionId,
+                        serviceUrl,
+                        mapClientType))
             .orElse(null);
     boolean removeZoomLevelConstraints =
         tilesConfig.map(TilesConfiguration::getRemoveZoomLevelConstraints).orElse(false);

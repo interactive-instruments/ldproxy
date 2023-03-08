@@ -10,8 +10,12 @@ package de.ii.ogcapi.html.domain;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.xtraplatform.base.domain.LogContext;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Objects;
 import java.util.Optional;
@@ -181,16 +185,18 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
 
   /**
    * @langEn A default style in the style repository that is used in maps in the HTML representation
-   *     of the features and tiles resources. If `NONE`, a simple wireframe style will be used with
-   *     OpenStreetMap as a basemap. If the value is not `NONE`, the API landing page (or the
-   *     collection page) will also contain a link to a web map with the style for the dataset (or
-   *     the collection).
+   *     of the feature and tile resources. If `NONE`, a simple wireframe style will be used with
+   *     OpenStreetMap as a basemap, if the map client is MapLibre; for Cesium, the default 3D Tiles
+   *     styling will be used with the basemap. If the value is not `NONE` and the map client is
+   *     MapLibre, the API landing page (or the collection page) will also contain a link to a web
+   *     map with the style for the dataset (or the collection).
    * @langDe Ein Style im Style-Repository, der standardmäßig in Karten mit Feature- und
    *     Tile-Ressourcen verwendet werden soll. Bei `NONE` wird ein einfacher Style mit
-   *     OpenStreetMap als Basiskarte verwendet. Wenn der Wert nicht `NONE` ist, enthält die
-   *     "Landing Page" bzw. die "Feature Collection" auch einen Link zu einer Webkarte mit dem Stil
-   *     für den Datensatz bzw. die Feature Collection. Der Style sollte alle Daten abdecken und
-   *     muss im Format Mapbox Style verfügbar sein.
+   *     OpenStreetMap als Basiskarte verwendet, wenn MapLibre der Map-Client ist; bei Cesium wird
+   *     das Standard-3D-Tiles-Styling verwendet. Wenn der Wert nicht `NONE` ist und MapLibre der
+   *     Map_Client ist, enthält die "Landing Page" bzw. die "Feature Collection" auch einen Link zu
+   *     einer Webkarte mit dem Stil für den Datensatz bzw. die Feature Collection. Der Style sollte
+   *     alle Daten abdecken und muss im Format Mapbox Style verfügbar sein.
    * @default NONE
    */
   @Nullable
@@ -262,55 +268,79 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
   }
 
   default String getStyle(
-      Optional<String> requestedStyle, Optional<String> collectionId, String serviceUrl) {
-    String styleUrl =
-        requestedStyle
-            .map(
-                s ->
-                    s.equals("DEFAULT") ? Objects.requireNonNullElse(getDefaultStyle(), "NONE") : s)
-            .filter(s -> !s.equals("NONE"))
-            .map(
-                s ->
-                    collectionId.isEmpty()
-                        ? String.format("%s/styles/%s?f=mbs", serviceUrl, s)
-                        : String.format(
-                            "%s/collections/%s/styles/%s?f=mbs", serviceUrl, collectionId.get(), s))
-            .orElse(null);
+      Optional<String> requestedStyle,
+      Optional<String> collectionId,
+      String serviceUrl,
+      MapClient.Type mapClientType) {
+    String f =
+        mapClientType == Type.MAP_LIBRE ? "mbs" : mapClientType == Type.CESIUM ? "3dtiles" : null;
+    URL styleUrl = null;
 
-    // Check that the style exists
-    if (Objects.nonNull(styleUrl)) {
-      // TODO we currently test for the availability of the style using a HTTP request to
-      //      avoid a dependency to STYLES. Once OGC API Styles is stable, we should consider to
-      //      separate the StyleRepository from the endpoints. The StyleRepository could be part
-      //      of FOUNDATION or its own module
-      try {
-        URL url = new URL(styleUrl);
-        HttpURLConnection http = (HttpURLConnection) url.openConnection();
-        http.setRequestMethod("HEAD");
-        if (http.getResponseCode() == 404 && collectionId.isPresent()) {
-          // Try fallback to the dataset style, if we have a collection style
-          return getStyle(requestedStyle, Optional.empty(), serviceUrl);
-        } else if (http.getResponseCode() != 200) {
-          LOGGER.error(
-              "Could not access style '{}', falling back to style 'NONE'. Response code: '{}'. Message: {}",
-              styleUrl,
-              http.getResponseCode(),
-              http.getResponseMessage());
-          return null;
-        }
-        http.disconnect();
-      } catch (Exception e) {
-        LOGGER.error(
-            "Could not access style '{}', falling back to style 'NONE'. Reason: {}",
-            styleUrl,
-            e.getMessage());
-        if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
-          LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
-        }
-        return null;
-      }
+    if (Objects.nonNull(f)) {
+      styleUrl =
+          requestedStyle
+              .map(
+                  s ->
+                      s.equals("DEFAULT")
+                          ? Objects.requireNonNullElse(getDefaultStyle(), "NONE")
+                          : s)
+              .filter(s -> !s.equals("NONE"))
+              .map(
+                  s -> {
+                    try {
+                      URI serviceUri = new URI(serviceUrl);
+                      String path =
+                          collectionId.isEmpty()
+                              ? String.format("%s/styles/%s", serviceUri.getPath(), s)
+                              : String.format(
+                                  "%s/collections/%s/styles/%s",
+                                  serviceUri.getPath(), collectionId.get(), s);
+                      String query = String.format("f=%s", f);
+                      return new URI(
+                              serviceUri.getScheme(), serviceUri.getAuthority(), path, query, null)
+                          .toURL();
+                    } catch (URISyntaxException | MalformedURLException e) {
+                      return null;
+                    }
+                  })
+              .orElse(null);
     }
 
-    return styleUrl;
+    // Check that the style exists
+    if (Objects.isNull(styleUrl)) {
+      return null;
+    }
+
+    // TODO we currently test for the availability of the style using a HTTP request to
+    //      avoid a dependency to STYLES. Once OGC API Styles is stable, we should consider to
+    //      separate the StyleRepository from the endpoints. The StyleRepository could be part
+    //      of FOUNDATION or its own module
+    try {
+      HttpURLConnection http = (HttpURLConnection) styleUrl.openConnection();
+      http.setRequestMethod("HEAD");
+      if (http.getResponseCode() == 404 && collectionId.isPresent()) {
+        // Try fallback to the dataset style, if we have a collection style
+        return getStyle(requestedStyle, Optional.empty(), serviceUrl, mapClientType);
+      } else if (http.getResponseCode() != 200) {
+        LOGGER.error(
+            "Could not access style '{}', falling back to style 'NONE'. Response code: '{}'. Message: {}",
+            styleUrl,
+            http.getResponseCode(),
+            http.getResponseMessage());
+        return null;
+      }
+      http.disconnect();
+    } catch (Exception e) {
+      LOGGER.error(
+          "Could not access style '{}', falling back to style 'NONE'. Reason: {}",
+          styleUrl,
+          e.getMessage());
+      if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+        LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
+      }
+      return null;
+    }
+
+    return styleUrl.toString();
   }
 }

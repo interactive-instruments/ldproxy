@@ -42,8 +42,7 @@ public abstract class MbStyleLayer {
 
   public abstract String getId();
 
-  // TODO use enum to check that we have a valid value
-  public abstract String getType();
+  public abstract LayerType getType();
 
   public abstract Map<String, Object> getMetadata();
 
@@ -52,9 +51,9 @@ public abstract class MbStyleLayer {
   @JsonProperty("source-layer")
   public abstract Optional<String> getSourceLayer();
 
-  public abstract Optional<Integer> getMinzoom();
+  public abstract Optional<Number> getMinzoom();
 
-  public abstract Optional<Integer> getMaxzoom();
+  public abstract Optional<Number> getMaxzoom();
 
   public abstract Optional<Object> getFilter();
 
