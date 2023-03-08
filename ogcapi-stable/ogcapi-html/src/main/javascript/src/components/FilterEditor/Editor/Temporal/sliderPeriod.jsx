@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
+import moment from "moment";
 import { Slider, Rail, Handles, Tracks, Ticks } from "react-compound-slider";
 import { differenceInYears, format, differenceInMonths, differenceInHours } from "date-fns";
 import { scaleTime } from "d3-scale";
@@ -12,7 +13,7 @@ const sliderStyle = {
   width: "100%",
 };
 
-function SliderPeriod({ isInstant, period, setPeriod, min, max }) {
+function SliderPeriod({ period, setPeriod, min, max, forStory }) {
   const [updated, setUpdated] = useState([period.start, period.end]);
 
   const formatTick = (ms) => {
@@ -37,16 +38,17 @@ function SliderPeriod({ isInstant, period, setPeriod, min, max }) {
     .map((d) => +d);
 
   const onUpdate = (updatedValues) => {
+    setUpdated([new Date(updatedValues[0]), new Date(updatedValues[1])]);
     setPeriod((prevPeriod) => {
       return {
         ...prevPeriod,
-        start: new Date(updatedValues[0]),
-        end: new Date(updatedValues[1]),
+        start: new Date(moment(updatedValues[0]).utc(true)),
+        end: new Date(moment(updatedValues[1]).utc(true)),
       };
     });
-    setUpdated([new Date(updatedValues[0]), new Date(updatedValues[1])]);
   };
 
+  // renderDateTime is only used for Storybook
   const renderDateTime = (date, header) => {
     const diffInMonths = differenceInMonths(max, min);
     const formattedDateStart =
@@ -73,8 +75,8 @@ function SliderPeriod({ isInstant, period, setPeriod, min, max }) {
 
   return (
     <div>
-      {renderDateTime(updated, isInstant ? "Instant" : "Period")}
-      <div style={{ margin: "5%", height: 120, width: "90%" }}>
+      {forStory && renderDateTime(updated, "Date/Time")}
+      <div style={{ margin: "1%", height: 120, width: "98%" }}>
         <Slider
           mode={1}
           step={halfHour}
@@ -127,12 +129,16 @@ function SliderPeriod({ isInstant, period, setPeriod, min, max }) {
 export default SliderPeriod;
 
 SliderPeriod.propTypes = {
-  min: PropTypes.instanceOf(Date).isRequired,
-  max: PropTypes.instanceOf(Date).isRequired,
-  isInstant: PropTypes.bool.isRequired,
+  min: PropTypes.number.isRequired,
+  max: PropTypes.number.isRequired,
   setPeriod: PropTypes.func.isRequired,
   period: PropTypes.shape({
     start: PropTypes.instanceOf(Date).isRequired,
     end: PropTypes.instanceOf(Date),
   }).isRequired,
+  forStory: PropTypes.bool,
+};
+
+SliderPeriod.defaultProps = {
+  forStory: false,
 };

@@ -74,7 +74,7 @@ export function Handle({ domain: [min, max], handle: { id, value, percent }, get
           width: 20,
           height: 20,
           borderRadius: "50%",
-          boxShadow: "1px 1px 1px 1px rgba(0, 0, 0, 0.3)",
+          boxShadow: "1px 1px 1px 0px rgba(0, 0, 0, 0.3)",
           //  backgroundColor: disabled ? "#666" : "#ff0000",
         }}
       />
