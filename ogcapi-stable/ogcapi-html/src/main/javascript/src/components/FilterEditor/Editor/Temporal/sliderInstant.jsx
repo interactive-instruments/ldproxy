@@ -13,7 +13,7 @@ const sliderStyle = {
   width: "100%",
 };
 
-function SliderInstant({ minInstant, maxInstant, isInstant, period, setInstant }) {
+function SliderInstant({ minInstant, maxInstant, period, setInstant, forStory }) {
   const [updated, setUpdated] = useState(period.start);
 
   const formatTick = (ms) => {
@@ -42,6 +42,7 @@ function SliderInstant({ minInstant, maxInstant, isInstant, period, setInstant }
     setInstant(moment(ms).utc(true));
   };
 
+  // renderDateTime is only used for Storybook
   const renderDateTime = (date, header) => {
     const diffInMonths = differenceInMonths(maxInstant, minInstant);
     const formattedDate =
@@ -64,8 +65,8 @@ function SliderInstant({ minInstant, maxInstant, isInstant, period, setInstant }
 
   return (
     <div>
-      {renderDateTime(updated, isInstant ? "Instant" : "Period")}
-      <div style={{ margin: "5%", height: 120, width: "90%" }}>
+      {forStory && renderDateTime(updated, "Date/Time")}
+      <div style={{ margin: "1%", height: 120, width: "98%" }}>
         <Slider
           mode={1}
           step={halfHour}
@@ -114,15 +115,19 @@ function SliderInstant({ minInstant, maxInstant, isInstant, period, setInstant }
   );
 }
 
-export default SliderInstant;
-
 SliderInstant.propTypes = {
   minInstant: PropTypes.number.isRequired,
-  maxInstant: PropTypes.instanceOf(Date).isRequired,
-  isInstant: PropTypes.bool.isRequired,
+  maxInstant: PropTypes.number.isRequired,
   setInstant: PropTypes.func.isRequired,
   period: PropTypes.shape({
     start: PropTypes.instanceOf(Date).isRequired,
     end: PropTypes.instanceOf(Date),
   }).isRequired,
+  forStory: PropTypes.bool,
 };
+
+SliderInstant.defaultProps = {
+  forStory: false,
+};
+
+export default SliderInstant;

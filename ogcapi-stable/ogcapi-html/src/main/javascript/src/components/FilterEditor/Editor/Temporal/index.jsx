@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import qs from "qs";
-import { subDays, addDays, startOfToday } from "date-fns";
+import { startOfToday } from "date-fns";
 import { Button, ButtonGroup, Form, Input, Row, Col } from "reactstrap";
 import DatetimeRangePicker from "react-datetime-range-picker";
 import Datetime from "react-datetime";
@@ -45,8 +45,8 @@ const formatDate = (date) => {
 };
 
 const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }) => {
-  const min = subDays(start, 1);
-  const max = addDays(end, 1);
+  const min = start;
+  const max = end;
 
   const minInstant = start;
   const maxInstant = startOfToday();
@@ -186,7 +186,6 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
         <Col md="10">
           <SliderInstant
             period={period}
-            isInstant={isInstant}
             setInstant={setInstant}
             minInstant={minInstant}
             maxInstant={maxInstant}
@@ -194,13 +193,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
         </Col>
       ) : (
         <Col md="10">
-          <SliderPeriod
-            period={period}
-            isInstant={isInstant}
-            setPeriod={setPeriod}
-            min={min}
-            max={max}
-          />
+          <SliderPeriod period={period} setPeriod={setPeriod} min={min} max={max} />
         </Col>
       )}
     </Form>
