@@ -3407,8 +3407,8 @@ __metadata:
     qs: ^6.5.1
     react: ^16
     react-compound-slider: 0.16.3
-    react-datetime: ^2.14.0
-    react-datetime-range-picker: ^1.0.5
+    react-datetime: ^2.16.3
+    react-datetime-range-picker: ^3.0.0
     react-dom: ^16
     react-maplibre-ui: ^2.0.0
     react-refresh: ^0.9.0
@@ -14303,20 +14303,20 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"react-datetime-range-picker@npm:^1.0.5":
-  version: 1.0.6
-  resolution: "react-datetime-range-picker@npm:1.0.6"
+"react-datetime-range-picker@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "react-datetime-range-picker@npm:3.0.0"
   dependencies:
     moment: ^2.19.3
     prop-types: ^15.5.10
   peerDependencies:
-    react: ^15.6.1
+    react: ^16.3.0
     react-datetime: ^2.8.10
-  checksum: 90ef2162356c49585884b12add4a4810d785a757e5e4656b2dd31d489c1d9fdb3e74246d8215ad7916d7bcc595475f02c5a832859ceb1efec0f3acf3d624fb8c
+  checksum: 1c8d5564770808c2a5cf56921eddbc12c60b184c374c40808cd5157e376783d0b683939781669f4bef6211cc5f649e62c1ccf807efa5d2adabc035a02fa88ad8
   languageName: node
   linkType: hard
 
-"react-datetime@npm:^2.14.0":
+"react-datetime@npm:^2.16.3":
   version: 2.16.3
   resolution: "react-datetime@npm:2.16.3"
   dependencies:

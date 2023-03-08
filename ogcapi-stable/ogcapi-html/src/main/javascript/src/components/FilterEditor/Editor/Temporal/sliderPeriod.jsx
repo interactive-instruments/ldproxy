@@ -1,13 +1,7 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import { Slider, Rail, Handles, Tracks, Ticks } from "react-compound-slider";
-import {
-  subDays,
-  differenceInYears,
-  addDays,
-  format,
-  differenceInMonths,
-  differenceInHours,
-} from "date-fns";
+import { differenceInYears, format, differenceInMonths, differenceInHours } from "date-fns";
 import { scaleTime } from "d3-scale";
 import { SliderRail, Handle, Track, Tick } from "./components";
 
@@ -32,7 +26,7 @@ function SliderPeriod({ isInstant, period, setPeriod, min, max }) {
     } else if (differenceInHours(max, min) > 24) {
       dateFormat = format(new Date(ms), "MMM dd");
     } else if (differenceInHours(max, min) < 24) {
-      dateFormat = format(new Date(ms), "ddd HH:mm:ss");
+      dateFormat = format(new Date(ms), "HH:mm:ss");
     }
     return dateFormat;
   };
@@ -131,3 +125,14 @@ function SliderPeriod({ isInstant, period, setPeriod, min, max }) {
 }
 
 export default SliderPeriod;
+
+SliderPeriod.propTypes = {
+  min: PropTypes.instanceOf(Date).isRequired,
+  max: PropTypes.instanceOf(Date).isRequired,
+  isInstant: PropTypes.bool.isRequired,
+  setPeriod: PropTypes.func.isRequired,
+  period: PropTypes.shape({
+    start: PropTypes.instanceOf(Date).isRequired,
+    end: PropTypes.instanceOf(Date),
+  }).isRequired,
+};
