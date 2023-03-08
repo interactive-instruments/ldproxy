@@ -10,7 +10,9 @@ package de.ii.ogcapi.crs.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.docs.DocIgnore;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
@@ -55,6 +57,25 @@ public interface CrsConfiguration extends ExtensionConfiguration {
    * @default {}
    */
   Set<EpsgCrs> getAdditionalCrs();
+
+  /**
+   * @langEn If `true`, the coordinate reference systems will be included in every Collection
+   *     resource that is embedded in the Collections resource. The global `crs` array will not be
+   *     used or referenced. Use this option, if the API is intended to be used with QGIS.
+   * @langDe Bei `true` werden die Koordinatenreferenzsysteme in jede Collection-Ressource
+   *     aufgenommen, die in die Collections-Ressource eingebettet ist. Das globale `crs` Array wird
+   *     nicht verwendet oder referenziert. Verwenden Sie diese Option, wenn die API mit QGIS
+   *     verwendet werden soll.
+   * @default false
+   */
+  @Nullable
+  Boolean getSuppressGlobalCrsList();
+
+  @Value.Derived
+  @DocIgnore
+  default boolean shouldSuppressGlobalCrsList() {
+    return Boolean.TRUE.equals(getSuppressGlobalCrsList());
+  }
 
   @Override
   default Builder getBuilder() {
