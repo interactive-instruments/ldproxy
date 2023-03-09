@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 
 import { Button, ButtonGroup, Form, FormGroup, Input, Row, Col } from "reactstrap";
@@ -6,6 +6,8 @@ import { Button, ButtonGroup, Form, FormGroup, Input, Row, Col } from "reactstra
 export { default as MapSelect } from "./MapSelect";
 
 const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
+  const [minLng, setMinLng] = useState(bounds[0][0].toFixed(4));
+
   const bBoxFilter = Object.keys(filters).filter(
     (key) => filters[key].remove === false && key === "bbox" && key !== "datetime"
   );
@@ -15,12 +17,16 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
     event.preventDefault();
     event.stopPropagation();
 
-    onChange(
-      "bbox",
-      `${bounds[0][0].toFixed(4)},${bounds[0][1].toFixed(4)},${bounds[1][0].toFixed(
-        4
-      )},${bounds[1][1].toFixed(4)}`
-    );
+    const bboxRegex = /^-?\d+\.\d{4},-?\d+\.\d{4},-?\d+\.\d{4},-?\d+\.\d{4}$/;
+    const bboxInput = `${minLng},${bounds[0][1].toFixed(4)},${bounds[1][0].toFixed(
+      4
+    )},${bounds[1][1].toFixed(4)}`;
+    if (!bboxRegex.test(bboxInput)) {
+      alert("Invalid bbox input.");
+      return;
+    }
+
+    onChange("bbox", bboxInput);
   };
 
   return (
@@ -35,8 +41,8 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               name="minLng"
               id="minLng"
               className="mr-2"
-              value={bounds[0][0].toFixed(4)}
-              readOnly
+              value={minLng}
+              onChange={(e) => setMinLng(e.target.value)}
             />
           </FormGroup>
         </Col>
@@ -49,7 +55,6 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               id="minLat"
               className="mr-2"
               value={bounds[0][1].toFixed(4)}
-              readOnly
             />
           </FormGroup>
         </Col>
@@ -64,7 +69,6 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               id="maxLng"
               className="mr-2"
               value={bounds[1][0].toFixed(4)}
-              readOnly
             />
           </FormGroup>
         </Col>
@@ -77,7 +81,6 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               id="maxLat"
               className="mr-2"
               value={bounds[1][1].toFixed(4)}
-              readOnly
             />
           </FormGroup>
         </Col>

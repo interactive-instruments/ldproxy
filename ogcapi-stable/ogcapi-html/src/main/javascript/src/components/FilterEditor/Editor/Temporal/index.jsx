@@ -69,6 +69,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
     end: new Date(extent.end ? extent.end : extent.start),
   });
   const [isInstant, setIsInstant] = useState(extent.end === null);
+  const [userInputValidation, setUserInputValidation] = useState(true);
 
   useEffect(() => {
     const parsedQuery = qs.parse(window.location.search, {
@@ -99,6 +100,18 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
     );
   };
 
+  const testFunction = (inputValue) => {
+    const parsedDate = moment.utc(inputValue);
+    if (parsedDate.isValid()) {
+      setUserInputValidation(true);
+    } else {
+      setUserInputValidation(false);
+      console.error("Invalid date input");
+    }
+  };
+
+  console.log(instant, userInputValidation);
+
   return (
     <Form onSubmit={save}>
       <p className="text-muted text-uppercase">date/time</p>
@@ -128,8 +141,9 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
             <Datetime
               className=""
               inputProps={{
-                className: "form-control form-control-sm w-100 mb-3",
-                readOnly: true,
+                className: userInputValidation
+                  ? "form-control form-control-sm w-100 mb-3"
+                  : "form-control form-control-sm w-100 mb-3 is-invalid",
                 style: {
                   backgroundColor: "white",
                   cursor: "pointer",
@@ -139,23 +153,30 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
               dateFormat="DD.MM.YYYY"
               utc
               value={instant}
-              onChange={(next) => setInstant(next)}
+              onChange={(next) => {
+                testFunction(next);
+                userInputValidation && setInstant(next);
+              }}
             />
             <Input size="sm" className="mb-3" disabled />
           </Col>
         ) : (
           <DatetimeRangePicker
+            input
             className="col-md-10"
             inputProps={{
               className: "form-control form-control-sm w-100 mb-3",
-              readOnly: true,
+              readOnly: false,
             }}
             timeFormat="HH:mm:ss"
             dateFormat="DD.MM.YYYY"
             utc
             startDate={period.start}
             endDate={period.end}
-            onChange={(next) => setPeriod(next)}
+            onChange={(next) => {
+              testFunction(next);
+              userInputValidation && setPeriod(next);
+            }}
           />
         )}
         {hasDateTimeInFilters ? (
