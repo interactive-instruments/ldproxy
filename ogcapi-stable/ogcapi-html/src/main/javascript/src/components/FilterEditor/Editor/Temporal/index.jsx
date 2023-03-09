@@ -155,14 +155,15 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
               value={instant}
               onChange={(next) => {
                 testFunction(next);
-                userInputValidation && setInstant(next);
+                if (userInputValidation) {
+                  setInstant(next);
+                }
               }}
             />
             <Input size="sm" className="mb-3" disabled />
           </Col>
         ) : (
           <DatetimeRangePicker
-            input
             className="col-md-10"
             inputProps={{
               className: "form-control form-control-sm w-100 mb-3",
@@ -175,7 +176,9 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
             endDate={period.end}
             onChange={(next) => {
               testFunction(next);
-              userInputValidation && setPeriod(next);
+              if (userInputValidation) {
+                setPeriod(next);
+              }
             }}
           />
         )}
