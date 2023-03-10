@@ -1,7 +1,7 @@
 import React from "react";
 import { storiesOf } from "@storybook/react";
-import SliderInstant from "./sliderInstant";
-import SliderPeriod from "./sliderPeriod";
+import SliderInstant from "./InstantSlider";
+import SliderPeriod from "./PeriodSlider";
 
 const Instant = (args) => {
   return (

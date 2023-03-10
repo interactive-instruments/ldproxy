@@ -4,7 +4,7 @@ import moment from "moment";
 import { Slider, Rail, Handles, Tracks, Ticks } from "react-compound-slider";
 import { differenceInYears, format, differenceInMonths, differenceInHours } from "date-fns";
 import { scaleTime } from "d3-scale";
-import { SliderRail, Handle, Track, Tick } from "./components";
+import { SliderRail, Handle, Track, Tick } from "../Components";
 
 const halfHour = 1000 * 60 * 30;
 
@@ -13,40 +13,48 @@ const sliderStyle = {
   width: "100%",
 };
 
-function SliderInstant({ minInstant, maxInstant, period, setInstant, forStory }) {
-  const [updated, setUpdated] = useState(period.start);
+function SliderPeriod({ period, setPeriod, min, max, forStory }) {
+  const [updated, setUpdated] = useState([period.start, period.end]);
 
   const formatTick = (ms) => {
     let dateFormat;
-    if (differenceInYears(maxInstant, minInstant) > 7) {
+    if (differenceInYears(max, min) > 7) {
       dateFormat = format(new Date(ms), "yyyy");
-    } else if (differenceInYears(maxInstant, minInstant) > 3) {
+    } else if (differenceInYears(max, min) > 3) {
       dateFormat = format(new Date(ms), "MMM yyyy");
-    } else if (differenceInMonths(maxInstant, minInstant) > 7) {
+    } else if (differenceInMonths(max, min) > 7) {
       dateFormat = format(new Date(ms), "MMM");
-    } else if (differenceInHours(maxInstant, minInstant) > 24) {
+    } else if (differenceInHours(max, min) > 24) {
       dateFormat = format(new Date(ms), "MMM dd");
-    } else if (differenceInHours(maxInstant, minInstant) < 24) {
+    } else if (differenceInHours(max, min) < 24) {
       dateFormat = format(new Date(ms), "HH:mm:ss");
     }
     return dateFormat;
   };
 
   const dateTicks = scaleTime()
-    .domain([minInstant, maxInstant])
+    .domain([min, max])
     .ticks(8)
     .map((d) => +d);
 
-  const onUpdate = ([ms]) => {
-    setUpdated(new Date(ms));
-    setInstant(moment(ms).utc(true));
+  const onUpdate = (updatedValues) => {
+    setUpdated([new Date(updatedValues[0]), new Date(updatedValues[1])]);
+    setPeriod((prevPeriod) => {
+      return {
+        ...prevPeriod,
+        start: new Date(moment(updatedValues[0]).utc(true)),
+        end: new Date(moment(updatedValues[1]).utc(true)),
+      };
+    });
   };
 
   // renderDateTime is only used for Storybook
   const renderDateTime = (date, header) => {
-    const diffInMonths = differenceInMonths(maxInstant, minInstant);
-    const formattedDate =
-      diffInMonths > 1 ? format(date, "dd.MM.yyyy") : format(date, "dd.MM.yyyy HH:mm:ss");
+    const diffInMonths = differenceInMonths(max, min);
+    const formattedDateStart =
+      diffInMonths > 1 ? format(date[0], "dd.MM.yyyy") : format(date[0], "dd.MM.yyyy HH:mm:ss");
+    const formattedDateEnd =
+      diffInMonths > 1 ? format(date[1], "dd.MM.yyyy") : format(date[1], "dd.MM.yyyy HH:mm:ss");
 
     return (
       <div
@@ -58,7 +66,9 @@ function SliderInstant({ minInstant, maxInstant, period, setInstant, forStory })
         }}
       >
         <b>{header}:</b>
-        <div style={{ fontSize: 12 }}>{formattedDate}</div>
+        <div style={{ fontSize: 12 }}>
+          {formattedDateStart} -- {formattedDateEnd}
+        </div>
       </div>
     );
   };
@@ -70,10 +80,11 @@ function SliderInstant({ minInstant, maxInstant, period, setInstant, forStory })
         <Slider
           mode={1}
           step={halfHour}
-          domain={[+minInstant, +maxInstant]}
+          utc
+          domain={[+min, +max]}
           rootStyle={sliderStyle}
           onUpdate={onUpdate}
-          values={[+updated]}
+          values={[+updated[0], +updated[1]]}
         >
           <Rail>{({ getRailProps }) => <SliderRail getRailProps={getRailProps} />}</Rail>
           <Handles>
@@ -83,14 +94,14 @@ function SliderInstant({ minInstant, maxInstant, period, setInstant, forStory })
                   <Handle
                     key={handle.id}
                     handle={handle}
-                    domain={[+minInstant, +maxInstant]}
+                    domain={[+min, +max]}
                     getHandleProps={getHandleProps}
                   />
                 ))}
               </div>
             )}
           </Handles>
-          <Tracks right={false} left={false}>
+          <Tracks left={false} right={false}>
             {({ tracks, getTrackProps }) => (
               <div>
                 {tracks.map(({ id, source, target }) => (
@@ -115,10 +126,12 @@ function SliderInstant({ minInstant, maxInstant, period, setInstant, forStory })
   );
 }
 
-SliderInstant.propTypes = {
-  minInstant: PropTypes.number.isRequired,
-  maxInstant: PropTypes.number.isRequired,
-  setInstant: PropTypes.func.isRequired,
+export default SliderPeriod;
+
+SliderPeriod.propTypes = {
+  min: PropTypes.number.isRequired,
+  max: PropTypes.number.isRequired,
+  setPeriod: PropTypes.func.isRequired,
   period: PropTypes.shape({
     start: PropTypes.instanceOf(Date).isRequired,
     end: PropTypes.instanceOf(Date),
@@ -126,8 +139,6 @@ SliderInstant.propTypes = {
   forStory: PropTypes.bool,
 };
 
-SliderInstant.defaultProps = {
+SliderPeriod.defaultProps = {
   forStory: false,
 };
-
-export default SliderInstant;

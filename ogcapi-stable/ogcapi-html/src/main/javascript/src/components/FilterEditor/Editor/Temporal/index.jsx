@@ -6,8 +6,8 @@ import { Button, ButtonGroup, Form, Input, Row, Col } from "reactstrap";
 import DatetimeRangePicker from "react-datetime-range-picker";
 import Datetime from "react-datetime";
 import moment from "moment";
-import SliderInstant from "./sliderInstant";
-import SliderPeriod from "./sliderPeriod";
+import SliderInstant from "./InstantSlider";
+import SliderPeriod from "./PeriodSlider";
 
 const fromFilterString = (filter) => {
   if (filter.indexOf("/") === -1) {
@@ -109,7 +109,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
     setUserInputValidation(false);
     return false;
   };
-
+  console.log(period, userInputValidation);
   return (
     <Form onSubmit={save}>
       <p className="text-muted text-uppercase">date/time</p>
@@ -156,12 +156,12 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
                 if (isValidInput) {
                   setInstant(next);
                 }
-              }} /*
+              }}
               onKeyPress={(event) => {
                 if (event.key === "Enter" && userInputValidation) {
-                  save();
+                  save(event);
                 }
-              }} */
+              }}
             />
             <Input size="sm" className="mb-3" disabled />
           </Col>

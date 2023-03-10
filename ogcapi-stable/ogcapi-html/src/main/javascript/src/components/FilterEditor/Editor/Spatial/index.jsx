@@ -21,13 +21,13 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
   const [maxLng, setMaxLng] = useState(Number(bounds[1][0]).toFixed(4));
   const [maxLat, setMaxLat] = useState(Number(bounds[1][1]).toFixed(4));
 
-  const [isLngValid, setIsLngValid] = useState(true);
-  const [isLatValid, setIsLatValid] = useState(true);
+  const [isLngMinValid, setIsLngValid] = useState(true);
+  const [isLatMinValid, setIsLatValid] = useState(true);
   const [isLngMaxValid, setIsLngMaxValid] = useState(true);
   const [isLatMaxValid, setIsLatMaxValid] = useState(true);
 
-  const [minLngCorrect, setMinLngCorrect] = useState(true);
-  const [minLatCorrect, setMinLatCorrect] = useState(true);
+  const [LngMinLessMax, setMinLngCorrect] = useState(true);
+  const [LatMinLessMax, setMinLatCorrect] = useState(true);
 
   const bBoxFilter = Object.keys(filters).filter(
     (key) => filters[key].remove === false && key === "bbox" && key !== "datetime"
@@ -47,7 +47,7 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
     onChange("bbox", bboxInput);
   };
 
-  const testLng = (lng) => {
+  const testMinLng = (lng) => {
     let isValid = true;
     if (lng < -180 || lng > 180) isValid = false;
     setIsLngValid(isValid);
@@ -61,7 +61,7 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
     return isValid;
   };
 
-  const testLat = (lat) => {
+  const testMinLat = (lat) => {
     let isValid = true;
     if (lat < -90 || lat > 90) isValid = false;
     setIsLatValid(isValid);
@@ -98,11 +98,11 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               size="sm"
               name="minLng"
               id="minLng"
-              className={minLngCorrect && isLngValid ? "mr-2" : "mr-2 is-invalid"}
+              className={LngMinLessMax && isLngMinValid ? "mr-2" : "mr-2 is-invalid"}
               defaultValue={minLng}
               onChange={(e) => {
                 const minMaxValid = testMinMaxLng(Number(e.target.value), maxLng);
-                const isValidInputLng = testLng(e.target.value);
+                const isValidInputLng = testMinLng(e.target.value);
                 if (isValidInputLng && minMaxValid) {
                   setMinLng(Number(e.target.value));
                 }
@@ -110,10 +110,10 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               onKeyPress={(event) => {
                 if (
                   event.key === "Enter" &&
-                  isLngValid &&
-                  isLatValid &&
-                  minLngCorrect &&
-                  minLatCorrect &&
+                  isLngMinValid &&
+                  isLatMinValid &&
+                  LngMinLessMax &&
+                  LatMinLessMax &&
                   isLngMaxValid &&
                   isLatMaxValid
                 ) {
@@ -121,9 +121,9 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
                 }
               }}
             />
-            {minLngCorrect && isLngValid && <FormText>Min. Longitude</FormText>}
-            {!minLngCorrect && <FormFeedback>Min greater than Max!</FormFeedback>}
-            {!isLngValid && <FormFeedback>Value too low/high for Lng</FormFeedback>}
+            {LngMinLessMax && isLngMinValid && <FormText>Min. Longitude</FormText>}
+            {!LngMinLessMax && <FormFeedback>Min greater than Max!</FormFeedback>}
+            {!isLngMinValid && <FormFeedback>Value too low/high for Lng</FormFeedback>}
           </FormGroup>
         </Col>
         <Col md="5">
@@ -133,11 +133,11 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               size="sm"
               name="minLat"
               id="minLat"
-              className={isLatValid && minLatCorrect ? "mr-2" : "mr-2 is-invalid"}
+              className={isLatMinValid && LatMinLessMax ? "mr-2" : "mr-2 is-invalid"}
               defaultValue={minLat}
               onChange={(e) => {
                 const minMaxValid = testMinMaxLat(Number(e.target.value), maxLat);
-                const isValidInputLat = testLat(e.target.value);
+                const isValidInputLat = testMinLat(e.target.value);
                 if (isValidInputLat && minMaxValid) {
                   setMinLat(Number(e.target.value));
                 }
@@ -145,10 +145,10 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               onKeyPress={(event) => {
                 if (
                   event.key === "Enter" &&
-                  isLngValid &&
-                  isLatValid &&
-                  minLngCorrect &&
-                  minLatCorrect &&
+                  isLngMinValid &&
+                  isLatMinValid &&
+                  LngMinLessMax &&
+                  LatMinLessMax &&
                   isLngMaxValid &&
                   isLatMaxValid
                 ) {
@@ -156,9 +156,9 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
                 }
               }}
             />
-            {minLatCorrect && isLatValid && <FormText>Min. Latitude</FormText>}
-            {!minLatCorrect && <FormFeedback>Min greater than Max!</FormFeedback>}
-            {!isLatValid && <FormFeedback>Value too low/high for Lat</FormFeedback>}
+            {LatMinLessMax && isLatMinValid && <FormText>Min. Latitude</FormText>}
+            {!LatMinLessMax && <FormFeedback>Min greater than Max!</FormFeedback>}
+            {!isLatMinValid && <FormFeedback>Value too low/high for Lat</FormFeedback>}
           </FormGroup>
         </Col>
       </Row>
@@ -170,7 +170,7 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               size="sm"
               name="maxLng"
               id="maxLng"
-              className={isLngMaxValid && minLngCorrect ? "mr-2" : "mr-2 is-invalid"}
+              className={isLngMaxValid && LngMinLessMax ? "mr-2" : "mr-2 is-invalid"}
               defaultValue={maxLng}
               onChange={(e) => {
                 const minMaxValid = testMinMaxLng(minLng, Number(e.target.value));
@@ -182,10 +182,10 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               onKeyPress={(event) => {
                 if (
                   event.key === "Enter" &&
-                  isLngValid &&
-                  isLatValid &&
-                  minLngCorrect &&
-                  minLatCorrect &&
+                  isLngMinValid &&
+                  isLatMinValid &&
+                  LngMinLessMax &&
+                  LatMinLessMax &&
                   isLngMaxValid &&
                   isLatMaxValid
                 ) {
@@ -204,7 +204,7 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               size="sm"
               name="maxLat"
               id="maxLat"
-              className={isLatMaxValid && minLatCorrect ? "mr-2" : "mr-2 is-invalid"}
+              className={isLatMaxValid && LatMinLessMax ? "mr-2" : "mr-2 is-invalid"}
               defaultValue={maxLat}
               onChange={(e) => {
                 const minMaxValid = testMinMaxLat(minLat, Number(e.target.value));
@@ -216,10 +216,10 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               onKeyPress={(event) => {
                 if (
                   event.key === "Enter" &&
-                  isLngValid &&
-                  isLatValid &&
-                  minLngCorrect &&
-                  minLatCorrect &&
+                  isLngMinValid &&
+                  isLatMinValid &&
+                  LngMinLessMax &&
+                  LatMinLessMax &&
                   isLngMaxValid &&
                   isLatMaxValid
                 ) {
@@ -239,10 +239,10 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
                 size="sm"
                 style={{ minWidth: "40px" }}
                 disabled={
-                  !isLngValid ||
-                  !isLatValid ||
-                  !minLngCorrect ||
-                  !minLatCorrect ||
+                  !isLngMinValid ||
+                  !isLatMinValid ||
+                  !LngMinLessMax ||
+                  !LatMinLessMax ||
                   !isLngMaxValid ||
                   !isLatMaxValid
                 }
@@ -266,10 +266,10 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               color="primary"
               size="sm"
               disabled={
-                !isLngValid ||
-                !isLatValid ||
-                !minLngCorrect ||
-                !minLatCorrect ||
+                !isLngMinValid ||
+                !isLatMinValid ||
+                !LngMinLessMax ||
+                !LatMinLessMax ||
                 !isLngMaxValid ||
                 !isLatMaxValid
               }
