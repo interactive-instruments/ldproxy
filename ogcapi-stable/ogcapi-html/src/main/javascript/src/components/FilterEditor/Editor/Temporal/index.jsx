@@ -104,13 +104,11 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
     const parsedDate = moment.utc(inputValue);
     if (parsedDate.isValid()) {
       setUserInputValidation(true);
-    } else {
-      setUserInputValidation(false);
-      console.error("Invalid date input");
+      return true;
     }
+    setUserInputValidation(false);
+    return false;
   };
-
-  console.log(instant, userInputValidation);
 
   return (
     <Form onSubmit={save}>
@@ -154,11 +152,16 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
               utc
               value={instant}
               onChange={(next) => {
-                testFunction(next);
-                if (userInputValidation) {
+                const isValidInput = testFunction(next);
+                if (isValidInput) {
                   setInstant(next);
                 }
-              }}
+              }} /*
+              onKeyPress={(event) => {
+                if (event.key === "Enter" && userInputValidation) {
+                  save();
+                }
+              }} */
             />
             <Input size="sm" className="mb-3" disabled />
           </Col>
@@ -166,7 +169,9 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
           <DatetimeRangePicker
             className="col-md-10"
             inputProps={{
-              className: "form-control form-control-sm w-100 mb-3",
+              className: userInputValidation
+                ? "form-control form-control-sm w-100 mb-3"
+                : "form-control form-control-sm w-100 mb-3 is-invalid",
               readOnly: false,
             }}
             timeFormat="HH:mm:ss"
@@ -175,8 +180,8 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
             startDate={period.start}
             endDate={period.end}
             onChange={(next) => {
-              testFunction(next);
-              if (userInputValidation) {
+              const isValidInput = testFunction(next);
+              if (isValidInput) {
                 setPeriod(next);
               }
             }}
@@ -200,7 +205,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
           </Col>
         ) : (
           <Col md="2" className="d-flex align-items-end mb-3">
-            <Button color="primary" size="sm" onClick={save}>
+            <Button color="primary" size="sm" onClick={save} disabled={!userInputValidation}>
               Add
             </Button>
           </Col>

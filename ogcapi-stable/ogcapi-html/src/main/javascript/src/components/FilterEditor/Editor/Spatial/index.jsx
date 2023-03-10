@@ -1,12 +1,33 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 
-import { Button, ButtonGroup, Form, FormGroup, Input, Row, Col } from "reactstrap";
+import {
+  Button,
+  ButtonGroup,
+  Form,
+  FormGroup,
+  Input,
+  Row,
+  Col,
+  FormFeedback,
+  FormText,
+} from "reactstrap";
 
 export { default as MapSelect } from "./MapSelect";
 
 const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
-  const [minLng, setMinLng] = useState(bounds[0][0].toFixed(4));
+  const [minLng, setMinLng] = useState(Number(bounds[0][0]).toFixed(4));
+  const [minLat, setMinLat] = useState(Number(bounds[0][1]).toFixed(4));
+  const [maxLng, setMaxLng] = useState(Number(bounds[1][0]).toFixed(4));
+  const [maxLat, setMaxLat] = useState(Number(bounds[1][1]).toFixed(4));
+
+  const [isLngValid, setIsLngValid] = useState(true);
+  const [isLatValid, setIsLatValid] = useState(true);
+  const [isLngMaxValid, setIsLngMaxValid] = useState(true);
+  const [isLatMaxValid, setIsLatMaxValid] = useState(true);
+
+  const [minLngCorrect, setMinLngCorrect] = useState(true);
+  const [minLatCorrect, setMinLatCorrect] = useState(true);
 
   const bBoxFilter = Object.keys(filters).filter(
     (key) => filters[key].remove === false && key === "bbox" && key !== "datetime"
@@ -17,16 +38,53 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
     event.preventDefault();
     event.stopPropagation();
 
-    const bboxRegex = /^-?\d+\.\d{4},-?\d+\.\d{4},-?\d+\.\d{4},-?\d+\.\d{4}$/;
-    const bboxInput = `${minLng},${bounds[0][1].toFixed(4)},${bounds[1][0].toFixed(
-      4
-    )},${bounds[1][1].toFixed(4)}`;
-    if (!bboxRegex.test(bboxInput)) {
-      alert("Invalid bbox input.");
-      return;
-    }
+    const bboxInput = `${parseFloat(Math.round(minLng * 10000) / 10000).toFixed(4)},${parseFloat(
+      Math.round(minLat * 10000) / 10000
+    ).toFixed(4)},${parseFloat(Math.round(maxLng * 10000) / 10000).toFixed(4)},${parseFloat(
+      Math.round(maxLat * 10000) / 10000
+    ).toFixed(4)}`;
 
     onChange("bbox", bboxInput);
+  };
+
+  const testLng = (lng) => {
+    let isValid = true;
+    if (lng < -180 || lng > 180) isValid = false;
+    setIsLngValid(isValid);
+    return isValid;
+  };
+
+  const testMaxLng = (lngMax) => {
+    let isValid = true;
+    if (lngMax < -180 || lngMax > 180) isValid = false;
+    setIsLngMaxValid(isValid);
+    return isValid;
+  };
+
+  const testLat = (lat) => {
+    let isValid = true;
+    if (lat < -90 || lat > 90) isValid = false;
+    setIsLatValid(isValid);
+    return isValid;
+  };
+
+  const testMaxLat = (latMax) => {
+    let isValid = true;
+    if (latMax < -90 || latMax > 90) isValid = false;
+    setIsLatMaxValid(isValid);
+    return isValid;
+  };
+
+  const testMinMaxLng = (min, max) => {
+    const isValid = min <= max;
+    setMinLngCorrect(isValid);
+    return isValid;
+  };
+
+  const testMinMaxLat = (min, max) => {
+    const isValid = min <= max;
+    setMinLatCorrect(isValid);
+    return isValid;
   };
 
   return (
@@ -36,26 +94,71 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
         <Col md="5">
           <FormGroup>
             <Input
-              type="text"
+              type="number"
               size="sm"
               name="minLng"
               id="minLng"
-              className="mr-2"
-              value={minLng}
-              onChange={(e) => setMinLng(e.target.value)}
+              className={minLngCorrect && isLngValid ? "mr-2" : "mr-2 is-invalid"}
+              defaultValue={minLng}
+              onChange={(e) => {
+                const minMaxValid = testMinMaxLng(Number(e.target.value), maxLng);
+                const isValidInputLng = testLng(e.target.value);
+                if (isValidInputLng && minMaxValid) {
+                  setMinLng(Number(e.target.value));
+                }
+              }}
+              onKeyPress={(event) => {
+                if (
+                  event.key === "Enter" &&
+                  isLngValid &&
+                  isLatValid &&
+                  minLngCorrect &&
+                  minLatCorrect &&
+                  isLngMaxValid &&
+                  isLatMaxValid
+                ) {
+                  save(event);
+                }
+              }}
             />
+            {minLngCorrect && isLngValid && <FormText>Min. Longitude</FormText>}
+            {!minLngCorrect && <FormFeedback>Min greater than Max!</FormFeedback>}
+            {!isLngValid && <FormFeedback>Value too low/high for Lng</FormFeedback>}
           </FormGroup>
         </Col>
         <Col md="5">
           <FormGroup>
             <Input
-              type="text"
+              type="number"
               size="sm"
               name="minLat"
               id="minLat"
-              className="mr-2"
-              value={bounds[0][1].toFixed(4)}
+              className={isLatValid && minLatCorrect ? "mr-2" : "mr-2 is-invalid"}
+              defaultValue={minLat}
+              onChange={(e) => {
+                const minMaxValid = testMinMaxLat(Number(e.target.value), maxLat);
+                const isValidInputLat = testLat(e.target.value);
+                if (isValidInputLat && minMaxValid) {
+                  setMinLat(Number(e.target.value));
+                }
+              }}
+              onKeyPress={(event) => {
+                if (
+                  event.key === "Enter" &&
+                  isLngValid &&
+                  isLatValid &&
+                  minLngCorrect &&
+                  minLatCorrect &&
+                  isLngMaxValid &&
+                  isLatMaxValid
+                ) {
+                  save(event);
+                }
+              }}
             />
+            {minLatCorrect && isLatValid && <FormText>Min. Latitude</FormText>}
+            {!minLatCorrect && <FormFeedback>Min greater than Max!</FormFeedback>}
+            {!isLatValid && <FormFeedback>Value too low/high for Lat</FormFeedback>}
           </FormGroup>
         </Col>
       </Row>
@@ -63,31 +166,88 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
         <Col md="5">
           <FormGroup>
             <Input
-              type="text"
+              type="number"
               size="sm"
               name="maxLng"
               id="maxLng"
-              className="mr-2"
-              value={bounds[1][0].toFixed(4)}
+              className={isLngMaxValid && minLngCorrect ? "mr-2" : "mr-2 is-invalid"}
+              defaultValue={maxLng}
+              onChange={(e) => {
+                const minMaxValid = testMinMaxLng(minLng, Number(e.target.value));
+                const isValidInputLng = testMaxLng(e.target.value);
+                if (isValidInputLng && minMaxValid) {
+                  setMaxLng(Number(e.target.value));
+                }
+              }}
+              onKeyPress={(event) => {
+                if (
+                  event.key === "Enter" &&
+                  isLngValid &&
+                  isLatValid &&
+                  minLngCorrect &&
+                  minLatCorrect &&
+                  isLngMaxValid &&
+                  isLatMaxValid
+                ) {
+                  save(event);
+                }
+              }}
             />
+            {isLngMaxValid && <FormText>Max. Longitude</FormText>}
+            {!isLngMaxValid && <FormFeedback>Value too low/high for Lng</FormFeedback>}
           </FormGroup>
         </Col>
         <Col md="5">
           <FormGroup>
             <Input
-              type="text"
+              type="number"
               size="sm"
               name="maxLat"
               id="maxLat"
-              className="mr-2"
-              value={bounds[1][1].toFixed(4)}
+              className={isLatMaxValid && minLatCorrect ? "mr-2" : "mr-2 is-invalid"}
+              defaultValue={maxLat}
+              onChange={(e) => {
+                const minMaxValid = testMinMaxLat(minLat, Number(e.target.value));
+                const isValidInputLat = testMaxLat(e.target.value);
+                if (isValidInputLat && minMaxValid) {
+                  setMaxLat(Number(e.target.value));
+                }
+              }}
+              onKeyPress={(event) => {
+                if (
+                  event.key === "Enter" &&
+                  isLngValid &&
+                  isLatValid &&
+                  minLngCorrect &&
+                  minLatCorrect &&
+                  isLngMaxValid &&
+                  isLatMaxValid
+                ) {
+                  save(event);
+                }
+              }}
             />
+            {isLatMaxValid && <FormText>Max. Latitude</FormText>}
+            {!isLatMaxValid && <FormFeedback>Value too low/high for Lat</FormFeedback>}
           </FormGroup>
         </Col>
         {hasBboxInFilters ? (
           <Col md="2">
             <ButtonGroup>
-              <Button color="primary" size="sm" style={{ minWidth: "40px" }} onClick={save}>
+              <Button
+                color="primary"
+                size="sm"
+                style={{ minWidth: "40px" }}
+                disabled={
+                  !isLngValid ||
+                  !isLatValid ||
+                  !minLngCorrect ||
+                  !minLatCorrect ||
+                  !isLngMaxValid ||
+                  !isLatMaxValid
+                }
+                onClick={save}
+              >
                 {"\u2713"}
               </Button>
               <Button
@@ -102,7 +262,19 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
           </Col>
         ) : (
           <Col md="2">
-            <Button color="primary" size="sm" onClick={save}>
+            <Button
+              color="primary"
+              size="sm"
+              disabled={
+                !isLngValid ||
+                !isLatValid ||
+                !minLngCorrect ||
+                !minLatCorrect ||
+                !isLngMaxValid ||
+                !isLatMaxValid
+              }
+              onClick={save}
+            >
               Add
             </Button>
           </Col>

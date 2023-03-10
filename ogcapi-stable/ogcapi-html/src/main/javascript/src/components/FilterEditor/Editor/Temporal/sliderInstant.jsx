@@ -90,7 +90,7 @@ function SliderInstant({ minInstant, maxInstant, period, setInstant, forStory })
               </div>
             )}
           </Handles>
-          <Tracks right={false}>
+          <Tracks right={false} left={false}>
             {({ tracks, getTrackProps }) => (
               <div>
                 {tracks.map(({ id, source, target }) => (
