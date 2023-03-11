@@ -6,7 +6,7 @@ globalThis._cesium = {
   {{#featureExtent}}
   getExtent: (Rectangle) => {{.}},
   {{/featureExtent}}
-  getTileset: (Cesium3DTileset, Matrix4, Cartesian3) => new Cesium3DTileset({
+  getTileset: (Cesium3DTileset, Matrix4, Cartesian3, Color) => new Cesium3DTileset({
     {{#fromFeatures}}
     url: 'data:application/json,%7B%22asset%22%3A%7B%22version%22%3A%221.1%22%7D%2C%22geometricError%22%3A5000%2C%22root%22%3A%7B%22boundingVolume%22%3A%7B%22region%22%3A%5B{{{encodedRegion}}}%5D%7D%2C%22refine%22%3A%22REPLACE%22%2C%22geometricError%22%3A0%2C%22content%22%3A%7B%22uri%22%3A%22{{{encodedUrl}}}%22%7D%7D%7D',
     {{/fromFeatures}}
@@ -16,6 +16,7 @@ globalThis._cesium = {
     modelMatrix: Matrix4.fromTranslation(Cartesian3.subtract(Cartesian3.fromRadians({{centerLon}}, {{centerLat}}, {{centerHeight}}+({{.}})), Cartesian3.fromRadians({{centerLon}}, {{centerLat}}, {{centerHeight}}), new Cartesian3())),
     {{/terrainHeightDifference}}
     {{/fromTiles}}
+    outlineColor: Color.DARKSLATEGREY,
   }),
   {{#ionAccessToken}}
   accessToken: '{{.}}',

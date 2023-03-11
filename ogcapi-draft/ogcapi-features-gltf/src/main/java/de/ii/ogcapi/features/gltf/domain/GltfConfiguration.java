@@ -90,6 +90,21 @@ public interface GltfConfiguration extends ExtensionConfiguration, PropertyTrans
   }
 
   /**
+   * @langEn If `true`, the polygon edges are outlined in Cesium.
+   * @langDe Wenn `true`, werden die Kanten der Polygone in Cesium hervorgehoben.
+   * @default false
+   * @since v3.4
+   */
+  @Nullable
+  Boolean getWithOutline();
+
+  @Value.Derived
+  @DocIgnore
+  default boolean writeOutline() {
+    return Boolean.TRUE.equals(getWithOutline());
+  }
+
+  /**
    * @langEn If `true`, materials are defined as
    *     [double-sided](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#double-sided).
    * @langDe Wenn `true`, werden Materialien als

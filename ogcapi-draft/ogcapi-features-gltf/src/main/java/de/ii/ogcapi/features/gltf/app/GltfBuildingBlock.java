@@ -97,6 +97,7 @@ public class GltfBuildingBlock implements ApiBuildingBlock {
         .enabled(false)
         .meshQuantization(true)
         .withNormals(true)
+        .withOutline(false)
         .polygonOrientationNotGuaranteed(true)
         .withSurfaceType(false)
         .maxMultiplicity(DEFAULT_MULTIPLICITY)
