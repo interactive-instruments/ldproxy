@@ -1,5 +1,14 @@
 # Changelog
 
+## v3.3.5 (13/03/2023)
+
+#### Fixed bugs
+
+-  file log misses first two lines [#934](https://github.com/interactive-instruments/ldproxy/issues/934)
+-  incorrect detection of time elements in dateFormat transformations [#920](https://github.com/interactive-instruments/ldproxy/issues/920)
+
+---
+
 ## v3.3.4 (14/02/2023)
 
 #### Fixed bugs
