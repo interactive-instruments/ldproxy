@@ -6,15 +6,17 @@ import { differenceInYears, format, differenceInMonths, differenceInHours } from
 import { scaleTime } from "d3-scale";
 import { SliderRail, Handle, Track, Tick } from "../Components";
 
-const halfHour = 1000 * 60 * 30;
-
 const sliderStyle = {
   position: "relative",
   width: "100%",
 };
 
 function SliderPeriod({ period, setPeriod, min, max, forStory }) {
-  const [updated, setUpdated] = useState([period.start, period.end]);
+  const [updated, setUpdated] = useState([period.start, moment(period.end).valueOf()]);
+
+  const numSteps = 100;
+  const range = max - min;
+  const step = range / numSteps;
 
   const formatTick = (ms) => {
     let dateFormat;
@@ -79,7 +81,7 @@ function SliderPeriod({ period, setPeriod, min, max, forStory }) {
       <div style={{ margin: "1%", height: 120, width: "98%" }}>
         <Slider
           mode={1}
-          step={halfHour}
+          step={step}
           utc
           domain={[+min, +max]}
           rootStyle={sliderStyle}

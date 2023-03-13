@@ -161,7 +161,7 @@ storiesOf("@ogcapi/html/FilterEditor/Editor/Temporal/Period/MoreThan24h", module
       isInstant={false}
       period={{
         start: new Date("Tue Jan 01 2019 00:00:00 GMT+0100"),
-        end: new Date("Tue Jan 07 2019 00:00:00 GMT+0100"),
+        end: new Date("Tue Jun 07 2019 00:00:00 GMT+0100"),
       }}
       setPeriod={() => {}}
       min={new Date("Tue Jan 01 2019 00:00:00 GMT+0100")}

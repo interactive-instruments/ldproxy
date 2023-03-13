@@ -2,7 +2,7 @@ export const getBaseUrl = () => {
   let baseUrl = new URL(window.location.href);
   if (process.env.NODE_ENV !== "production") {
     baseUrl = new URL(
-      "https://demo.ldproxy.net/strassen/collections/unfaelle/items?limit=10&offset=10"
+      "https://demo.ldproxy.net/daraa/collections/CulturePnt/items?limit=10&offset=10"
     );
   }
   return baseUrl;
@@ -70,15 +70,16 @@ export const extractSpatial = (obj) => {
 
     if (spatialExtent) {
       const bounds = spatialExtent.bbox;
-      const transformedBounds = bounds[0].length === 6
-        ? bounds.map((innerArray) => [
-            [innerArray[0], innerArray[1]],
-            [innerArray[3], innerArray[4]],
-          ])
-        : bounds.map((innerArray) => [
-            [innerArray[0], innerArray[1]],
-            [innerArray[2], innerArray[3]],
-          ]);
+      const transformedBounds =
+        bounds[0].length === 6
+          ? bounds.map((innerArray) => [
+              [innerArray[0], innerArray[1]],
+              [innerArray[3], innerArray[4]],
+            ])
+          : bounds.map((innerArray) => [
+              [innerArray[0], innerArray[1]],
+              [innerArray[2], innerArray[3]],
+            ]);
       spatial = transformedBounds.flat();
     }
   }
