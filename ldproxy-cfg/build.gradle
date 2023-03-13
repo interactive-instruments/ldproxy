@@ -24,6 +24,7 @@ ext {
           'org/apache',
           'org/eclipse',
           'org/yaml',
+          'org/commonmark',
 
   ]
   includePaths = [
@@ -41,6 +42,7 @@ ext {
           'org/apache/http',
           'org/eclipse/jetty',
           'org/yaml/snakeyaml',
+          'org/commonmark/renderer',
 
   ]
 }
