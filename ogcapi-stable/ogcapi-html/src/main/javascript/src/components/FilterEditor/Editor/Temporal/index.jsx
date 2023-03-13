@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import qs from "qs";
 import { startOfToday } from "date-fns";
-import { Button, ButtonGroup, Form, Input, Row, Col } from "reactstrap";
+import { Button, ButtonGroup, Form, Input, Row, Col, FormText } from "reactstrap";
 import DatetimeRangePicker from "react-datetime-range-picker";
 import Datetime from "react-datetime";
 import moment from "moment";
@@ -70,6 +70,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
   });
   const [isInstant, setIsInstant] = useState(extent.end === null);
   const [userInputValidation, setUserInputValidation] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const parsedQuery = qs.parse(window.location.search, {
@@ -100,9 +101,31 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
     );
   };
 
+  const error = (inputValue) => {
+    const parsedDate = moment.utc(inputValue, "DD.MM.YYYY HH:mm:ss", true);
+    if (!parsedDate.isValid()) {
+      setErrorMessage("Invalid date format.");
+    } else if (!parsedDate.isSameOrAfter(moment.utc(min))) {
+      setErrorMessage("Date is before the minimum date.");
+    } else if (!parsedDate.isSameOrBefore(moment.utc(max))) {
+      setErrorMessage("Date is after the maximum date.");
+    } else if (!parsedDate.isSameOrBefore(moment.utc())) {
+      setErrorMessage("Date is in the future.");
+    } else {
+      setErrorMessage("");
+    }
+    return errorMessage;
+  };
+
   const testFunction = (inputValue) => {
-    const parsedDate = moment.utc(inputValue);
-    if (parsedDate.isValid()) {
+    error(inputValue);
+    const parsedDate = moment.utc(inputValue, "DD.MM.YYYY HH:mm:ss", true);
+    if (
+      parsedDate.isValid() &&
+      parsedDate.isSameOrAfter(moment.utc(min)) &&
+      parsedDate.isSameOrBefore(moment.utc(max)) &&
+      parsedDate.isSameOrBefore(moment.utc())
+    ) {
       setUserInputValidation(true);
       return true;
     }
@@ -165,6 +188,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
                     }
                   }}
                 />
+                {!userInputValidation && <FormText>{errorMessage}</FormText>}
                 <Input size="sm" className="mb-3" disabled />
               </Col>
             ) : (
