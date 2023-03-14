@@ -68,7 +68,7 @@ function SliderInstant({ minInstant, maxInstant, period, setInstant, forStory })
   return (
     <div>
       {forStory && renderDateTime(updated, "Date/Time")}
-      <div style={{ margin: "1%", height: 120, width: "98%" }}>
+      <div style={{ margin: "10px", height: 120 }}>
         <Slider
           mode={1}
           step={step}

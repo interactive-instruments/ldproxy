@@ -130,7 +130,7 @@ const SpatialFilter = ({ bounds, setBounds, onChange, filters, deleteFilters }) 
               }}
             />
             {LngMinLessMax && isLngMinValid && <FormText>Min. Longitude</FormText>}
-            {!LngMinLessMax && <FormFeedback>Min greater than Max!</FormFeedback>}
+            {!LngMinLessMax && <FormFeedback>Min. greater than Max.</FormFeedback>}
             {!isLngMinValid && <FormFeedback>Value too low/high for Lng</FormFeedback>}
           </FormGroup>
         </Col>
@@ -166,7 +166,7 @@ const SpatialFilter = ({ bounds, setBounds, onChange, filters, deleteFilters }) 
               }}
             />
             {LatMinLessMax && isLatMinValid && <FormText>Min. Latitude</FormText>}
-            {!LatMinLessMax && <FormFeedback>Min greater than Max!</FormFeedback>}
+            {!LatMinLessMax && <FormFeedback>Min. greater than Max.</FormFeedback>}
             {!isLatMinValid && <FormFeedback>Value too low/high for Lat</FormFeedback>}
           </FormGroup>
         </Col>
