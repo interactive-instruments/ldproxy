@@ -29,13 +29,6 @@ const SpatialFilter = ({ bounds, setBounds, onChange, filters, deleteFilters }) 
   const [LngMinLessMax, setMinLngCorrect] = useState(true);
   const [LatMinLessMax, setMinLatCorrect] = useState(true);
 
-  useEffect(() => {
-    setMinLng(Number(bounds[0][0]).toFixed(4));
-    setMinLat(Number(bounds[0][1]).toFixed(4));
-    setMaxLng(Number(bounds[1][0]).toFixed(4));
-    setMaxLat(Number(bounds[1][1]).toFixed(4));
-  }, [bounds]);
-
   const bBoxFilter = Object.keys(filters).filter(
     (key) => filters[key].remove === false && key === "bbox" && key !== "datetime"
   );
@@ -93,6 +86,17 @@ const SpatialFilter = ({ bounds, setBounds, onChange, filters, deleteFilters }) 
     setMinLatCorrect(isValid);
     return isValid;
   };
+
+  useEffect(() => {
+    setMinLng(Number(bounds[0][0]).toFixed(4));
+    setMinLat(Number(bounds[0][1]).toFixed(4));
+    setMaxLng(Number(bounds[1][0]).toFixed(4));
+    setMaxLat(Number(bounds[1][1]).toFixed(4));
+    testMinLng(minLng);
+    testMaxLng(maxLng);
+    testMinLat(minLat);
+    testMaxLat(maxLat);
+  }, [bounds]);
 
   return (
     <Form onSubmit={save}>
