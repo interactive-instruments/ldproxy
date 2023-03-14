@@ -92,10 +92,11 @@ const SpatialFilter = ({ bounds, setBounds, onChange, filters, deleteFilters }) 
     setMinLat(Number(bounds[0][1]).toFixed(4));
     setMaxLng(Number(bounds[1][0]).toFixed(4));
     setMaxLat(Number(bounds[1][1]).toFixed(4));
-    testMinLng(minLng);
-    testMaxLng(maxLng);
-    testMinLat(minLat);
-    testMaxLat(maxLat);
+
+    testMinLng(Number(bounds[0][0]));
+    testMaxLng(Number(bounds[1][0]));
+    testMinLat(Number(bounds[0][1]));
+    testMaxLat(Number(bounds[1][1]));
   }, [bounds]);
 
   return (
