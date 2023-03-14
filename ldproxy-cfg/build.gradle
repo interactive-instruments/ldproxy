@@ -41,6 +41,7 @@ ext {
           'org/apache/http',
           'org/eclipse/jetty',
           'org/yaml/snakeyaml',
+          'org/commonmark',
 
   ]
 }

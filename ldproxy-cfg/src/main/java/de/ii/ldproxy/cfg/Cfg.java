@@ -9,6 +9,7 @@ package de.ii.ldproxy.cfg;
 
 import de.ii.xtraplatform.store.domain.entities.EntityData;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
 
 public interface Cfg {
@@ -18,4 +19,10 @@ public interface Cfg {
   <T extends EntityData> void writeEntity(T data, Path... patches) throws IOException;
 
   <T extends EntityData> void writeDefaults(T data, Path... defaults) throws IOException;
+
+  <T extends EntityData> void addEntity(T data) throws IOException;
+
+  <T extends EntityData> void writeEntity(T data, OutputStream outputStream) throws IOException;
+
+  void writeZippedStore(OutputStream outputStream) throws IOException;
 }
