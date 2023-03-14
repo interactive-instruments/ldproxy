@@ -49,7 +49,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
   const max = end;
 
   const minInstant = start;
-  const maxInstant = startOfToday();
+  const maxInstant = end !== null ? end : startOfToday();
 
   const dateTimeFilter = Object.keys(filters).filter(
     (key) => filters[key].remove === false && key === "datetime"
@@ -135,122 +135,125 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
 
   return (
     <Form onSubmit={save}>
+      <p className="text-muted text-uppercase">date/time (utc)</p>
+      <ButtonGroup className="mb-3">
+        <Button
+          color="primary"
+          outline={isInstant}
+          size="sm"
+          className="py-0"
+          onClick={() => setIsInstant(false)}
+        >
+          Period
+        </Button>
+        <Button
+          color="primary"
+          outline={!isInstant}
+          size="sm"
+          className="py-0"
+          onClick={() => setIsInstant(true)}
+        >
+          Instant
+        </Button>
+      </ButtonGroup>
+      <Row>
+        {isInstant ? (
+          <Col md="10">
+            {!userInputValidation && <FormText>{errorMessage}</FormText>}
+            <Datetime
+              className=""
+              inputProps={{
+                className: userInputValidation
+                  ? "form-control form-control-sm w-100 mb-3"
+                  : "form-control form-control-sm w-100 mb-3 is-invalid",
+                style: {
+                  backgroundColor: "white",
+                  cursor: "pointer",
+                },
+              }}
+              timeFormat="HH:mm:ss"
+              dateFormat="DD.MM.YYYY"
+              utc
+              value={instant}
+              onChange={(next) => {
+                const isValidInput = testFunction(next);
+                if (isValidInput) {
+                  setInstant(next);
+                }
+              }}
+              onKeyPress={(event) => {
+                if (event.key === "Enter" && userInputValidation) {
+                  save(event);
+                }
+              }}
+            />
+
+            <Input size="sm" className="mb-3" disabled />
+          </Col>
+        ) : (
+          <DatetimeRangePicker
+            className="col-md-10"
+            inputProps={{
+              className: userInputValidation
+                ? "form-control form-control-sm w-100 mb-3"
+                : "form-control form-control-sm w-100 mb-3 is-invalid",
+              readOnly: false,
+            }}
+            timeFormat="HH:mm:ss"
+            dateFormat="DD.MM.YYYY"
+            utc
+            startDate={period.start}
+            endDate={period.end}
+            onChange={(next) => {
+              const isValidInput = testFunction(next);
+              if (isValidInput) {
+                setPeriod(next);
+              }
+            }}
+          />
+        )}
+        {hasDateTimeInFilters ? (
+          <Col md="2" className="d-flex align-items-end mb-3">
+            <ButtonGroup>
+              <Button color="primary" size="sm" style={{ minWidth: "40px" }} onClick={save}>
+                {"\u2713"}
+              </Button>
+              <Button
+                color="danger"
+                size="sm"
+                style={{ minWidth: "40px" }}
+                onClick={deleteFilters("datetime")}
+              >
+                {"\u2716"}
+              </Button>
+            </ButtonGroup>
+          </Col>
+        ) : (
+          <Col md="2" className="d-flex align-items-end mb-3">
+            <Button color="primary" size="sm" onClick={save} disabled={!userInputValidation}>
+              Add
+            </Button>
+          </Col>
+        )}
+      </Row>
       {min !== max && (
         <>
-          <p className="text-muted text-uppercase">date/time</p>
-          <ButtonGroup className="mb-3">
-            <Button
-              color="primary"
-              outline={isInstant}
-              size="sm"
-              className="py-0"
-              onClick={() => setIsInstant(false)}
-            >
-              Period
-            </Button>
-            <Button
-              color="primary"
-              outline={!isInstant}
-              size="sm"
-              className="py-0"
-              onClick={() => setIsInstant(true)}
-            >
-              Instant
-            </Button>
-          </ButtonGroup>
           <Row>
-            {isInstant ? (
+            {extent.start && isInstant ? (
               <Col md="10">
-                <Datetime
-                  className=""
-                  inputProps={{
-                    className: userInputValidation
-                      ? "form-control form-control-sm w-100 mb-3"
-                      : "form-control form-control-sm w-100 mb-3 is-invalid",
-                    style: {
-                      backgroundColor: "white",
-                      cursor: "pointer",
-                    },
-                  }}
-                  timeFormat="HH:mm:ss"
-                  dateFormat="DD.MM.YYYY"
-                  utc
-                  value={instant}
-                  onChange={(next) => {
-                    const isValidInput = testFunction(next);
-                    if (isValidInput) {
-                      setInstant(next);
-                    }
-                  }}
-                  onKeyPress={(event) => {
-                    if (event.key === "Enter" && userInputValidation) {
-                      save(event);
-                    }
-                  }}
+                <SliderInstant
+                  period={period}
+                  setInstant={setInstant}
+                  minInstant={minInstant}
+                  maxInstant={maxInstant}
                 />
-                {!userInputValidation && <FormText>{errorMessage}</FormText>}
-                <Input size="sm" className="mb-3" disabled />
               </Col>
             ) : (
-              <DatetimeRangePicker
-                className="col-md-10"
-                inputProps={{
-                  className: userInputValidation
-                    ? "form-control form-control-sm w-100 mb-3"
-                    : "form-control form-control-sm w-100 mb-3 is-invalid",
-                  readOnly: false,
-                }}
-                timeFormat="HH:mm:ss"
-                dateFormat="DD.MM.YYYY"
-                utc
-                startDate={period.start}
-                endDate={period.end}
-                onChange={(next) => {
-                  const isValidInput = testFunction(next);
-                  if (isValidInput) {
-                    setPeriod(next);
-                  }
-                }}
-              />
-            )}
-            {hasDateTimeInFilters ? (
-              <Col md="2" className="d-flex align-items-end mb-3">
-                <ButtonGroup>
-                  <Button color="primary" size="sm" style={{ minWidth: "40px" }} onClick={save}>
-                    {"\u2713"}
-                  </Button>
-                  <Button
-                    color="danger"
-                    size="sm"
-                    style={{ minWidth: "40px" }}
-                    onClick={deleteFilters("datetime")}
-                  >
-                    {"\u2716"}
-                  </Button>
-                </ButtonGroup>
-              </Col>
-            ) : (
-              <Col md="2" className="d-flex align-items-end mb-3">
-                <Button color="primary" size="sm" onClick={save} disabled={!userInputValidation}>
-                  Add
-                </Button>
+              <Col md="10">
+                <SliderPeriod period={period} setPeriod={setPeriod} min={min} max={max} />
               </Col>
             )}
           </Row>
-          {extent.start && isInstant ? (
-            <Col md="10">
-              <SliderInstant
-                period={period}
-                setInstant={setInstant}
-                minInstant={minInstant}
-                maxInstant={maxInstant}
-              />
-            </Col>
-          ) : (
-            <Col md="10">
-              <SliderPeriod period={period} setPeriod={setPeriod} min={min} max={max} />
-            </Col>
-          )}
         </>
       )}
     </Form>

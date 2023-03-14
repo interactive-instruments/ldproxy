@@ -2,7 +2,7 @@ export const getBaseUrl = () => {
   let baseUrl = new URL(window.location.href);
   if (process.env.NODE_ENV !== "production") {
     baseUrl = new URL(
-      "https://demo.ldproxy.net/daraa/collections/CulturePnt/items?limit=10&offset=10"
+      "https://demo.ldproxy.net/vineyards/collections/vineyards/items?limit=10&offset=10"
     );
   }
   return baseUrl;

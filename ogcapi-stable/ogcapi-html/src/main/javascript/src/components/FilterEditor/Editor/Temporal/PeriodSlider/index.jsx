@@ -27,7 +27,7 @@ function SliderPeriod({ period, setPeriod, min, max, forStory }) {
     } else if (differenceInMonths(max, min) > 7) {
       dateFormat = format(new Date(ms), "MMM");
     } else if (differenceInHours(max, min) > 24) {
-      dateFormat = format(new Date(ms), "MMM dd");
+      dateFormat = format(new Date(ms), "dd MMM");
     } else if (differenceInHours(max, min) < 24) {
       dateFormat = format(new Date(ms), "HH:mm:ss");
     }
@@ -76,9 +76,9 @@ function SliderPeriod({ period, setPeriod, min, max, forStory }) {
   };
 
   return (
-    <div>
+    <>
       {forStory && renderDateTime(updated, "Date/Time")}
-      <div style={{ margin: "1%", height: 120, width: "98%" }}>
+      <div style={{ margin: "10px", height: 120 }}>
         <Slider
           mode={1}
           step={step}
@@ -124,7 +124,7 @@ function SliderPeriod({ period, setPeriod, min, max, forStory }) {
           </Ticks>
         </Slider>
       </div>
-    </div>
+    </>
   );
 }
 

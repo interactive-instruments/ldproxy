@@ -27,7 +27,7 @@ function SliderInstant({ minInstant, maxInstant, period, setInstant, forStory })
     } else if (differenceInMonths(maxInstant, minInstant) > 7) {
       dateFormat = format(new Date(ms), "MMM");
     } else if (differenceInHours(maxInstant, minInstant) > 24) {
-      dateFormat = format(new Date(ms), "MMM dd");
+      dateFormat = format(new Date(ms), "dd MMM");
     } else if (differenceInHours(maxInstant, minInstant) < 24) {
       dateFormat = format(new Date(ms), "HH:mm:ss");
     }

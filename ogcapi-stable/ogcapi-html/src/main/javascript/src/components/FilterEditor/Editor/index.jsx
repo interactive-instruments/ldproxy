@@ -53,7 +53,8 @@ const EditorBody = ({
           )}
           {spatial && spatial.length > 0 && (
             <SpatialFilter
-              bounds={bounds}
+              bounds={bounds.map((point) => point.map((num) => parseFloat(num).toFixed(4)))}
+              setBounds={setBounds}
               onChange={onAdd}
               filters={filters}
               deleteFilters={deleteFilters}

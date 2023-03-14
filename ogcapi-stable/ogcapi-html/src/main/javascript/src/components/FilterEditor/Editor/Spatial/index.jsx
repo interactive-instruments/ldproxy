@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 
 import {
@@ -15,7 +15,7 @@ import {
 
 export { default as MapSelect } from "./MapSelect";
 
-const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
+const SpatialFilter = ({ bounds, setBounds, onChange, filters, deleteFilters }) => {
   const [minLng, setMinLng] = useState(Number(bounds[0][0]).toFixed(4));
   const [minLat, setMinLat] = useState(Number(bounds[0][1]).toFixed(4));
   const [maxLng, setMaxLng] = useState(Number(bounds[1][0]).toFixed(4));
@@ -28,6 +28,13 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
 
   const [LngMinLessMax, setMinLngCorrect] = useState(true);
   const [LatMinLessMax, setMinLatCorrect] = useState(true);
+
+  useEffect(() => {
+    setMinLng(Number(bounds[0][0]).toFixed(4));
+    setMinLat(Number(bounds[0][1]).toFixed(4));
+    setMaxLng(Number(bounds[1][0]).toFixed(4));
+    setMaxLat(Number(bounds[1][1]).toFixed(4));
+  }, [bounds]);
 
   const bBoxFilter = Object.keys(filters).filter(
     (key) => filters[key].remove === false && key === "bbox" && key !== "datetime"
@@ -99,13 +106,14 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               name="minLng"
               id="minLng"
               className={LngMinLessMax && isLngMinValid ? "mr-2" : "mr-2 is-invalid"}
-              defaultValue={minLng}
+              value={Number(bounds[0][0]) || ""}
               onChange={(e) => {
-                const minMaxValid = testMinMaxLng(Number(e.target.value), maxLng);
-                const isValidInputLng = testMinLng(e.target.value);
-                if (isValidInputLng && minMaxValid) {
-                  setMinLng(Number(e.target.value));
-                }
+                testMinMaxLng(Number(e.target.value), maxLng);
+                testMinLng(e.target.value);
+                setBounds([
+                  [Number(e.target.value).toFixed(4), Number(minLat).toFixed(4)],
+                  [Number(maxLng).toFixed(4), Number(maxLat).toFixed(4)],
+                ]);
               }}
               onKeyPress={(event) => {
                 if (
@@ -134,13 +142,14 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               name="minLat"
               id="minLat"
               className={isLatMinValid && LatMinLessMax ? "mr-2" : "mr-2 is-invalid"}
-              defaultValue={minLat}
+              value={Number(bounds[0][1]) || ""}
               onChange={(e) => {
-                const minMaxValid = testMinMaxLat(Number(e.target.value), maxLat);
-                const isValidInputLat = testMinLat(e.target.value);
-                if (isValidInputLat && minMaxValid) {
-                  setMinLat(Number(e.target.value));
-                }
+                testMinMaxLat(Number(e.target.value), maxLat);
+                testMinLat(e.target.value);
+                setBounds([
+                  [Number(minLng).toFixed(4), Number(e.target.value).toFixed(4)],
+                  [Number(maxLng).toFixed(4), Number(maxLat).toFixed(4)],
+                ]);
               }}
               onKeyPress={(event) => {
                 if (
@@ -171,13 +180,14 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               name="maxLng"
               id="maxLng"
               className={isLngMaxValid && LngMinLessMax ? "mr-2" : "mr-2 is-invalid"}
-              defaultValue={maxLng}
+              value={Number(bounds[1][0]) || ""}
               onChange={(e) => {
-                const minMaxValid = testMinMaxLng(minLng, Number(e.target.value));
-                const isValidInputLng = testMaxLng(e.target.value);
-                if (isValidInputLng && minMaxValid) {
-                  setMaxLng(Number(e.target.value));
-                }
+                testMinMaxLng(minLng, Number(e.target.value));
+                testMaxLng(e.target.value);
+                setBounds([
+                  [Number(minLng).toFixed(4), Number(minLat).toFixed(4)],
+                  [Number(e.target.value).toFixed(4), Number(maxLat).toFixed(4)],
+                ]);
               }}
               onKeyPress={(event) => {
                 if (
@@ -205,13 +215,14 @@ const SpatialFilter = ({ bounds, onChange, filters, deleteFilters }) => {
               name="maxLat"
               id="maxLat"
               className={isLatMaxValid && LatMinLessMax ? "mr-2" : "mr-2 is-invalid"}
-              defaultValue={maxLat}
+              value={Number(bounds[1][1]) || ""}
               onChange={(e) => {
-                const minMaxValid = testMinMaxLat(minLat, Number(e.target.value));
-                const isValidInputLat = testMaxLat(e.target.value);
-                if (isValidInputLat && minMaxValid) {
-                  setMaxLat(Number(e.target.value));
-                }
+                testMinMaxLat(minLat, Number(e.target.value));
+                testMaxLat(e.target.value);
+                setBounds([
+                  [Number(minLng).toFixed(4), Number(minLat).toFixed(4)],
+                  [Number(maxLng).toFixed(4), Number(e.target.value).toFixed(4)],
+                ]);
               }}
               onKeyPress={(event) => {
                 if (
@@ -292,6 +303,7 @@ SpatialFilter.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   filters: PropTypes.object.isRequired,
   deleteFilters: PropTypes.func.isRequired,
+  setBounds: PropTypes.func.isRequired,
 };
 
 SpatialFilter.defaultProps = {
