@@ -7,10 +7,10 @@
  */
 package de.ii.ogcapi.crs.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.docs.DocIgnore;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
@@ -73,7 +73,7 @@ public interface CrsConfiguration extends ExtensionConfiguration {
   Boolean getSuppressGlobalCrsList();
 
   @Value.Derived
-  @DocIgnore
+  @JsonIgnore
   default boolean shouldSuppressGlobalCrsList() {
     return Boolean.TRUE.equals(getSuppressGlobalCrsList());
   }
