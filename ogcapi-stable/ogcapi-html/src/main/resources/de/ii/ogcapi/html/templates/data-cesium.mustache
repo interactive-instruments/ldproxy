@@ -16,7 +16,7 @@ globalThis._cesium = {
     modelMatrix: Matrix4.fromTranslation(Cartesian3.subtract(Cartesian3.fromRadians({{centerLon}}, {{centerLat}}, {{centerHeight}}+({{.}})), Cartesian3.fromRadians({{centerLon}}, {{centerLat}}, {{centerHeight}}), new Cartesian3())),
     {{/terrainHeightDifference}}
     {{/fromTiles}}
-    outlineColor: Color.DARKSLATEGREY,
+    outlineColor: Color.DIMGREY,
   }),
   {{#ionAccessToken}}
   accessToken: '{{.}}',
