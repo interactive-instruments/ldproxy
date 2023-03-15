@@ -7,9 +7,9 @@
  */
 package de.ii.ogcapi.features.gltf.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.xtraplatform.docs.DocIgnore;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -69,7 +69,7 @@ public interface GltfConfiguration extends ExtensionConfiguration, PropertyTrans
   Boolean getMeshQuantization();
 
   @Value.Derived
-  @DocIgnore
+  @JsonIgnore
   default boolean useMeshQuantization() {
     return Boolean.TRUE.equals(getMeshQuantization());
   }
@@ -84,7 +84,7 @@ public interface GltfConfiguration extends ExtensionConfiguration, PropertyTrans
   Boolean getWithNormals();
 
   @Value.Derived
-  @DocIgnore
+  @JsonIgnore
   default boolean writeNormals() {
     return Boolean.TRUE.equals(getWithNormals());
   }
@@ -99,7 +99,7 @@ public interface GltfConfiguration extends ExtensionConfiguration, PropertyTrans
   Boolean getWithOutline();
 
   @Value.Derived
-  @DocIgnore
+  @JsonIgnore
   default boolean writeOutline() {
     return Boolean.TRUE.equals(getWithOutline());
   }
@@ -117,7 +117,7 @@ public interface GltfConfiguration extends ExtensionConfiguration, PropertyTrans
   Boolean getPolygonOrientationNotGuaranteed();
 
   @Value.Derived
-  @DocIgnore
+  @JsonIgnore
   default boolean polygonOrientationIsNotGuaranteed() {
     return Boolean.TRUE.equals(getPolygonOrientationNotGuaranteed());
   }
@@ -167,7 +167,7 @@ public interface GltfConfiguration extends ExtensionConfiguration, PropertyTrans
   Boolean getWithSurfaceType();
 
   @Value.Derived
-  @DocIgnore
+  @JsonIgnore
   default boolean includeSurfaceType() {
     return Boolean.TRUE.equals(getWithSurfaceType());
   }
