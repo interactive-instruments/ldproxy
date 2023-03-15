@@ -72,6 +72,9 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
   const [userInputValidation, setUserInputValidation] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const [isStartValid, setIsStartValid] = useState(true);
+  const [isEndValid, setIsEndValid] = useState(true);
+
   useEffect(() => {
     const parsedQuery = qs.parse(window.location.search, {
       ignoreQueryPrefix: true,
@@ -80,13 +83,11 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
       const datetime = fromFilterString(parsedQuery.datetime);
       if (datetime.end === null) {
         setInstant(moment.utc(datetime.start).toDate());
-        setIsInstant(true);
       } else {
         setPeriod({
           start: moment.utc(datetime.start).toDate(),
           end: moment.utc(datetime.end).toDate(),
         });
-        setIsInstant(false);
       }
     }
   }, [filter]);
@@ -130,6 +131,38 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
       return true;
     }
     setUserInputValidation(false);
+    return false;
+  };
+
+  const testStart = (inputValue) => {
+    error(inputValue);
+    const parsedDate = moment.utc(inputValue, "DD.MM.YYYY HH:mm:ss", true);
+    if (
+      parsedDate.isValid() &&
+      parsedDate.isSameOrAfter(moment.utc(min)) &&
+      parsedDate.isSameOrBefore(moment.utc(max)) &&
+      parsedDate.isSameOrBefore(moment.utc())
+    ) {
+      setIsStartValid(true);
+      return true;
+    }
+    setIsStartValid(false);
+    return false;
+  };
+
+  const testEnd = (inputValue) => {
+    error(inputValue);
+    const parsedDate = moment.utc(inputValue, "DD.MM.YYYY HH:mm:ss", true);
+    if (
+      parsedDate.isValid() &&
+      parsedDate.isSameOrAfter(moment.utc(min)) &&
+      parsedDate.isSameOrBefore(moment.utc(max)) &&
+      parsedDate.isSameOrBefore(moment.utc())
+    ) {
+      setIsEndValid(true);
+      return true;
+    }
+    setIsEndValid(false);
     return false;
   };
 
@@ -179,6 +212,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
                 const isValidInput = testFunction(next);
                 if (isValidInput) {
                   setInstant(next);
+                  setIsInstant(true);
                 }
               }}
               onKeyPress={(event) => {
@@ -191,31 +225,67 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
             <Input size="sm" className="mb-3" disabled />
           </Col>
         ) : (
-          <DatetimeRangePicker
-            className="col-md-10"
-            inputProps={{
-              className: userInputValidation
-                ? "form-control form-control-sm w-100 mb-3"
-                : "form-control form-control-sm w-100 mb-3 is-invalid",
-              readOnly: false,
-            }}
-            timeFormat="HH:mm:ss"
-            dateFormat="DD.MM.YYYY"
-            utc
-            startDate={period.start}
-            endDate={period.end}
-            onChange={(next) => {
-              const isValidInput = testFunction(next);
-              if (isValidInput) {
-                setPeriod(next);
-              }
-            }}
-          />
+          <>
+            {!isStartValid && (
+              <FormText style={{ marginLeft: "15px" }}>
+                The start date is outside the specified time range.
+              </FormText>
+            )}
+            {!isEndValid && (
+              <FormText style={{ marginLeft: "15px" }}>
+                The end date is outside the specified time range.
+              </FormText>
+            )}
+            <DatetimeRangePicker
+              className="col-md-10"
+              input
+              inputProps={{
+                input: true,
+                inputProps: {
+                  className:
+                    isStartValid && isEndValid
+                      ? "form-control form-control-sm w-100 mb-3"
+                      : "form-control form-control-sm w-100 mb-3 is-invalid",
+                },
+              }}
+              timeFormat="HH:mm:ss"
+              dateFormat="DD.MM.YYYY"
+              utc
+              startDate={period.start}
+              endDate={period.end}
+              onStartDateChange={(next) => {
+                const isValidInput = testStart(next);
+                if (isValidInput) {
+                  setPeriod((prevPeriod) => ({
+                    ...prevPeriod,
+                    start: next,
+                  }));
+                  setIsInstant(false);
+                }
+              }}
+              onEndDateChange={(next) => {
+                const isValidInput = testEnd(next);
+                if (isValidInput) {
+                  setPeriod((prevPeriod) => ({
+                    ...prevPeriod,
+                    end: next,
+                  }));
+                  setIsInstant(false);
+                }
+              }}
+            />
+          </>
         )}
         {hasDateTimeInFilters ? (
           <Col md="2" className="d-flex align-items-end mb-3">
             <ButtonGroup>
-              <Button color="primary" size="sm" style={{ minWidth: "40px" }} onClick={save}>
+              <Button
+                color="primary"
+                size="sm"
+                style={{ minWidth: "40px" }}
+                onClick={save}
+                disabled={!userInputValidation || !isStartValid || !isEndValid}
+              >
                 {"\u2713"}
               </Button>
               <Button
@@ -230,7 +300,12 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
           </Col>
         ) : (
           <Col md="2" className="d-flex align-items-end mb-3">
-            <Button color="primary" size="sm" onClick={save} disabled={!userInputValidation}>
+            <Button
+              color="primary"
+              size="sm"
+              onClick={save}
+              disabled={!userInputValidation || !isStartValid || !isEndValid}
+            >
               Add
             </Button>
           </Col>

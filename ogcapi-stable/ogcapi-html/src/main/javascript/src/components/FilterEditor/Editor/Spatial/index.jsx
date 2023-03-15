@@ -303,7 +303,7 @@ const SpatialFilter = ({ bounds, setBounds, onChange, filters, deleteFilters }) 
 SpatialFilter.displayName = "SpatialFilter";
 
 SpatialFilter.propTypes = {
-  bounds: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
+  bounds: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.string)),
   onChange: PropTypes.func.isRequired,
   // eslint-disable-next-line react/forbid-prop-types
   filters: PropTypes.object.isRequired,
