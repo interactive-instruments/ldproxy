@@ -7,11 +7,11 @@
  */
 package de.ii.ogcapi.tiles3d.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.tiles.domain.SeedingOptions;
-import de.ii.xtraplatform.docs.DocIgnore;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -183,7 +183,7 @@ public interface Tiles3dConfiguration extends ExtensionConfiguration {
   @Nullable
   Boolean getClampToEllipsoid();
 
-  @DocIgnore
+  @JsonIgnore
   @Value.Derived
   @Value.Auxiliary
   default boolean shouldClampToEllipsoid() {
