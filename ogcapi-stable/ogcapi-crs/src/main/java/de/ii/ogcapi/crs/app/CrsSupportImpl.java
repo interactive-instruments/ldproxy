@@ -57,7 +57,7 @@ public class CrsSupportImpl implements CrsSupport {
     Set<EpsgCrs> additionalCrs =
         getAdditionalCrs(apiData, Optional.ofNullable(featureTypeConfiguration));
 
-    return Stream.concat(Stream.of(nativeCrs, defaultCrs), additionalCrs.stream())
+    return Stream.concat(Stream.of(defaultCrs, nativeCrs), additionalCrs.stream())
         .distinct()
         .collect(ImmutableList.toImmutableList());
   }
