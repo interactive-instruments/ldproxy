@@ -61,11 +61,12 @@ public interface CrsConfiguration extends ExtensionConfiguration {
   /**
    * @langEn If `true`, the coordinate reference systems will be included in every Collection
    *     resource that is embedded in the Collections resource. The global `crs` array will not be
-   *     used or referenced. Use this option, if the API is intended to be used with QGIS.
+   *     used or referenced. Use this option, if the API is intended to be used with a client that
+   *     does not support the global `crs` array.
    * @langDe Bei `true` werden die Koordinatenreferenzsysteme in jede Collection-Ressource
-   *     aufgenommen, die in die Collections-Ressource eingebettet ist. Das globale `crs` Array wird
-   *     nicht verwendet oder referenziert. Verwenden Sie diese Option, wenn die API mit QGIS
-   *     verwendet werden soll.
+   *     aufgenommen, die in die Collections-Ressource eingebettet ist. Das globale `crs`-Array wird
+   *     nicht verwendet oder referenziert. Verwenden Sie diese Option, wenn die API mit Clients
+   *     verwendet werden soll, die das globale `crs`-Array nicht unterstützen.
    * @default false
    */
   @Nullable
