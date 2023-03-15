@@ -11,6 +11,7 @@ import {
   Cesium3DTileStyle,
   Matrix4,
   Cartesian3,
+  Color,
 } from "c137.js";
 
 import "./style.css";
@@ -77,7 +78,7 @@ const Cesium = ({
   }
 
   if (getTileset) {
-    const tileset = getTileset(Cesium3DTileset, Matrix4, Cartesian3);
+    const tileset = getTileset(Cesium3DTileset, Matrix4, Cartesian3, Color);
     if (getStyle) {
       tileset.style = getStyle(Cesium3DTileStyle);
     }
