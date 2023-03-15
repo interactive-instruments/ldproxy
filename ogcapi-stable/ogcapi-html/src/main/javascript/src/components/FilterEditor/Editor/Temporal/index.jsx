@@ -321,6 +321,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
                   setInstant={setInstant}
                   minInstant={minInstant}
                   maxInstant={maxInstant}
+                  instant={instant}
                 />
               </Col>
             ) : (

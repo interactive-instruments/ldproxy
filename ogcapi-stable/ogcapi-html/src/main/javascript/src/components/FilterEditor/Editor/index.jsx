@@ -26,6 +26,7 @@ const EditorBody = ({
 }) => {
   const [showMap, setShowMap] = useState(false);
   const [bounds, setBounds] = useState(spatial);
+  const [mapFlag, setMapFlag] = useState(true);
 
   return (
     <Collapse isOpen={isOpen} onEntered={() => setShowMap(true)}>
@@ -58,6 +59,8 @@ const EditorBody = ({
               onChange={onAdd}
               filters={filters}
               deleteFilters={deleteFilters}
+              mapFlag={mapFlag}
+              setMapFlag={setMapFlag}
             />
           )}
           {temporal && Object.keys(temporal).length > 0 && (
@@ -74,9 +77,10 @@ const EditorBody = ({
         <Col md="6">
           {showMap && spatial && spatial.length > 0 && (
             <MapSelect
+              key={JSON.stringify(mapFlag)}
               backgroundUrl={backgroundUrl}
               attribution={attribution}
-              bounds={spatial}
+              bounds={bounds}
               onChange={setBounds}
             />
           )}

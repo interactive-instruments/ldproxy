@@ -11,7 +11,7 @@ const sliderStyle = {
   width: "100%",
 };
 
-function SliderInstant({ minInstant, maxInstant, period, setInstant, forStory }) {
+function SliderInstant({ minInstant, maxInstant, period, setInstant, forStory, instant }) {
   const [updated, setUpdated] = useState(period.start);
 
   const numSteps = 100;
