@@ -1005,7 +1005,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
 
       Integer accessorIdOutline = null;
       if (context.getGltfConfiguration().writeOutline()) {
-        // write normals and add accessor
+        // write outline edges and add accessor
         if (indices.size() <= Short.MAX_VALUE - Short.MIN_VALUE) {
           componentType = UNSIGNED_SHORT;
         } else {
