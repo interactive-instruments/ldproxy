@@ -66,7 +66,7 @@ public class CrsBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
-    return new Builder().enabled(true).build();
+    return new Builder().enabled(true).suppressGlobalCrsList(false).build();
   }
 
   @Override
