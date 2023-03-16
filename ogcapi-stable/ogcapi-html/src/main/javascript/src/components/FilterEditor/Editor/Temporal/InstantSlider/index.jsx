@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import moment from "moment";
 import { Slider, Rail, Handles, Tracks, Ticks } from "react-compound-slider";
@@ -11,42 +11,51 @@ const sliderStyle = {
   width: "100%",
 };
 
-function SliderInstant({ minInstant, maxInstant, period, setInstant, forStory, instant }) {
-  const [updated, setUpdated] = useState(period.start);
+function SliderInstant({ minInstant, maxInstant, setInstant, forStory, instant }) {
+  const [updated, setUpdated] = useState(instant);
+  const maxMinusOneHour = moment(maxInstant).subtract(1, "hour").valueOf();
 
   const numSteps = 100;
-  const range = maxInstant - minInstant;
+  const range = maxMinusOneHour - minInstant;
   const step = range / numSteps;
 
   const formatTick = (ms) => {
     let dateFormat;
-    if (differenceInYears(maxInstant, minInstant) > 7) {
+    if (differenceInYears(maxMinusOneHour, minInstant) > 7) {
       dateFormat = format(new Date(ms), "yyyy");
-    } else if (differenceInYears(maxInstant, minInstant) > 3) {
+    } else if (differenceInYears(maxMinusOneHour, minInstant) > 3) {
       dateFormat = format(new Date(ms), "MMM yyyy");
-    } else if (differenceInMonths(maxInstant, minInstant) > 7) {
+    } else if (differenceInMonths(maxMinusOneHour, minInstant) > 7) {
       dateFormat = format(new Date(ms), "MMM");
-    } else if (differenceInHours(maxInstant, minInstant) > 24) {
+    } else if (differenceInHours(maxMinusOneHour, minInstant) > 24) {
       dateFormat = format(new Date(ms), "dd MMM");
-    } else if (differenceInHours(maxInstant, minInstant) < 24) {
+    } else if (differenceInHours(maxMinusOneHour, minInstant) < 24) {
       dateFormat = format(new Date(ms), "HH:mm:ss");
     }
     return dateFormat;
   };
 
   const dateTicks = scaleTime()
-    .domain([minInstant, maxInstant])
+    .domain([minInstant, maxMinusOneHour])
     .ticks(8)
     .map((d) => +d);
 
   const onUpdate = ([ms]) => {
-    setUpdated(new Date(ms));
+    // setUpdated(new Date(ms));
     setInstant(moment(ms).utc(true));
   };
 
+  useEffect(() => {
+    const steps = [...Array(numSteps).keys()].map((i) => minInstant + i * step);
+    const closestStep = steps.reduce((prev, curr) =>
+      Math.abs(curr - instant) < Math.abs(prev - instant) ? curr : prev
+    );
+    setUpdated(closestStep);
+  }, [instant]);
+
   // renderDateTime is only used for Storybook
   const renderDateTime = (date, header) => {
-    const diffInMonths = differenceInMonths(maxInstant, minInstant);
+    const diffInMonths = differenceInMonths(maxMinusOneHour, minInstant);
     const formattedDate =
       diffInMonths > 1 ? format(date, "dd.MM.yyyy") : format(date, "dd.MM.yyyy HH:mm:ss");
 
@@ -67,12 +76,12 @@ function SliderInstant({ minInstant, maxInstant, period, setInstant, forStory, i
 
   return (
     <div>
-      {forStory && renderDateTime(updated, "Date/Time")}
+      {forStory && renderDateTime(instant, "Date/Time")}
       <div style={{ margin: "10px", height: 120 }}>
         <Slider
           mode={1}
           step={step}
-          domain={[+minInstant, +maxInstant]}
+          domain={[+minInstant, +maxMinusOneHour]}
           rootStyle={sliderStyle}
           onUpdate={onUpdate}
           values={[+updated]}
@@ -85,7 +94,7 @@ function SliderInstant({ minInstant, maxInstant, period, setInstant, forStory, i
                   <Handle
                     key={handle.id}
                     handle={handle}
-                    domain={[+minInstant, +maxInstant]}
+                    domain={[+minInstant, +maxMinusOneHour]}
                     getHandleProps={getHandleProps}
                   />
                 ))}
@@ -126,6 +135,7 @@ SliderInstant.propTypes = {
     end: PropTypes.instanceOf(Date),
   }).isRequired,
   forStory: PropTypes.bool,
+  instant: PropTypes.number.isRequired,
 };
 
 SliderInstant.defaultProps = {

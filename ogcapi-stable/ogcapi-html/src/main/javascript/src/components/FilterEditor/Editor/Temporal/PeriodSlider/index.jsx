@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import moment from "moment";
 import { Slider, Rail, Handles, Tracks, Ticks } from "react-compound-slider";
@@ -13,29 +13,30 @@ const sliderStyle = {
 
 function SliderPeriod({ period, setPeriod, min, max, forStory }) {
   const [updated, setUpdated] = useState([period.start, moment(period.end).valueOf()]);
+  const maxMinusOneHour = moment(max).subtract(1, "hour").valueOf();
 
   const numSteps = 100;
-  const range = max - min;
+  const range = maxMinusOneHour - min;
   const step = range / numSteps;
 
   const formatTick = (ms) => {
     let dateFormat;
-    if (differenceInYears(max, min) > 7) {
+    if (differenceInYears(maxMinusOneHour, min) > 7) {
       dateFormat = format(new Date(ms), "yyyy");
-    } else if (differenceInYears(max, min) > 3) {
+    } else if (differenceInYears(maxMinusOneHour, min) > 3) {
       dateFormat = format(new Date(ms), "MMM yyyy");
-    } else if (differenceInMonths(max, min) > 7) {
+    } else if (differenceInMonths(maxMinusOneHour, min) > 7) {
       dateFormat = format(new Date(ms), "MMM");
-    } else if (differenceInHours(max, min) > 24) {
+    } else if (differenceInHours(maxMinusOneHour, min) > 24) {
       dateFormat = format(new Date(ms), "dd MMM");
-    } else if (differenceInHours(max, min) < 24) {
+    } else if (differenceInHours(maxMinusOneHour, min) < 24) {
       dateFormat = format(new Date(ms), "HH:mm:ss");
     }
     return dateFormat;
   };
 
   const dateTicks = scaleTime()
-    .domain([min, max])
+    .domain([min, maxMinusOneHour])
     .ticks(8)
     .map((d) => +d);
 
@@ -50,9 +51,20 @@ function SliderPeriod({ period, setPeriod, min, max, forStory }) {
     });
   };
 
+  useEffect(() => {
+    const steps = [...Array(numSteps).keys()].map((i) => min + i * step);
+    const closestStepStart = steps.reduce((prev, curr) =>
+      Math.abs(curr - period.start) < Math.abs(prev - period.start) ? curr : prev
+    );
+    const closestStepEnd = steps.reduce((prev, curr) =>
+      Math.abs(curr - period.end) < Math.abs(prev - period.end) ? curr : prev
+    );
+    setUpdated([closestStepStart, closestStepEnd]);
+  }, [period]);
+
   // renderDateTime is only used for Storybook
   const renderDateTime = (date, header) => {
-    const diffInMonths = differenceInMonths(max, min);
+    const diffInMonths = differenceInMonths(maxMinusOneHour, min);
     const formattedDateStart =
       diffInMonths > 1 ? format(date[0], "dd.MM.yyyy") : format(date[0], "dd.MM.yyyy HH:mm:ss");
     const formattedDateEnd =
@@ -83,7 +95,7 @@ function SliderPeriod({ period, setPeriod, min, max, forStory }) {
           mode={1}
           step={step}
           utc
-          domain={[+min, +max]}
+          domain={[+min, +maxMinusOneHour]}
           rootStyle={sliderStyle}
           onUpdate={onUpdate}
           values={[+updated[0], +updated[1]]}
@@ -96,7 +108,7 @@ function SliderPeriod({ period, setPeriod, min, max, forStory }) {
                   <Handle
                     key={handle.id}
                     handle={handle}
-                    domain={[+min, +max]}
+                    domain={[+min, +maxMinusOneHour]}
                     getHandleProps={getHandleProps}
                   />
                 ))}
