@@ -24,10 +24,10 @@ const SpatialFilter = ({
   setMapFlag,
   mapFlag,
 }) => {
-  const [minLng, setMinLng] = useState();
-  const [minLat, setMinLat] = useState();
-  const [maxLng, setMaxLng] = useState();
-  const [maxLat, setMaxLat] = useState();
+  const [minLng, setMinLng] = useState(Number(bounds[0][0]).toString());
+  const [minLat, setMinLat] = useState(Number(bounds[0][1]).toString());
+  const [maxLng, setMaxLng] = useState(Number(bounds[1][0]).toString());
+  const [maxLat, setMaxLat] = useState(Number(bounds[1][1]).toString());
 
   const [isLngMinValid, setIsLngValid] = useState(true);
   const [isLatMinValid, setIsLatValid] = useState(true);
@@ -84,27 +84,29 @@ const SpatialFilter = ({
   };
 
   const testMinMaxLng = (min, max) => {
-    const isValid = min <= max;
+    const isValid = Number(min).toFixed(4) <= Number(max).toFixed(4);
     setMinLngCorrect(isValid);
+    console.log(Number(min).toFixed(4), Number(max).toFixed(4), "Lng", isValid);
     return isValid;
   };
 
   const testMinMaxLat = (min, max) => {
-    const isValid = min <= max;
+    const isValid = Number(min).toFixed(4) <= Number(max).toFixed(4);
     setMinLatCorrect(isValid);
+    console.log(Number(min).toFixed(4), Number(max).toFixed(4), "Lat", isValid);
     return isValid;
   };
 
   useEffect(() => {
-    setMinLng(Number(bounds[0][0]).toFixed(4));
-    setMinLat(Number(bounds[0][1]).toFixed(4));
-    setMaxLng(Number(bounds[1][0]).toFixed(4));
-    setMaxLat(Number(bounds[1][1]).toFixed(4));
+    setMinLng(Number(bounds[0][0]).toString());
+    setMinLat(Number(bounds[0][1]).toString());
+    setMaxLng(Number(bounds[1][0]).toString());
+    setMaxLat(Number(bounds[1][1]).toString());
 
-    testMinLng(Number(bounds[0][0]));
-    testMaxLng(Number(bounds[1][0]));
-    testMinLat(Number(bounds[0][1]));
-    testMaxLat(Number(bounds[1][1]));
+    testMinLng(Number(bounds[0][0]).toString());
+    testMaxLng(Number(bounds[1][0]).toString());
+    testMinLat(Number(bounds[0][1]).toString());
+    testMaxLat(Number(bounds[1][1]).toString());
   }, [bounds]);
 
   return (
@@ -119,16 +121,19 @@ const SpatialFilter = ({
               name="minLng"
               id="minLng"
               className={LngMinLessMax && isLngMinValid ? "mr-2" : "mr-2 is-invalid"}
-              value={Number(bounds[0][0]) || ""}
+              value={minLng}
               onChange={(e) => {
-                testMinMaxLng(Number(e.target.value), maxLng);
-                testMinLng(e.target.value);
-
-                setBounds([
-                  [Number(e.target.value).toFixed(4), Number(minLat).toFixed(4)],
-                  [Number(maxLng).toFixed(4), Number(maxLat).toFixed(4)],
-                ]);
-                setMapFlag(!mapFlag);
+                const newValue = Number(e.target.value).toFixed(4);
+                const isMinMaxValid = testMinMaxLng(Number(newValue), Number(maxLng));
+                const isLngValid = testMinLng(newValue);
+                setMinLng(e.target.value);
+                if (isLngValid && isMinMaxValid && e.target.value) {
+                  setBounds([
+                    [Number(newValue).toFixed(4), Number(minLat).toFixed(4)],
+                    [Number(maxLng).toFixed(4), Number(maxLat).toFixed(4)],
+                  ]);
+                  setMapFlag(!mapFlag);
+                }
               }}
               onKeyPress={(event) => {
                 if (
@@ -157,16 +162,19 @@ const SpatialFilter = ({
               name="minLat"
               id="minLat"
               className={isLatMinValid && LatMinLessMax ? "mr-2" : "mr-2 is-invalid"}
-              value={Number(bounds[0][1]) || ""}
+              value={minLat}
               onChange={(e) => {
-                testMinMaxLat(Number(e.target.value), maxLat);
-                testMinLat(e.target.value);
-
-                setBounds([
-                  [Number(minLng).toFixed(4), Number(e.target.value).toFixed(4)],
-                  [Number(maxLng).toFixed(4), Number(maxLat).toFixed(4)],
-                ]);
-                setMapFlag(!mapFlag);
+                const newValue = Math.floor(parseFloat(e.target.value) * 10000) / 10000;
+                const minMax = testMinMaxLat(Number(newValue), Number(maxLat));
+                const isValid = testMinLat(newValue);
+                setMinLat(newValue);
+                if (minMax && isValid && e.target.value) {
+                  setBounds([
+                    [Number(minLng).toFixed(4), Number(newValue).toFixed(4)],
+                    [Number(maxLng).toFixed(4), Number(maxLat).toFixed(4)],
+                  ]);
+                  setMapFlag(!mapFlag);
+                }
               }}
               onKeyPress={(event) => {
                 if (
@@ -196,16 +204,20 @@ const SpatialFilter = ({
               size="sm"
               name="maxLng"
               id="maxLng"
-              className={isLngMaxValid && LngMinLessMax ? "mr-2" : "mr-2 is-invalid"}
-              value={Number(bounds[1][0]) || ""}
+              className={LngMinLessMax && isLngMaxValid ? "mr-2" : "mr-2 is-invalid"}
+              value={maxLng}
               onChange={(e) => {
-                testMinMaxLng(minLng, Number(e.target.value));
-                testMaxLng(e.target.value);
-                setBounds([
-                  [Number(minLng).toFixed(4), Number(minLat).toFixed(4)],
-                  [Number(e.target.value).toFixed(4), Number(maxLat).toFixed(4)],
-                ]);
-                setMapFlag(!mapFlag);
+                const newValue = Math.floor(parseFloat(e.target.value) * 10000) / 10000;
+                const minMax = testMinMaxLng(Number(minLng), Number(newValue));
+                const isValid = testMaxLng(newValue);
+                setMaxLng(newValue);
+                if (minMax && isValid && e.target.value) {
+                  setBounds([
+                    [Number(minLng).toFixed(4), Number(minLat).toFixed(4)],
+                    [Number(newValue).toFixed(4), Number(maxLat).toFixed(4)],
+                  ]);
+                  setMapFlag(!mapFlag);
+                }
               }}
               onKeyPress={(event) => {
                 if (
@@ -233,15 +245,19 @@ const SpatialFilter = ({
               name="maxLat"
               id="maxLat"
               className={isLatMaxValid && LatMinLessMax ? "mr-2" : "mr-2 is-invalid"}
-              value={Number(bounds[1][1]) || ""}
+              value={maxLat}
               onChange={(e) => {
-                testMinMaxLat(minLat, Number(e.target.value));
-                testMaxLat(e.target.value);
-                setBounds([
-                  [Number(minLng).toFixed(4), Number(minLat).toFixed(4)],
-                  [Number(maxLng).toFixed(4), Number(e.target.value).toFixed(4)],
-                ]);
-                setMapFlag(!mapFlag);
+                const newValue = Math.floor(parseFloat(e.target.value) * 10000) / 10000;
+                const minMax = testMinMaxLat(Number(minLat), Number(newValue));
+                const isValid = testMaxLat(newValue);
+                setMaxLat(newValue);
+                if (minMax && isValid && e.target.value) {
+                  setBounds([
+                    [Number(minLng).toFixed(4), Number(minLat).toFixed(4)],
+                    [Number(maxLng).toFixed(4), Number(newValue).toFixed(4)],
+                  ]);
+                  setMapFlag(!mapFlag);
+                }
               }}
               onKeyPress={(event) => {
                 if (

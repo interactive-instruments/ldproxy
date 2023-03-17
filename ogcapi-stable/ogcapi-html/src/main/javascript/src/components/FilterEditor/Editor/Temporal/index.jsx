@@ -64,7 +64,12 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
       };
 
   const [instant, setInstant] = useState(new Date(extent.start));
+  const [instantInput, setInstantInput] = useState(new Date(extent.start));
   const [period, setPeriod] = useState({
+    start: new Date(extent.start),
+    end: new Date(extent.end ? extent.end : extent.start),
+  });
+  const [periodInput, setPeriodInput] = useState({
     start: new Date(extent.start),
     end: new Date(extent.end ? extent.end : extent.start),
   });
@@ -76,8 +81,6 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
   const [isEndValid, setIsEndValid] = useState(true);
   const [startLessEnd, setStartLessEnd] = useState(true);
   const [endGreaterStart, setEndGreaterStart] = useState(true);
-  const [displayError, setDisplayError] = useState(false);
-  const [errorMessagePeriod, setErrorMessagePeriod] = useState("");
 
   useEffect(() => {
     const parsedQuery = qs.parse(window.location.search, {
@@ -140,87 +143,67 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
 
   const testStart = (inputValue) => {
     const parsedDate = moment.utc(inputValue, "DD.MM.YYYY HH:mm:ss", true);
-    if (parsedDate.isValid() && parsedDate.isSameOrAfter(moment.utc(min))) {
-      setErrorMessagePeriod("Start greater than end or date outside specified range.");
+    if (
+      parsedDate.isValid() &&
+      parsedDate.isSameOrAfter(moment.utc(min)) &&
+      parsedDate.isSameOrBefore(moment.utc(max))
+    ) {
       setIsStartValid(true);
       return true;
     }
-    setDisplayError(true);
-    setTimeout(() => {
-      setDisplayError(false);
-      setErrorMessagePeriod("");
-    }, 5000);
     setIsStartValid(false);
     return false;
   };
   // eslint-disable-next-line
   const testStartLessEnd = (next) => {
     const parsedDate = moment.utc(next, "DD.MM.YYYY HH:mm:ss", true);
-    if (parsedDate.isValid() && parsedDate.isSameOrBefore(moment.utc(period.end))) {
-      setErrorMessagePeriod("Start greater than end or date outside specified range.");
+    if (parsedDate.isSameOrBefore(moment.utc(period.end))) {
       setStartLessEnd(true);
       return true;
     }
     setStartLessEnd(false);
-    setDisplayError(true);
-    setTimeout(() => {
-      setDisplayError(false);
-      setErrorMessagePeriod("");
-    }, 5000);
-    setPeriod({
-      start: new Date(next),
-      end: new Date(end),
-    });
   };
 
   const testEnd = (inputValue) => {
     const parsedDate = moment.utc(inputValue, "DD.MM.YYYY HH:mm:ss", true);
-    if (parsedDate.isValid() && parsedDate.isSameOrBefore(moment.utc(max))) {
-      setErrorMessagePeriod("The end date is outside the specified time range.");
+    if (
+      parsedDate.isValid() &&
+      parsedDate.isSameOrBefore(moment.utc(max)) &&
+      parsedDate.isSameOrAfter(moment.utc(min))
+    ) {
       setIsEndValid(true);
       return true;
     }
-    setDisplayError(true);
-    setTimeout(() => {
-      setDisplayError(false);
-      setErrorMessagePeriod("");
-    }, 3000);
     setIsEndValid(false);
     return false;
   };
 
   const testEndGreaterStart = (next) => {
     const parsedDate = moment.utc(next, "DD.MM.YYYY HH:mm:ss", true);
-    if (!period.start || parsedDate.isSameOrAfter(moment.utc(period.start))) {
-      setErrorMessagePeriod("The start date must be less than the end date.");
+    if (parsedDate.isSameOrAfter(moment.utc(period.start))) {
       setEndGreaterStart(true);
       return true;
     }
-    setDisplayError(true);
-    setTimeout(() => {
-      setDisplayError(false);
-      setErrorMessagePeriod("");
-    }, 3000);
     setEndGreaterStart(false);
-    setPeriod({
-      start: new Date(start),
-      end: new Date(next),
-    });
     return false;
   };
 
   useEffect(() => {
     if (isInstant) {
+      setInstantInput(instant);
       testFunction(instant);
       error(instant);
     } else {
+      setPeriodInput({
+        start: period.start,
+        end: period.end,
+      });
       testEnd(period.end);
       testStart(period.start);
       testEndGreaterStart(period.end);
       testStartLessEnd(period.start);
     }
   }, [instant, period]);
-
   return (
     <Form onSubmit={save}>
       <p className="text-muted text-uppercase">date/time (utc)</p>
@@ -262,8 +245,9 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
               timeFormat="HH:mm:ss"
               dateFormat="DD.MM.YYYY"
               utc
-              value={instant}
+              value={instantInput}
               onChange={(next) => {
+                setInstantInput(next);
                 const isValidInput = testFunction(next);
                 if (isValidInput) {
                   setInstant(next);
@@ -281,28 +265,61 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
           </Col>
         ) : (
           <>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {displayError && (
-                <>
-                  <FormText style={{ marginLeft: "15px" }}>{errorMessagePeriod}</FormText>
-                </>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                marginBottom: "10px",
+              }}
+            >
+              {!isStartValid && (
+                <FormText style={{ marginLeft: "15px" }}>
+                  The start date is outside the specified range.
+                </FormText>
+              )}
+              {!isEndValid && (
+                <FormText style={{ marginLeft: "15px" }}>
+                  The end date is outside the specified range.
+                </FormText>
+              )}
+              {!startLessEnd && (
+                <FormText style={{ marginLeft: "15px" }}>
+                  The start date must be less than the end date.
+                </FormText>
+              )}
+              {!endGreaterStart && (
+                <FormText style={{ marginLeft: "15px" }}>
+                  The end date must be greater than the start date.
+                </FormText>
               )}
             </div>
+
             <DatetimeRangePicker
               className="col-md-10"
               input
               inputProps={{
                 input: true,
                 inputProps: {
-                  className: "form-control form-control-sm w-100 mb-3",
+                  className:
+                    userInputValidation &&
+                    isStartValid &&
+                    isEndValid &&
+                    startLessEnd &&
+                    endGreaterStart
+                      ? "form-control form-control-sm w-100 mb-3"
+                      : "form-control form-control-sm w-100 mb-3 is-invalid",
                 },
               }}
               timeFormat="HH:mm:ss"
               dateFormat="DD.MM.YYYY"
               utc
-              startDate={period.start}
-              endDate={period.end}
+              startDate={periodInput.start}
+              endDate={periodInput.end}
               onStartDateChange={(next) => {
+                setPeriodInput(() => ({
+                  start: next,
+                  end: periodInput.end,
+                }));
                 const isValidInput = testStart(next);
                 const minMaxOk = testStartLessEnd(next);
                 if (isValidInput && minMaxOk) {
@@ -311,14 +328,13 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
                     start: next,
                   }));
                   setIsInstant(false);
-                } else {
-                  setPeriod({
-                    start: new Date(start),
-                    end: new Date(period.end ? period.end : end),
-                  });
                 }
               }}
               onEndDateChange={(next) => {
+                setPeriodInput(() => ({
+                  start: periodInput.start,
+                  end: next,
+                }));
                 const isValidInput = testEnd(next);
                 const minMaxOk = testEndGreaterStart(next);
                 if (isValidInput && minMaxOk) {
@@ -327,11 +343,6 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
                     end: next,
                   }));
                   setIsInstant(false);
-                } else {
-                  setPeriod({
-                    start: new Date(period.start ? period.start : start),
-                    end: new Date(end),
-                  });
                 }
               }}
             />
