@@ -6,8 +6,7 @@ import { Button, ButtonGroup, Form, Input, Row, Col, FormText } from "reactstrap
 import DatetimeRangePicker from "react-datetime-range-picker";
 import Datetime from "react-datetime";
 import moment from "moment";
-import SliderInstant from "./InstantSlider";
-import SliderPeriod from "./PeriodSlider";
+import SliderInstant from "./Slider";
 
 const fromFilterString = (filter) => {
   if (filter.indexOf("/") === -1) {
@@ -398,21 +397,19 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
       {min !== max && (
         <>
           <Row>
-            {extent.start && isInstant ? (
-              <Col md="10">
-                <SliderInstant
-                  period={period}
-                  setInstant={setInstant}
-                  minInstant={minInstant}
-                  maxInstant={maxInstant}
-                  instant={instant}
-                />
-              </Col>
-            ) : (
-              <Col md="10">
-                <SliderPeriod period={period} setPeriod={setPeriod} min={min} max={max} />
-              </Col>
-            )}
+            <Col md="10">
+              <SliderInstant
+                period={period}
+                setInstant={setInstant}
+                minInstant={minInstant}
+                maxInstant={maxInstant}
+                instant={instant}
+                isInstant={isInstant}
+                setPeriod={setPeriod}
+                min={min}
+                max={max}
+              />
+            </Col>
           </Row>
         </>
       )}
