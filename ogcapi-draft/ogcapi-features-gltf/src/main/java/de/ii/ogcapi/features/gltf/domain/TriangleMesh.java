@@ -46,16 +46,20 @@ public interface TriangleMesh {
 
   List<Double> getNormals();
 
+  List<Integer> getOutlineIndices();
+
   @SuppressWarnings({
     "PMD.ExcessiveMethodLength",
     "PMD.NcssCount",
-    "PMD.AvoidInstantiatingObjectsInLoops"
+    "PMD.AvoidInstantiatingObjectsInLoops",
+    "PMD.UnusedLocalVariable"
   })
   static TriangleMesh of(
       Geometry.MultiPolygon multiPolygon,
       double minZ,
       boolean clampToEllipsoid,
       boolean withNormals,
+      boolean withOutline,
       int startIndex,
       Optional<CrsTransformer> crsTransformer,
       String featureName) {
@@ -70,12 +74,14 @@ public interface TriangleMesh {
     List<Double> data = new ArrayList<>();
     List<Integer> holeIndices = new ArrayList<>();
     List<Double> normals = new ArrayList<>();
+    List<Integer> outlineIndices = new ArrayList<>();
     double area;
     for (Geometry.Polygon polygon : multiPolygon.getCoordinates()) {
       numRing = 0;
       data.clear();
       normals.clear();
       holeIndices.clear();
+      outlineIndices.clear();
 
       // change axis order, if we have a vertical polygon; ensure we still have a right-handed CRS
       for (Geometry.LineString ring : polygon.getCoordinates()) {
@@ -201,6 +207,15 @@ public interface TriangleMesh {
           }
         }
 
+        if (withOutline && coords.length > 6) {
+          int l = coords.length;
+          for (int i = 0; i < l / 3; i++) {
+            // also include closing edge
+            outlineIndices.add(i);
+            outlineIndices.add(i < l / 3 - 1 ? i + 1 : 0);
+          }
+        }
+
         numRing++;
       }
 
@@ -219,6 +234,11 @@ public interface TriangleMesh {
       }
       builder.addAllVertices(data);
       builder.addAllNormals(normals);
+      if (withOutline) {
+        for (int outlineIndex : outlineIndices) {
+          builder.addOutlineIndices(startIndex + vertexCountSurface + outlineIndex);
+        }
+      }
 
       vertexCountSurface += data.size() / 3;
     }
