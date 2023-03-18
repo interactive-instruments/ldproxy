@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import PropTypes from "prop-types";
 
 import { Row, Col, Collapse } from "reactstrap";
 
 import FieldFilter from "./Fields";
 import TemporalFilter from "./Temporal";
-import SpatialFilter, { MapSelect } from "./Spatial";
+import SpatialFilter, { MapSelect, roundBounds, boundsArraysEqual } from "./Spatial";
 
 const EditorBody = ({
   isOpen,
@@ -25,8 +25,29 @@ const EditorBody = ({
   booleanProperty,
 }) => {
   const [showMap, setShowMap] = useState(false);
-  const [bounds, setBounds] = useState(spatial);
+  const [bounds, setBounds] = useState(roundBounds(spatial));
   const [mapFlag, setMapFlag] = useState(true);
+
+  const refreshMap = useCallback(() => setMapFlag((prev) => !prev), []);
+
+  const setBoundsIfNecessary = useCallback(
+    (newBounds, doRefreshMap) => {
+      const rounded = roundBounds(newBounds);
+
+      setBounds((prev) => {
+        if (boundsArraysEqual(prev, rounded)) {
+          console.log("SAME", prev, newBounds, rounded);
+          return prev;
+        }
+        console.log("UPDATE", prev, newBounds, rounded);
+        if (doRefreshMap) {
+          refreshMap();
+        }
+        return rounded;
+      });
+    },
+    [refreshMap]
+  );
 
   return (
     <Collapse isOpen={isOpen} onEntered={() => setShowMap(true)}>
@@ -54,13 +75,12 @@ const EditorBody = ({
           )}
           {spatial && spatial.length > 0 && (
             <SpatialFilter
-              bounds={bounds.map((point) => point.map((num) => parseFloat(num).toFixed(4)))}
-              setBounds={setBounds}
+              bounds={bounds}
+              setBounds={setBoundsIfNecessary}
               onChange={onAdd}
               filters={filters}
               deleteFilters={deleteFilters}
-              mapFlag={mapFlag}
-              setMapFlag={setMapFlag}
+              refreshMap={refreshMap}
             />
           )}
           {temporal && Object.keys(temporal).length > 0 && (
@@ -81,7 +101,7 @@ const EditorBody = ({
               backgroundUrl={backgroundUrl}
               attribution={attribution}
               bounds={bounds}
-              onChange={setBounds}
+              onChange={setBoundsIfNecessary}
             />
           )}
         </Col>
