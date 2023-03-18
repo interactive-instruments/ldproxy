@@ -9,7 +9,6 @@ package de.ii.ogcapi.crs.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ogcapi.crs.domain.CrsSupport;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
@@ -17,16 +16,18 @@ import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.inject.Inject;
@@ -43,7 +44,7 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterBboxCrsFeatures extends ApiExtensionCache
-    implements OgcApiQueryParameter {
+    implements OgcApiQueryParameter, TypedQueryParameter<EpsgCrs> {
 
   public static final String BBOX = "bbox";
   public static final String BBOX_CRS = "bbox-crs";
@@ -67,6 +68,39 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache
   @Override
   public String getName() {
     return BBOX_CRS;
+  }
+
+  @Override
+  public EpsgCrs parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    FeatureTypeConfigurationOgcApi collectionData =
+        optionalCollectionData.orElseThrow(
+            () ->
+                new IllegalStateException(
+                    String.format(
+                        "The parameter '%s' could not be processed, no collection provided.",
+                        getName())));
+
+    EpsgCrs bboxCrs;
+    try {
+      bboxCrs = EpsgCrs.fromString(value);
+    } catch (Throwable e) {
+      throw new IllegalArgumentException(
+          String.format("The parameter '%s' is invalid: %s", BBOX_CRS, e.getMessage()), e);
+    }
+    // CRS84 is always supported
+    if (!crsSupport.isSupported(api.getData(), collectionData, bboxCrs)
+        && !bboxCrs.equals(OgcCrs.CRS84)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "The parameter '%s' is invalid: the coordinate reference system '%s' is not supported",
+              BBOX_CRS, bboxCrs.toUriString()));
+    }
+
+    return bboxCrs;
   }
 
   @Override
@@ -139,40 +173,5 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return CrsConfiguration.class;
-  }
-
-  @Override
-  public Map<String, String> transformParameters(
-      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-      Map<String, String> parameters,
-      OgcApiDataV2 datasetData) {
-
-    if (!isEnabledForApi(datasetData, featureTypeConfiguration.getId())) {
-      return parameters;
-    }
-
-    if (parameters.containsKey(BBOX) && parameters.containsKey(BBOX_CRS)) {
-      EpsgCrs bboxCrs;
-      try {
-        bboxCrs = EpsgCrs.fromString(parameters.get(BBOX_CRS));
-      } catch (Throwable e) {
-        throw new IllegalArgumentException(
-            String.format("The parameter '%s' is invalid: %s", BBOX_CRS, e.getMessage()), e);
-      }
-      // CRS84 is always supported
-      if (!crsSupport.isSupported(datasetData, featureTypeConfiguration, bboxCrs)
-          && !bboxCrs.equals(OgcCrs.CRS84)) {
-        throw new IllegalArgumentException(
-            String.format(
-                "The parameter '%s' is invalid: the crs '%s' is not supported",
-                BBOX_CRS, bboxCrs.toUriString()));
-      }
-
-      Map<String, String> newParameters = new HashMap<>(parameters);
-      newParameters.put(BBOX, String.format("%s,%s", parameters.get(BBOX), bboxCrs.toUriString()));
-      return ImmutableMap.copyOf(newParameters);
-    }
-
-    return parameters;
   }
 }

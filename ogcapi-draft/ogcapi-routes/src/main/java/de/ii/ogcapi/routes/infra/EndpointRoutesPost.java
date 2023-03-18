@@ -39,6 +39,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableExample;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.routes.app.RoutingBuildingBlock;
 import de.ii.ogcapi.routes.domain.HtmlForm;
 import de.ii.ogcapi.routes.domain.HtmlFormDefaults;
@@ -364,19 +365,21 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
             .getExtension(RoutingConfiguration.class)
             .map(RoutingConfiguration::getElevationProfileSimplificationTolerance)
             .orElse(null);
-    List<OgcApiQueryParameter> allowedParameters =
+
+    List<OgcApiQueryParameter> parameterDefinitions =
         getQueryParameters(extensionRegistry, api.getData(), "/routes", HttpMethods.POST);
+    QueryParameterSet queryParameterSet =
+        QueryParameterSet.of(parameterDefinitions, toFlatMap(uriInfo.getQueryParameters()))
+            .evaluate(api, Optional.empty());
+
     FeatureQuery query =
         ogcApiFeaturesQuery.requestToBareFeatureQuery(
             api.getData(),
             featureTypeId,
             defaultCrs,
             coordinatePrecision,
-            1,
             LIMIT,
-            LIMIT,
-            toFlatMap(uriInfo.getQueryParameters()),
-            allowedParameters);
+            queryParameterSet);
 
     RouteDefinition definition;
     try {

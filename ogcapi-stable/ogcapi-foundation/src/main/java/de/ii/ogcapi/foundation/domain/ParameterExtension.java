@@ -15,7 +15,6 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,12 +145,5 @@ public interface ParameterExtension extends ApiExtension {
             || ("array".equals(schema.getType()) && value.trim().startsWith("["))
         ? value
         : "\"" + value + "\"";
-  }
-
-  default Map<String, String> transformParameters(
-      FeatureTypeConfigurationOgcApi featureType,
-      Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
-    return parameters;
   }
 }

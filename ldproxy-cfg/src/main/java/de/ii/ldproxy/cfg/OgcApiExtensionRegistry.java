@@ -49,7 +49,7 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
   OgcApiExtensionRegistry() {
     this.apiExtensions =
         ImmutableSet.<ApiExtension>builder()
-            .add(new QueryablesBuildingBlock())
+            .add(new QueryablesBuildingBlock(null, null))
             .add(new SchemaBuildingBlock())
             .add(new FeaturesExtensionsBuildingBlock())
             .add(new FeaturesFlatgeobufBuildingBlock())

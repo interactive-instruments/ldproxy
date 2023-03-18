@@ -127,8 +127,6 @@ public class EndpointSortables extends EndpointSubCollection /* implements Confo
       final List<String> collectionIds =
           (explode) ? collectionIdParam.getValues(apiData) : ImmutableList.of("{collectionId}");
       for (String collectionId : collectionIds) {
-        // TODO summary and description needs to be updated to describe the Sortables resource, not
-        // the Queryables resource
         final List<OgcApiQueryParameter> queryParameters =
             getQueryParameters(extensionRegistry, apiData, path, collectionId);
         final String operationSummary =

@@ -21,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
@@ -63,7 +64,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointQueryables extends EndpointSubCollection /* implements ConformanceClass */ {
+public class EndpointQueryables extends EndpointSubCollection implements ConformanceClass {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointQueryables.class);
 
@@ -83,12 +84,25 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
         new SchemaCacheQueryables(() -> entityRegistry.getEntitiesForType(Codelist.class));
   }
 
-  /* TODO wait for updates on Features Part n: Schemas
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-      return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-n/0.0/conf/queryables");
+    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/queryables");
   }
-  */
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData.getCollections().keySet().stream()
+        .anyMatch(collectionId -> isEnabledForApi(apiData, collectionId));
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return apiData
+        .getExtension(QueryablesConfiguration.class, collectionId)
+        .filter(QueryablesConfiguration::isEnabled)
+        .filter(QueryablesConfiguration::endpointIsEnabled)
+        .isPresent();
+  }
 
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {

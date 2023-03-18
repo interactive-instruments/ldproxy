@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.slf4j.Logger;
@@ -107,10 +109,8 @@ public class SortingBuildingBlock implements ApiBuildingBlock {
     if (apiValidation == ValidationResult.MODE.NONE) return builder.build();
 
     for (Map.Entry<String, SortingConfiguration> entry : configs.entrySet()) {
-      List<String> sortables = entry.getValue().getSortables();
-
       // check that there is at least one sortable for each collection where sorting is enabled
-      if (sortables.isEmpty())
+      if (entry.getValue().getIncluded().isEmpty() && entry.getValue().getSortables().isEmpty())
         builder.addStrictErrors(
             MessageFormat.format(
                 "Sorting is enabled for collection ''{0}'', but no sortable property has been configured.",
@@ -126,12 +126,17 @@ public class SortingBuildingBlock implements ApiBuildingBlock {
                 "Sorting is enabled for collection ''{0}'', but no provider has been configured.",
                 entry.getKey()));
       else {
-        for (String sortable : sortables) {
+        for (String sortable :
+            Stream.concat(
+                    entry.getValue().getSortables().stream(),
+                    entry.getValue().getIncluded().stream())
+                .filter(v -> !"*".equals(v))
+                .collect(Collectors.toUnmodifiableList())) {
           // does the collection include the sortable property?
           if (!properties.contains(sortable))
             builder.addErrors(
                 MessageFormat.format(
-                    "The sorting configuration for collection ''{0}'' includes a sortable property ''{1}'', but the property does not exist.",
+                    "The sorting configuration for collection ''{0}'' includes property ''{1}'', but the property does not exist.",
                     entry.getKey(), sortable));
 
           // is it a top level, non-array property?

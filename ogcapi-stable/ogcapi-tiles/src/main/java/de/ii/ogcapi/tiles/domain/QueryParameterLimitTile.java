@@ -12,6 +12,7 @@ import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
@@ -135,7 +136,11 @@ public class QueryParameterLimitTile extends ApiExtensionCache
   }
 
   @Override
-  public Integer parse(String value, OgcApiDataV2 apiData) {
+  public Integer parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> collectionData) {
     try {
       return Integer.parseInt(value);
     } catch (Throwable e) {

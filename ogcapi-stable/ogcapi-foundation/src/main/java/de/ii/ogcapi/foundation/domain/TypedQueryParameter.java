@@ -8,11 +8,22 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import java.util.Map;
+import java.util.Optional;
 
 @AutoMultiBind
 public interface TypedQueryParameter<T> {
 
   String getName();
 
-  T parse(String value, OgcApiDataV2 apiData);
+  default int getPriority() {
+    // default is to parse in first pass
+    return 1;
+  }
+
+  T parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData);
 }

@@ -20,6 +20,7 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableLink;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import java.util.List;
 import java.util.Locale;
@@ -42,6 +43,21 @@ public class QueryablesOnCollection implements CollectionExtension {
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return QueryablesConfiguration.class;
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData.getCollections().keySet().stream()
+        .anyMatch(collectionId -> isEnabledForApi(apiData, collectionId));
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return apiData
+        .getExtension(QueryablesConfiguration.class, collectionId)
+        .filter(QueryablesConfiguration::isEnabled)
+        .filter(QueryablesConfiguration::endpointIsEnabled)
+        .isPresent();
   }
 
   @Override

@@ -13,7 +13,6 @@ import com.google.common.io.Files;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
-import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -69,7 +68,6 @@ public class Seeding implements OgcApiBackgroundTask {
   private final FeaturesCoreProviders providers;
   private final FeaturesCoreQueriesHandler queryHandlerFeatures;
   private final Cql cql;
-  private final FeaturesQuery featuresQuery;
 
   @Inject
   public Seeding(
@@ -77,14 +75,12 @@ public class Seeding implements OgcApiBackgroundTask {
       ServicesContext servicesContext,
       FeaturesCoreProviders providers,
       FeaturesCoreQueriesHandler queryHandlerFeatures,
-      Cql cql,
-      FeaturesQuery featuresQuery) {
+      Cql cql) {
     this.tileResourcesCache = tileResourcesCache;
     this.servicesUri = servicesContext.getUri();
     this.providers = providers;
     this.queryHandlerFeatures = queryHandlerFeatures;
     this.cql = cql;
-    this.featuresQuery = featuresQuery;
   }
 
   @Override
@@ -612,7 +608,7 @@ public class Seeding implements OgcApiBackgroundTask {
                 cql,
                 cfg,
                 content,
-                content.getQuery(featuresQuery),
+                content.getQuery(providers),
                 new URICustomizer(
                     String.format(
                         "%s/collections/%s/3dtiles/content_%d_%d_%d",

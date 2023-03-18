@@ -7,11 +7,33 @@
  */
 package de.ii.ogcapi.features.core.app;
 
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.DATETIME_INTERVAL_SEPARATOR;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.AbstractQueryParameterDatetime;
+import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
+import de.ii.xtraplatform.cql.domain.BooleanValue2;
+import de.ii.xtraplatform.cql.domain.Cql2Expression;
+import de.ii.xtraplatform.cql.domain.Interval;
+import de.ii.xtraplatform.cql.domain.IsNull;
+import de.ii.xtraplatform.cql.domain.Or;
+import de.ii.xtraplatform.cql.domain.Property;
+import de.ii.xtraplatform.cql.domain.TIntersects;
+import de.ii.xtraplatform.cql.domain.TemporalLiteral;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.Tuple;
+import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -25,11 +47,15 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterDatetime extends AbstractQueryParameterDatetime {
+public class QueryParameterDatetime extends AbstractQueryParameterDatetime
+    implements TypedQueryParameter<Cql2Expression>, FeatureQueryParameter {
+
+  private final FeaturesCoreProviders providers;
 
   @Inject
-  QueryParameterDatetime(SchemaValidator schemaValidator) {
+  QueryParameterDatetime(SchemaValidator schemaValidator, FeaturesCoreProviders providers) {
     super(schemaValidator);
+    this.providers = providers;
   }
 
   @Override
@@ -40,5 +66,87 @@ public class QueryParameterDatetime extends AbstractQueryParameterDatetime {
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
                 && definitionPath.equals("/collections/{collectionId}/items"));
+  }
+
+  @Override
+  public Cql2Expression parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    FeatureTypeConfigurationOgcApi collectionData =
+        optionalCollectionData.orElseThrow(
+            () ->
+                new IllegalStateException(
+                    String.format(
+                        "The parameter '%s' could not be processed, no collection provided.",
+                        getName())));
+
+    // valid values: timestamp or time interval;
+    // this includes open intervals indicated by ".." (see ISO 8601-2);
+    // accept also unknown ("") with the same interpretation;
+    // in addition, "now" is accepted for the current time
+
+    TemporalLiteral temporalLiteral;
+    try {
+      if (value.contains(DATETIME_INTERVAL_SEPARATOR)) {
+        temporalLiteral =
+            TemporalLiteral.of(Splitter.on(DATETIME_INTERVAL_SEPARATOR).splitToList(value));
+      } else {
+        temporalLiteral = TemporalLiteral.of(value);
+      }
+    } catch (Throwable e) {
+      throw new IllegalArgumentException(
+          String.format("Invalid value for query parameter '%s'.", getName()), e);
+    }
+
+    FeatureSchema featureSchema =
+        providers
+            .getFeatureSchema(api.getData(), collectionData)
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        String.format(
+                            "The parameter '%s' could not be processed, no feature schema provided.",
+                            getName())));
+    Optional<FeatureSchema> primaryInstant = featureSchema.getPrimaryInstant();
+    if (primaryInstant.isPresent()) {
+      Property property = Property.of(primaryInstant.get().getFullPathAsString());
+      return Or.of(TIntersects.of(property, temporalLiteral), IsNull.of(property));
+    }
+    Optional<Tuple<FeatureSchema, FeatureSchema>> primaryInterval =
+        featureSchema.getPrimaryInterval();
+    if (primaryInterval.isPresent()) {
+      FeatureSchema begin = primaryInterval.get().first();
+      FeatureSchema end = primaryInterval.get().second();
+      if (begin != null && end != null) {
+        return TIntersects.of(
+            Interval.of(
+                ImmutableList.of(
+                    Property.of(begin.getFullPathAsString()),
+                    Property.of(end.getFullPathAsString()))),
+            temporalLiteral);
+      } else if (begin != null) {
+        return TIntersects.of(
+            Interval.of(
+                ImmutableList.of(
+                    Property.of(begin.getFullPathAsString()), TemporalLiteral.of(Instant.MAX))),
+            temporalLiteral);
+      } else if (end != null) {
+        return TIntersects.of(
+            Interval.of(
+                ImmutableList.of(
+                    TemporalLiteral.of(Instant.MIN), Property.of(end.getFullPathAsString()))),
+            temporalLiteral);
+      }
+    }
+
+    // no spatial property or unbounded interval, matches all features
+    return BooleanValue2.of(true);
+  }
+
+  @Override
+  public boolean isFilterParameter() {
+    return true;
   }
 }

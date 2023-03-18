@@ -14,7 +14,6 @@ import io.swagger.v3.oas.models.parameters.Parameter;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 @AutoMultiBind
 public interface OgcApiQueryParameter extends ParameterExtension {
@@ -30,9 +29,8 @@ public interface OgcApiQueryParameter extends ParameterExtension {
     return isApplicable(apiData, definitionPath, method);
   }
 
-  default Set<String> getFilterParameters(
-      Set<String> filterParameters, OgcApiDataV2 apiData, String collectionId) {
-    return filterParameters;
+  default boolean isFilterParameter(OgcApiDataV2 apiData, String collectionId) {
+    return false;
   }
 
   default void updateOpenApiDefinition(

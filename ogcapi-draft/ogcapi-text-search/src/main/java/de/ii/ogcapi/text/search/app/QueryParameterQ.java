@@ -9,23 +9,24 @@ package de.ii.ogcapi.text.search.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
-import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
+import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.ogcapi.text.search.domain.TextSearchConfiguration;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.Or;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -55,12 +56,12 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterQ extends ApiExtensionCache
-    implements OgcApiQueryParameter, FeatureQueryTransformer {
+    implements OgcApiQueryParameter, FeatureQueryParameter, TypedQueryParameter<Cql2Expression> {
+
+  private static final String PARAMETER_Q = "q";
 
   private final Schema<?> baseSchema;
   private final SchemaValidator schemaValidator;
-
-  String PARAMETER_Q = "q";
 
   @Inject
   public QueryParameterQ(SchemaValidator schemaValidator, Cql cql) {
@@ -70,12 +71,57 @@ public class QueryParameterQ extends ApiExtensionCache
 
   @Override
   public String getName() {
-    return "q";
+    return PARAMETER_Q;
+  }
+
+  @Override
+  public Cql2Expression parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    FeaturesCoreConfiguration featuresCoreConfiguration =
+        optionalCollectionData
+            .map(cd -> cd.getExtension(FeaturesCoreConfiguration.class))
+            .orElse(api.getData().getExtension(FeaturesCoreConfiguration.class))
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        String.format(
+                            "Could not process query parameter '%s', features core configuration not provided.",
+                            getName())));
+    TextSearchConfiguration textSearchConfiguration =
+        optionalCollectionData
+            .map(cd -> cd.getExtension(TextSearchConfiguration.class))
+            .orElse(api.getData().getExtension(TextSearchConfiguration.class))
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        String.format(
+                            "Could not process query parameter '%s', text search configuration not provided.",
+                            getName())));
+
+    Set<String> qProperties = new HashSet<>();
+    List<String> qValues = Splitter.on(",").trimResults().splitToList(value);
+
+    if (textSearchConfiguration.getProperties().isEmpty()) {
+      featuresCoreConfiguration
+          .getQueryables()
+          .ifPresent(queryables -> qProperties.addAll(queryables.getQ()));
+    } else {
+      qProperties.addAll(textSearchConfiguration.getProperties());
+    }
+
+    return qToCql(qProperties, qValues);
+  }
+
+  @Override
+  public boolean isFilterParameter() {
+    return true;
   }
 
   @Override
   public String getDescription() {
-
     return "General text search in multiple text properties of the data. Separate search terms by comma."
         + "If at least one of the search terms is included in an item, it is included in the result set. "
         + "Known limitation: The search should be case-insensitive, but currently is case-sensitive.";
@@ -108,7 +154,6 @@ public class QueryParameterQ extends ApiExtensionCache
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-
     return isExtensionEnabled(
             apiData.getCollections().get(collectionId),
             FeaturesCoreConfiguration.class,
@@ -140,55 +185,25 @@ public class QueryParameterQ extends ApiExtensionCache
     return TextSearchConfiguration.class;
   }
 
-  @Override
-  public Builder transformQuery(
-      Builder queryBuilder,
-      Map<String, String> parameters,
-      OgcApiDataV2 apiData,
-      FeatureTypeConfigurationOgcApi collectionData) {
-
-    if (parameters.containsKey(PARAMETER_Q)) {
-      Set<String> qProperties = new HashSet<>();
-      List<String> qValues =
-          Splitter.on(",").trimResults().splitToList(parameters.get(PARAMETER_Q));
-
-      Optional<FeaturesCollectionQueryables> featuresCoreQueryables =
-          apiData
-              .getExtension(FeaturesCoreConfiguration.class, collectionData.getId())
-              .flatMap(FeaturesCoreConfiguration::getQueryables);
-      Optional<TextSearchConfiguration> textSearchConfiguration =
-          apiData.getExtension(TextSearchConfiguration.class, collectionData.getId());
-
-      featuresCoreQueryables.ifPresent(queryables -> qProperties.addAll(queryables.getQ()));
-      textSearchConfiguration.ifPresent(cfg -> qProperties.addAll(cfg.getProperties()));
-
-      Optional<Cql2Expression> cql = qToCql(qProperties, qValues);
-
-      cql.ifPresent(queryBuilder::addFilters);
-    }
-
-    return queryBuilder;
-  }
-
-  private Optional<Cql2Expression> qToCql(Set<String> qFields, List<String> qValues) {
+  private Cql2Expression qToCql(Set<String> qFields, List<String> qValues) {
     if (qFields.isEmpty() || qValues.isEmpty()) {
-      return Optional.empty();
+      // nothing to filter, ignore
+      return null;
     }
 
     if (qFields.size() == 1 && qValues.size() == 1) {
-      return Optional.of(qToLike(qFields.iterator().next(), qValues.get(0)));
+      return qToLike(qFields.iterator().next(), qValues.get(0));
     }
 
-    return Optional.of(
-        Or.of(
-            qFields.stream()
-                .map(
-                    qField ->
-                        qValues.stream()
-                            .map(qValue -> qToLike(qField, qValue))
-                            .collect(Collectors.toUnmodifiableList()))
-                .flatMap(Collection::stream)
-                .collect(Collectors.toUnmodifiableList())));
+    return Or.of(
+        qFields.stream()
+            .map(
+                qField ->
+                    qValues.stream()
+                        .map(qValue -> qToLike(qField, qValue))
+                        .collect(Collectors.toUnmodifiableList()))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toUnmodifiableList()));
   }
 
   private Like qToLike(String qField, String qValue) {

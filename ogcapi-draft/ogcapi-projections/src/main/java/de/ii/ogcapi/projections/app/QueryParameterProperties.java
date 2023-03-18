@@ -9,20 +9,20 @@ package de.ii.ogcapi.projections.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
-import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
+import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
 import de.ii.xtraplatform.tiles.domain.TileGenerationSchema;
 import io.swagger.v3.oas.models.media.ArraySchema;
@@ -51,7 +51,7 @@ import javax.inject.Singleton;
 public class QueryParameterProperties extends ApiExtensionCache
     implements OgcApiQueryParameter,
         TypedQueryParameter<List<String>>,
-        FeatureQueryTransformer,
+        FeatureQueryParameter,
         TileGenerationUserParameter {
 
   private final SchemaInfo schemaInfo;
@@ -134,7 +134,11 @@ public class QueryParameterProperties extends ApiExtensionCache
   }
 
   @Override
-  public List<String> parse(String value, OgcApiDataV2 apiData) {
+  public List<String> parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> collectionData) {
     try {
       return Splitter.on(',').omitEmptyStrings().trimResults().splitToList(value);
     } catch (Throwable e) {
@@ -144,14 +148,12 @@ public class QueryParameterProperties extends ApiExtensionCache
   }
 
   @Override
-  public ImmutableFeatureQuery.Builder transformQuery(
-      ImmutableFeatureQuery.Builder queryBuilder,
-      Map<String, String> parameters,
-      OgcApiDataV2 datasetData,
-      FeatureTypeConfigurationOgcApi featureTypeConfiguration) {
-    List<String> propertiesList = getPropertiesList(parameters);
-
-    return queryBuilder.fields(propertiesList);
+  public void applyTo(
+      Builder queryBuilder,
+      QueryParameterSet parameters,
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData) {
+    parameters.getValue(this).ifPresent(queryBuilder::fields);
   }
 
   @Override
@@ -160,16 +162,5 @@ public class QueryParameterProperties extends ApiExtensionCache
       QueryParameterSet parameters,
       Optional<TileGenerationSchema> generationSchema) {
     parameters.getValue(this).ifPresent(userParametersBuilder::fields);
-  }
-
-  private List<String> getPropertiesList(Map<String, String> parameters) {
-    if (parameters.containsKey(getName())) {
-      return Splitter.on(',')
-          .omitEmptyStrings()
-          .trimResults()
-          .splitToList(parameters.get(getName()));
-    } else {
-      return ImmutableList.of("*");
-    }
   }
 }

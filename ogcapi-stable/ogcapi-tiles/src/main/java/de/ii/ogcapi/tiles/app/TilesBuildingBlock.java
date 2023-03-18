@@ -13,8 +13,8 @@ import static de.ii.xtraplatform.tiles.domain.LayerOptionsFeatures.COMBINE_ALL;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
+import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
@@ -40,6 +40,7 @@ import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.base.domain.util.Tuple;
 import de.ii.xtraplatform.cql.domain.Cql;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.docs.DocDefs;
 import de.ii.xtraplatform.docs.DocStep;
 import de.ii.xtraplatform.docs.DocStep.Step;
@@ -611,26 +612,24 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                           "A filter in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' is specified to end at level ''{2}'', but the maximum level is ''{3}''.",
                           collectionId, tileMatrixSetId, filter.getMax(), zoomLevelsCfg.getMax()));
                 }
-                // try to convert the filter to CQL2-text
+                // try to parse the filter as CQL2 Text
                 String expression = filter.getFilter();
                 FeatureTypeConfigurationOgcApi collectionData =
                     apiData.getCollections().get(collectionId);
-                final Map<String, String> filterableFields =
-                    queryParser.getFilterableFields(apiData, collectionData);
-                final Map<String, String> queryableTypes =
-                    queryParser.getQueryableTypes(apiData, collectionData);
-                try {
-                  queryParser.getFilterFromQuery(
-                      ImmutableMap.of("filter", expression),
-                      filterableFields,
-                      ImmutableSet.of("filter"),
-                      queryableTypes,
-                      Cql.Format.TEXT);
-                } catch (Exception e) {
-                  builder.addErrors(
-                      MessageFormat.format(
-                          "A filter ''{0}'' in the TILES module of collection ''{1}'' for tile matrix set ''{2}'' is invalid. Reason: {3}",
-                          expression, collectionId, tileMatrixSetId, e.getMessage()));
+                if (collectionData != null) {
+                  Map<String, FeatureSchema> queryables =
+                      collectionData
+                          .getExtension(QueryablesConfiguration.class)
+                          .map(cfg -> cfg.getQueryables(apiData, collectionData, providers))
+                          .orElse(ImmutableMap.of());
+                  queryParser
+                      .validateFilter(expression, Cql.Format.TEXT, OgcCrs.CRS84, queryables)
+                      .ifPresent(
+                          error ->
+                              builder.addErrors(
+                                  MessageFormat.format(
+                                      "A filter ''{0}'' in the TILES module of collection ''{1}'' for tile matrix set ''{2}'' is invalid. Reason: {3}",
+                                      expression, collectionId, tileMatrixSetId, error)));
                 }
               }
             }

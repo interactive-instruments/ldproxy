@@ -28,12 +28,15 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.RuntimeQueryParametersExtension;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
@@ -91,6 +94,7 @@ public class FeaturesFormatHtml
               PropertyTransformations.WILDCARD,
               new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
 
+  private final ExtensionRegistry extensionRegistry;
   private final EntityRegistry entityRegistry;
   private final I18n i18n;
   private final FeaturesCoreProviders providers;
@@ -101,6 +105,7 @@ public class FeaturesFormatHtml
 
   @Inject
   public FeaturesFormatHtml(
+      ExtensionRegistry extensionRegistry,
       EntityRegistry entityRegistry,
       MustacheRenderer mustacheRenderer,
       I18n i18n,
@@ -108,6 +113,7 @@ public class FeaturesFormatHtml
       FeaturesCoreValidation featuresCoreValidator,
       ServicesContext servicesContext,
       Http http) {
+    this.extensionRegistry = extensionRegistry;
     this.entityRegistry = entityRegistry;
     this.i18n = i18n;
     this.providers = providers;
@@ -320,9 +326,17 @@ public class FeaturesFormatHtml
             collectionData.getExtension(FeaturesCoreConfiguration.class);
 
         List<String> queryables =
-            featuresCoreConfiguration
-                .map(FeaturesCoreConfiguration::getFilterParameters)
-                .orElse(ImmutableList.of());
+            extensionRegistry.getExtensionsForType(RuntimeQueryParametersExtension.class).stream()
+                .map(
+                    extension ->
+                        extension.getRuntimeParameters(
+                            apiData,
+                            Optional.of(collectionData.getId()),
+                            "/collections/{collectionId}/items"))
+                .flatMap(Collection::stream)
+                .map(OgcApiQueryParameter::getName)
+                .collect(Collectors.toUnmodifiableList());
+
         Map<String, String> filterableFields =
             transformationContext
                 .getFeatureSchema()
