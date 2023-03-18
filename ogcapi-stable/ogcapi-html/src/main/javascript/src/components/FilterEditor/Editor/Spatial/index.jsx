@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 
 import {
@@ -13,101 +13,67 @@ import {
   FormText,
 } from "reactstrap";
 
+import {
+  areBoundsValid,
+  boundsAsArray,
+  boundsAsObject,
+  boundsAsString,
+  boundsObjectEqualsArray,
+  round,
+  validateBounds,
+} from "./util";
+import { useDebounce } from "../../hooks";
+
 export { default as MapSelect } from "./MapSelect";
+export { round, roundBounds, boundsArraysEqual } from "./util";
 
-const SpatialFilter = ({
-  bounds,
-  setBounds,
-  onChange,
-  filters,
-  deleteFilters,
-  setMapFlag,
-  mapFlag,
-}) => {
-  const [minLng, setMinLng] = useState(Number(bounds[0][0]).toString());
-  const [minLat, setMinLat] = useState(Number(bounds[0][1]).toString());
-  const [maxLng, setMaxLng] = useState(Number(bounds[1][0]).toString());
-  const [maxLat, setMaxLat] = useState(Number(bounds[1][1]).toString());
-
-  const [isLngMinValid, setIsLngValid] = useState(true);
-  const [isLatMinValid, setIsLatValid] = useState(true);
-  const [isLngMaxValid, setIsLngMaxValid] = useState(true);
-  const [isLatMaxValid, setIsLatMaxValid] = useState(true);
-
-  const [LngMinLessMax, setMinLngCorrect] = useState(true);
-  const [LatMinLessMax, setMinLatCorrect] = useState(true);
-
-  const bBoxFilter = Object.keys(filters).filter(
-    (key) => filters[key].remove === false && key === "bbox" && key !== "datetime"
-  );
-  const hasBboxInFilters = bBoxFilter.length > 0;
-
-  const save = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const bboxInput = `${parseFloat(Math.round(minLng * 10000) / 10000).toFixed(4)},${parseFloat(
-      Math.round(minLat * 10000) / 10000
-    ).toFixed(4)},${parseFloat(Math.round(maxLng * 10000) / 10000).toFixed(4)},${parseFloat(
-      Math.round(maxLat * 10000) / 10000
-    ).toFixed(4)}`;
-
-    onChange("bbox", bboxInput);
-  };
-
-  const testMinLng = (lng) => {
-    let isValid = true;
-    if (lng < -180 || lng > 180) isValid = false;
-    setIsLngValid(isValid);
-    return isValid;
-  };
-
-  const testMaxLng = (lngMax) => {
-    let isValid = true;
-    if (lngMax < -180 || lngMax > 180) isValid = false;
-    setIsLngMaxValid(isValid);
-    return isValid;
-  };
-
-  const testMinLat = (lat) => {
-    let isValid = true;
-    if (lat <= -90 || lat >= 90) isValid = false;
-    setIsLatValid(isValid);
-    return isValid;
-  };
-
-  const testMaxLat = (latMax) => {
-    let isValid = true;
-    if (latMax < -90 || latMax > 90) isValid = false;
-    setIsLatMaxValid(isValid);
-    return isValid;
-  };
-
-  const testMinMaxLng = (min, max) => {
-    const isValid = Number(min).toFixed(4) <= Number(max).toFixed(4);
-    setMinLngCorrect(isValid);
-    console.log(Number(min).toFixed(4), Number(max).toFixed(4), "Lng", isValid);
-    return isValid;
-  };
-
-  const testMinMaxLat = (min, max) => {
-    const isValid = Number(min).toFixed(4) <= Number(max).toFixed(4);
-    setMinLatCorrect(isValid);
-    console.log(Number(min).toFixed(4), Number(max).toFixed(4), "Lat", isValid);
-    return isValid;
-  };
+const SpatialFilter = ({ bounds, setBounds, onChange, filters, deleteFilters }) => {
+  const [inputs, setInputs] = useState(boundsAsObject(bounds));
+  const debouncedInput = useDebounce(inputs, 1000);
 
   useEffect(() => {
-    setMinLng(Number(bounds[0][0]).toString());
-    setMinLat(Number(bounds[0][1]).toString());
-    setMaxLng(Number(bounds[1][0]).toString());
-    setMaxLat(Number(bounds[1][1]).toString());
-
-    testMinLng(Number(bounds[0][0]).toString());
-    testMaxLng(Number(bounds[1][0]).toString());
-    testMinLat(Number(bounds[0][1]).toString());
-    testMaxLat(Number(bounds[1][1]).toString());
+    setInputs((prev) => {
+      if (boundsObjectEqualsArray(prev, bounds)) {
+        return prev;
+      }
+      console.log("setInputs", bounds);
+      return boundsAsObject(bounds);
+    });
   }, [bounds]);
+
+  useEffect(() => {
+    if (areBoundsValid(debouncedInput)) {
+      const newBounds = boundsAsArray(debouncedInput);
+      console.log("setBounds", newBounds);
+      setBounds(newBounds, true);
+    }
+  }, [setBounds, debouncedInput]);
+
+  const valid = useMemo(() => validateBounds(inputs), [inputs]);
+  console.log("VALID", valid);
+
+  const hasBboxInFilters = Object.keys(filters).some(
+    (key) => filters[key].remove === false && key === "bbox" && key !== "datetime"
+  );
+
+  const onInputChange = useCallback((event) => {
+    const { name, value } = event.target;
+    const newValue = parseFloat(value);
+    console.log("setInput", name, newValue);
+    if (!Number.isNaN(newValue)) {
+      setInputs((prev) => (newValue === prev[name] ? prev : { ...prev, [name]: round(newValue) }));
+    }
+  }, []);
+
+  const save = () => onChange("bbox", boundsAsString(inputs));
+
+  const onInputKey = (event) => {
+    if (event.key === "Enter" && valid.all) {
+      event.preventDefault();
+      event.stopPropagation();
+      save();
+    }
+  };
 
   return (
     <Form onSubmit={save}>
@@ -120,38 +86,14 @@ const SpatialFilter = ({
               size="sm"
               name="minLng"
               id="minLng"
-              className={LngMinLessMax && isLngMinValid ? "mr-2" : "mr-2 is-invalid"}
-              value={minLng}
-              onChange={(e) => {
-                const newValue = Number(e.target.value).toFixed(4);
-                const isMinMaxValid = testMinMaxLng(Number(newValue), Number(maxLng));
-                const isLngValid = testMinLng(newValue);
-                setMinLng(e.target.value);
-                if (isLngValid && isMinMaxValid && e.target.value) {
-                  setBounds([
-                    [Number(newValue).toFixed(4), Number(minLat).toFixed(4)],
-                    [Number(maxLng).toFixed(4), Number(maxLat).toFixed(4)],
-                  ]);
-                  setMapFlag(!mapFlag);
-                }
-              }}
-              onKeyPress={(event) => {
-                if (
-                  event.key === "Enter" &&
-                  isLngMinValid &&
-                  isLatMinValid &&
-                  LngMinLessMax &&
-                  LatMinLessMax &&
-                  isLngMaxValid &&
-                  isLatMaxValid
-                ) {
-                  save(event);
-                }
-              }}
+              className={valid.minMaxLng && valid.minLng ? "mr-2" : "mr-2 is-invalid"}
+              value={inputs.minLng}
+              onChange={onInputChange}
+              onKeyPress={onInputKey}
             />
-            {LngMinLessMax && isLngMinValid && <FormText>Min. Longitude</FormText>}
-            {!LngMinLessMax && <FormFeedback>Min. greater than Max.</FormFeedback>}
-            {!isLngMinValid && <FormFeedback>Value too low/high for Lng</FormFeedback>}
+            {valid.minMaxLng && valid.minLng && <FormText>Min. Longitude</FormText>}
+            {!valid.minMaxLng && <FormFeedback>Min. greater than Max.</FormFeedback>}
+            {!valid.minLng && <FormFeedback>Value too low/high for Lng</FormFeedback>}
           </FormGroup>
         </Col>
         <Col md="5">
@@ -161,38 +103,14 @@ const SpatialFilter = ({
               size="sm"
               name="minLat"
               id="minLat"
-              className={isLatMinValid && LatMinLessMax ? "mr-2" : "mr-2 is-invalid"}
-              value={minLat}
-              onChange={(e) => {
-                const newValue = Math.floor(parseFloat(e.target.value) * 10000) / 10000;
-                const minMax = testMinMaxLat(Number(newValue), Number(maxLat));
-                const isValid = testMinLat(newValue);
-                setMinLat(newValue);
-                if (minMax && isValid && e.target.value) {
-                  setBounds([
-                    [Number(minLng).toFixed(4), Number(newValue).toFixed(4)],
-                    [Number(maxLng).toFixed(4), Number(maxLat).toFixed(4)],
-                  ]);
-                  setMapFlag(!mapFlag);
-                }
-              }}
-              onKeyPress={(event) => {
-                if (
-                  event.key === "Enter" &&
-                  isLngMinValid &&
-                  isLatMinValid &&
-                  LngMinLessMax &&
-                  LatMinLessMax &&
-                  isLngMaxValid &&
-                  isLatMaxValid
-                ) {
-                  save(event);
-                }
-              }}
+              className={valid.minMaxLat && valid.minLat ? "mr-2" : "mr-2 is-invalid"}
+              value={inputs.minLat}
+              onChange={onInputChange}
+              onKeyPress={onInputKey}
             />
-            {LatMinLessMax && isLatMinValid && <FormText>Min. Latitude</FormText>}
-            {!LatMinLessMax && <FormFeedback>Min. greater than Max.</FormFeedback>}
-            {!isLatMinValid && <FormFeedback>Value too low/high for Lat</FormFeedback>}
+            {valid.minMaxLat && valid.minLat && <FormText>Min. Latitude</FormText>}
+            {!valid.minMaxLat && <FormFeedback>Min. greater than Max.</FormFeedback>}
+            {!valid.minLat && <FormFeedback>Value too low/high for Lat</FormFeedback>}
           </FormGroup>
         </Col>
       </Row>
@@ -204,37 +122,14 @@ const SpatialFilter = ({
               size="sm"
               name="maxLng"
               id="maxLng"
-              className={LngMinLessMax && isLngMaxValid ? "mr-2" : "mr-2 is-invalid"}
-              value={maxLng}
-              onChange={(e) => {
-                const newValue = Math.floor(parseFloat(e.target.value) * 10000) / 10000;
-                const minMax = testMinMaxLng(Number(minLng), Number(newValue));
-                const isValid = testMaxLng(newValue);
-                setMaxLng(newValue);
-                if (minMax && isValid && e.target.value) {
-                  setBounds([
-                    [Number(minLng).toFixed(4), Number(minLat).toFixed(4)],
-                    [Number(newValue).toFixed(4), Number(maxLat).toFixed(4)],
-                  ]);
-                  setMapFlag(!mapFlag);
-                }
-              }}
-              onKeyPress={(event) => {
-                if (
-                  event.key === "Enter" &&
-                  isLngMinValid &&
-                  isLatMinValid &&
-                  LngMinLessMax &&
-                  LatMinLessMax &&
-                  isLngMaxValid &&
-                  isLatMaxValid
-                ) {
-                  save(event);
-                }
-              }}
+              className={valid.minMaxLng && valid.maxLng ? "mr-2" : "mr-2 is-invalid"}
+              value={inputs.maxLng}
+              onChange={onInputChange}
+              onKeyPress={onInputKey}
             />
-            {isLngMaxValid && <FormText>Max. Longitude</FormText>}
-            {!isLngMaxValid && <FormFeedback>Value too low/high for Lng</FormFeedback>}
+            {valid.minMaxLng && valid.maxLng && <FormText>Max. Longitude</FormText>}
+            {!valid.minMaxLng && <FormFeedback>Min. greater than Max.</FormFeedback>}
+            {!valid.maxLng && <FormFeedback>Value too low/high for Lng</FormFeedback>}
           </FormGroup>
         </Col>
         <Col md="5">
@@ -244,37 +139,14 @@ const SpatialFilter = ({
               size="sm"
               name="maxLat"
               id="maxLat"
-              className={isLatMaxValid && LatMinLessMax ? "mr-2" : "mr-2 is-invalid"}
-              value={maxLat}
-              onChange={(e) => {
-                const newValue = Math.floor(parseFloat(e.target.value) * 10000) / 10000;
-                const minMax = testMinMaxLat(Number(minLat), Number(newValue));
-                const isValid = testMaxLat(newValue);
-                setMaxLat(newValue);
-                if (minMax && isValid && e.target.value) {
-                  setBounds([
-                    [Number(minLng).toFixed(4), Number(minLat).toFixed(4)],
-                    [Number(maxLng).toFixed(4), Number(newValue).toFixed(4)],
-                  ]);
-                  setMapFlag(!mapFlag);
-                }
-              }}
-              onKeyPress={(event) => {
-                if (
-                  event.key === "Enter" &&
-                  isLngMinValid &&
-                  isLatMinValid &&
-                  LngMinLessMax &&
-                  LatMinLessMax &&
-                  isLngMaxValid &&
-                  isLatMaxValid
-                ) {
-                  save(event);
-                }
-              }}
+              className={valid.minMaxLat && valid.maxLat ? "mr-2" : "mr-2 is-invalid"}
+              value={inputs.maxLat}
+              onChange={onInputChange}
+              onKeyPress={onInputKey}
             />
-            {isLatMaxValid && <FormText>Max. Latitude</FormText>}
-            {!isLatMaxValid && <FormFeedback>Value too low/high for Lat</FormFeedback>}
+            {valid.minMaxLat && valid.maxLat && <FormText>Max. Latitude</FormText>}
+            {!valid.minMaxLat && <FormFeedback>Min. greater than Max.</FormFeedback>}
+            {!valid.maxLat && <FormFeedback>Value too low/high for Lat</FormFeedback>}
           </FormGroup>
         </Col>
         {hasBboxInFilters ? (
@@ -284,14 +156,7 @@ const SpatialFilter = ({
                 color="primary"
                 size="sm"
                 style={{ minWidth: "40px" }}
-                disabled={
-                  !isLngMinValid ||
-                  !isLatMinValid ||
-                  !LngMinLessMax ||
-                  !LatMinLessMax ||
-                  !isLngMaxValid ||
-                  !isLatMaxValid
-                }
+                disabled={!valid.all}
                 onClick={save}
               >
                 {"\u2713"}
@@ -308,19 +173,7 @@ const SpatialFilter = ({
           </Col>
         ) : (
           <Col md="2">
-            <Button
-              color="primary"
-              size="sm"
-              disabled={
-                !isLngMinValid ||
-                !isLatMinValid ||
-                !LngMinLessMax ||
-                !LatMinLessMax ||
-                !isLngMaxValid ||
-                !isLatMaxValid
-              }
-              onClick={save}
-            >
+            <Button color="primary" size="sm" disabled={!valid.all} onClick={save}>
               Add
             </Button>
           </Col>
@@ -339,8 +192,6 @@ SpatialFilter.propTypes = {
   filters: PropTypes.object.isRequired,
   deleteFilters: PropTypes.func.isRequired,
   setBounds: PropTypes.func.isRequired,
-  setMapFlag: PropTypes.func.isRequired,
-  mapFlag: PropTypes.bool.isRequired,
 };
 
 SpatialFilter.defaultProps = {
