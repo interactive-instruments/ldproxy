@@ -277,7 +277,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
                 size="sm"
                 style={{ minWidth: "40px" }}
                 onClick={save}
-                disabled={!validInstant || !validPeriod.all}
+                disabled={!validInstant.instantInputValid || !validPeriod.all}
               >
                 {"\u2713"}
               </Button>
@@ -297,7 +297,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
               color="primary"
               size="sm"
               onClick={save}
-              disabled={!validInstant || !validPeriod.all}
+              disabled={!validInstant.instantInputValid || !validPeriod.all}
             >
               Add
             </Button>
