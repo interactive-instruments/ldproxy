@@ -36,7 +36,6 @@ const SpatialFilter = ({ bounds, setBounds, onChange, filters, deleteFilters }) 
       if (boundsObjectEqualsArray(prev, bounds)) {
         return prev;
       }
-      console.log("setInputs", bounds);
       return boundsAsObject(bounds);
     });
   }, [bounds]);
@@ -44,13 +43,11 @@ const SpatialFilter = ({ bounds, setBounds, onChange, filters, deleteFilters }) 
   useEffect(() => {
     if (areBoundsValid(debouncedInput)) {
       const newBounds = boundsAsArray(debouncedInput);
-      console.log("setBounds", newBounds);
       setBounds(newBounds, true);
     }
   }, [setBounds, debouncedInput]);
 
   const valid = useMemo(() => validateBounds(inputs), [inputs]);
-  console.log("VALID", valid);
 
   const hasBboxInFilters = Object.keys(filters).some(
     (key) => filters[key].remove === false && key === "bbox" && key !== "datetime"
@@ -59,7 +56,6 @@ const SpatialFilter = ({ bounds, setBounds, onChange, filters, deleteFilters }) 
   const onInputChange = useCallback((event) => {
     const { name, value } = event.target;
     const newValue = parseFloat(value);
-    console.log("setInput", name, newValue);
     if (!Number.isNaN(newValue)) {
       setInputs((prev) => (newValue === prev[name] ? prev : { ...prev, [name]: round(newValue) }));
     }

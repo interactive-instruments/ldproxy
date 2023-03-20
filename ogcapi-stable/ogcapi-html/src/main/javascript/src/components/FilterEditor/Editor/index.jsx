@@ -36,10 +36,8 @@ const EditorBody = ({
 
       setBounds((prev) => {
         if (boundsArraysEqual(prev, rounded)) {
-          console.log("SAME", prev, newBounds, rounded);
           return prev;
         }
-        console.log("UPDATE", prev, newBounds, rounded);
         if (doRefreshMap) {
           refreshMap();
         }

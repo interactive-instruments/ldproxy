@@ -1,12 +1,11 @@
 import React from "react";
 import { storiesOf } from "@storybook/react";
-import SliderInstant from "./InstantSlider";
-import SliderPeriod from "./PeriodSlider";
+import Slider from "./Slider";
 
 const Instant = (args) => {
   return (
     <>
-      <SliderInstant {...args} />
+      <Slider {...args} />
     </>
   );
 };
@@ -14,7 +13,7 @@ const Instant = (args) => {
 const Period = (args) => {
   return (
     <>
-      <SliderPeriod {...args} />
+      <Slider {...args} />
     </>
   );
 };

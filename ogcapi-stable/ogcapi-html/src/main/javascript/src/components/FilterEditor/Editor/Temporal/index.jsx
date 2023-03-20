@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import PropTypes from "prop-types";
 import qs from "qs";
 import { startOfToday } from "date-fns";
@@ -7,6 +7,8 @@ import DatetimeRangePicker from "react-datetime-range-picker";
 import Datetime from "react-datetime";
 import moment from "moment";
 import SliderInstant from "./Slider";
+
+import { validateInstant, validatePeriod, errorInstant } from "./util";
 
 const fromFilterString = (filter) => {
   if (filter.indexOf("/") === -1) {
@@ -73,13 +75,6 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
     end: new Date(extent.end ? extent.end : extent.start),
   });
   const [isInstant, setIsInstant] = useState(extent.end === null);
-  const [userInputValidation, setUserInputValidation] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const [isStartValid, setIsStartValid] = useState(true);
-  const [isEndValid, setIsEndValid] = useState(true);
-  const [startLessEnd, setStartLessEnd] = useState(true);
-  const [endGreaterStart, setEndGreaterStart] = useState(true);
 
   useEffect(() => {
     const parsedQuery = qs.parse(window.location.search, {
@@ -108,101 +103,60 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
     );
   };
 
-  const error = (inputValue) => {
-    const parsedDate = moment.utc(inputValue, "DD.MM.YYYY HH:mm:ss", true);
-    if (!parsedDate.isValid()) {
-      setErrorMessage("Invalid date format.");
-    } else if (!parsedDate.isSameOrAfter(moment.utc(min))) {
-      setErrorMessage("Date is before the minimum date.");
-    } else if (!parsedDate.isSameOrBefore(moment.utc(max))) {
-      setErrorMessage("Date is after the maximum date.");
-    } else if (!parsedDate.isSameOrBefore(moment.utc())) {
-      setErrorMessage("Date is in the future.");
-    } else {
-      setErrorMessage("");
-    }
-    return errorMessage;
-  };
+  const validInstant = useMemo(() => validateInstant(instantInput, min, max), [instantInput]);
 
-  const testFunction = (inputValue) => {
-    error(inputValue);
-    const parsedDate = moment.utc(inputValue, "DD.MM.YYYY HH:mm:ss", true);
-    if (
-      parsedDate.isValid() &&
-      parsedDate.isSameOrAfter(moment.utc(min)) &&
-      parsedDate.isSameOrBefore(moment.utc(max)) &&
-      parsedDate.isSameOrBefore(moment.utc())
-    ) {
-      setUserInputValidation(true);
-      return true;
-    }
-    setUserInputValidation(false);
-    return false;
-  };
+  const validPeriod = useMemo(() => validatePeriod(periodInput, period, min, max), [periodInput]);
 
-  const testStart = (inputValue) => {
-    const parsedDate = moment.utc(inputValue, "DD.MM.YYYY HH:mm:ss", true);
-    if (
-      parsedDate.isValid() &&
-      parsedDate.isSameOrAfter(moment.utc(min)) &&
-      parsedDate.isSameOrBefore(moment.utc(max))
-    ) {
-      setIsStartValid(true);
-      return true;
+  const inputChangeInstant = useCallback((next) => {
+    setInstantInput(next);
+    if (validInstant) {
+      setInstant(next);
+      setIsInstant(true);
     }
-    setIsStartValid(false);
-    return false;
-  };
-  // eslint-disable-next-line
-  const testStartLessEnd = (next) => {
-    const parsedDate = moment.utc(next, "DD.MM.YYYY HH:mm:ss", true);
-    if (parsedDate.isSameOrBefore(moment.utc(period.end))) {
-      setStartLessEnd(true);
-      return true;
-    }
-    setStartLessEnd(false);
-  };
+  }, []);
 
-  const testEnd = (inputValue) => {
-    const parsedDate = moment.utc(inputValue, "DD.MM.YYYY HH:mm:ss", true);
-    if (
-      parsedDate.isValid() &&
-      parsedDate.isSameOrBefore(moment.utc(max)) &&
-      parsedDate.isSameOrAfter(moment.utc(min))
-    ) {
-      setIsEndValid(true);
-      return true;
+  const inputChangePeriodStart = useCallback((next) => {
+    setPeriodInput(() => ({
+      start: next,
+      end: periodInput.end,
+    }));
+    if (validPeriod.periodInputStart) {
+      setPeriod((prevPeriod) => ({
+        ...prevPeriod,
+        start: next,
+      }));
+      setIsInstant(false);
     }
-    setIsEndValid(false);
-    return false;
-  };
+  }, []);
 
-  const testEndGreaterStart = (next) => {
-    const parsedDate = moment.utc(next, "DD.MM.YYYY HH:mm:ss", true);
-    if (parsedDate.isSameOrAfter(moment.utc(period.start))) {
-      setEndGreaterStart(true);
-      return true;
+  const inputChangePeriodEnd = useCallback((next) => {
+    setPeriodInput(() => ({
+      start: periodInput.start,
+      end: next,
+    }));
+    if (validPeriod.periodInputEnd) {
+      setPeriod((prevPeriod) => ({
+        ...prevPeriod,
+        end: next,
+      }));
+      setIsInstant(false);
     }
-    setEndGreaterStart(false);
-    return false;
-  };
+  }, []);
 
   useEffect(() => {
     if (isInstant) {
       setInstantInput(instant);
-      testFunction(instant);
-      error(instant);
+      validateInstant(instantInput, min, max);
+      errorInstant(instantInput);
     } else {
       setPeriodInput({
         start: period.start,
         end: period.end,
       });
-      testEnd(period.end);
-      testStart(period.start);
-      testEndGreaterStart(period.end);
-      testStartLessEnd(period.start);
+      validatePeriod(periodInput, period, min, max);
     }
   }, [instant, period]);
+  console.log(periodInput.start, "Instant:", instantInput);
   return (
     <Form onSubmit={save}>
       <p className="text-muted text-uppercase">date/time (utc)</p>
@@ -229,11 +183,19 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
       <Row>
         {isInstant ? (
           <Col md="10">
-            {!userInputValidation && <FormText>{errorMessage}</FormText>}
+            {!validInstant.instantInputValid && (
+              <>
+                <div style={{ marginBottom: "10px" }}>
+                  {errorInstant(instantInput, min, max).map((error) => (
+                    <FormText key={error}>{error}</FormText>
+                  ))}
+                </div>
+              </>
+            )}
             <Datetime
               className=""
               inputProps={{
-                className: userInputValidation
+                className: validInstant.instantInputValid
                   ? "form-control form-control-sm w-100 mb-3"
                   : "form-control form-control-sm w-100 mb-3 is-invalid",
                 style: {
@@ -245,16 +207,9 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
               dateFormat="DD.MM.YYYY"
               utc
               value={instantInput}
-              onChange={(next) => {
-                setInstantInput(next);
-                const isValidInput = testFunction(next);
-                if (isValidInput) {
-                  setInstant(next);
-                  setIsInstant(true);
-                }
-              }}
+              onChange={inputChangeInstant}
               onKeyPress={(event) => {
-                if (event.key === "Enter" && userInputValidation) {
+                if (event.key === "Enter" && validInstant) {
                   save(event);
                 }
               }}
@@ -271,26 +226,25 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
                 marginBottom: "10px",
               }}
             >
-              {!isStartValid && (
+              {!validPeriod.startValid && (
                 <FormText style={{ marginLeft: "15px" }}>
                   The start date is outside the specified range.
                 </FormText>
               )}
-              {!isEndValid && (
+              {!validPeriod.endValid && (
                 <FormText style={{ marginLeft: "15px" }}>
                   The end date is outside the specified range.
                 </FormText>
               )}
-              {!startLessEnd && (
-                <FormText style={{ marginLeft: "15px" }}>
-                  The start date must be less than the end date.
-                </FormText>
-              )}
-              {!endGreaterStart && (
-                <FormText style={{ marginLeft: "15px" }}>
-                  The end date must be greater than the start date.
-                </FormText>
-              )}
+              {
+                // prettier-ignore
+                (!validPeriod.startLessEnd ||
+                !validPeriod.endGreaterStart) && (
+                  <FormText style={{ marginLeft: "15px" }}>
+                    The start date must be less than the end date.
+                  </FormText>
+                )
+              }
             </div>
 
             <DatetimeRangePicker
@@ -300,11 +254,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
                 input: true,
                 inputProps: {
                   className:
-                    userInputValidation &&
-                    isStartValid &&
-                    isEndValid &&
-                    startLessEnd &&
-                    endGreaterStart
+                    validInstant && validPeriod.all
                       ? "form-control form-control-sm w-100 mb-3"
                       : "form-control form-control-sm w-100 mb-3 is-invalid",
                 },
@@ -314,36 +264,8 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
               utc
               startDate={periodInput.start}
               endDate={periodInput.end}
-              onStartDateChange={(next) => {
-                setPeriodInput(() => ({
-                  start: next,
-                  end: periodInput.end,
-                }));
-                const isValidInput = testStart(next);
-                const minMaxOk = testStartLessEnd(next);
-                if (isValidInput && minMaxOk) {
-                  setPeriod((prevPeriod) => ({
-                    ...prevPeriod,
-                    start: next,
-                  }));
-                  setIsInstant(false);
-                }
-              }}
-              onEndDateChange={(next) => {
-                setPeriodInput(() => ({
-                  start: periodInput.start,
-                  end: next,
-                }));
-                const isValidInput = testEnd(next);
-                const minMaxOk = testEndGreaterStart(next);
-                if (isValidInput && minMaxOk) {
-                  setPeriod((prevPeriod) => ({
-                    ...prevPeriod,
-                    end: next,
-                  }));
-                  setIsInstant(false);
-                }
-              }}
+              onStartDateChange={inputChangePeriodStart}
+              onEndDateChange={inputChangePeriodEnd}
             />
           </>
         )}
@@ -355,13 +277,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
                 size="sm"
                 style={{ minWidth: "40px" }}
                 onClick={save}
-                disabled={
-                  !userInputValidation ||
-                  !isStartValid ||
-                  !isEndValid ||
-                  !startLessEnd ||
-                  !endGreaterStart
-                }
+                disabled={!validInstant || !validPeriod.all}
               >
                 {"\u2713"}
               </Button>
@@ -381,13 +297,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
               color="primary"
               size="sm"
               onClick={save}
-              disabled={
-                !userInputValidation ||
-                !isStartValid ||
-                !isEndValid ||
-                !startLessEnd ||
-                !endGreaterStart
-              }
+              disabled={!validInstant || !validPeriod.all}
             >
               Add
             </Button>
