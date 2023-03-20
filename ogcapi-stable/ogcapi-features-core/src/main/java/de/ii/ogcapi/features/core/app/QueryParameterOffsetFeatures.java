@@ -65,17 +65,6 @@ public class QueryParameterOffsetFeatures extends ApiExtensionCache
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
-    FeaturesCoreConfiguration cfg =
-        optionalCollectionData
-            .map(cd -> cd.getExtension(FeaturesCoreConfiguration.class))
-            .orElse(api.getData().getExtension(FeaturesCoreConfiguration.class))
-            .orElseThrow(
-                () ->
-                    new IllegalStateException(
-                        String.format(
-                            "Could not process query parameter '%s', paging default values not provided.",
-                            getName())));
-
     try {
       return Integer.parseInt(value);
     } catch (Throwable e) {

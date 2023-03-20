@@ -8,20 +8,30 @@
 package de.ii.ogcapi.common.domain;
 
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public abstract class QueryParameterF extends ApiExtensionCache implements OgcApiQueryParameter {
+public abstract class QueryParameterF extends ApiExtensionCache
+    implements OgcApiQueryParameter, TypedQueryParameter<ApiMediaType> {
+
+  // TODO #846
 
   protected final ExtensionRegistry extensionRegistry;
   protected final SchemaValidator schemaValidator;
@@ -54,6 +64,20 @@ public abstract class QueryParameterF extends ApiExtensionCache implements OgcAp
 
   protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
     return matchesPath(definitionPath) && isEnabledForApi(apiData);
+  }
+
+  @Override
+  public ApiMediaType parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    return extensionRegistry.getExtensionsForType(getFormatClass()).stream()
+        .filter(f -> f.isEnabledForApi(api.getData()))
+        .map(FormatExtension::getMediaType)
+        .filter(mt -> Objects.equals(mt.parameter(), value))
+        .findFirst()
+        .orElse(null);
   }
 
   protected abstract boolean matchesPath(String definitionPath);

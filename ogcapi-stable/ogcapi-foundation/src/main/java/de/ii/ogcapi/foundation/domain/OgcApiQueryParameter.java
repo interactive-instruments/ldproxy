@@ -29,10 +29,6 @@ public interface OgcApiQueryParameter extends ParameterExtension {
     return isApplicable(apiData, definitionPath, method);
   }
 
-  default boolean isFilterParameter(OgcApiDataV2 apiData, String collectionId) {
-    return false;
-  }
-
   default void updateOpenApiDefinition(
       OgcApiDataV2 apiData, Optional<String> collectionId, OpenAPI openAPI, Operation op) {
     String id = getId(collectionId);

@@ -22,6 +22,8 @@ import org.immutables.value.Value;
 public abstract class QueryParameterTemplateParameter extends ApiExtensionCache
     implements OgcApiQueryParameter {
 
+  // TODO #846
+
   public abstract String getApiId();
 
   public abstract String getQueryId();

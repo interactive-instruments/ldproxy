@@ -509,8 +509,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       return response.build();
     }
 
-    QueryExpression queryExpression =
-        queryInput.getQuery().resolveParameters(requestContext.getParameters(), schemaValidator);
+    QueryExpression queryExpression = queryInput.getQuery();
     EpsgCrs crs =
         queryExpression.getCrs().map(EpsgCrs::fromString).orElse(queryInput.getDefaultCrs());
 

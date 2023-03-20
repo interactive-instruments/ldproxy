@@ -175,11 +175,11 @@ public class QueryParameterBbox extends ApiExtensionCache
                         .epsgCrs(bboxCrs)
                         .build());
 
-    BoundingBox spatialExtent = maxSpatialExtent.get();
-    if (bboxCoordinates.get(0) > spatialExtent.getXmax()
-        || bboxCoordinates.get(1) > spatialExtent.getYmax()
-        || bboxCoordinates.get(2) < spatialExtent.getXmin()
-        || bboxCoordinates.get(3) < spatialExtent.getYmin()) {
+    if (maxSpatialExtent.isPresent()
+        && (bboxCoordinates.get(0) > maxSpatialExtent.get().getXmax()
+            || bboxCoordinates.get(1) > maxSpatialExtent.get().getYmax()
+            || bboxCoordinates.get(2) < maxSpatialExtent.get().getXmin()
+            || bboxCoordinates.get(3) < maxSpatialExtent.get().getYmin())) {
       // bounding box does not overlap with spatial extent of the data, no match;
       // detecting this is also important to avoid errors when converting bbox coordinates
       // that are outside of the range of the native CRS

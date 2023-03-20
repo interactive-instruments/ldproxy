@@ -12,9 +12,14 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.common.domain.QueryParameterProfile;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -29,7 +34,10 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterProfileSchema extends QueryParameterProfile {
+public class QueryParameterProfileSchema extends QueryParameterProfile
+    implements TypedQueryParameter<String> {
+
+  // TODO #846
 
   static final List<String> PROFILES = ImmutableList.of("2019-09", "07");
 
@@ -62,5 +70,14 @@ public class QueryParameterProfileSchema extends QueryParameterProfile {
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return SchemaConfiguration.class;
+  }
+
+  @Override
+  public String parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    return value;
   }
 }

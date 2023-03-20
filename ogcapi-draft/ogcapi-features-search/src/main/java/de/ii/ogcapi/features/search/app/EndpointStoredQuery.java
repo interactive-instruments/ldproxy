@@ -33,6 +33,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -199,6 +200,13 @@ public class EndpointStoredQuery extends EndpointRequiresFeatures {
 
     QueryExpression query = repository.get(apiData, queryId);
 
+    List<OgcApiQueryParameter> parameterDefinitions =
+        getQueryParameters(extensionRegistry, api.getData(), "/search/{queryId}");
+    QueryParameterSet queryParameterSet =
+        QueryParameterSet.of(parameterDefinitions, requestContext.getParameters())
+            .evaluate(api, Optional.empty());
+
+    // TODO #846
     final String offset = requestContext.getParameters().get("offset");
     if (Objects.nonNull(offset)) {
       query =
@@ -207,6 +215,7 @@ public class EndpointStoredQuery extends EndpointRequiresFeatures {
               .offset(Integer.parseInt(offset))
               .build();
     }
+    query = query.resolveParameters(requestContext.getParameters(), schemaValidator);
 
     FeaturesCoreConfiguration coreConfiguration =
         api.getData().getExtension(FeaturesCoreConfiguration.class).orElseThrow();
