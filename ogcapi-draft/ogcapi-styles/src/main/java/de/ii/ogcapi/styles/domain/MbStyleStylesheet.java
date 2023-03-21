@@ -19,6 +19,7 @@ import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.foundation.domain.ImmutableLink;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.app.SchemaCacheStyleLayer;
+import de.ii.ogcapi.styles.domain.MbStyleLayer.LayerType;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
@@ -48,7 +49,7 @@ public abstract class MbStyleStylesheet {
 
   public abstract Optional<String> getName();
 
-  public abstract Optional<Object> getMetadata();
+  public abstract Optional<Map<String, Object>> getMetadata();
 
   public abstract Optional<List<Double>> getCenter();
 
@@ -189,11 +190,11 @@ public abstract class MbStyleStylesheet {
                 else if (!point && line && !polygon) builder.type("line");
                 else if (!point && !line && polygon) builder.type("polygon");
                 else builder.type("geometry");
-              } else if (layer.getType().matches("fill|line|symbol|fill\\-extrusion")) {
+              } else if (layer.getType().toString().matches("fill|line|symbol|fill\\-extrusion")) {
                 builder.type("geometry");
-              } else if (layer.getType().equals("circle")) {
+              } else if (layer.getType() == LayerType.circle) {
                 builder.type("point");
-              } else if (layer.getType().equals("raster")) {
+              } else if (layer.getType() == LayerType.raster) {
                 builder.type("raster");
               }
 

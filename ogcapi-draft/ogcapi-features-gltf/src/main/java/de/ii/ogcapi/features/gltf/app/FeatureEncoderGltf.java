@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.gltf.domain.FeatureTransformationContextGltf;
 import de.ii.ogcapi.features.gltf.domain.GltfAsset;
+import de.ii.ogcapi.features.gltf.domain.GltfConfiguration;
 import de.ii.ogcapi.features.gltf.domain.ImmutableAccessor;
 import de.ii.ogcapi.features.gltf.domain.ImmutableAssetMetadata;
 import de.ii.ogcapi.features.gltf.domain.ImmutableAttributes;
@@ -67,6 +68,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private static final String INDICES = "_indices";
   private static final String VERTICES = "_vertices";
   private static final String NORMALS = "_normals";
+  private static final String OUTLINE = "_outline";
   private static final String PROPERTY_PREFIX = "_p_";
   private static final int BUFFER_VIEW_NORMALS = 2;
   private static final int BUFFER_VIEW_INDICES = 0;
@@ -105,6 +107,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private static final int UNSIGNED_INT = 5125;
   private static final int FLOAT = 5126;
   private static final int TRIANGLES = 4;
+  public static final String CESIUM_PRIMITIVE_OUTLINE = "CESIUM_primitive_outline";
 
   private final FeatureTransformationContextGltf transformationContext;
   private final OutputStream outputStream;
@@ -116,6 +119,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
   private long processingStart;
   private OptionalLong featuresFetched;
   private OptionalLong featuresMatched;
+  private boolean withSurfaceType;
   private int featureCount;
   private long featuresDuration;
 
@@ -159,6 +163,12 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       featuresFetched = OptionalLong.empty();
       featuresMatched = OptionalLong.empty();
     }
+    this.withSurfaceType =
+        transformationContext
+            .getApiData()
+            .getExtension(GltfConfiguration.class, transformationContext.getCollectionId())
+            .map(GltfConfiguration::includeSurfaceType)
+            .orElse(false);
 
     initNewModel();
   }
@@ -182,7 +192,8 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     if (!surfaces.isEmpty()) {
       try {
         boolean added =
-            addMultiPolygons(builder, transformationContext, state, feature, fid, surfaces);
+            addMultiPolygons(
+                builder, transformationContext, state, feature, fid, surfaces, withSurfaceType);
         if (added) {
           int nextNodeId = state.getNextNodeId();
           featureNodes.add(nextNodeId++);
@@ -342,6 +353,10 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     }
     buffers.put(FEATURE_ID, new ByteArrayOutputStream(getByteStrideFeatureId() * INITIAL_SIZE));
     currentBufferViewOffsets.put(FEATURE_ID, 0);
+    if (transformationContext.getGltfConfiguration().writeOutline()) {
+      buffers.put(OUTLINE, new ByteArrayOutputStream(getByteStrideOutline() * INITIAL_SIZE));
+      currentBufferViewOffsets.put(OUTLINE, 0);
+    }
     transformationContext
         .getProperties()
         .forEach(
@@ -472,6 +487,19 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       nextBufferViewId++;
     }
 
+    if (transformationContext.getGltfConfiguration().writeOutline()) {
+      size = buffers.get(OUTLINE).size();
+      builder.addBufferViews(
+          ImmutableBufferView.builder()
+              .buffer(0)
+              .byteLength(size)
+              .byteOffset(offset)
+              .target(ELEMENT_ARRAY_BUFFER)
+              .build());
+      offset += size;
+      nextBufferViewId++;
+    }
+
     for (Map.Entry<String, ByteArrayOutputStream> entry : buffers.entrySet()) {
       String bufferName = entry.getKey();
       if (bufferName.startsWith(PROPERTY_PREFIX) && !bufferName.endsWith(STRING_OFFSET)) {
@@ -519,6 +547,10 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     if (transformationContext.getGltfConfiguration().useMeshQuantization()) {
       builder.addExtensionsUsed(KHR_MESH_QUANTIZATION);
       builder.addExtensionsRequired(KHR_MESH_QUANTIZATION);
+    }
+
+    if (transformationContext.getGltfConfiguration().writeOutline()) {
+      builder.addExtensionsUsed(CESIUM_PRIMITIVE_OUTLINE);
     }
 
     builder.addMaterials(
@@ -581,6 +613,9 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     if (!transformationContext.getProperties().isEmpty()) {
       bufferList.add(buffers.get(FEATURE_ID));
     }
+    if (transformationContext.getGltfConfiguration().writeOutline()) {
+      bufferList.add(buffers.get(OUTLINE));
+    }
     bufferList.addAll(
         bufferViews.entrySet().stream()
             .sorted(Comparator.comparingInt(Entry::getValue))
@@ -602,6 +637,10 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     return (transformationContext.getGltfConfiguration().useMeshQuantization() ? 1 : 3) * 4;
   }
 
+  private int getByteStrideOutline() {
+    return getByteStrideIndices();
+  }
+
   private int getByteStrideFeatureId() {
     return 4;
   }
@@ -621,7 +660,8 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       ModifiableStateGltf state,
       FeatureGltf feature,
       String featureName,
-      MeshSurfaceList surfaces)
+      MeshSurfaceList surfaces,
+      boolean withSurfaceType)
       throws IOException {
 
     double[][] minMax = surfaces.getMinMax();
@@ -630,6 +670,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
     List<Double> normals = new ArrayList<>();
     List<Integer> indices = new ArrayList<>();
     List<Integer> featureIds = new ArrayList<>();
+    List<Integer> outline = new ArrayList<>();
     int indexCount = 0;
     int surfaceCount = 0;
 
@@ -643,6 +684,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
               minMax[0][2],
               context.getClampToEllipsoid(),
               context.getGltfConfiguration().writeNormals(),
+              context.getGltfConfiguration().writeOutline(),
               indexCount,
               Optional.of(context.getCrsTransformerCrs84hToEcef()),
               featureName);
@@ -657,12 +699,13 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
 
       vertices.addAll(triangleMesh.getVertices());
       normals.addAll(triangleMesh.getNormals());
+      outline.addAll(triangleMesh.getOutlineIndices());
 
       final int nextFeatureId = state.getNextFeatureId() + 1;
       IntStream.range(0, vertexCountSurface).forEach(i -> featureIds.add(nextFeatureId - 1));
       state.setNextFeatureId(nextFeatureId);
 
-      if (context.getProperties().containsKey(SURFACE_TYPE)) {
+      if (withSurfaceType && context.getProperties().containsKey(SURFACE_TYPE)) {
         ByteArrayOutputStream buffer = buffers.get(PROPERTY_PREFIX + SURFACE_TYPE);
         buffer.write(SURFACE_TYPE_ENUMS.get(surface.getSurfaceType().orElse("unknown")));
       }
@@ -852,6 +895,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
       state.setNextAccessorId(nextAccessorId);
       currentBufferViewOffsets.put(VERTICES, buffers.get(VERTICES).size());
 
+      int nextBufferView = BUFFER_VIEW_NORMALS;
       if (context.getGltfConfiguration().writeNormals()) {
         // write normals and add accessor
         buffer = buffers.get(NORMALS);
@@ -880,7 +924,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
         final List<Double> normalsMax = getMax(normals);
         builder.addAccessors(
             ImmutableAccessor.builder()
-                .bufferView(BUFFER_VIEW_NORMALS)
+                .bufferView(nextBufferView++)
                 .byteOffset(currentBufferViewOffsets.get(NORMALS))
                 .componentType(quantizeMesh ? BYTE : FLOAT)
                 .normalized(quantizeMesh)
@@ -948,7 +992,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
 
         builder.addAccessors(
             ImmutableAccessor.builder()
-                .bufferView(context.getGltfConfiguration().writeNormals() ? 3 : 2)
+                .bufferView(nextBufferView++)
                 .byteOffset(currentBufferViewOffsets.get(FEATURE_ID))
                 .componentType(componentType)
                 .count(featureIds.size())
@@ -959,6 +1003,53 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
         currentBufferViewOffsets.put(FEATURE_ID, buffer.size());
       }
 
+      Integer accessorIdOutline = null;
+      if (context.getGltfConfiguration().writeOutline()) {
+        // write outline edges and add accessor
+        if (indices.size() <= Short.MAX_VALUE - Short.MIN_VALUE) {
+          componentType = UNSIGNED_SHORT;
+        } else {
+          componentType = UNSIGNED_INT;
+        }
+
+        // write indices and add accessor
+        buffer = buffers.get(OUTLINE);
+        switch (componentType) {
+          case UNSIGNED_SHORT:
+            for (int v : outline) {
+              buffer.write(GltfAsset.intToLittleEndianShort(v));
+            }
+            break;
+
+          case UNSIGNED_INT:
+          default:
+            for (int v : outline) {
+              buffer.write(GltfAsset.intToLittleEndianInt(v));
+            }
+            break;
+        }
+
+        builder.addAccessors(
+            ImmutableAccessor.builder()
+                .bufferView(nextBufferView++)
+                .byteOffset(currentBufferViewOffsets.get(OUTLINE))
+                .componentType(componentType)
+                .addMax(outline.stream().max(Comparator.naturalOrder()).orElseThrow())
+                .addMin(outline.stream().min(Comparator.naturalOrder()).orElseThrow())
+                .count(outline.size())
+                .type("SCALAR")
+                .build());
+
+        // pad for alignment, all offsets must be divisible by 4
+        while (buffers.get(OUTLINE).size() % 4 > 0) {
+          buffers.get(OUTLINE).write(GltfAsset.BIN_PADDING);
+        }
+
+        accessorIdOutline = nextAccessorId++;
+        state.setNextAccessorId(nextAccessorId);
+        currentBufferViewOffsets.put(OUTLINE, buffers.get(OUTLINE).size());
+      }
+
       // add mesh and node for the feature
       ImmutableList.Builder<Map<String, Object>> featureIdsBuilder = ImmutableList.builder();
       if (!context.getProperties().isEmpty()) {
@@ -966,6 +1057,15 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
             ImmutableMap.of("featureCount", surfaceCount, "attribute", 0, "propertyTable", 0));
       }
       List<Map<String, Object>> meshFeatures = featureIdsBuilder.build();
+      ImmutableMap.Builder<String, Map<String, Object>> extensionsBuilder =
+          new ImmutableMap.Builder<>();
+      if (!meshFeatures.isEmpty()) {
+        extensionsBuilder.put(EXT_MESH_FEATURES, ImmutableMap.of("featureIds", meshFeatures));
+      }
+      if (Objects.nonNull(accessorIdOutline)) {
+        extensionsBuilder.put(
+            CESIUM_PRIMITIVE_OUTLINE, ImmutableMap.of("indices", accessorIdOutline));
+      }
       builder.addMeshes(
           ImmutableMesh.builder()
               .addPrimitives(
@@ -974,11 +1074,7 @@ public class FeatureEncoderGltf extends FeatureObjectEncoder<PropertyGltf, Featu
                       .mode(TRIANGLES)
                       .indices(accessorIdIndices)
                       .material(MATERIAL)
-                      .extensions(
-                          meshFeatures.isEmpty()
-                              ? ImmutableMap.of()
-                              : ImmutableMap.of(
-                                  EXT_MESH_FEATURES, ImmutableMap.of("featureIds", meshFeatures)))
+                      .extensions(extensionsBuilder.build())
                       .build())
               .build());
 

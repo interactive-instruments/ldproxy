@@ -56,9 +56,14 @@ public class CrsOnCollections implements CollectionsExtension {
 
       // list all CRSs as the list of default CRSs
       ImmutableList<String> crsList =
-          crsSupport.getSupportedCrsList(api.getData()).stream()
-              .map(EpsgCrs::toUriString)
-              .collect(ImmutableList.toImmutableList());
+          api.getData()
+                  .getExtension(CrsConfiguration.class)
+                  .map(CrsConfiguration::shouldSuppressGlobalCrsList)
+                  .orElse(false)
+              ? ImmutableList.of()
+              : crsSupport.getSupportedCrsList(api.getData()).stream()
+                  .map(EpsgCrs::toUriString)
+                  .collect(ImmutableList.toImmutableList());
 
       collectionsBuilder.crs(crsList);
     }

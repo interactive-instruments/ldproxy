@@ -7,11 +7,11 @@
  */
 package de.ii.ogcapi.tiles3d.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.tiles.domain.SeedingOptions;
-import de.ii.xtraplatform.docs.DocIgnore;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -183,7 +183,7 @@ public interface Tiles3dConfiguration extends ExtensionConfiguration {
   @Nullable
   Boolean getClampToEllipsoid();
 
-  @DocIgnore
+  @JsonIgnore
   @Value.Derived
   @Value.Auxiliary
   default boolean shouldClampToEllipsoid() {
@@ -233,6 +233,20 @@ public interface Tiles3dConfiguration extends ExtensionConfiguration {
    * @since v3.4
    */
   Optional<Double> getTerrainHeightDifference();
+
+  /**
+   * @langEn A style in the style repository of the collection to be used in maps with 3D Tiles.
+   *     With `DEFAULT` the `defaultStyle` from [module HTML](html.md) is used. With `NONE` the
+   *     default 3D Tiles style is used. The style must be available in the 3D Tiles Styling format.
+   *     If no style is found, 'NONE' is used.
+   * @langDe Ein Style im Style-Repository der Collection, der in Karten mit den 3D Tiles verwendet
+   *     werden soll. Bei `DEFAULT` wird der `defaultStyle` aus [Modul HTML](html.md) verwendet. Bei
+   *     `NONE` wird der Standard-Style von 3D Tiles verwendet. Der Style muss im Format 3D Tiles
+   *     Styling verfügbar sein. Wird kein Style gefunden, wird `NONE` verwendet.
+   * @default DEFAULT
+   */
+  @Nullable
+  String getStyle();
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 

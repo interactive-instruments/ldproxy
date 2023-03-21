@@ -196,30 +196,31 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
 
   /**
    * @langEn The map client library to use to display features in the HTML representation. The
-   *     default is MapLibre GL (`MAP_LIBRE`). WIP: Cesium (`CESIUM`) can be used for displaying 3D
-   *     features on a globe.
+   *     default is MapLibre GL (`MAP_LIBRE`). Cesium (`CESIUM`) can be used for displaying 3D
+   *     features on a globe, if [Features - glTF](features_-_gltf.md) is enabled.
    * @langDe Auswahl des in den Ressourcen "Features" und "Feature" zu verwendenden Map-Clients. Der
-   *     Standard ist MapLibre GL JS. Alternativ wird als auch `CESIUM` unterstützt (CesiumJS). Die
-   *     Unterstützung von CesiumJS zielt vor allem auf die Darstellung von 3D-Daten ab und besitzt
-   *     in der aktuellen Version experimentellen Charakter, es werden keine Styles unterstützt.
+   *     Standard ist MapLibre GL JS. Alternativ wird für 3D-Daten auch `CESIUM` unterstützt, wenn
+   *     [Features - glTF](features_-_gltf.md) aktiviert ist.
    * @default `MAP_LIBRE`
    */
   @Nullable
   MapClient.Type getMapClientType();
 
   /**
-   * @langEn An optional Mapbox style in the style repository to use for the map in the HTML
-   *     representation of a feature or feature collection. If set to `DEFAULT`, the `defaultStyle`
-   *     configured in the [HTML configuration](html.md) is used. If set to `NONE`, a simple
-   *     wireframe style will be used with OpenStreetMap as a basemap. The value is ignored, if the
-   *     map client is not MapLibre.
+   * @langEn An optional style in the style repository to use for the map in the HTML representation
+   *     of a feature or feature collection. The style should render all data. If set to `DEFAULT`,
+   *     the `defaultStyle` configured in the [HTML configuration](html.md) is used. If the map
+   *     client is MapLibre, the style must be available in the Mapbox format. If the style is set
+   *     to `NONE`, a simple wireframe style will be used with OpenStreetMap as a basemap. If the
+   *     map client is Cesium, the style must be available in the 3D Tiles format. If the style is
+   *     set to `NONE`, the standard 3D Tiles styling is used.
    * @langDe Ein Style im Style-Repository, der standardmäßig in Karten mit den Features verwendet
-   *     werden soll. Bei `DEFAULT` wird der `defaultStyle` aus [Modul HTML](html.md) verwendet. Bei
-   *     `NONE` wird ein einfacher Style mit OpenStreetMap als Basiskarte verwendet. Der Style
-   *     sollte alle Daten abdecken und muss im Format Mapbox Style verfügbar sein. Es wird zuerst
-   *     nach einem Style mit dem Namen für die Feature Collection gesucht; falls keiner gefunden
-   *     wird, wird nach einem Style mit dem Namen auf der API-Ebene gesucht. Wird kein Style
-   *     gefunden, wird `NONE` verwendet.
+   *     werden soll. Der Style sollte alle Daten abdecken. Bei `DEFAULT` wird der `defaultStyle`
+   *     aus [Modul HTML](html.md) verwendet. Handelt es sich bei dem Kartenclient um MapLibre, muss
+   *     der Style im Mapbox-Format verfügbar sein. Wenn der Style auf `NONE` gesetzt ist, wird ein
+   *     einfacher Wireframe Style mit OpenStreetMap als Basiskarte verwendet. Handelt es sich bei
+   *     dem Kartenclient um Cesium, muss der Style im 3D-Tiles-Format verfügbar sein. Ist der Style
+   *     auf `NONE` gesetzt, wird das Standard 3D Tiles Styling verwendet.
    * @default `DEFAULT`
    */
   @Nullable

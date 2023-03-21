@@ -385,18 +385,16 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
 
   /**
    * @langEn A style in the style repository to be used in maps with tiles by default. With
-   *     `DEFAULT` the `defaultStyle` from [module HTML](html.md) is used. With `NONE` a simple
-   *     style with OpenStreetMap as base map is used. The style should cover all data and must be
-   *     available in Mapbox Style format. A style with the name for the feature collection is
-   *     searched for first; if none is found, a style with the name at the API level is searched
-   *     for. If no style is found, 'NONE' is used.
+   *     `DEFAULT` the `defaultStyle` from [module HTML](html.md) is used. If the map client is
+   *     MapLibre, the style must be available in the Mapbox format. If the style is set to `NONE`,
+   *     a simple wireframe style will be used with OpenStreetMap as a basemap. If the map client is
+   *     Open Layers, the setting is ignored.
    * @langDe Ein Style im Style-Repository, der standardmäßig in Karten mit den Tiles verwendet
-   *     werden soll. Bei `DEFAULT` wird der `defaultStyle` aus [Modul HTML](html.md) verwendet. Bei
-   *     `NONE` wird ein einfacher Style mit OpenStreetMap als Basiskarte verwendet. Der Style
-   *     sollte alle Daten abdecken und muss im Format Mapbox Style verfügbar sein. Es wird zuerst
-   *     nach einem Style mit dem Namen für die Feature Collection gesucht; falls keiner gefunden
-   *     wird, wird nach einem Style mit dem Namen auf der API-Ebene gesucht. Wird kein Style
-   *     gefunden, wird `NONE` verwendet.
+   *     werden soll. Bei `DEFAULT` wird der `defaultStyle` aus [Modul HTML](html.md) verwendet.
+   *     Handelt es sich bei dem Kartenclient um MapLibre, muss der Style im Mapbox-Format verfügbar
+   *     sein. Wenn der Style auf `NONE` gesetzt ist, wird ein einfacher Wireframe Style mit
+   *     OpenStreetMap als Basiskarte verwendet. Handelt es sich bei dem Kartenclient um Open
+   *     Layers, wird die Angabe ignoriert.
    * @default DEFAULT
    */
   @Nullable

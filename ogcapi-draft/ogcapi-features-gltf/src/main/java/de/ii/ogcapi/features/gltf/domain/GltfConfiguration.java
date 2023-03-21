@@ -7,9 +7,9 @@
  */
 package de.ii.ogcapi.features.gltf.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.xtraplatform.docs.DocIgnore;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -69,7 +69,7 @@ public interface GltfConfiguration extends ExtensionConfiguration, PropertyTrans
   Boolean getMeshQuantization();
 
   @Value.Derived
-  @DocIgnore
+  @JsonIgnore
   default boolean useMeshQuantization() {
     return Boolean.TRUE.equals(getMeshQuantization());
   }
@@ -84,9 +84,24 @@ public interface GltfConfiguration extends ExtensionConfiguration, PropertyTrans
   Boolean getWithNormals();
 
   @Value.Derived
-  @DocIgnore
+  @JsonIgnore
   default boolean writeNormals() {
     return Boolean.TRUE.equals(getWithNormals());
+  }
+
+  /**
+   * @langEn If `true`, the polygon edges are outlined in Cesium.
+   * @langDe Wenn `true`, werden die Kanten der Polygone in Cesium hervorgehoben.
+   * @default false
+   * @since v3.4
+   */
+  @Nullable
+  Boolean getWithOutline();
+
+  @Value.Derived
+  @JsonIgnore
+  default boolean writeOutline() {
+    return Boolean.TRUE.equals(getWithOutline());
   }
 
   /**
@@ -102,7 +117,7 @@ public interface GltfConfiguration extends ExtensionConfiguration, PropertyTrans
   Boolean getPolygonOrientationNotGuaranteed();
 
   @Value.Derived
-  @DocIgnore
+  @JsonIgnore
   default boolean polygonOrientationIsNotGuaranteed() {
     return Boolean.TRUE.equals(getPolygonOrientationNotGuaranteed());
   }
@@ -137,6 +152,25 @@ public interface GltfConfiguration extends ExtensionConfiguration, PropertyTrans
    * @since v3.4
    */
   Map<String, GltfPropertyDefinition> getProperties();
+
+  /**
+   * @langEn If `true`, for buildings in Level-of-Detail 2 with information about the semantics of
+   *     each surface (wall, roof, etc.), a property "surfaceType" is added and available for each
+   *     vertex.
+   * @langDe Wenn `true`, wird für Gebäude in Level-of-Detail 2 mit Informationen über die Semantik
+   *     jeder Oberfläche (Wand, Dach, etc.) wird automatisch eine weitere Eigenschaft "surfaceType"
+   *     hinzugefügt, die für jeden Vertex verfügbar ist.
+   * @default false
+   * @since v3.4
+   */
+  @Nullable
+  Boolean getWithSurfaceType();
+
+  @Value.Derived
+  @JsonIgnore
+  default boolean includeSurfaceType() {
+    return Boolean.TRUE.equals(getWithSurfaceType());
+  }
 
   /**
    * @langEn If the data is flattened and the feature schema includes arrays, `maxMultiplicity`
