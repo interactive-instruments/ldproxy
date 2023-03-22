@@ -8,7 +8,6 @@
 package de.ii.ogcapi.features.core
 
 import com.google.common.collect.ImmutableList
-import dagger.Lazy
 import de.ii.ogcapi.collections.app.QueriesHandlerCollectionsImpl
 import de.ii.ogcapi.collections.domain.*
 import de.ii.ogcapi.collections.infra.EndpointCollection
@@ -16,35 +15,21 @@ import de.ii.ogcapi.collections.infra.EndpointCollections
 import de.ii.ogcapi.common.domain.ImmutableCommonConfiguration
 import de.ii.ogcapi.features.core.app.CollectionExtensionFeatures
 import de.ii.ogcapi.features.core.app.CollectionsExtensionFeatures
-import de.ii.ogcapi.features.core.app.FeaturesCoreProvidersImpl
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders
 import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables
 import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration
 import de.ii.ogcapi.foundation.app.I18nDefault
 import de.ii.ogcapi.foundation.app.OgcApiEntity
-import de.ii.ogcapi.foundation.domain.ApiExtension
-import de.ii.ogcapi.foundation.domain.ApiMediaType
-import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent
-import de.ii.ogcapi.foundation.domain.ApiRequestContext
-import de.ii.ogcapi.foundation.domain.ExtensionRegistry
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent
-import de.ii.ogcapi.foundation.domain.ImmutableCollectionExtent
-import de.ii.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi
-import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2
-import de.ii.ogcapi.foundation.domain.ImmutableRequestContext
-import de.ii.ogcapi.foundation.domain.ImmutableTemporalExtent
-import de.ii.ogcapi.foundation.domain.OgcApi
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2
-import de.ii.ogcapi.foundation.domain.TemporalExtent
+import de.ii.ogcapi.foundation.domain.*
 import de.ii.ogcapi.html.domain.ImmutableHtmlConfiguration
 import de.ii.ogcapi.json.domain.ImmutableJsonConfiguration
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.OgcCrs
-import de.ii.xtraplatform.store.app.entities.EntityRegistryImpl
-import de.ii.xtraplatform.store.domain.entities.EntityFactory
+import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema
+import de.ii.xtraplatform.features.domain.SchemaBase
 import spock.lang.Ignore
+import spock.lang.Shared
 import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType
@@ -52,13 +37,24 @@ import java.util.stream.Collectors
 
 class OgcApiCoreSpecCollections extends Specification {
 
-    static final ExtensionRegistry registry = createExtensionRegistry()
-    static final OgcApiDataV2 datasetData = createDatasetData()
-    static final OgcApiEntity api = createOgcApiApiEntity()
-    static final ApiRequestContext requestContext = createRequestContext()
-    static QueriesHandlerCollectionsImpl ogcApiQueriesHandlerCollections = new QueriesHandlerCollectionsImpl(registry, new I18nDefault())
-    static final EndpointCollections collectionsEndpoint = createCollectionsEndpoint()
-    static final EndpointCollection collectionEndpoint = createCollectionEndpoint()
+    @Shared
+    FeaturesCoreProviders providers = Mock {
+        getFeatureSchema(_, _) >> Optional.of(createFeatureSchema())
+    }
+    @Shared
+    ExtensionRegistry registry = createExtensionRegistry(providers)
+    @Shared
+    OgcApiDataV2 datasetData = createDatasetData()
+    @Shared
+    OgcApiEntity api = createOgcApiApiEntity(registry, datasetData)
+    @Shared
+    ApiRequestContext requestContext = createRequestContext(api)
+    @Shared
+    QueriesHandlerCollectionsImpl ogcApiQueriesHandlerCollections = new QueriesHandlerCollectionsImpl(registry, new I18nDefault())
+    @Shared
+    EndpointCollections collectionsEndpoint = createCollectionsEndpoint(registry, ogcApiQueriesHandlerCollections)
+    @Shared
+    EndpointCollection collectionEndpoint = createCollectionEndpoint(registry, ogcApiQueriesHandlerCollections)
 
     def 'Requirement 13 A: collections response'() {
         given: 'A request to the server at /collections'
@@ -108,7 +104,6 @@ class OgcApiCoreSpecCollections extends Specification {
         links.any { it.any { it.rel == "items" && it.type == "application/json" } }
     }
 
-    @Ignore // FIXME add feature schema to fixtures
     def 'Requirement 16 A: extent property'() {
         given: 'A request to the server at /collections'
 
@@ -120,7 +115,6 @@ class OgcApiCoreSpecCollections extends Specification {
     }
 
 
-    @Ignore // FIXME add feature schema to fixtures
     def 'Requirement 18 B: feature collection response'() {
         given: 'A request to the server at /collections'
 
@@ -139,7 +133,7 @@ class OgcApiCoreSpecCollections extends Specification {
     }
 
 
-    static def createExtensionRegistry() {
+    static def createExtensionRegistry(FeaturesCoreProviders providers) {
         new ExtensionRegistry() {
 
             @Override
@@ -150,6 +144,7 @@ class OgcApiCoreSpecCollections extends Specification {
 
             @Override
             <T extends ApiExtension> List<T> getExtensionsForType(Class<T> extensionType) {
+                ExtensionRegistry self = this;
                 if (extensionType == CollectionsFormatExtension.class) {
                     return ImmutableList.of((T) new CollectionsFormatExtension() {
                         @Override
@@ -228,13 +223,11 @@ class OgcApiCoreSpecCollections extends Specification {
                     })
                 }
                 if (extensionType == CollectionsExtension.class) {
-                    return ImmutableList.of((T) new CollectionsExtensionFeatures(registry))
+                    return ImmutableList.of((T) new CollectionsExtensionFeatures(self))
                 }
 
                 if (extensionType == CollectionExtension.class) {
-                    Lazy<Set<EntityFactory>> factories = () -> [] as Set
-                    FeaturesCoreProviders providers = (FeaturesCoreProviders) new FeaturesCoreProvidersImpl(new EntityRegistryImpl(factories))
-                    CollectionExtensionFeatures collectionExtension = new CollectionExtensionFeatures(registry, new I18nDefault(), providers)
+                    CollectionExtensionFeatures collectionExtension = new CollectionExtensionFeatures(self, new I18nDefault(), providers)
                     return ImmutableList.of((T) collectionExtension)
                 }
 
@@ -272,7 +265,7 @@ class OgcApiCoreSpecCollections extends Specification {
         }
     }
 
-    static def createRequestContext(String uri = 'http://example.com/collections') {
+    static def createRequestContext(OgcApiEntity api, String uri = 'http://example.com/collections') {
         new ImmutableRequestContext.Builder()
                 .mediaType(new ImmutableApiMediaType.Builder()
                         .type(MediaType.APPLICATION_JSON_TYPE)
@@ -325,20 +318,34 @@ class OgcApiCoreSpecCollections extends Specification {
                 .build()
     }
 
+    static def createFeatureSchema() {
+        return new ImmutableFeatureSchema.Builder()
+                .name("featureType1")
+                .type(SchemaBase.Type.OBJECT)
+                .putProperties2("geo",
+                        new ImmutableFeatureSchema.Builder()
+                                .type(SchemaBase.Type.GEOMETRY)
+                                .role(SchemaBase.Role.PRIMARY_GEOMETRY))
+                .putProperties2("date",
+                        new ImmutableFeatureSchema.Builder()
+                                .type(SchemaBase.Type.DATE)
+                                .role(SchemaBase.Role.PRIMARY_INSTANT))
+                .build()
+    }
 
-    static def createOgcApiApiEntity() {
+    static def createOgcApiApiEntity(ExtensionRegistry registry, OgcApiDataV2 datasetData) {
         def entity = new OgcApiEntity(null, registry, () -> "", datasetData)
-        entity.updateSpatialExtent("featureType1", BoundingBox.of(-180,-90,180,90,OgcCrs.CRS84))
-        entity.updateTemporalExtent("featureType1", TemporalExtent.of(Long.MIN_VALUE,Long.MAX_VALUE))
+        entity.updateSpatialExtent("featureType1", BoundingBox.of(-180, -90, 180, 90, OgcCrs.CRS84))
+        entity.updateTemporalExtent("featureType1", TemporalExtent.of(Long.MIN_VALUE, Long.MAX_VALUE))
         entity.updateItemCount("featureType1", 0)
         return entity
     }
 
-    static def createCollectionsEndpoint() {
+    static def createCollectionsEndpoint(ExtensionRegistry registry, QueriesHandlerCollectionsImpl ogcApiQueriesHandlerCollections) {
         return new EndpointCollections(registry, ogcApiQueriesHandlerCollections)
     }
 
-    static def createCollectionEndpoint() {
+    static def createCollectionEndpoint(ExtensionRegistry registry, QueriesHandlerCollectionsImpl ogcApiQueriesHandlerCollections) {
         return new EndpointCollection(registry, ogcApiQueriesHandlerCollections)
     }
 
