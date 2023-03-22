@@ -1,5 +1,6 @@
 import React from "react";
 import { storiesOf } from "@storybook/react";
+import moment from "moment";
 import Slider from "./Slider";
 
 const Instant = (args) => {
@@ -24,14 +25,13 @@ storiesOf("@ogcapi/html/FilterEditor/Editor/Temporal/Instant/MoreThan7Years", mo
   "Default",
   () => (
     <Instant
-      minInstant={new Date("Tue Jan 01 2019 00:00:00 GMT+0100")}
-      maxInstant={new Date("Tue Jan 01 2028 00:57:00 GMT+0100")}
-      setInstant={() => {}}
-      period={{
-        start: new Date("Tue Jan 01 2019 00:00:00 GMT+0100"),
-      }}
-      isInstant="true"
-      forStory
+      min={moment.utc("01 Jan 2019 00:00:00").valueOf()}
+      max={moment.utc("01 Jan 2028 00:57:00").valueOf()}
+      start={moment.utc("01 Jan 2019 00:00:00")}
+      end={moment.utc("01 Jan 2019 00:00:00")}
+      onChange={() => {}}
+      isInstant
+      showHeader
     />
   )
 );
@@ -40,14 +40,13 @@ storiesOf("@ogcapi/html/FilterEditor/Editor/Temporal/Instant/MoreThan3Years", mo
   "Default",
   () => (
     <Instant
-      minInstant={new Date("Tue Jan 01 2019 00:00:00 GMT+0100")}
-      maxInstant={new Date("Tue Jan 01 2024 00:57:00 GMT+0100")}
-      setInstant={() => {}}
-      period={{
-        start: new Date("Tue Jan 01 2019 00:00:00 GMT+0100"),
-      }}
-      isInstant="true"
-      forStory
+      min={moment.utc("01 Jan 2019 00:00:00").valueOf()}
+      max={moment.utc("01 Jan 2024 00:57:00").valueOf()}
+      start={moment.utc("01 Jan 2019 00:00:00")}
+      end={moment.utc("01 Jan 2019 00:00:00")}
+      onChange={() => {}}
+      isInstant
+      showHeader
     />
   )
 );
@@ -56,14 +55,13 @@ storiesOf("@ogcapi/html/FilterEditor/Editor/Temporal/Instant/MoreThan7Months", m
   "Default",
   () => (
     <Instant
-      minInstant={new Date("Tue Jan 01 2019 00:00:00 GMT+0100")}
-      maxInstant={new Date("Tue Dec 01 2019 00:57:00 GMT+0100")}
-      setInstant={() => {}}
-      period={{
-        start: new Date("Tue Jan 01 2019 00:00:00 GMT+0100"),
-      }}
-      isInstant="true"
-      forStory
+      min={moment.utc("01 Jan 2019 00:00:00").valueOf()}
+      max={moment.utc("01 Dec 2019 00:57:00").valueOf()}
+      start={moment.utc("01 Jan 2019 00:00:00")}
+      end={moment.utc("01 Jan 2019 00:00:00")}
+      onChange={() => {}}
+      isInstant
+      showHeader
     />
   )
 );
@@ -72,14 +70,13 @@ storiesOf("@ogcapi/html/FilterEditor/Editor/Temporal/Instant/MoreThan24h", modul
   "Default",
   () => (
     <Instant
-      minInstant={new Date("Tue Jan 01 2019 00:00:00 GMT+0100")}
-      maxInstant={new Date("Tue Jan 08 2019 00:00:00 GMT+0100")}
-      setInstant={() => {}}
-      period={{
-        start: new Date("Tue Jan 01 2019 00:00:00 GMT+0100"),
-      }}
-      isInstant="true"
-      forStory
+      min={moment.utc("01 Jan 2019 00:00:00").valueOf()}
+      max={moment.utc("08 Jan 2019 00:00:00").valueOf()}
+      start={moment.utc("01 Jan 2019 00:00:00")}
+      end={moment.utc("01 Jan 2019 00:00:00")}
+      onChange={() => {}}
+      isInstant
+      showHeader
     />
   )
 );
@@ -88,14 +85,13 @@ storiesOf("@ogcapi/html/FilterEditor/Editor/Temporal/Instant/LessThan24h", modul
   "Default",
   () => (
     <Instant
-      minInstant={new Date("Tue Jan 01 2019 00:00:00 GMT+0100")}
-      maxInstant={new Date("Tue Jan 01 2019 23:00:00 GMT+0100")}
-      setInstant={() => {}}
-      period={{
-        start: new Date("Tue Jan 01 2019 00:00:00 GMT+0100"),
-      }}
-      isInstant="true"
-      forStory
+      min={moment.utc("01 Jan 2019 00:00:00").valueOf()}
+      max={moment.utc("01 Jan 2019 23:00:00").valueOf()}
+      start={moment.utc("01 Jan 2019 00:00:00")}
+      end={moment.utc("01 Jan 2019 00:00:00")}
+      onChange={() => {}}
+      isInstant
+      showHeader
     />
   )
 );
@@ -106,15 +102,13 @@ storiesOf("@ogcapi/html/FilterEditor/Editor/Temporal/Period/MoreThan7Years", mod
   "Default",
   () => (
     <Period
+      min={moment.utc("01 Jan 2019 00:00:00").valueOf()}
+      max={moment.utc("31 Dec 2028 00:00:00").valueOf()}
+      start={moment.utc("01 Jan 2019 00:00:00")}
+      end={moment.utc("31 Dec 2028 00:00:00")}
+      onChange={() => {}}
       isInstant={false}
-      period={{
-        start: new Date("Tue Jan 01 2019 00:00:00 GMT+0100"),
-        end: new Date("Tue Dec 31 2028 00:00:00 GMT+0100"),
-      }}
-      setPeriod={() => {}}
-      min={new Date("Tue Jan 01 2019 00:00:00 GMT+0100")}
-      max={new Date("Tue Dec 31 2028 00:00:00 GMT+0100")}
-      forStory
+      showHeader
     />
   )
 );
@@ -123,15 +117,13 @@ storiesOf("@ogcapi/html/FilterEditor/Editor/Temporal/Period/MoreThan3Years", mod
   "Default",
   () => (
     <Period
+      min={moment.utc("01 Jan 2019 00:00:00").valueOf()}
+      max={moment.utc("01 Jan 2024 00:00:00").valueOf()}
+      start={moment.utc("01 Jan 2019 00:00:00")}
+      end={moment.utc("01 Jan 2024 00:00:00")}
+      onChange={() => {}}
       isInstant={false}
-      period={{
-        start: new Date("Tue Jan 01 2019 00:00:00 GMT+0100"),
-        end: new Date("Tue Jan 01 2024 00:00:00 GMT+0100"),
-      }}
-      setPeriod={() => {}}
-      min={new Date("Tue Jan 01 2019 00:00:00 GMT+0100")}
-      max={new Date("Tue Jan 01 2024 00:00:00 GMT+0100")}
-      forStory
+      showHeader
     />
   )
 );
@@ -140,15 +132,13 @@ storiesOf("@ogcapi/html/FilterEditor/Editor/Temporal/Period/MoreThan7Months", mo
   "Default",
   () => (
     <Period
+      min={moment.utc("01 Jan 2019 00:00:00").valueOf()}
+      max={moment.utc("01 Dec 2019 00:00:00").valueOf()}
+      start={moment.utc("01 Jan 2019 00:00:00")}
+      end={moment.utc("01 Dec 2019 00:00:00")}
+      onChange={() => {}}
       isInstant={false}
-      period={{
-        start: new Date("Tue Jan 01 2019 00:00:00 GMT+0100"),
-        end: new Date("Tue Dec 01 2019 00:00:00 GMT+0100"),
-      }}
-      setPeriod={() => {}}
-      min={new Date("Tue Jan 01 2019 00:00:00 GMT+0100")}
-      max={new Date("Tue Dec 01 2019 00:00:00 GMT+0100")}
-      forStory
+      showHeader
     />
   )
 );
@@ -157,15 +147,13 @@ storiesOf("@ogcapi/html/FilterEditor/Editor/Temporal/Period/MoreThan24h", module
   "Default",
   () => (
     <Period
+      min={moment.utc("01 Jan 2019 00:00:00").valueOf()}
+      max={moment.utc("07 Jun 2019 00:00:00").valueOf()}
+      start={moment.utc("01 Jan 2019 00:00:00")}
+      end={moment.utc("07 Jun 2019 00:00:00")}
+      onChange={() => {}}
       isInstant={false}
-      period={{
-        start: new Date("Tue Jan 01 2019 00:00:00 GMT+0100"),
-        end: new Date("Tue Jun 07 2019 00:00:00 GMT+0100"),
-      }}
-      setPeriod={() => {}}
-      min={new Date("Tue Jan 01 2019 00:00:00 GMT+0100")}
-      max={new Date("Tue Jun 07 2019 00:00:00 GMT+0100")}
-      forStory
+      showHeader
     />
   )
 );
@@ -174,15 +162,13 @@ storiesOf("@ogcapi/html/FilterEditor/Editor/Temporal/Period/LessThan24h", module
   "Default",
   () => (
     <Period
+      min={moment.utc("01 Jan 2019 00:00:00").valueOf()}
+      max={moment.utc("01 Jan 2019 23:00:00").valueOf()}
+      start={moment.utc("01 Jan 2019 00:00:00")}
+      end={moment.utc("01 Jan 2019 23:00:00")}
+      onChange={() => {}}
       isInstant={false}
-      period={{
-        start: new Date("Tue Jan 01 2019 00:00:00 GMT+0100"),
-        end: new Date("Tue Jan 01 2019 23:00:00 GMT+0100"),
-      }}
-      setPeriod={() => {}}
-      min={new Date("Tue Jan 01 2019 00:00:00 GMT+0100")}
-      max={new Date("Tue Jan 01 2019 23:00:00 GMT+0100")}
-      forStory
+      showHeader
     />
   )
 );

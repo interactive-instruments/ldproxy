@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import PropTypes from "prop-types";
 import qs from "qs";
-import { startOfToday } from "date-fns";
 import { Button, ButtonGroup, Form, Input, Row, Col, FormText } from "reactstrap";
 import DatetimeRangePicker from "react-datetime-range-picker";
 import Datetime from "react-datetime";
 import moment from "moment";
-import SliderInstant from "./Slider";
+import Slider from "./Slider";
 
 import { validateInstant, validatePeriod, errorInstant } from "./util";
 
@@ -50,7 +49,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
   const max = end;
 
   const minInstant = start;
-  const maxInstant = end !== null ? end : startOfToday();
+  const maxInstant = end !== null ? end : moment.utc().startOf("day");
 
   const dateTimeFilter = Object.keys(filters).filter(
     (key) => filters[key].remove === false && key === "datetime"
@@ -64,15 +63,15 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
         end,
       };
 
-  const [instant, setInstant] = useState(new Date(extent.start));
-  const [instantInput, setInstantInput] = useState(new Date(extent.start));
+  const [instant, setInstant] = useState(moment.utc(extent.start));
+  const [instantInput, setInstantInput] = useState(moment.utc(extent.start));
   const [period, setPeriod] = useState({
-    start: new Date(extent.start),
-    end: new Date(extent.end ? extent.end : extent.start),
+    start: moment.utc(extent.start),
+    end: moment.utc(extent.end ? extent.end : extent.start),
   });
   const [periodInput, setPeriodInput] = useState({
-    start: new Date(extent.start),
-    end: new Date(extent.end ? extent.end : extent.start),
+    start: moment.utc(extent.start),
+    end: moment.utc(extent.end ? extent.end : extent.start),
   });
   const [isInstant, setIsInstant] = useState(extent.end === null);
 
@@ -83,11 +82,11 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
     if (parsedQuery.datetime) {
       const datetime = fromFilterString(parsedQuery.datetime);
       if (datetime.end === null) {
-        setInstant(moment.utc(datetime.start).toDate());
+        setInstant(moment.utc(datetime.start));
       } else {
         setPeriod({
-          start: moment.utc(datetime.start).toDate(),
-          end: moment.utc(datetime.end).toDate(),
+          start: moment.utc(datetime.start),
+          end: moment.utc(datetime.end),
         });
       }
     }
@@ -116,9 +115,9 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
   }, []);
 
   const inputChangePeriodStart = useCallback((next) => {
-    setPeriodInput(() => ({
+    setPeriodInput((prev) => ({
       start: next,
-      end: periodInput.end,
+      end: prev.end,
     }));
     if (validPeriod.periodInputStart) {
       setPeriod((prevPeriod) => ({
@@ -130,8 +129,8 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
   }, []);
 
   const inputChangePeriodEnd = useCallback((next) => {
-    setPeriodInput(() => ({
-      start: periodInput.start,
+    setPeriodInput((prev) => ({
+      start: prev.start,
       end: next,
     }));
     if (validPeriod.periodInputEnd) {
@@ -156,7 +155,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
       validatePeriod(periodInput, period, min, max);
     }
   }, [instant, period]);
-  console.log(periodInput.start, "Instant:", instantInput);
+
   return (
     <Form onSubmit={save}>
       <p className="text-muted text-uppercase">date/time (utc)</p>
@@ -308,16 +307,13 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
         <>
           <Row>
             <Col md="10">
-              <SliderInstant
-                period={period}
-                setInstant={setInstant}
-                minInstant={minInstant}
-                maxInstant={maxInstant}
-                instant={instant}
+              <Slider
+                start={isInstant ? instant : period.start}
+                end={isInstant ? instant : period.end}
+                min={isInstant ? minInstant : min}
+                max={isInstant ? maxInstant : max}
                 isInstant={isInstant}
-                setPeriod={setPeriod}
-                min={min}
-                max={max}
+                onChange={isInstant ? setInstant : setPeriod}
               />
             </Col>
           </Row>

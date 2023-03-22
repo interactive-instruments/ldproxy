@@ -1,3 +1,5 @@
+import moment from "moment";
+
 export const getBaseUrl = () => {
   let baseUrl = new URL(window.location.href);
   if (process.env.NODE_ENV !== "production") {
@@ -42,9 +44,8 @@ export const extractInterval = (obj) => {
   const parseTemporalExtent = (temporalExtent) => {
     const starting = temporalExtent.interval[0][0];
     const ending = temporalExtent.interval[0][1];
-    const startingUnix = new Date(starting).getTime();
-    const endingUnix = new Date(ending).getTime();
-
+    const startingUnix = moment.utc(starting).valueOf();
+    const endingUnix = moment.utc(ending).valueOf();
     return { start: startingUnix, end: endingUnix };
   };
 

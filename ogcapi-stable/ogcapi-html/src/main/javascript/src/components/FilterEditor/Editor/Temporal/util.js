@@ -1,4 +1,5 @@
 import moment from "moment";
+import { differenceInYears, differenceInMonths, differenceInHours } from "date-fns";
 
 export const errorInstant = (instantInput, min, max) => {
   const parsedDate = moment.utc(instantInput, "DD.MM.YYYY HH:mm:ss", true);
@@ -98,3 +99,19 @@ export const validatePeriod = (periodInput, period, min, max) => {
 
 export const isPeriodValid = (periodInput, period, min, max) =>
   validatePeriod(periodInput, period, min, max).all;
+
+export const formatTick = (max, min) => (ms) => {
+  let dateFormat;
+  if (differenceInYears(max, min) > 7) {
+    dateFormat = moment.utc(ms).format("yyyy");
+  } else if (differenceInYears(max, min) > 3) {
+    dateFormat = moment.utc(ms).format("MMM yyyy");
+  } else if (differenceInMonths(max, min) > 7) {
+    dateFormat = moment.utc(ms).format("MMM");
+  } else if (differenceInHours(max, min) > 24) {
+    dateFormat = moment.utc(ms).format("DD MMM");
+  } else if (differenceInHours(max, min) < 24) {
+    dateFormat = moment.utc(ms).format("HH:mm:ss");
+  }
+  return dateFormat;
+};
