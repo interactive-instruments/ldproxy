@@ -114,6 +114,22 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
     }
   }, []);
 
+  const inputChangePeriodStartNoRange = useCallback((next) => {
+    if (moment.utc(start).isSame(moment.utc(end)) && moment.utc(next).isAfter(moment.utc(start))) {
+      setPeriodInput((prev) => ({
+        start: moment.utc(next).subtract(1, "day"),
+        end: prev.end,
+      }));
+      if (validPeriod.periodInputStart) {
+        setPeriod((prevPeriod) => ({
+          ...prevPeriod,
+          start: moment.utc(next).subtract(1, "day"),
+        }));
+        setIsInstant(false);
+      }
+    }
+  }, []);
+
   const inputChangePeriodStart = useCallback((next) => {
     setPeriodInput((prev) => ({
       start: next,
@@ -197,6 +213,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
                 className: validInstant.instantInputValid
                   ? "form-control form-control-sm w-100 mb-3"
                   : "form-control form-control-sm w-100 mb-3 is-invalid",
+                readOnly: moment.utc(start).isSame(moment.utc(end)),
                 style: {
                   backgroundColor: "white",
                   cursor: "pointer",
@@ -248,7 +265,7 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
 
             <DatetimeRangePicker
               className="col-md-10"
-              input
+              input={!moment.utc(start).isSame(moment.utc(end))}
               inputProps={{
                 input: true,
                 inputProps: {
@@ -263,7 +280,11 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
               utc
               startDate={periodInput.start}
               endDate={periodInput.end}
-              onStartDateChange={inputChangePeriodStart}
+              onStartDateChange={
+                moment.utc(start).isSame(moment.utc(end))
+                  ? inputChangePeriodStartNoRange
+                  : inputChangePeriodStart
+              }
               onEndDateChange={inputChangePeriodEnd}
             />
           </>
