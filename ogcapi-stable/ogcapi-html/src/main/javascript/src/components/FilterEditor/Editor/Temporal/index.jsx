@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import PropTypes from "prop-types";
-import qs from "qs";
 import { Button, ButtonGroup, Form, Input, Row, Col, FormText } from "reactstrap";
 import DatetimeRangePicker from "react-datetime-range-picker";
 import Datetime from "react-datetime";
@@ -75,23 +74,6 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
   });
   const [isInstant, setIsInstant] = useState(extent.end === null);
 
-  useEffect(() => {
-    const parsedQuery = qs.parse(window.location.search, {
-      ignoreQueryPrefix: true,
-    });
-    if (parsedQuery.datetime) {
-      const datetime = fromFilterString(parsedQuery.datetime);
-      if (datetime.end === null) {
-        setInstant(moment.utc(datetime.start));
-      } else {
-        setPeriod({
-          start: moment.utc(datetime.start),
-          end: moment.utc(datetime.end),
-        });
-      }
-    }
-  }, [filter]);
-
   const save = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -120,13 +102,11 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
         start: moment.utc(next).subtract(1, "day"),
         end: prev.end,
       }));
-      if (validPeriod.periodInputStart) {
-        setPeriod((prevPeriod) => ({
-          ...prevPeriod,
-          start: moment.utc(next).subtract(1, "day"),
-        }));
-        setIsInstant(false);
-      }
+    } else {
+      setPeriodInput((prev) => ({
+        start: next,
+        end: prev.end,
+      }));
     }
   }, []);
 
