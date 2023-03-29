@@ -74,6 +74,20 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
   });
   const [isInstant, setIsInstant] = useState(extent.end === null);
 
+  useEffect(() => {
+    if (filter !== null) {
+      const datetime = fromFilterString(filter);
+      if (datetime.end === null) {
+        setInstant(moment.utc(datetime.start));
+      } else {
+        setPeriod({
+          start: moment.utc(datetime.start),
+          end: moment.utc(datetime.end),
+        });
+      }
+    }
+  }, [filter]);
+
   const save = (event) => {
     event.preventDefault();
     event.stopPropagation();
