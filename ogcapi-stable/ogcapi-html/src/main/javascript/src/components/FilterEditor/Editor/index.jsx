@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import PropTypes from "prop-types";
 
 import { Row, Col, Collapse } from "reactstrap";
 
 import FieldFilter from "./Fields";
 import TemporalFilter from "./Temporal";
-import SpatialFilter, { MapSelect } from "./Spatial";
+import SpatialFilter, { MapSelect, roundBounds, boundsArraysEqual } from "./Spatial";
 
 const EditorBody = ({
   isOpen,
@@ -25,7 +25,27 @@ const EditorBody = ({
   booleanProperty,
 }) => {
   const [showMap, setShowMap] = useState(false);
-  const [bounds, setBounds] = useState(spatial);
+  const [bounds, setBounds] = useState(roundBounds(spatial));
+  const [mapFlag, setMapFlag] = useState(true);
+
+  const refreshMap = useCallback(() => setMapFlag((prev) => !prev), []);
+
+  const setBoundsIfNecessary = useCallback(
+    (newBounds, doRefreshMap) => {
+      const rounded = roundBounds(newBounds);
+
+      setBounds((prev) => {
+        if (boundsArraysEqual(prev, rounded)) {
+          return prev;
+        }
+        if (doRefreshMap) {
+          refreshMap();
+        }
+        return rounded;
+      });
+    },
+    [refreshMap]
+  );
 
   return (
     <Collapse isOpen={isOpen} onEntered={() => setShowMap(true)}>
@@ -54,9 +74,11 @@ const EditorBody = ({
           {spatial && spatial.length > 0 && (
             <SpatialFilter
               bounds={bounds}
+              setBounds={setBoundsIfNecessary}
               onChange={onAdd}
               filters={filters}
               deleteFilters={deleteFilters}
+              refreshMap={refreshMap}
             />
           )}
           {temporal && Object.keys(temporal).length > 0 && (
@@ -73,10 +95,11 @@ const EditorBody = ({
         <Col md="6">
           {showMap && spatial && spatial.length > 0 && (
             <MapSelect
+              key={JSON.stringify(mapFlag)}
               backgroundUrl={backgroundUrl}
               attribution={attribution}
-              bounds={spatial}
-              onChange={setBounds}
+              bounds={bounds}
+              onChange={setBoundsIfNecessary}
             />
           )}
         </Col>
