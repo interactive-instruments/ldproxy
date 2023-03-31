@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import PropTypes from "prop-types";
-import qs from "qs";
-
-import { Button, ButtonGroup, Form, Input, Row, Col } from "reactstrap";
+import { Button, ButtonGroup, Form, Input, Row, Col, FormText } from "reactstrap";
 import DatetimeRangePicker from "react-datetime-range-picker";
 import Datetime from "react-datetime";
 import moment from "moment";
+import Slider from "./Slider";
+
+import { validateInstant, validatePeriod, errorInstant } from "./util";
 
 const fromFilterString = (filter) => {
   if (filter.indexOf("/") === -1) {
@@ -43,6 +44,12 @@ const formatDate = (date) => {
 };
 
 const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }) => {
+  const min = start;
+  const max = end;
+
+  const minInstant = start;
+  const maxInstant = end !== null ? end : moment.utc().startOf("day");
+
   const dateTimeFilter = Object.keys(filters).filter(
     (key) => filters[key].remove === false && key === "datetime"
   );
@@ -55,28 +62,28 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
         end,
       };
 
-  const [instant, setInstant] = useState(new Date(extent.start));
+  const [instant, setInstant] = useState(moment.utc(extent.start));
+  const [instantInput, setInstantInput] = useState(moment.utc(extent.start));
   const [period, setPeriod] = useState({
-    start: new Date(extent.start),
-    end: new Date(extent.end ? extent.end : extent.start),
+    start: moment.utc(extent.start),
+    end: moment.utc(extent.end ? extent.end : extent.start),
+  });
+  const [periodInput, setPeriodInput] = useState({
+    start: moment.utc(extent.start),
+    end: moment.utc(extent.end ? extent.end : extent.start),
   });
   const [isInstant, setIsInstant] = useState(extent.end === null);
 
   useEffect(() => {
-    const parsedQuery = qs.parse(window.location.search, {
-      ignoreQueryPrefix: true,
-    });
-    if (parsedQuery.datetime) {
-      const datetime = fromFilterString(parsedQuery.datetime);
+    if (filter !== null) {
+      const datetime = fromFilterString(filter);
       if (datetime.end === null) {
-        setInstant(moment.utc(datetime.start).toDate());
-        setIsInstant(true);
+        setInstant(moment.utc(datetime.start));
       } else {
         setPeriod({
-          start: moment.utc(datetime.start).toDate(),
-          end: moment.utc(datetime.end).toDate(),
+          start: moment.utc(datetime.start),
+          end: moment.utc(datetime.end),
         });
-        setIsInstant(false);
       }
     }
   }, [filter]);
@@ -91,9 +98,77 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
     );
   };
 
+  const validInstant = useMemo(() => validateInstant(instantInput, min, max), [instantInput]);
+
+  const validPeriod = useMemo(() => validatePeriod(periodInput, period, min, max), [periodInput]);
+
+  const inputChangeInstant = useCallback((next) => {
+    setInstantInput(next);
+    if (validInstant) {
+      setInstant(next);
+      setIsInstant(true);
+    }
+  }, []);
+
+  const inputChangePeriodStartNoRange = useCallback((next) => {
+    if (moment.utc(start).isSame(moment.utc(end)) && moment.utc(next).isAfter(moment.utc(start))) {
+      setPeriodInput((prev) => ({
+        start: moment.utc(next).subtract(1, "day"),
+        end: prev.end,
+      }));
+    } else {
+      setPeriodInput((prev) => ({
+        start: next,
+        end: prev.end,
+      }));
+    }
+  }, []);
+
+  const inputChangePeriodStart = useCallback((next) => {
+    setPeriodInput((prev) => ({
+      start: next,
+      end: prev.end,
+    }));
+    if (validPeriod.periodInputStart) {
+      setPeriod((prevPeriod) => ({
+        ...prevPeriod,
+        start: next,
+      }));
+      setIsInstant(false);
+    }
+  }, []);
+
+  const inputChangePeriodEnd = useCallback((next) => {
+    setPeriodInput((prev) => ({
+      start: prev.start,
+      end: next,
+    }));
+    if (validPeriod.periodInputEnd) {
+      setPeriod((prevPeriod) => ({
+        ...prevPeriod,
+        end: next,
+      }));
+      setIsInstant(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isInstant) {
+      setInstantInput(instant);
+      validateInstant(instantInput, min, max);
+      errorInstant(instantInput);
+    } else {
+      setPeriodInput({
+        start: period.start,
+        end: period.end,
+      });
+      validatePeriod(periodInput, period, min, max);
+    }
+  }, [instant, period]);
+
   return (
     <Form onSubmit={save}>
-      <p className="text-muted text-uppercase">date/time</p>
+      <p className="text-muted text-uppercase">date/time (utc)</p>
       <ButtonGroup className="mb-3">
         <Button
           color="primary"
@@ -117,11 +192,22 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
       <Row>
         {isInstant ? (
           <Col md="10">
+            {!validInstant.instantInputValid && (
+              <>
+                <div style={{ marginBottom: "10px" }}>
+                  {errorInstant(instantInput, min, max).map((error) => (
+                    <FormText key={error}>{error}</FormText>
+                  ))}
+                </div>
+              </>
+            )}
             <Datetime
               className=""
               inputProps={{
-                className: "form-control form-control-sm w-100 mb-3",
-                readOnly: true,
+                className: validInstant.instantInputValid
+                  ? "form-control form-control-sm w-100 mb-3"
+                  : "form-control form-control-sm w-100 mb-3 is-invalid",
+                readOnly: moment.utc(start).isSame(moment.utc(end)),
                 style: {
                   backgroundColor: "white",
                   cursor: "pointer",
@@ -130,30 +216,83 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
               timeFormat="HH:mm:ss"
               dateFormat="DD.MM.YYYY"
               utc
-              value={instant}
-              onChange={(next) => setInstant(next)}
+              value={instantInput}
+              onChange={inputChangeInstant}
+              onKeyPress={(event) => {
+                if (event.key === "Enter" && validInstant) {
+                  save(event);
+                }
+              }}
             />
+
             <Input size="sm" className="mb-3" disabled />
           </Col>
         ) : (
-          <DatetimeRangePicker
-            className="col-md-10"
-            inputProps={{
-              className: "form-control form-control-sm w-100 mb-3",
-              readOnly: true,
-            }}
-            timeFormat="HH:mm:ss"
-            dateFormat="DD.MM.YYYY"
-            utc
-            startDate={period.start}
-            endDate={period.end}
-            onChange={(next) => setPeriod(next)}
-          />
+          <>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                marginBottom: "10px",
+              }}
+            >
+              {!validPeriod.startValid && (
+                <FormText style={{ marginLeft: "15px" }}>
+                  The start date is outside the specified range.
+                </FormText>
+              )}
+              {!validPeriod.endValid && (
+                <FormText style={{ marginLeft: "15px" }}>
+                  The end date is outside the specified range.
+                </FormText>
+              )}
+              {
+                // prettier-ignore
+                (!validPeriod.startLessEnd ||
+                !validPeriod.endGreaterStart) && (
+                  <FormText style={{ marginLeft: "15px" }}>
+                    The start date must be less than the end date.
+                  </FormText>
+                )
+              }
+            </div>
+
+            <DatetimeRangePicker
+              className="col-md-10"
+              input={!moment.utc(start).isSame(moment.utc(end))}
+              inputProps={{
+                input: true,
+                inputProps: {
+                  className:
+                    validInstant && validPeriod.all
+                      ? "form-control form-control-sm w-100 mb-3"
+                      : "form-control form-control-sm w-100 mb-3 is-invalid",
+                },
+              }}
+              timeFormat="HH:mm:ss"
+              dateFormat="DD.MM.YYYY"
+              utc
+              startDate={periodInput.start}
+              endDate={periodInput.end}
+              onStartDateChange={
+                moment.utc(start).isSame(moment.utc(end))
+                  ? inputChangePeriodStartNoRange
+                  : inputChangePeriodStart
+              }
+              onEndDateChange={inputChangePeriodEnd}
+            />
+          </>
         )}
         {hasDateTimeInFilters ? (
           <Col md="2" className="d-flex align-items-end mb-3">
             <ButtonGroup>
-              <Button color="primary" size="sm" style={{ minWidth: "40px" }} onClick={save}>
+              <Button
+                color="primary"
+                size="sm"
+                style={{ minWidth: "40px" }}
+                onClick={save}
+                disabled={!validInstant.instantInputValid || !validPeriod.all}
+              >
                 {"\u2713"}
               </Button>
               <Button
@@ -168,12 +307,33 @@ const TemporalFilter = ({ start, end, filter, onChange, filters, deleteFilters }
           </Col>
         ) : (
           <Col md="2" className="d-flex align-items-end mb-3">
-            <Button color="primary" size="sm" onClick={save}>
+            <Button
+              color="primary"
+              size="sm"
+              onClick={save}
+              disabled={!validInstant.instantInputValid || !validPeriod.all}
+            >
               Add
             </Button>
           </Col>
         )}
       </Row>
+      {min !== max && (
+        <>
+          <Row>
+            <Col md="10">
+              <Slider
+                start={isInstant ? instant : period.start}
+                end={isInstant ? instant : period.end}
+                min={isInstant ? minInstant : min}
+                max={isInstant ? maxInstant : max}
+                isInstant={isInstant}
+                onChange={isInstant ? setInstant : setPeriod}
+              />
+            </Col>
+          </Row>
+        </>
+      )}
     </Form>
   );
 };
