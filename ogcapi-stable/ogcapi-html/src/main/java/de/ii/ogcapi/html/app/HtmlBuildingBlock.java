@@ -43,6 +43,7 @@ public class HtmlBuildingBlock implements ApiBuildingBlock {
         .noIndexEnabled(true)
         .schemaOrgEnabled(true)
         .collectionDescriptionsInOverview(false)
+        .suppressEmptyCollectionsInOverview(false)
         .sendEtags(false)
         .legalName("Legal notice")
         .legalUrl("")

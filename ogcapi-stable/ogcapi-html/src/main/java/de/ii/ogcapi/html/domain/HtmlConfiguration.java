@@ -135,13 +135,25 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
   Boolean getSchemaOrgEnabled();
 
   /**
-   * @langEn Show collection descriptions in *Feature Collections* resource for HTML.
+   * @langEn Show collection descriptions in the HTML representation of the *Feature Collections*
+   *     resource.
    * @langDe Steuert, ob in der HTML-Ausgabe der Feature-Collections-Ressource für jede Collection
    *     die Beschreibung ausgegeben werden soll.
    * @default false
    */
   @Nullable
   Boolean getCollectionDescriptionsInOverview();
+
+  /**
+   * @langEn Suppress collections without items in the HTML representation of the *Feature
+   *     Collections* resource.
+   * @langDe Steuert, ob in der HTML-Ausgabe der Feature-Collections-Ressource Collections ohne
+   *     Daten unterdrückt sein sollen.
+   * @default false
+   * @since v3.4
+   */
+  @Nullable
+  Boolean getSuppressEmptyCollectionsInOverview();
 
   @Nullable
   Boolean getSendEtags();
