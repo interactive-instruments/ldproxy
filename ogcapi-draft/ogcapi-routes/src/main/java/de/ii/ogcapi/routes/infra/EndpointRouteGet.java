@@ -43,6 +43,13 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title Route
+ * @path routes/{routeId}
+ * @langEn Fetches a route.
+ * @langDe Holt eine Route.
+ * @ref:formats {@link de.ii.ogcapi.routes.domain.RouteFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointRouteGet extends Endpoint implements ConformanceClass {
@@ -74,7 +81,7 @@ public class EndpointRouteGet extends Endpoint implements ConformanceClass {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(RouteFormatExtension.class);
     return formats;
@@ -111,7 +118,7 @@ public class EndpointRouteGet extends Endpoint implements ConformanceClass {
               false,
               queryParameters,
               ImmutableList.of(),
-              getContent(apiData, path),
+              getResponseContent(apiData),
               operationSummary,
               operationDescription,
               Optional.empty(),

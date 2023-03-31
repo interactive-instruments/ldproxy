@@ -31,6 +31,8 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +49,18 @@ import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title Queryables
+ * @path collections/{collectionId}/queryables
+ * @langEn The Queryables resource identifies and describes the properties that can be referenced in
+ *     filter expressions to select specific features that meet the criteria identified in the
+ *     filter. The response is a JSON Schema document that describes a single JSON object where each
+ *     property is a queryable.
+ * @langDe Die Ressource Queryables identifiziert und beschreibt die Eigenschaften, auf die in
+ *     Filterausdrücken verwiesen werden kann. Die Antwort ist ein JSON-Schema-Dokument, das ein
+ *     einzelnes JSON-Objekt beschreibt, bei dem jede Eigenschaft eine abfragbare Eigenschaft ist.
+ * @ref:formats {@link de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat}
+ */
 @Singleton
 @AutoBind
 public class EndpointQueryables extends EndpointSubCollection /* implements ConformanceClass */ {
@@ -60,10 +74,13 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
 
   @Inject
   public EndpointQueryables(
-      ExtensionRegistry extensionRegistry, CollectionPropertiesQueriesHandler queryHandler) {
+      ExtensionRegistry extensionRegistry,
+      CollectionPropertiesQueriesHandler queryHandler,
+      EntityRegistry entityRegistry) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
-    this.schemaCache = new SchemaCacheQueryables();
+    this.schemaCache =
+        new SchemaCacheQueryables(() -> entityRegistry.getEntitiesForType(Codelist.class));
   }
 
   /* TODO wait for updates on Features Part n: Schemas
@@ -79,7 +96,7 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(CollectionPropertiesFormat.class);
     return formats;
@@ -125,10 +142,7 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
             new ImmutableOgcApiResourceData.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> responseContent =
-            collectionId.startsWith("{")
-                ? getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET)
-                : getContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+        Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
         ApiOperation.getResource(
                 apiData,
                 resourcePath,

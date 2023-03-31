@@ -20,6 +20,31 @@ import org.slf4j.LoggerFactory;
 @Value.Immutable
 public interface ApiMediaType {
 
+  ApiMediaType HTML_MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(MediaType.TEXT_HTML_TYPE)
+          .label("HTML")
+          .parameter("html")
+          .build();
+  ApiMediaType JSON_MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(MediaType.APPLICATION_JSON_TYPE)
+          .label("JSON")
+          .parameter("json")
+          .build();
+  ApiMediaType XML_MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(MediaType.APPLICATION_XML_TYPE)
+          .label("XML")
+          .parameter("xml")
+          .build();
+  ApiMediaType JSON_SCHEMA_MEDIA_TYPE =
+      new ImmutableApiMediaType.Builder()
+          .type(new MediaType("application", "schema+json"))
+          .label("JSON")
+          .parameter("json")
+          .build();
+
   Logger LOGGER = LoggerFactory.getLogger(ApiMediaType.class);
 
   enum CompatibilityLevel {

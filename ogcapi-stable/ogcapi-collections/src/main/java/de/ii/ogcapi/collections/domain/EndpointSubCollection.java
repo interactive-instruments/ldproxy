@@ -9,7 +9,6 @@ package de.ii.ogcapi.collections.domain;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
-import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.Endpoint;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -19,20 +18,13 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.ParameterExtension;
 import java.text.MessageFormat;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class EndpointSubCollection extends Endpoint {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointSubCollection.class);
 
   public EndpointSubCollection(ExtensionRegistry extensionRegistry) {
     super(extensionRegistry);
@@ -51,42 +43,6 @@ public abstract class EndpointSubCollection extends Endpoint {
     return super.isEnabledForApi(apiData, collectionId)
         && Objects.nonNull(configuration)
         && configuration.getEnabled();
-  }
-
-  public Map<MediaType, ApiMediaTypeContent> getContent(
-      OgcApiDataV2 apiData, Optional<String> collectionId, String subSubPath, HttpMethods method) {
-    return getFormats().stream()
-        .filter(
-            outputFormatExtension ->
-                collectionId
-                    .map(s -> outputFormatExtension.isEnabledForApi(apiData, s))
-                    .orElseGet(() -> outputFormatExtension.isEnabledForApi(apiData)))
-        .map(
-            f ->
-                f.getContent(
-                    apiData,
-                    "/collections/" + collectionId.orElse("{collectionId}") + subSubPath,
-                    method))
-        .filter(Objects::nonNull)
-        .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
-  }
-
-  protected Map<MediaType, ApiMediaTypeContent> getRequestContent(
-      OgcApiDataV2 apiData, Optional<String> collectionId, String subSubPath, HttpMethods method) {
-    return getFormats().stream()
-        .filter(
-            outputFormatExtension ->
-                collectionId
-                    .map(s -> outputFormatExtension.isEnabledForApi(apiData, s))
-                    .orElseGet(() -> outputFormatExtension.isEnabledForApi(apiData)))
-        .map(
-            f ->
-                f.getRequestContent(
-                    apiData,
-                    "/collections/" + collectionId.orElse("{collectionId}") + subSubPath,
-                    method))
-        .filter(Objects::nonNull)
-        .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
   }
 
   protected void checkCollectionExists(

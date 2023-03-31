@@ -18,11 +18,14 @@ import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
+import de.ii.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.ogcapi.html.domain.ImmutableMapClient;
+import de.ii.ogcapi.html.domain.MapClient;
+import de.ii.ogcapi.html.domain.MapClient.Popup;
 import de.ii.ogcapi.styles.domain.ImmutableMbStyleStylesheet;
 import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.ogcapi.styles.domain.MbStyleVectorSource;
@@ -30,8 +33,6 @@ import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
 import de.ii.xtraplatform.services.domain.ServicesContext;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
@@ -39,31 +40,24 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title HTML
+ */
 @Singleton
 @AutoBind
 public class StyleFormatHtml implements StyleFormatExtension {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StyleFormatHtml.class);
   public static final String MEDIA_TYPE_STRING = "application/vnd.mapbox.style+json";
-  static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(MediaType.TEXT_HTML_TYPE)
-          .label("HTML")
-          .parameter("html")
-          .build();
 
-  private final Schema schemaStyle;
   private final ClassSchemaCache classSchemaCache;
   private final URI servicesUri;
-  public static final String SCHEMA_REF_STYLE = "#/components/schemas/htmlSchema";
 
   @Inject
   public StyleFormatHtml(ClassSchemaCache classSchemaCache, ServicesContext servicesContext) {
-    schemaStyle = new StringSchema().example("<html>...</html>");
     this.classSchemaCache = classSchemaCache;
     this.servicesUri = servicesContext.getUri();
   }
@@ -85,17 +79,13 @@ public class StyleFormatHtml implements StyleFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(schemaStyle)
-        .schemaRef(SCHEMA_REF_STYLE)
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
+  public ApiMediaType getMediaType() {
+    return ApiMediaType.HTML_MEDIA_TYPE;
   }
 
   @Override
-  public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
+  public ApiMediaTypeContent getContent() {
+    return FormatExtension.HTML_CONTENT;
   }
 
   @Override
@@ -171,6 +161,13 @@ public class StyleFormatHtml implements StyleFormatExtension {
           String.format("Could not derive style %s. Reason: %s", descriptor, e.getMessage()));
       return Optional.empty();
     }
+  }
+
+  private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(HtmlConfiguration.class)
+        .map(HtmlConfiguration::getNoIndexEnabled)
+        .orElse(true);
   }
 
   @Override
@@ -250,14 +247,39 @@ public class StyleFormatHtml implements StyleFormatExtension {
       }
     }
 
-    return new StyleView(
-        styleUrl,
-        apiData,
-        api.getSpatialExtent(),
-        styleId,
-        popup,
-        layerControl,
-        layerMap.asMap(),
-        requestContext.getStaticUrlPrefix());
+    MapClient mapClient =
+        new ImmutableMapClient.Builder()
+            .styleUrl(styleUrl)
+            .popup(popup ? Optional.of(Popup.CLICK_PROPERTIES) : Optional.empty())
+            .savePosition(true)
+            .layerGroupControl(
+                layerControl ? Optional.of(layerMap.asMap().entrySet()) : Optional.empty())
+            .build();
+
+    return new ImmutableStyleView.Builder()
+        .apiData(apiData)
+        .styleUrl(styleUrl)
+        .spatialExtent(api.getSpatialExtent())
+        .styleId(styleId)
+        .popup(popup)
+        .layerControl(layerControl)
+        .noIndex(isNoIndexEnabledForApi(apiData))
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .layerIds(
+            "{"
+                + layerMap.asMap().entrySet().stream()
+                    .sorted(Map.Entry.comparingByKey())
+                    .map(
+                        entry ->
+                            "\""
+                                + entry.getKey()
+                                + "\": [ \""
+                                + String.join("\", \"", entry.getValue())
+                                + "\" ]")
+                    .collect(Collectors.joining(", "))
+                + "}")
+        .mapClient(mapClient)
+        .title("Style " + styleId)
+        .build();
   }
 }

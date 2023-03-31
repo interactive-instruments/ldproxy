@@ -18,12 +18,13 @@ import org.apache.http.client.utils.URIBuilder;
 public class DefaultLinksGenerator {
 
   public List<Link> generateLinks(
-      URICustomizer uriBuilder,
+      URICustomizer uriCustomizer,
       ApiMediaType mediaType,
       List<ApiMediaType> alternateMediaTypes,
       I18n i18n,
       Optional<Locale> language) {
-    uriBuilder.removeParameters("lang").ensureNoTrailingSlash();
+    URICustomizer uriBuilder =
+        uriCustomizer.copy().removeParameters("lang").ensureNoTrailingSlash();
 
     final ImmutableList.Builder<Link> builder =
         new ImmutableList.Builder<Link>()
@@ -43,6 +44,15 @@ public class DefaultLinksGenerator {
                     .collect(Collectors.toList()));
 
     return builder.build();
+  }
+
+  public List<Link> generateLinks(ApiRequestContext requestContext, I18n i18n) {
+    return generateLinks(
+        requestContext.getUriCustomizer(),
+        requestContext.getMediaType(),
+        requestContext.getAlternateMediaTypes(),
+        i18n,
+        requestContext.getLanguage());
   }
 
   private Function<ApiMediaType, Link> generateAlternateLink(

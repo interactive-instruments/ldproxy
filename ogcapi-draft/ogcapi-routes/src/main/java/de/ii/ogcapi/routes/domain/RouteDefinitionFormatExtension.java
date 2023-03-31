@@ -7,19 +7,12 @@
  */
 package de.ii.ogcapi.routes.domain;
 
-import static de.ii.ogcapi.routes.domain.PathParameterRouteId.ROUTE_ID_PATTERN;
-
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 
 public interface RouteDefinitionFormatExtension extends FormatExtension {
-
-  @Override
-  default String getPathPattern() {
-    return "^/routes/" + ROUTE_ID_PATTERN + "/definition/?$";
-  }
 
   @Override
   default boolean isEnabledForApi(OgcApiDataV2 apiData) {

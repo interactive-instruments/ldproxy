@@ -26,9 +26,13 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn This option can be used to return features with a different schema.
- * @langDe Todo
- * @name schema
+ * @langEn This option can be used to return features with a different schema. The only supported
+ *     value is `receivables`, the response is the schema of the features that has to be met when
+ *     creating or replacing a feature.
+ * @langEn Diese Option kann verwendet werden, um Features in einem anderen Schema zurückzugeben.
+ *     Der einzige unterstützte Wert ist `receivables`. Die Antwort ist dann in dem Schema, das beim
+ *     Erstellen oder Ersetzen eines Features verwendet werden muss.
+ * @title schema
  * @endpoints Feature
  */
 @Singleton

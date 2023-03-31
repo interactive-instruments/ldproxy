@@ -8,45 +8,34 @@
 package de.ii.ogcapi.features.core.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesType;
 import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ogcapi.html.domain.NavigationDTO;
-import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 
+/**
+ * @title HTML
+ */
 @Singleton
 @AutoBind
 public class CollectionPropertiesFormatHtml implements CollectionPropertiesFormat {
-
-  static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder().type(MediaType.TEXT_HTML_TYPE).parameter("html").build();
 
   private final I18n i18n;
 
   @Inject
   public CollectionPropertiesFormatHtml(I18n i18n) {
     this.i18n = i18n;
-  }
-
-  @Override
-  public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
   }
 
   @Override
@@ -75,12 +64,13 @@ public class CollectionPropertiesFormatHtml implements CollectionPropertiesForma
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new StringSchema().example("<html>...</html>"))
-        .schemaRef("#/components/schemas/htmlSchema")
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
+  public ApiMediaType getMediaType() {
+    return ApiMediaType.HTML_MEDIA_TYPE;
+  }
+
+  @Override
+  public ApiMediaTypeContent getContent() {
+    return FormatExtension.HTML_CONTENT;
   }
 
   private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
@@ -98,34 +88,6 @@ public class CollectionPropertiesFormatHtml implements CollectionPropertiesForma
       String collectionId,
       OgcApi api,
       ApiRequestContext requestContext) {
-    String rootTitle = i18n.get("root", requestContext.getLanguage());
-    String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
-    String collectionPropertiesTitle =
-        i18n.get(type.toString() + "Title", requestContext.getLanguage());
-
-    URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
-    final List<NavigationDTO> breadCrumbs =
-        new ImmutableList.Builder<NavigationDTO>()
-            .add(
-                new NavigationDTO(
-                    rootTitle,
-                    resourceUri
-                        .copy()
-                        .removeLastPathSegments(api.getData().getSubPath().size() + 3)
-                        .toString()))
-            .add(
-                new NavigationDTO(
-                    api.getData().getLabel(),
-                    resourceUri.copy().removeLastPathSegments(3).toString()))
-            .add(
-                new NavigationDTO(
-                    collectionsTitle, resourceUri.copy().removeLastPathSegments(2).toString()))
-            .add(
-                new NavigationDTO(
-                    api.getData().getCollections().get(collectionId).getLabel(),
-                    resourceUri.copy().removeLastPathSegments(1).toString()))
-            .add(new NavigationDTO(collectionPropertiesTitle))
-            .build();
 
     HtmlConfiguration htmlConfig =
         api.getData()
@@ -134,17 +96,18 @@ public class CollectionPropertiesFormatHtml implements CollectionPropertiesForma
             .getExtension(HtmlConfiguration.class)
             .orElse(null);
 
-    return new CollectionPropertiesView(
-        api.getData(),
-        schemaProperties,
-        type,
-        links,
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        htmlConfig,
-        isNoIndexEnabledForApi(api.getData()),
-        requestContext.getUriCustomizer(),
-        i18n,
-        requestContext.getLanguage());
+    return new ImmutableCollectionPropertiesView.Builder()
+        .apiData(api.getData())
+        .collectionId(collectionId)
+        .schemaCollectionProperties(schemaProperties)
+        .type(type)
+        .rawLinks(links)
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .htmlConfig(htmlConfig)
+        .noIndex(isNoIndexEnabledForApi(api.getData()))
+        .uriCustomizer(requestContext.getUriCustomizer())
+        .i18n(i18n)
+        .language(requestContext.getLanguage())
+        .build();
   }
 }

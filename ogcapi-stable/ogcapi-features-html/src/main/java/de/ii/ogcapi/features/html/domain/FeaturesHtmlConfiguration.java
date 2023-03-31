@@ -25,23 +25,18 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @langEn Example of the specifications in the configuration file for the entire API (from the API
- *     for [Topographic Data in Daraa, Syria](https://demo.ldproxy.net/daraa)):
- * @langDe Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (aus der API für
- *     [Topographische Daten in Daraa, Syrien](https://demo.ldproxy.net/daraa)):
- * @example <code>
+ * @buildingBlock FEATURES_HTML
+ * @examplesEn Example of the specifications in the configuration file for the entire API (from the
+ *     API for [Topographic Data in Daraa, Syria](https://demo.ldproxy.net/daraa)):
+ *     <p><code>
  * ```yaml
  * - buildingBlock: FEATURES_HTML
  *   enabled: true
  *   style: 'topographic-with-basemap'
  * ```
- * </code>
- */
-
-/**
- * @langEn Example of the specifications in the configuration file for a feature collection:
- * @langDe Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
- * @example <code>
+ *     </code>
+ *     <p>Example of the specifications in the configuration file for a feature collection:
+ *     <p><code>
  * ```yaml
  * - buildingBlock: FEATURES_HTML
  *   itemLabelFormat: '{{ZI005_FNA}}'
@@ -65,15 +60,10 @@ import org.immutables.value.Value;
  *     LOC:
  *       codelist: loc
  * ```
- * </code>
- */
-
-/**
- * @langEn Example of using CesiumJS for building data that is partially composed of building
+ *     </code>
+ *     <p>Example of using CesiumJS for building data that is partially composed of building
  *     components. The floor slab is used as a fallback:
- * @langDe Beispiel für die Verwendung von CesiumJS für Gebäudedaten, die teilweise aus Bauteilen
- *     zusammengesetzt sind. Als Fallback wird die Bodenplatte verwendet:
- * @example <code>
+ *     <p><code>
  * ```yaml
  * - buildingBlock: FEATURES_HTML
  *   mapClientType: CESIUM
@@ -82,7 +72,54 @@ import org.immutables.value.Value;
  *   - lod1Solid
  *   - lod1GroundSurface
  * ```
- * </code>
+ *     </code>
+ * @examplesDe Beispiel für die Angaben in der Konfigurationsdatei für die gesamte API (aus der API
+ *     für [Topographische Daten in Daraa, Syrien](https://demo.ldproxy.net/daraa)):
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: FEATURES_HTML
+ *   enabled: true
+ *   style: 'topographic-with-basemap'
+ * ```
+ *     </code>
+ *     <p>Beispiel für die Angaben in der Konfigurationsdatei für eine Feature Collection:
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: FEATURES_HTML
+ *   itemLabelFormat: '{{ZI005_FNA}}'
+ *   transformations:
+ *     F_CODE:
+ *       codelist: f_code
+ *     ZI001_SDV:
+ *       dateFormat: MM/dd/yyyy[', 'HH:mm:ss[' 'z]]
+ *     RTY:
+ *       codelist: rty
+ *     FCSUBTYPE:
+ *       codelist: fcsubtype
+ *     TRS:
+ *       codelist: trs
+ *     RIN_ROI:
+ *       codelist: roi
+ *     ZI016_WTC:
+ *       codelist: wtc
+ *     RLE:
+ *       codelist: rle
+ *     LOC:
+ *       codelist: loc
+ * ```
+ *     </code>
+ *     <p>Beispiel für die Verwendung von CesiumJS für Gebäudedaten, die teilweise aus Bauteilen
+ *     zusammengesetzt sind. Als Fallback wird die Bodenplatte verwendet:
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: FEATURES_HTML
+ *   mapClientType: CESIUM
+ *   geometryProperties:
+ *   - consistsOfBuildingPart.lod1Solid
+ *   - lod1Solid
+ *   - lod1GroundSurface
+ * ```
+ *     </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new", attributeBuilderDetection = true)
@@ -101,6 +138,13 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
     TOP,
     RIGHT
   }
+
+  /**
+   * @default true
+   */
+  @Nullable
+  @Override
+  Boolean getEnabled();
 
   /**
    * @langEn *Deprecated* Superseded by `mapPosition` and the [`flattern`
@@ -131,8 +175,9 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
    *     doppelt-geschweiften Klammern Ersetzungspunkte für die Attribute des Features verwendet
    *     werden. Es können nur Attribute verwendet werden, die nur einmal pro Feature vorkommen
    *     können. Neben einer direkten Ersetzung mit dem Attributwert können auch
-   *     [Filter](general-rules.md#String-Template-Filter) angewendet werden. Ist ein Attribut
-   *     `null`, dann wird der Ersetzungspunkt durch einen leeren String ersetzt.
+   *     [Filter](../../providers/details/transformations.html#examples-for-stringformat) angewendet
+   *     werden. Ist ein Attribut `null`, dann wird der Ersetzungspunkt durch einen leeren String
+   *     ersetzt.
    * @default `{{id}}`
    */
   @JsonAlias("itemLabelFormat")
@@ -143,7 +188,7 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
    *     [transformations](README.md#transformations).
    * @langDe Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in der
    *     HTML-Ausgabe [transformiert](README.md#transformations) werden.
-   * @default `{}`
+   * @default {}
    */
   @JsonSerialize(converter = IgnoreLinksWildcardSerializer.class)
   @Override
@@ -151,30 +196,31 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
 
   /**
    * @langEn The map client library to use to display features in the HTML representation. The
-   *     default is MapLibre GL (`MAP_LIBRE`). WIP: Cesium (`CESIUM`) can be used for displaying 3D
-   *     features on a globe.
+   *     default is MapLibre GL (`MAP_LIBRE`). Cesium (`CESIUM`) can be used for displaying 3D
+   *     features on a globe, if [Features - glTF](features_-_gltf.md) is enabled.
    * @langDe Auswahl des in den Ressourcen "Features" und "Feature" zu verwendenden Map-Clients. Der
-   *     Standard ist MapLibre GL JS. Alternativ wird als auch `CESIUM` unterstützt (CesiumJS). Die
-   *     Unterstützung von CesiumJS zielt vor allem auf die Darstellung von 3D-Daten ab und besitzt
-   *     in der aktuellen Version experimentellen Charakter, es werden keine Styles unterstützt.
+   *     Standard ist MapLibre GL JS. Alternativ wird für 3D-Daten auch `CESIUM` unterstützt, wenn
+   *     [Features - glTF](features_-_gltf.md) aktiviert ist.
    * @default `MAP_LIBRE`
    */
   @Nullable
   MapClient.Type getMapClientType();
 
   /**
-   * @langEn An optional Mapbox style in the style repository to use for the map in the HTML
-   *     representation of a feature or feature collection. If set to `DEFAULT`, the `defaultStyle`
-   *     configured in the [HTML configuration](html.md) is used. If set to `NONE`, a simple
-   *     wireframe style will be used with OpenStreetMap as a basemap. The value is ignored, if the
-   *     map client is not MapLibre.
+   * @langEn An optional style in the style repository to use for the map in the HTML representation
+   *     of a feature or feature collection. The style should render all data. If set to `DEFAULT`,
+   *     the `defaultStyle` configured in the [HTML configuration](html.md) is used. If the map
+   *     client is MapLibre, the style must be available in the Mapbox format. If the style is set
+   *     to `NONE`, a simple wireframe style will be used with OpenStreetMap as a basemap. If the
+   *     map client is Cesium, the style must be available in the 3D Tiles format. If the style is
+   *     set to `NONE`, the standard 3D Tiles styling is used.
    * @langDe Ein Style im Style-Repository, der standardmäßig in Karten mit den Features verwendet
-   *     werden soll. Bei `DEFAULT` wird der `defaultStyle` aus [Modul HTML](html.md) verwendet. Bei
-   *     `NONE` wird ein einfacher Style mit OpenStreetMap als Basiskarte verwendet. Der Style
-   *     sollte alle Daten abdecken und muss im Format Mapbox Style verfügbar sein. Es wird zuerst
-   *     nach einem Style mit dem Namen für die Feature Collection gesucht; falls keiner gefunden
-   *     wird, wird nach einem Style mit dem Namen auf der API-Ebene gesucht. Wird kein Style
-   *     gefunden, wird `NONE` verwendet.
+   *     werden soll. Der Style sollte alle Daten abdecken. Bei `DEFAULT` wird der `defaultStyle`
+   *     aus [Modul HTML](html.md) verwendet. Handelt es sich bei dem Kartenclient um MapLibre, muss
+   *     der Style im Mapbox-Format verfügbar sein. Wenn der Style auf `NONE` gesetzt ist, wird ein
+   *     einfacher Wireframe Style mit OpenStreetMap als Basiskarte verwendet. Handelt es sich bei
+   *     dem Kartenclient um Cesium, muss der Style im 3D-Tiles-Format verfügbar sein. Ist der Style
+   *     auf `NONE` gesetzt, wird das Standard 3D Tiles Styling verwendet.
    * @default `DEFAULT`
    */
   @Nullable
@@ -188,13 +234,13 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
    *     angezeigt werden. Diese Option sollte nicht gewählt werden, wenn der Style unterschiedliche
    *     Präsentationen je nach Zoomstufe vorsieht, da ansonsten alle Layer auf allen Zoomstufen
    *     gleichzeitig angezeigt werden.
-   * @default `false`
+   * @default false
    */
   @Nullable
   Boolean getRemoveZoomLevelConstraints();
 
   /**
-   * @langEn TThis option works only for CesiumJS as map client. By default, the geometry identified
+   * @langEn This option works only for CesiumJS as map client. By default, the geometry identified
    *     in the provider as PRIMARY_GEOMETRY is used for representation on the map. This option
    *     allows multiple geometry properties to be specified in a list. The first geometry property
    *     set for a feature will be used.
@@ -203,7 +249,7 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
    *     Diese Option ermöglicht es, mehrere Geometrieeigenschaften anzugeben in einer Liste
    *     anzugeben. Die erste Geometrieeigenschaft, die für ein Feature gesetzt ist, wird dabei
    *     verwendet.
-   * @default `[]`
+   * @default []
    */
   @Nullable
   List<String> getGeometryProperties();
@@ -216,10 +262,30 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
    *     `limit` gesetzt werden. Sofern kein Wert angegeben ist, so gilt der Wert aus dem Modul
    *     "Features Core". Bei der Verwendung von CesiumJS als Map-Client wird ein Wert von 100
    *     empfohlen.
-   * @default `null`
+   * @default null
    */
   @Nullable
   Integer getMaximumPageSize();
+
+  /**
+   * @langEn If `true`, on the single item page any property that has a description in the provider
+   *     schema will get an info icon with the description as a tooltip.
+   * @langDe Bei `true` werden auf der Seite für einzelne Items für jedes Property mit einer
+   *     Beschreibung im Provider-Schema Info-Icons mit einem Tooltip angezeigt.
+   * @default true
+   */
+  @Nullable
+  Boolean getPropertyTooltips();
+
+  /**
+   * @langEn If `true`, on the items page any property that has a description in the provider schema
+   *     will get an info icon with the description in a tooltip.
+   * @langDe Bei `true` werden auf der Seite für Items für jedes Property mit einer Beschreibung im
+   *     Provider-Schema Info-Icons mit einem Tooltip angezeigt.
+   * @default false
+   */
+  @Nullable
+  Boolean getPropertyTooltipsOnItems();
 
   @Value.Check
   default FeaturesHtmlConfiguration backwardsCompatibility() {

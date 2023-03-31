@@ -22,31 +22,46 @@ import javax.inject.Singleton;
 
 /**
  * @title Map Tiles
- * @langEn The *Map Tiles* module activates the "Map Tilesets", "Map Tileset" and "Map Tile"
- *     resources.
- *     <p>The module is based on the drafts of [OGC API -
- *     Maps](https://github.com/opengeospatial/OGC-API-Maps). The implementation will change as the
- *     drafts are further standardized.
- *     <p>The supported tile formats are:
- *     <p>- PNG - WebP - JPEG
- *     <p>Only the [WebMercatorQuad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#62)
- *     tiling scheme is available.
- * @langDe Das Modul "Map Tiles" aktiviert die Ressourcen "Map Tilesets", "Map Tileset" und "Map
- *     Tile".
- *     <p>Das Modul basiert auf den Entwürfen von [OGC API -
- *     Maps](https://github.com/opengeospatial/OGC-API-Maps). Die Implementierung wird sich im Zuge
- *     der weiteren Standardisierung der Entwürfe noch ändern.
- *     <p>Die unterstützten Kachelformate sind:
- *     <p>- PNG - WebP - JPEG
+ * @langEn Publish raster image tiles.
+ * @langDe Veröffentlichung von Raster-Bild-Kacheln.
+ * @scopeEn The supported tile formats are:
+ *     <p><code>
+ * - PNG
+ * - WebP
+ * - JPEG
+ *     </code>
+ *     <p>Only the [WebMercatorQuad](https://docs.ogc.org/is/17-083r2/17-083r2.html#62) tiling
+ *     scheme is available.
+ * @scopeDe Die unterstützten Kachelformate sind:
+ *     <p><code>
+ * - PNG
+ * - WebP
+ * - JPEG
+ *     </code>
  *     <p>Es steht nur das Kachelschema
- *     [WebMercatorQuad](http://docs.opengeospatial.org/is/17-083r2/17-083r2.html#62) zur Verfügung.
- * @propertyTable {@link de.ii.ogcapi.maps.domain.MapTilesConfiguration}
- * @endpointTable {@link de.ii.ogcapi.maps.infra.EndpointMapTileMultiCollection}, {@link
- *     de.ii.ogcapi.maps.infra.EndpointMapTileSetMultiCollection}, {@link
- *     de.ii.ogcapi.maps.infra.EndpointMapTileSetSingleCollection}, {@link
+ *     [WebMercatorQuad](https://docs.ogc.org/is/17-083r2/17-083r2.html#62) zur Verfügung.
+ * @conformanceEn The module is based on the drafts of [OGC API -
+ *     Maps](https://github.com/opengeospatial/OGC-API-Maps). The implementation will change as the
+ *     draft will evolve during the standardization process.
+ * @conformanceDe Das Modul basiert auf den Entwürfen von [OGC API -
+ *     Maps](https://github.com/opengeospatial/OGC-API-Maps). Die Implementierung wird sich im Zuge
+ *     der weiteren Standardisierung der Spezifikation noch ändern.
+ * @ref:cfg {@link de.ii.ogcapi.maps.domain.MapTilesConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.maps.domain.ImmutableMapTilesConfiguration}
+ * @ref:endpoints {@link de.ii.ogcapi.maps.infra.EndpointMapTileMultiCollection}, {@link
+ *     de.ii.ogcapi.maps.infra.EndpointMapTileSingleCollection}, {@link
  *     de.ii.ogcapi.maps.infra.EndpointMapTileSetsMultiCollection}, {@link
  *     de.ii.ogcapi.maps.infra.EndpointMapTileSetsSingleCollection}, {@link
- *     de.ii.ogcapi.maps.infra.EndpointMapTileSingleCollection}
+ *     de.ii.ogcapi.maps.infra.EndpointMapTileSetMultiCollection}, {@link
+ *     de.ii.ogcapi.maps.infra.EndpointMapTileSetSingleCollection}
+ * @ref:queryParameters {@link de.ii.ogcapi.maps.domain.QueryParameterFTile}, {@link
+ *     de.ii.ogcapi.maps.domain.QueryParameterFTileSet}, {@link
+ *     de.ii.ogcapi.maps.domain.QueryParameterFTileSets}
+ * @ref:pathParameters {@link de.ii.ogcapi.maps.domain.PathParameterCollectionIdMaps}, {@link
+ *     de.ii.ogcapi.maps.domain.PathParameterTileMatrixSetId}, {@link
+ *     de.ii.ogcapi.maps.domain.PathParameterTileMatrix}, {@link
+ *     de.ii.ogcapi.maps.domain.PathParameterTileRow}, {@link
+ *     de.ii.ogcapi.maps.domain.PathParameterTileCol}
  */
 @Singleton
 @AutoBind

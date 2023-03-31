@@ -30,14 +30,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 /**
- * @langEn Access multi-layer tiles
- * @langDe TODO
- * @name Tilesets
- * @path /{apiId}/tiles
- * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
+ * @title Dataset Tilesets
+ * @path tiles
+ * @langEn Access dataset tilesets
+ * @langDe Zugriff auf die Kachelsätze zum Datensatz
+ * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetsFormatExtension}
  */
-
-/** Handle responses under '/tiles'. */
 @Singleton
 @AutoBind
 public class EndpointTileSetsMultiCollection extends AbstractEndpointTileSetsMultiCollection
@@ -66,7 +64,7 @@ public class EndpointTileSetsMultiCollection extends AbstractEndpointTileSetsMul
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(TileSetsFormatExtension.class);
     return formats;

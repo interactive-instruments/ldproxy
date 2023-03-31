@@ -22,7 +22,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyle.Builder;
+import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyle;
 import de.ii.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
@@ -40,18 +40,20 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** fetch list the metadata of a style */
-
 /**
+ * @title Style Metadata
+ * @path styles/{styleId}/metadata
  * @langEn Style metadata is essential information about a style in order to support users to
  *     discover and select styles for rendering their data and for visual style editors to create
  *     user interfaces for editing a style. This operations returns the metadata for the requested
  *     style as a single document. The stylesheet of the style will typically include some the
  *     metadata, too.
- * @langDe TODO
- * @name Style Metadata
- * @path /{apiId}/styles/{styleId}/metadata"
- * @format {@link de.ii.ogcapi.styles.domain.StylesFormatExtension}
+ * @langDe Style-Metadaten sind wichtige Informationen über einen Style, damit Benutzer Styles für
+ *     die Darstellung ihrer Daten erkennen und auswählen können und visuelle Style-Editoren
+ *     Benutzeroberflächen für die Bearbeitung eines Styles bereitstellen können. Diese Operation
+ *     gibt die Metadaten für den angeforderten Style als ein einziges Dokument zurück. Das
+ *     Stylesheet des Styles enthält in der Regel auch einige der Metadaten.
+ * @ref:formats {@link de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension}
  */
 @Singleton
 @AutoBind
@@ -76,7 +78,7 @@ public class EndpointStyleMetadata extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(StyleMetadataFormatExtension.class);
     return formats;
@@ -117,7 +119,7 @@ public class EndpointStyleMetadata extends Endpoint {
               false,
               queryParameters,
               ImmutableList.of(),
-              getContent(apiData, path),
+              getResponseContent(apiData),
               operationSummary,
               operationDescription,
               Optional.empty(),
@@ -153,7 +155,10 @@ public class EndpointStyleMetadata extends Endpoint {
         styleId);
 
     QueriesHandlerStyles.QueryInputStyle queryInput =
-        new Builder().from(getGenericQueryInput(api.getData())).styleId(styleId).build();
+        new ImmutableQueryInputStyle.Builder()
+            .from(getGenericQueryInput(api.getData()))
+            .styleId(styleId)
+            .build();
 
     return queryHandler.handle(
         QueriesHandlerStyles.Query.STYLE_METADATA, queryInput, requestContext);

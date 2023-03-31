@@ -10,6 +10,8 @@ settings.pluginManagement {
     }
 }
 
+apply from: '../catalog.gradle'
+
 rootProject.name = 'ldproxy-composite'
 
 def siblingDirectories = rootDir.parentFile.parentFile.listFiles()
@@ -18,7 +20,7 @@ def xtraplatformSpatial = siblingDirectories.find({ it.name.toLowerCase().equals
 def xtraplatformBuild = siblingDirectories.find({ it.name.toLowerCase().equals('xtraplatform-build') })
 def xtraplatformNative = siblingDirectories.find({ it.name.toLowerCase().equals('xtraplatform-native') })
 
-if (xtraplatformBuild) {
+if (hasProperty('build-plugins') && xtraplatformBuild) {
     includeBuild "../../${xtraplatformBuild.name}"
 }
 if (xtraplatform) {

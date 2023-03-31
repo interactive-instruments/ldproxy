@@ -7,16 +7,13 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
-import de.ii.ogcapi.features.core.app.PathParameterFeatureIdFeatures;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Locale;
@@ -25,22 +22,15 @@ import java.util.Optional;
 @AutoMultiBind
 public interface FeatureFormatExtension extends FormatExtension {
 
-  default String getPathPattern() {
-    return "^/?collections/"
-        + COLLECTION_ID_PATTERN
-        + "/items(?:/"
-        + PathParameterFeatureIdFeatures.FEATURE_ID_PATTERN
-        + ")?$";
-  }
-
   ApiMediaType getCollectionMediaType();
 
-  @Override
-  default ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path, HttpMethods method) {
-    if (method.equals(HttpMethods.GET)) {
-      return getContent(apiData, path);
-    }
-    return null;
+  default EpsgCrs getContentCrs(EpsgCrs targetCrs) {
+    return targetCrs;
+  }
+
+  default ApiMediaTypeContent getFeatureContent(
+      OgcApiDataV2 apiData, Optional<String> collectionId, boolean featureCollection) {
+    return getContent();
   }
 
   default boolean canPassThroughFeatures() {
@@ -67,8 +57,7 @@ public interface FeatureFormatExtension extends FormatExtension {
     Optional<PropertyTransformations> coreTransformations =
         collectionData
             .getExtension(FeaturesCoreConfiguration.class)
-            .map(
-                featuresCoreConfiguration -> ((PropertyTransformations) featuresCoreConfiguration));
+            .map(featuresCoreConfiguration -> featuresCoreConfiguration);
 
     Optional<PropertyTransformations> formatTransformations =
         collectionData
@@ -83,5 +72,17 @@ public interface FeatureFormatExtension extends FormatExtension {
     return formatTransformations
         .map(ft -> coreTransformations.map(ft::mergeInto).orElse(ft))
         .or(() -> coreTransformations);
+  }
+
+  default boolean supportsHitsOnly() {
+    return false;
+  }
+
+  default Optional<Long> getNumberMatched(Object content) {
+    return Optional.empty();
+  }
+
+  default Optional<Long> getNumberReturned(Object content) {
+    return Optional.empty();
   }
 }

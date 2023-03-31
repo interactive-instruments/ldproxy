@@ -7,14 +7,19 @@
  */
 package de.ii.ogcapi.collections.app.xml;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import de.ii.ogcapi.collections.domain.OgcApiCollection;
+import de.ii.ogcapi.common.domain.OgcApiExtent;
 import de.ii.ogcapi.foundation.domain.Link;
 import java.util.List;
+import java.util.Objects;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+@JsonInclude(Include.NON_NULL)
 @XmlRootElement(name = "Collection", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
 @XmlType(propOrder = {"id", "title", "description", "links", "extent"})
 public class OgcApiCollectionXml {
@@ -41,7 +46,11 @@ public class OgcApiCollectionXml {
 
   @XmlElement(name = "Extent", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
   public OgcApiExtentXml getExtent() {
-    return new OgcApiExtentXml(ogcApiCollection.getExtent().orElse(null));
+    OgcApiExtent extent = ogcApiCollection.getExtent().orElse(null);
+    if (Objects.nonNull(extent)) {
+      return new OgcApiExtentXml(extent);
+    }
+    return null;
   }
 
   @XmlElement(name = "atom:link", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")

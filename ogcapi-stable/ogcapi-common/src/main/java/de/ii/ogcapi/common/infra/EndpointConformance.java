@@ -13,7 +13,7 @@ import de.ii.ogcapi.common.app.ImmutableQueryInputConformance;
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl;
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
 import de.ii.ogcapi.common.domain.CommonConfiguration;
-import de.ii.ogcapi.common.domain.CommonFormatExtension;
+import de.ii.ogcapi.common.domain.ConformanceDeclarationFormatExtension;
 import de.ii.ogcapi.common.domain.QueriesHandlerCommon;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
@@ -38,15 +38,18 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 /**
- * @langEn The URIs of all conformance classes supported by the server. This information is provided
- *     to support 'generic' clients that want to access multiple OGC API implementations - and not
+ * @title Conformance Declaration
+ * @path conformance
+ * @langEn The URIs of all conformance classes supported by the API. This information is provided to
+ *     support 'generic' clients that want to access multiple OGC API implementations - and not
  *     'just' a specific API. For clients accessing only a single API, this information is in
- *     general not relevant and the OpenAPI definition details the required information about the
- *     API.
- * @langDe TODO
- * @name Conformance Declaration
- * @path /{apiId}/conformance
- * @formats {@link de.ii.ogcapi.common.domain.CommonFormatExtension}
+ *     general not relevant and the OpenAPI definition describes the API in detail.
+ * @langDe Die URIs aller von der API unterstützten Konformitätsklassen. Diese Informationen werden
+ *     bereitgestellt, um "generische" Clients zu unterstützen, die auf mehrere
+ *     OGC-API-Implementierungen zugreifen wollen - und nicht "nur" auf eine bestimmte API. Für
+ *     Clients, die nur auf eine einzige API zugreifen, ist diese Information im Allgemeinen nicht
+ *     relevant und die OpenAPI-Definition beschreibt die API im Detail.
+ * @ref:formats {@link de.ii.ogcapi.common.domain.ConformanceDeclarationFormatExtension}
  */
 @Singleton
 @AutoBind
@@ -69,9 +72,9 @@ public class EndpointConformance extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null) {
-      formats = extensionRegistry.getExtensionsForType(CommonFormatExtension.class);
+      formats = extensionRegistry.getExtensionsForType(ConformanceDeclarationFormatExtension.class);
     }
     return formats;
   }
@@ -101,7 +104,7 @@ public class EndpointConformance extends Endpoint {
             false,
             queryParameters,
             ImmutableList.of(),
-            getContent(apiData, path),
+            getResponseContent(apiData),
             operationSummary,
             operationDescription,
             Optional.empty(),

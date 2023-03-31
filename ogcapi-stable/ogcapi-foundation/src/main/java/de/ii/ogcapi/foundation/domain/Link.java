@@ -35,11 +35,12 @@ public abstract class Link {
           .put("application/vnd.ogc.fg+json", "JSON-FG")
           .put("application/schema+json", "JSON Schema")
           .put("application/city+json", "CityJSON")
-          .put("application/vnd.ogc.city+json", "CityJSON")
+          .put("application/vnd.ogc.city+json", "CityJSON") // legacy, can be removed
           .put("application/city+json-seq", "CityJSON-Seq")
-          .put("application/vnd.ogc.city+json-seq", "CityJSON-Seq")
+          .put("application/vnd.ogc.city+json-seq", "CityJSON-Seq") // legacy, can be removed
           .put("application/json", "JSON")
           .put("application/ld+json", "JSON-LD")
+          .put("model/gltf-binary", "glTF")
           .put("text/html", "HTML")
           .put("text/csv", "CSV")
           .put("application/flatgeobuf", "FlatGeobuf")

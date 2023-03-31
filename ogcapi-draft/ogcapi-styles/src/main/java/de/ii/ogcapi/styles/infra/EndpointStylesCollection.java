@@ -25,7 +25,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyles.Builder;
+import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyles;
 import de.ii.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesFormatExtension;
@@ -44,7 +44,16 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** fetch list of styles associated with a collection */
+/**
+ * @title Collection Styles
+ * @path collections/{collectionId}/styles
+ * @langEn This operation fetches the list of styles. For each style the id, a title, links to the
+ *     stylesheet of the style in each supported encoding, and the link to the metadata is provided.
+ * @langDe Mit dieser Operation wird die Liste der Styles abgerufen. Für jeden Style werden die ID,
+ *     ein Titel, Links zum Stylesheet des Styles in jeder unterstützten Kodierung und der Link zu
+ *     den Metadaten bereitgestellt.
+ * @ref:formats {@link de.ii.ogcapi.styles.domain.StylesFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointStylesCollection extends EndpointSubCollection implements ConformanceClass {
@@ -73,7 +82,7 @@ public class EndpointStylesCollection extends EndpointSubCollection implements C
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(StylesFormatExtension.class);
     return formats;
@@ -116,10 +125,7 @@ public class EndpointStylesCollection extends EndpointSubCollection implements C
                 .path(resourcePath)
                 .pathParameters(pathParameters)
                 .subResourceType("Style");
-        Map<MediaType, ApiMediaTypeContent> responseContent =
-            collectionId.startsWith("{")
-                ? getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET)
-                : getContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+        Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
         ApiOperation.getResource(
                 apiData,
                 resourcePath,
@@ -163,7 +169,10 @@ public class EndpointStylesCollection extends EndpointSubCollection implements C
     checkCollectionExists(apiData, collectionId);
 
     QueriesHandlerStyles.QueryInputStyles queryInput =
-        new Builder().from(getGenericQueryInput(api.getData())).collectionId(collectionId).build();
+        new ImmutableQueryInputStyles.Builder()
+            .from(getGenericQueryInput(api.getData()))
+            .collectionId(collectionId)
+            .build();
 
     return queryHandler.handle(QueriesHandlerStyles.Query.STYLES, queryInput, requestContext);
   }

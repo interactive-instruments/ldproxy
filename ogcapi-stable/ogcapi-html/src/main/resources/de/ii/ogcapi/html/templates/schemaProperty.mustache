@@ -1,0 +1,86 @@
+<h4>{{#title}}{{.}}{{/title}}{{^title}}{{id}}{{/title}}</h4>
+{{#description}}<p>{{.}}</p>{{/description}}
+<div class="row my-3">
+  <div class="col-md-2 font-weight-normal">{{typeTitle}}</div>
+  <div class="col-md-10">{{#isArray}}[ {{/isArray}}{{type}}{{#isArray}} ]{{/isArray}}</div>
+</div>
+{{#isForm}}
+  <div class="row my-3">
+    <div class="input-group">
+      <div class="col-md-2 font-weight-normal">
+        <label for="{{objectId}}__{{id}}">{{valueTitle}}</label>
+      </div>
+      <div class="col-md-10">
+        {{#hasValues}}
+          <select class="form-control" id="{{objectId}}__{{id}}" name="{{objectId}}__{{id}}" {{#isArray}}size="3" multiple{{/isArray}} required>
+            {{#valuesAsOptions}}
+              {{{.}}}
+            {{/valuesAsOptions}}
+          </select>
+        {{/hasValues}}
+        {{^hasValues}}
+          {{#isInteger}}
+            <input class="form-control" id="{{objectId}}__{{id}}" name="{{objectId}}__{{id}}" type="number" step="1" {{#minimum}}min="{{.}}" {{/minimum}}{{#maximum}}max="{{.}}" {{/maximum}}value="{{defaultValue}}" required/>
+          {{/isInteger}}
+          {{^isInteger}}
+            {{#isNumber}}
+              <input class="form-control" id="{{objectId}}__{{id}}" name="{{objectId}}__{{id}}" type="number" step="any" {{#minimum}}min="{{.}}" {{/minimum}}{{#maximum}}max="{{.}}" {{/maximum}}value="{{defaultValue}}" required/>
+            {{/isNumber}}
+            {{^isNumber}}
+              {{#isUri}}
+                <input class="form-control" id="{{objectId}}__{{id}}" name="{{objectId}}__{{id}}" type="url" value="{{defaultValue}}" required/>
+              {{/isUri}}
+              {{^isUri}}
+                {{#isDate}}
+                  <input class="form-control" id="{{objectId}}__{{id}}" name="{{objectId}}__{{id}}" type="text" pattern="^\d{4}-\d{2}-\d{2}$" value="{{defaultValue}}" required/>
+                {{/isDate}}
+                {{^isDate}}
+                  {{#isTimestamp}}
+                    <input class="form-control" id="{{objectId}}__{{id}}" name="{{objectId}}__{{id}}" type="text" pattern="^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$" value="{{defaultValue}}" required/>
+                  {{/isTimestamp}}
+                  {{^isTimestamp}}
+                    <input class="form-control" id="{{objectId}}__{{id}}" name="{{objectId}}__{{id}}" type="text" {{#minLength}}minlength="{{.}}" {{/minLength}}{{#maxLength}}maxlength="{{.}}" {{/maxLength}}{{#pattern}}pattern="{{.}}" {{/pattern}}value="{{defaultValue}}" required/>
+                  {{/isTimestamp}}
+                {{/isDate}}
+              {{/isUri}}
+            {{/isNumber}}
+          {{/isInteger}}
+        {{/hasValues}}
+      </div>
+    </div>
+  </div>
+{{/isForm}}
+{{^isForm}}
+  {{#pattern}}
+    <div class="row my-3">
+      <div class="col-md-3 font-weight-bold">{{patternTitle}}</div>
+      <div class="col-md-9">{{.}}</div>
+    </div>
+  {{/pattern}}
+  {{#min}}
+    <div class="row my-3">
+      <div class="col-md-3 font-weight-bold">{{minTitle}}</div>
+      <div class="col-md-9">{{.}}</div>
+    </div>
+  {{/min}}
+  {{#max}}
+    <div class="row my-3">
+      <div class="col-md-3 font-weight-bold">{{maxTitle}}</div>
+      <div class="col-md-9">{{.}}</div>
+    </div>
+  {{/max}}
+  {{#valueList}}
+    <div class="row my-3">
+      <div class="col-md-3 font-weight-bold">{{enumTitle}}</div>
+      <div class="col-md-9">{{.}}</div>
+    </div>
+  {{/valueList}}
+  {{#defaultValue}}
+    <div class="row my-3">
+      <div class="col-md-3 font-weight-bold">{{defaultTitle}}</div>
+      <div class="col-md-9">{{.}}</div>
+    </div>
+  {{/defaultValue}}
+{{/isForm}}
+
+

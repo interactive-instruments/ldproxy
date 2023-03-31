@@ -11,6 +11,15 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import org.immutables.value.Value;
 
+/**
+ * @buildingBlock FILTER
+ * @examplesAll <code>
+ * ```yaml
+ * - buildingBlock: FILTER
+ *   enabled: true
+ * ```
+ * </code>
+ */
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFilterConfiguration.Builder.class)

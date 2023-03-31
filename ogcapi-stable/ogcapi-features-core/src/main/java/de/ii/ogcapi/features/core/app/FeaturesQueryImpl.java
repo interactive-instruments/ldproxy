@@ -179,7 +179,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
 
     boolean hitsOnly =
         parameters.containsKey("resultType")
-            && parameters.get("resultType").toLowerCase().equals("hits");
+            && parameters.get("resultType").equalsIgnoreCase("hits");
 
     /**
      * NOTE: OGC API and ldproxy do not use the HTTP "Range" header for limit/offset for the
@@ -739,24 +739,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
     // so we need to build the query to get the CRS
     ImmutableFeatureQuery query = queryBuilder.build();
     if (!coordinatePrecision.isEmpty() && query.getCrs().isPresent()) {
-      Integer precision;
-      List<Unit<?>> units = crsInfo.getAxisUnits(query.getCrs().get());
-      ImmutableList.Builder<Integer> precisionListBuilder = new ImmutableList.Builder<>();
-      for (Unit<?> unit : units) {
-        if (unit.equals(Units.METRE)) {
-          precision = coordinatePrecision.get("meter");
-          if (Objects.isNull(precision)) precision = coordinatePrecision.get("metre");
-        } else if (unit.equals(Units.DEGREE)) {
-          precision = coordinatePrecision.get("degree");
-        } else {
-          LOGGER.debug(
-              "Coordinate precision could not be set, unrecognised unit found: '{}'.",
-              unit.getName());
-          return queryBuilder;
-        }
-        precisionListBuilder.add(precision);
-      }
-      List<Integer> precisionList = precisionListBuilder.build();
+      List<Integer> precisionList =
+          crsInfo.getPrecisionList(query.getCrs().get(), coordinatePrecision);
       if (!precisionList.isEmpty()) {
         queryBuilder.geometryPrecision(precisionList);
       }

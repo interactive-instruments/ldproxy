@@ -20,7 +20,6 @@ import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -28,6 +27,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.styles.domain.ImmutableMbStyleStylesheet;
 import de.ii.ogcapi.styles.domain.MbStyleLayer;
+import de.ii.ogcapi.styles.domain.MbStyleLayer.LayerType;
 import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleLayer;
@@ -52,6 +52,9 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title Mapbox
+ */
 @Singleton
 @AutoBind
 public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtension {
@@ -88,23 +91,12 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  public ApiMediaTypeContent getContent() {
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schemaStyle)
         .schemaRef(MbStyleStylesheet.SCHEMA_REF)
         .referencedSchemas(referencedSchemas)
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
-  }
-
-  @Override
-  public ApiMediaTypeContent getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(schemaStyle)
-        .schemaRef(MbStyleStylesheet.SCHEMA_REF)
-        .referencedSchemas(referencedSchemas)
-        .ogcApiMediaType(MEDIA_TYPE)
+        .ogcApiMediaType(getMediaType())
         .build();
   }
 
@@ -249,23 +241,12 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         throw new IllegalArgumentException("The Mapbox Style document has no sources.");
       }
       List<String> ids = new ArrayList<>();
-      List<String> types =
-          ImmutableList.of(
-              "fill",
-              "line",
-              "symbol",
-              "circle",
-              "heatmap",
-              "fill-extrusion",
-              "raster",
-              "hillshade",
-              "background");
       for (MbStyleLayer layer : stylesheet.getLayers()) {
         String id = layer.getId();
         if (Objects.isNull(id))
           throw new IllegalArgumentException("A layer in the Mapbox Style document has no id.");
 
-        String type = layer.getType();
+        LayerType type = layer.getType();
         if (Objects.isNull(type))
           throw new IllegalArgumentException(
               String.format("Layer '%s' in the Mapbox Style document has no type.", id));
@@ -275,12 +256,6 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
               String.format("Multiple layers in the Mapbox Style document have id '%s'.", id));
         }
         ids.add(id);
-
-        if (!types.contains(type)) {
-          throw new IllegalArgumentException(
-              String.format(
-                  "Layer '%s' in the Mapbox Style document has an invalid type: '%s'", id, type));
-        }
       }
     }
 

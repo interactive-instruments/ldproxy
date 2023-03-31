@@ -42,12 +42,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * @title Resource
+ * @path resources/{resourceId}
  * @langEn Fetches the file resource with identifier `resourceId`. The set of available resources
  *     can be retrieved at `/resources`.
- * @langDe TODO
- * @name Resource
- * @path /{apiId}/resources/{resourceId}
- * @format {@link de.ii.ogcapi.resources.domain.ResourceFormatExtension}
+ * @langDe Holt die Dateiressource mit dem Bezeichner `resourceId`. Die Menge der verfügbaren
+ *     Ressourcen kann unter `/resources` abgerufen werden.
+ * @ref:formats {@link de.ii.ogcapi.resources.domain.ResourceFormatExtension}
  */
 @Singleton
 @AutoBind
@@ -81,7 +82,7 @@ public class EndpointResource extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(ResourceFormatExtension.class);
     return formats;
@@ -119,7 +120,7 @@ public class EndpointResource extends Endpoint {
               false,
               queryParameters,
               ImmutableList.of(),
-              getContent(apiData, path),
+              getResponseContent(apiData),
               operationSummary,
               operationDescription,
               Optional.empty(),

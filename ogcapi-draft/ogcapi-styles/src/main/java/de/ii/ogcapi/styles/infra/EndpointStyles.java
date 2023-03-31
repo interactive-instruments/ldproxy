@@ -22,7 +22,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyles.Builder;
+import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyles;
 import de.ii.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesFormatExtension;
@@ -39,13 +39,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn This operation fetches the set of styles available. For each style the id, a title, links
- *     to the stylesheet of the style in each supported encoding, and the link to the metadata is
- *     provided.
- * @langDe TODO
- * @name Styles
- * @path /{apiId}/styles
- * @format {@link de.ii.ogcapi.styles.domain.StylesFormatExtension}
+ * @title Styles
+ * @path styles
+ * @langEn This operation fetches the list of styles. For each style the id, a title, links to the
+ *     stylesheet of the style in each supported encoding, and the link to the metadata is provided.
+ * @langDe Mit dieser Operation wird die Liste der Styles abgerufen. Für jeden Style werden die ID,
+ *     ein Titel, Links zum Stylesheet des Styles in jeder unterstützten Kodierung und der Link zu
+ *     den Metadaten bereitgestellt.
+ * @ref:formats {@link de.ii.ogcapi.styles.domain.StylesFormatExtension}
  */
 @Singleton
 @AutoBind
@@ -74,7 +75,7 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(StylesFormatExtension.class);
     return formats;
@@ -103,7 +104,7 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
             false,
             queryParameters,
             ImmutableList.of(),
-            getContent(apiData, path),
+            getResponseContent(apiData),
             operationSummary,
             operationDescription,
             Optional.empty(),
@@ -124,7 +125,7 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
   @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
   public Response getStyles(@Context OgcApi api, @Context ApiRequestContext requestContext) {
     QueriesHandlerStyles.QueryInputStyles queryInput =
-        new Builder().from(getGenericQueryInput(api.getData())).build();
+        new ImmutableQueryInputStyles.Builder().from(getGenericQueryInput(api.getData())).build();
 
     return queryHandler.handle(QueriesHandlerStyles.Query.STYLES, queryInput, requestContext);
   }

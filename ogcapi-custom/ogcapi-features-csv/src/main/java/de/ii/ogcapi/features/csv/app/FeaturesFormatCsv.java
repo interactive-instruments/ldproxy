@@ -38,6 +38,9 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title CSV
+ */
 @Singleton
 @AutoBind
 public class FeaturesFormatCsv implements ConformanceClass, FeatureFormatExtension {
@@ -87,7 +90,7 @@ public class FeaturesFormatCsv implements ConformanceClass, FeatureFormatExtensi
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  public ApiMediaTypeContent getContent() {
     // TODO Should we describe the schema? As an OpenAPI schema?
     String schemaRef = "#/components/schemas/csv";
     Schema<?> schema = new StringSchema();

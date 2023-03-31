@@ -10,12 +10,12 @@ package de.ii.ogcapi.tiles.app;
 import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
@@ -141,7 +141,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
     TileSetsFormatExtension outputFormat =
         api.getOutputFormat(
-                TileSetsFormatExtension.class, requestContext.getMediaType(), path, collectionId)
+                TileSetsFormatExtension.class, requestContext.getMediaType(), collectionId)
             .orElseThrow(
                 () ->
                     new NotAcceptableException(
@@ -267,7 +267,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
     TileSetFormatExtension outputFormat =
         api.getOutputFormat(
-                TileSetFormatExtension.class, requestContext.getMediaType(), path, collectionId)
+                TileSetFormatExtension.class, requestContext.getMediaType(), collectionId)
             .orElseThrow(
                 () ->
                     new NotAcceptableException(
@@ -382,18 +382,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       return response.build();
     }
 
-    List<Link> links =
-        new DefaultLinksGenerator()
-            .generateLinks(
-                requestContext.getUriCustomizer(),
-                requestContext.getMediaType(),
-                requestContext.getAlternateMediaTypes(),
-                i18n,
-                requestContext.getLanguage());
-
     return prepareSuccessResponse(
             requestContext,
-            queryInput.getIncludeLinkHeader() ? links : null,
+            queryInput.getIncludeLinkHeader() ? getLinks(requestContext, i18n) : ImmutableList.of(),
             HeaderCaching.of(null, eTag, queryInput),
             null,
             HeaderContentDisposition.of(

@@ -41,6 +41,12 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title Route
+ * @path routes/{routeId}
+ * @langEn Delete a stored route.
+ * @langDe Löscht eine gespeicherte Route.
+ */
 @Singleton
 @AutoBind
 public class EndpointRouteDelete extends Endpoint {
@@ -72,7 +78,7 @@ public class EndpointRouteDelete extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     return ImmutableList.of();
   }
 

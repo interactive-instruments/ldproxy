@@ -12,8 +12,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.collections.app.ImmutableQueryInputFeatureCollection;
 import de.ii.ogcapi.collections.app.QueriesHandlerCollectionsImpl;
+import de.ii.ogcapi.collections.domain.CollectionFormatExtension;
 import de.ii.ogcapi.collections.domain.CollectionsConfiguration;
-import de.ii.ogcapi.collections.domain.CollectionsFormatExtension;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.QueriesHandlerCollections;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
@@ -64,37 +64,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn Information about the feature collection with id '"+collectionId+"'. The response
- *     contains a link to the items in the collection (path `/collections/{collectionId}/items`,link
- *     relation `items`) as well as key information about the collection. This information includes:
- *     <p>* A local identifier for the collection that is unique for the dataset;
- *     <p>* A title and description for the collection;
- *     <p>* An indication of the spatial and temporal extent of the data in the collection;
- *     <p>* A list of coordinate reference systems (CRS) in which geometries may be returned by the
- *     server. The first CRS is the default coordinate reference system (the default is always WGS
- *     84 with axis order longitude/latitude);
- *     <p>* The CRS in which the spatial geometries are stored in the data source (if data is
- *     requested in this CRS, the geometries are returned without any coordinate conversion);
- *     <p>* An indicator about the type of the items in the collection (the default value is
- *     'feature').
- * @langDe Informationen über die Feature-Collection mit der ID '"+collectionId+"'. Die Antwort
- *     enthält einen Link zu den Elementen der Collection (Pfad
- *     `/collections/{collectionId}/items`,link relation `items`) sowie Schlüsselinformationen über
- *     die Collection. Diese Informationen umfassen:
- *     <p>* Ein lokaler Bezeichner für die Collection, der für den Datensatz eindeutig ist;
- *     <p>* Ein Titel und eine Beschreibung für die Collection;
- *     <p>* Eine Angabe der räumlichen und zeitlichen Ausdehnung der Daten in der Collection;
- *     <p>* Eine Liste von Koordinatenreferenzsystemen (CRS), in denen Geometrien vom Server
- *     zurückgegeben werden können. Das erste CRS ist das Standard-Koordinatenreferenzsystem (der
- *     Standard ist immer WGS 84 mit der Achsenfolge Längengrad/Breitengrad);
- *     <p>* Das CRS, in dem die räumlichen Geometrien in der Datenquelle gespeichert sind (wenn
- *     Daten in (werden Daten in diesem CRS angefordert, werden die Geometrien ohne
- *     Koordinatenumrechnung zurückgegeben);
- *     <p>* Ein Indikator für die Art der Elemente in der Collection (der Standardwert ist
- *     "Feature").
- * @name Feature Collection
- * @path /{apiId}/collections/{collectionId}
- * @formats {@link de.ii.ogcapi.collections.domain.CollectionsFormatExtension}
+ * @title Feature Collection
+ * @path collections/{collectionId}
+ * @langEn Information about the feature collection with id `collectionId`. The response contains a
+ *     link to the items in the collection (path `/collections/{collectionId}/items`,link relation
+ *     `items`) as well as key information about the collection.
+ * @langDe Informationen über die Feature-Collection mit der ID `collectionIdì. Die Antwort enthält
+ *     einen Link zu den Elementen der Collection (Pfad `/collections/{collectionId}/items`,link
+ *     relation `items`) sowie Schlüsselinformationen über die Collection.
+ * @ref:formats {@link de.ii.ogcapi.collections.domain.CollectionsFormatExtension}
  */
 @Singleton
 @AutoBind
@@ -214,9 +192,9 @@ public class EndpointCollection extends EndpointSubCollection {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
-      formats = extensionRegistry.getExtensionsForType(CollectionsFormatExtension.class);
+      formats = extensionRegistry.getExtensionsForType(CollectionFormatExtension.class);
     return formats;
   }
 
@@ -270,10 +248,7 @@ public class EndpointCollection extends EndpointSubCollection {
             new ImmutableOgcApiResourceAuxiliary.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> responseContent =
-            collectionId.startsWith("{")
-                ? getContent(apiData, Optional.empty(), "", HttpMethods.GET)
-                : getContent(apiData, Optional.of(collectionId), "", HttpMethods.GET);
+        Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
         ApiOperation.getResource(
                 apiData,
                 resourcePath,

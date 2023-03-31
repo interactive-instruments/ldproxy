@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
+ * @buildingBlock GML
  * @langEn By default, every GML property element will receive the property name from the feature
  *     schema. That is, the element will be in the default namespace. A different name can be set
  *     using the `rename` transformation, which can be used to change the name, but also supports to
@@ -27,8 +28,7 @@ import org.immutables.value.Value;
  *     Feature-Schema. Das heißt, das Element wird im Standard-Namensraum liegen. Ein anderer Name
  *     kann mit der Transformation `rename` festgelegt werden, die zum Ändern des Namens verwendet
  *     werden kann, aber auch das Hinzufügen eines Namensraumpräfixes unterstützt.
- * @default `{}`
- * @example <code>
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: GML
  *   enabled: true
@@ -51,7 +51,7 @@ import org.immutables.value.Value;
  *         someOtherAtt:
  *           rename: 'ns2:someOtherAtt'
  * ```
- * </code>
+ *     </code>
  */
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
@@ -75,8 +75,8 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     for GML 2.1.
    * @langDe Bestimmt die zu verwendende GML-Version: `GML32` für GML 3.2, `GML31` für GML 3.1 und
    *     `GML21` für GML 2.1.
-   * @default `GML32`
-   * @example <code>
+   * @default GML32
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -92,8 +92,7 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    * @langEn The default `null` declares that the GML support does not meet all requirements of the
    *     *Geography Markup Language (GML), Simple Features Profile, Level 0* or the *Geography
    *     Markup Language (GML), Simple Features Profile, Level 2* conformance classes from [OGC API
-   *     - Features - Part 1: Core
-   *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_gmlsf0).
+   *     - Features - Part 1: Core 1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_gmlsf0).
    *     <p>If the value is set to `0`, `1` or `2`, the conformance will be declared in the
    *     *Conformance Declaration* resource.
    *     <p>If for a collection from a SQL feature provider a root element different to
@@ -102,15 +101,15 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    * @langDe Der Standardwert `null` erklärt, dass die GML-Unterstützung nicht alle Anforderungen
    *     der Konformitätsklassen *Geography Markup Language (GML), Simple Features Profile, Level 0*
    *     oder der *Geography Markup Language (GML), Simple Features Profile, Level 2* aus [OGC API -
-   *     Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_gmlsf0)
+   *     Features - Part 1: Core 1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_gmlsf0)
    *     erfüllt.
    *     <p>Wenn der Wert auf `0`, `1` oder `2` gesetzt wird, wird die Konformität in der
    *     *Conformance Declaration* Ressource angegeben.
    *     <p>Wenn für eine Sammlung von einem SQL-Feature-Provider ein anderes Root-Element als
    *     `sf:FeatureCollection` in `featureCollectionElementName` konfiguriert ist, wird der Wert
    *     ignoriert und es wird keine Konformität zu einer GML-Konformitätsklasse erklärt.
-   * @default `null`
-   * @example <code>
+   * @default null
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -159,8 +158,8 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     GML-Anwendungsschemata und importierten Schemata), werden mit ihren Präfixen konfiguriert.
    *     Da Feature-Daten immer Elemente in anwendungsschemaspezifischen Namespaces verwenden, muss
    *     dieser Konfigurationsparameter immer angegeben werden.
-   * @default `{}`
-   * @example <code>
+   * @default {}
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -183,8 +182,8 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     der Namespace-Präfix. Es muss entweder ein vordefiniertes Präfix oder ein in
    *     `applicationNamespaces` deklariertes Präfix sein. Dieser Namespace wird als
    *     Standard-Namespace des XML-Dokuments deklariert.
-   * @default `null`
-   * @example <code>
+   * @default null
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -218,8 +217,8 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     <p>Beachten Sie, dass der Namespace des Root-Elements im Attribut `xsi:schemaLocation`
    *     deklariert werden muss, um den XML-Schema-Validierungsanforderungen zu entsprechen, auch
    *     wenn der Namespace von einem anderen Schema importiert wird.
-   * @default `null`
-   * @example <code>
+   * @default null
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -248,8 +247,8 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     unqualifizierten Namen des GML-Objektelements verwendet.
    *     <p>Wenn das GML-Objektelement nicht im Standard-Namensraum liegt, spezifiziert dieser
    *     Konfigurationsparameter den Namensraumpräfix zu einem Objekttyp.
-   * @default `{}`
-   * @example <code>
+   * @default {}
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -278,8 +277,8 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     die Werte auf qualifizierte Namen für das GML-Objektelement abzubilden. Im Beispiel ist
    *     `_type` die Feature-Eigenschaft mit drei verschiedenen Werten, die auf den qualifizierten
    *     Elementnamen abgebildet werden.
-   * @default `{}`
-   * @example <code>
+   * @default {}
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -306,8 +305,8 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     `sf:FeatureCollection`, wie von OGC API Features spezifiziert. Dieser
    *     Konfigurationsparameter bietet die Möglichkeit, dass ein anderes Feature-Collection-Element
    *     in der Rückgabe verwendet wird.
-   * @default `sf:FeatureCollection`
-   * @example <code>
+   * @default sf:FeatureCollection
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -329,8 +328,8 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     ist `sf:featureMember`, wie von OGC API Features definiert. Dieser Konfigurationsparameter
    *     bietet die Möglichkeit, den Elementnamen für das konfigurierte Feature-Collection-Element
    *     zu spezifizieren.
-   * @default `sf:featureMember`
-   * @example <code>
+   * @default sf:featureMember
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -351,8 +350,8 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     wird, kann die WFS-2.0-Standardantwortparameter (`timeStamp`, `numberMatched`,
    *     `numberReturned`) unterstützen. Dieser Konfigurationsparameter steuert, ob die Attribute
    *     als XML-Attribute in das Feature-Collection-Element aufgenommen werden.
-   * @default `false`
-   * @example <code>
+   * @default false
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -373,8 +372,8 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     XML-Elements dargestellt, das das Objekt repräsentiert (GML-Objektelement). Alternativ kann
    *     die Eigenschaft auch als XML-Attribut des übergeordneten GML-Objektelements dargestellt
    *     werden. Dies ist nur für Eigenschaften vom Typ STRING, FLOAT, INTEGER oder BOOLEAN möglich.
-   * @default `[]`
-   * @example <code>
+   * @default []
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true
@@ -399,8 +398,8 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    *     <p>Wenn die Werte die Regel für XML-IDs verletzen, z. B. wenn sie mit einer Ziffer beginnen
    *     können, kann dieser Konfigurationsparameter verwendet werden, um ein konsistentes Präfix
    *     hinzuzufügen, um alle Werte auf gültige XML-IDs abzubilden.
-   * @default `null`
-   * @example <code>
+   * @default null
+   * @examplesAll <code>
    * ```yaml
    * - buildingBlock: GML
    *   enabled: true

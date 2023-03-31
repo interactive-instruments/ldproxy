@@ -58,25 +58,93 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @title Features Core
- * @langEn The module *Features Core* has to be enabled for every API with a feature provider. It
- *     provides the resources *Features* and *Feature*.
- *     <p>*Features Core* implements all requirements of conformance class *Core* of [OGC API -
- *     Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) for
- *     the two mentioned resources.
- * @langDe Das Modul *Features Core* ist für jede über ldproxy bereitgestellte API mit einem
- *     Feature-Provider zu aktivieren. Es stellt die Ressourcen "Features" und "Feature" bereit.
- *     <p>"Features Core" implementiert alle Vorgaben der Konformitätsklasse "Core" von [OGC API -
- *     Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_core) für
- *     die zwei genannten Ressourcen.
- * @example {@link de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration}
- * @propertyTable {@link de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration}
- * @endpointTable {@link de.ii.ogcapi.features.core.app.EndpointFeatures}
- * @queryParameterTable {@link de.ii.ogcapi.features.core.app.QueryParameterBbox}, {@link
+ * @title Features
+ * @langEn The core capabilities to publish feature data (vector data).
+ * @langDe Die Kernfunktionen zur Bereitstellung von Features (Vektordaten).
+ * @scopeEn *Features* specifies the most important capabilities for sharing feature data.
+ *     <p>The scope is restricted to fetching features where geometries are represented in the
+ *     coordinate reference system WGS 84 with axis order longitude/latitude. Features can be
+ *     selected using basic filtering criteria.Additional capabilities that address more advanced
+ *     needs are provided in additional building blocks.
+ *     <p>The formats (encodings) that the API supports are enabled through additional building
+ *     blocks, too. By default, GeoJSON and HTML are enabled.
+ *     <p>Response paging is supported. That is, if more features are available that the page size,
+ *     a link to the next page with the next features is returned.
+ *     <p>For spatial filtering a rectangular area (`bbox`) can be specified. Only features that
+ *     have a primary geometry that intersects the bounding box are selected. The bounding box is
+ *     provided as four numbers:
+ *     <p><code>
+ * - Lower left corner, coordinate axis 1
+ * - Lower left corner, coordinate axis 2
+ * - Upper right corner, coordinate axis 1
+ * - Upper right corner, coordinate axis 2
+ *     </code>
+ *     <p>The coordinate reference system of the values is WGS 84 longitude/latitude unless a
+ *     different coordinate reference system is specified in the parameter `bbox-crs` (see building
+ *     block [CRS](crs.md)).
+ *     <p>For WGS 84 longitude/latitude the values are in most cases the sequence of minimum
+ *     longitude, minimum latitude, maximum longitude and maximum latitude. However, in cases where
+ *     the box spans the antimeridian the first value (west-most box edge) is larger than the third
+ *     value (east-most box edge).
+ *     <p>For temporal filtering an instant or interval (`datetime`) can be specified. The value is
+ *     either a local date, a date-time value in UTC or an interval. date and date-time expressions
+ *     adhere to RFC 3339. Intervals are two instants, separated by a slash (`/`). To indicate a
+ *     half-bounded interval end a double-dot (`..`) can be used.
+ *     <p>Additional attributes can be filtered based on their values, if they are configured as
+ *     queryables.
+ *     <p>All filter predicates must be met to select a feature.
+ * @scopeDe *Features* spezifiziert die wichtigsten Fähigkeiten zur Bereitstellung von Features.
+ *     <p>Der Umfang beschränkt sich auf das Abrufen von Features, deren Geometrien im
+ *     Koordinatenreferenzsystem WGS 84 mit der Achsenreihenfolge Längengrad/Breitengrad dargestellt
+ *     werden. Die Selektion von Features kann anhand grundlegender Filterkriterien erfolgen.
+ *     Zusätzliche Fähigkeiten, die weitergehende Anforderungen erfüllen, werden in zusätzlichen
+ *     Modulen bereitgestellt.
+ *     <p>Die Formate (Kodierungen), die die API unterstützt, werden durch zusätzliche Module
+ *     aktiviert. Standardmäßig sind GeoJSON und HTML kodiert.
+ *     <p>Die Antworten werden seitenweise zurückgeliefert. Das heißt, wenn mehr Features als die
+ *     Seitengröße verfügbar sind, wird ein Link zur nächsten Seite mit den nächsten Features
+ *     zurückgegeben.
+ *     <p>Für die räumliche Filterung kann ein rechteckiger Bereich (`bbox`) angegeben werden. Es
+ *     werden nur Features ausgewählt, deren primäre Geometrie die Begrenzungsgeometrie schneidet.
+ *     Die Begrenzungsgeometrie wird als vier Zahlen angegeben:
+ *     <p><code>
+ * - Linke untere Ecke, Koordinatenachse 1
+ * - Linke untere Ecke, Koordinatenachse 2
+ * - Rechte obere Ecke, Koordinatenachse 1
+ * - Rechte obere Ecke, Koordinatenachse 2
+ *     </code>
+ *     <p>Das Koordinatenreferenzsystem der Werte ist WGS 84 Längen-/Breitengrad, es sei denn, im
+ *     Parameter `bbox-crs` (siehe Modul [CRS](crs.md)) wird ein anderes Koordinatenreferenzsystem
+ *     angegeben.
+ *     <p>Für Angaben als Längen-/Breitengrad sind die Werte in den meisten Fällen die Folge von
+ *     minimaler Länge, minimaler Breite, maximale Länge und maximale Breite. In den Fällen, in
+ *     denen die Geometrie über den Antimeridian verläuft, ist der erste Wert (westlichster Rand)
+ *     jedoch größer als der dritte Wert (östlichster Rand).
+ *     <p>Für die zeitliche Filterung kann ein Zeitpunkt oder ein Intervall (`datetime`) angegeben
+ *     werden. Der Wert ist entweder ein lokales Datum, ein Zeitstempel in UTC oder ein Intervall.
+ *     Datums- und Zeitstempel-Ausdrücke entsprechen RFC 3339. Intervalle sind zwei Zeitpunkte, die
+ *     durch einen Schrägstrich (`/`) getrennt sind. Zur Angabe eines unbegrenzten Intervallendes
+ *     kann ein Doppelpunkt (`..`) verwendet werden.
+ *     <p>Zusätzliche Attribute können auf der Grundlage ihrer Werte gefiltert werden, wenn sie als
+ *     abfragbar konfiguriert sind (Queryables).
+ *     <p>Alle Filterprädikate müssen erfüllt sein, um ein Feature zu selektieren.
+ * @conformanceEn *Features* implements all requirements of conformance class *Core* of [OGC API -
+ *     Features - Part 1: Core 1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_core) for the
+ *     two operations resources.
+ * @conformanceDe *Features* implementiert alle Vorgaben der Konformitätsklasse "Core" von [OGC API
+ *     - Features - Part 1: Core 1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_core) für
+ *     die zwei Operationen.
+ * @ref:cfg {@link de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration}
+ * @ref:endpoints {@link de.ii.ogcapi.features.core.app.EndpointFeatures}, {@link
+ *     de.ii.ogcapi.features.core.app.EndpointFeature}
+ * @ref:pathParameters {@link de.ii.ogcapi.features.core.domain.PathParameterCollectionIdFeatures},
+ *     {@link de.ii.ogcapi.features.core.domain.PathParameterFeatureIdFeatures}
+ * @ref:queryParameters {@link de.ii.ogcapi.features.core.app.QueryParameterBbox}, {@link
  *     de.ii.ogcapi.features.core.app.QueryParameterDatetime}, {@link
- *     de.ii.ogcapi.features.core.app.QueryParameterFFeatures}, {@link
  *     de.ii.ogcapi.features.core.app.QueryParameterLimitFeatures}, {@link
- *     de.ii.ogcapi.features.core.app.QueryParameterOffsetFeatures}
+ *     de.ii.ogcapi.features.core.app.QueryParameterOffsetFeatures}, {@link
+ *     de.ii.ogcapi.features.core.app.QueryParameterFFeatures}
  */
 @Singleton
 @AutoBind
@@ -132,6 +200,8 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
             });
 
     // register schemas that cannot be derived automatically
+    // TODO Setting a schema here has no effect since onStartup is executed *after* the
+    //      API definitions have been compiled.
     Schema<?> stringSchema = classSchemaCache.getSchema(JsonSchemaString.class);
     Schema<?> numberSchema = classSchemaCache.getSchema(JsonSchemaNumber.class);
     Schema<?> integerSchema = classSchemaCache.getSchema(JsonSchemaInteger.class);

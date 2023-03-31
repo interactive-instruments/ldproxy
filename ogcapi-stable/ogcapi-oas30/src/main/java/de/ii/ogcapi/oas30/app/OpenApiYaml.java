@@ -24,15 +24,15 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+/**
+ * @title YAML
+ */
 @Singleton
 @AutoBind
 public class OpenApiYaml implements ApiDefinitionFormatExtension {
 
-  private static Logger LOGGER = LoggerFactory.getLogger(OpenApiYaml.class);
-  private static ApiMediaType MEDIA_TYPE =
+  private static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
           .type(new MediaType("application", "vnd.oai.openapi", ImmutableMap.of("version", "3.0")))
           .parameter("yaml")
@@ -58,9 +58,7 @@ public class OpenApiYaml implements ApiDefinitionFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.startsWith("/api/")) return null;
-
+  public ApiMediaTypeContent getContent() {
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(new ObjectSchema())
         .schemaRef("#/components/schemas/objectSchema")
@@ -69,8 +67,7 @@ public class OpenApiYaml implements ApiDefinitionFormatExtension {
   }
 
   @Override
-  public Response getApiDefinitionResponse(
-      OgcApiDataV2 apiData, ApiRequestContext apiRequestContext) {
+  public Response getResponse(OgcApiDataV2 apiData, ApiRequestContext apiRequestContext) {
     return openApiDefinition.getOpenApi(
         "yaml", apiRequestContext.getUriCustomizer().copy(), apiData);
   }

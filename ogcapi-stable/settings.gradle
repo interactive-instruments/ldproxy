@@ -10,6 +10,8 @@ pluginManagement {
     }
 }
 
+apply from: '../catalog.gradle'
+
 rootDir.listFiles().each { file ->
     if (file.isDirectory() && (file.name.startsWith('ogcapi'))) {
     	include file.name

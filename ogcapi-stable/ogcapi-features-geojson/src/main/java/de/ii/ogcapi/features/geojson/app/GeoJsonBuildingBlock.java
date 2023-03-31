@@ -20,24 +20,18 @@ import javax.inject.Singleton;
  */
 
 /**
- * @title Features GeoJSON
- * @langEn The module *Features GeoJSON* may be enabled for every API with a feature provider. It
- *     provides the resources *Features* and *Feature* encoded as GeoJSON.
+ * @title Features - GeoJSON
+ * @langEn Encode features as GeoJSON.
+ * @langDe Kodierung von Features als GeoJSON.
  * @conformanceEn *Features GeoJSON* implements all requirements of conformance class *GeoJSON* from
  *     [OGC API - Features - Part 1: Core
- *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_geojson) for the two mentioned
+ *     1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_geojson) for the two mentioned
  *     resources.
- * @langDe Das Modul *Features GeoJSON* kann für jede über ldproxy bereitgestellte API mit einem
- *     Feature-Provider aktiviert werden. Es aktiviert die Bereitstellung der Ressourcen Features
- *     und Feature in GeoJSON.
  * @conformanceDe Das Modul implementiert für die Ressourcen Features und Feature alle Vorgaben der
  *     Konformitätsklasse "GeoJSON" von [OGC API - Features - Part 1: Core
- *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_geojson).
- * @example {@link de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration}
- * @propertyTable {@link de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration}
- * @queryParameterTable {@link
- *     de.ii.ogcapi.features.geojson.app.QueryParameterDebugFeaturesGeoJson}, {@link
- *     de.ii.ogcapi.features.geojson.app.QueryParameterPrettyFeaturesGeoJson}
+ *     1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_geojson).
+ * @ref:cfg {@link de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration}
  */
 @Singleton
 @AutoBind

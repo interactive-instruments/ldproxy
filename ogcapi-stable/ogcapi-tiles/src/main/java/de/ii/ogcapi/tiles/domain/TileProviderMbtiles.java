@@ -22,8 +22,6 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * # Tile-Provider MBTILES
- *
  * @langEn With this tile provider, the tiles are provided via an [MBTiles
  *     file](https://github.com/mapbox/mbtiles-spec). The tile format and all other properties of
  *     the tileset resource are derived from the contents of the MBTiles file. Only the
@@ -41,7 +39,7 @@ public abstract class TileProviderMbtiles extends TileProvider {
   /**
    * @langEn Fixed value, identifies the tile provider type.
    * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
-   * @default `MBTILES`
+   * @default MBTILES
    */
   @Value.Derived
   public String getType() {
@@ -51,7 +49,7 @@ public abstract class TileProviderMbtiles extends TileProvider {
   /**
    * @langEn Filename of the MBTiles file in the `api-resources/tiles/{apiId}` directory.
    * @langDe Dateiname der MBTiles-Datei im Verzeichnis `api-resources/tiles/{apiId}`.
-   * @default `null`
+   * @default null
    */
   @Nullable
   public abstract String getFilename();
@@ -59,7 +57,7 @@ public abstract class TileProviderMbtiles extends TileProvider {
   /**
    * @langEn Tiling scheme used in the MBTiles file.
    * @langDe Kachelschema, das in der MBTiles-Datei verwendet wird.
-   * @default `WebMercatorQuad`
+   * @default WebMercatorQuad
    */
   @Value.Default
   public String getTileMatrixSetId() {

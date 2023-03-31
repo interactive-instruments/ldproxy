@@ -14,11 +14,7 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ExceptionFormatExtension;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import io.dropwizard.jersey.errors.ErrorEntityWriter;
-import io.swagger.v3.oas.models.media.StringSchema;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -33,9 +29,6 @@ import javax.ws.rs.core.MediaType;
 public class ExceptionFormatHtml extends ErrorEntityWriter<ApiErrorMessage, OgcApiErrorView>
     implements ExceptionFormatExtension {
 
-  static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder().type(MediaType.TEXT_HTML_TYPE).build();
-
   @Inject
   public ExceptionFormatHtml() {
     super(MediaType.TEXT_HTML_TYPE, OgcApiErrorView.class);
@@ -43,16 +36,12 @@ public class ExceptionFormatHtml extends ErrorEntityWriter<ApiErrorMessage, OgcA
 
   @Override
   public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
+    return ApiMediaType.HTML_MEDIA_TYPE;
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new StringSchema().example("<html>...</html>"))
-        .schemaRef("#/components/schemas/htmlSchema")
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
+  public ApiMediaTypeContent getContent() {
+    return FormatExtension.HTML_CONTENT;
   }
 
   @Override

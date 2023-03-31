@@ -23,6 +23,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title JPEG
+ */
 @Singleton
 @AutoBind
 public class TileFormatJPEG extends TileFormatExtension implements ConformanceClass {
@@ -43,17 +46,12 @@ public class TileFormatJPEG extends TileFormatExtension implements ConformanceCl
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
-        || path.equals(
-            "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(SCHEMA_TILE)
-          .schemaRef(SCHEMA_REF_TILE)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-
-    return null;
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(BINARY_SCHEMA)
+        .schemaRef(BINARY_SCHEMA_REF)
+        .ogcApiMediaType(getMediaType())
+        .build();
   }
 
   @Override

@@ -20,8 +20,39 @@ import javax.inject.Singleton;
 
 /**
  * @title Routing
- * @langEn TODO
- * @langDe TODO
+ * @langEn Calculate and manage routes.
+ * @langDe Routen berechnen und verwalten.
+ * @scopeEn This building block computes routes using a [routing
+ *     provider](../../providers/feature/extensions/routing.html); that is, am PostgreSQL feature
+ *     provider with the extensions PostGIS and pgRouting.
+ *     <p>An option to store and manage routes that have been computed can be enabled, too.
+ * @scopeDe Dieses Modul berechnet Routen mit Hilfe eines
+ *     [Routing-Providers](../../providers/feature/extensions/routing.html), d.h. eines
+ *     PostgreSQL-SQL-Feature-Providers mit den Erweiterungen PostGIS und pgRouting.
+ *     <p>Eine Option zur Speicherung und Verwaltung der berechneten Routen wird ebenfalls
+ *     unterstützt.
+ * @conformanceEn *Routing* implements the conformance classes "Core", "Manage Routes", "Modes",
+ *     "Intermediate Waypoints", "Height Restrictions", "Weight Restrictions", and "Obstacles" of
+ *     the [draft OGC API - Routes - Part 1: Core](https://docs.ogc.org/DRAFTS/21-000.html) and the
+ *     conformance class "Route Exchange Model" of the [draft OGC Route Exchange
+ *     Model](https://docs.ogc.org/DRAFTS/21-001.html).
+ * @conformanceDe Das Modul implementiert die Konformitätsklassen "Core", "Manage Routes", "Modes",
+ *     "Intermediate Waypoints", "Height Restrictions", "Weight Restrictions" und "Obstacles" des
+ *     [Entwurfs von OGC API - Routes - Part 1: Core](https://docs.ogc.org/DRAFTS/21-000.html) sowie
+ *     die Konformitätsklasse "Route Exchange Model" des [Entwurfs OGC Route Exchange
+ *     Model](https://docs.ogc.org/DRAFTS/21-001.html).
+ * @ref:cfg {@link de.ii.ogcapi.routes.domain.RoutingConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.routes.domain.ImmutableRoutingConfiguration}
+ * @ref:endpoints {@link de.ii.ogcapi.routes.infra.EndpointRouteDefinition}, {@link
+ *     de.ii.ogcapi.routes.infra.EndpointRouteDelete}, {@link
+ *     de.ii.ogcapi.routes.infra.EndpointRouteGet}, {@link
+ *     de.ii.ogcapi.routes.infra.EndpointRoutesGet}, {@link
+ *     de.ii.ogcapi.routes.infra.EndpointRoutesPost}
+ * @ref:queryParameters {@link de.ii.ogcapi.routes.domain.QueryParameterFRoutes}, {@link
+ *     de.ii.ogcapi.routes.domain.QueryParameterFRoute}, {@link
+ *     de.ii.ogcapi.routes.domain.QueryParameterFRouteDefinition}, {@link
+ *     de.ii.ogcapi.routes.app.QueryParameterCrsRoutes}
+ * @ref:pathParameters {@link de.ii.ogcapi.routes.domain.PathParameterRouteId}
  */
 @Singleton
 @AutoBind

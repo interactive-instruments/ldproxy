@@ -31,10 +31,15 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn TODO
- * @langDe TODO
- * @name limit
+ * @title limit
  * @endpoints Features
+ * @langEn The maximum number of features that are presented in the response document. If more
+ *     features are available, a link to the next page is provided with the response. If no
+ *     parameter value is provided, the default value that is configured for the API applies.
+ * @langDe Die maximale Anzahl von Features, die im Antwortdokument zurückgegeben werden. Wenn mehr
+ *     Features verfügbar sind, wird ein Link zur nächsten Seite mit der Antwort zurückgeliefert.
+ *     Wird kein Wert für den Parameter angegeben, gilt der Standardwert, der für die API
+ *     konfiguriert ist.
  */
 @Singleton
 @AutoBind

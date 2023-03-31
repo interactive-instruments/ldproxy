@@ -14,6 +14,17 @@ import java.util.Objects;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
+/**
+ * @buildingBlock FEATURES_EXTENSIONS
+ * @exampleAll <code>
+ * ```yaml
+ * - buildingBlock: FEATURES_EXTENSIONS
+ *   enabled: true
+ *   postOnItems: true
+ *   intersectsParameter: true
+ * ```
+ *     </code>
+ */
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFeaturesExtensionsConfiguration.Builder.class)
@@ -24,7 +35,8 @@ public interface FeaturesExtensionsConfiguration extends ExtensionConfiguration 
   /**
    * @langEn Enables support for the POST HTTP method on the "Features" resource.
    * @langDe Aktiviert die Unterstützung für die HTTP-Methode POST auf der Ressource "Features"
-   * @default `false`
+   * @default false
+   * @since v3.1
    */
   @Nullable
   Boolean getPostOnItems();
@@ -40,10 +52,18 @@ public interface FeaturesExtensionsConfiguration extends ExtensionConfiguration 
    * @langEn Enables support for the `intersects` query parameter on the "Features" resource
    * @langDe Aktiviert die Unterstützung für den Query-Parameter `intersects` auf der Ressource
    *     "Features"
-   * @default `false`
+   * @default false
+   * @since v3.1
    */
   @Nullable
   Boolean getIntersectsParameter();
+
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  default boolean shouldSupportIntersectsParameter() {
+    return Objects.equals(getIntersectsParameter(), true);
+  }
 
   @Override
   default Builder getBuilder() {

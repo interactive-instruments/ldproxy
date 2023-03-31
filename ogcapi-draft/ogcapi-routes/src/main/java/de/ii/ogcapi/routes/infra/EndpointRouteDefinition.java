@@ -40,7 +40,13 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** fetch the definition of a route */
+/**
+ * @title Route Definition
+ * @path routes/{routeId}/definition
+ * @langEn Fetch the definition of a stored route.
+ * @langDe Holt die Definition einer gespeicherten Route.
+ * @ref:formats {@link de.ii.ogcapi.routes.domain.RouteDefinitionFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointRouteDefinition extends Endpoint {
@@ -73,7 +79,7 @@ public class EndpointRouteDefinition extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(RouteDefinitionFormatExtension.class);
     return formats;
@@ -107,7 +113,7 @@ public class EndpointRouteDefinition extends Endpoint {
               false,
               queryParameters,
               ImmutableList.of(),
-              getContent(apiData, path),
+              getResponseContent(apiData),
               operationSummary,
               operationDescription,
               Optional.empty(),

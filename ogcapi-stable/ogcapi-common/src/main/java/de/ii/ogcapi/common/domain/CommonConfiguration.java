@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.common.domain;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonMerge;
 import com.fasterxml.jackson.annotation.OptBoolean;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -21,9 +20,33 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @example <code>
+ * @buildingBlock COMMON
+ * @examplesEn <code>
  * ```yaml
  * - buildingBlock: COMMON
+ *   enabled: true
+ *   caching:
+ *     lastModified: '2021-07-01T00:00:00Z'
+ *     expires: '2023-06-30T23:59:59Z'
+ *     cacheControl: max-age=86400
+ *     cacheControlItems: max-age=3600
+ *   additionalLinks:
+ *   - rel: describedby
+ *     type: text/html
+ *     title: Website with additional information
+ *     href: 'https://example.com/path/to/document'
+ *     hreflang: en
+ * ```
+ * </code>
+ * @examplesDe <code>
+ * ```yaml
+ * - buildingBlock: COMMON
+ *   enabled: true
+ *   caching:
+ *     lastModified: '2021-07-01T00:00:00Z'
+ *     expires: '2023-06-30T23:59:59Z'
+ *     cacheControl: max-age=86400
+ *     cacheControlItems: max-age=3600
  *   additionalLinks:
  *   - rel: describedby
  *     type: text/html
@@ -41,26 +64,12 @@ public interface CommonConfiguration extends ExtensionConfiguration, CachingConf
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   /**
-   * @langEn Always `COMMON`.
-   * @langDe Immer `COMMON`.
-   */
-  @Override
-  @JsonAlias("extensionType")
-  @Value.Derived
-  default String getBuildingBlock() {
-    return ExtensionConfiguration.super.getBuildingBlock();
-  }
-
-  /**
    * @default true
    */
   @Nullable
   @Override
   Boolean getEnabled();
 
-  /**
-   * @since v3.0
-   */
   @Nullable
   @Override
   Caching getCaching();

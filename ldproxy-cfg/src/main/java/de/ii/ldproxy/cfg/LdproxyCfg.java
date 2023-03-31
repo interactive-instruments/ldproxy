@@ -39,22 +39,30 @@ import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
 import de.ii.xtraplatform.store.domain.entities.EntityDataStore;
 import de.ii.xtraplatform.store.domain.entities.EntityFactory;
 import de.ii.xtraplatform.store.infra.EventStoreDriverFs;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class LdproxyCfg implements Cfg {
 
   private final EntityDataDefaultsStore entityDataDefaultsStore;
   private final EntityDataStore<EntityData> entityDataStore;
+  private final Path dataDirectory;
   private final Builders builders;
   private final ObjectMapper objectMapper;
   private final RequiredIncludes requiredIncludes;
 
   public LdproxyCfg(Path dataDirectory) {
+    this.dataDirectory = dataDirectory;
     Path store = dataDirectory.resolve(StoreConfiguration.DEFAULT_LOCATION);
     try {
       Files.createDirectories(store);
@@ -139,6 +147,36 @@ public class LdproxyCfg implements Cfg {
     }
   }
 
+  @Override
+  public <T extends EntityData> void addEntity(T data) throws IOException {
+    Path path = getPath(data);
+
+    path.getParent().toFile().mkdirs();
+    objectMapper.writeValue(path.toFile(), data);
+  }
+
+  @Override
+  public <T extends EntityData> void writeEntity(T data, OutputStream outputStream)
+      throws IOException {
+    addEntity(data);
+
+    Path path = getPath(data);
+
+    Files.copy(path, outputStream);
+  }
+
+  @Override
+  public void writeZippedStore(OutputStream outputStream) throws IOException {
+    ZipOutputStream zipOut = new ZipOutputStream(outputStream);
+    zipFile(dataDirectory.toFile(), dataDirectory.toFile().getName(), zipOut, true);
+    zipOut.close();
+  }
+
+  private <T extends EntityData> Path getPath(T data) {
+    return dataDirectory.resolve(
+        Paths.get("store", "entities", getType(data), data.getId() + ".yml"));
+  }
+
   private static <T extends EntityData> String getType(T data) {
     if (data instanceof CodelistData) {
       return Codelist.ENTITY_TYPE;
@@ -163,5 +201,43 @@ public class LdproxyCfg implements Cfg {
       return OgcApiDataV2.SERVICE_TYPE.toLowerCase();
     }
     return null;
+  }
+
+  private static void zipFile(
+      File fileToZip, String fileName, ZipOutputStream zipOut, boolean skipParentDir)
+      throws IOException {
+    if (fileToZip.isHidden()) {
+      return;
+    }
+    if (fileToZip.isDirectory()) {
+      if (skipParentDir) {
+        File[] children = fileToZip.listFiles();
+        for (File childFile : children) {
+          zipFile(childFile, childFile.getName(), zipOut, false);
+        }
+        return;
+      }
+      if (fileName.endsWith("/")) {
+        zipOut.putNextEntry(new ZipEntry(fileName));
+        zipOut.closeEntry();
+      } else {
+        zipOut.putNextEntry(new ZipEntry(fileName + "/"));
+        zipOut.closeEntry();
+      }
+      File[] children = fileToZip.listFiles();
+      for (File childFile : children) {
+        zipFile(childFile, fileName + "/" + childFile.getName(), zipOut, false);
+      }
+      return;
+    }
+    FileInputStream fis = new FileInputStream(fileToZip);
+    ZipEntry zipEntry = new ZipEntry(fileName);
+    zipOut.putNextEntry(zipEntry);
+    byte[] bytes = new byte[1024];
+    int length;
+    while ((length = fis.read(bytes)) >= 0) {
+      zipOut.write(bytes, 0, length);
+    }
+    fis.close();
   }
 }

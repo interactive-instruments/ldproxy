@@ -12,26 +12,23 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
-import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 
+/**
+ * @title HTML
+ */
 @Singleton
 @AutoBind
 public class ResourcesFormatHtml implements ResourcesFormatExtension {
-
-  static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder().type(MediaType.TEXT_HTML_TYPE).parameter("html").build();
 
   private final I18n i18n;
 
@@ -42,16 +39,12 @@ public class ResourcesFormatHtml implements ResourcesFormatExtension {
 
   @Override
   public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
+    return ApiMediaType.HTML_MEDIA_TYPE;
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new StringSchema().example("<html>...</html>"))
-        .schemaRef("#/components/schemas/htmlSchema")
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
+  public ApiMediaTypeContent getContent() {
+    return FormatExtension.HTML_CONTENT;
   }
 
   private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
@@ -85,15 +78,17 @@ public class ResourcesFormatHtml implements ResourcesFormatExtension {
 
     HtmlConfiguration htmlConfig = apiData.getExtension(HtmlConfiguration.class).orElse(null);
 
-    return new ResourcesView(
-        apiData,
-        resources,
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        htmlConfig,
-        isNoIndexEnabledForApi(apiData),
-        requestContext.getUriCustomizer(),
-        i18n,
-        requestContext.getLanguage());
+    return new ImmutableResourcesView.Builder()
+        .apiData(apiData)
+        .breadCrumbs(breadCrumbs)
+        .htmlConfig(htmlConfig)
+        .noIndex(isNoIndexEnabledForApi(apiData))
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .rawLinks(resources.getLinks())
+        .title(i18n.get("resourcesTitle", requestContext.getLanguage()))
+        .description(i18n.get("resourcesDescription", requestContext.getLanguage()))
+        .none(i18n.get("none", requestContext.getLanguage()))
+        .resources(resources.getResources())
+        .build();
   }
 }

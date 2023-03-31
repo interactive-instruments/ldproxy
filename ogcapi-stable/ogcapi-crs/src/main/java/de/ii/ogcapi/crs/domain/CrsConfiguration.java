@@ -7,17 +7,17 @@
  */
 package de.ii.ogcapi.crs.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @langEn Todo
- * @langDe Das Default-Koordinatenreferenzsystem `CRS84` entspricht `code: 4326, forceAxisOrder:
- *     LON_LAT`, `CRS84h` entspricht `code: 4979, forceAxisOrder: LON_LAT`.
- * @example <code>
+ * @buildingBlock CRS
+ * @examplesAll <code>
  * ```yaml
  * - buildingBlock: CRS
  *   additionalCrs:
@@ -31,10 +31,6 @@ import org.immutables.value.Value;
  *     forceAxisOrder: NONE
  * ```
  * </code>
- * @langEn Todo
- * @langDe Durch Angabe des Query-Parameters `crs` bei den Ressourcen "Features" und "Feature"
- *     können die Koordinaten in einem der konfigurierten Koordinatenreferenzsystemen angefordert
- *     werden.
  */
 @Value.Immutable
 @Value.Style(builder = "new")
@@ -44,7 +40,13 @@ public interface CrsConfiguration extends ExtensionConfiguration {
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   /**
-   * @langEn Add additonal coordinate reference systems to an API or a collection.
+   * @langEn Lists additional coordinate reference systems to be supported in the API or for a
+   *     feature collection. The native coordinate reference system of the data and the default
+   *     coordinate reference system of the API are automatically enabled. Coordinate reference
+   *     systems are identified by their EPSG code (`code`). Additionally, the order of the
+   *     coordinate axes must be specified in `forceAxisOrder` (`NONE`: as in the coordinate
+   *     reference system, `LON_LAT` or `LAT_LON`: the order in the coordinate reference system is
+   *     ignored and the specified order is used).
    * @langDe Steuert, welche weitere Koordinatenreferenzsysteme in einer API oder für eine Feature
    *     Collection unterstützt werden sollen. Das native Koordinatenreferenzsystem der Daten und
    *     das Default-Koordinatenreferenzsystem der API sind automatisch aktiviert.
@@ -52,9 +54,29 @@ public interface CrsConfiguration extends ExtensionConfiguration {
    *     ist in `forceAxisOrder` die Reihenfolge der Koordinatenachsen anzugeben (`NONE`: wie im
    *     Koordinatenreferenzsystem, `LON_LAT` oder `LAT_LON`: die Reihenfolge im
    *     Koordinatenreferenzsystem wird ignoriert und die angegebene Reihenfolge wird verwendet).
-   * @default `{}`
+   * @default {}
    */
   Set<EpsgCrs> getAdditionalCrs();
+
+  /**
+   * @langEn If `true`, the coordinate reference systems will be included in every Collection
+   *     resource that is embedded in the Collections resource. The global `crs` array will not be
+   *     used or referenced. Use this option, if the API is intended to be used with a client that
+   *     does not support the global `crs` array.
+   * @langDe Bei `true` werden die Koordinatenreferenzsysteme in jede Collection-Ressource
+   *     aufgenommen, die in die Collections-Ressource eingebettet ist. Das globale `crs`-Array wird
+   *     nicht verwendet oder referenziert. Verwenden Sie diese Option, wenn die API mit Clients
+   *     verwendet werden soll, die das globale `crs`-Array nicht unterstützen.
+   * @default false
+   */
+  @Nullable
+  Boolean getSuppressGlobalCrsList();
+
+  @Value.Derived
+  @JsonIgnore
+  default boolean shouldSuppressGlobalCrsList() {
+    return Boolean.TRUE.equals(getSuppressGlobalCrsList());
+  }
 
   @Override
   default Builder getBuilder() {

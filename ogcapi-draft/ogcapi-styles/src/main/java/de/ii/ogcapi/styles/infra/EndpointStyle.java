@@ -24,7 +24,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyle.Builder;
+import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyle;
 import de.ii.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleRepository;
@@ -48,13 +48,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn This operation fetches the set of styles available. For each style the id, a title, links
- *     to the stylesheet of the style in each supported encoding, and the link to the metadata is
- *     provided.
- * @langDe TODO
- * @name Style
- * @path /{apiId}/styles/{styleId}
- * @format {@link de.ii.ogcapi.styles.domain.StylesFormatExtension}
+ * @title Style
+ * @path styles/{styleId}
+ * @langEn This operation fetches the list of styles. For each style the id, a title, links to the
+ *     stylesheet of the style in each supported encoding, and the link to the metadata is provided.
+ * @langDe Mit dieser Operation wird die Liste der Stylee abgerufen. Für jeden Style werden die ID,
+ *     ein Titel, Links zum Stylesheet des Styles in jeder unterstützten Kodierung und der Link zu
+ *     den Metadaten bereitgestellt.
+ * @ref:formats {@link de.ii.ogcapi.styles.domain.StyleFormatExtension}
  */
 @Singleton
 @AutoBind
@@ -102,7 +103,7 @@ public class EndpointStyle extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(StyleFormatExtension.class);
     return formats;
@@ -155,7 +156,7 @@ public class EndpointStyle extends Endpoint {
               false,
               queryParameters,
               ImmutableList.of(),
-              getContent(apiData, path),
+              getResponseContent(apiData),
               operationSummary,
               operationDescription,
               Optional.empty(),
@@ -190,7 +191,10 @@ public class EndpointStyle extends Endpoint {
         styleId);
 
     QueriesHandlerStyles.QueryInputStyle queryInput =
-        new Builder().from(getGenericQueryInput(api.getData())).styleId(styleId).build();
+        new ImmutableQueryInputStyle.Builder()
+            .from(getGenericQueryInput(api.getData()))
+            .styleId(styleId)
+            .build();
 
     return queryHandler.handle(QueriesHandlerStyles.Query.STYLE, queryInput, requestContext);
   }

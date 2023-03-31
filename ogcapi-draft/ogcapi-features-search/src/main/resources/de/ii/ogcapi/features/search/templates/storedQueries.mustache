@@ -1,0 +1,59 @@
+{{> header}}
+
+<div>
+    <h1>{{title}}</h1>
+    <span>{{{description}}}</span>
+    <br/>
+
+    {{#queries}}
+      <br/>
+      <h2>{{#title}}{{.}}{{/title}}{{^title}}{{id}}{{/title}}</h2>
+      <p>{{{description}}}</p>
+      <form id="{{id}}" onSubmit="globalThis._query.execute(event, '{{Id}}', new FormData(document.getElementById('{{id}}')))">
+      <div class="row my-3">
+        <div class="col-md-2 font-weight-normal">{{formatTitle}}</div>
+        <div class="col-md-10">
+          <select class="form-control" id="{{id}}__f" name="{{id}}__f" required>
+            {{#formats}}
+              <option value="{{value}}">{{key}}</option>
+            {{/formats}}
+          </select>
+        </div>
+      </div>
+      {{#hasParameters}}
+        <p>{{parametersDescription}}</p>
+      {{/hasParameters}}
+      {{#parameterList}}
+        {{> schemaProperty}}
+      {{/parameterList}}
+      <div class="row my-3">
+        <div class="col-md-12">
+          <button id="submit_{{id}}" type="submit" class="btn btn-primary">{{executeQueryButton}}</button>
+        </div>
+      </div>
+      </form>
+      <hr/>
+    {{/queries}}
+    {{^queries}}
+      <div>{{none}}</div>
+    {{/queries}}
+</div>
+
+<script type="text/javascript">
+  globalThis._query = {
+    execute: (event, queryId, data) => {
+      const form = document.getElementById(queryId);
+      if (form.reportValidity()) {
+        event.preventDefault();
+        const queryUrl = "{{baseUrl}}/" + queryId + "?" + [...new Set([...data.keys()])]
+          .map(param => `${encodeURIComponent(param.replace(queryId + '__',''))}=${data.getAll(param).map(value => encodeURIComponent(value)).join(',')}`)
+          .join('&');
+        window.location.href = queryUrl;
+        return false;
+      }
+    },
+  }
+</script>
+
+{{> footer}}
+

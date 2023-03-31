@@ -15,27 +15,19 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @author zahnen
- */
-
-/**
  * @title Projections
- * @langEn The module *Projections* may be enabled for every API with a feature provider. It adds
- *     the following query parameters:
- *     <p>* `properties` (for resources *Features*, *Feature* and *Vector Tile*): if set only the
- *     given properties are included in the output. Only applies to GeoJSON `properties` and Mapbox
- *     Vector Tiles `tags`. * `skipGeometry` (for resources *Features* and *Feature*): if set to
- *     `true`, geometries will be skipped in the output.<br>
- *     _since version 2.2
- * @langDe Das Modul *Projections* kann für jede über ldproxy bereitgestellte API mit einem
- *     Feature-Provider aktiviert werden. Es ergänzt die folgenden Query-Parameter:
- *     <p>* `properties` (Ressourcen "Features", "Feature" und "Vector Tile"): Ist der Parameter
- *     angegeben, werden nur die angegeben Objekteigenschaften ausgegeben. Die Angabe begrenzt nur
- *     die Eigenschaften, die in GeoJSON im `properties`-Objekt bzw. in Mapbox Vector Tiles im
- *     `tags`-Feld enthalten sind; * `skipGeometry` (Ressourcen "Features" und "Feature"): Bei
- *     `true` werden Geometrien in der Ausgabe unterdrückt.
- * @propertyTable {@link de.ii.ogcapi.projections.app.ImmutableProjectionsConfiguration}
- * @queryParameterTable {@link de.ii.ogcapi.projections.app.QueryParameterProperties}, {@link
+ * @langEn Select the feature properties included in the feature response.
+ * @langDe Auswahl der Feature-Eigenschaften in Rückgaben.
+ * @conformanceEn *Projections* is based on the [OGC API Features proposal for a new part 'Property
+ *     Selection'](https://github.com/opengeospatial/ogcapi-features/tree/master/proposals/property-selection)
+ *     and [ongoing discussions](https://github.com/opengeospatial/ogcapi-features/projects/12).
+ * @conformanceDe Das Modul basiert auf dem [Vorschlag für einen neuen Teil 'Property Selection' von
+ *     OGC API
+ *     Features](https://github.com/opengeospatial/ogcapi-features/tree/master/proposals/property-selection)
+ *     und [laufenden Diskussionen](https://github.com/opengeospatial/ogcapi-features/projects/12).
+ * @ref:cfg {@link de.ii.ogcapi.projections.app.ProjectionsConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.projections.app.ImmutableProjectionsConfiguration}
+ * @ref:queryParameters {@link de.ii.ogcapi.projections.app.QueryParameterProperties}, {@link
  *     de.ii.ogcapi.projections.app.QueryParameterSkipGeometry}
  */
 @Singleton

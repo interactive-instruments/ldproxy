@@ -29,6 +29,9 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title JSON
+ */
 @Singleton
 @AutoBind
 public class RoutesFormatJson implements RoutesFormatExtension {
@@ -72,7 +75,7 @@ public class RoutesFormatJson implements RoutesFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  public ApiMediaTypeContent getContent() {
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schemaRoutes)
         .schemaRef(Routes.SCHEMA_REF)

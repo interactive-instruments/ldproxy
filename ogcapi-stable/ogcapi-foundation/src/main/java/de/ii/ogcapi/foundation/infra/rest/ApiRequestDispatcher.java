@@ -18,7 +18,6 @@ import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ApiSecurity;
 import de.ii.ogcapi.foundation.domain.EndpointExtension;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -63,12 +62,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
 
   private static final Set<String> NOCONTENT_METHODS =
       ImmutableSet.of("POST", "PUT", "DELETE", "PATCH");
-  private static final ApiMediaType DEFAULT_MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "json"))
-          .label("JSON")
-          .parameter("json")
-          .build();
+  private static final ApiMediaType DEFAULT_MEDIA_TYPE = ApiMediaType.JSON_MEDIA_TYPE;
 
   private final ExtensionRegistry extensionRegistry;
   private final RequestInjectableContext ogcApiInjectableContext;
@@ -193,6 +187,12 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
       @SuppressWarnings("unused") String entrypoint,
       String subPath,
       String method) {
+    if ("OPTIONS".equals(method)) {
+      return;
+    }
+    if (ogcApiEndpoint.shouldIgnoreParameters(apiData, subPath, method)) {
+      return;
+    }
     Set<String> parameters = requestContext.getUriInfo().getQueryParameters().keySet();
     List<OgcApiQueryParameter> knownParameters =
         ogcApiEndpoint.getParameters(apiData, subPath, method);

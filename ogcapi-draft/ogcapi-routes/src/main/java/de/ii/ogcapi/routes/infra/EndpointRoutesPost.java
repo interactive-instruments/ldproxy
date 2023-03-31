@@ -82,7 +82,15 @@ import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** computes routes */
+/**
+ * @title Route
+ * @path routes
+ * @langEn This operation creates a new route. The payload of the request specifies the definition
+ *     of the new route.
+ * @langDe Diese Operation erstellt eine neue Route. Die Nutzlast der Anfrage gibt die Definition
+ *     der neuen Route an.
+ * @ref:formats {@link de.ii.ogcapi.routes.domain.RouteFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
@@ -147,7 +155,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(RouteFormatExtension.class);
     return formats;
@@ -170,7 +178,6 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
   private Map<MediaType, ApiMediaTypeContent> getRequestContent(
       Optional<RoutingConfiguration> config) {
     List<Example> examples = ImmutableList.of();
-    ;
     Optional<HtmlFormDefaults> defaults =
         config.map(RoutingConfiguration::getHtml).flatMap(HtmlForm::getDefaults);
     if (defaults.isPresent()) {
@@ -292,7 +299,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
     ImmutableOgcApiResourceData.Builder resourceBuilder =
         new ImmutableOgcApiResourceData.Builder().path(path);
     Map<MediaType, ApiMediaTypeContent> requestContent = getRequestContent(config);
-    Map<MediaType, ApiMediaTypeContent> responseContent = getContent(apiData, "/routes", method);
+    Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
     ApiOperation.of(
             requestContent,
             responseContent,

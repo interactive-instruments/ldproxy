@@ -23,6 +23,12 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title resourceId
+ * @endpoints Resource
+ * @langEn The local identifier of the resource.
+ * @langDe Der lokale Identifikator der Dateiressource.
+ */
 @Singleton
 @AutoBind
 public class PathParameterResourceId implements OgcApiPathParameter {

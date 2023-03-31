@@ -20,58 +20,100 @@ import javax.inject.Singleton;
 
 /**
  * @title Styles
- * @langEn Adds support for publishing and managing styles (*Mapbox Style* or *SLD*) and related
- *     resources (symbols and sprites).
+ * @langEn Publish styles.
+ * @langDe Veröffentlichung von Styles.
+ * @scopeEn Clients can discover, access, use, and update styles in the following stylesheet
+ *     encodings:
+ *     <p><code>
+ * - Mapbox Style
+ * - OGC SLD 1.0
+ * - OGC SLD 1.1
+ * - QGIS QML
+ * - ArcGIS Desktop (lyr)
+ * - ArcGIS Pro (lyrx)
+ * - 3D Tiles Styling
+ *     </code>
+ *     <p>Styles available as Mapbox Style can be used by ldproxy to render features and vector
+ *     tiles where MapLibre is used as the map client. Styles available as 3D Tiles Styling can be
+ *     used by ldproxy to render features and vector tiles where Cesium is used as the map client.
+ *     See `defaultStyle` in [HTML](html.md), and `style` in [Features HTML](features_-_html.md) and
+ *     [Tiles](tiles.md).
+ * @scopeDe Clients können Styles in den folgenden Style-Formaten entdecken, darauf zugreifen, sie
+ *     verwenden und aktualisieren:
+ *     <p><code>
+ * - Mapbox Style
+ * - OGC SLD 1.0
+ * - OGC SLD 1.1
+ * - QGIS QML
+ * - ArcGIS Desktop (lyr)
+ * - ArcGIS Pro (lyrx)
+ * - 3D Tiles Styling
+ *     </code>
+ *     <p>Styles, die als Mapbox Style verfügbar sind, können von ldproxy verwendet werden, um
+ *     Features und Vektorkacheln zu rendern, wenn MapLibre als Kartenclient verwendet wird. Styles,
+ *     die als 3D Tiles Styling verfügbar sind, können von ldproxy verwendet werden, um Features und
+ *     3D Tiles zu rendern, wenn Cesium als Kartenclient verwendet wird. Siehe `defaultStyle` in
+ *     [HTML](html.md), und `style` in [Features HTML](features_-_html.md) und [Tiles](tiles.md).
  * @conformanceEn This module implements requirements of the conformance classes *Core*, *Manage
  *     Styles*, *Validation of styles*, *Resources*, *Manage resources*, *Mapbox Style*, *OGC SLD
  *     1.0*, *OGC SLD 1.1*, *HTML* and *Style information* from the draft specification [OGC API -
- *     Styles](http://docs.opengeospatial.org/DRAFTS/20-009.html). The implementation is subject to
- *     change in the course of the development and approval process of the draft.
- * @storageEn The stylesheets, style metadata and style information all reside as files in the data
- *     directory:
- *     <p>* Stylesheets reside under the relative path `styles/{apiId}/{styleId}.{ext}`, where
- *     `{ext}` is either `mbs` (Mapbox), `sld10` (SLD 1.0) or `sld11` (SLD 1.1). The URIs (Sprites,
- *     Glyphs, Source.url, Source.tiles) used in Mapbox styles links might contain `{serviceUrl}`. *
- *     Style metadata reside under the relative path `styles/{apiId}/{styleId}.metadata`. Links
- *     might be templates (by setting `templated` to `true`) containing `{serviceUrl}`. * Style
- *     information reside under the relative path `style-infos/{apiId}/{collectionId}.json`. Links
- *     might be templates (by setting `templated` to `true`) containing `{serviceUrl}` and
- *     `{collectionId}`.
- * @langDe Das Modul *Styles* kann für jede über ldproxy bereitgestellte API aktiviert werden. Es
- *     ergänzt verschiedene Ressourcen für die Bereitstellung und Verwaltung von Styles. (Mapbox
- *     Style, SLD).
+ *     Styles](https://docs.ogc.org/DRAFTS/20-009.html). The implementation is subject to change in
+ *     the course of the development and approval process of the draft.
  * @conformanceDe Das Modul basiert auf den Vorgaben der Konformitätsklassen *Core*, *Manage
  *     styles*, *Validation of styles*, *Mapbox Style*, *OGC SLD 1.0* und *OGC SLD 1.1* aus dem
  *     [Entwurf von OGC API - Styles](https://docs.ogc.org/DRAFTS/20-009.html). Die Implementierung
- *     wird sich im Zuge der weiteren Standardisierung des Entwurfs noch ändern. Unterstützte
- *     Style-Formate sind:
- *     <p>- Mapbox Style - OGC SLD 1.0 - OGC SLD 1.1 - QGIS QML - ArcGIS Desktop (lyr) - ArcGIS Pro
- *     (lyrx)
- *     <p>Style-Collections werden unter den folgenden `{baseResource}` zur Verfügung gestellt:
- *     <p>- `{apiId}` - `{apiId}/collection/{collectionId}`
- *     <p>Erlaubte Zeichen für `{styleId}` sind alle Zeichen bis auf den Querstrich ("/").
- *     <p>Die Stylesheets, die Style-Metadaten und die Style-Informationen liegen als Dateien im
- *     ldproxy-Datenverzeichnis:
- *     <p>- Die Stylesheets müssen unter dem relativen Pfad
- *     `api-resources/styles/{apiId}/{styleId}.{ext}` liegen. Die URIs (Sprites, Glyphs, Source.url,
- *     Source.tiles) bei den Mapbox-Styles Links können dabei als Parameter `{serviceUrl}`
- *     enthalten. Die Dateikennung `{ext}` muss den folgenden Wert in Abhängigkeit des Style-Formats
- *     haben: - Mapbox Style: "mbs" - OGC SLD 1.0: "sld10" - OGC SLD 1.1: "sld11" - QGIS QML: "qml"
- *     - ArcGIS Desktop: "lyr" - ArcGIS Pro: "lyrx - Die Style-Metadaten müssen unter dem relativen
- *     Pfad `api-resources/styles/{apiId}/{styleId}.metadata` liegen. Links können dabei Templates
- *     sein (d.h. `templated` ist `true`) und als Parameter `{serviceUrl}` enthalten.
- * @example {@link de.ii.ogcapi.styles.domain.StylesConfiguration}
- * @propertyTable {@link de.ii.ogcapi.styles.domain.ImmutableStylesConfiguration}
- * @endpointTable {@link de.ii.ogcapi.styles.infra.EndpointStyle}, {@link
- *     de.ii.ogcapi.styles.infra.EndpointStyleCollection}, {@link
+ *     wird sich im Zuge der weiteren Standardisierung der Spezifikation noch ändern.
+ * @limitationsEn All encodings of a style must be created and maintained separately. The on-the-fly
+ *     derivation of a stylesheet in another stylesheet encoding is not supported.
+ *     <p>The following limitations apply for the stylesheet encodings:
+ *     <p><code>
+ * - Mapbox Style: The stylesheets are parsed into an internal Java object. Not all structures are
+ *     supported or validated:
+ *   - Only a single sprite is supported.
+ *   - Terrain is not supported.
+ *   - Text strings (e.g., color values) are not validated.
+ *   - `filter`, `layout` and `paint` values are not validated.
+ *   - Interpolate expressions are only supported in `layout` and `paint` values.
+ *   - Sources: `volatile` is not supported.
+ *   - Vector sources: `promoteId` is not supported.
+ * - 3D Tiles Styling: The stylesheets are parsed into an internal Java object. Text strings in
+ *     the JSON are not validated. The `defines` key is not supported.
+ * - OGC SLD 1.0/1.1: The content of these stylesheets is validated against the XML Schema.
+ * - QGIS QML, ArcGIS Pro (lyrx), ArcGIS Desktop (lyr): The content of these stylesheets is not validated.
+ *     </code>
+ * @limitationsDe Alle Formate eines Styles müssen separat erstellt und gepflegt werden. Die
+ *     automatische Ableitung eines Stylesheets in einem anderen Format wird nicht unterstützt.
+ *     <p>Die folgenden Einschränkungen gelten für die Style-Formate:
+ *     <p><code>
+ * - Mapbox Style: Die Stylesheets werden in ein internes Java-Objekt geparst. Nicht alle Strukturen werden unterstützt oder validiert:
+ *   - Nur ein einzelnes Sprite wird unterstützt.
+ *   - Terrain wird nicht unterstützt.
+ *   - Textstrings (z.B. Farbwerte) werden nicht validiert.
+ *   - `filter`, `layout` und `paint` Werte werden nicht validiert.
+ *   - Interpolationsausdrücke werden nur in `layout` und `paint` Werten unterstützt.
+ *   - Sources: `volatile` wird nicht unterstützt.
+ *   - Vector-Sources: `promoteId` wird nicht unterstützt.
+ * - 3D Tiles Styling: Die Stylesheets werden in ein internes Java-Objekt geparst. Textstrings in JSON werden nicht validiert. Der JSON-Schlüssel `defines` wird nicht unterstützt.
+ * - OGC SLD 1.0/1.1: Der Inhalt dieser Stylesheets wird anhand des XML-Schemas validiert.
+ * - QGIS QML, ArcGIS Pro (lyrx), ArcGIS Desktop (lyr): Der Inhalt dieser Stylesheets wird nicht validiert.
+ *     </code>
+ * @ref:cfg {@link de.ii.ogcapi.styles.domain.StylesConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.styles.domain.ImmutableStylesConfiguration}
+ * @ref:endpoints {@link de.ii.ogcapi.styles.infra.EndpointStyles}, {@link
+ *     de.ii.ogcapi.styles.infra.EndpointStyle}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyleMetadata}, {@link
+ *     de.ii.ogcapi.styles.infra.EndpointStylesCollection}, {@link
+ *     de.ii.ogcapi.styles.infra.EndpointStyleCollection}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyleMetadataCollection}, {@link
- *     de.ii.ogcapi.styles.infra.EndpointStyles}, {@link
- *     de.ii.ogcapi.styles.infra.EndpointStylesCollection}
- * @queryParameterTable {@link de.ii.ogcapi.styles.domain.QueryParameterFStyle}, {@link
- *     de.ii.ogcapi.styles.domain.QueryParameterFStyles}
- * @todo de.ii.ogcapi.resources.infra.EndpointResource
- * @todo de.ii.ogcapi.resources.infra.EndpointResources
+ *     de.ii.ogcapi.styles.infra.manager.EndpointStylesManager}, {@link
+ *     de.ii.ogcapi.styles.infra.manager.EndpointStyleMetadataManager}, {@link
+ *     de.ii.ogcapi.styles.infra.manager.EndpointStylesManagerCollection}, {@link
+ *     de.ii.ogcapi.styles.infra.manager.EndpointStyleMetadataManagerCollection}
+ * @ref:pathParameters {@link de.ii.ogcapi.styles.domain.PathParameterCollectionIdStyles}, {@link
+ *     de.ii.ogcapi.styles.domain.PathParameterStyleId}
+ * @ref:queryParameters {@link de.ii.ogcapi.styles.domain.QueryParameterFStyles}, {@link
+ *     de.ii.ogcapi.styles.domain.QueryParameterFStyle}, {@link
+ *     de.ii.ogcapi.styles.app.manager.QueryParameterDryRunStylesManager}
  */
 @Singleton
 @AutoBind

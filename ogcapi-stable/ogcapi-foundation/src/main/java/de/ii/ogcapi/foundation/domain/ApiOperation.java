@@ -74,6 +74,11 @@ public interface ApiOperation {
   Optional<ApiResponse> getSuccess();
 
   @Value.Default
+  default boolean ignoreUnknownQueryParameters() {
+    return false;
+  }
+
+  @Value.Default
   default boolean hideInOpenAPI() {
     return false;
   }

@@ -11,7 +11,6 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -26,6 +25,9 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+/**
+ * @title Any
+ */
 @Singleton
 @AutoBind
 public class ResourceFormatAny implements ResourceFormatExtension {
@@ -45,32 +47,12 @@ public class ResourceFormatAny implements ResourceFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-
-    // TODO add examples
-    if (path.equals("/resources/{resourceId}"))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaResource)
-          .schemaRef(SCHEMA_REF_RESOURCE)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-
-    throw new RuntimeException("Unexpected path: " + path);
-  }
-
-  @Override
-  public ApiMediaTypeContent getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-
-    // TODO add examples
-    if (path.equals("/resources/{resourceId}"))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaResource)
-          .schemaRef(SCHEMA_REF_RESOURCE)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-
-    throw new RuntimeException("Unexpected path: " + path);
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(schemaResource)
+        .schemaRef(SCHEMA_REF_RESOURCE)
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
   }
 
   @Override

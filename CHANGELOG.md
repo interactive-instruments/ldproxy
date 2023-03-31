@@ -1,11 +1,55 @@
 # Changelog
 
+## v3.3.5 (13/03/2023)
+
+#### Fixed bugs
+
+-  file log misses first two lines [#934](https://github.com/interactive-instruments/ldproxy/issues/934)
+-  incorrect detection of time elements in dateFormat transformations [#920](https://github.com/interactive-instruments/ldproxy/issues/920)
+
+---
+
+## v3.3.4 (14/02/2023)
+
+#### Fixed bugs
+
+-  tile seeding fails with 'too many open files' [#902](https://github.com/interactive-instruments/ldproxy/issues/902)
+
+---
+
+## v3.3.3 (09/02/2023)
+
+#### Improvements
+
+-  support XACML JSON 1.0 [#893](https://github.com/interactive-instruments/ldproxy/issues/893)
+-  switch docker base image to temurin [#891](https://github.com/interactive-instruments/ldproxy/issues/891)
+
+#### Fixed bugs
+
+-  auto mode for WFS providers does not work for complex schemas [#895](https://github.com/interactive-instruments/ldproxy/issues/895)
+-  sortby does not work with GPKG provider [#894](https://github.com/interactive-instruments/ldproxy/issues/894)
+-  error message content in HTML is not escaped [#888](https://github.com/interactive-instruments/ldproxy/issues/888)
+-  XML content handling errors [#886](https://github.com/interactive-instruments/ldproxy/issues/886)
+-  Collections and Collection resources are always provided as XML [#885](https://github.com/interactive-instruments/ldproxy/issues/885)
+-  missing collection extents [#874](https://github.com/interactive-instruments/ldproxy/issues/874)
+
+---
+## v3.3.2 (13/01/2023)
+
+#### Fixed bugs
+
+-  additionalLocations should not be written to [#868](https://github.com/interactive-instruments/ldproxy/issues/868)
+-  GML: use of custom GML schemas breaks schemaLocation [#864](https://github.com/interactive-instruments/ldproxy/issues/864)
+-  GeoPackage: t_intersects() fails for intervals [#863](https://github.com/interactive-instruments/ldproxy/issues/863)
+-  only seed layers with features [#862](https://github.com/interactive-instruments/ldproxy/issues/862)
+-  unsorted fields dropdown in filter editor [#848](https://github.com/interactive-instruments/ldproxy/issues/848)
+---
+
 ## v3.3.1 (19/12/2022)
 
 #### Fixed bugs
 
 - tile provider cache levels are ignored on deserialization [#850](https://github.com/interactive-instruments/ldproxy/issues/850)
-
 ---
 
 ## v3.3.0 (16/12/2022)
@@ -23,7 +67,11 @@
 -  parallel db connection pools [#732](https://github.com/interactive-instruments/ldproxy/issues/732)
 -  add access control for GET operations [#718](https://github.com/interactive-instruments/ldproxy/issues/718)
 -  GML support for SQL feature providers [#681](https://github.com/interactive-instruments/ldproxy/issues/681)
+-  add support for CityJSON [#667](https://github.com/interactive-instruments/ldproxy/issues/667)
+-  support CQL2 JSON [#658](https://github.com/interactive-instruments/ldproxy/issues/658)
+-  support for feature changes [#500](https://github.com/interactive-instruments/ldproxy/issues/500)
 -  support for conditional requests and optimistic locking [#404](https://github.com/interactive-instruments/ldproxy/issues/404)
+-  add number of features on dataset pages [#30](https://github.com/interactive-instruments/ldproxy/issues/30)
 
 #### Improvements
 
@@ -35,6 +83,8 @@
 -  align JSON-FG with draft v0.1 [#710](https://github.com/interactive-instruments/ldproxy/issues/710)
 -  align CRUD with latest draft [#703](https://github.com/interactive-instruments/ldproxy/issues/703)
 -  support docker platform linux/arm64 [#693](https://github.com/interactive-instruments/ldproxy/issues/693)
+-  support for 3D bounding boxes [#655](https://github.com/interactive-instruments/ldproxy/issues/655)
+-  http header Content-Disposition for queryables changed to upper case [#638](https://github.com/interactive-instruments/ldproxy/issues/638)
 -  improve exception handling/routing [#569](https://github.com/interactive-instruments/ldproxy/issues/569)
 
 #### Fixed bugs
@@ -52,6 +102,9 @@
 -  manager password change not working [#687](https://github.com/interactive-instruments/ldproxy/issues/687)
 -  tooltip labels for start/stop button are backwards [#686](https://github.com/interactive-instruments/ldproxy/issues/686)
 -  timeZone for logging has no effect [#685](https://github.com/interactive-instruments/ldproxy/issues/685)
+-  value transformations do not properly handle null values [#666](https://github.com/interactive-instruments/ldproxy/issues/666)
+-  bbox requests with coordinates outside the native CRS domain return 400 [#661](https://github.com/interactive-instruments/ldproxy/issues/661)
+-  OpenAPI document invalid [#660](https://github.com/interactive-instruments/ldproxy/issues/660)
 -  line breaks in stringFormat markdown do not work [#544](https://github.com/interactive-instruments/ldproxy/issues/544)
 
 #### Dependency updates

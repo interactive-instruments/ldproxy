@@ -15,9 +15,19 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title Features CSV
- * @langEn TODO
- * @langDe TODO
+ * @title Features - CSV
+ * @langEn Encode features as comma-separated values (CSV).
+ * @langDe Kodierung von Features als komma-separierte Werte (CSV).
+ * @scopeEn Feature properties that are arrays or objects are always flattened using the `flatten`
+ *     transformation, by default using '.' as the separator. Array properties are limited to
+ *     `maxMultiplicity` values.
+ *     <p>Geometry properties are ignored.
+ * @scopeDe Objekteigenschaften, bei denen es sich um Arrays oder Objekte handelt, werden immer mit
+ *     der Transformation `flatten` abgeflacht, wobei standardmäßig '.' als Trennzeichen verwendet
+ *     wird. Array-Eigenschaften sind auf `maxMultiplicity`-Werte beschränkt.
+ *     <p>Geometrien werden nicht kodiert.
+ * @ref:cfg {@link de.ii.ogcapi.features.csv.domain.CsvConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.features.csv.domain.ImmutableCsvConfiguration}
  */
 @Singleton
 @AutoBind

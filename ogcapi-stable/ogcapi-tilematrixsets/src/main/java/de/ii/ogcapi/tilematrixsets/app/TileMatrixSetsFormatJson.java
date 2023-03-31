@@ -12,78 +12,49 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetOgcApi;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSets;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 
+/**
+ * @title JSON
+ */
 @Singleton
 @AutoBind
 public class TileMatrixSetsFormatJson implements TileMatrixSetsFormatExtension {
 
-  public static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(MediaType.APPLICATION_JSON_TYPE)
-          .label("JSON")
-          .parameter("json")
-          .build();
-
   private final Schema<?> schemaStyleTileMatrixSets;
   private final Map<String, Schema<?>> referencedSchemasTileMatrixSets;
-  private final Schema<?> schemaStyleTileMatrixSet;
-  private final Map<String, Schema<?>> referencedSchemasTileMatrixSet;
 
   @Inject
   public TileMatrixSetsFormatJson(ClassSchemaCache classSchemaCache) {
-    schemaStyleTileMatrixSet = classSchemaCache.getSchema(TileMatrixSetOgcApi.class);
-    referencedSchemasTileMatrixSet =
-        classSchemaCache.getReferencedSchemas(TileMatrixSetOgcApi.class);
     schemaStyleTileMatrixSets = classSchemaCache.getSchema(TileMatrixSets.class);
     referencedSchemasTileMatrixSets = classSchemaCache.getReferencedSchemas(TileMatrixSets.class);
   }
 
   @Override
   public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
+    return ApiMediaType.JSON_MEDIA_TYPE;
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.equals("/tileMatrixSets"))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaStyleTileMatrixSets)
-          .schemaRef(TileMatrixSets.SCHEMA_REF)
-          .referencedSchemas(referencedSchemasTileMatrixSets)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-    else if (path.equals("/tileMatrixSets/{tileMatrixSetId}"))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaStyleTileMatrixSet)
-          .schemaRef(TileMatrixSetOgcApi.SCHEMA_REF)
-          .referencedSchemas(referencedSchemasTileMatrixSet)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-
-    throw new RuntimeException("Unexpected path: " + path);
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(schemaStyleTileMatrixSets)
+        .schemaRef(TileMatrixSets.SCHEMA_REF)
+        .referencedSchemas(referencedSchemasTileMatrixSets)
+        .ogcApiMediaType(getMediaType())
+        .build();
   }
 
   @Override
-  public Object getTileMatrixSetsEntity(
+  public Object getEntity(
       TileMatrixSets tileMatrixSets, OgcApi api, ApiRequestContext requestContext) {
     return tileMatrixSets;
-  }
-
-  @Override
-  public Object getTileMatrixSetEntity(
-      TileMatrixSetOgcApi tileMatrixSet, OgcApi api, ApiRequestContext requestContext) {
-    return tileMatrixSet;
   }
 }

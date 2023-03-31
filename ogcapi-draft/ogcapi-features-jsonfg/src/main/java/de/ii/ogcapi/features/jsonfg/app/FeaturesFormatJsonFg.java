@@ -17,12 +17,16 @@ import de.ii.ogcapi.features.jsonfg.domain.FeaturesFormatJsonFgBase;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title JSON-FG
+ */
 @Singleton
 @AutoBind
 public class FeaturesFormatJsonFg implements FeaturesFormatJsonFgBase {
@@ -84,7 +88,13 @@ public class FeaturesFormatJsonFg implements FeaturesFormatJsonFgBase {
     return transformationContext.getTargetCrs().equals(transformationContext.getDefaultCrs())
         && transformationContext
             .getFeatureSchema()
-            .map(FeaturesFormatJsonFgBase::hasSimpleFeatureGeometryType)
+            .map(
+                schema ->
+                    schema
+                            .getPrimaryGeometry()
+                            .filter(SchemaBase::isSimpleFeatureGeometry)
+                            .isPresent()
+                        && schema.getSecondaryGeometry().isEmpty())
             .orElse(true);
   }
 }

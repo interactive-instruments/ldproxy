@@ -20,6 +20,12 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @title tileCol
+ * @endpoints Dataset Tile, Collection Tile
+ * @langEn The column of the tile at the zoom level in the tiling scheme.
+ * @langDe Die Spalte der Kachel auf der Zoomstufe im Kachelschema.
+ */
 @Singleton
 @AutoBind
 public class PathParameterTileCol implements OgcApiPathParameter {

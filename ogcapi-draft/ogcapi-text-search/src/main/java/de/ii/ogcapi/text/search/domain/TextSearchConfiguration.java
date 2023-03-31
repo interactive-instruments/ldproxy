@@ -13,14 +13,27 @@ import de.ii.ogcapi.text.search.domain.ImmutableTextSearchConfiguration.Builder;
 import java.util.List;
 import org.immutables.value.Value;
 
+/**
+ * @buildingBlock TEXT_SEARCH
+ * @examplesAll <code>
+ * ```yaml
+ * - buildingBlock: TEXT_SEARCH
+ *   enabled: true
+ *   properties:
+ *   - name
+ *   - description
+ *   - function
+ * ```
+ * </code>
+ */
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableTextSearchConfiguration.Builder.class)
 public interface TextSearchConfiguration extends ExtensionConfiguration {
 
   /**
-   * @langEn Controls which of the attributes in queries can be used for text search.
-   * @langDe Steuert, welche der Attribute in Queries für die Textsuche verwendet werden können.
+   * @langEn Controls which of the queryable attributes are used for text search.
+   * @langDe Steuert, welche der Attribute, die Queryables sind, für die Textsuche verwendet werden.
    * @default []
    */
   List<String> getProperties();

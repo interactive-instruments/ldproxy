@@ -22,27 +22,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn Only features that have a geometry that intersects the bounding box are selected. The
- *     bounding box is provided as four numbers: * Lower left corner, coordinate axis 1 * Lower left
- *     corner, coordinate axis 2 * Upper right corner, coordinate axis 1 * Upper right corner,
- *     coordinate axis 2 The coordinate reference system of the values is WGS 84 longitude/latitude
- *     (http://www.opengis.net/def/crs/OGC/1.3/CRS84) unless a different coordinate reference system
- *     is specified in the parameter `bbox-crs`. For WGS 84 longitude/latitude the values are in
- *     most cases the sequence of minimum longitude, minimum latitude, maximum longitude and maximum
- *     latitude. However, in cases where the box spans the antimeridian the first value (west-most
- *     box edge) is larger than the third value (east-most box edge).
- * @langDe Es werden nur Features ausgewählt, deren Geometrie den Begrenzungsrahmen schneidet. Der
- *     Begrenzungsrahmen wird als vier Zahlen angegeben: * Linke untere Ecke, Koordinatenachse 1 *
- *     Linke untere Ecke, Koordinatenachse 2 * Rechte obere Ecke, Koordinatenachse 1 * Obere rechte
- *     Ecke, Koordinatenachse 2 Das Koordinatenreferenzsystem der Werte ist WGS 84
- *     Längen/Breitengrad (http://www.opengis.net/def/crs/OGC/1.3/CRS84) es sei denn, im Parameter
- *     `bbox-crs` wird ein anderes Koordinatenreferenzsystem angegeben. Für WGS 84
- *     longitude/latitude sind die Werte in den meisten Fällen die Folge von minimaler Länge,
- *     minimaler Breitengrad, maximaler Längengrad und maximaler Breitengrad. In den Fällen, in
- *     denen die Box den Antimeridian überspannt, ist der erste Wert (westlichster Boxrand) jedoch
- *     größer als der dritte Wert (östlichste Kante der Box).
- * @name bbox
+ * @title bbox
  * @endpoints Features
+ * @langEn Select only features that have a primary geometry that intersects the bounding box.
+ * @langDe Es werden nur Features ausgewählt, deren primäre Geometrie die Begrenzungsgeometrie
+ *     schneidet.
  */
 @Singleton
 @AutoBind

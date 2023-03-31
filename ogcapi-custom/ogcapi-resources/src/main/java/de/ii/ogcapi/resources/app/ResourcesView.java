@@ -7,48 +7,23 @@
  */
 package de.ii.ogcapi.resources.app;
 
-import com.google.common.base.Charsets;
-import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.ogcapi.html.domain.OgcApiView;
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
+import org.immutables.value.Value;
+import org.immutables.value.Value.Style.ImplementationVisibility;
 
-public class ResourcesView extends OgcApiView {
-  private List<Resource> resourceList;
-  public String none;
+@Value.Immutable
+@Value.Style(
+    builder = "new",
+    visibility = ImplementationVisibility.PUBLIC,
+    deepImmutablesDetection = true)
+public abstract class ResourcesView extends OgcApiView {
 
-  public ResourcesView(
-      OgcApiDataV2 apiData,
-      Resources resources,
-      List<NavigationDTO> breadCrumbs,
-      String staticUrlPrefix,
-      HtmlConfiguration htmlConfig,
-      boolean noIndex,
-      URICustomizer uriCustomizer,
-      I18n i18n,
-      Optional<Locale> language) {
-    super(
-        "resources.mustache",
-        Charsets.UTF_8,
-        apiData,
-        breadCrumbs,
-        htmlConfig,
-        noIndex,
-        staticUrlPrefix,
-        resources.getLinks(),
-        i18n.get("resourcesTitle", language),
-        i18n.get("resourcesDescription", language));
-
-    this.resourceList = resources.getResources();
-    this.none = i18n.get("none", language);
+  public ResourcesView() {
+    super("resources.mustache");
   }
 
-  public List<Resource> getResources() {
-    return resourceList;
-  }
+  public abstract List<Resource> resources();
+
+  public abstract String none();
 }

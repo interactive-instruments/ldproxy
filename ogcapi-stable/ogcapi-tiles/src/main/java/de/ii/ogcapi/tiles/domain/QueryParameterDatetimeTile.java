@@ -34,10 +34,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn Todo
- * @langDe Todo
- * @name Datetime Tile
- * @endpoints Tile
+ * @title datetime
+ * @endpoints Dataset Tile, Collection Tile
+ * @langEn Include only features in the tile that have a primary instant or interval that intersects
+ *     the provided instant or interval.
+ * @langDe Es werden nur Features in die Kachel aufgenommen, deren primäre zeitliche Eigenschaft den
+ *     angegebenen Wert (Zeitstempel, Datum oder Intervall) schneidet.
  */
 @Singleton
 @AutoBind

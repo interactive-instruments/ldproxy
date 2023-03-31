@@ -40,16 +40,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * @langEn Access single-layer map tiles
- * @langDe TODO
- * @name Tile
- * @path
- *     /{apiId}/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol
- */
-
-/**
- * Handle responses under
- * '/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'.
+ * @title Collection Map Tiles
+ * @path collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
+ * @langEn Access dataset map tiles
+ * @langDe Zugriff auf Kartenkacheln einer Feature Collection.
+ * @ref:formats {@link de.ii.ogcapi.maps.domain.MapTileFormatExtension}
  */
 @Singleton
 @AutoBind
@@ -80,7 +75,7 @@ public class EndpointMapTileSingleCollection extends EndpointSubCollection
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null) {
       formats = extensionRegistry.getExtensionsForType(MapTileFormatExtension.class);
     }

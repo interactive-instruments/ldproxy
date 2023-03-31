@@ -29,6 +29,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title CityJSON
+ */
 @Singleton
 @AutoBind
 public class FeaturesFormatCityJson extends FeaturesFormatCityJsonBase {

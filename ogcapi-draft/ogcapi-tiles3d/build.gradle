@@ -1,0 +1,6 @@
+maturity = 'PROPOSAL'
+
+dependencies {
+    provided project(':ogcapi-features-gltf')
+    provided project(':ogcapi-styles')
+}

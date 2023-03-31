@@ -16,10 +16,12 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn TODO
- * @langDe TODO
- * @name Datetime
+ * @title datetime
  * @endpoints Features
+ * @langEn Select only features that have a primary instant or interval that intersects the provided
+ *     instant or interval.
+ * @langDe Es werden nur Features ausgewählt, deren primäre zeitliche Eigenschaft den angegebenen
+ *     Wert (Zeitstempel, Datum oder Intervall) schneidet.
  */
 @Singleton
 @AutoBind

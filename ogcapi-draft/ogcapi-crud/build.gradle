@@ -1,5 +1,5 @@
 
-maturity = 'CANDIDATE'
+maturity = 'PROPOSAL'
 
 dependencies {
     provided project(':ogcapi-collections-schema')

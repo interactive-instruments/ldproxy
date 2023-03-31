@@ -12,12 +12,14 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.maps.domain.MapTileFormatExtension;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title PNG
+ */
 @Singleton
 @AutoBind
 public class MapTileFormatPNG extends MapTileFormatExtension {
@@ -38,17 +40,12 @@ public class MapTileFormatPNG extends MapTileFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.equals("/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
-        || path.equals(
-            "/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(SCHEMA_TILE)
-          .schemaRef(SCHEMA_REF_TILE)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-
-    return null;
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(BINARY_SCHEMA)
+        .schemaRef(BINARY_SCHEMA_REF)
+        .ogcApiMediaType(getMediaType())
+        .build();
   }
 
   @Override

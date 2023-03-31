@@ -53,11 +53,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn Discover data collections
- * @langDe TODO
- * @name Feature Schema
- * @path /{apiId}/collections/{collectionId}/schemas/feature
- * @format {@link de.ii.ogcapi.collections.schema.domain.SchemaFormatExtension}
+ * @title Feature Schema
+ * @path collections/{collectionId}/schemas/{type}
+ * @langEn JSON Schema of the GeoJSON features (`type`: "feature") or GeoJSON feature collection
+ *     (`type`: "collection") for the collection `collectionId`.
+ * @langDe JSON Schema der GeoJSON-Features (`type`: "feature") oder GeoJSON-Feature-Collection
+ *     (`type`: "collection") für die Collection `collectionId`.
+ * @ref:formats {@link de.ii.ogcapi.collections.schema.domain.SchemaFormatExtension}
  */
 @Singleton
 @AutoBind
@@ -100,7 +102,7 @@ public class EndpointSchema extends EndpointSubCollection {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(SchemaFormatExtension.class);
     return formats;
@@ -138,10 +140,7 @@ public class EndpointSchema extends EndpointSubCollection {
             new ImmutableOgcApiResourceData.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> responseContent =
-            collectionId.startsWith("{")
-                ? getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET)
-                : getContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+        Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
         ApiOperation.getResource(
                 apiData,
                 resourcePath,

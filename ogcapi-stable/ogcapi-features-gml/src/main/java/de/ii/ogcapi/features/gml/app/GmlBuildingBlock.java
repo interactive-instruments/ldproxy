@@ -15,9 +15,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title Features GML
- * @langEn The module *Features GML* may be enabled for every API with a SQL or WFS feature
- *     provider. It provides the resources *Features* and *Feature* encoded as GML.
+ * @title Features - GML
+ * @langEn Encode features as GML.
+ * @langDe Kodierung von Features als GML.
  * @scopeEn For a WFS feature provider, the features are accessed as GML from the WFS and rewritten
  *     to the response. In case of *Features* the root element is `sf:FeatureCollection`.
  *     <p>For a SQL feature provider, the features are mapped to GML object and property elements
@@ -42,20 +42,7 @@ import javax.inject.Singleton;
  * - Properties that are `FLOAT` or `INTEGER` values with a `unit` property in the provider
  *   schema are mapped to a `gml:MeasureType` value, too. The value of `unit` is mapped to the
  *   `uom` attribute.
- * </code>
- * @conformanceEn In general, *Features GML* implements all requirements of conformance class
- *     *Geography Markup Language (GML), Simple Features Profile, Level 0* and *Geography Markup
- *     Language (GML), Simple Features Profile, Level 2* from [OGC API - Features - Part 1: Core
- *     1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_gmlsf0). However, conformance
- *     depends on the conformance of the GML application schema with the GML Simple Features
- *     standard. Since the GML application schema is not controlled by ldproxy, the conformance
- *     level needs to be declared as part of the configuration.
- *     <p>For SQL feature providers a different root element than `sf:FeatureCollection` can be
- *     configured for the *Features* resource. In that case, the API cannot conform to any of the
- *     GML conformance classes of OGC API Features.
- * @langDe Das Modul *Features GML* kann für jede über ldproxy bereitgestellte API mit einem SQL-
- *     oder WFS-Feature-Provider aktiviert werden. Es aktiviert die Bereitstellung der Ressourcen
- *     Features und Feature in GML.
+ *     </code>
  * @scopeDe Bei einem WFS-Feature-Provider werden die Features als GML vom WFS abgerufen und in die
  *     Antwort umgeschrieben. Im Falle von *Features* ist das Wurzelelement `sf:FeatureCollection`.
  *     <p>Bei einem SQL-Feature-Provider werden die Features auf der Grundlage des Provider-Schemas
@@ -82,19 +69,29 @@ import javax.inject.Singleton;
  * - Eigenschaften, die `FLOAT`- oder `INTEGER`-Werte mit einer `unit`-Eigenschaft im
  *   Provider-Schema sind, werden ebenfalls auf einen `gml:MeasureType`-Wert abgebildet.
  *   Der Wert von `unit` wird auf das Attribut `uom` abgebildet.
- * </code>
+ *     </code>
+ * @conformanceEn In general, *Features GML* implements all requirements of conformance class
+ *     *Geography Markup Language (GML), Simple Features Profile, Level 0* and *Geography Markup
+ *     Language (GML), Simple Features Profile, Level 2* from [OGC API - Features - Part 1: Core
+ *     1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_gmlsf0). However, conformance depends
+ *     on the conformance of the GML application schema with the GML Simple Features standard. Since
+ *     the GML application schema is not controlled by ldproxy, the conformance level needs to be
+ *     declared as part of the configuration.
+ *     <p>For SQL feature providers a different root element than `sf:FeatureCollection` can be
+ *     configured for the *Features* resource. In that case, the API cannot conform to any of the
+ *     GML conformance classes of OGC API Features.
  * @conformanceDe Im Allgemeinen implementiert *Features GML* alle Anforderungen der
  *     Konformitätsklassen *Geography Markup Language (GML), Simple Features Profile, Level 0* und
  *     *Geography Markup Language (GML), Simple Features Profile, Level 2* aus [OGC API - Features -
- *     Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0#rc_gmlsf0). Die
- *     Konformität hängt jedoch von der Konformität des GML-Anwendungsschemas mit dem GML Simple
- *     Features Standard ab. Da das GML-Anwendungsschema nicht von ldproxy kontrolliert wird, muss
- *     die Einstufung der Konformität als Teil der Konfiguration deklariert werden.
+ *     Part 1: Core 1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_gmlsf0). Die Konformität
+ *     hängt jedoch von der Konformität des GML-Anwendungsschemas mit dem GML Simple Features
+ *     Standard ab. Da das GML-Anwendungsschema nicht von ldproxy kontrolliert wird, muss die
+ *     Einstufung der Konformität als Teil der Konfiguration deklariert werden.
  *     <p>Für SQL-Feature-Provider kann außerdem ein anderes Root-Element als `sf:FeatureCollection`
  *     für die *Features*-Ressource konfiguriert werden. In diesem Fall kann die API nicht konform
  *     zu einer der GML-Konformitätsklassen von OGC API Features sein.
- * @example {@link de.ii.ogcapi.features.gml.domain.GmlConfiguration}
- * @propertyTable {@link de.ii.ogcapi.features.gml.domain.ImmutableGmlConfiguration}
+ * @ref:cfg {@link de.ii.ogcapi.features.gml.domain.GmlConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.features.gml.domain.ImmutableGmlConfiguration}
  */
 @Singleton
 @AutoBind

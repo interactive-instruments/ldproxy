@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
@@ -19,13 +20,19 @@ import javax.annotation.Nullable;
 public interface SfFlatConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
   /**
-   * @return If the data is flattened and the feature schema includes arrays, {@code
-   *     maxMultiplicity} properties will be created for each array property. If an instance has
-   *     more values in an array, only the first values are included in the data.
+   * @langEn If the feature schema includes array properties, `maxMultiplicity` properties will be
+   *     created for each array property. If an instance has more values in an array, only the first
+   *     values are included in the data.
+   * @langDe Wenn das Feature-Schema Array-Eigenschaften enthält, werden für jede Array-Eigenschaft
+   *     `maxMultiplicity` Eigenschaften erstellt. Wenn eine Instanz mehrere Werte in einem Array
+   *     hat, werden nur die ersten Werte in die Daten aufgenommen.
+   * @default 3
+   * @since v3.2
    */
   @Nullable
   Integer getMaxMultiplicity();
 
+  @JsonIgnore
   default Map<String, List<PropertyTransformation>> extendWithFlattenIfMissing() {
     if (!hasTransformation(
         PropertyTransformations.WILDCARD,

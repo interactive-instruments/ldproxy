@@ -34,11 +34,13 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn The collections that should be included. The parameter value is a comma-separated list of
- *     collection names.
- * @langDe Todo
- * @name collections
- * @endpoints collections
+ * @langEn The collections of the dataset that should be included in the tile. The parameter value
+ *     is a comma-separated list of collection identifiers.
+ * @langDe Die Feature Collections des Datensatzes, die in die Kachel aufgenommen werden sollen. Der
+ *     Parameterwert ist eine durch Kommata getrennte Liste von Identifikatoren der Feature
+ *     Collections.
+ * @title collections
+ * @endpoints Dataset Tile
  */
 @Singleton
 @AutoBind

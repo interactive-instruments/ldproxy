@@ -90,21 +90,8 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
                 () ->
                     extensionRegistry.getExtensionsForType(ExceptionFormatExtension.class).get(0));
 
-    String msg =
-        Objects.requireNonNullElse(
-            exception.getMessage(),
-            String.format(
-                "%s at %s",
-                exception.getClass().getSimpleName(), exception.getStackTrace()[0].toString()));
-    String msgCause =
-        Objects.nonNull(exception.getCause())
-            ? Objects.nonNull(exception.getCause().getMessage())
-                ? exception.getCause().getMessage()
-                : String.format(
-                    "%s at %s",
-                    exception.getCause().getClass().getSimpleName(),
-                    exception.getCause().getStackTrace()[0].toString())
-            : "";
+    String msg = getMessage(exception);
+    String msgCause = getMessageOfCause(exception);
 
     if (exception instanceof FormatNotSupportedException) {
       return processException((FormatNotSupportedException) exception, exceptionFormat, msg);
@@ -120,7 +107,29 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
       return processException(
           exceptionFormat, msgCause.isEmpty() ? msg : String.format("%s: %s", msg, msgCause));
     }
+    return serverError(exception, exceptionFormat);
+  }
 
+  private String getMessage(Throwable exception) {
+    return Objects.requireNonNullElse(
+        exception.getMessage(),
+        String.format(
+            "%s at %s",
+            exception.getClass().getSimpleName(), exception.getStackTrace()[0].toString()));
+  }
+
+  private String getMessageOfCause(Throwable exception) {
+    return Objects.nonNull(exception.getCause())
+        ? Objects.nonNull(exception.getCause().getMessage())
+            ? exception.getCause().getMessage()
+            : String.format(
+                "%s at %s",
+                exception.getCause().getClass().getSimpleName(),
+                exception.getCause().getStackTrace()[0].toString())
+        : "";
+  }
+
+  private Response serverError(Throwable exception, ExceptionFormatExtension exceptionFormat) {
     long id = logException(exception);
     final Response.Status responseStatus = Response.Status.INTERNAL_SERVER_ERROR;
     return Response.serverError()

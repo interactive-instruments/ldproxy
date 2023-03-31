@@ -25,6 +25,12 @@ public abstract class ApiEndpointDefinition {
   public static final int SORT_PRIORITY_FEATURES = 100;
 
   // draft 1000 - 9999
+  public static final int SORT_PRIORITY_SEARCH_STORED_QUERIES = 1000;
+  public static final int SORT_PRIORITY_SEARCH_AD_HOC = 1010;
+  public static final int SORT_PRIORITY_SEARCH_STORED_QUERY = 1020;
+  public static final int SORT_PRIORITY_SEARCH_PARAMETERS = 1030;
+  public static final int SORT_PRIORITY_SEARCH_PARAMETER = 1040;
+  public static final int SORT_PRIORITY_SEARCH_MANAGER = 1050;
   public static final int SORT_PRIORITY_FEATURES_TRANSACTION = 1100;
   public static final int SORT_PRIORITY_QUERYABLES = 1200;
   public static final int SORT_PRIORITY_SORTABLES = 1210;
@@ -62,6 +68,10 @@ public abstract class ApiEndpointDefinition {
   public static final int SORT_PRIORITY_ROUTE_GET = 2520;
   public static final int SORT_PRIORITY_ROUTE_DELETE = 2530;
   public static final int SORT_PRIORITY_ROUTE_DEFINITION = 2540;
+
+  public static final int SORT_PRIORITY_3D_TILES = 3000;
+  public static final int SORT_PRIORITY_3D_TILES_CONTENT = 3050;
+  public static final int SORT_PRIORITY_3D_TILES_SUBTREE = 3060;
 
   public static final int SORT_PRIORITY_DUMMY = Integer.MAX_VALUE;
 

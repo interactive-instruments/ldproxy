@@ -15,7 +15,6 @@ import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
@@ -25,6 +24,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * @title JSON
+ */
 @Singleton
 @AutoBind
 public class TileSetsFormatJson implements TileSetsFormatExtension {
@@ -51,16 +53,13 @@ public class TileSetsFormatJson implements TileSetsFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.endsWith("/tiles"))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaTiles)
-          .schemaRef(TileSets.SCHEMA_REF)
-          .referencedSchemas(referencedSchemas)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-
-    throw new RuntimeException("Unexpected path: " + path);
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(schemaTiles)
+        .schemaRef(TileSets.SCHEMA_REF)
+        .referencedSchemas(referencedSchemas)
+        .ogcApiMediaType(MEDIA_TYPE)
+        .build();
   }
 
   @Override

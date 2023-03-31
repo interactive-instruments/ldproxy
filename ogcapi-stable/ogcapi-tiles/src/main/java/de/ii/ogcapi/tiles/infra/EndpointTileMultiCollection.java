@@ -40,14 +40,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * @langEn Access multi-layer tiles
- * @langDe TODO
- * @name Tile
- * @path /{apiId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
- * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
+ * @title Dataset Tiles
+ * @path tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
+ * @langEn Access tiles of a dataset.
+ * @langDe Zugriff auf Kacheln eines Datensatzes.
+ * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
  */
-
-/** Handle responses under '/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'. */
 @Singleton
 @AutoBind
 public class EndpointTileMultiCollection extends Endpoint
@@ -91,7 +89,7 @@ public class EndpointTileMultiCollection extends Endpoint
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(TileFormatExtension.class);
     return formats;

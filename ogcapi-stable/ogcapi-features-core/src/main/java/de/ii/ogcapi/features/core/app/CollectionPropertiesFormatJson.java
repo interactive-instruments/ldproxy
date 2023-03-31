@@ -14,36 +14,23 @@ import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.json.domain.JsonConfiguration;
-import io.swagger.v3.oas.models.media.ObjectSchema;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 
+/**
+ * @title JSON
+ */
 @Singleton
 @AutoBind
 public class CollectionPropertiesFormatJson implements CollectionPropertiesFormat {
 
-  public static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "schema+json"))
-          .label("JSON")
-          .parameter("json")
-          .build();
-
   @Inject
   public CollectionPropertiesFormatJson() {}
-
-  @Override
-  public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
-  }
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
@@ -71,14 +58,13 @@ public class CollectionPropertiesFormatJson implements CollectionPropertiesForma
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(new ObjectSchema())
-        .schemaRef("#/components/schemas/anyObject")
-        // TODO with OpenAPI 3.1 change to a link to a property schema
-        // .schemaRef("https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/schemas/v3.0/schema.json#/definitions/Schema")
-        .ogcApiMediaType(MEDIA_TYPE)
-        .build();
+  public ApiMediaType getMediaType() {
+    return ApiMediaType.JSON_SCHEMA_MEDIA_TYPE;
+  }
+
+  @Override
+  public ApiMediaTypeContent getContent() {
+    return SCHEMA_CONTENT;
   }
 
   @Override

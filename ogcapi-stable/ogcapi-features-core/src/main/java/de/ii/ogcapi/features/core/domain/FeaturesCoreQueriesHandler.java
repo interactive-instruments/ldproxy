@@ -14,6 +14,7 @@ import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
+import java.io.File;
 import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
@@ -43,7 +44,15 @@ public interface FeaturesCoreQueriesHandler
 
     boolean getShowsFeatureSelfLink();
 
-    boolean getIncludeLinkHeader();
+    @Value.Default
+    default boolean sendResponseAsStream() {
+      return !getQuery().hitsOnly();
+    }
+
+    @Value.Default
+    default String getPath() {
+      return "/collections/" + getCollectionId() + "/items";
+    }
   }
 
   @Value.Immutable
@@ -58,6 +67,14 @@ public interface FeaturesCoreQueriesHandler
 
     EpsgCrs getDefaultCrs();
 
-    boolean getIncludeLinkHeader();
+    @Value.Default
+    default boolean sendResponseAsStream() {
+      return false;
+    }
+
+    @Value.Default
+    default Optional<File> getSaveContentAsFile() {
+      return Optional.empty();
+    }
   }
 }

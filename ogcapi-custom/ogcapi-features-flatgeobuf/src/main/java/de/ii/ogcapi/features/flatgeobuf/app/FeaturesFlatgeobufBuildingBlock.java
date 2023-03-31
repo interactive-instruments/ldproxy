@@ -15,9 +15,16 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title Features Flatgeobuf
- * @langEn TODO
- * @langDe TODO
+ * @title Features - FlatGeobuf
+ * @langEn Encode features as [FlatGeobuf](https://flatgeobuf.org).
+ * @langDe Kodierung von Features als [FlatGeobuf](https://flatgeobuf.org).
+ * @scopeEn Features are encoded as FlatGeobuf file. The feature properties are always flattened.
+ *     Properties with multiple values are limited to `maxMultiplicity` values.
+ * @scopeDe Kodierung von Features als FlatGeobuf-Datei. Die Objekteigenschaften werden stets
+ *     abgeflacht. Eigenschaften mit mehreren Werten werden auf `maxMultiplicity` Werte begrenzt.
+ * @ref:cfg {@link de.ii.ogcapi.features.flatgeobuf.domain.FlatgeobufConfiguration}
+ * @ref:cfgProperties {@link
+ *     de.ii.ogcapi.features.flatgeobuf.domain.ImmutableFlatgeobufConfiguration}
  */
 @Singleton
 @AutoBind

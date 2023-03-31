@@ -22,6 +22,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -31,10 +32,14 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -42,6 +47,9 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title FlatGeobuf
+ */
 @Singleton
 @AutoBind
 public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormatExtension {
@@ -53,12 +61,6 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
           .type(new MediaType("application", "flatgeobuf"))
           .label("FlatGeobuf")
           .parameter("fgb")
-          .build();
-  public static final ApiMediaType COLLECTION_MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "json"))
-          .label("JSON")
-          .parameter("json")
           .build();
 
   private final FeaturesCoreProviders providers;
@@ -89,18 +91,18 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
 
   @Override
   public ApiMediaType getCollectionMediaType() {
-    return COLLECTION_MEDIA_TYPE;
+    return ApiMediaType.JSON_MEDIA_TYPE;
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+  public ApiMediaTypeContent getContent() {
     // TODO Should we describe the schema used in the binary file? As an OpenAPI schema?
     String schemaRef = "#/components/schemas/FlatGeobuf";
     Schema<?> schema = new BinarySchema();
     return new ImmutableApiMediaTypeContent.Builder()
         .schema(schema)
         .schemaRef(schemaRef)
-        .ogcApiMediaType(MEDIA_TYPE)
+        .ogcApiMediaType(getMediaType())
         .build();
   }
 
@@ -149,5 +151,34 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
                 .crsTransformer(transformationContext.getCrsTransformer())
                 .is3d(crsInfo.is3d(crs))
                 .build()));
+  }
+
+  @Override
+  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+    ValidationResult result = FeatureFormatExtension.super.onStartup(api, apiValidation);
+
+    if (apiValidation == MODE.NONE) {
+      return result;
+    }
+
+    ImmutableValidationResult.Builder builder =
+        ImmutableValidationResult.builder().from(result).mode(apiValidation);
+
+    Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(api.getData());
+
+    for (Map.Entry<String, FeatureSchema> entry : featureSchemas.entrySet()) {
+      if (entry
+          .getValue()
+          .getPrimaryGeometry()
+          .filter(SchemaBase::isSimpleFeatureGeometry)
+          .isEmpty()) {
+        builder.addStrictErrors(
+            String.format(
+                "Feature type '%s' does not have a primary geometry that is a Simple Feature geometry. FlatGeobuf only supports Simple Feature geometry types.",
+                entry.getKey()));
+      }
+    }
+
+    return builder.build();
   }
 }

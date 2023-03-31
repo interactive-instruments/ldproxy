@@ -19,11 +19,6 @@ import javax.ws.rs.core.Response;
 public interface ResourceFormatExtension extends FormatExtension {
 
   @Override
-  default String getPathPattern() {
-    return "^/resources/[^/]+/?$";
-  }
-
-  @Override
   default boolean canSupportTransactions() {
     return true;
   }

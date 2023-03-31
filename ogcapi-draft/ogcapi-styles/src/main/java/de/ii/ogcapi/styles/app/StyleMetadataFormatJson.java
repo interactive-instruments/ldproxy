@@ -16,8 +16,6 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.domain.StyleMetadata;
@@ -28,18 +26,13 @@ import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 
+/**
+ * @title JSON
+ */
 @Singleton
 @AutoBind
 public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
-
-  public static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "json"))
-          .label("JSON")
-          .parameter("json")
-          .build();
 
   private final Schema<?> schemaStyleMetadata;
   private final Map<String, Schema<?>> referencedSchemas;
@@ -52,7 +45,7 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
 
   @Override
   public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
+    return ApiMediaType.JSON_MEDIA_TYPE;
   }
 
   @Override
@@ -70,33 +63,13 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
   }
 
   @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-
-    // TODO add examples
-    if (path.endsWith("/styles/{styleId}/metadata"))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaStyleMetadata)
-          .schemaRef(StyleMetadata.SCHEMA_REF)
-          .referencedSchemas(referencedSchemas)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-
-    throw new RuntimeException("Unexpected path: " + path);
-  }
-
-  @Override
-  public ApiMediaTypeContent getRequestContent(
-      OgcApiDataV2 apiData, String path, HttpMethods method) {
-    if (path.endsWith("/styles/{styleId}/metadata")
-        && (method == HttpMethods.PUT || method == HttpMethods.PATCH))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(schemaStyleMetadata)
-          .schemaRef(StyleMetadata.SCHEMA_REF)
-          .referencedSchemas(referencedSchemas)
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-
-    throw new RuntimeException("Unexpected path: " + path);
+  public ApiMediaTypeContent getContent() {
+    return new ImmutableApiMediaTypeContent.Builder()
+        .schema(schemaStyleMetadata)
+        .schemaRef(StyleMetadata.SCHEMA_REF)
+        .referencedSchemas(referencedSchemas)
+        .ogcApiMediaType(getMediaType())
+        .build();
   }
 
   public StyleMetadata parse(byte[] content, boolean strict, boolean inStore) {

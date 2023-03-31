@@ -9,13 +9,13 @@ package de.ii.ogcapi.routes.app.html;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
@@ -27,35 +27,22 @@ import de.ii.ogcapi.routes.domain.ImmutableHtmlFormDefaults;
 import de.ii.ogcapi.routes.domain.Routes;
 import de.ii.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+/**
+ * @title HTML
+ */
 @Singleton
 @AutoBind
 public class RoutesFormatHtml implements RoutesFormatExtension {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RoutesFormatHtml.class);
-  static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder()
-          .type(MediaType.TEXT_HTML_TYPE)
-          .label("HTML")
-          .parameter("html")
-          .build();
-
-  private final Schema schemaHtml;
-  public static final String SCHEMA_REF_HTML = "#/components/schemas/htmlSchema";
   private final I18n i18n;
 
   @Inject
   public RoutesFormatHtml(I18n i18n) {
     this.i18n = i18n;
-    schemaHtml = new StringSchema().example("<html>...</html>");
   }
 
   @Override
@@ -71,6 +58,16 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
         .map(RoutingConfiguration::getHtml)
         .filter(HtmlForm::isEnabled)
         .isPresent();
+  }
+
+  @Override
+  public ApiMediaType getMediaType() {
+    return ApiMediaType.HTML_MEDIA_TYPE;
+  }
+
+  @Override
+  public ApiMediaTypeContent getContent() {
+    return FormatExtension.HTML_CONTENT;
   }
 
   @Override
@@ -104,33 +101,39 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
             .flatMap(HtmlForm::getDefaults)
             .orElse(ImmutableHtmlFormDefaults.builder().build());
 
-    RoutesView view =
-        new RoutesView(
-            api.getData(),
-            routes,
-            htmlDefaults,
-            api.getSpatialExtent(),
-            breadCrumbs,
-            requestContext.getStaticUrlPrefix(),
-            htmlConfig,
-            isNoIndexEnabledForApi(api.getData()),
-            i18n,
-            requestContext.getLanguage());
-    return view;
-  }
-
-  @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    return new ImmutableApiMediaTypeContent.Builder()
-        .schema(schemaHtml)
-        .schemaRef(SCHEMA_REF_HTML)
-        .ogcApiMediaType(MEDIA_TYPE)
+    return new ImmutableRoutesView.Builder()
+        .apiData(api.getData())
+        .bbox(
+            api.getSpatialExtent()
+                .map(
+                    boundingBox ->
+                        ImmutableMap.of(
+                            "minLng", Double.toString(boundingBox.getXmin()),
+                            "minLat", Double.toString(boundingBox.getYmin()),
+                            "maxLng", Double.toString(boundingBox.getXmax()),
+                            "maxLat", Double.toString(boundingBox.getYmax())))
+                .orElse(null))
+        .routes(routes)
+        .htmlDefaults(htmlDefaults)
+        .breadCrumbs(breadCrumbs)
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .htmlConfig(htmlConfig)
+        .noIndex(isNoIndexEnabledForApi(api.getData()))
+        .i18n(i18n)
+        .language(requestContext.getLanguage())
+        .rawLinks(routes.getLinks())
+        .title(i18n.get("routesTitle", requestContext.getLanguage()))
+        .description(
+            api.getData()
+                    .getExtension(RoutingConfiguration.class)
+                    .map(RoutingConfiguration::supportsObstacles)
+                    .orElse(false)
+                ? String.format(
+                    "%s %s",
+                    i18n.get("routesDescription", requestContext.getLanguage()),
+                    i18n.get("routesDescriptionObstacles", requestContext.getLanguage()))
+                : i18n.get("routesDescription", requestContext.getLanguage()))
         .build();
-  }
-
-  @Override
-  public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
   }
 
   private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {

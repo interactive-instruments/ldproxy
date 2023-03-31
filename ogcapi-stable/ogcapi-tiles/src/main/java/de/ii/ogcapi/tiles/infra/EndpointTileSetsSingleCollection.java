@@ -33,14 +33,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn Access single-layer tiles
- * @langDe TODO
- * @name Tilesets
- * @path /{apiId}/collections/{collectionId}/tiles
- * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
+ * @title Collection Tilesets
+ * @path collections/{collectionId}/tiles
+ * @langEn Access collection tilesets
+ * @langDe Zugriff auf Kachelsätze einer Feature Collection
+ * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetsFormatExtension}
  */
-
-/** Handle responses under '/collections/{collectionId}/tiles'. */
 @Singleton
 @AutoBind
 public class EndpointTileSetsSingleCollection extends AbstractEndpointTileSetsSingleCollection

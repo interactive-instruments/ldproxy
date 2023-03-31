@@ -41,14 +41,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * @langEn Access multi-layer map tiles
- * @langDe TODO
- * @name Tile
- * @path /{apiId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
- * @formats {@link de.ii.ogcapi.maps.domain.MapTileFormatExtension}
+ * @title Dataset Map Tiles
+ * @path map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
+ * @langEn Access dataset map tiles
+ * @langDe Zugriff auf Kartenkacheln eines Datensatzes.
+ * @ref:formats {@link de.ii.ogcapi.maps.domain.MapTileFormatExtension}
  */
-
-/** Handle responses under '/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'. */
 @Singleton
 @AutoBind
 public class EndpointMapTileMultiCollection extends Endpoint implements EndpointTileMixin {
@@ -72,7 +70,7 @@ public class EndpointMapTileMultiCollection extends Endpoint implements Endpoint
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null) {
       formats = extensionRegistry.getExtensionsForType(MapTileFormatExtension.class);
     }

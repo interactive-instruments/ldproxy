@@ -21,6 +21,12 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @title routeId
+ * @endpoints Route, Route Definition
+ * @langEn The local identifier of the route.
+ * @langDe Der lokale Identifikator der Route.
+ */
 @Singleton
 @AutoBind
 public class PathParameterRouteId implements OgcApiPathParameter {

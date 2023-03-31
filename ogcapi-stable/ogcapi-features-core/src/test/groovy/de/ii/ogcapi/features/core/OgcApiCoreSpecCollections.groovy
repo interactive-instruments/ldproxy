@@ -8,18 +8,21 @@
 package de.ii.ogcapi.features.core
 
 import com.google.common.collect.ImmutableList
-import de.ii.ogcapi.foundation.app.I18nDefault
-import de.ii.ogcapi.foundation.app.OgcApiEntity
+import dagger.Lazy
 import de.ii.ogcapi.collections.app.QueriesHandlerCollectionsImpl
-import de.ii.ogcapi.collections.domain.CollectionExtension
-import de.ii.ogcapi.collections.domain.Collections
-import de.ii.ogcapi.collections.domain.CollectionsExtension
-import de.ii.ogcapi.collections.domain.CollectionsFormatExtension
-import de.ii.ogcapi.collections.domain.ImmutableCollectionsConfiguration
-import de.ii.ogcapi.collections.domain.OgcApiCollection
+import de.ii.ogcapi.collections.domain.*
 import de.ii.ogcapi.collections.infra.EndpointCollection
 import de.ii.ogcapi.collections.infra.EndpointCollections
 import de.ii.ogcapi.common.domain.ImmutableCommonConfiguration
+import de.ii.ogcapi.features.core.app.CollectionExtensionFeatures
+import de.ii.ogcapi.features.core.app.CollectionsExtensionFeatures
+import de.ii.ogcapi.features.core.app.FeaturesCoreProvidersImpl
+import de.ii.ogcapi.features.core.domain.FeatureFormatExtension
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders
+import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables
+import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration
+import de.ii.ogcapi.foundation.app.I18nDefault
+import de.ii.ogcapi.foundation.app.OgcApiEntity
 import de.ii.ogcapi.foundation.domain.ApiExtension
 import de.ii.ogcapi.foundation.domain.ApiMediaType
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent
@@ -34,16 +37,13 @@ import de.ii.ogcapi.foundation.domain.ImmutableRequestContext
 import de.ii.ogcapi.foundation.domain.ImmutableTemporalExtent
 import de.ii.ogcapi.foundation.domain.OgcApi
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2
-import de.ii.ogcapi.features.core.domain.FeatureFormatExtension
 import de.ii.ogcapi.foundation.domain.TemporalExtent
 import de.ii.ogcapi.html.domain.ImmutableHtmlConfiguration
 import de.ii.ogcapi.json.domain.ImmutableJsonConfiguration
-import de.ii.ogcapi.features.core.app.CollectionExtensionFeatures
-import de.ii.ogcapi.features.core.app.CollectionsExtensionFeatures
-import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables
-import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.OgcCrs
+import de.ii.xtraplatform.store.app.entities.EntityRegistryImpl
+import de.ii.xtraplatform.store.domain.entities.EntityFactory
 import spock.lang.Specification
 
 import javax.ws.rs.core.MediaType
@@ -157,19 +157,14 @@ class OgcApiCoreSpecCollections extends Specification {
                         }
 
                         @Override
-                        ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+                        ApiMediaTypeContent getContent() {
                             return new ImmutableApiMediaTypeContent.Builder()
                                     .build()
                         }
 
                         @Override
-                        Object getCollectionsEntity(Collections collections, OgcApi api, ApiRequestContext requestContext) {
+                        Object getEntity(Collections collections, OgcApi api, ApiRequestContext requestContext) {
                             return collections
-                        }
-
-                        @Override
-                        Object getCollectionEntity(OgcApiCollection ogcApiCollection, OgcApi api, ApiRequestContext requestContext) {
-                            return ogcApiCollection
                         }
                     }, (T) new CollectionsFormatExtension() {
                         @Override
@@ -177,32 +172,66 @@ class OgcApiCoreSpecCollections extends Specification {
                             return new ImmutableApiMediaType.Builder()
                                     .type(MediaType.TEXT_HTML_TYPE)
                                     .build()
-                }
-
-                        @Override
-                        ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-                            return new ImmutableApiMediaTypeContent.Builder()
-                                    .build()
-                }
-
-                        @Override
-                        Object getCollectionsEntity(Collections collections, OgcApi api, ApiRequestContext requestContext) {
-                            return collections
                         }
 
                         @Override
-                        Object getCollectionEntity(OgcApiCollection ogcApiCollection, OgcApi api, ApiRequestContext requestContext) {
+                        ApiMediaTypeContent getContent() {
+                            return new ImmutableApiMediaTypeContent.Builder()
+                                    .build()
+                        }
+
+                        @Override
+                        Object getEntity(Collections collections, OgcApi api, ApiRequestContext requestContext) {
+                            return collections
+                        }
+                    })
+                } else if (extensionType == CollectionFormatExtension.class) {
+                    return ImmutableList.of((T) new CollectionFormatExtension() {
+                        @Override
+                        ApiMediaType getMediaType() {
+                            return new ImmutableApiMediaType.Builder()
+                                    .type(MediaType.APPLICATION_JSON_TYPE)
+                                    .build()
+                        }
+
+                        @Override
+                        ApiMediaTypeContent getContent() {
+                            return new ImmutableApiMediaTypeContent.Builder()
+                                    .build()
+                        }
+
+                        @Override
+                        Object getEntity(OgcApiCollection ogcApiCollection, OgcApi api, ApiRequestContext requestContext) {
+                            return ogcApiCollection
+                        }
+                    }, (T) new CollectionFormatExtension() {
+                        @Override
+                        ApiMediaType getMediaType() {
+                            return new ImmutableApiMediaType.Builder()
+                                    .type(MediaType.TEXT_HTML_TYPE)
+                                    .build()
+                        }
+
+                        @Override
+                        ApiMediaTypeContent getContent() {
+                            return new ImmutableApiMediaTypeContent.Builder()
+                                    .build()
+                        }
+
+                        @Override
+                        Object getEntity(OgcApiCollection ogcApiCollection, OgcApi api, ApiRequestContext requestContext) {
                             return ogcApiCollection
                         }
                     })
-                    }
-
+                }
                 if (extensionType == CollectionsExtension.class) {
                     return ImmutableList.of((T) new CollectionsExtensionFeatures(registry))
                 }
 
                 if (extensionType == CollectionExtension.class) {
-                    CollectionExtensionFeatures collectionExtension = new CollectionExtensionFeatures(registry, new I18nDefault())
+                    Lazy<Set<EntityFactory>> factories = () -> [] as Set
+                    FeaturesCoreProviders providers = (FeaturesCoreProviders) new FeaturesCoreProvidersImpl(new EntityRegistryImpl(factories))
+                    CollectionExtensionFeatures collectionExtension = new CollectionExtensionFeatures(registry, new I18nDefault(), providers)
                     return ImmutableList.of((T) collectionExtension)
                 }
 
@@ -217,7 +246,7 @@ class OgcApiCoreSpecCollections extends Specification {
                         }
 
                         @Override
-                        ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
+                        ApiMediaTypeContent getContent() {
                             return new ImmutableApiMediaTypeContent.Builder()
                                     .build()
                         }

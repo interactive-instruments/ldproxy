@@ -36,13 +36,16 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @title Sorting
- * @langEn The module *Sorting* may be enabled for every API with a feature provider that supports
- *     sorting.
- * @langDe Das Modul "Sorting" kann für jede über ldproxy bereitgestellte API mit einem
- *     Feature-Provider, der Sortierung unterstützt, aktiviert werden.
- * @endpointTable {@link de.ii.ogcapi.sorting.app.EndpointSortables}
- * @propertyTable {@link de.ii.ogcapi.sorting.domain.ImmutableSortingConfiguration}
- * @queryParameterTable {@link de.ii.ogcapi.sorting.app.QueryParameterSortbyFeatures}, {@link
+ * @langEn Sort features in a response.
+ * @langDe Sortieren von Features in Rückgaben.
+ * @conformanceEn *Sorting* implements the conformance class "Sorting" of the [draft OGC API -
+ *     Records - Part 1: Core](https://docs.ogc.org/DRAFTS/20-004.html#rc_sorting).
+ * @conformanceDe Das Modul implementiert die Konformitätsklasse "Sorting" des [Entwurfs von OGC API
+ *     - Records - Part 1: Core](https://docs.ogc.org/DRAFTS/20-004.html#rc_sorting).
+ * @ref:endpoints {@link de.ii.ogcapi.sorting.app.EndpointSortables}
+ * @ref:cfg {@link de.ii.ogcapi.sorting.domain.SortingConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.sorting.domain.ImmutableSortingConfiguration}
+ * @ref:queryParameters {@link de.ii.ogcapi.sorting.app.QueryParameterSortbyFeatures}, {@link
  *     de.ii.ogcapi.sorting.app.QueryParameterFSortables}
  */
 @Singleton

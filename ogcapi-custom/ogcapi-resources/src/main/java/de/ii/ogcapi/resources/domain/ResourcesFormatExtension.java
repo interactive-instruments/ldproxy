@@ -18,11 +18,6 @@ import de.ii.ogcapi.styles.domain.StylesConfiguration;
 @AutoMultiBind
 public interface ResourcesFormatExtension extends GenericFormatExtension {
 
-  @Override
-  default String getPathPattern() {
-    return "^/resources/?$";
-  }
-
   Object getResourcesEntity(
       Resources resources, OgcApiDataV2 apiData, ApiRequestContext requestContext);
 

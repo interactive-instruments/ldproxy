@@ -74,7 +74,7 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(TileSetsFormatExtension.class);
     return formats;
@@ -121,10 +121,7 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
                 .path(resourcePath)
                 .pathParameters(pathParameters)
                 .subResourceType("Tile Set");
-        Map<MediaType, ApiMediaTypeContent> responseContent =
-            collectionId.startsWith("{")
-                ? getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET)
-                : getContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+        Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
         Optional<String> operationId =
             collectionId.startsWith("{")
                 ? operationIdWithPlaceholders.map(

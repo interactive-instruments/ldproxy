@@ -40,17 +40,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * @langEn Access single-layer tiles
- * @langDe TODO
- * @name Tile
- * @path
- *     /{apiId}/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
- * @format {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
- */
-
-/**
- * Handle responses under
- * '/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}'.
+ * @title Collection tiles
+ * @path collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
+ * @langEn Access tiles of a collection.
+ * @langDe Zugriff auf Kacheln einer Feature Collection.
+ * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
  */
 @Singleton
 @AutoBind
@@ -95,7 +89,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(TileFormatExtension.class);
     return formats;

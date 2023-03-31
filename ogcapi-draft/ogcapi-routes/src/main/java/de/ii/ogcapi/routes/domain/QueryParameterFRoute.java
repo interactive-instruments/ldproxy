@@ -16,6 +16,14 @@ import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * @title f
+ * @endpoints Route
+ * @langEn Select the output format of the response. If no value is provided, the standard HTTP
+ *     rules apply, i.e., the "Accept" header will be used to determine the format.
+ * @langDe Wählt das Ausgabeformat der Antwort. Wenn kein Wert angegeben wird, gelten die
+ *     Standard-HTTP Regeln, d.h. der "Accept"-Header wird zur Bestimmung des Formats verwendet.
+ */
 @Singleton
 @AutoBind
 public class QueryParameterFRoute extends QueryParameterF {

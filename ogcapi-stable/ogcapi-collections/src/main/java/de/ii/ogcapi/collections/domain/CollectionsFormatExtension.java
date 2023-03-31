@@ -7,30 +7,13 @@
  */
 package de.ii.ogcapi.collections.domain;
 
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 
 @AutoMultiBind
 public interface CollectionsFormatExtension extends GenericFormatExtension {
 
-  @Override
-  default String getPathPattern() {
-    return "^/collections(?:/" + COLLECTION_ID_PATTERN + ")?/?$";
-  }
-
-  @Override
-  default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
-    return CollectionsConfiguration.class;
-  }
-
-  Object getCollectionsEntity(
-      Collections collections, OgcApi api, ApiRequestContext requestContext);
-
-  Object getCollectionEntity(
-      OgcApiCollection ogcApiCollection, OgcApi api, ApiRequestContext requestContext);
+  Object getEntity(Collections collections, OgcApi api, ApiRequestContext requestContext);
 }

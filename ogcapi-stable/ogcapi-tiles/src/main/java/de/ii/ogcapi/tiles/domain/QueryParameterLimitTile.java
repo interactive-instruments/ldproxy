@@ -30,10 +30,10 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @langEn The optional limit parameter limits the number of features that are included in the tile.
- * @langDe Todo
- * @name limit
- * @endpoints Tile
+ * @langEn The parameter restricts the number of features that are included in the tile.
+ * @langDe Der Parameter begrenzt die Anzahl der Features, die in die Kachel aufgenommen werden.
+ * @title limit
+ * @endpoints Dataset Tile, Collection Tile
  */
 @Singleton
 @AutoBind

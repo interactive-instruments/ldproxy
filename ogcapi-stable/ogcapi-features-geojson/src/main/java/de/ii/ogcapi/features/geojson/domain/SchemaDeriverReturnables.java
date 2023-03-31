@@ -37,7 +37,7 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
       String label,
       Optional<String> description,
       List<Codelist> codelists) {
-    super(version, schemaUri, label, description, codelists);
+    super(version, schemaUri, label, description, codelists, true);
   }
 
   @Override
@@ -101,7 +101,7 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
             });
 
     findByRole(properties, Role.PRIMARY_GEOMETRY)
-        .or(() -> findByRole(properties, SECONDARY_GEOMETRY))
+        .or(() -> findByRole(properties, Role.SECONDARY_GEOMETRY))
         .ifPresentOrElse(
             jsonSchema -> {
               if (jsonSchema.isRequired()) {

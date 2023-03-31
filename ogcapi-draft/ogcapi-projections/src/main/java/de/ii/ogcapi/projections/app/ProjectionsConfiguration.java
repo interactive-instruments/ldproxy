@@ -12,6 +12,15 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.projections.app.ImmutableProjectionsConfiguration.Builder;
 import org.immutables.value.Value;
 
+/**
+ * @buildingBlock PROJECTIONS
+ * @examplesAll <code>
+ * ```yaml
+ * - buildingBlock: PROJECTIONS
+ *   enabled: true
+ * ```
+ * </code>
+ */
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = Builder.class)

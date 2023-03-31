@@ -22,8 +22,6 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * # Tile-Provider FEATURES
- *
  * @langEn In this tile provider, the tiles in Mapbox Vector Tiles format are derived from the
  *     features provided by the API in the area of the tile.
  * @langDe Bei diesem Tile-Provider werden die Kacheln im Format Mapbox Vector Tiles aus den von der
@@ -37,7 +35,7 @@ public abstract class TileProviderFeatures extends TileProvider {
   /**
    * @langEn Fixed value, identifies the tile provider type.
    * @langDe Fester Wert, identifiziert die Tile-Provider-Art.
-   * @default `FEATURES`
+   * @default FEATURES
    */
   @Value.Derived
   public String getType() {
@@ -49,7 +47,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     Tiles ("MVT") is available.
    * @langDe Steuert, welche Formate für die Kacheln unterstützt werden sollen. Zur Verfügung steht
    *     derzeit nur Mapbox Vector Tiles ("MVT").
-   * @default `[ "MVT" ]`
+   * @default [ "MVT" ]
    */
   @Override
   public abstract List<String> getTileEncodings();
@@ -59,14 +57,14 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     level to use as default.
    * @langDe Steuert die Zoomstufen, die für jedes aktive Kachelschema verfügbar sind sowie welche
    *     Zoomstufe als Default bei verwendet werden soll.
-   * @default `{ "WebMercatorQuad" : { "min": 0, "max": 23 } }`
+   * @default { "WebMercatorQuad" : { "min": 0, "max": 23 } }
    */
   public abstract Map<String, MinMax> getZoomLevels();
 
   /**
    * @langEn Zoom levels for which tiles are cached.
    * @langDe Steuert die Zoomstufen, in denen erzeugte Kacheln gecacht werden.
-   * @default `{}`
+   * @default {}
    */
   public abstract Map<String, MinMax> getZoomLevelsCache();
 
@@ -83,7 +81,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     startup.
    * @langDe Steuert die Zoomstufen, die für jedes aktive Kachelschema beim Start vorberechnet
    *     werden.
-   * @default `{}`
+   * @default {}
    */
   public abstract Map<String, MinMax> getSeeding();
 
@@ -93,7 +91,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    * @langDe Über Filter kann gesteuert werden, welche Features auf welchen Zoomstufen selektiert
    *     werden sollen. Dazu dient ein CQL-Filterausdruck, der in `filter` angegeben wird. Siehe das
    *     Beispiel unten.
-   * @default `{}`
+   * @default {}
    */
   public abstract Map<String, List<LevelFilter>> getFilters();
 
@@ -109,7 +107,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     eingeschränkt auf Features mit bestimmten identischen Attributen (`groupBy`). Siehe das
    *     Beispiel unten. Beim Verschmelzen werden alle Attribute in das neue Objekt übernommen, die
    *     in den verschmolzenen Features identisch sind.
-   * @default `{}`
+   * @default {}
    */
   public abstract Map<String, List<LevelTransformation>> getRules();
 
@@ -117,7 +115,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    * @langEn Longitude and latitude that a map with the tiles should be centered on by default.
    * @langDe Legt Länge und Breite fest, auf die standardmäßig eine Karte mit den Kacheln zentriert
    *     werden sollte.
-   * @default `[ 0, 0 ]`
+   * @default [ 0, 0 ]
    */
   public abstract List<Double> getCenter();
 
@@ -135,7 +133,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     feature from the collection.
    * @langDe Steuert, ob Vector Tiles für jede Feature Collection aktiviert werden sollen. Jede
    *     Kachel hat einen Layer mit den Features aus der Collection.
-   * @default `true`
+   * @default true
    */
   @Nullable
   public abstract Boolean getSingleCollectionEnabled();
@@ -153,7 +151,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     with the features of that collection.
    * @langDe Steuert, ob Vector Tiles für den Datensatz aktiviert werden sollen. Jede Kachel hat
    *     einen Layer pro Collection mit den Features aus der Collection.
-   * @default `true`
+   * @default true
    */
   @Nullable
   public abstract Boolean getMultiCollectionEnabled();
@@ -177,7 +175,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     von Geometrien können entweder schon im Provider ungültig sein oder die Geometrie kann in
    *     seltenen Fällen als Folge der Quantisierung der Koordinaten zu Integern für die Speicherung
    *     in der Kachel ungültig werden.
-   * @default `false`
+   * @default false
    */
   @Nullable
   public abstract Boolean getIgnoreInvalidGeometries();

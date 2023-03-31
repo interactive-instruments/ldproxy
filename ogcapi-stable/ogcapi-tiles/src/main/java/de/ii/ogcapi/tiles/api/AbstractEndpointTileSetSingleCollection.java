@@ -55,7 +55,7 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null) {
       formats = extensionRegistry.getExtensionsForType(TileSetFormatExtension.class);
     }
@@ -122,10 +122,7 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
             new ImmutableOgcApiResourceAuxiliary.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> responseContent =
-            collectionId.startsWith("{")
-                ? getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET)
-                : getContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+        Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
         Optional<String> operationId =
             collectionId.startsWith("{")
                 ? operationIdWithPlaceholders.map(

@@ -48,18 +48,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @langEn The sortables resources identifies the properties that can be referenced in the 'sortby'
+ * @title Sortables
+ * @path collections/{collectionId}/sortables
+ * @langEn The Sortables resource identifies the properties that can be referenced in the "sortby"
  *     parameter to order the features of the collection in the response to a query. The response is
  *     returned as a JSON Schema document that describes a single JSON object where each property is
- *     a sortable. Note that the sortables schema does not specify a schema of any object that can
- *     be retrieved from the API. JSON Schema is used for the sortables to have a consistent
- *     approach for describing schema information and JSON Schema is/will be used in other parts of
- *     OGC API Features to describe schemas for GeoJSON feature content including in OpenAPI
- *     documents.
- * @langDe TODO
- * @name sortables
- * @path /collections/{collectionId}/sortables
- * @format {@link de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat}
+ *     a sortable. Note that the Sortables schema does not specify a schema of any object that can
+ *     be retrieved from the API. JSON Schema is used for the Sortables to have a consistent
+ *     approach for describing schema information. JSON Schema is used in other parts of the API to
+ *     describe schemas for JSON responses including in OpenAPI documents.
+ * @langDe Die Sortables-Ressource identifiziert die Eigenschaften, auf die im Parameter "sortby"
+ *     Bezug genommen werden kann, um die Features in der Antwort zu ordnen. Die Antwort wird als
+ *     JSON-Schema-Dokument zurückgegeben, das ein einzelnes JSON-Objekt beschreibt, bei dem jede
+ *     Eigenschaft ein Sortable ist. Beachten Sie, dass das Sortables-Schema kein Schema eines
+ *     Objekts angibt, das über die API abgerufen werden kann. JSON Schema wird für die Sortables
+ *     verwendet, um einen konsistenten Ansatz für die Beschreibung von Schemainformationen zu
+ *     haben. JSON Schema wird in anderen Teilen der API außerdem dazu verwendet, um das Schema für
+ *     JSON-Antwortdokumente zu beschreiben, einschließlich in OpenAPI-Dokumenten.
+ * @ref:formats {@link de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat}
  */
 @Singleton
 @AutoBind
@@ -93,7 +99,7 @@ public class EndpointSortables extends EndpointSubCollection /* implements Confo
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(CollectionPropertiesFormat.class);
     return formats;
@@ -140,10 +146,7 @@ public class EndpointSortables extends EndpointSubCollection /* implements Confo
             new ImmutableOgcApiResourceData.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> responseContent =
-            collectionId.startsWith("{")
-                ? getContent(apiData, Optional.empty(), subSubPath, HttpMethods.GET)
-                : getContent(apiData, Optional.of(collectionId), subSubPath, HttpMethods.GET);
+        Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
         ApiOperation.getResource(
                 apiData,
                 resourcePath,

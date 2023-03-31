@@ -50,7 +50,13 @@ import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** computes routes */
+/**
+ * @title Routes
+ * @path routes
+ * @langEn Fetches the list of stored routes.
+ * @langDe Holt die Liste der gespeicherten Routen.
+ * @ref:formats {@link de.ii.ogcapi.routes.domain.RoutesFormatExtension}
+ */
 @Singleton
 @AutoBind
 public class EndpointRoutesGet extends Endpoint {
@@ -86,7 +92,7 @@ public class EndpointRoutesGet extends Endpoint {
   }
 
   @Override
-  public List<? extends FormatExtension> getFormats() {
+  public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
       formats = extensionRegistry.getExtensionsForType(RoutesFormatExtension.class);
     return formats;
@@ -126,7 +132,7 @@ public class EndpointRoutesGet extends Endpoint {
             false,
             queryParameters,
             headers,
-            getContent(apiData, path),
+            getResponseContent(apiData),
             operationSummary,
             operationDescription,
             Optional.empty(),

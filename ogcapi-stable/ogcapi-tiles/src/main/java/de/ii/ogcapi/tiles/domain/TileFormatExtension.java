@@ -7,20 +7,13 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import io.swagger.v3.oas.models.media.BinarySchema;
-import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
 
 public abstract class TileFormatExtension implements FormatExtension {
-
-  protected String SCHEMA_REF_TILE = "#/components/schemas/Binary";
-  protected Schema SCHEMA_TILE = new BinarySchema();
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
@@ -40,11 +33,6 @@ public abstract class TileFormatExtension implements FormatExtension {
         .filter(TilesConfiguration::hasCollectionTiles)
         .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
         .isPresent();
-  }
-
-  @Override
-  public String getPathPattern() {
-    return "^(?:/collections/" + COLLECTION_ID_PATTERN + ")?/tiles/\\w+/\\w+/\\w+/\\w+/?$";
   }
 
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {

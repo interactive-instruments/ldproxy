@@ -27,7 +27,7 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
       Optional<String> description,
       List<Codelist> codelists,
       List<String> properties) {
-    super(version, schemaUri, label, description, codelists);
+    super(version, schemaUri, label, description, codelists, true);
     this.properties = properties;
   }
 

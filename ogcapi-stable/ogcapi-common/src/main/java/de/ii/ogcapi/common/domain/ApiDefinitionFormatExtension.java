@@ -17,17 +17,7 @@ import javax.ws.rs.core.Response;
 @AutoMultiBind
 public interface ApiDefinitionFormatExtension extends FormatExtension {
 
-  default String getPathPattern() {
-    return "^/api/?$";
-  }
-
-  Response getApiDefinitionResponse(OgcApiDataV2 apiData, ApiRequestContext apiRequestContext);
-
-  default Response getApiDefinitionFile(
-      OgcApiDataV2 apiData, ApiRequestContext apiRequestContext, String file) {
-    throw new RuntimeException(
-        "Access to an auxiliary API definition file was requested for a format that does not support auxiliary files.");
-  }
+  Response getResponse(OgcApiDataV2 apiData, ApiRequestContext apiRequestContext);
 
   default Optional<String> getRel() {
     return Optional.empty();

@@ -16,6 +16,15 @@ import java.util.List;
 import java.util.Map;
 import org.immutables.value.Value;
 
+/**
+ * @buildingBlock FLATGEOBUF
+ * @examplesAll <code>
+ * ```yaml
+ * - buildingBlock: FLATGEOBUF
+ *   enabled: true
+ * ```
+ *     </code>
+ */
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
 @JsonDeserialize(builder = ImmutableFlatgeobufConfiguration.Builder.class)

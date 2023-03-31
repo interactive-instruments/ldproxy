@@ -7,8 +7,6 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -17,11 +15,6 @@ import java.util.Optional;
 
 @AutoMultiBind
 public interface TileSetsFormatExtension extends GenericFormatExtension {
-
-  @Override
-  default String getPathPattern() {
-    return "^(?:/collections/" + COLLECTION_ID_PATTERN + ")?(?:/map)?/tiles/?$";
-  }
 
   Object getTileSetsEntity(
       TileSets tiles, Optional<String> collectionId, OgcApi api, ApiRequestContext requestContext);

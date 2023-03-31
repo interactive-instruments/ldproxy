@@ -16,16 +16,24 @@ import javax.inject.Singleton;
 
 /**
  * @title XML
- * @langEn The module *XML* may be enabled for every API with a feature provider. It is disabled by
- *     default. It provides the resources *Landing Page*, *Conformance Declaration*, *Feature
- *     Collections* and *Feature Collection* as XML.
- * @langDe Das Modul *XML* kann für jede über ldproxy bereitgestellte API aktiviert werden. Es ist
- *     standardmäßig deaktiviert. Soweit für eine Ressource keine speziellen Regelungen für die
- *     Ausgabeformate bestehen (wie zum Beispiel für [Features](features_gml.md)) und die Ressource
- *     XML unterstützt, können Clients das Ausgabeformat anfordern. Allerdings unterstützen nur die
- *     folgenden Ressourcen XML: Landing Page, Conformance Declaration, Feature Collections und
- *     Feature Collection.
- * @propertyTable {@link de.ii.ogcapi.xml.domain.XmlConfiguration}
+ * @langEn XML encoding for every supported resource.
+ * @langDe XML-Kodierung für alle unterstützten Ressourcen.
+ * @limitationsEn Only the resources *Landing Page*, *Conformance Declaration*, *Feature
+ *     Collections* and *Feature Collection* support XML.
+ * @limitationsDe Nur die Ressourcen *Landing Page*, *Conformance Declaration*, *Feature
+ *     Collections* and *Feature Collection* unterstützen XML.
+ * @conformanceEn *JSON* implements all requirements of conformance classes *Geography Markup
+ *     Language (GML), Simple Features Profile, Level 0* and *Geography Markup Language (GML),
+ *     Simple Features Profile, Level 2* from [OGC API - Features - Part 1: Core
+ *     1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_geojson) for the resources *Landing
+ *     Page*, *Conformance Declaration*, *Feature Collections*, and *Feature Collection*.
+ * @conformanceDe Das Modul implementiert für die Ressourcen *Landing Page*, *Conformance
+ *     Declaration*, *Feature Collections* und *Feature Collection* alle Vorgaben der
+ *     Konformitätsklassen "Geography Markup Language (GML), Simple Features Profile, Level 0" and
+ *     "Geography Markup Language (GML), Simple Features Profile, Level 2" von [OGC API - Features -
+ *     Part 1: Core 1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html.0#rc_geojson).
+ * @ref:cfg {@link de.ii.ogcapi.xml.domain.XmlConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.xml.domain.ImmutableXmlConfiguration}
  */
 @Singleton
 @AutoBind

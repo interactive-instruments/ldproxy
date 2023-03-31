@@ -64,7 +64,11 @@ public class CrsOnCollection implements CollectionExtension {
             .isPresent();
     if (isExtensionEnabled(featureTypeConfiguration, CrsConfiguration.class) && hasGeometry) {
       List<String> crsList;
-      if (isNested) {
+      if (isNested
+          && !api.getData()
+              .getExtension(CrsConfiguration.class)
+              .map(CrsConfiguration::shouldSuppressGlobalCrsList)
+              .orElse(false)) {
         // just reference the default list of coordinate reference systems
         crsList = ImmutableList.of("#/crs");
       } else {

@@ -7,44 +7,39 @@
  */
 package de.ii.ogcapi.tiles.app.html;
 
-import static de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId.COLLECTION_ID_PATTERN;
-
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.I18n;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
-import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.NavigationDTO;
+import de.ii.ogcapi.tiles.domain.ImmutableTileSetsView;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
-import de.ii.ogcapi.tiles.domain.TileSetsView;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
-import io.swagger.v3.oas.models.media.StringSchema;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 
+/**
+ * @title HTML
+ */
 @Singleton
 @AutoBind
 public class TileSetsFormatHtml implements TileSetsFormatExtension {
-
-  static final ApiMediaType MEDIA_TYPE =
-      new ImmutableApiMediaType.Builder().type(MediaType.TEXT_HTML_TYPE).parameter("html").build();
 
   private final I18n i18n;
   private final URI servicesUri;
@@ -60,24 +55,12 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
 
   @Override
   public ApiMediaType getMediaType() {
-    return MEDIA_TYPE;
+    return ApiMediaType.HTML_MEDIA_TYPE;
   }
 
   @Override
-  public String getPathPattern() {
-    return "^(?:/collections/" + COLLECTION_ID_PATTERN + ")?/tiles/?$";
-  }
-
-  @Override
-  public ApiMediaTypeContent getContent(OgcApiDataV2 apiData, String path) {
-    if (path.equals("/tiles") || path.equals("/collections/{collectionId}/tiles"))
-      return new ImmutableApiMediaTypeContent.Builder()
-          .schema(new StringSchema().example("<html>...</html>"))
-          .schemaRef("#/components/schemas/htmlSchema")
-          .ogcApiMediaType(MEDIA_TYPE)
-          .build();
-
-    return null;
+  public ApiMediaTypeContent getContent() {
+    return FormatExtension.HTML_CONTENT;
   }
 
   private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {
@@ -155,23 +138,32 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
             .map(
                 cfg ->
                     cfg.getStyle(
-                        tilesConfig.map(TilesConfiguration::getStyle), collectionId, serviceUrl))
+                        tilesConfig.map(TilesConfiguration::getStyle),
+                        collectionId,
+                        serviceUrl,
+                        mapClientType))
             .orElse(null);
     boolean removeZoomLevelConstraints =
         tilesConfig.map(TilesConfiguration::getRemoveZoomLevelConstraints).orElse(false);
 
-    return new TileSetsView(
-        api.getData(),
-        tiles,
-        tileMatrixSets,
-        breadCrumbs,
-        requestContext.getStaticUrlPrefix(),
-        mapClientType,
-        styleUrl,
-        removeZoomLevelConstraints,
-        htmlConfig.orElseThrow(),
-        isNoIndexEnabledForApi(api.getData()),
-        i18n,
-        requestContext.getLanguage());
+    return new ImmutableTileSetsView.Builder()
+        .apiData(api.getData())
+        .tiles(tiles)
+        .collectionId(collectionId)
+        .tileMatrixSets(tileMatrixSets)
+        .breadCrumbs(breadCrumbs)
+        .rawLinks(tiles.getLinks())
+        .urlPrefix(requestContext.getStaticUrlPrefix())
+        .mapClientType(mapClientType)
+        .styleUrl(styleUrl)
+        .removeZoomLevelConstraints(removeZoomLevelConstraints)
+        .htmlConfig(htmlConfig.orElseThrow())
+        .noIndex(isNoIndexEnabledForApi(api.getData()))
+        .uriCustomizer(requestContext.getUriCustomizer())
+        .i18n(i18n)
+        .description(tiles.getDescription().orElse(null))
+        .title(tiles.getTitle().orElse(null))
+        .language(requestContext.getLanguage())
+        .build();
   }
 }
