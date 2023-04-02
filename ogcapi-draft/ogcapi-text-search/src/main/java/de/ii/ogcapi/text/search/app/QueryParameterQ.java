@@ -9,6 +9,7 @@ package de.ii.ogcapi.text.search.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
@@ -24,8 +25,10 @@ import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.ogcapi.text.search.domain.TextSearchConfiguration;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
+import de.ii.xtraplatform.cql.domain.Function;
 import de.ii.xtraplatform.cql.domain.Like;
 import de.ii.xtraplatform.cql.domain.Or;
+import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -33,6 +36,7 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -80,39 +84,24 @@ public class QueryParameterQ extends ApiExtensionCache
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
-    FeaturesCoreConfiguration featuresCoreConfiguration =
-        optionalCollectionData
-            .map(cd -> cd.getExtension(FeaturesCoreConfiguration.class))
-            .orElse(api.getData().getExtension(FeaturesCoreConfiguration.class))
-            .orElseThrow(
-                () ->
-                    new IllegalStateException(
-                        String.format(
-                            "Could not process query parameter '%s', features core configuration not provided.",
-                            getName())));
-    TextSearchConfiguration textSearchConfiguration =
+    Set<String> qProperties = new HashSet<>();
+    List<String> textSearchProperties =
         optionalCollectionData
             .map(cd -> cd.getExtension(TextSearchConfiguration.class))
             .orElse(api.getData().getExtension(TextSearchConfiguration.class))
-            .orElseThrow(
-                () ->
-                    new IllegalStateException(
-                        String.format(
-                            "Could not process query parameter '%s', text search configuration not provided.",
-                            getName())));
-
-    Set<String> qProperties = new HashSet<>();
-    List<String> qValues = Splitter.on(",").trimResults().splitToList(value);
-
-    if (textSearchConfiguration.getProperties().isEmpty()) {
-      featuresCoreConfiguration
-          .getQueryables()
+            .map(TextSearchConfiguration::getProperties)
+            .orElse(ImmutableList.of());
+    if (textSearchProperties.isEmpty()) {
+      optionalCollectionData
+          .map(cd -> cd.getExtension(FeaturesCoreConfiguration.class))
+          .orElse(api.getData().getExtension(FeaturesCoreConfiguration.class))
+          .flatMap(FeaturesCoreConfiguration::getQueryables)
           .ifPresent(queryables -> qProperties.addAll(queryables.getQ()));
     } else {
-      qProperties.addAll(textSearchConfiguration.getProperties());
+      qProperties.addAll(textSearchProperties);
     }
 
-    return qToCql(qProperties, qValues);
+    return qToCql(qProperties, Splitter.on(",").trimResults().splitToList(value));
   }
 
   @Override
@@ -207,6 +196,8 @@ public class QueryParameterQ extends ApiExtensionCache
   }
 
   private Like qToLike(String qField, String qValue) {
-    return Like.of(qField, ScalarLiteral.of("%" + qValue + "%"));
+    return Like.ofFunction(
+        Function.of("lower", ImmutableList.of(Property.of(qField))),
+        ScalarLiteral.of("%" + qValue.toLowerCase(Locale.ROOT) + "%"));
   }
 }
