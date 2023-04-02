@@ -45,7 +45,7 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
             builder.putProperties(cleanName, propertySchema);
           }
         });
-    builder.additionalProperties(new ImmutableJsonSchemaFalse.Builder().build());
+    builder.additionalProperties(ImmutableJsonSchemaFalse.builder().build());
   }
 
   @Override
@@ -62,7 +62,7 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
       case MULTI_POLYGON:
       case GEOMETRY_COLLECTION:
         jsonSchema =
-            new ImmutableJsonSchemaRefExternal.Builder()
+            new ImmutableJsonSchemaRef.Builder()
                 .ref(
                     String.format(
                         baseUrlFormat,
@@ -75,7 +75,7 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
       case ANY:
       default:
         jsonSchema =
-            new ImmutableJsonSchemaRefExternal.Builder()
+            new ImmutableJsonSchemaRef.Builder()
                 .ref(String.format(baseUrlFormat, "Geometry"))
                 .build();
         break;

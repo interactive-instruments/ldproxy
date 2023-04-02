@@ -8,32 +8,14 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.Builder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.immutables.value.Value;
 
-@JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "type")
-@JsonSubTypes({
-  @JsonSubTypes.Type(value = JsonSchemaString.class, name = "string"),
-  @JsonSubTypes.Type(value = JsonSchemaNumber.class, name = "number"),
-  @JsonSubTypes.Type(value = JsonSchemaInteger.class, name = "integer"),
-  @JsonSubTypes.Type(value = JsonSchemaBoolean.class, name = "boolean"),
-  @JsonSubTypes.Type(value = JsonSchemaObject.class, name = "object"),
-  @JsonSubTypes.Type(value = JsonSchemaArray.class, name = "array"),
-  @JsonSubTypes.Type(value = JsonSchemaNull.class, name = "null"),
-  @JsonSubTypes.Type(value = JsonSchemaTrue.class, name = "true"),
-  @JsonSubTypes.Type(value = JsonSchemaFalse.class, name = "false"),
-  @JsonSubTypes.Type(value = JsonSchemaRef.class, name = "$refDefs"),
-  @JsonSubTypes.Type(value = JsonSchemaRefExternal.class, name = "$ref"),
-  @JsonSubTypes.Type(value = JsonSchemaOneOf.class, name = "oneOf")
-})
+@JsonDeserialize(using = JsonSchemaDeserializer.class)
 public abstract class JsonSchema {
 
   @SuppressWarnings("UnstableApiUsage")
@@ -65,13 +47,12 @@ public abstract class JsonSchema {
           JsonSchemaOneOf.FUNNEL.funnel((JsonSchemaOneOf) from, into);
       };
 
-  public abstract String getType();
-
   public abstract Optional<String> getTitle();
 
   public abstract Optional<String> getDescription();
 
-  public abstract Optional<Object> getDefault();
+  @JsonProperty("default")
+  public abstract Optional<Object> getDefault_();
 
   @JsonIgnore
   @Value.Auxiliary
@@ -92,6 +73,10 @@ public abstract class JsonSchema {
     public abstract Builder description(String description);
 
     public abstract Builder description(Optional<String> description);
+
+    public abstract Builder default_(Object default_);
+
+    public abstract Builder default_(Optional<? extends Object> default_);
 
     public abstract Builder name(String name);
 

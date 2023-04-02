@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaArray;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRef;
-import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRefV7;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaString;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
 import de.ii.ogcapi.features.core.domain.JsonSchemaBuildingBlocks;
@@ -72,9 +71,12 @@ public class SchemaDeriverReturnables extends SchemaDeriverJsonSchema {
       JsonSchemaDocument.Builder builder) {
 
     JsonSchemaRef linkRef =
-        version == JsonSchemaDocument.VERSION.V7
-            ? ImmutableJsonSchemaRefV7.builder().objectType("Link").build()
-            : new ImmutableJsonSchemaRef.Builder().objectType("Link").build();
+        new ImmutableJsonSchemaRef.Builder()
+            .ref(
+                String.format(
+                    "#/%s/Link",
+                    version == JsonSchemaDocument.VERSION.V7 ? "definitions" : "$defs"))
+            .build();
 
     builder.putDefinitions("Link", JsonSchemaBuildingBlocks.LINK_JSON);
 

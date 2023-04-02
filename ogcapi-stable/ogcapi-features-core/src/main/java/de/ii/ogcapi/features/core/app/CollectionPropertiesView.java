@@ -18,7 +18,6 @@ import de.ii.ogcapi.features.core.domain.JsonSchemaInteger;
 import de.ii.ogcapi.features.core.domain.JsonSchemaNumber;
 import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.features.core.domain.JsonSchemaRef;
-import de.ii.ogcapi.features.core.domain.JsonSchemaRefExternal;
 import de.ii.ogcapi.features.core.domain.JsonSchemaString;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
@@ -131,9 +130,9 @@ public abstract class CollectionPropertiesView extends OgcApiView {
                     .getRef()
                     .replace("https://geojson.org/schema/", "")
                     .replace(".json", ""));
-          } else if (value instanceof JsonSchemaRefExternal) {
+          } else if (value instanceof JsonSchemaRef) {
             builder2.type(
-                ((JsonSchemaRefExternal) value)
+                ((JsonSchemaRef) value)
                     .getRef()
                     .replace("https://geojson.org/schema/", "")
                     .replace(".json", ""));

@@ -19,33 +19,25 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableJsonSchemaRef.Builder.class)
 public abstract class JsonSchemaRef extends JsonSchema {
 
-  @JsonIgnore
-  @Nullable
-  @Value.Derived
-  public String getType() {
-    return null;
-  }
-
   @JsonProperty("$ref")
-  @Value.Derived
-  public String getRef() {
-    return String.format("#/%s/%s", getDefsName(), getObjectType());
-  }
-
-  @JsonIgnore
-  @Value.Auxiliary
-  public String getDefsName() {
-    return "$defs";
-  }
-
-  @JsonIgnore
-  @Value.Auxiliary
-  public abstract String getObjectType();
+  public abstract String getRef();
 
   @JsonIgnore
   @Nullable
   @Value.Auxiliary
   public abstract JsonSchema getDef();
+
+  @JsonIgnore
+  @Value.Derived
+  public boolean isLocal() {
+    return getRef().matches("^#/\\$defs/");
+  }
+
+  @JsonIgnore
+  @Value.Derived
+  public boolean isLocalV7() {
+    return getRef().matches("^#/definitions/");
+  }
 
   public abstract static class Builder extends JsonSchema.Builder {}
 

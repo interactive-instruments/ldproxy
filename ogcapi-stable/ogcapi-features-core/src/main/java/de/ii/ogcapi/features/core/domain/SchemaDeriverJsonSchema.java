@@ -246,12 +246,8 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
       builder = new ImmutableJsonSchemaOneOf.Builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaArray) {
       builder = new ImmutableJsonSchemaArray.Builder().from(jsonSchema);
-    } else if (jsonSchema instanceof JsonSchemaRefV7) {
-      builder = ImmutableJsonSchemaRefV7.builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaRef) {
       builder = new ImmutableJsonSchemaRef.Builder().from(jsonSchema);
-    } else if (jsonSchema instanceof JsonSchemaRefExternal) {
-      builder = new ImmutableJsonSchemaRefExternal.Builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaNull) {
       builder = new ImmutableJsonSchemaNull.Builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaInteger) {
@@ -374,17 +370,9 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
 
   @Override
   protected JsonSchema withRefWrapper(JsonSchema schema, String objectType) {
-    if (version == VERSION.V7) {
-      return ImmutableJsonSchemaRefV7.builder()
-          .name(schema.getName())
-          .objectType(objectType)
-          .def(new ImmutableJsonSchemaObject.Builder().from(schema).name(objectType).build())
-          .build();
-    }
-
     return new ImmutableJsonSchemaRef.Builder()
         .name(schema.getName())
-        .objectType(objectType)
+        .ref(String.format("#/%s/%s", version == VERSION.V7 ? "definitions" : "$defs", objectType))
         .def(new ImmutableJsonSchemaObject.Builder().from(schema).name(objectType).build())
         .build();
   }

@@ -12,15 +12,12 @@ import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaDocumentV7;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaInteger;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRef;
-import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRefExternal;
-import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRefV7;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaString;
 import de.ii.ogcapi.features.core.domain.JsonSchemaBuildingBlocks;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.ogcapi.features.core.domain.JsonSchemaRef;
-import de.ii.ogcapi.features.core.domain.JsonSchemaRefExternal;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -42,16 +39,18 @@ public class SchemaCacheReturnablesCollection extends JsonSchemaCache {
             : ImmutableJsonSchemaDocument.builder();
 
     JsonSchemaRef linkRef =
-        version == JsonSchemaDocument.VERSION.V7
-            ? ImmutableJsonSchemaRefV7.builder().objectType("Link").build()
-            : new ImmutableJsonSchemaRef.Builder().objectType("Link").build();
+        new ImmutableJsonSchemaRef.Builder()
+            .ref(
+                String.format(
+                    "#/%s/Link",
+                    version == JsonSchemaDocument.VERSION.V7 ? "definitions" : "$defs"))
+            .build();
 
     String featureSchemaUri =
         schemaUri
             .map(uri -> uri.replace("/schemas/collection", "/schemas/feature"))
             .orElse("https://geojson.org/schema/Feature.json");
-    JsonSchemaRefExternal featureRef =
-        new ImmutableJsonSchemaRefExternal.Builder().ref(featureSchemaUri).build();
+    JsonSchemaRef featureRef = new ImmutableJsonSchemaRef.Builder().ref(featureSchemaUri).build();
 
     builder
         .id(schemaUri)

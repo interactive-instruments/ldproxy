@@ -7,32 +7,21 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableJsonSchemaTrue.Builder.class)
-@JsonSerialize(converter = JsonSchemaTrue.ToStringConverter.class)
+@Value.Style(jdkOnly = true)
 public abstract class JsonSchemaTrue extends JsonSchema {
 
   // any instance is valid, same as {}
 
-  @JsonIgnore
-  @Value.Derived
-  public String getType() {
-    return "true";
-  }
-
-  public static class ToStringConverter extends StdConverter<JsonSchemaTrue, String> {
-
-    @Override
-    public String convert(JsonSchemaTrue value) {
-      return value.getType();
-    }
+  @JsonValue
+  public final boolean toValue() {
+    return true;
   }
 
   @SuppressWarnings("UnstableApiUsage")

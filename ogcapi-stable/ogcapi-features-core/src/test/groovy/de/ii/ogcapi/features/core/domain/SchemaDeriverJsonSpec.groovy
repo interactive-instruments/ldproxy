@@ -9,9 +9,6 @@ package de.ii.ogcapi.features.core.domain
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
-import de.ii.ogcapi.features.core.domain.JsonSchema
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument
-import de.ii.ogcapi.features.core.domain.SchemaDeriverJsonSchema
 import de.ii.xtraplatform.features.domain.FeatureSchema
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied
@@ -44,7 +41,7 @@ class SchemaDeriverJsonSpec extends Specification {
             ImmutableJsonSchemaDocument.builder()
                     .title("test-label")
                     .description("bar")
-                    .putProperties("geometry", new ImmutableJsonSchemaRefExternal.Builder()
+                    .putProperties("geometry", new ImmutableJsonSchemaRef.Builder()
                             .ref("https://geojson.org/schema/MultiPolygon.json")
                             .build())
                     .putProperties("datetime", new ImmutableJsonSchemaString.Builder()
