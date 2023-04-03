@@ -20,12 +20,10 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
-import de.ii.xtraplatform.features.domain.FeatureSchema.Scope;
+import de.ii.xtraplatform.features.domain.FeatureSchemaBase.Scope;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -114,28 +112,5 @@ public class QueryParameterSchemaFeatures extends ApiExtensionCache
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return CrudConfiguration.class;
-  }
-
-  @Override
-  public ImmutableFeatureQuery.Builder transformQuery(
-      ImmutableFeatureQuery.Builder queryBuilder,
-      Map<String, String> parameters,
-      OgcApiDataV2 datasetData,
-      FeatureTypeConfigurationOgcApi featureTypeConfiguration) {
-    if (!isExtensionEnabled(
-        datasetData.getCollections().get(featureTypeConfiguration.getId()),
-        CrudConfiguration.class)) {
-      return queryBuilder;
-    }
-    if (parameters.containsKey(getName())
-        && Objects.equals(parameters.get(getName()), "receivables")) {
-      try {
-        queryBuilder.schemaScope(FeatureSchemaBase.Scope.MUTATIONS);
-      } catch (NumberFormatException e) {
-        // ignore
-      }
-    }
-
-    return queryBuilder;
   }
 }
