@@ -41,7 +41,7 @@ import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.FeatureSchema.Scope;
+import de.ii.xtraplatform.features.domain.FeatureSchemaBase;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import de.ii.xtraplatform.web.domain.ETag.Type;
@@ -380,7 +380,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                     .map(s -> s.substring(1, s.length() - 1))
                     .map(s -> EpsgCrs.fromString(s))
                     .orElseGet(coreConfiguration::getDefaultEpsgCrs))
-            .schemaScope(Scope.MUTATIONS)
+            .schemaScope(FeatureSchemaBase.Scope.MUTATIONS)
             .eTag(Type.STRONG);
 
     FeatureQuery eTagQuery =
@@ -448,7 +448,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                     .map(s -> s.substring(1, s.length() - 1))
                     .map(s -> EpsgCrs.fromString(s))
                     .orElseGet(coreConfiguration::getDefaultEpsgCrs))
-            .schemaScope(Scope.MUTATIONS)
+            .schemaScope(FeatureSchemaBase.Scope.MUTATIONS)
             .eTag(Type.STRONG);
 
     FeatureQuery eTagQuery =

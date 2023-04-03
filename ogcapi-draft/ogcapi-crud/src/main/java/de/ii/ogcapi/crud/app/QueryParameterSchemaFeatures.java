@@ -17,7 +17,7 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-import de.ii.xtraplatform.features.domain.FeatureSchema.Scope;
+import de.ii.xtraplatform.features.domain.FeatureSchemaBase;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Map;
@@ -104,7 +104,7 @@ public class QueryParameterSchemaFeatures extends ApiExtensionCache
     if (parameters.containsKey(getName())
         && Objects.equals(parameters.get(getName()), "receivables")) {
       try {
-        queryBuilder.schemaScope(Scope.MUTATIONS);
+        queryBuilder.schemaScope(FeatureSchemaBase.Scope.MUTATIONS);
       } catch (NumberFormatException e) {
         // ignore
       }

@@ -9,6 +9,7 @@ package de.ii.ogcapi.html.domain;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.ogcapi.foundation.domain.ApiCatalogEntry;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.xtraplatform.base.domain.LogContext;
@@ -17,6 +18,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -135,13 +137,25 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
   Boolean getSchemaOrgEnabled();
 
   /**
-   * @langEn Show collection descriptions in *Feature Collections* resource for HTML.
+   * @langEn Show collection descriptions in the HTML representation of the *Feature Collections*
+   *     resource.
    * @langDe Steuert, ob in der HTML-Ausgabe der Feature-Collections-Ressource für jede Collection
    *     die Beschreibung ausgegeben werden soll.
    * @default false
    */
   @Nullable
   Boolean getCollectionDescriptionsInOverview();
+
+  /**
+   * @langEn Suppress collections without items in the HTML representation of the *Feature
+   *     Collections* resource.
+   * @langDe Steuert, ob in der HTML-Ausgabe der Feature-Collections-Ressource Collections ohne
+   *     Daten unterdrückt sein sollen.
+   * @default false
+   * @since v3.4
+   */
+  @Nullable
+  Boolean getSuppressEmptyCollectionsInOverview();
 
   @Nullable
   Boolean getSendEtags();
@@ -261,6 +275,8 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
    */
   @Nullable
   String getFooterText();
+
+  List<ApiCatalogEntry> getAdditionalApis();
 
   @Override
   default Builder getBuilder() {

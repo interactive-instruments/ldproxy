@@ -74,6 +74,14 @@ public class TileMatrixSetsBuildingBlock implements ApiBuildingBlock, Conformanc
   public TileMatrixSetsBuildingBlock() {}
 
   @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(TileMatrixSetsConfiguration.class)
+        .filter(TileMatrixSetsConfiguration::isEnabled)
+        .isPresent();
+  }
+
+  @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     return ImmutableList.of(
         "http://www.opengis.net/spec/tms/2.0/conf/tilematrixset",
