@@ -9,6 +9,7 @@ package de.ii.ogcapi.html.domain;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.ogcapi.foundation.domain.ApiCatalogEntry;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.xtraplatform.base.domain.LogContext;
@@ -17,6 +18,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -273,6 +275,8 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
    */
   @Nullable
   String getFooterText();
+
+  List<ApiCatalogEntry> getAdditionalApis();
 
   @Override
   default Builder getBuilder() {

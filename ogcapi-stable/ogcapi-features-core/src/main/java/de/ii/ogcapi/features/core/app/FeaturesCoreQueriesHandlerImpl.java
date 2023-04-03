@@ -276,7 +276,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             .links(links)
             .isFeatureCollection(Objects.isNull(featureId))
             .isHitsOnly(query.hitsOnly())
-            .isPropertyOnly(query.propertyOnly())
             .fields(ImmutableMap.of(collectionId, query.getFields()))
             .limit(query.getLimit())
             .offset(query.getOffset())
