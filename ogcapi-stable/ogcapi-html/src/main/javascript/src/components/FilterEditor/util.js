@@ -1,8 +1,10 @@
+import moment from "moment";
+
 export const getBaseUrl = () => {
   let baseUrl = new URL(window.location.href);
   if (process.env.NODE_ENV !== "production") {
     baseUrl = new URL(
-      "https://demo.ldproxy.net/strassen/collections/nullpunkte/items?limit=10&offset=10"
+      "https://demo.ldproxy.net/cshapes/collections/boundary/items?limit=10&offset=10"
     );
   }
   return baseUrl;
@@ -42,9 +44,8 @@ export const extractInterval = (obj) => {
   const parseTemporalExtent = (temporalExtent) => {
     const starting = temporalExtent.interval[0][0];
     const ending = temporalExtent.interval[0][1];
-    const startingUnix = new Date(starting).getTime();
-    const endingUnix = new Date(ending).getTime();
-
+    const startingUnix = moment.utc(starting).valueOf();
+    const endingUnix = moment.utc(ending).valueOf();
     return { start: startingUnix, end: endingUnix };
   };
 
@@ -70,15 +71,16 @@ export const extractSpatial = (obj) => {
 
     if (spatialExtent) {
       const bounds = spatialExtent.bbox;
-      const transformedBounds = bounds[0].length === 6
-        ? bounds.map((innerArray) => [
-            [innerArray[0], innerArray[1]],
-            [innerArray[3], innerArray[4]],
-          ])
-        : bounds.map((innerArray) => [
-            [innerArray[0], innerArray[1]],
-            [innerArray[2], innerArray[3]],
-          ]);
+      const transformedBounds =
+        bounds[0].length === 6
+          ? bounds.map((innerArray) => [
+              [innerArray[0], innerArray[1]],
+              [innerArray[3], innerArray[4]],
+            ])
+          : bounds.map((innerArray) => [
+              [innerArray[0], innerArray[1]],
+              [innerArray[2], innerArray[3]],
+            ]);
       spatial = transformedBounds.flat();
     }
   }

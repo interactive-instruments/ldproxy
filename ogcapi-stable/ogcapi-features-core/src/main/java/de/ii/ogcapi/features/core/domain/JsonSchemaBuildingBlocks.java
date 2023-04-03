@@ -9,17 +9,17 @@ package de.ii.ogcapi.features.core.domain;
 
 public interface JsonSchemaBuildingBlocks {
 
-  JsonSchemaNull NULL = ImmutableJsonSchemaNull.builder().build();
+  JsonSchemaNull NULL = new ImmutableJsonSchemaNull.Builder().build();
 
   JsonSchemaArray COORDINATES =
-      ImmutableJsonSchemaArray.builder()
+      new ImmutableJsonSchemaArray.Builder()
           .minItems(2)
           .maxItems(3)
-          .items(ImmutableJsonSchemaNumber.builder().build())
+          .items(new ImmutableJsonSchemaNumber.Builder().build())
           .build();
 
   JsonSchemaObject POINT =
-      ImmutableJsonSchemaObject.builder()
+      new ImmutableJsonSchemaObject.Builder()
           .title("GeoJSON Point")
           .addRequired("type", "coordinates")
           .putProperties("type", getEnum("Point"))
@@ -27,62 +27,64 @@ public interface JsonSchemaBuildingBlocks {
           .build();
 
   JsonSchemaObject MULTI_POINT =
-      ImmutableJsonSchemaObject.builder()
+      new ImmutableJsonSchemaObject.Builder()
           .title("GeoJSON MultiPoint")
           .addRequired("type", "coordinates")
           .putProperties("type", getEnum("MultiPoint"))
           .putProperties(
-              "coordinates", ImmutableJsonSchemaArray.builder().items(COORDINATES).build())
+              "coordinates", new ImmutableJsonSchemaArray.Builder().items(COORDINATES).build())
           .build();
 
   JsonSchemaObject LINE_STRING =
-      ImmutableJsonSchemaObject.builder()
+      new ImmutableJsonSchemaObject.Builder()
           .title("GeoJSON LineString")
           .addRequired("type", "coordinates")
           .putProperties("type", getEnum("LineString"))
           .putProperties(
               "coordinates",
-              ImmutableJsonSchemaArray.builder().minItems(2).items(COORDINATES).build())
+              new ImmutableJsonSchemaArray.Builder().minItems(2).items(COORDINATES).build())
           .build();
 
   JsonSchemaObject MULTI_LINE_STRING =
-      ImmutableJsonSchemaObject.builder()
+      new ImmutableJsonSchemaObject.Builder()
           .title("GeoJSON MultiLineString")
           .addRequired("type", "coordinates")
           .putProperties("type", getEnum("MultiLineString"))
           .putProperties(
               "coordinates",
-              ImmutableJsonSchemaArray.builder()
-                  .items(ImmutableJsonSchemaArray.builder().minItems(2).items(COORDINATES).build())
+              new ImmutableJsonSchemaArray.Builder()
+                  .items(
+                      new ImmutableJsonSchemaArray.Builder().minItems(2).items(COORDINATES).build())
                   .build())
           .build();
 
   JsonSchemaObject POLYGON =
-      ImmutableJsonSchemaObject.builder()
+      new ImmutableJsonSchemaObject.Builder()
           .title("GeoJSON Polygon")
           .addRequired("type", "coordinates")
           .putProperties("type", getEnum("Polygon"))
           .putProperties(
               "coordinates",
-              ImmutableJsonSchemaArray.builder()
+              new ImmutableJsonSchemaArray.Builder()
                   .minItems(1)
-                  .items(ImmutableJsonSchemaArray.builder().minItems(4).items(COORDINATES).build())
+                  .items(
+                      new ImmutableJsonSchemaArray.Builder().minItems(4).items(COORDINATES).build())
                   .build())
           .build();
 
   JsonSchemaObject MULTI_POLYGON =
-      ImmutableJsonSchemaObject.builder()
+      new ImmutableJsonSchemaObject.Builder()
           .title("GeoJSON MultiPolygon")
           .addRequired("type", "coordinates")
           .putProperties("type", getEnum("MultiPolygon"))
           .putProperties(
               "coordinates",
-              ImmutableJsonSchemaArray.builder()
+              new ImmutableJsonSchemaArray.Builder()
                   .items(
-                      ImmutableJsonSchemaArray.builder()
+                      new ImmutableJsonSchemaArray.Builder()
                           .minItems(1)
                           .items(
-                              ImmutableJsonSchemaArray.builder()
+                              new ImmutableJsonSchemaArray.Builder()
                                   .minItems(4)
                                   .items(COORDINATES)
                                   .build())
@@ -93,41 +95,42 @@ public interface JsonSchemaBuildingBlocks {
   // TODO add additional JSON-FG geometries
 
   JsonSchemaOneOf GEOMETRY =
-      ImmutableJsonSchemaOneOf.builder()
+      new ImmutableJsonSchemaOneOf.Builder()
           .title("GeoJSON Geometry")
           .addOneOf(POINT, MULTI_POINT, LINE_STRING, MULTI_LINE_STRING, POLYGON, MULTI_POLYGON)
           .build();
 
   JsonSchemaObject GEOMETRY_COLLECTION =
-      ImmutableJsonSchemaObject.builder()
+      new ImmutableJsonSchemaObject.Builder()
           .title("GeoJSON GeometryCollection")
           .addRequired("type", "geometries")
           .putProperties("type", getEnum("GeometryCollection"))
-          .putProperties("geometries", ImmutableJsonSchemaArray.builder().items(GEOMETRY).build())
+          .putProperties(
+              "geometries", new ImmutableJsonSchemaArray.Builder().items(GEOMETRY).build())
           .build();
 
   JsonSchemaObject LINK_JSON =
-      ImmutableJsonSchemaObject.builder()
+      new ImmutableJsonSchemaObject.Builder()
           .putProperties(
-              "href", ImmutableJsonSchemaString.builder().format("uri-reference").build())
-          .putProperties("rel", ImmutableJsonSchemaString.builder().build())
-          .putProperties("type", ImmutableJsonSchemaString.builder().build())
-          .putProperties("title", ImmutableJsonSchemaString.builder().build())
+              "href", new ImmutableJsonSchemaString.Builder().format("uri-reference").build())
+          .putProperties("rel", new ImmutableJsonSchemaString.Builder().build())
+          .putProperties("type", new ImmutableJsonSchemaString.Builder().build())
+          .putProperties("title", new ImmutableJsonSchemaString.Builder().build())
           .addRequired("href")
           .build();
 
   static JsonSchemaString getEnum(String value) {
-    return ImmutableJsonSchemaString.builder().addEnums(value).build();
+    return new ImmutableJsonSchemaString.Builder().addEnums(value).build();
   }
 
   static JsonSchemaOneOf nullable(JsonSchema schema) {
     if (schema instanceof JsonSchemaOneOf) {
-      return ImmutableJsonSchemaOneOf.builder()
+      return new ImmutableJsonSchemaOneOf.Builder()
           .addOneOf(NULL)
           .addAllOneOf(((JsonSchemaOneOf) schema).getOneOf())
           .build();
     }
 
-    return ImmutableJsonSchemaOneOf.builder().addOneOf(NULL, schema).build();
+    return new ImmutableJsonSchemaOneOf.Builder().addOneOf(NULL, schema).build();
   }
 }

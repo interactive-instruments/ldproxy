@@ -64,7 +64,7 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
       case MULTI_POLYGON:
       case GEOMETRY_COLLECTION:
         jsonSchema =
-            ImmutableJsonSchemaRefExternal.builder()
+            new ImmutableJsonSchemaRef.Builder()
                 .ref(
                     String.format(
                         baseUrlFormat,
@@ -77,7 +77,7 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
       case ANY:
       default:
         jsonSchema =
-            ImmutableJsonSchemaRefExternal.builder()
+            new ImmutableJsonSchemaRef.Builder()
                 .ref(String.format(baseUrlFormat, "Geometry"))
                 .build();
         break;

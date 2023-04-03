@@ -7,12 +7,13 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import java.util.List;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Style(jdkOnly = true, deepImmutablesDetection = true)
+@JsonDeserialize(builder = ImmutableJsonSchemaOneOf.Builder.class)
 public abstract class JsonSchemaOneOf extends JsonSchema {
 
   public abstract List<JsonSchema> getOneOf();

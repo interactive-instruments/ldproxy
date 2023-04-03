@@ -24,7 +24,6 @@ import de.ii.ogcapi.features.core.domain.JsonSchemaNumber;
 import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.features.core.domain.JsonSchemaOneOf;
 import de.ii.ogcapi.features.core.domain.JsonSchemaRef;
-import de.ii.ogcapi.features.core.domain.JsonSchemaRefExternal;
 import de.ii.ogcapi.features.core.domain.JsonSchemaString;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
@@ -209,7 +208,7 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
     Schema<?> objectSchema = classSchemaCache.getSchema(JsonSchemaObject.class);
     Schema<?> arraySchema = classSchemaCache.getSchema(JsonSchemaArray.class);
     Schema<?> refSchema = classSchemaCache.getSchema(JsonSchemaRef.class);
-    Schema<?> refExternalSchema = classSchemaCache.getSchema(JsonSchemaRefExternal.class);
+    Schema<?> refExternalSchema = classSchemaCache.getSchema(JsonSchemaRef.class);
     Schema<?> oneOfSchema = classSchemaCache.getSchema(JsonSchemaOneOf.class);
     classSchemaCache.registerSchema(
         JsonSchema.class,

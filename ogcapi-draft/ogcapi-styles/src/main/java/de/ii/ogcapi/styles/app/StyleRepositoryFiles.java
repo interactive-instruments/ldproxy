@@ -73,7 +73,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.MediaType;
@@ -544,12 +543,12 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
                 patch.get().apply(metadataMapper.valueToTree(metadata)), StyleMetadata.class);
       } catch (JsonProcessingException | JsonPatchException e) {
         if (collectionId.isPresent())
-          throw new InternalServerErrorException(
+          throw new IllegalStateException(
               MessageFormat.format(
                   "Style metadata file in styles store is invalid for style ''{0}'' in collection ''{1}'' in API ''{2}''.",
                   styleId, collectionId.get(), apiData.getId()),
               e);
-        throw new InternalServerErrorException(
+        throw new IllegalStateException(
             MessageFormat.format(
                 "Style metadata file in styles store is invalid for style ''{0}'' in API ''{1}''.",
                 styleId, apiData.getId()),
@@ -580,12 +579,12 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
         return Optional.of(patchMapperLenient.readValue(patchContent, JsonMergePatch.class));
       } catch (IOException e) {
         if (collectionId.isPresent())
-          throw new InternalServerErrorException(
+          throw new IllegalStateException(
               MessageFormat.format(
                   "Style metadata file in styles store is invalid for style ''{0}'' in collection ''{1}'' in API ''{2}''.",
                   styleId, collectionId.get(), apiData.getId()),
               e);
-        throw new InternalServerErrorException(
+        throw new IllegalStateException(
             MessageFormat.format(
                 "Style metadata file in styles store is invalid for style ''{0}'' in API ''{1}''.",
                 styleId, apiData.getId()),
@@ -593,12 +592,12 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       }
     } catch (IOException e) {
       if (collectionId.isPresent())
-        throw new InternalServerErrorException(
+        throw new IllegalStateException(
             MessageFormat.format(
                 "Style metadata could not be read for style ''{0}'' in collection ''{1}'' in API ''{2}''.",
                 styleId, collectionId.get(), apiData.getId()),
             e);
-      throw new InternalServerErrorException(
+      throw new IllegalStateException(
           MessageFormat.format(
               "Style metadata could not be read for style ''{0}'' in API ''{1}''.",
               styleId, apiData.getId()),
@@ -642,12 +641,12 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
             mapper.treeToValue(patch.apply(mapper.valueToTree(current)), JsonMergePatch.class));
       } catch (IOException | JsonPatchException e) {
         if (collectionId.isPresent())
-          throw new InternalServerErrorException(
+          throw new IllegalStateException(
               MessageFormat.format(
                   "Style metadata file in styles store is invalid for style ''{0}'' in collection ''{1}'' in API ''{2}''.",
                   styleId, collectionId.get(), apiData.getId()),
               e);
-        throw new InternalServerErrorException(
+        throw new IllegalStateException(
             MessageFormat.format(
                 "Style metadata file in styles store is invalid for style ''{0}'' in API ''{1}''.",
                 styleId, apiData.getId()),
@@ -655,12 +654,12 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       }
     } catch (IOException e) {
       if (collectionId.isPresent())
-        throw new InternalServerErrorException(
+        throw new IllegalStateException(
             MessageFormat.format(
                 "Style metadata could not be read for style ''{0}'' in collection ''{1}'' in API ''{2}''.",
                 styleId, collectionId.get(), apiData.getId()),
             e);
-      throw new InternalServerErrorException(
+      throw new IllegalStateException(
           MessageFormat.format(
               "Style metadata could not be read for style ''{0}'' in API ''{1}''.",
               styleId, apiData.getId()),

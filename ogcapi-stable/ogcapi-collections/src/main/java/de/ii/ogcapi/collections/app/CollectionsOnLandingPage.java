@@ -67,6 +67,7 @@ public class CollectionsOnLandingPage implements LandingPageExtension {
     List<String> collectionNames =
         apiData.getCollections().values().stream()
             .filter(featureType -> featureType.getEnabled())
+            .filter(cd -> api.getItemCount(cd.getId()).map(count -> count > 0).orElse(true))
             .map(featureType -> featureType.getLabel())
             .collect(Collectors.toList());
     String suffix =

@@ -13,7 +13,7 @@ import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.FeatureSchema.Scope;
+import de.ii.xtraplatform.features.domain.FeatureSchemaBase;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,7 +26,7 @@ public class SchemaCacheReceivables extends JsonSchemaCache {
 
   public SchemaCacheReceivables(
       boolean removeId, boolean allOptional, boolean allNonRequiredNullable, boolean strict) {
-    super(Scope.MUTATIONS);
+    super(FeatureSchemaBase.Scope.MUTATIONS);
     this.removeId = removeId;
     this.allOptional = allOptional;
     this.allNonRequiredNullable = allNonRequiredNullable;

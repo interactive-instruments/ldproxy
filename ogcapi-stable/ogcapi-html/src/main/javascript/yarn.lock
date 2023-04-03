@@ -3390,6 +3390,8 @@ __metadata:
     "@xtraplatform/neutrino": ^2.0.0
     bootstrap: ^4.6.0
     c137.js: ^1.94.4
+    d3-scale: 3.2.3
+    date-fns: 2.16.1
     eslint: ^7
     eslint-plugin-babel: "*"
     jquery: ^3
@@ -3404,8 +3406,9 @@ __metadata:
     prop-types: ^15.7.2
     qs: ^6.5.1
     react: ^16
-    react-datetime: ^2.14.0
-    react-datetime-range-picker: ^1.0.5
+    react-compound-slider: 0.16.3
+    react-datetime: ^2.16.3
+    react-datetime-range-picker: ^3.0.0
     react-dom: ^16
     react-maplibre-ui: ^2.0.0
     react-refresh: ^0.9.0
@@ -7428,10 +7431,87 @@ __metadata:
   languageName: node
   linkType: hard
 
+"d3-array@npm:2, d3-array@npm:^2.3.0":
+  version: 2.12.1
+  resolution: "d3-array@npm:2.12.1"
+  dependencies:
+    internmap: ^1.0.0
+  checksum: 97853b7b523aded17078f37c67742f45d81e88dda2107ae9994c31b9e36c5fa5556c4c4cf39650436f247813602dfe31bf7ad067ff80f127a16903827f10c6eb
+  languageName: node
+  linkType: hard
+
+"d3-array@npm:^1.2.4":
+  version: 1.2.4
+  resolution: "d3-array@npm:1.2.4"
+  checksum: d0be1fa7d72dbfac8a3bcffbb669d42bcb9128d8818d84d2b1df0c60bbe4c8e54a798be0457c55a219b399e2c2fabcbd581cbb130eb638b5436b0618d7e56000
+  languageName: node
+  linkType: hard
+
+"d3-color@npm:1 - 2":
+  version: 2.0.0
+  resolution: "d3-color@npm:2.0.0"
+  checksum: b887354aa383937abd04fbffed3e26e5d6a788472cd3737fb10735930e427763e69fe93398663bccf88c0b53ee3e638ac6fcf0c02226b00ed9e4327c2dfbf3dc
+  languageName: node
+  linkType: hard
+
+"d3-format@npm:1 - 2":
+  version: 2.0.0
+  resolution: "d3-format@npm:2.0.0"
+  checksum: c4d3c8f9941d097d514d3986f54f21434e08e5876dc08d1d65226447e8e167600d5b9210235bb03fd45327225f04f32d6e365f08f76d2f4b8bff81594851aaf7
+  languageName: node
+  linkType: hard
+
+"d3-interpolate@npm:1.2.0 - 2":
+  version: 2.0.1
+  resolution: "d3-interpolate@npm:2.0.1"
+  dependencies:
+    d3-color: 1 - 2
+  checksum: 4a2018ac34fbcc3e0e7241e117087ca1b2274b8b33673913658623efacc5db013b8d876586d167b23e3145bdb34ec8e441d301299b082e1a90985b2f18d4299c
+  languageName: node
+  linkType: hard
+
+"d3-scale@npm:3.2.3":
+  version: 3.2.3
+  resolution: "d3-scale@npm:3.2.3"
+  dependencies:
+    d3-array: ^2.3.0
+    d3-format: 1 - 2
+    d3-interpolate: 1.2.0 - 2
+    d3-time: 1 - 2
+    d3-time-format: 2 - 3
+  checksum: 8d5a75079676eada4cd4026170670900349cae624ea9872e489135367ccdbd540767c543ec5fd5c4e74e0e4835261609f082a1647e2a26fe0c6d142ebe950784
+  languageName: node
+  linkType: hard
+
+"d3-time-format@npm:2 - 3":
+  version: 3.0.0
+  resolution: "d3-time-format@npm:3.0.0"
+  dependencies:
+    d3-time: 1 - 2
+  checksum: c20c1667dbea653f81d923e741f84c23e4b966002ba0d6ed94cbc70692105566e55e89d18d175404534a879383fd1123300bd12885a3c924fe924032bb0060db
+  languageName: node
+  linkType: hard
+
+"d3-time@npm:1 - 2":
+  version: 2.1.1
+  resolution: "d3-time@npm:2.1.1"
+  dependencies:
+    d3-array: 2
+  checksum: d1c7b9658c20646e46c3dd19e11c38e02dec098e8baa7d2cd868af8eb01953668f5da499fa33dc63541cf74a26e788786f8828c4381dbbf475a76b95972979a6
+  languageName: node
+  linkType: hard
+
 "damerau-levenshtein@npm:^1.0.6":
   version: 1.0.7
   resolution: "damerau-levenshtein@npm:1.0.7"
   checksum: ec8161cb381523e0db9b5c9b64863736da3197808b6fdc4a3a2ca764c0b4357e9232a4c5592220fb18755a91240b8fee7b13ab1b269fbbdc5f68c36f0053aceb
+  languageName: node
+  linkType: hard
+
+"date-fns@npm:2.16.1":
+  version: 2.16.1
+  resolution: "date-fns@npm:2.16.1"
+  checksum: f19c2b3b9bd62fdbc55b160c87b4656b3a260d79ee7a32a9cbc19107c3d61d71b569c0957351f9a07fc84c35283f74b0af5276620d4a37e36eef1898fa6c25b2
   languageName: node
   linkType: hard
 
@@ -10515,6 +10595,13 @@ fsevents@^1.2.7:
     has: ^1.0.3
     side-channel: ^1.0.4
   checksum: 1944f92e981e47aebc98a88ff0db579fd90543d937806104d0b96557b10c1f170c51fb777b97740a8b6ddeec585fca8c39ae99fd08a8e058dfc8ab70937238bf
+  languageName: node
+  linkType: hard
+
+"internmap@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "internmap@npm:1.0.1"
+  checksum: 9d00f8c0cf873a24a53a5a937120dab634c41f383105e066bb318a61864e6292d24eb9516e8e7dccfb4420ec42ca474a0f28ac9a6cc82536898fa09bbbe53813
   languageName: node
   linkType: hard
 
@@ -14203,20 +14290,33 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"react-datetime-range-picker@npm:^1.0.5":
-  version: 1.0.6
-  resolution: "react-datetime-range-picker@npm:1.0.6"
+"react-compound-slider@npm:0.16.3":
+  version: 0.16.3
+  resolution: "react-compound-slider@npm:0.16.3"
+  dependencies:
+    d3-array: ^1.2.4
+    prop-types: ^15.6.2
+    warning: ^3.0.0
+  peerDependencies:
+    react: ^15.0.0 || ^16.0.0
+  checksum: 6a3a3b8016c45daeea93703b28ab4b117d198b269de2180aeb6f61e9649f171fb186c6ec25e2224fea6bb14e116dc127fbcc99edf4795d384142f0b24b3838c3
+  languageName: node
+  linkType: hard
+
+"react-datetime-range-picker@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "react-datetime-range-picker@npm:3.0.0"
   dependencies:
     moment: ^2.19.3
     prop-types: ^15.5.10
   peerDependencies:
-    react: ^15.6.1
+    react: ^16.3.0
     react-datetime: ^2.8.10
-  checksum: 90ef2162356c49585884b12add4a4810d785a757e5e4656b2dd31d489c1d9fdb3e74246d8215ad7916d7bcc595475f02c5a832859ceb1efec0f3acf3d624fb8c
+  checksum: 1c8d5564770808c2a5cf56921eddbc12c60b184c374c40808cd5157e376783d0b683939781669f4bef6211cc5f649e62c1ccf807efa5d2adabc035a02fa88ad8
   languageName: node
   linkType: hard
 
-"react-datetime@npm:^2.14.0":
+"react-datetime@npm:^2.16.3":
   version: 2.16.3
   resolution: "react-datetime@npm:2.16.3"
   dependencies:
@@ -17286,6 +17386,15 @@ resolve@^2.0.0-next.3:
   dependencies:
     makeerror: 1.0.x
   checksum: 4038fcf92f6ab0288267ad05008aec9e089a759f1bd32e1ea45cc2eb498eb12095ec43cf8ca2bf23a465f4580a0d33b25b89f450ba521dd27083cbc695ee6bf5
+  languageName: node
+  linkType: hard
+
+"warning@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "warning@npm:3.0.0"
+  dependencies:
+    loose-envify: ^1.0.0
+  checksum: c9f99a12803aab81b29858e7dc3415bf98b41baee3a4c3acdeb680d98c47b6e17490f1087dccc54432deed5711a5ce0ebcda2b27e9b5eb054c32ae50acb4419c
   languageName: node
   linkType: hard
 

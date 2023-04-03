@@ -262,7 +262,6 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             .links(links)
             .isFeatureCollection(true)
             .isHitsOnly(query.hitsOnly())
-            .isPropertyOnly(query.propertyOnly())
             .fields(ImmutableMap.of("not_applicable", query.getFields()))
             .limit(query.getLimit())
             .offset(query.getOffset())

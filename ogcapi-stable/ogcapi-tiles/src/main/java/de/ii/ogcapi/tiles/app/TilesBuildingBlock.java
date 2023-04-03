@@ -962,7 +962,10 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                   range =
                       Range.closed(
                           Math.max(
-                              seeding.get(entry.getKey()).getMax() + 1, entry.getValue().getMin()),
+                              Math.min(
+                                  seeding.get(entry.getKey()).getMax() + 1,
+                                  entry.getValue().getMax()),
+                              entry.getValue().getMin()),
                           entry.getValue().getMax());
                 }
 
