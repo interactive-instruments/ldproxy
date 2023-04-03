@@ -9,39 +9,39 @@ package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import java.nio.charset.StandardCharsets;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Style(jdkOnly = true, deepImmutablesDetection = true)
+@JsonDeserialize(builder = ImmutableJsonSchemaRef.Builder.class)
 public abstract class JsonSchemaRef extends JsonSchema {
 
-  @SuppressWarnings("UnstableApiUsage")
-  public static final Funnel<JsonSchemaRef> FUNNEL =
-      (from, into) -> into.putString(from.getRef(), StandardCharsets.UTF_8);
-
   @JsonProperty("$ref")
-  @Value.Derived
-  public String getRef() {
-    return String.format("#/%s/%s", getDefsName(), getObjectType());
-  }
-
-  @JsonIgnore
-  @Value.Auxiliary
-  public String getDefsName() {
-    return "$defs";
-  }
-
-  @JsonIgnore
-  @Value.Auxiliary
-  public abstract String getObjectType();
+  public abstract String getRef();
 
   @JsonIgnore
   @Nullable
   @Value.Auxiliary
   public abstract JsonSchema getDef();
 
+  @JsonIgnore
+  @Value.Derived
+  public boolean isLocal() {
+    return getRef().matches("^#/\\$defs/");
+  }
+
+  @JsonIgnore
+  @Value.Derived
+  public boolean isLocalV7() {
+    return getRef().matches("^#/definitions/");
+  }
+
   public abstract static class Builder extends JsonSchema.Builder {}
+
+  @SuppressWarnings("UnstableApiUsage")
+  public static final Funnel<JsonSchemaRef> FUNNEL =
+      (from, into) -> into.putString(from.getRef(), StandardCharsets.UTF_8);
 }

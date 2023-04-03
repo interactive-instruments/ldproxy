@@ -24,6 +24,7 @@ public abstract class MbStyleLayer {
     symbol("symbol"),
     raster("raster"),
     circle("circle"),
+    @JsonProperty("fill-extrusion")
     fillExtrusion("fill-extrusion"),
     heatmap("heatmap"),
     hillshade("hillshade");

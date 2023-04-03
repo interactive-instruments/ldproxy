@@ -8,10 +8,12 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
 @Value.Immutable
+@JsonDeserialize(builder = ImmutableJsonSchemaTrue.Builder.class)
 @Value.Style(jdkOnly = true)
 public abstract class JsonSchemaTrue extends JsonSchema {
 

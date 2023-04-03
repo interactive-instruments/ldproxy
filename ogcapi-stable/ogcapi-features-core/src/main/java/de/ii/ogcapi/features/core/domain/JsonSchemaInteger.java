@@ -8,6 +8,7 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -15,10 +16,11 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Style(jdkOnly = true, deepImmutablesDetection = true)
+@JsonDeserialize(builder = ImmutableJsonSchemaInteger.Builder.class)
 public abstract class JsonSchemaInteger extends JsonSchema {
 
-  public final String getType() {
+  @Value.Derived
+  public String getType() {
     return "integer";
   }
 

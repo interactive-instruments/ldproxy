@@ -8,12 +8,14 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.Builder;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.immutables.value.Value;
 
+@JsonDeserialize(using = JsonSchemaDeserializer.class)
 public abstract class JsonSchema {
 
   @SuppressWarnings("UnstableApiUsage")
@@ -49,7 +51,8 @@ public abstract class JsonSchema {
 
   public abstract Optional<String> getDescription();
 
-  public abstract Optional<Object> getDefault();
+  @JsonProperty("default")
+  public abstract Optional<Object> getDefault_();
 
   @JsonIgnore
   @Value.Auxiliary
@@ -70,6 +73,10 @@ public abstract class JsonSchema {
     public abstract Builder description(String description);
 
     public abstract Builder description(Optional<String> description);
+
+    public abstract Builder default_(Object default_);
+
+    public abstract Builder default_(Optional<? extends Object> default_);
 
     public abstract Builder name(String name);
 

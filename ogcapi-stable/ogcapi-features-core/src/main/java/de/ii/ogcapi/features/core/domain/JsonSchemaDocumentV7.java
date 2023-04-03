@@ -66,7 +66,7 @@ public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
     if (hasRefsWithWrongVersion(schema)) {
       Map<String, JsonSchema> adjustedProperties = adjustRefs(schema.getProperties());
 
-      return ImmutableJsonSchemaObject.builder()
+      return new ImmutableJsonSchemaObject.Builder()
           .from(schema)
           .properties(adjustedProperties)
           .build();
@@ -77,7 +77,7 @@ public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
 
   static JsonSchemaArray adjustRefs(JsonSchemaArray schema) {
     if (hasRefsWithWrongVersion(schema)) {
-      return ImmutableJsonSchemaArray.builder()
+      return new ImmutableJsonSchemaArray.Builder()
           .from(schema)
           .items(adjustRef((JsonSchemaRef) schema.getItems()))
           .build();
@@ -86,12 +86,15 @@ public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
     return schema;
   }
 
-  static JsonSchemaRefV7 adjustRef(JsonSchemaRef schema) {
+  static JsonSchemaRef adjustRef(JsonSchemaRef schema) {
     if (isRefWithWrongVersion(schema)) {
-      return ImmutableJsonSchemaRefV7.builder().from(schema).build();
+      return new ImmutableJsonSchemaRef.Builder()
+          .from(schema)
+          .ref(schema.getRef().replace("#/$defs/", "#/definitions/"))
+          .build();
     }
 
-    return (JsonSchemaRefV7) schema;
+    return schema;
   }
 
   static boolean hasRefsWithWrongVersion(Map<String, JsonSchema> schemas) {
@@ -119,6 +122,7 @@ public abstract class JsonSchemaDocumentV7 extends JsonSchemaDocument {
   }
 
   static boolean isRefWithWrongVersion(JsonSchema schema) {
-    return schema instanceof JsonSchemaRef && !(schema instanceof JsonSchemaRefV7);
+    return schema instanceof JsonSchemaRef
+        && ((JsonSchemaRef) schema).getRef().startsWith("#/$defs/");
   }
 }

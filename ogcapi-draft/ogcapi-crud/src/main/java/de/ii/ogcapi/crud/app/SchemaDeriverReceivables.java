@@ -134,7 +134,7 @@ public class SchemaDeriverReceivables extends SchemaDeriverReturnables {
 
       newProperties.put(
           "properties",
-          ImmutableJsonSchemaObject.builder()
+          new ImmutableJsonSchemaObject.Builder()
               .from(props)
               .required(allOptional ? List.of() : props.getRequired())
               .properties(newProps)
@@ -146,7 +146,7 @@ public class SchemaDeriverReceivables extends SchemaDeriverReturnables {
 
       newProperties.put(
           "properties",
-          ImmutableJsonSchemaObject.builder()
+          new ImmutableJsonSchemaObject.Builder()
               .from(newProperties.get("properties"))
               .additionalProperties(ImmutableJsonSchemaFalse.builder().build())
               .build());

@@ -7,16 +7,18 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Style(jdkOnly = true, deepImmutablesDetection = true)
+@JsonDeserialize(builder = ImmutableJsonSchemaArray.Builder.class)
 public abstract class JsonSchemaArray extends JsonSchema {
 
-  public final String getType() {
+  @Value.Derived
+  public String getType() {
     return "array";
   }
 
