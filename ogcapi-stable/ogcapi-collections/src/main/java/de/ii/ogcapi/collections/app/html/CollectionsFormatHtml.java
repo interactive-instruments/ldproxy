@@ -24,6 +24,7 @@ import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -70,6 +71,13 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
         .orElse(false);
   }
 
+  private boolean suppressEmptyCollectionsInOverview(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(HtmlConfiguration.class)
+        .map(HtmlConfiguration::getSuppressEmptyCollectionsInOverview)
+        .orElse(false);
+  }
+
   @Override
   public Object getEntity(Collections collections, OgcApi api, ApiRequestContext requestContext) {
 
@@ -106,7 +114,12 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
         .description(collections.getDescription().get())
         .i18n(i18n)
         .language(requestContext.getLanguage())
-        .rawCollections(collections.getCollections())
+        .rawCollections(
+            suppressEmptyCollectionsInOverview(api.getData())
+                ? collections.getCollections().stream()
+                    .filter(c -> c.getItemCount().map(count -> count > 0).orElse(true))
+                    .collect(Collectors.toList())
+                : collections.getCollections())
         .spatialExtent(api.getSpatialExtent())
         .showCollectionDescriptions(showCollectionDescriptionsInOverview(api.getData()))
         .crs(collections.getCrs())
