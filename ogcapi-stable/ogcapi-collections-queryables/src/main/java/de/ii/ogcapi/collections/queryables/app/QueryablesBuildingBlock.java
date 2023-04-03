@@ -23,6 +23,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -129,6 +130,8 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
 
     for (Map.Entry<String, QueryablesConfiguration> entry : configs.entrySet()) {
       // check that there is at least one queryable for each collection where queryables is enabled
+      FeatureTypeConfigurationOgcApi collectionData =
+          api.getData().getCollections().get(entry.getKey());
       List<String> deprecatedQueryables =
           api.getData()
               .getExtension(FeaturesCoreConfiguration.class, entry.getKey())
@@ -143,9 +146,7 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
 
       List<String> properties =
           schemaInfo.getPropertyNames(api.getData(), entry.getKey(), true, false);
-      Optional<FeatureSchema> schema =
-          providers.getFeatureSchema(
-              api.getData(), api.getData().getCollections().get(entry.getKey()));
+      Optional<FeatureSchema> schema = providers.getFeatureSchema(api.getData(), collectionData);
       if (schema.isEmpty())
         builder.addErrors(
             MessageFormat.format(
@@ -160,26 +161,32 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
                         entry.getValue().getExcluded().stream()))
                 .filter(v -> !"*".equals(v))
                 .collect(Collectors.toUnmodifiableList())) {
-          // does the collection include the queryable property?
-          if (!properties.contains(queryable))
-            builder.addErrors(
+          // does the collection include the sortable property?
+          if (!properties.contains(queryable)) {
+            builder.addStrictErrors(
                 MessageFormat.format(
-                    "The Queryables configuration for collection ''{0}'' includes property ''{1}'', but the property does not exist.",
+                    "The queryables configuration for collection ''{0}'' includes property ''{1}'', but the property does not exist.",
                     entry.getKey(), queryable));
-
-          // check types
-          schema.get().getAllNestedProperties().stream()
-              .filter(property -> queryable.equals(property.getFullPathAsString()))
-              .findFirst()
-              .ifPresent(
-                  property -> {
-                    if (!VALID_TYPES.contains(property.getType().toString()))
-                      builder.addErrors(
-                          MessageFormat.format(
-                              "The Queryables configuration for collection ''{0}'' includes a queryable property ''{1}'', but the property is not of a supported type. Found: ''{2}''.",
-                              entry.getKey(), queryable, property.getType().toString()));
-                  });
+          }
         }
+
+        List<String> queryables =
+            entry
+                .getValue()
+                .getQueryablesSchema(collectionData, schema.get())
+                .getAllNestedProperties()
+                .stream()
+                .map(SchemaBase::getFullPathAsString)
+                .collect(Collectors.toList());
+        Stream.concat(deprecatedQueryables.stream(), entry.getValue().getIncluded().stream())
+            .filter(propertyName -> !"*".equals(propertyName))
+            .filter(propertyName -> !queryables.contains(propertyName))
+            .forEach(
+                propertyName ->
+                    builder.addStrictErrors(
+                        MessageFormat.format(
+                            "The queryables configuration for collection ''{0}'' includes a property ''{1}'', but the property is not eligible.",
+                            entry.getKey(), propertyName)));
       }
     }
 

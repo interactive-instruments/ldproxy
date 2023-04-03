@@ -20,6 +20,7 @@ import de.ii.ogcapi.sorting.domain.ImmutableSortingConfiguration;
 import de.ii.ogcapi.sorting.domain.SortingConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -117,11 +118,11 @@ public class SortingBuildingBlock implements ApiBuildingBlock {
                 entry.getKey()));
 
       List<String> properties = schemaInfo.getPropertyNames(api.getData(), entry.getKey());
-      Optional<FeatureSchema> schema =
-          providers.getFeatureSchema(
-              api.getData(), api.getData().getCollections().get(entry.getKey()));
+      FeatureTypeConfigurationOgcApi collectionData =
+          api.getData().getCollections().get(entry.getKey());
+      Optional<FeatureSchema> schema = providers.getFeatureSchema(api.getData(), collectionData);
       if (schema.isEmpty())
-        builder.addErrors(
+        builder.addStrictErrors(
             MessageFormat.format(
                 "Sorting is enabled for collection ''{0}'', but no provider has been configured.",
                 entry.getKey()));
@@ -129,35 +130,38 @@ public class SortingBuildingBlock implements ApiBuildingBlock {
         for (String sortable :
             Stream.concat(
                     entry.getValue().getSortables().stream(),
-                    entry.getValue().getIncluded().stream())
+                    Stream.concat(
+                        entry.getValue().getIncluded().stream(),
+                        entry.getValue().getExcluded().stream()))
                 .filter(v -> !"*".equals(v))
                 .collect(Collectors.toUnmodifiableList())) {
           // does the collection include the sortable property?
-          if (!properties.contains(sortable))
+          if (!properties.contains(sortable)) {
             builder.addErrors(
                 MessageFormat.format(
                     "The sorting configuration for collection ''{0}'' includes property ''{1}'', but the property does not exist.",
                     entry.getKey(), sortable));
-
-          // is it a top level, non-array property?
-          schema.get().getProperties().stream()
-              .filter(property -> sortable.equals(property.getName()))
-              .findAny()
-              .ifPresentOrElse(
-                  property -> {
-                    if (!VALID_TYPES.contains(property.getType().toString()))
-                      builder.addErrors(
-                          MessageFormat.format(
-                              "The sorting configuration for collection ''{0}'' includes a sortable property ''{1}'', but the property is not of a simple type. Found: ''{2}''.",
-                              entry.getKey(), sortable, property.getType().toString()));
-                  },
-                  () -> {
-                    builder.addErrors(
-                        MessageFormat.format(
-                            "The sorting configuration for collection ''{0}'' includes a sortable property ''{1}'', but the property is a nested property, not a top-level property.",
-                            entry.getKey(), sortable));
-                  });
+          }
         }
+
+        List<String> sortables =
+            entry
+                .getValue()
+                .getSortablesSchema(collectionData, schema.get())
+                .getAllNestedProperties()
+                .stream()
+                .map(SchemaBase::getFullPathAsString)
+                .collect(Collectors.toList());
+        Stream.concat(
+                entry.getValue().getSortables().stream(), entry.getValue().getIncluded().stream())
+            .filter(propertyName -> !"*".equals(propertyName))
+            .filter(propertyName -> !sortables.contains(propertyName))
+            .forEach(
+                propertyName ->
+                    builder.addStrictErrors(
+                        MessageFormat.format(
+                            "The sorting configuration for collection ''{0}'' includes a sortable property ''{1}'', but the property is not eligible.",
+                            entry.getKey(), propertyName)));
       }
     }
 

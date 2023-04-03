@@ -23,7 +23,6 @@ import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformat
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -71,7 +70,7 @@ class SchemaCacheQueryables extends JsonSchemaCache {
             collectionData.getLabel(),
             Optional.empty(),
             codelistSupplier.get(),
-            Objects.equals(schema, queryablesSchema) ? ImmutableList.of() : ImmutableList.of("*"));
+            ImmutableList.of("*"));
 
     return (JsonSchemaDocument)
         queryablesSchema.accept(schemaFlattener).accept(schemaDeriverCollectionProperties);

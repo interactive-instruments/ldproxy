@@ -21,7 +21,6 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
-import java.util.Objects;
 import java.util.Optional;
 
 class SchemaCacheSortables extends JsonSchemaCache {
@@ -62,7 +61,7 @@ class SchemaCacheSortables extends JsonSchemaCache {
             collectionData.getLabel(),
             Optional.empty(),
             ImmutableList.of(),
-            Objects.equals(schema, sortablesSchema) ? ImmutableList.of() : ImmutableList.of("*"));
+            ImmutableList.of("*"));
 
     return (JsonSchemaDocument)
         sortablesSchema.accept(schemaFlattener).accept(schemaDeriverCollectionProperties);
