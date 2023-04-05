@@ -316,6 +316,8 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   }
 
   String LINK_WILDCARD = "*{objectType=Link}";
+  String REF_WILDCARD = "*{type=FEATURE_REF}";
+  String REF_ARRAY_WILDCARD = "*{type=FEATURE_REF_ARRAY}";
 
   @Value.Check
   default FeaturesHtmlConfiguration transformLinks() {
@@ -327,6 +329,50 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
               LINK_WILDCARD,
               new ImmutablePropertyTransformation.Builder()
                   .reduceStringFormat("<a href=\"{{href}}\">{{title}}</a>")
+                  .build());
+
+      return new ImmutableFeaturesHtmlConfiguration.Builder()
+          .from(this)
+          .transformations(transformations)
+          .build();
+    }
+
+    return this;
+  }
+
+  @Value.Check
+  default FeaturesHtmlConfiguration transformRefs() {
+    if (!hasTransformation(
+        REF_WILDCARD, transformation -> transformation.getStringFormat().isPresent())) {
+
+      Map<String, List<PropertyTransformation>> transformations =
+          withTransformation(
+              REF_WILDCARD,
+              new ImmutablePropertyTransformation.Builder()
+                  .stringFormat(
+                      "<a href=\"{{apiUri}}/collections/{{type}}/items/{{value}}\">{{value}}</a>")
+                  .build());
+
+      return new ImmutableFeaturesHtmlConfiguration.Builder()
+          .from(this)
+          .transformations(transformations)
+          .build();
+    }
+
+    return this;
+  }
+
+  @Value.Check
+  default FeaturesHtmlConfiguration transformRefArrays() {
+    if (!hasTransformation(
+        REF_ARRAY_WILDCARD, transformation -> transformation.getStringFormat().isPresent())) {
+
+      Map<String, List<PropertyTransformation>> transformations =
+          withTransformation(
+              REF_ARRAY_WILDCARD,
+              new ImmutablePropertyTransformation.Builder()
+                  .stringFormat(
+                      "<a href=\"{{apiUri}}/collections/{{type}}/items/{{value}}\">{{value}}</a>")
                   .build());
 
       return new ImmutableFeaturesHtmlConfiguration.Builder()

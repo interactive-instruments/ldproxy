@@ -8,12 +8,7 @@
 package de.ii.ogcapi.features.geojson.domain
 
 import com.google.common.collect.ImmutableMap
-import de.ii.ogcapi.foundation.domain.AbstractExtensionConfigurationSpec
-import de.ii.ogcapi.foundation.domain.MergeBase
-import de.ii.ogcapi.foundation.domain.MergeMap
-import de.ii.ogcapi.foundation.domain.MergeMinimal
-import de.ii.ogcapi.foundation.domain.MergeNested
-import de.ii.ogcapi.foundation.domain.MergeSimple
+import de.ii.ogcapi.foundation.domain.*
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
 
 @SuppressWarnings('ClashingTraitMethods')
@@ -55,8 +50,13 @@ class GeoJsonConfigurationSpec extends AbstractExtensionConfigurationSpec implem
 
     @Override
     GeoJsonConfiguration getSimpleFullMerged() {
+        def transformations = new LinkedHashMap(getFull().getTransformations())
+        transformations.remove(GeoJsonConfiguration.REF_WILDCARD)
+        transformations.remove(GeoJsonConfiguration.REF_ARRAY_WILDCARD)
+
         return new ImmutableGeoJsonConfiguration.Builder()
                 .from(getFull())
+                .transformations(transformations)
                 .from(getSimple())
                 .build()
     }
@@ -94,7 +94,7 @@ class GeoJsonConfigurationSpec extends AbstractExtensionConfigurationSpec implem
                         "foo", [
                         new ImmutablePropertyTransformation.Builder().rename("bar").build(),
                         new ImmutablePropertyTransformation.Builder().codelist("cl").build()
-                        ]
+                ]
                 ))
                 .build()
     }
