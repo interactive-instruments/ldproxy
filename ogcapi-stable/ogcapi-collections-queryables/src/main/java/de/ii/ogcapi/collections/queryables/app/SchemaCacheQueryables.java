@@ -33,6 +33,7 @@ class SchemaCacheQueryables extends JsonSchemaCache {
   private final Supplier<List<Codelist>> codelistSupplier;
 
   public SchemaCacheQueryables(Supplier<List<Codelist>> codelistSupplier) {
+    super();
     this.codelistSupplier = codelistSupplier;
   }
 

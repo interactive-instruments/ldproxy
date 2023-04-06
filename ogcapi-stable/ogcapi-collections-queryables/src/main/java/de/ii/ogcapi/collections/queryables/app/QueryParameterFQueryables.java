@@ -44,7 +44,7 @@ public class QueryParameterFQueryables extends QueryParameterFSubCollection {
 
   @Override
   protected boolean matchesPath(String definitionPath) {
-    return definitionPath.equals("/collections/{collectionId}/queryables");
+    return "/collections/{collectionId}/queryables".equals(definitionPath);
   }
 
   @Override

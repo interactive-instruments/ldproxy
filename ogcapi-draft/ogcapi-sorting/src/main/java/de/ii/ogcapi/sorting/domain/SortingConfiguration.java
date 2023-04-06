@@ -30,7 +30,7 @@ import org.immutables.value.Value;
  * ```yaml
  * - buildingBlock: SORTING
  *   enabled: true
- *   sortables:
+ *   included:
  *   - name
  *   - function
  *   - height
@@ -53,6 +53,7 @@ public interface SortingConfiguration extends ExtensionConfiguration {
    *     `DATETIME`, `INTEGER` und `FLOAT`.
    * @default []
    */
+  @SuppressWarnings("DeprecatedIsStillUsed")
   @Deprecated(since = "3.4.0")
   List<String> getSortables();
 
@@ -142,6 +143,7 @@ public interface SortingConfiguration extends ExtensionConfiguration {
 
   @Override
   default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
+    //noinspection deprecation
     return new ImmutableSortingConfiguration.Builder()
         .from(source)
         .from(this)

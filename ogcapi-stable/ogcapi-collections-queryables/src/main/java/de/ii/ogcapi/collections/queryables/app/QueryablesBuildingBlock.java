@@ -69,10 +69,6 @@ import javax.inject.Singleton;
 @AutoBind
 public class QueryablesBuildingBlock implements ApiBuildingBlock {
 
-  static final List<String> VALID_TYPES =
-      ImmutableList.of(
-          "STRING", "DATE", "DATETIME", "INTEGER", "FLOAT", "BOOLEAN", "GEOMETRY", "VALUE_ARRAY");
-
   private final SchemaInfo schemaInfo;
   private final FeaturesCoreProviders providers;
 
@@ -95,18 +91,7 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
   @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     // get the configurations to process
-    Map<String, QueryablesConfiguration> configs =
-        api.getData().getCollections().entrySet().stream()
-            .map(
-                entry -> {
-                  final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
-                  final QueryablesConfiguration config =
-                      collectionData.getExtension(QueryablesConfiguration.class).orElse(null);
-                  if (Objects.isNull(config) || !config.isEnabled()) return null;
-                  return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), config);
-                })
-            .filter(Objects::nonNull)
-            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+    Map<String, QueryablesConfiguration> configs = getConfigurations(api);
 
     if (configs.isEmpty()) {
       // nothing to do
@@ -118,78 +103,123 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
 
     // check that the feature provider supports queries
     FeatureProvider2 provider = providers.getFeatureProviderOrThrow(api.getData());
-    if (!provider.supportsQueries())
+    if (!provider.supportsQueries()) {
       builder.addErrors(
           MessageFormat.format(
               "Queryables is enabled, but the feature provider of the API '{0}' does not support queries.",
               provider.getData().getId()));
+    }
 
     // no additional operational checks for now, only validation; we can stop, if no validation is
     // requested
-    if (apiValidation == ValidationResult.MODE.NONE) return builder.build();
+    if (apiValidation == ValidationResult.MODE.NONE) {
+      return builder.build();
+    }
 
     for (Map.Entry<String, QueryablesConfiguration> entry : configs.entrySet()) {
-      // check that there is at least one queryable for each collection where queryables is enabled
-      FeatureTypeConfigurationOgcApi collectionData =
-          api.getData().getCollections().get(entry.getKey());
-      List<String> deprecatedQueryables =
-          api.getData()
-              .getExtension(FeaturesCoreConfiguration.class, entry.getKey())
-              .flatMap(FeaturesCoreConfiguration::getQueryables)
-              .map(FeaturesCollectionQueryables::getAll)
-              .orElse(ImmutableList.of());
-      if (entry.getValue().getIncluded().isEmpty() && deprecatedQueryables.isEmpty())
-        builder.addStrictErrors(
-            MessageFormat.format(
-                "Queryables is enabled for collection ''{0}'', but no queryable property has been configured.",
-                entry.getKey()));
+      List<String> deprecatedQueryables = getDeprecatedQueryables(builder, api, entry);
 
+      FeatureTypeConfigurationOgcApi collectionData =
+          Objects.requireNonNull(api.getData().getCollections().get(entry.getKey()));
       List<String> properties =
           schemaInfo.getPropertyNames(api.getData(), entry.getKey(), true, false);
       Optional<FeatureSchema> schema = providers.getFeatureSchema(api.getData(), collectionData);
-      if (schema.isEmpty())
+      if (schema.isEmpty()) {
         builder.addErrors(
             MessageFormat.format(
                 "Queryables is enabled for collection ''{0}'', but no provider has been configured.",
                 entry.getKey()));
-      else {
-        for (String queryable :
-            Stream.concat(
-                    deprecatedQueryables.stream(),
-                    Stream.concat(
-                        entry.getValue().getIncluded().stream(),
-                        entry.getValue().getExcluded().stream()))
-                .filter(v -> !"*".equals(v))
-                .collect(Collectors.toUnmodifiableList())) {
-          // does the collection include the sortable property?
-          if (!properties.contains(queryable)) {
-            builder.addStrictErrors(
-                MessageFormat.format(
-                    "The queryables configuration for collection ''{0}'' includes property ''{1}'', but the property does not exist.",
-                    entry.getKey(), queryable));
-          }
-        }
-
-        List<String> queryables =
-            entry
-                .getValue()
-                .getQueryablesSchema(collectionData, schema.get())
-                .getAllNestedProperties()
-                .stream()
-                .map(SchemaBase::getFullPathAsString)
-                .collect(Collectors.toList());
-        Stream.concat(deprecatedQueryables.stream(), entry.getValue().getIncluded().stream())
-            .filter(propertyName -> !"*".equals(propertyName))
-            .filter(propertyName -> !queryables.contains(propertyName))
-            .forEach(
-                propertyName ->
-                    builder.addStrictErrors(
-                        MessageFormat.format(
-                            "The queryables configuration for collection ''{0}'' includes a property ''{1}'', but the property is not eligible.",
-                            entry.getKey(), propertyName)));
+      } else {
+        checkQueryableExists(builder, entry, deprecatedQueryables, properties);
+        checkQueryableIsEligible(builder, entry, deprecatedQueryables, collectionData, schema);
       }
     }
 
     return builder.build();
+  }
+
+  private void checkQueryableExists(
+      ImmutableValidationResult.Builder builder,
+      Map.Entry<String, QueryablesConfiguration> entry,
+      List<String> deprecatedQueryables,
+      List<String> properties) {
+    for (String queryable :
+        Stream.concat(
+                deprecatedQueryables.stream(),
+                Stream.concat(
+                    entry.getValue().getIncluded().stream(),
+                    entry.getValue().getExcluded().stream()))
+            .filter(v -> !"*".equals(v))
+            .collect(Collectors.toUnmodifiableList())) {
+      // does the collection include the sortable property?
+      if (!properties.contains(queryable)) {
+        builder.addStrictErrors(
+            MessageFormat.format(
+                "The queryables configuration for collection ''{0}'' includes property ''{1}'', but the property does not exist.",
+                entry.getKey(), queryable));
+      }
+    }
+  }
+
+  private void checkQueryableIsEligible(
+      ImmutableValidationResult.Builder builder,
+      Map.Entry<String, QueryablesConfiguration> entry,
+      List<String> deprecatedQueryables,
+      FeatureTypeConfigurationOgcApi collectionData,
+      Optional<FeatureSchema> schema) {
+    List<String> queryables =
+        entry
+            .getValue()
+            .getQueryablesSchema(collectionData, schema.get())
+            .getAllNestedProperties()
+            .stream()
+            .map(SchemaBase::getFullPathAsString)
+            .collect(Collectors.toList());
+    Stream.concat(deprecatedQueryables.stream(), entry.getValue().getIncluded().stream())
+        .filter(propertyName -> !"*".equals(propertyName))
+        .filter(propertyName -> !queryables.contains(propertyName))
+        .forEach(
+            propertyName ->
+                builder.addStrictErrors(
+                    MessageFormat.format(
+                        "The queryables configuration for collection ''{0}'' includes a property ''{1}'', but the property is not eligible.",
+                        entry.getKey(), propertyName)));
+  }
+
+  private List<String> getDeprecatedQueryables(
+      ImmutableValidationResult.Builder builder,
+      OgcApi api,
+      Map.Entry<String, QueryablesConfiguration> entry) {
+    @SuppressWarnings("deprecation")
+    List<String> deprecatedQueryables =
+        api.getData()
+            .getExtension(FeaturesCoreConfiguration.class, entry.getKey())
+            .flatMap(FeaturesCoreConfiguration::getQueryables)
+            .map(FeaturesCollectionQueryables::getAll)
+            .orElse(ImmutableList.of());
+    // check that there is at least one queryable for each collection where queryables is enabled
+    if (entry.getValue().getIncluded().isEmpty() && deprecatedQueryables.isEmpty()) {
+      builder.addStrictErrors(
+          MessageFormat.format(
+              "Queryables is enabled for collection ''{0}'', but no queryable property has been configured.",
+              entry.getKey()));
+    }
+    return deprecatedQueryables;
+  }
+
+  private Map<String, QueryablesConfiguration> getConfigurations(OgcApi api) {
+    return api.getData().getCollections().entrySet().stream()
+        .map(
+            entry -> {
+              final FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
+              final QueryablesConfiguration config =
+                  collectionData.getExtension(QueryablesConfiguration.class).orElse(null);
+              if (Objects.isNull(config) || !config.isEnabled()) {
+                return null;
+              }
+              return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), config);
+            })
+        .filter(Objects::nonNull)
+        .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 }

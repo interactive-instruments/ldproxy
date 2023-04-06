@@ -69,6 +69,7 @@ public class QueryParametersQueryables
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    //noinspection deprecation
     return apiData
             .getExtension(QueryablesConfiguration.class, collectionId)
             .filter(QueryablesConfiguration::isEnabled)
@@ -95,58 +96,70 @@ public class QueryParametersQueryables
 
     Optional<QueryablesConfiguration> configuration =
         apiData.getExtension(QueryablesConfiguration.class, collectionId.get());
-    if (configuration.map(QueryablesConfiguration::provideAsQueryParameters).orElse(true)) {
-      FeatureTypeConfigurationOgcApi collectionData =
-          apiData.getCollectionData(collectionId.get()).orElse(null);
-      if (collectionData != null) {
-        FeatureSchema featureSchema =
-            providers.getFeatureSchema(apiData, collectionData).orElse(null);
-        if (featureSchema != null) {
-          Map<String, FeatureSchema> queryables =
-              configuration
-                  .map(c -> c.getQueryables(collectionData, featureSchema))
-                  .orElse(ImmutableMap.of());
-          return queryables.entrySet().stream()
-              .filter(queryable -> !queryable.getValue().isSpatial())
-              .map(
-                  entry -> {
-                    String field = entry.getKey();
-                    Optional<Schema<?>> schema2 =
-                        schemaGeneratorFeature.getProperty(featureSchema, collectionData, field);
-                    if (schema2.isEmpty()) {
-                      if (LOGGER.isWarnEnabled()) {
-                        LOGGER.warn(
-                            "Query parameter for property '{}' at path '/collections/{}/items' could not be created, the property was not found in the feature schema.",
-                            field,
-                            collectionId);
-                      }
-                      return null;
-                    }
-                    String description = "Filter the collection by property '" + field + "'";
-                    if (Objects.nonNull(schema2.get().getTitle())
-                        && !schema2.get().getTitle().isEmpty())
-                      description += " (" + schema2.get().getTitle() + ")";
-                    if (Objects.nonNull(schema2.get().getDescription())
-                        && !schema2.get().getDescription().isEmpty())
-                      description += ": " + schema2.get().getDescription();
-                    else description += ".";
-                    return new ImmutableQueryParameterTemplateQueryable.Builder()
-                        .apiId(apiData.getId())
-                        .collectionId(collectionId.get())
-                        .name(field)
-                        .type(entry.getValue().getType())
-                        .valueType(entry.getValue().getValueType())
-                        .description(description)
-                        .schema(schema2.get())
-                        .schemaValidator(schemaValidator)
-                        .build();
-                  })
-              .filter(Objects::nonNull)
-              .collect(Collectors.toUnmodifiableList());
-        }
-      }
+    if (!configuration.map(QueryablesConfiguration::provideAsQueryParameters).orElse(true)) {
+      return ImmutableList.of();
     }
-    return ImmutableList.of();
+
+    FeatureTypeConfigurationOgcApi collectionData =
+        apiData.getCollectionData(collectionId.get()).orElse(null);
+    if (collectionData == null) {
+      return ImmutableList.of();
+    }
+
+    FeatureSchema featureSchema = providers.getFeatureSchema(apiData, collectionData).orElse(null);
+    if (featureSchema == null) {
+      return ImmutableList.of();
+    }
+
+    return configuration
+        .map(c -> c.getQueryables(collectionData, featureSchema))
+        .orElse(ImmutableMap.of())
+        .entrySet()
+        .stream()
+        .filter(queryable -> !queryable.getValue().isSpatial())
+        .map(queryable -> getQueryable(apiData, collectionData, featureSchema, queryable))
+        .filter(Objects::nonNull)
+        .collect(Collectors.toUnmodifiableList());
+  }
+
+  private QueryParameterTemplateQueryable getQueryable(
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData,
+      FeatureSchema featureSchema,
+      Map.Entry<String, FeatureSchema> queryableDefinition) {
+    String field = queryableDefinition.getKey();
+    Optional<Schema<?>> schema2 =
+        schemaGeneratorFeature.getProperty(featureSchema, collectionData, field);
+    if (schema2.isEmpty()) {
+      if (LOGGER.isWarnEnabled()) {
+        LOGGER.warn(
+            "Query parameter for property '{}' at path '/collections/{}/items' could not be created, the property was not found in the feature schema.",
+            field,
+            collectionData.getId());
+      }
+      return null;
+    }
+    StringBuilder description =
+        new StringBuilder("Filter the collection by property '").append(field).append('\'');
+    if (Objects.nonNull(schema2.get().getTitle()) && !schema2.get().getTitle().isEmpty()) {
+      description.append(" (").append(schema2.get().getTitle()).append(')');
+    }
+    if (Objects.nonNull(schema2.get().getDescription())
+        && !schema2.get().getDescription().isEmpty()) {
+      description.append(": ").append(schema2.get().getDescription());
+    } else {
+      description.append('.');
+    }
+    return new ImmutableQueryParameterTemplateQueryable.Builder()
+        .apiId(apiData.getId())
+        .collectionId(collectionData.getId())
+        .name(field)
+        .type(queryableDefinition.getValue().getType())
+        .valueType(queryableDefinition.getValue().getValueType())
+        .description(description.toString())
+        .schema(schema2.get())
+        .schemaValidator(schemaValidator)
+        .build();
   }
 
   @Override

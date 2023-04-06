@@ -166,6 +166,7 @@ public interface QueryablesConfiguration extends ExtensionConfiguration, Caching
             ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue, (first, second) -> second));
   }
 
+  @SuppressWarnings("deprecation")
   default FeatureSchema getQueryablesSchema(
       FeatureTypeConfigurationOgcApi collectionData, FeatureSchema schema) {
     OnlyQueryables queryablesSelector;

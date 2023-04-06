@@ -48,6 +48,7 @@ public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache
 
   public abstract Schema<?> getSchema();
 
+  @Override
   public abstract SchemaValidator getSchemaValidator();
 
   @Override
@@ -84,7 +85,7 @@ public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache
         () ->
             apiData.getId().equals(getApiId())
                 && method == HttpMethods.GET
-                && definitionPath.equals("/collections/{collectionId}")
+                && "/collections/{collectionId}".equals(definitionPath)
                 && collectionId.equals(getCollectionId()));
   }
 

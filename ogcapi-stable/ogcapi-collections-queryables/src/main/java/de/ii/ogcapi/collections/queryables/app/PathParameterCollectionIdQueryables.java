@@ -38,7 +38,7 @@ public class PathParameterCollectionIdQueryables extends AbstractPathParameterCo
 
   @Override
   public boolean matchesPath(String definitionPath) {
-    return definitionPath.equals("/collections/{collectionId}/queryables");
+    return "/collections/{collectionId}/queryables".equals(definitionPath);
   }
 
   @Override

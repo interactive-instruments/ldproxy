@@ -64,18 +64,21 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
   static final Splitter KEYS_SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings();
   private final SchemaValidator schemaValidator;
   private final FeaturesCoreProviders providers;
+  private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap;
 
   @Inject
   QueryParameterSortbyFeatures(SchemaValidator schemaValidator, FeaturesCoreProviders providers) {
+    super();
     this.schemaValidator = schemaValidator;
     this.providers = providers;
+    this.schemaMap = new ConcurrentHashMap<>();
   }
 
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
 
-    // TODO add feature-specific conformance class once we have a draft spec
+    // add feature-specific conformance class once we have a draft spec
 
     if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record)) {
       builder.add("http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/sorting");
@@ -106,8 +109,7 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
       if (key.startsWith("-")) {
         builder.add(SortKey.of(key.substring(1), SortKey.Direction.DESCENDING));
       } else {
-        if (key.startsWith("+")) key = key.substring(1);
-        builder.add(SortKey.of(key));
+        builder.add(SortKey.of(key.startsWith("+") ? key.substring(1) : key));
       }
     }
     return builder.build();
@@ -138,7 +140,7 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
             apiData.getCollections().entrySet().stream()
                     .anyMatch(entry -> isEnabledForApi(apiData, entry.getKey()))
                 && method == HttpMethods.GET
-                && definitionPath.equals("/collections/{collectionId}/items"));
+                && "/collections/{collectionId}/items".equals(definitionPath));
   }
 
   @Override
@@ -153,16 +155,15 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
         () ->
             isEnabledForApi(apiData, collectionId)
                 && method == HttpMethods.GET
-                && definitionPath.equals("/collections/{collectionId}/items"));
+                && "/collections/{collectionId}/items".equals(definitionPath));
   }
-
-  private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =
-      new ConcurrentHashMap<>();
 
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {
     int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.containsKey(apiHashCode)) {
+      schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    }
     if (!schemaMap.get(apiHashCode).containsKey("*")) {
       schemaMap.get(apiHashCode).put("*", new ArraySchema().items(new StringSchema()));
     }
@@ -172,7 +173,9 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
     int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.containsKey(apiHashCode)) {
+      schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    }
     if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
       FeatureTypeConfigurationOgcApi collectionData =
           Objects.requireNonNull(apiData.getCollections().get(collectionId));

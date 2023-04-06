@@ -69,6 +69,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
+@SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
 public class EndpointSortables extends EndpointSubCollection /* implements ConformanceClass */ {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointSortables.class);
@@ -86,7 +87,7 @@ public class EndpointSortables extends EndpointSubCollection /* implements Confo
     this.schemaCache = new SchemaCacheSortables();
   }
 
-  /* TODO wait for updates on Features Part n: Schemas
+  /* Wait for updates on Features Part n: Schemas
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
       return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-n/0.0/conf/queryables");
@@ -100,8 +101,9 @@ public class EndpointSortables extends EndpointSubCollection /* implements Confo
 
   @Override
   public List<? extends FormatExtension> getResourceFormats() {
-    if (formats == null)
+    if (formats == null) {
       formats = extensionRegistry.getExtensionsForType(CollectionPropertiesFormat.class);
+    }
     return formats;
   }
 
@@ -115,8 +117,8 @@ public class EndpointSortables extends EndpointSubCollection /* implements Confo
     String path = "/collections/{collectionId}" + subSubPath;
     List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
     Optional<OgcApiPathParameter> optCollectionIdParam =
-        pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-    if (!optCollectionIdParam.isPresent()) {
+        pathParameters.stream().filter(param -> "collectionId".equals(param.getName())).findAny();
+    if (optCollectionIdParam.isEmpty()) {
       LOGGER.error(
           "Path parameter 'collectionId' missing for resource at path '"
               + path
@@ -125,13 +127,13 @@ public class EndpointSortables extends EndpointSubCollection /* implements Confo
       final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
       final boolean explode = collectionIdParam.isExplodeInOpenApi(apiData);
       final List<String> collectionIds =
-          (explode) ? collectionIdParam.getValues(apiData) : ImmutableList.of("{collectionId}");
+          explode ? collectionIdParam.getValues(apiData) : ImmutableList.of("{collectionId}");
       for (String collectionId : collectionIds) {
         final List<OgcApiQueryParameter> queryParameters =
             getQueryParameters(extensionRegistry, apiData, path, collectionId);
         final String operationSummary =
             "retrieve the sortables of the feature collection '" + collectionId + "'";
-        Optional<String> operationDescription =
+        final Optional<String> operationDescription =
             Optional.of(
                 "The sortables resources identifies the properties that can be"
                     + "referenced in the 'sortby' parameter to order the features of the collection in the response to a query."
@@ -139,12 +141,12 @@ public class EndpointSortables extends EndpointSubCollection /* implements Confo
                     + "Note that the sortables schema does not specify a schema of any object that can be retrieved from the API.\n\n"
                     + "JSON Schema is used for the sortables to have a consistent approach for describing schema information and JSON Schema "
                     + "is/will be used in other parts of OGC API Features to describe schemas for GeoJSON feature content including in OpenAPI documents.");
-        String resourcePath = "/collections/" + collectionId + subSubPath;
-        ImmutableOgcApiResourceData.Builder resourceBuilder =
+        final String resourcePath = "/collections/" + collectionId + subSubPath;
+        final ImmutableOgcApiResourceData.Builder resourceBuilder =
             new ImmutableOgcApiResourceData.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
+        final Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
         ApiOperation.getResource(
                 apiData,
                 resourcePath,
