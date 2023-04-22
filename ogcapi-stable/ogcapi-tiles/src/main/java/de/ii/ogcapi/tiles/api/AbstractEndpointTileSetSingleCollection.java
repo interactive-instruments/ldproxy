@@ -164,22 +164,17 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
     checkPathParameter(
         extensionRegistry, apiData, definitionPath, "tileMatrixSetId", tileMatrixSetId);
 
-    FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
-    TilesConfiguration tilesConfiguration =
-        featureType.getExtension(TilesConfiguration.class).get();
+    FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
+    TilesetMetadata tilesetMetadata =
+        tilesProviders.getTilesetMetadataOrThrow(apiData, collectionData);
 
     TilesQueriesHandler.QueryInputTileSet queryInput =
         new Builder()
             .from(getGenericQueryInput(apiData))
             .collectionId(collectionId)
             .tileMatrixSetId(tileMatrixSetId)
-            .center(
-                tilesProviders
-                    .getTilesetMetadata(apiData, featureType)
-                    .flatMap(TilesetMetadata::getCenter)
-                    .map(LonLat::asList)
-                    .orElse(List.of()))
-            .zoomLevels(tilesConfiguration.getZoomLevelsDerived().get(tileMatrixSetId))
+            .center(tilesetMetadata.getCenter().map(LonLat::asList).orElse(List.of()))
+            .zoomLevels(tilesetMetadata.getLevels().get(tileMatrixSetId))
             .path(definitionPath)
             .build();
 

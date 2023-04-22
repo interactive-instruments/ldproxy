@@ -130,6 +130,7 @@ public class EndpointMapTileSingleCollection extends EndpointSubCollection
             limitsGenerator,
             tileMatrixSetRepository,
             api,
+            tilesProviders,
             requestContext,
             uriInfo,
             "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",

@@ -26,6 +26,7 @@ import de.ii.ogcapi.tiles.domain.TileJson;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Map;
 import java.util.Optional;
@@ -51,14 +52,19 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
   private final Schema<?> schemaTileJson;
   private final Map<String, Schema<?>> referencedSchemas;
   private final FeaturesCoreProviders providers;
+  private final TilesProviders tilesProviders;
   private final SchemaInfo schemaInfo;
 
   @Inject
   public TileSetFormatTileJson(
-      ClassSchemaCache classSchemaCache, FeaturesCoreProviders providers, SchemaInfo schemaInfo) {
+      ClassSchemaCache classSchemaCache,
+      FeaturesCoreProviders providers,
+      TilesProviders tilesProviders,
+      SchemaInfo schemaInfo) {
     schemaTileJson = classSchemaCache.getSchema(TileJson.class);
     referencedSchemas = classSchemaCache.getReferencedSchemas(TileJson.class);
     this.providers = providers;
+    this.tilesProviders = tilesProviders;
     this.schemaInfo = schemaInfo;
   }
 
@@ -101,7 +107,12 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
         .center(TilesHelper.getCenter(tileset))
         .vectorLayers(
             TilesHelper.getVectorLayers(
-                apiData, collectionId, tileset.getTileMatrixSetId(), providers, schemaInfo))
+                apiData,
+                collectionId,
+                tileset.getTileMatrixSetId(),
+                providers,
+                tilesProviders,
+                schemaInfo))
         .build();
   }
 

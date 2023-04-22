@@ -223,7 +223,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                 crsTransformerFactory,
                                 limitsGenerator,
                                 providers,
-                                entityRegistry))
+                                entityRegistry,
+                                tilesProviders))
                     .collect(Collectors.toUnmodifiableList())));
 
     TileSets tileSets = builder.build();
@@ -317,7 +318,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             crsTransformerFactory,
             limitsGenerator,
             providers,
-            entityRegistry);
+            entityRegistry,
+            tilesProviders);
 
     Date lastModified = getLastModified(queryInput);
     EntityTag etag =

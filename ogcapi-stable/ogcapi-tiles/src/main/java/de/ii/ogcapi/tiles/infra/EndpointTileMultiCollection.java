@@ -134,6 +134,7 @@ public class EndpointTileMultiCollection extends Endpoint
             limitsGenerator,
             tileMatrixSetRepository,
             api,
+            tilesProviders,
             requestContext,
             uriInfo,
             "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",

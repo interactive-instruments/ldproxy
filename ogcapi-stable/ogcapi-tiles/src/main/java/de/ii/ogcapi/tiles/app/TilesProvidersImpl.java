@@ -25,6 +25,7 @@ import de.ii.xtraplatform.tiles.domain.MinMax;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import de.ii.xtraplatform.tiles.domain.TileProvider;
+import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
 import java.util.Locale;
@@ -127,13 +128,11 @@ public class TilesProvidersImpl implements TilesProviders {
                 boundingBox.get().getYmax()));
 
     OgcApiDataV2 apiData = api.getData();
-    Optional<TilesConfiguration> config =
-        collectionId.isEmpty()
-            ? apiData.getExtension(TilesConfiguration.class)
-            : apiData.getExtension(TilesConfiguration.class, collectionId.get());
-    if (config.isEmpty()) return;
+    Optional<TilesetMetadata> tilesetMetadata =
+        getTilesetMetadata(apiData, collectionId.flatMap(apiData::getCollectionData));
+    if (tilesetMetadata.isEmpty()) return;
 
-    Map<String, MinMax> zoomLevels = config.get().getZoomLevelsDerived();
+    Map<String, MinMax> zoomLevels = tilesetMetadata.get().getLevels();
 
     Map<String, MinMax> relevantZoomLevels =
         tileMatrixSetId

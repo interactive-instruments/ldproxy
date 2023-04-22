@@ -29,7 +29,6 @@ import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.tiles.domain.MinMax;
 import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
 import de.ii.xtraplatform.tiles.domain.TilesetMetadata.LonLat;
 import java.util.List;
@@ -168,28 +167,20 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
         "collectionId",
         collectionId);
 
+    TilesetMetadata tilesetMetadata =
+        tilesProviders.getTilesetMetadataOrThrow(apiData, apiData.getCollectionData(collectionId));
+
     TilesQueriesHandler.QueryInputTileSets queryInput =
         new Builder()
             .from(getGenericQueryInput(apiData))
             .collectionId(collectionId)
-            .center(
-                tilesProviders
-                    .getTilesetMetadata(apiData, apiData.getCollectionData(collectionId))
-                    .flatMap(TilesetMetadata::getCenter)
-                    .map(LonLat::asList)
-                    .orElse(List.of()))
-            .tileMatrixSetZoomLevels(getTileMatrixSetZoomLevels(apiData, collectionId))
+            .center(tilesetMetadata.getCenter().map(LonLat::asList).orElse(List.of()))
+            .tileMatrixSetZoomLevels(tilesetMetadata.getLevels())
             .path(definitionPath)
             .onlyWebMercatorQuad(onlyWebMercatorQuad)
             .tileEncodings(tileEncodings)
             .build();
 
     return queryHandler.handle(TilesQueriesHandler.Query.TILE_SETS, queryInput, requestContext);
-  }
-
-  private Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiDataV2 data, String collectionId) {
-    TilesConfiguration tilesConfiguration =
-        data.getCollections().get(collectionId).getExtension(TilesConfiguration.class).get();
-    return tilesConfiguration.getZoomLevelsDerived();
   }
 }

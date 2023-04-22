@@ -30,13 +30,10 @@ import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsOgcApi;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTile;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
-import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.tiles.domain.MinMax;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
@@ -178,6 +175,7 @@ public interface EndpointTileMixin {
       TileMatrixSetLimitsGenerator limitsGenerator,
       TileMatrixSetRepository tileMatrixSetRepository,
       OgcApi api,
+      TilesProviders tilesProviders,
       ApiRequestContext requestContext,
       UriInfo uriInfo,
       String definitionPath,
@@ -186,14 +184,10 @@ public interface EndpointTileMixin {
       String tileLevel,
       String tileRow,
       String tileCol)
-      throws CrsTransformationException, IOException, NotFoundException {
+      throws NotFoundException {
     OgcApiDataV2 apiData = api.getData();
     Optional<FeatureTypeConfigurationOgcApi> collectionData =
         collectionId.map(id -> apiData.getCollections().get(id));
-    TilesConfiguration tilesConfiguration =
-        collectionData.isPresent()
-            ? collectionData.get().getExtension(TilesConfiguration.class).orElseThrow()
-            : apiData.getExtension(TilesConfiguration.class).orElseThrow();
     Map<String, String> parameterValues = endpoint.toFlatMap(uriInfo.getQueryParameters());
     final List<OgcApiQueryParameter> parameterDefinitions =
         collectionId.isPresent()
@@ -224,16 +218,20 @@ public interface EndpointTileMixin {
           "Could not convert tile coordinates that have been validated to integers", 500);
     }
 
-    MinMax zoomLevels = tilesConfiguration.getZoomLevelsDerived().get(tileMatrixSetId);
-    if (zoomLevels.getMax() < level || zoomLevels.getMin() > level)
-      throw new NotFoundException(
-          "The requested tile is outside the zoom levels for this tile set.");
-
     TileMatrixSet tileMatrixSet =
         tileMatrixSetRepository
             .get(tileMatrixSetId)
             .orElseThrow(
                 () -> new NotFoundException("Unknown tile matrix set: " + tileMatrixSetId));
+
+    MinMax zoomLevels =
+        tilesProviders
+            .getTilesetMetadataOrThrow(apiData, collectionData)
+            .getLevels()
+            .get(tileMatrixSetId);
+    if (zoomLevels.getMax() < level || zoomLevels.getMin() > level)
+      throw new NotFoundException(
+          "The requested tile is outside the zoom levels for this tile set.");
 
     TileMatrixSetLimitsOgcApi tileLimits =
         limitsGenerator.getTileMatrixSetLimits(api, tileMatrixSet, level, collectionId);

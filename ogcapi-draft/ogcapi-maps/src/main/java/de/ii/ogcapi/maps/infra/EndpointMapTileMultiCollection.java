@@ -124,6 +124,7 @@ public class EndpointMapTileMultiCollection extends Endpoint implements Endpoint
             limitsGenerator,
             tileMatrixSetRepository,
             api,
+            tilesProviders,
             requestContext,
             uriInfo,
             "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",

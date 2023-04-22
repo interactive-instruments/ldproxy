@@ -122,22 +122,17 @@ public abstract class AbstractEndpointTileSetMultiCollection extends Endpoint {
       ApiRequestContext requestContext,
       String definitionPath,
       String tileMatrixSetId) {
-
     checkPathParameter(
         extensionRegistry, apiData, definitionPath, "tileMatrixSetId", tileMatrixSetId);
-    TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
+
+    TilesetMetadata tilesetMetadata = tilesProviders.getTilesetMetadataOrThrow(apiData);
 
     TilesQueriesHandler.QueryInputTileSet queryInput =
         new Builder()
             .from(getGenericQueryInput(apiData))
             .tileMatrixSetId(tileMatrixSetId)
-            .center(
-                tilesProviders
-                    .getTilesetMetadata(apiData)
-                    .flatMap(TilesetMetadata::getCenter)
-                    .map(LonLat::asList)
-                    .orElse(List.of()))
-            .zoomLevels(tilesConfiguration.getZoomLevelsDerived().get(tileMatrixSetId))
+            .center(tilesetMetadata.getCenter().map(LonLat::asList).orElse(List.of()))
+            .zoomLevels(tilesetMetadata.getLevels().get(tileMatrixSetId))
             .path(definitionPath)
             .build();
 

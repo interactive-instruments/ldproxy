@@ -15,10 +15,10 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
+import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -42,12 +42,16 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
   private final ConcurrentMap<Integer, Schema<?>> schemaMap = new ConcurrentHashMap<>();
   private final SchemaValidator schemaValidator;
   private final TileMatrixSetRepository tileMatrixSetRepository;
+  private final TilesProviders tilesProviders;
 
   @Inject
   public PathParameterTileMatrixSetId(
-      SchemaValidator schemaValidator, TileMatrixSetRepository tileMatrixSetRepository) {
+      SchemaValidator schemaValidator,
+      TileMatrixSetRepository tileMatrixSetRepository,
+      TilesProviders tilesProviders) {
     this.schemaValidator = schemaValidator;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -62,8 +66,8 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
             .getExtension(TilesConfiguration.class)
             .filter(TilesConfiguration::isEnabled)
             .filter(TilesConfiguration::hasDatasetTiles)
-            .map(TilesConfiguration::getZoomLevelsDerived)
-            .map(Map::keySet)
+            .flatMap(cfg -> tilesProviders.getTilesetMetadata(apiData))
+            .map(TilesetMetadata::getTileMatrixSets)
             .orElse(ImmutableSet.of())
             .stream()
             .collect(Collectors.toUnmodifiableList());
@@ -71,9 +75,18 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
     Set<String> tmsSet =
         apiData.getCollections().values().stream()
             .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
-            .map(collection -> collection.getExtension(TilesConfiguration.class))
-            .filter(config -> config.filter(ExtensionConfiguration::isEnabled).isPresent())
-            .map(config -> config.get().getZoomLevelsDerived().keySet())
+            .filter(
+                collection ->
+                    collection
+                        .getExtension(TilesConfiguration.class)
+                        .filter(TilesConfiguration::isEnabled)
+                        .isPresent())
+            .map(
+                collection ->
+                    tilesProviders
+                        .getTilesetMetadata(apiData, collection)
+                        .map(TilesetMetadata::getTileMatrixSets)
+                        .orElse(ImmutableSet.of()))
             .flatMap(Set::stream)
             .collect(Collectors.toSet());
 

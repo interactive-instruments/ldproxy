@@ -127,18 +127,13 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
     if (!isEnabledForApi(apiData))
       throw new NotFoundException("Multi-collection tiles are not available in this API.");
 
-    TilesConfiguration tilesConfiguration = apiData.getExtension(TilesConfiguration.class).get();
+    TilesetMetadata tilesetMetadata = tilesProviders.getTilesetMetadataOrThrow(apiData);
 
     TilesQueriesHandler.QueryInputTileSets queryInput =
         new Builder()
             .from(getGenericQueryInput(apiData))
-            .center(
-                tilesProviders
-                    .getTilesetMetadata(apiData)
-                    .flatMap(TilesetMetadata::getCenter)
-                    .map(LonLat::asList)
-                    .orElse(List.of()))
-            .tileMatrixSetZoomLevels(tilesConfiguration.getZoomLevelsDerived())
+            .center(tilesetMetadata.getCenter().map(LonLat::asList).orElse(List.of()))
+            .tileMatrixSetZoomLevels(tilesetMetadata.getLevels())
             .path(definitionPath)
             .onlyWebMercatorQuad(onlyWebMercatorQuad)
             .tileEncodings(tileEncodings)
