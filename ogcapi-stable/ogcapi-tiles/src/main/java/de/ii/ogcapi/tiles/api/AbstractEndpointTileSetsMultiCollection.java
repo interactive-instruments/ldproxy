@@ -24,8 +24,11 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSets.Builder;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
+import de.ii.xtraplatform.tiles.domain.TilesetMetadata.LonLat;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -36,14 +39,17 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
 
   private final TilesQueriesHandler queryHandler;
   private final FeaturesCoreProviders providers;
+  private final TilesProviders tilesProviders;
 
   public AbstractEndpointTileSetsMultiCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
-      FeaturesCoreProviders providers) {
+      FeaturesCoreProviders providers,
+      TilesProviders tilesProviders) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
     this.providers = providers;
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -126,7 +132,12 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
     TilesQueriesHandler.QueryInputTileSets queryInput =
         new Builder()
             .from(getGenericQueryInput(apiData))
-            .center(tilesConfiguration.getCenterDerived())
+            .center(
+                tilesProviders
+                    .getTilesetMetadata(apiData)
+                    .flatMap(TilesetMetadata::getCenter)
+                    .map(LonLat::asList)
+                    .orElse(List.of()))
             .tileMatrixSetZoomLevels(tilesConfiguration.getZoomLevelsDerived())
             .path(definitionPath)
             .onlyWebMercatorQuad(onlyWebMercatorQuad)

@@ -30,6 +30,8 @@ import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
+import de.ii.xtraplatform.tiles.domain.TilesetMetadata.LonLat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -171,7 +173,12 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
             .from(getGenericQueryInput(apiData))
             .collectionId(collectionId)
             .tileMatrixSetId(tileMatrixSetId)
-            .center(tilesConfiguration.getCenterDerived())
+            .center(
+                tilesProviders
+                    .getTilesetMetadata(apiData, featureType)
+                    .flatMap(TilesetMetadata::getCenter)
+                    .map(LonLat::asList)
+                    .orElse(List.of()))
             .zoomLevels(tilesConfiguration.getZoomLevelsDerived().get(tileMatrixSetId))
             .path(definitionPath)
             .build();

@@ -30,6 +30,8 @@ import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.tiles.domain.MinMax;
+import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
+import de.ii.xtraplatform.tiles.domain.TilesetMetadata.LonLat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -170,7 +172,12 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
         new Builder()
             .from(getGenericQueryInput(apiData))
             .collectionId(collectionId)
-            .center(getCenter(apiData))
+            .center(
+                tilesProviders
+                    .getTilesetMetadata(apiData, apiData.getCollectionData(collectionId))
+                    .flatMap(TilesetMetadata::getCenter)
+                    .map(LonLat::asList)
+                    .orElse(List.of()))
             .tileMatrixSetZoomLevels(getTileMatrixSetZoomLevels(apiData, collectionId))
             .path(definitionPath)
             .onlyWebMercatorQuad(onlyWebMercatorQuad)
@@ -178,11 +185,6 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
             .build();
 
     return queryHandler.handle(TilesQueriesHandler.Query.TILE_SETS, queryInput, requestContext);
-  }
-
-  private List<Double> getCenter(OgcApiDataV2 data) {
-    TilesConfiguration tilesConfiguration = data.getExtension(TilesConfiguration.class).get();
-    return tilesConfiguration.getCenterDerived();
   }
 
   private Map<String, MinMax> getTileMatrixSetZoomLevels(OgcApiDataV2 data, String collectionId) {
