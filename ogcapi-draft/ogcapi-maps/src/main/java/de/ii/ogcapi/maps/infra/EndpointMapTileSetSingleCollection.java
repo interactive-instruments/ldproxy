@@ -19,6 +19,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ogcapi.tiles.api.AbstractEndpointTileSetSingleCollection;
 import de.ii.ogcapi.tiles.api.EndpointTileMixin;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import java.util.List;
 import javax.inject.Inject;
@@ -50,8 +51,9 @@ public class EndpointMapTileSetSingleCollection extends AbstractEndpointTileSetS
   EndpointMapTileSetSingleCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
-      FeaturesCoreProviders providers) {
-    super(extensionRegistry, queryHandler, providers);
+      FeaturesCoreProviders providers,
+      TilesProviders tilesProviders) {
+    super(extensionRegistry, queryHandler, providers, tilesProviders);
   }
 
   @Override

@@ -28,6 +28,7 @@ import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
@@ -115,7 +116,7 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
       ApiRequestContext requestContext,
       String definitionPath,
       boolean onlyWebMercatorQuad,
-      List<String> tileEncodings) {
+      Set<String> tileEncodings) {
 
     if (!isEnabledForApi(apiData))
       throw new NotFoundException("Multi-collection tiles are not available in this API.");

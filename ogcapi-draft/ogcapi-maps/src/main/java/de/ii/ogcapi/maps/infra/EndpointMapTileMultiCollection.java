@@ -22,6 +22,7 @@ import de.ii.ogcapi.maps.domain.MapTileFormatExtension;
 import de.ii.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tiles.api.EndpointTileMixin;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
@@ -56,17 +57,20 @@ public class EndpointMapTileMultiCollection extends Endpoint implements Endpoint
   private final TilesQueriesHandler queryHandler;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
   private final TileMatrixSetRepository tileMatrixSetRepository;
+  private final TilesProviders tilesProviders;
 
   @Inject
   EndpointMapTileMultiCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
       TileMatrixSetLimitsGenerator limitsGenerator,
-      TileMatrixSetRepository tileMatrixSetRepository) {
+      TileMatrixSetRepository tileMatrixSetRepository,
+      TilesProviders tilesProviders) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
     this.limitsGenerator = limitsGenerator;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -93,6 +97,7 @@ public class EndpointMapTileMultiCollection extends Endpoint implements Endpoint
         extensionRegistry,
         this,
         apiData,
+        tilesProviders,
         "map",
         ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE,
         "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",

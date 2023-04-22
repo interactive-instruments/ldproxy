@@ -84,6 +84,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -426,14 +427,17 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
               .filter(formatExtension -> formatExtension.isEnabledForApi(apiData))
               .map(format -> format.getMediaType().label())
               .collect(Collectors.toUnmodifiableList());
-      List<String> tileEncodings = config.getTileEncodingsDerived();
+      Set<String> tileEncodings =
+          tilesProviders
+              .getTilesetMetadataOrThrow(apiData, apiData.getCollectionData(collectionId))
+              .getTileEncodings();
       if (Objects.isNull(tileEncodings)) {
         builder.addStrictErrors(
             MessageFormat.format(
                 "No tile encoding has been specified in the TILES module configuration of collection ''{0}''.",
                 collectionId));
       } else {
-        for (String encoding : config.getTileEncodingsDerived()) {
+        for (String encoding : tileEncodings) {
           if (!formatLabels.contains(encoding)) {
             builder.addStrictErrors(
                 MessageFormat.format(

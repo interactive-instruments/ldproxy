@@ -21,8 +21,11 @@ import de.ii.ogcapi.maps.domain.MapTilesConfiguration;
 import de.ii.ogcapi.tiles.api.AbstractEndpointTileSetsSingleCollection;
 import de.ii.ogcapi.tiles.api.EndpointTileMixin;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
+import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
 import java.util.List;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -50,12 +53,16 @@ public class EndpointMapTileSetsSingleCollection extends AbstractEndpointTileSet
 
   private static final List<String> TAGS = ImmutableList.of("Access single-layer map tiles");
 
+  private final TilesProviders tilesProviders;
+
   @Inject
   EndpointMapTileSetsSingleCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
-      FeaturesCoreProviders providers) {
-    super(extensionRegistry, queryHandler, providers);
+      FeaturesCoreProviders providers,
+      TilesProviders tilesProviders) {
+    super(extensionRegistry, queryHandler, providers, tilesProviders);
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -105,10 +112,10 @@ public class EndpointMapTileSetsSingleCollection extends AbstractEndpointTileSet
       @Context ApiRequestContext requestContext,
       @PathParam("collectionId") String collectionId) {
 
-    List<String> tileEncodings =
-        api.getData()
-            .getExtension(MapTilesConfiguration.class, collectionId)
-            .map(MapTilesConfiguration::getTileEncodingsDerived)
+    Set<String> tileEncodings =
+        tilesProviders
+            .getTilesetMetadata(api.getData(), api.getData().getCollectionData(collectionId))
+            .map(TilesetMetadata::getTileEncodings)
             .orElseThrow(() -> new IllegalStateException("No tile encoding available."));
     return super.getTileSets(
         api.getData(),

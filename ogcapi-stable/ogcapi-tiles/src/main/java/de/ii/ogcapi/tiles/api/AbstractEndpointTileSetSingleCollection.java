@@ -27,6 +27,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSet.Builder;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import java.util.List;
@@ -44,14 +45,17 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
 
   private final TilesQueriesHandler queryHandler;
   private final FeaturesCoreProviders providers;
+  private final TilesProviders tilesProviders;
 
   public AbstractEndpointTileSetSingleCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
-      FeaturesCoreProviders providers) {
+      FeaturesCoreProviders providers,
+      TilesProviders tilesProviders) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
     this.providers = providers;
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -124,29 +128,8 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
                 .pathParameters(pathParameters);
         Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
         Optional<String> operationId =
-            collectionId.startsWith("{")
-                ? operationIdWithPlaceholders.map(
-                    id ->
-                        id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER + ".", "")
-                            .replace(
-                                EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
-                                apiData
-                                        .getExtension(TilesConfiguration.class)
-                                        .map(c -> c.getTileEncodingsDerived().contains("MVT"))
-                                        .orElse(false)
-                                    ? "vector"
-                                    : "map"))
-                : operationIdWithPlaceholders.map(
-                    id ->
-                        id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER, collectionId)
-                            .replace(
-                                EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
-                                apiData
-                                        .getExtension(TilesConfiguration.class, collectionId)
-                                        .map(c -> c.getTileEncodingsDerived().contains("MVT"))
-                                        .orElse(false)
-                                    ? "vector"
-                                    : "map"));
+            EndpointTileMixin.getOperationId(
+                operationIdWithPlaceholders, collectionId, apiData, tilesProviders);
         ApiOperation.getResource(
                 apiData,
                 resourcePath,

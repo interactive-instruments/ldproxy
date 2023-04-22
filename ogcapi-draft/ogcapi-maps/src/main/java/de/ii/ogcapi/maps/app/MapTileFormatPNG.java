@@ -13,6 +13,7 @@ import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.maps.domain.MapTileFormatExtension;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -32,7 +33,9 @@ public class MapTileFormatPNG extends MapTileFormatExtension {
           .build();
 
   @Inject
-  MapTileFormatPNG() {}
+  MapTileFormatPNG(TilesProviders tilesProviders) {
+    super(tilesProviders);
+  }
 
   @Override
   public ApiMediaType getMediaType() {

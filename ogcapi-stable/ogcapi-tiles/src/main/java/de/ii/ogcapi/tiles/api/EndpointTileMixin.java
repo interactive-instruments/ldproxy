@@ -31,6 +31,7 @@ import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsOgcApi;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTile;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.tiles.domain.MinMax;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
@@ -59,6 +60,7 @@ public interface EndpointTileMixin {
       ExtensionRegistry extensionRegistry,
       EndpointSubCollection endpoint,
       OgcApiDataV2 apiData,
+      TilesProviders tilesProviders,
       String apiEntrypoint,
       int sortPriority,
       String basePath,
@@ -101,29 +103,7 @@ public interface EndpointTileMixin {
                 .pathParameters(pathParameters);
         Map<MediaType, ApiMediaTypeContent> responseContent = endpoint.getResponseContent(apiData);
         Optional<String> operationId =
-            collectionId.startsWith("{")
-                ? operationIdWithPlaceholders.map(
-                    id ->
-                        id.replace(COLLECTION_ID_PLACEHOLDER + ".", "")
-                            .replace(
-                                DATA_TYPE_PLACEHOLDER,
-                                apiData
-                                        .getExtension(TilesConfiguration.class)
-                                        .map(c -> c.getTileEncodingsDerived().contains("MVT"))
-                                        .orElse(false)
-                                    ? "vector"
-                                    : "map"))
-                : operationIdWithPlaceholders.map(
-                    id ->
-                        id.replace(COLLECTION_ID_PLACEHOLDER, collectionId)
-                            .replace(
-                                DATA_TYPE_PLACEHOLDER,
-                                apiData
-                                        .getExtension(TilesConfiguration.class, collectionId)
-                                        .map(c -> c.getTileEncodingsDerived().contains("MVT"))
-                                        .orElse(false)
-                                    ? "vector"
-                                    : "map"));
+            getOperationId(operationIdWithPlaceholders, collectionId, apiData, tilesProviders);
         ApiOperation.getResource(
                 apiData,
                 resourcePath,
@@ -149,6 +129,7 @@ public interface EndpointTileMixin {
       ExtensionRegistry extensionRegistry,
       Endpoint endpoint,
       OgcApiDataV2 apiData,
+      TilesProviders tilesProviders,
       String apiEntrypoint,
       int sortPriority,
       String path,
@@ -172,16 +153,7 @@ public interface EndpointTileMixin {
     ImmutableOgcApiResourceData.Builder resourceBuilder =
         new ImmutableOgcApiResourceData.Builder().path(path).pathParameters(pathParameters);
     Optional<String> operationId =
-        operationIdWithPlaceholders.map(
-            id ->
-                id.replace(
-                    "__dataType__",
-                    apiData
-                            .getExtension(TilesConfiguration.class)
-                            .map(c -> c.getTileEncodingsDerived().contains("MVT"))
-                            .orElse(false)
-                        ? "vector"
-                        : "map"));
+        getOperationId(operationIdWithPlaceholders, "", apiData, tilesProviders);
     ApiOperation.getResource(
             apiData,
             path,
@@ -307,5 +279,30 @@ public interface EndpointTileMixin {
             QueryParameterSet.of(parameterDefinitions, parameterValues)
                 .evaluate(apiData, collectionData))
         .build();
+  }
+
+  static Optional<String> getOperationId(
+      Optional<String> operationIdWithPlaceholders,
+      String collectionId,
+      OgcApiDataV2 apiData,
+      TilesProviders tilesProviders) {
+    return operationIdWithPlaceholders.map(
+        id ->
+            collectionId.startsWith("{")
+                ? id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER + ".", "")
+                    .replace(
+                        EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
+                        tilesProviders.getTilesetMetadataOrThrow(apiData).isVector()
+                            ? "vector"
+                            : "map")
+                : id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER, collectionId)
+                    .replace(
+                        EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
+                        tilesProviders
+                                .getTilesetMetadataOrThrow(
+                                    apiData, apiData.getCollectionData(collectionId))
+                                .isVector()
+                            ? "vector"
+                            : "map"));
   }
 }

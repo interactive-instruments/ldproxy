@@ -11,6 +11,8 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.tiles.domain.TileProvider;
+import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
 import java.util.Optional;
 
 public interface TilesProviders {
@@ -25,6 +27,19 @@ public interface TilesProviders {
 
   de.ii.xtraplatform.tiles.domain.TileProvider getTileProviderOrThrow(OgcApiDataV2 apiData);
 
+  default Optional<TilesetMetadata> getTilesetMetadata(OgcApiDataV2 apiData) {
+    TileProvider provider = getTileProviderOrThrow(apiData);
+    return apiData
+        .getExtension(TilesConfiguration.class)
+        .map(TilesConfiguration::getTileLayer)
+        .flatMap(provider::metadata);
+  }
+
+  default TilesetMetadata getTilesetMetadataOrThrow(OgcApiDataV2 apiData) {
+    return getTilesetMetadata(apiData)
+        .orElseThrow(() -> new IllegalStateException("No tileset metadata found."));
+  }
+
   boolean hasTileProvider(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData);
 
   Optional<de.ii.xtraplatform.tiles.domain.TileProvider> getTileProvider(
@@ -32,6 +47,21 @@ public interface TilesProviders {
 
   de.ii.xtraplatform.tiles.domain.TileProvider getTileProviderOrThrow(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData);
+
+  default Optional<TilesetMetadata> getTilesetMetadata(
+      OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData) {
+    TileProvider provider = getTileProviderOrThrow(apiData, collectionData);
+    return collectionData
+        .getExtension(TilesConfiguration.class)
+        .map(TilesConfiguration::getTileLayer)
+        .flatMap(provider::metadata);
+  }
+
+  default TilesetMetadata getTilesetMetadataOrThrow(
+      OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData) {
+    return getTilesetMetadata(apiData, collectionData)
+        .orElseThrow(() -> new IllegalStateException("No tileset metadata found."));
+  }
 
   default boolean hasTileProvider(
       OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> collectionData) {
@@ -52,6 +82,20 @@ public interface TilesProviders {
     return collectionData.isPresent()
         ? getTileProviderOrThrow(apiData, collectionData.get())
         : getTileProviderOrThrow(apiData);
+  }
+
+  default Optional<TilesetMetadata> getTilesetMetadata(
+      OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> collectionData) {
+    return collectionData.isPresent()
+        ? getTilesetMetadata(apiData, collectionData.get())
+        : getTilesetMetadata(apiData);
+  }
+
+  default TilesetMetadata getTilesetMetadataOrThrow(
+      OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> collectionData) {
+    return collectionData.isPresent()
+        ? getTilesetMetadataOrThrow(apiData, collectionData.get())
+        : getTilesetMetadataOrThrow(apiData);
   }
 
   void deleteTiles(

@@ -21,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.api.AbstractEndpointTileSetMultiCollection;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import java.util.List;
 import javax.inject.Inject;
@@ -45,12 +46,16 @@ public class EndpointTileSetMultiCollection extends AbstractEndpointTileSetMulti
 
   private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
 
+  private final TilesProviders tilesProviders;
+
   @Inject
   EndpointTileSetMultiCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
-      FeaturesCoreProviders providers) {
+      FeaturesCoreProviders providers,
+      TilesProviders tilesProviders) {
     super(extensionRegistry, queryHandler, providers);
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -82,12 +87,7 @@ public class EndpointTileSetMultiCollection extends AbstractEndpointTileSetMulti
         "tiles",
         ApiEndpointDefinition.SORT_PRIORITY_TILE_SET,
         "/tiles/{tileMatrixSetId}",
-        apiData
-                .getExtension(TilesConfiguration.class)
-                .map(c -> c.getTileEncodingsDerived().contains("MVT"))
-                .orElse(false)
-            ? "vector"
-            : "map",
+        tilesProviders.getTilesetMetadataOrThrow(apiData).isVector() ? "vector" : "map",
         TAGS);
   }
 
