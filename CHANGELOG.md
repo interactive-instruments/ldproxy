@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.3.6 (14/04/2023)
+
+#### Fixed bugs
+
+-  properties are not always sorted according to provider schema [#949](https://github.com/interactive-instruments/ldproxy/issues/949)
+
+---
+
 ## v3.3.5 (13/03/2023)
 
 #### Fixed bugs
