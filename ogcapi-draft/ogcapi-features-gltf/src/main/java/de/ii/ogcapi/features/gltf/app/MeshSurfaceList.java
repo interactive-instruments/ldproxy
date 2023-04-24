@@ -14,6 +14,7 @@ import de.ii.xtraplatform.features.domain.PropertyBase;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -57,6 +58,7 @@ interface MeshSurfaceList {
   }
 
   @Value.Derived
+  @Nullable
   default double[][] getMinMax() {
     // determine the bounding box; eventually we will translate vertices to the center of the
     // feature to have smaller values (glTF uses float)
@@ -66,6 +68,9 @@ interface MeshSurfaceList {
             .map(MultiPolygon::getCoordinatesFlat)
             .flatMap(List::stream)
             .collect(Collectors.toUnmodifiableList());
+    if (coordList.isEmpty()) {
+      return null;
+    }
     return new double[][] {
       new double[] {
         coordList.stream().mapToDouble(coord -> coord.get(0)).min().orElseThrow(),
@@ -132,6 +137,7 @@ interface MeshSurfaceList {
                                             .collect(Collectors.toUnmodifiableList()))
                                 .flatMap(List::stream)
                                 .map(PropertyGltf::getMultiPolygon)
+                                .flatMap(Optional::stream)
                                 .map(MultiPolygon::getCoordinates)
                                 .flatMap(List::stream)
                                 .collect(Collectors.toUnmodifiableList())),
@@ -140,14 +146,20 @@ interface MeshSurfaceList {
 
   private static void addMultiPolygon(
       ImmutableMeshSurfaceList.Builder meshSurfaceBuilder, PropertyGltf geometryProperty) {
-    meshSurfaceBuilder.addMeshSurfaces(MeshSurface.of(geometryProperty.getMultiPolygon()));
+    geometryProperty
+        .getMultiPolygon()
+        .ifPresent(
+            multiPolygon -> meshSurfaceBuilder.addMeshSurfaces(MeshSurface.of(multiPolygon)));
   }
 
   private static void addMultiPolygon(
       ImmutableMeshSurfaceList.Builder meshSurfaceBuilder,
       PropertyGltf geometryProperty,
       Optional<String> surfaceType) {
-    meshSurfaceBuilder.addMeshSurfaces(
-        MeshSurface.of(geometryProperty.getMultiPolygon(), surfaceType));
+    geometryProperty
+        .getMultiPolygon()
+        .ifPresent(
+            multiPolygon ->
+                meshSurfaceBuilder.addMeshSurfaces(MeshSurface.of(multiPolygon, surfaceType)));
   }
 }
