@@ -11,11 +11,13 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration.PathSeparator;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-import de.ii.xtraplatform.features.domain.transform.OnlySortables;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
 import java.util.Map;
@@ -102,8 +104,13 @@ public interface SortingConfiguration extends ExtensionConfiguration {
   }
 
   default Map<String, FeatureSchema> getSortables(
-      FeatureTypeConfigurationOgcApi collectionData, FeatureSchema schema) {
-    return getSortablesSchema(collectionData, schema).getAllNestedProperties().stream()
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData,
+      FeatureSchema schema,
+      FeaturesCoreProviders providers) {
+    return getSortablesSchema(apiData, collectionData, schema, providers)
+        .getAllNestedProperties()
+        .stream()
         .filter(SchemaBase::sortable)
         .map(
             subschema ->
@@ -114,24 +121,37 @@ public interface SortingConfiguration extends ExtensionConfiguration {
   }
 
   default FeatureSchema getSortablesSchema(
-      FeatureTypeConfigurationOgcApi collectionData, FeatureSchema schema) {
-    OnlySortables sortablesSelector;
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData,
+      FeatureSchema schema,
+      FeaturesCoreProviders providers) {
+    FeatureQueries featureQueries =
+        providers.getFeatureProviderOrThrow(apiData, collectionData).queries();
+
+    return featureQueries.getSortablesSchema(
+        schema,
+        getIncludedBackwardsCompatible(collectionData),
+        getExcludedBackwardsCompatible(collectionData),
+        getPathSeparator().toString());
+  }
+
+  default List<String> getIncludedBackwardsCompatible(
+      FeatureTypeConfigurationOgcApi collectionData) {
     if (getIncluded().isEmpty() && getExcluded().isEmpty()) {
-      sortablesSelector =
-          new OnlySortables(
-              collectionData
-                  .getExtension(SortingConfiguration.class)
-                  .map(SortingConfiguration::getSortables)
-                  .orElse(ImmutableList.of()),
-              ImmutableList.of(),
-              getPathSeparator().toString());
-
-    } else {
-      sortablesSelector =
-          new OnlySortables(getIncluded(), getExcluded(), getPathSeparator().toString());
+      return collectionData
+          .getExtension(SortingConfiguration.class)
+          .map(SortingConfiguration::getSortables)
+          .orElse(ImmutableList.of());
     }
+    return getIncluded();
+  }
 
-    return schema.accept(sortablesSelector);
+  default List<String> getExcludedBackwardsCompatible(
+      FeatureTypeConfigurationOgcApi collectionData) {
+    if (getIncluded().isEmpty() && getExcluded().isEmpty()) {
+      return ImmutableList.of();
+    }
+    return getExcluded();
   }
 
   abstract class Builder extends ExtensionConfiguration.Builder {}

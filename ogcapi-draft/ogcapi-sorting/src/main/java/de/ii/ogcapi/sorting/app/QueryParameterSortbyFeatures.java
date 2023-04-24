@@ -186,7 +186,10 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
               .getExtension(SortingConfiguration.class)
               .map(
                   cfg ->
-                      cfg.getSortables(collectionData, featureSchema).keySet().stream()
+                      cfg
+                          .getSortables(apiData, collectionData, featureSchema, providers)
+                          .keySet()
+                          .stream()
                           .collect(Collectors.toUnmodifiableList()))
               .orElse(ImmutableList.of());
       schemaMap

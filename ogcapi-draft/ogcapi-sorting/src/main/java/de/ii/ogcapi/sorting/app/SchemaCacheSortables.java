@@ -10,6 +10,7 @@ package de.ii.ogcapi.sorting.app;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration.PathSeparator;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
@@ -26,6 +27,11 @@ import java.util.Optional;
 class SchemaCacheSortables extends JsonSchemaCache {
 
   private static final String DEFAULT_FLATTENING_SEPARATOR = ".";
+  private final FeaturesCoreProviders featuresCoreProviders;
+
+  SchemaCacheSortables(FeaturesCoreProviders featuresCoreProviders) {
+    this.featuresCoreProviders = featuresCoreProviders;
+  }
 
   @Override
   protected JsonSchemaDocument deriveSchema(
@@ -38,7 +44,7 @@ class SchemaCacheSortables extends JsonSchemaCache {
     FeatureSchema sortablesSchema =
         collectionData
             .getExtension(SortingConfiguration.class)
-            .map(c -> c.getSortablesSchema(collectionData, schema))
+            .map(c -> c.getSortablesSchema(apiData, collectionData, schema, featuresCoreProviders))
             .orElse(schema);
 
     String flatteningSeparator =

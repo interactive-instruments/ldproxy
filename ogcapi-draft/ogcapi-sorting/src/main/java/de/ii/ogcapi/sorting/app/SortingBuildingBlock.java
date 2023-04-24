@@ -15,6 +15,7 @@ import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.sorting.domain.ImmutableSortingConfiguration;
 import de.ii.ogcapi.sorting.domain.SortingConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -127,7 +128,7 @@ public class SortingBuildingBlock implements ApiBuildingBlock {
                 entry.getKey()));
       } else {
         checkSortablesExist(builder, entry, properties);
-        checkSortablesAreEligible(builder, entry, collectionData, schema);
+        checkSortablesAreEligible(builder, entry, api.getData(), collectionData, schema, providers);
       }
     }
 
@@ -159,12 +160,14 @@ public class SortingBuildingBlock implements ApiBuildingBlock {
   private void checkSortablesAreEligible(
       ImmutableValidationResult.Builder builder,
       Map.Entry<String, SortingConfiguration> entry,
+      OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
-      Optional<FeatureSchema> schema) {
+      Optional<FeatureSchema> schema,
+      FeaturesCoreProviders providers) {
     List<String> sortables =
         entry
             .getValue()
-            .getSortablesSchema(collectionData, schema.get())
+            .getSortablesSchema(apiData, collectionData, schema.get(), providers)
             .getAllNestedProperties()
             .stream()
             .map(SchemaBase::getFullPathAsString)

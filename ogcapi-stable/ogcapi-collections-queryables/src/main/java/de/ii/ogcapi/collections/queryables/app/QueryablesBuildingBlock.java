@@ -21,16 +21,19 @@ import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult.Builder;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -131,7 +134,8 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
                 entry.getKey()));
       } else {
         checkQueryableExists(builder, entry, deprecatedQueryables, properties);
-        checkQueryableIsEligible(builder, entry, deprecatedQueryables, collectionData, schema);
+        checkQueryableIsEligible(
+            builder, entry, deprecatedQueryables, api.getData(), collectionData, schema, providers);
       }
     }
 
@@ -162,15 +166,17 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
   }
 
   private void checkQueryableIsEligible(
-      ImmutableValidationResult.Builder builder,
-      Map.Entry<String, QueryablesConfiguration> entry,
+      Builder builder,
+      Entry<String, QueryablesConfiguration> entry,
       List<String> deprecatedQueryables,
+      OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
-      Optional<FeatureSchema> schema) {
+      Optional<FeatureSchema> schema,
+      FeaturesCoreProviders providers) {
     List<String> queryables =
         entry
             .getValue()
-            .getQueryablesSchema(collectionData, schema.get())
+            .getQueryablesSchema(apiData, collectionData, schema.get(), providers)
             .getAllNestedProperties()
             .stream()
             .map(SchemaBase::getFullPathAsString)

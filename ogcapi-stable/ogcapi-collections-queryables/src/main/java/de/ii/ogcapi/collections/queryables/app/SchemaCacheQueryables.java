@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration.PathSeparator;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
@@ -31,10 +32,13 @@ class SchemaCacheQueryables extends JsonSchemaCache {
   private static final String DEFAULT_FLATTENING_SEPARATOR = ".";
 
   private final Supplier<List<Codelist>> codelistSupplier;
+  private final FeaturesCoreProviders providers;
 
-  public SchemaCacheQueryables(Supplier<List<Codelist>> codelistSupplier) {
+  public SchemaCacheQueryables(
+      Supplier<List<Codelist>> codelistSupplier, FeaturesCoreProviders featuresCoreProviders) {
     super();
     this.codelistSupplier = codelistSupplier;
+    this.providers = featuresCoreProviders;
   }
 
   @Override
@@ -44,11 +48,10 @@ class SchemaCacheQueryables extends JsonSchemaCache {
       FeatureTypeConfigurationOgcApi collectionData,
       Optional<String> schemaUri,
       VERSION version) {
-
     FeatureSchema queryablesSchema =
         collectionData
             .getExtension(QueryablesConfiguration.class)
-            .map(c -> c.getQueryablesSchema(collectionData, schema))
+            .map(c -> c.getQueryablesSchema(apiData, collectionData, schema, providers))
             .orElse(schema);
 
     String flatteningSeparator =

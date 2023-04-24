@@ -18,9 +18,9 @@ import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-import de.ii.xtraplatform.features.domain.transform.OnlyQueryables;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
 import java.util.Map;
@@ -150,13 +150,18 @@ public interface QueryablesConfiguration extends ExtensionConfiguration, Caching
       FeaturesCoreProviders providers) {
     return providers
         .getFeatureSchema(apiData, collectionData)
-        .map(schema -> getQueryables(collectionData, schema))
+        .map(schema -> getQueryables(apiData, collectionData, schema, providers))
         .orElse(ImmutableMap.of());
   }
 
   default Map<String, FeatureSchema> getQueryables(
-      FeatureTypeConfigurationOgcApi collectionData, FeatureSchema schema) {
-    return getQueryablesSchema(collectionData, schema).getAllNestedProperties().stream()
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData,
+      FeatureSchema schema,
+      FeaturesCoreProviders providers) {
+    return getQueryablesSchema(apiData, collectionData, schema, providers)
+        .getAllNestedProperties()
+        .stream()
         .filter(SchemaBase::queryable)
         .map(
             subschema ->
@@ -166,27 +171,39 @@ public interface QueryablesConfiguration extends ExtensionConfiguration, Caching
             ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue, (first, second) -> second));
   }
 
-  @SuppressWarnings("deprecation")
   default FeatureSchema getQueryablesSchema(
-      FeatureTypeConfigurationOgcApi collectionData, FeatureSchema schema) {
-    OnlyQueryables queryablesSelector;
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData,
+      FeatureSchema schema,
+      FeaturesCoreProviders providers) {
+    FeatureQueries featureQueries =
+        providers.getFeatureProviderOrThrow(apiData, collectionData).queries();
+
+    return featureQueries.getQueryablesSchema(
+        schema,
+        getIncludedBackwardsCompatible(collectionData),
+        getExcludedBackwardsCompatible(collectionData),
+        getPathSeparator().toString());
+  }
+
+  default List<String> getIncludedBackwardsCompatible(
+      FeatureTypeConfigurationOgcApi collectionData) {
     if (getIncluded().isEmpty() && getExcluded().isEmpty()) {
-      queryablesSelector =
-          new OnlyQueryables(
-              collectionData
-                  .getExtension(FeaturesCoreConfiguration.class)
-                  .flatMap(FeaturesCoreConfiguration::getQueryables)
-                  .map(FeaturesCollectionQueryables::getAll)
-                  .orElse(ImmutableList.of()),
-              ImmutableList.of(),
-              getPathSeparator().toString());
-
-    } else {
-      queryablesSelector =
-          new OnlyQueryables(getIncluded(), getExcluded(), getPathSeparator().toString());
+      return collectionData
+          .getExtension(FeaturesCoreConfiguration.class)
+          .flatMap(FeaturesCoreConfiguration::getQueryables)
+          .map(FeaturesCollectionQueryables::getAll)
+          .orElse(ImmutableList.of());
     }
+    return getIncluded();
+  }
 
-    return schema.accept(queryablesSelector);
+  default List<String> getExcludedBackwardsCompatible(
+      FeatureTypeConfigurationOgcApi collectionData) {
+    if (getIncluded().isEmpty() && getExcluded().isEmpty()) {
+      return ImmutableList.of();
+    }
+    return getExcluded();
   }
 
   abstract class Builder extends ExtensionConfiguration.Builder {}

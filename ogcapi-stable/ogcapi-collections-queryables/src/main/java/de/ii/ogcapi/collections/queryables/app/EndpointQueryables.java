@@ -15,6 +15,7 @@ import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesQueriesHandler;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesType;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputCollectionProperties;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
@@ -78,11 +79,13 @@ public class EndpointQueryables extends EndpointSubCollection implements Conform
   public EndpointQueryables(
       ExtensionRegistry extensionRegistry,
       CollectionPropertiesQueriesHandler queryHandler,
-      EntityRegistry entityRegistry) {
+      EntityRegistry entityRegistry,
+      FeaturesCoreProviders featuresCoreProviders) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
     this.schemaCache =
-        new SchemaCacheQueryables(() -> entityRegistry.getEntitiesForType(Codelist.class));
+        new SchemaCacheQueryables(
+            () -> entityRegistry.getEntitiesForType(Codelist.class), featuresCoreProviders);
   }
 
   @Override

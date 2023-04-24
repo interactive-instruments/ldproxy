@@ -14,6 +14,7 @@ import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesQueriesHandler;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesType;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputCollectionProperties;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
@@ -81,10 +82,12 @@ public class EndpointSortables extends EndpointSubCollection /* implements Confo
 
   @Inject
   public EndpointSortables(
-      ExtensionRegistry extensionRegistry, CollectionPropertiesQueriesHandler queryHandler) {
+      ExtensionRegistry extensionRegistry,
+      CollectionPropertiesQueriesHandler queryHandler,
+      FeaturesCoreProviders featuresCoreProviders) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
-    this.schemaCache = new SchemaCacheSortables();
+    this.schemaCache = new SchemaCacheSortables(featuresCoreProviders);
   }
 
   /* Wait for updates on Features Part n: Schemas
