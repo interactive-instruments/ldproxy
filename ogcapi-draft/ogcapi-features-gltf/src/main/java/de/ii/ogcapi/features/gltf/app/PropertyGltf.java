@@ -132,26 +132,29 @@ public interface PropertyGltf extends PropertyBase<PropertyGltf, FeatureSchema> 
                     .findFirst());
   }
 
-  default Geometry.MultiPolygon getMultiPolygon() {
-    if (getGeometryType().orElse(SimpleFeatureGeometry.ANY) != MULTI_POLYGON) {
+  default Optional<Geometry.MultiPolygon> getMultiPolygon() {
+    if (getGeometryType().isEmpty()) {
+      return Optional.empty();
+    } else if (getGeometryType().orElse(SimpleFeatureGeometry.ANY) != MULTI_POLYGON) {
       throw new IllegalStateException(
           "Unexpected geometry type for property '"
               + getName()
               + "', MultiPolygon required: "
               + getGeometryType());
     }
-    return Geometry.MultiPolygon.of(
-        getNestedProperties().get(0).getNestedProperties().stream()
-            .map(
-                polygon ->
-                    Geometry.Polygon.of(
-                        polygon.getNestedProperties().stream()
-                            .map(
-                                ring ->
-                                    Geometry.LineString.of(
-                                        getCoordinates(ring.getNestedProperties())))
-                            .collect(Collectors.toUnmodifiableList())))
-            .collect(Collectors.toUnmodifiableList()));
+    return Optional.of(
+        Geometry.MultiPolygon.of(
+            getNestedProperties().get(0).getNestedProperties().stream()
+                .map(
+                    polygon ->
+                        Geometry.Polygon.of(
+                            polygon.getNestedProperties().stream()
+                                .map(
+                                    ring ->
+                                        Geometry.LineString.of(
+                                            getCoordinates(ring.getNestedProperties())))
+                                .collect(Collectors.toUnmodifiableList())))
+                .collect(Collectors.toUnmodifiableList())));
   }
 
   private static Geometry.Coordinate getCoordinate(List<PropertyGltf> coordList) {
