@@ -9,28 +9,34 @@ package de.ii.ogcapi.filter.api;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
+import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
 import de.ii.ogcapi.filter.domain.FilterConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql.Format;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
+import de.ii.xtraplatform.crs.domain.CrsInfo;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -41,8 +47,9 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -62,18 +69,30 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterFilter extends ApiExtensionCache
-    implements OgcApiQueryParameter, ItemTypeSpecificConformanceClass, TileGenerationUserParameter {
+    implements OgcApiQueryParameter,
+        ItemTypeSpecificConformanceClass,
+        TileGenerationUserParameter,
+        FeatureQueryParameter,
+        TypedQueryParameter<Cql2Expression> {
 
   private final FeaturesCoreProviders providers;
   private final SchemaValidator schemaValidator;
+  private final CrsInfo crsInfo;
   private final Cql cql;
+  private final CrsTransformerFactory crsTransformerFactory;
 
   @Inject
   public QueryParameterFilter(
-      FeaturesCoreProviders providers, SchemaValidator schemaValidator, Cql cql) {
+      FeaturesCoreProviders providers,
+      SchemaValidator schemaValidator,
+      CrsInfo crsInfo,
+      Cql cql,
+      CrsTransformerFactory crsTransformerFactory) {
     this.providers = providers;
     this.schemaValidator = schemaValidator;
+    this.crsInfo = crsInfo;
     this.cql = cql;
+    this.crsTransformerFactory = crsTransformerFactory;
   }
 
   @Override
@@ -235,57 +254,54 @@ public class QueryParameterFilter extends ApiExtensionCache
   }
 
   @Override
-  public Set<String> getFilterParameters(
-      Set<String> filterParameters, OgcApiDataV2 apiData, String collectionId) {
-    if (!isEnabledForApi(apiData)) return filterParameters;
-
-    return new ImmutableSet.Builder<String>().addAll(filterParameters).add(getName()).build();
+  public boolean isFilterParameter() {
+    return true;
   }
 
   @Override
-  public void applyTo(
-      ImmutableTileGenerationParametersTransient.Builder userParametersBuilder,
-      QueryParameterSet parameters,
-      Optional<TileGenerationSchema> generationSchema) {
-    if (parameters.getValues().containsKey(getName()) && generationSchema.isPresent()) {
-      Cql.Format filterLang =
-          parameters.getDefinitions().stream()
-              .filter(def -> def instanceof QueryParameterFilterLang)
-              .findFirst()
-              .flatMap(
-                  filterLangDef -> parameters.getValue((QueryParameterFilterLang) filterLangDef))
-              .orElse(Format.TEXT);
-      EpsgCrs filterCrs =
-          parameters.getDefinitions().stream()
-              .filter(def -> def instanceof QueryParameterFilterCrs)
-              .findFirst()
-              .flatMap(filterCrsDef -> parameters.getValue((QueryParameterFilterCrs) filterCrsDef))
-              .orElse(OgcCrs.CRS84);
-
-      Cql2Expression filter =
-          parseFilter(
-              parameters.getValues().get(getName()),
-              filterLang,
-              filterCrs,
-              generationSchema.get().getProperties());
-
-      userParametersBuilder.addFilters(filter);
-    }
+  public int getPriority() {
+    // wait for parsed results of filter-lang and filter-crs
+    return 2;
   }
 
-  private Cql2Expression parseFilter(
-      String filter, Format filterLang, EpsgCrs filterCrs, Map<String, String> propertyTypes) {
+  @Override
+  public Cql2Expression parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    FeatureTypeConfigurationOgcApi collectionData =
+        optionalCollectionData.orElseThrow(
+            () ->
+                new IllegalStateException(
+                    String.format(
+                        "The parameter '%s' could not be processed, no collection provided.",
+                        getName())));
+
     Cql2Expression cql2Expression;
+    Cql.Format filterLang =
+        Objects.requireNonNullElse((Format) typedValues.get("filter-lang"), Format.TEXT);
+    EpsgCrs filterCrs =
+        Objects.requireNonNullElse((EpsgCrs) typedValues.get("filter-crs"), OgcCrs.CRS84);
     try {
-      cql2Expression = cql.read(filter, filterLang, filterCrs);
+      cql2Expression = cql.read(value, filterLang, filterCrs);
     } catch (Throwable e) {
       throw new IllegalArgumentException(
           String.format("The parameter '%s' is invalid", getName()), e);
     }
 
-    List<String> invalidProperties =
-        cql.findInvalidProperties(cql2Expression, propertyTypes.keySet());
+    Map<String, FeatureSchema> queryables =
+        collectionData
+            .getExtension(QueryablesConfiguration.class)
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        String.format(
+                            "The parameter '%s' could not be processed, queryables for collection '%s' could not be determined.",
+                            getName(), collectionData.getId())))
+            .getQueryables(api.getData(), collectionData, providers);
 
+    List<String> invalidProperties = cql.findInvalidProperties(cql2Expression, queryables.keySet());
     if (!invalidProperties.isEmpty()) {
       throw new IllegalArgumentException(
           String.format(
@@ -293,9 +309,40 @@ public class QueryParameterFilter extends ApiExtensionCache
               getName(), String.join(", ", invalidProperties)));
     }
 
-    // will throw an error
-    cql.checkTypes(cql2Expression, propertyTypes);
+    // will throw an error, if there is a type mismatch
+    cql.checkTypes(
+        cql2Expression,
+        queryables.entrySet().stream()
+            .collect(
+                Collectors.toUnmodifiableMap(
+                    Entry::getKey, entry -> entry.getValue().getType().toString())));
+
+    if (collectionData
+        .getExtension(FeaturesCoreConfiguration.class)
+        .map(FeaturesCoreConfiguration::getValidateCoordinatesInQueries)
+        .orElse(false)) {
+      cql.checkCoordinates(
+          cql2Expression,
+          crsTransformerFactory,
+          crsInfo,
+          filterCrs,
+          providers
+              .getFeatureProvider(api.getData(), collectionData)
+              .map(FeatureProvider2::getData)
+              .flatMap(FeatureProviderDataV2::getNativeCrs)
+              .orElse(null));
+    }
 
     return cql2Expression;
+  }
+
+  @Override
+  public void applyTo(
+      ImmutableTileGenerationParametersTransient.Builder userParametersBuilder,
+      QueryParameterSet parameters,
+      Optional<TileGenerationSchema> generationSchema) {
+    if (parameters.getTypedValues().containsKey(getName()) && generationSchema.isPresent()) {
+      userParametersBuilder.addFilters((Cql2Expression) parameters.getTypedValues().get(getName()));
+    }
   }
 }

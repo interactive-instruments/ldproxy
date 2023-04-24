@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.immutables.value.Value;
 
+@Deprecated(since = "3.4.0")
 @Value.Immutable
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableFeaturesCollectionQueryables.Builder.class)
@@ -35,13 +36,16 @@ public interface FeaturesCollectionQueryables
     return new ImmutableFeaturesCollectionQueryables.Builder().build();
   }
 
+  @Deprecated(since = "3.4.0")
   List<String> getSpatial();
 
+  @Deprecated(since = "3.4.0")
   List<String> getTemporal();
 
   @Deprecated(since = "3.3.0")
   List<String> getQ();
 
+  @Deprecated(since = "3.4.0")
   List<String> getOther();
 
   @JsonIgnore

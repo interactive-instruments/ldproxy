@@ -305,7 +305,7 @@ public interface EndpointTileMixin {
         .col(col)
         .parameters(
             QueryParameterSet.of(parameterDefinitions, parameterValues)
-                .evaluate(apiData, collectionData))
+                .evaluate(api, collectionData))
         .build();
   }
 }

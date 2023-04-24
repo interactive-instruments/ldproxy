@@ -15,12 +15,14 @@ import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesQueriesHandler;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesType;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputCollectionProperties;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
@@ -63,7 +65,8 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointQueryables extends EndpointSubCollection /* implements ConformanceClass */ {
+@SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+public class EndpointQueryables extends EndpointSubCollection implements ConformanceClass {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointQueryables.class);
 
@@ -76,19 +79,34 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
   public EndpointQueryables(
       ExtensionRegistry extensionRegistry,
       CollectionPropertiesQueriesHandler queryHandler,
-      EntityRegistry entityRegistry) {
+      EntityRegistry entityRegistry,
+      FeaturesCoreProviders featuresCoreProviders) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
     this.schemaCache =
-        new SchemaCacheQueryables(() -> entityRegistry.getEntitiesForType(Codelist.class));
+        new SchemaCacheQueryables(
+            () -> entityRegistry.getEntitiesForType(Codelist.class), featuresCoreProviders);
   }
 
-  /* TODO wait for updates on Features Part n: Schemas
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-      return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-n/0.0/conf/queryables");
+    return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/queryables");
   }
-  */
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData.getCollections().keySet().stream()
+        .anyMatch(collectionId -> isEnabledForApi(apiData, collectionId));
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return apiData
+        .getExtension(QueryablesConfiguration.class, collectionId)
+        .filter(QueryablesConfiguration::isEnabled)
+        .filter(QueryablesConfiguration::endpointIsEnabled)
+        .isPresent();
+  }
 
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
@@ -97,23 +115,25 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
 
   @Override
   public List<? extends FormatExtension> getResourceFormats() {
-    if (formats == null)
+    if (formats == null) {
       formats = extensionRegistry.getExtensionsForType(CollectionPropertiesFormat.class);
+    }
     return formats;
   }
 
   @Override
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-    ImmutableApiEndpointDefinition.Builder definitionBuilder =
+    final ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("collections")
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_QUERYABLES);
-    String subSubPath = "/queryables";
-    String path = "/collections/{collectionId}" + subSubPath;
-    List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-    Optional<OgcApiPathParameter> optCollectionIdParam =
-        pathParameters.stream().filter(param -> param.getName().equals("collectionId")).findAny();
-    if (!optCollectionIdParam.isPresent()) {
+    final String subSubPath = "/queryables";
+    final String path = "/collections/{collectionId}" + subSubPath;
+    final List<OgcApiPathParameter> pathParameters =
+        getPathParameters(extensionRegistry, apiData, path);
+    final Optional<OgcApiPathParameter> optCollectionIdParam =
+        pathParameters.stream().filter(param -> "collectionId".equals(param.getName())).findAny();
+    if (optCollectionIdParam.isEmpty()) {
       LOGGER.error(
           "Path parameter 'collectionId' missing for resource at path '"
               + path
@@ -122,13 +142,13 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
       final OgcApiPathParameter collectionIdParam = optCollectionIdParam.get();
       final boolean explode = collectionIdParam.isExplodeInOpenApi(apiData);
       final List<String> collectionIds =
-          (explode) ? collectionIdParam.getValues(apiData) : ImmutableList.of("{collectionId}");
+          explode ? collectionIdParam.getValues(apiData) : ImmutableList.of("{collectionId}");
       for (String collectionId : collectionIds) {
         final List<OgcApiQueryParameter> queryParameters =
             getQueryParameters(extensionRegistry, apiData, path, collectionId);
         final String operationSummary =
             "retrieve the queryables of the feature collection '" + collectionId + "'";
-        Optional<String> operationDescription =
+        final Optional<String> operationDescription =
             Optional.of(
                 "The Queryables resources identifies the properties that can be "
                     + "referenced in filter expressions to select specific features that meet the criteria identified in the filter. "
@@ -137,12 +157,12 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
                     + "The descriptive metadata (title and description of the property) as well as the schema information (data type and "
                     + "constraints like a list of allowed values or minimum/maxmimum values are provided to support clients to construct"
                     + "meaningful queries for the data.");
-        String resourcePath = "/collections/" + collectionId + subSubPath;
-        ImmutableOgcApiResourceData.Builder resourceBuilder =
+        final String resourcePath = "/collections/" + collectionId + subSubPath;
+        final ImmutableOgcApiResourceData.Builder resourceBuilder =
             new ImmutableOgcApiResourceData.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
+        final Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
         ApiOperation.getResource(
                 apiData,
                 resourcePath,
@@ -173,7 +193,7 @@ public class EndpointQueryables extends EndpointSubCollection /* implements Conf
       @Context UriInfo uriInfo,
       @PathParam("collectionId") String collectionId) {
 
-    CollectionPropertiesQueriesHandler.QueryInputCollectionProperties queryInput =
+    final CollectionPropertiesQueriesHandler.QueryInputCollectionProperties queryInput =
         new ImmutableQueryInputCollectionProperties.Builder()
             .from(getGenericQueryInput(api.getData()))
             .collectionId(collectionId)

@@ -13,7 +13,9 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.filter.domain.FilterConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
@@ -23,7 +25,9 @@ import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -48,8 +52,8 @@ import javax.inject.Singleton;
 public class QueryParameterFilterLang extends ApiExtensionCache
     implements OgcApiQueryParameter, TypedQueryParameter<Cql.Format> {
 
-  private static final String FILTER_LANG_CQL2_TEXT = "cql2-text";
-  private static final String FILTER_LANG_CQL2_JSON = "cql2-json";
+  static final String FILTER_LANG_CQL2_TEXT = "cql2-text";
+  static final String FILTER_LANG_CQL2_JSON = "cql2-json";
 
   private final FeaturesCoreProviders providers;
   private final SchemaValidator schemaValidator;
@@ -101,7 +105,15 @@ public class QueryParameterFilterLang extends ApiExtensionCache
   }
 
   @Override
-  public Cql.Format parse(String value, OgcApiDataV2 apiData) {
+  public Cql.Format parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> collectionData) {
+    if (value == null) {
+      // no default value
+      return null;
+    }
     return Objects.equals(value, FILTER_LANG_CQL2_JSON) ? Cql.Format.JSON : Cql.Format.TEXT;
   }
 

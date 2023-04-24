@@ -10,22 +10,27 @@ package de.ii.ogcapi.routes.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.crs.domain.CrsSupport;
-import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
+import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.inject.Inject;
@@ -42,7 +47,7 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterCrsRoutes extends ApiExtensionCache
-    implements OgcApiQueryParameter, FeatureQueryTransformer {
+    implements OgcApiQueryParameter, FeatureQueryParameter, TypedQueryParameter<EpsgCrs> {
 
   public static final String CRS = "crs";
 
@@ -63,6 +68,37 @@ public class QueryParameterCrsRoutes extends ApiExtensionCache
   @Override
   public String getName() {
     return CRS;
+  }
+
+  @Override
+  public EpsgCrs parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    EpsgCrs targetCrs;
+    try {
+      targetCrs = EpsgCrs.fromString(value);
+    } catch (Throwable e) {
+      throw new IllegalArgumentException(
+          String.format("The parameter '%s' is invalid: %s", getName(), e.getMessage()), e);
+    }
+    if (!crsSupport.isSupported(api.getData(), targetCrs)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "The parameter '%s' is invalid: the crs '%s' is not supported.",
+              getName(), targetCrs.toUriString()));
+    }
+    return targetCrs;
+  }
+
+  @Override
+  public void applyTo(
+      Builder queryBuilder,
+      QueryParameterSet parameters,
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData) {
+    parameters.getValue(this).ifPresent(queryBuilder::crs);
   }
 
   @Override
@@ -113,32 +149,5 @@ public class QueryParameterCrsRoutes extends ApiExtensionCache
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return RoutingConfiguration.class;
-  }
-
-  @Override
-  public ImmutableFeatureQuery.Builder transformQuery(
-      ImmutableFeatureQuery.Builder queryBuilder,
-      Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
-
-    if (isEnabledForApi(apiData) && parameters.containsKey(CRS)) {
-      EpsgCrs targetCrs;
-      try {
-        targetCrs = EpsgCrs.fromString(parameters.get(CRS));
-      } catch (Throwable e) {
-        throw new IllegalArgumentException(
-            String.format("The parameter '%s' is invalid: %s", CRS, e.getMessage()), e);
-      }
-      if (!crsSupport.isSupported(apiData, targetCrs)) {
-        throw new IllegalArgumentException(
-            String.format(
-                "The parameter '%s' is invalid: the crs '%s' is not supported",
-                CRS, targetCrs.toUriString()));
-      }
-
-      queryBuilder.crs(targetCrs);
-    }
-
-    return queryBuilder;
   }
 }

@@ -36,6 +36,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiResource;
 import de.ii.ogcapi.foundation.domain.ParameterExtension;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import io.dropwizard.auth.Auth;
@@ -218,9 +219,7 @@ public class EndpointPostOnItems extends EndpointSubCollection {
                             "Features are not supported in API ''{0}'', collection ''{1}''.",
                             api.getId(), collectionId)));
 
-    int minimumPageSize = coreConfiguration.getMinimumPageSize();
     int defaultPageSize = coreConfiguration.getDefaultPageSize();
-    int maxPageSize = coreConfiguration.getMaximumPageSize();
     boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
 
     // TODO: generalize and centralize this logic, if we add more URL-encoded POST requests
@@ -235,8 +234,7 @@ public class EndpointPostOnItems extends EndpointSubCollection {
             .stream()
             // drop support for "f" in URL-encoded POST requests, content negotiation must be used
             // TODO: the main reason is that the f parameter has already been evaluated in
-            // ApiRequestDispatcher,
-            //       that is before we arrive here
+            //       ApiRequestDispatcher, that is before we arrive here
             .filter(param -> !param.getName().equals("f"))
             .collect(Collectors.toUnmodifiableList());
 
@@ -267,17 +265,18 @@ public class EndpointPostOnItems extends EndpointSubCollection {
                       if (result.isPresent()) throw new BadRequestException(result.get());
                     }));
 
+    QueryParameterSet queryParameterSet =
+        QueryParameterSet.of(knownParameters, toFlatMap(uriInfo.getQueryParameters()))
+            .evaluate(api, Optional.of(collectionData));
+
     FeatureQuery query =
         ogcApiFeaturesQuery.requestToFeatureQuery(
-            api,
+            api.getData(),
             collectionData,
             coreConfiguration.getDefaultEpsgCrs(),
             coreConfiguration.getCoordinatePrecision(),
-            minimumPageSize,
             defaultPageSize,
-            maxPageSize,
-            toFlatMap(parameters),
-            knownParameters);
+            queryParameterSet);
 
     FeaturesCoreQueriesHandler.QueryInputFeatures queryInput =
         new ImmutableQueryInputFeatures.Builder()

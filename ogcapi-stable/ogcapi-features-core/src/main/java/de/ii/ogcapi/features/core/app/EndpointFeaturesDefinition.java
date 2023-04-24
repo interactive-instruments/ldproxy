@@ -10,27 +10,24 @@ package de.ii.ogcapi.features.core.app;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
-import de.ii.ogcapi.collections.domain.ImmutableQueryParameterTemplateQueryable;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.SchemaValidator;
-import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
-import io.swagger.v3.oas.models.media.Schema;
+import de.ii.ogcapi.foundation.domain.ParameterExtension;
+import de.ii.ogcapi.foundation.domain.RuntimeQueryParametersExtension;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,19 +43,12 @@ public abstract class EndpointFeaturesDefinition extends EndpointSubCollection {
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointFeaturesDefinition.class);
   private static final List<String> TAGS = ImmutableList.of("Access data");
 
-  final SchemaGeneratorOpenApi schemaGeneratorFeature;
-  final FeaturesCoreProviders providers;
-  final SchemaValidator schemaValidator;
+  protected final FeaturesCoreProviders providers;
 
   public EndpointFeaturesDefinition(
-      ExtensionRegistry extensionRegistry,
-      SchemaGeneratorOpenApi schemaGeneratorFeature,
-      FeaturesCoreProviders providers,
-      SchemaValidator schemaValidator) {
+      ExtensionRegistry extensionRegistry, FeaturesCoreProviders providers) {
     super(extensionRegistry);
-    this.schemaGeneratorFeature = schemaGeneratorFeature;
     this.providers = providers;
-    this.schemaValidator = schemaValidator;
   }
 
   @Override
@@ -94,7 +84,6 @@ public abstract class EndpointFeaturesDefinition extends EndpointSubCollection {
   void generateDefinition(
       OgcApiDataV2 apiData,
       ImmutableApiEndpointDefinition.Builder definitionBuilder,
-      ImmutableList<OgcApiQueryParameter> allQueryParameters,
       String subSubPath,
       String summary,
       String description,
@@ -117,9 +106,23 @@ public abstract class EndpointFeaturesDefinition extends EndpointSubCollection {
 
     if (explode) {
       for (String collectionId : collectionIdParam.getValues(apiData)) {
-        Stream<OgcApiQueryParameter> queryParameters =
-            allQueryParameters.stream()
-                .filter(qp -> qp.isApplicable(apiData, path, collectionId, HttpMethods.GET));
+        List<OgcApiQueryParameter> queryParameters =
+            Stream.concat(
+                    extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class).stream()
+                        .filter(
+                            param ->
+                                param.isApplicable(apiData, path, collectionId, HttpMethods.GET))
+                        .sorted(Comparator.comparing(ParameterExtension::getName)),
+                    extensionRegistry
+                        .getExtensionsForType(RuntimeQueryParametersExtension.class)
+                        .stream()
+                        .map(
+                            extension ->
+                                extension.getRuntimeParameters(
+                                    apiData, Optional.of(collectionId), path, HttpMethods.GET))
+                        .flatMap(Collection::stream))
+                .collect(Collectors.toUnmodifiableList());
+
         List<ApiHeader> headers =
             getHeaders(extensionRegistry, apiData, path, collectionId, HttpMethods.GET);
 
@@ -145,14 +148,33 @@ public abstract class EndpointFeaturesDefinition extends EndpointSubCollection {
       }
     } else {
       Optional<String> representativeCollectionId = getRepresentativeCollectionId(apiData);
-      Stream<OgcApiQueryParameter> queryParameters = allQueryParameters.stream();
+      List<OgcApiQueryParameter> queryParameters;
       List<ApiHeader> headers = getHeaders(extensionRegistry, apiData, path, null, HttpMethods.GET);
 
       if (representativeCollectionId.isPresent()) {
         String collectionId = representativeCollectionId.get();
         queryParameters =
-            allQueryParameters.stream()
-                .filter(qp -> qp.isApplicable(apiData, path, collectionId, HttpMethods.GET));
+            Stream.concat(
+                    extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class).stream()
+                        .filter(
+                            param ->
+                                param.isApplicable(apiData, path, collectionId, HttpMethods.GET))
+                        .sorted(Comparator.comparing(ParameterExtension::getName)),
+                    extensionRegistry
+                        .getExtensionsForType(RuntimeQueryParametersExtension.class)
+                        .stream()
+                        .map(
+                            extension ->
+                                extension.getRuntimeParameters(
+                                    apiData, Optional.of(collectionId), path, HttpMethods.GET))
+                        .flatMap(Collection::stream))
+                .collect(Collectors.toUnmodifiableList());
+      } else {
+        queryParameters =
+            extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class).stream()
+                .filter(param -> param.isApplicable(apiData, path, HttpMethods.GET))
+                .sorted(Comparator.comparing(ParameterExtension::getName))
+                .collect(Collectors.toUnmodifiableList());
       }
 
       generateCollectionDefinition(
@@ -176,17 +198,13 @@ public abstract class EndpointFeaturesDefinition extends EndpointSubCollection {
       String subSubPath,
       String path,
       List<OgcApiPathParameter> pathParameters,
-      Stream<OgcApiQueryParameter> queryParameters,
+      List<OgcApiQueryParameter> queryParameters,
       List<ApiHeader> headers,
       String collectionId,
       String summary,
       String description,
       String logPrefix) {
 
-    final List<OgcApiQueryParameter> queryParameters1 =
-        path.equals("/collections/{collectionId}/items")
-            ? getQueryParametersWithQueryables(queryParameters, apiData, collectionId, logPrefix)
-            : queryParameters.collect(Collectors.toList());
     final String operationSummary = summary + collectionId + "'";
     final Optional<String> operationDescription = Optional.of(description);
     String resourcePath = "/collections/" + collectionId + subSubPath;
@@ -203,7 +221,7 @@ public abstract class EndpointFeaturesDefinition extends EndpointSubCollection {
             apiData,
             resourcePath,
             false,
-            queryParameters1,
+            queryParameters,
             headers,
             responseContent,
             operationSummary,
@@ -215,70 +233,5 @@ public abstract class EndpointFeaturesDefinition extends EndpointSubCollection {
         .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
 
     definitionBuilder.putResources(resourcePath, resourceBuilder.build());
-  }
-
-  private List<OgcApiQueryParameter> getQueryParametersWithQueryables(
-      Stream<OgcApiQueryParameter> generalList,
-      OgcApiDataV2 apiData,
-      String collectionId,
-      String logPrefix) {
-
-    Optional<FeaturesCoreConfiguration> coreConfiguration =
-        apiData.getExtension(FeaturesCoreConfiguration.class, collectionId);
-    final List<String> filterableFields =
-        coreConfiguration
-            .map(FeaturesCoreConfiguration::getFilterParameters)
-            .orElse(ImmutableList.of());
-
-    Map<String, List<PropertyTransformation>> transformations;
-    if (coreConfiguration.isPresent()) {
-      transformations = coreConfiguration.get().getTransformations();
-      // TODO
-    }
-
-    Optional<FeatureTypeConfigurationOgcApi> collectionData =
-        apiData.getCollectionData(collectionId);
-    Optional<FeatureSchema> featureSchema =
-        collectionData.flatMap(cd -> providers.getFeatureSchema(apiData, cd));
-
-    List<OgcApiQueryParameter> build =
-        Stream.concat(
-                generalList,
-                filterableFields.stream()
-                    .map(
-                        field -> {
-                          Optional<Schema<?>> schema2 =
-                              featureSchema.flatMap(
-                                  fs ->
-                                      schemaGeneratorFeature.getProperty(
-                                          fs, collectionData.get(), field));
-                          if (schema2.isEmpty()) {
-                            LOGGER.warn(
-                                "Query parameter for property '{}' at path '/collections/{}/items' could not be created, the property was not found in the feature schema.",
-                                field,
-                                collectionId);
-                            return null;
-                          }
-                          String description = "Filter the collection by property '" + field + "'";
-                          if (Objects.nonNull(schema2.get().getTitle())
-                              && !schema2.get().getTitle().isEmpty())
-                            description += " (" + schema2.get().getTitle() + ")";
-                          if (Objects.nonNull(schema2.get().getDescription())
-                              && !schema2.get().getDescription().isEmpty())
-                            description += ": " + schema2.get().getDescription();
-                          else description += ".";
-                          return new ImmutableQueryParameterTemplateQueryable.Builder()
-                              .apiId(apiData.getId())
-                              .collectionId(collectionId)
-                              .name(field)
-                              .description(description)
-                              .schema(schema2.get())
-                              .schemaValidator(schemaValidator)
-                              .build();
-                        })
-                    .filter(Objects::nonNull))
-            .collect(Collectors.toList());
-
-    return build;
   }
 }

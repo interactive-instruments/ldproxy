@@ -13,7 +13,9 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
@@ -137,9 +139,13 @@ public class QueryParameterCollections extends ApiExtensionCache
   }
 
   @Override
-  public List<String> parse(String value, OgcApiDataV2 apiData) {
+  public List<String> parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> collectionData) {
     try {
-      List<String> collections = getCollectionIds(apiData);
+      List<String> collections = getCollectionIds(api.getData());
       return Splitter.on(',').omitEmptyStrings().trimResults().splitToList(value).stream()
           .filter(collections::contains)
           .collect(ImmutableList.toImmutableList());

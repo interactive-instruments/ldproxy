@@ -12,6 +12,7 @@ import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
@@ -40,6 +41,7 @@ import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileQuery;
@@ -432,11 +434,14 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                 requestContext.getApiUri()))));
 
     // TODO: TilesProviders along the line of FeaturesCoreProviders
-    Map<String, String> queryableTypes =
-        collectionData.map(cd -> featuresQuery.getQueryableTypes(apiData, cd)).orElse(Map.of());
+    Map<String, FeatureSchema> queryables =
+        collectionData
+            .flatMap(cd -> cd.getExtension(QueryablesConfiguration.class))
+            .map(cfg -> cfg.getQueryables(apiData, collectionData.get(), providers))
+            .orElse(ImmutableMap.of());
     Optional<TileGenerationSchema> generationSchema =
         tileProvider.supportsGeneration()
-            ? Optional.of(tileProvider.generator().getGenerationSchema(layer, queryableTypes))
+            ? Optional.of(tileProvider.generator().getGenerationSchema(layer, queryables))
             : Optional.empty();
     ImmutableTileGenerationParametersTransient.Builder userParametersBuilder =
         new ImmutableTileGenerationParametersTransient.Builder();

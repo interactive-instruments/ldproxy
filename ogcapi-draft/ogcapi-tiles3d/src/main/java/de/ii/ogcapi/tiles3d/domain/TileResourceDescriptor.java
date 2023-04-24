@@ -8,13 +8,22 @@
 package de.ii.ogcapi.tiles3d.domain;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.features.core.domain.FeaturesQuery;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.cql.domain.BooleanValue2;
+import de.ii.xtraplatform.cql.domain.Cql2Expression;
+import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
+import de.ii.xtraplatform.cql.domain.Property;
+import de.ii.xtraplatform.cql.domain.SIntersects;
+import de.ii.xtraplatform.cql.domain.SpatialLiteral;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -102,17 +111,29 @@ public abstract class TileResourceDescriptor {
     return MortonCode.encode(getX(), getY());
   }
 
-  public FeatureQuery getQuery(FeaturesQuery featuresQuery) {
-    return featuresQuery.requestToFeatureQuery(
-        getApi(),
-        getApiData().getCollectionData(getCollectionId()).orElseThrow(),
-        OgcCrs.CRS84h,
-        ImmutableMap.of(),
-        1,
-        MAX_FEATURES_PER_TILE,
-        MAX_FEATURES_PER_TILE,
-        ImmutableMap.of("bbox", getBboxString()),
-        ImmutableList.of());
+  public FeatureQuery getQuery(FeaturesCoreProviders providers) {
+    FeatureTypeConfigurationOgcApi collectionData =
+        getApiData().getCollectionData(getCollectionId()).orElseThrow();
+    return ImmutableFeatureQuery.builder()
+        .type(
+            collectionData
+                .getExtension(FeaturesCoreConfiguration.class)
+                .flatMap(FeaturesCoreConfiguration::getFeatureType)
+                .orElse(getCollectionId()))
+        .crs(OgcCrs.CRS84h)
+        .limit(MAX_FEATURES_PER_TILE)
+        .filter(
+            providers
+                .getFeatureSchema(getApiData(), collectionData)
+                .flatMap(SchemaBase::getPrimaryGeometry)
+                .map(
+                    property ->
+                        (Cql2Expression)
+                            SIntersects.of(
+                                Property.of(property.getFullPathAsString()),
+                                SpatialLiteral.of(Envelope.of(computeBbox()))))
+                .orElse(BooleanValue2.of(false)))
+        .build();
   }
 
   public enum TYPE {

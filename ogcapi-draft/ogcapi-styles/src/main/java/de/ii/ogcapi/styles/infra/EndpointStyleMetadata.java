@@ -91,13 +91,10 @@ public class EndpointStyleMetadata extends Endpoint {
             .apiEntrypoint("styles")
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLE_METADATA);
     String path = "/styles/{styleId}/metadata";
-    ImmutableList<OgcApiQueryParameter> queryParameters =
+    List<OgcApiQueryParameter> queryParameters =
         getQueryParameters(extensionRegistry, apiData, path);
     List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-    if (!pathParameters.stream()
-        .filter(param -> param.getName().equals("styleId"))
-        .findAny()
-        .isPresent()) {
+    if (pathParameters.stream().noneMatch(param -> param.getName().equals("styleId"))) {
       LOGGER.error(
           "Path parameter 'styleId' missing for resource at path '"
               + path
