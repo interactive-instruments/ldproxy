@@ -15,7 +15,6 @@ import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
-import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
@@ -79,7 +78,6 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
 
   private final FeaturesCoreProviders providers;
   private final FeaturesCoreQueriesHandler queriesHandlerFeatures;
-  private final FeaturesQuery featuresQuery;
   private final QueriesHandler3dTiles queryHandler;
   private final Cql cql;
   private final TileResourceCache tileResourceCache;
@@ -89,14 +87,12 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
       ExtensionRegistry extensionRegistry,
       FeaturesCoreProviders providers,
       FeaturesCoreQueriesHandler queriesHandlerFeatures,
-      FeaturesQuery featuresQuery,
       QueriesHandler3dTiles queryHandler,
       Cql cql,
       TileResourceCache tileResourceCache) {
     super(extensionRegistry);
     this.providers = providers;
     this.queriesHandlerFeatures = queriesHandlerFeatures;
-    this.featuresQuery = featuresQuery;
     this.queryHandler = queryHandler;
     this.cql = cql;
     this.tileResourceCache = tileResourceCache;
@@ -261,7 +257,7 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
               cql,
               cfg,
               r,
-              r.getQuery(featuresQuery),
+              r.getQuery(providers),
               requestContext.getUriCustomizer(),
               Optional.of(getGenericQueryInput(apiData)));
 

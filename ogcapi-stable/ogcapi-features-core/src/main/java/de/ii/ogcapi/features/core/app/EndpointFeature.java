@@ -8,13 +8,11 @@
 package de.ii.ogcapi.features.core.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeature.Builder;
-import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -24,15 +22,13 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.ParameterExtension;
-import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.web.domain.ETag.Type;
 import io.dropwizard.auth.Auth;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -67,10 +63,8 @@ public class EndpointFeature extends EndpointFeaturesDefinition {
       ExtensionRegistry extensionRegistry,
       FeaturesCoreProviders providers,
       FeaturesQuery ogcApiFeaturesQuery,
-      FeaturesCoreQueriesHandler queryHandler,
-      SchemaGeneratorOpenApi schemaGeneratorFeature,
-      SchemaValidator schemaValidator) {
-    super(extensionRegistry, schemaGeneratorFeature, providers, schemaValidator);
+      FeaturesCoreQueriesHandler queryHandler) {
+    super(extensionRegistry, providers);
     this.ogcApiFeaturesQuery = ogcApiFeaturesQuery;
     this.queryHandler = queryHandler;
   }
@@ -87,15 +81,10 @@ public class EndpointFeature extends EndpointFeaturesDefinition {
         new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("collections")
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_FEATURES);
-    ImmutableList<OgcApiQueryParameter> allQueryParameters =
-        extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class).stream()
-            .sorted(Comparator.comparing(ParameterExtension::getName))
-            .collect(ImmutableList.toImmutableList());
 
     generateDefinition(
         apiData,
         definitionBuilder,
-        allQueryParameters,
         "/items/{featureId}",
         "retrieve a feature in the feature collection '",
         "Fetch the feature with id `{featureId}`.",
@@ -128,20 +117,23 @@ public class EndpointFeature extends EndpointFeaturesDefinition {
                         != FeaturesCoreConfiguration.ItemType.unknown)
             .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
-    List<OgcApiQueryParameter> allowedParameters =
+    List<OgcApiQueryParameter> parameterDefinitions =
         getQueryParameters(
             extensionRegistry,
             api.getData(),
             "/collections/{collectionId}/items/{featureId}",
             collectionId);
+    QueryParameterSet queryParameterSet =
+        QueryParameterSet.of(parameterDefinitions, toFlatMap(uriInfo.getQueryParameters()))
+            .evaluate(api, Optional.of(collectionData));
+
     FeatureQuery query =
         ogcApiFeaturesQuery.requestToFeatureQuery(
             api.getData(),
             collectionData,
             coreConfiguration.getDefaultEpsgCrs(),
             coreConfiguration.getCoordinatePrecision(),
-            toFlatMap(uriInfo.getQueryParameters()),
-            allowedParameters,
+            queryParameterSet,
             featureId,
             Optional.of(Type.STRONG));
 

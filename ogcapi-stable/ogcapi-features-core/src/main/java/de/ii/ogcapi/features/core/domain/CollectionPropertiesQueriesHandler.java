@@ -27,7 +27,5 @@ public interface CollectionPropertiesQueriesHandler
     CollectionPropertiesType getType();
 
     JsonSchemaCache getSchemaCache();
-
-    boolean getIncludeLinkHeader();
   }
 }

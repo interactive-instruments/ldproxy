@@ -12,9 +12,9 @@ import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
@@ -105,6 +105,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
   private final EntityRegistry entityRegistry;
   private final ExtensionRegistry extensionRegistry;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
+  private final FeaturesCoreProviders providers;
   private final TilesProviders tilesProviders;
   private final TileMatrixSetRepository tileMatrixSetRepository;
 
@@ -115,6 +116,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       EntityRegistry entityRegistry,
       ExtensionRegistry extensionRegistry,
       TileMatrixSetLimitsGenerator limitsGenerator,
+      FeaturesCoreProviders providers,
       TilesProviders tilesProviders,
       TileMatrixSetRepository tileMatrixSetRepository) {
     this.i18n = i18n;
@@ -122,6 +124,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     this.entityRegistry = entityRegistry;
     this.extensionRegistry = extensionRegistry;
     this.limitsGenerator = limitsGenerator;
+    this.providers = providers;
     this.tilesProviders = tilesProviders;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
 
@@ -424,11 +427,14 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                             FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
                                 requestContext.getApiUri()))));
 
-    Map<String, FeatureSchema> queryableTypes = Map.of();
-
+    Map<String, FeatureSchema> queryables =
+        collectionData
+            .flatMap(cd -> cd.getExtension(QueryablesConfiguration.class))
+            .map(cfg -> cfg.getQueryables(apiData, collectionData.get(), providers))
+            .orElse(ImmutableMap.of());
     Optional<TileGenerationSchema> generationSchema =
         tileProvider.supportsGeneration()
-            ? Optional.of(tileProvider.generator().getGenerationSchema(layer, queryableTypes))
+            ? Optional.of(tileProvider.generator().getGenerationSchema(layer, queryables))
             : Optional.empty();
     ImmutableTileGenerationParametersTransient.Builder userParametersBuilder =
         new ImmutableTileGenerationParametersTransient.Builder();

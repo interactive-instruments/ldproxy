@@ -19,6 +19,7 @@ import java.util.Optional;
 public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
 
   private final List<String> properties;
+  private final boolean wildcard;
 
   public SchemaDeriverCollectionProperties(
       VERSION version,
@@ -29,6 +30,7 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
       List<String> properties) {
     super(version, schemaUri, label, description, codelists, true);
     this.properties = properties;
+    this.wildcard = properties.size() == 1 && "*".equals(properties.get(0));
   }
 
   @Override
@@ -40,8 +42,8 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
       JsonSchemaDocument.Builder builder) {
     properties.forEach(
         (propertyName, propertySchema) -> {
-          String cleanName = propertyName.replaceAll("\\[\\]", "");
-          if (this.properties.contains(cleanName)) {
+          String cleanName = propertyName.replaceAll("\\[]", "");
+          if (wildcard || this.properties.contains(cleanName)) {
             builder.putProperties(cleanName, propertySchema);
           }
         });

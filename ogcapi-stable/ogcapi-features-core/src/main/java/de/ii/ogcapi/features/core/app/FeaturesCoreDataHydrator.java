@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -26,8 +25,6 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.Metadata;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -117,7 +114,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                             .transformations(
                                 config.normalizeTransformationKeys(buildingBlock, collectionId))
                             .build();
-                  // TODO: move to immutable check method???
+
                   if (apiValidation != MODE.STRICT && config.hasDeprecatedQueryables())
                     config =
                         new ImmutableFeaturesCoreConfiguration.Builder()
@@ -268,40 +265,10 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
     return featureProvider.getData().getTypes().values().stream()
         .map(
             type -> {
-              ImmutableList<String> spatialProperty =
-                  type.getProperties().stream()
-                      .filter(FeatureSchema::isSpatial)
-                      .findFirst()
-                      .map(FeatureSchema::getName)
-                      .map(ImmutableList::of)
-                      .orElse(ImmutableList.of());
-
-              ImmutableList<String> temporalProperty =
-                  type.getProperties().stream()
-                      .filter(FeatureSchema::isTemporal)
-                      .findFirst()
-                      .map(FeatureSchema::getName)
-                      .map(ImmutableList::of)
-                      .orElse(ImmutableList.of());
-
-              List<ExtensionConfiguration> extensions = new ArrayList<>();
-
-              if (!spatialProperty.isEmpty() || !temporalProperty.isEmpty()) {
-                extensions.add(
-                    new ImmutableFeaturesCoreConfiguration.Builder()
-                        .queryables(
-                            new ImmutableFeaturesCollectionQueryables.Builder()
-                                .spatial(spatialProperty)
-                                .temporal(temporalProperty)
-                                .build())
-                        .build());
-              }
-
               ImmutableFeatureTypeConfigurationOgcApi collection =
                   new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                       .id(type.getName())
                       .label(type.getName())
-                      .extensions(extensions)
                       .build();
 
               return new AbstractMap.SimpleImmutableEntry<>(type.getName(), collection);

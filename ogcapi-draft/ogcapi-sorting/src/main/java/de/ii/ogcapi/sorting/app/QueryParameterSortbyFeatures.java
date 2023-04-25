@@ -10,18 +10,23 @@ package de.ii.ogcapi.sorting.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
+import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.ogcapi.sorting.domain.SortingConfiguration;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import de.ii.xtraplatform.features.domain.SortKey;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -29,6 +34,8 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -49,24 +56,33 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterSortbyFeatures extends ApiExtensionCache
-    implements OgcApiQueryParameter, ItemTypeSpecificConformanceClass, FeatureQueryTransformer {
+    implements OgcApiQueryParameter,
+        ItemTypeSpecificConformanceClass,
+        FeatureQueryParameter,
+        TypedQueryParameter<List<SortKey>> {
 
   static final Splitter KEYS_SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings();
   private final SchemaValidator schemaValidator;
+  private final FeaturesCoreProviders providers;
+  private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap;
 
   @Inject
-  QueryParameterSortbyFeatures(SchemaValidator schemaValidator) {
+  QueryParameterSortbyFeatures(SchemaValidator schemaValidator, FeaturesCoreProviders providers) {
+    super();
     this.schemaValidator = schemaValidator;
+    this.providers = providers;
+    this.schemaMap = new ConcurrentHashMap<>();
   }
 
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
 
-    // TODO add feature-specific conformance class once we have a draft spec
+    // add feature-specific conformance class once we have a draft spec
 
-    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record))
+    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record)) {
       builder.add("http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/sorting");
+    }
 
     return builder.build();
   }
@@ -79,6 +95,33 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
   @Override
   public String getName() {
     return "sortby";
+  }
+
+  @Override
+  public List<SortKey> parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    // the validation against the schema has verified that only valid properties are listed
+    ImmutableList.Builder<SortKey> builder = new ImmutableList.Builder<>();
+    for (String key : KEYS_SPLITTER.split(value)) {
+      if (key.startsWith("-")) {
+        builder.add(SortKey.of(key.substring(1), SortKey.Direction.DESCENDING));
+      } else {
+        builder.add(SortKey.of(key.startsWith("+") ? key.substring(1) : key));
+      }
+    }
+    return builder.build();
+  }
+
+  @Override
+  public void applyTo(
+      Builder queryBuilder,
+      QueryParameterSet parameters,
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData) {
+    parameters.getValue(this).ifPresent(queryBuilder::sortKeys);
   }
 
   @Override
@@ -97,7 +140,7 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
             apiData.getCollections().entrySet().stream()
                     .anyMatch(entry -> isEnabledForApi(apiData, entry.getKey()))
                 && method == HttpMethods.GET
-                && definitionPath.equals("/collections/{collectionId}/items"));
+                && "/collections/{collectionId}/items".equals(definitionPath));
   }
 
   @Override
@@ -112,37 +155,17 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
         () ->
             isEnabledForApi(apiData, collectionId)
                 && method == HttpMethods.GET
-                && definitionPath.equals("/collections/{collectionId}/items"));
+                && "/collections/{collectionId}/items".equals(definitionPath));
   }
-
-  private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =
-      new ConcurrentHashMap<>();
 
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {
     int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.containsKey(apiHashCode)) {
+      schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    }
     if (!schemaMap.get(apiHashCode).containsKey("*")) {
-      List<String> sortables =
-          apiData
-              .getExtension(SortingConfiguration.class)
-              .map(SortingConfiguration::getSortables)
-              .orElse(ImmutableList.of());
-      if (sortables.isEmpty())
-        schemaMap.get(apiHashCode).put("*", new ArraySchema().items(new StringSchema()));
-      else
-        schemaMap
-            .get(apiHashCode)
-            .put(
-                "*",
-                new ArraySchema()
-                    .items(
-                        new StringSchema()
-                            ._enum(
-                                sortables.stream()
-                                    .map(p -> ImmutableList.of(p, "+" + p, "-" + p))
-                                    .flatMap(Collection::stream)
-                                    .collect(Collectors.toUnmodifiableList()))));
+      schemaMap.get(apiHashCode).put("*", new ArraySchema().items(new StringSchema()));
     }
     return schemaMap.get(apiHashCode).get("*");
   }
@@ -150,14 +173,24 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
     int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    if (!schemaMap.containsKey(apiHashCode)) {
+      schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
+    }
     if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
+      FeatureTypeConfigurationOgcApi collectionData =
+          Objects.requireNonNull(apiData.getCollections().get(collectionId));
+      FeatureSchema featureSchema =
+          providers.getFeatureSchema(apiData, collectionData).orElseThrow();
       List<String> sortables =
-          apiData
-              .getCollections()
-              .get(collectionId)
+          collectionData
               .getExtension(SortingConfiguration.class)
-              .map(SortingConfiguration::getSortables)
+              .map(
+                  cfg ->
+                      cfg
+                          .getSortables(apiData, collectionData, featureSchema, providers)
+                          .keySet()
+                          .stream()
+                          .collect(Collectors.toUnmodifiableList()))
               .orElse(ImmutableList.of());
       schemaMap
           .get(apiHashCode)
@@ -183,31 +216,5 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return SortingConfiguration.class;
-  }
-
-  @Override
-  public ImmutableFeatureQuery.Builder transformQuery(
-      ImmutableFeatureQuery.Builder queryBuilder,
-      Map<String, String> parameters,
-      OgcApiDataV2 datasetData,
-      FeatureTypeConfigurationOgcApi featureTypeConfiguration) {
-    if (!isExtensionEnabled(
-        datasetData.getCollections().get(featureTypeConfiguration.getId()),
-        SortingConfiguration.class)) {
-      return queryBuilder;
-    }
-    if (parameters.containsKey("sortby")) {
-      // the validation against the schema has verified that only valid properties are listed
-      for (String key : KEYS_SPLITTER.split(parameters.get("sortby"))) {
-        if (key.startsWith("-")) {
-          queryBuilder.addSortKeys(SortKey.of(key.substring(1), SortKey.Direction.DESCENDING));
-        } else {
-          if (key.startsWith("+")) key = key.substring(1);
-          queryBuilder.addSortKeys(SortKey.of(key));
-        }
-      }
-    }
-
-    return queryBuilder;
   }
 }

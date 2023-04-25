@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
-import com.google.common.collect.ImmutableSet;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,31 +29,34 @@ public interface QueryParameterSet {
 
   Map<String, Object> getTypedValues();
 
-  Set<String> getFilterKeys();
-
   default <U> Optional<U> getValue(TypedQueryParameter<U> parameter) {
+    //noinspection unchecked
     return Optional.ofNullable((U) getTypedValues().get(parameter.getName()));
   }
 
   default QueryParameterSet evaluate(
-      OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> collectionData) {
+      OgcApi api, Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
     Map<String, String> values = new LinkedHashMap<>(getValues());
     Map<String, Object> typedValues = new LinkedHashMap<>();
-    Set<String> filterKeys = ImmutableSet.of();
 
-    for (OgcApiQueryParameter parameter : getDefinitions()) {
-      if (collectionData.isPresent()) {
-        values = parameter.transformParameters(collectionData.get(), values, apiData);
-        filterKeys =
-            parameter.getFilterParameters(filterKeys, apiData, collectionData.get().getId());
-      }
-    }
-
-    for (OgcApiQueryParameter parameter : getDefinitions()) {
-      if (parameter instanceof TypedQueryParameter<?> && values.containsKey(parameter.getName())) {
-        typedValues.put(
-            parameter.getName(),
-            ((TypedQueryParameter<?>) parameter).parse(values.get(parameter.getName()), apiData));
+    int numberOfParsingPasses =
+        getDefinitions().stream()
+            .filter(parameter -> parameter instanceof TypedQueryParameter<?>)
+            .map(parameter -> ((TypedQueryParameter<?>) parameter).getPriority())
+            .max(Comparator.naturalOrder())
+            .orElse(1);
+    for (int pass = 1; pass <= numberOfParsingPasses; pass++) {
+      for (OgcApiQueryParameter parameter : getDefinitions()) {
+        if (parameter instanceof TypedQueryParameter<?>
+            && ((TypedQueryParameter<?>) parameter).getPriority() == pass
+            && values.containsKey(parameter.getName())) {
+          Object parsedValue =
+              ((TypedQueryParameter<?>) parameter)
+                  .parse(values.get(parameter.getName()), typedValues, api, optionalCollectionData);
+          if (parsedValue != null) {
+            typedValues.put(parameter.getName(), parsedValue);
+          }
+        }
       }
     }
 
@@ -61,7 +64,6 @@ public interface QueryParameterSet {
         .definitions(getDefinitions())
         .values(values)
         .typedValues(typedValues)
-        .filterKeys(filterKeys)
         .build();
   }
 

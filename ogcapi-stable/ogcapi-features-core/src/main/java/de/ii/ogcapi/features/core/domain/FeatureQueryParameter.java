@@ -10,25 +10,27 @@ package de.ii.ogcapi.features.core.domain;
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
+import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
-import java.util.Map;
 
 @AutoMultiBind
-public interface FeatureQueryTransformer {
+public interface FeatureQueryParameter {
 
-  default ImmutableFeatureQuery.Builder transformQuery(
-      ImmutableFeatureQuery.Builder queryBuilder,
-      Map<String, String> parameters,
-      OgcApiDataV2 apiData) {
-    return queryBuilder;
+  String getName();
+
+  default boolean isFilterParameter() {
+    return false;
   }
 
-  default ImmutableFeatureQuery.Builder transformQuery(
-      Builder queryBuilder,
-      Map<String, String> parameters,
+  default void applyTo(
+      ImmutableFeatureQuery.Builder queryBuilder,
+      QueryParameterSet parameters,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData) {
-    return queryBuilder;
+    // filter parameters follow a common pattern
+    if (isFilterParameter() && parameters.getTypedValues().containsKey(getName())) {
+      queryBuilder.addFilters((Cql2Expression) parameters.getTypedValues().get(getName()));
+    }
   }
 }

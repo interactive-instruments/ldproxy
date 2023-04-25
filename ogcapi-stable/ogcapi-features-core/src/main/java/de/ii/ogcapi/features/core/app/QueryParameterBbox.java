@@ -8,18 +8,49 @@
 package de.ii.ogcapi.features.core.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
+import de.ii.xtraplatform.cql.domain.BooleanValue2;
+import de.ii.xtraplatform.cql.domain.Cql;
+import de.ii.xtraplatform.cql.domain.Cql2Expression;
+import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
+import de.ii.xtraplatform.cql.domain.IsNull;
+import de.ii.xtraplatform.cql.domain.Or;
+import de.ii.xtraplatform.cql.domain.Property;
+import de.ii.xtraplatform.cql.domain.SIntersects;
+import de.ii.xtraplatform.cql.domain.SpatialLiteral;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsInfo;
+import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.ImmutableBoundingBox;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.measure.Unit;
+import org.kortforsyningen.proj.Units;
 
 /**
  * @title bbox
@@ -30,23 +61,176 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterBbox extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterBbox extends ApiExtensionCache
+    implements OgcApiQueryParameter, TypedQueryParameter<Cql2Expression>, FeatureQueryParameter {
+
+  private static final Splitter ARRAY_SPLITTER = Splitter.on(',').trimResults();
+  private static final double BUFFER_DEGREE = 0.00001;
+  private static final double BUFFER_METRE = 10.0;
 
   private final Schema<?> baseSchema;
   private final SchemaValidator schemaValidator;
+  private final FeaturesCoreProviders providers;
+  private final CrsInfo crsInfo;
+  private final Cql cql;
+  private final CrsTransformerFactory crsTransformerFactory;
 
   @Inject
-  public QueryParameterBbox(SchemaValidator schemaValidator) {
+  public QueryParameterBbox(
+      SchemaValidator schemaValidator,
+      FeaturesCoreProviders providers,
+      CrsInfo crsInfo,
+      Cql cql,
+      CrsTransformerFactory crsTransformerFactory) {
     this.schemaValidator = schemaValidator;
+    this.providers = providers;
+    this.crsInfo = crsInfo;
+    this.cql = cql;
+    this.crsTransformerFactory = crsTransformerFactory;
     // TODO support 6 coordinates (note: maxItems was originally set to 4 for now, but the CITE
-    // tests require maxItems=6)
+    //      tests require maxItems=6)
     this.baseSchema =
-        new ArraySchema().items(new NumberSchema().format("double")).minItems(4).maxItems(6);
+        new ArraySchema()
+            .items(new NumberSchema().format("double"))
+            .oneOf(
+                ImmutableList.of(
+                    new Schema<>().minItems(4).maxItems(4),
+                    new Schema<>().minItems(6).maxItems(6)));
   }
 
   @Override
   public String getName() {
     return "bbox";
+  }
+
+  @Override
+  public int getPriority() {
+    // wait for parsed results of bbox-crs
+    return 2;
+  }
+
+  @Override
+  public Cql2Expression parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    FeatureTypeConfigurationOgcApi collectionData =
+        optionalCollectionData.orElseThrow(
+            () ->
+                new IllegalStateException(
+                    String.format(
+                        "The parameter '%s' could not be processed, no collection provided.",
+                        getName())));
+
+    List<String> values = ARRAY_SPLITTER.splitToList(value);
+    if (values.size() != 4) {
+      throw new IllegalArgumentException(
+          String.format(
+              "The parameter 'bbox' is invalid: it must have exactly four values, found %d.",
+              values.size()));
+    }
+
+    EpsgCrs bboxCrs =
+        typedValues.containsKey("bbox-crs") ? (EpsgCrs) typedValues.get("bbox-crs") : OgcCrs.CRS84;
+
+    List<Double> bboxCoordinates;
+    try {
+      bboxCoordinates = values.stream().map(Double::valueOf).collect(Collectors.toList());
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException(
+          String.format(
+              "The parameter 'bbox' is invalid: the coordinates are not valid numbers '%s,%s,%s,%s'",
+              values.get(0), values.get(1), values.get(2), values.get(3)));
+    }
+
+    Envelope envelope =
+        Envelope.of(
+            bboxCoordinates.get(0),
+            bboxCoordinates.get(1),
+            bboxCoordinates.get(2),
+            bboxCoordinates.get(3),
+            bboxCrs);
+
+    // We are using the spatial extent of the data to avoid
+    // coordinate transformation errors when a bbox parameter
+    // is completely outside of the domain of a projected CRS
+    // in which the data is stored. Using the minimal bounding
+    // box can lead to surprising results in particular with
+    // point features and queries in other CRSs where features
+    // on the boundary of the spatial extent are suddenly no
+    // longer included in the result. For the purpose of the
+    // filter, we do not need the minimal bounding rectangle,
+    // but we can use a small buffer to avoid those issues.
+    double buffer = getBuffer(bboxCrs);
+    Optional<BoundingBox> maxSpatialExtent =
+        api.getSpatialExtent(collectionData.getId(), bboxCrs)
+            .map(
+                bbox ->
+                    new ImmutableBoundingBox.Builder()
+                        .xmin(bbox.getXmin() - buffer)
+                        .xmax(bbox.getXmax() + buffer)
+                        .ymin(bbox.getYmin() - buffer)
+                        .ymax(bbox.getYmax() + buffer)
+                        .epsgCrs(bboxCrs)
+                        .build());
+
+    if (maxSpatialExtent.isPresent()
+        && (bboxCoordinates.get(0) > maxSpatialExtent.get().getXmax()
+            || bboxCoordinates.get(1) > maxSpatialExtent.get().getYmax()
+            || bboxCoordinates.get(2) < maxSpatialExtent.get().getXmin()
+            || bboxCoordinates.get(3) < maxSpatialExtent.get().getYmin())) {
+      // bounding box does not overlap with spatial extent of the data, no match;
+      // detecting this is also important to avoid errors when converting bbox coordinates
+      // that are outside of the range of the native CRS
+      return BooleanValue2.of(false);
+    }
+
+    Optional<FeatureSchema> primaryGeometry =
+        providers
+            .getFeatureSchema(api.getData(), collectionData)
+            .orElseThrow(
+                () ->
+                    new IllegalStateException(
+                        String.format(
+                            "The parameter '%s' could not be processed, no feature schema provided.",
+                            getName())))
+            .getPrimaryGeometry();
+    if (primaryGeometry.isEmpty()) {
+      // no spatial property, matches all features
+      return BooleanValue2.of(true);
+    }
+
+    Property property = Property.of(primaryGeometry.get().getFullPathAsString());
+    Cql2Expression cql2Expression =
+        Or.of(SIntersects.of(property, SpatialLiteral.of(envelope)), IsNull.of(property));
+
+    if (collectionData
+        .getExtension(FeaturesCoreConfiguration.class)
+        .map(FeaturesCoreConfiguration::getValidateCoordinatesInQueries)
+        .orElse(false)) {
+      cql.checkCoordinates(
+          cql2Expression,
+          crsTransformerFactory,
+          crsInfo,
+          bboxCrs,
+          providers
+              .getFeatureProvider(api.getData(), collectionData)
+              .map(FeatureProvider2::getData)
+              .flatMap(FeatureProviderDataV2::getNativeCrs)
+              .orElse(null));
+    }
+
+    return cql2Expression;
+  }
+
+  private double getBuffer(EpsgCrs crs) {
+    List<Unit<?>> units = crsInfo.getAxisUnits(crs);
+    if (!units.isEmpty()) {
+      return Units.METRE.equals(units.get(0)) ? BUFFER_METRE : BUFFER_DEGREE;
+    }
+    // fallback to meters
+    return BUFFER_METRE;
   }
 
   @Override
@@ -93,5 +277,10 @@ public class QueryParameterBbox extends ApiExtensionCache implements OgcApiQuery
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return FeaturesCoreConfiguration.class;
+  }
+
+  @Override
+  public boolean isFilterParameter() {
+    return true;
   }
 }

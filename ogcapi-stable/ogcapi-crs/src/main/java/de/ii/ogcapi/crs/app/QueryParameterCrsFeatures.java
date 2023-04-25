@@ -11,22 +11,26 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ogcapi.crs.domain.CrsSupport;
-import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
+import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.inject.Inject;
@@ -43,7 +47,10 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterCrsFeatures extends ApiExtensionCache
-    implements OgcApiQueryParameter, ConformanceClass, FeatureQueryTransformer {
+    implements OgcApiQueryParameter,
+        ConformanceClass,
+        FeatureQueryParameter,
+        TypedQueryParameter<EpsgCrs> {
 
   public static final String CRS = "crs";
   public static final String CRS84 = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
@@ -66,6 +73,41 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache
   @Override
   public String getName() {
     return CRS;
+  }
+
+  @Override
+  public EpsgCrs parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    EpsgCrs targetCrs;
+    try {
+      targetCrs = EpsgCrs.fromString(value);
+    } catch (Throwable e) {
+      throw new IllegalArgumentException(
+          String.format("The parameter '%s' is invalid: %s", getName(), e.getMessage()), e);
+    }
+    boolean crsIsSupported =
+        optionalCollectionData
+            .map(cd -> crsSupport.isSupported(api.getData(), cd, targetCrs))
+            .orElse(crsSupport.isSupported(api.getData(), targetCrs));
+    if (!crsIsSupported) {
+      throw new IllegalArgumentException(
+          String.format(
+              "The parameter '%s' is invalid: the crs '%s' is not supported",
+              getName(), targetCrs.toUriString()));
+    }
+    return targetCrs;
+  }
+
+  @Override
+  public void applyTo(
+      Builder queryBuilder,
+      QueryParameterSet parameters,
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData) {
+    parameters.getValue(this).ifPresent(queryBuilder::crs);
   }
 
   @Override
@@ -137,34 +179,6 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache
             .getExtension(FeaturesCoreConfiguration.class, collectionId)
             .map(ExtensionConfiguration::isEnabled)
             .orElse(true);
-  }
-
-  @Override
-  public ImmutableFeatureQuery.Builder transformQuery(
-      ImmutableFeatureQuery.Builder queryBuilder,
-      Map<String, String> parameters,
-      OgcApiDataV2 apiData,
-      FeatureTypeConfigurationOgcApi featureTypeConfiguration) {
-
-    if (isEnabledForApi(apiData, featureTypeConfiguration.getId()) && parameters.containsKey(CRS)) {
-      EpsgCrs targetCrs;
-      try {
-        targetCrs = EpsgCrs.fromString(parameters.get(CRS));
-      } catch (Throwable e) {
-        throw new IllegalArgumentException(
-            String.format("The parameter '%s' is invalid: %s", CRS, e.getMessage()), e);
-      }
-      if (!crsSupport.isSupported(apiData, featureTypeConfiguration, targetCrs)) {
-        throw new IllegalArgumentException(
-            String.format(
-                "The parameter '%s' is invalid: the crs '%s' is not supported",
-                CRS, targetCrs.toUriString()));
-      }
-
-      queryBuilder.crs(targetCrs);
-    }
-
-    return queryBuilder;
   }
 
   @Override

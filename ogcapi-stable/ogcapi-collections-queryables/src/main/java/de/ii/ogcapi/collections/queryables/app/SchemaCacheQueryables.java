@@ -9,8 +9,9 @@ package de.ii.ogcapi.collections.queryables.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
+import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration.PathSeparator;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
@@ -23,20 +24,21 @@ import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformat
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 class SchemaCacheQueryables extends JsonSchemaCache {
 
   private static final String DEFAULT_FLATTENING_SEPARATOR = ".";
 
   private final Supplier<List<Codelist>> codelistSupplier;
+  private final FeaturesCoreProviders providers;
 
-  public SchemaCacheQueryables(Supplier<List<Codelist>> codelistSupplier) {
+  public SchemaCacheQueryables(
+      Supplier<List<Codelist>> codelistSupplier, FeaturesCoreProviders featuresCoreProviders) {
+    super();
     this.codelistSupplier = codelistSupplier;
+    this.providers = featuresCoreProviders;
   }
 
   @Override
@@ -46,31 +48,24 @@ class SchemaCacheQueryables extends JsonSchemaCache {
       FeatureTypeConfigurationOgcApi collectionData,
       Optional<String> schemaUri,
       VERSION version) {
-    List<String> queryables =
+    FeatureSchema queryablesSchema =
         collectionData
-            .getExtension(FeaturesCoreConfiguration.class)
-            .flatMap(FeaturesCoreConfiguration::getQueryables)
-            .map(FeaturesCollectionQueryables::getAll)
-            .orElse(ImmutableList.of());
+            .getExtension(QueryablesConfiguration.class)
+            .map(c -> c.getQueryablesSchema(apiData, collectionData, schema, providers))
+            .orElse(schema);
+
+    String flatteningSeparator =
+        collectionData
+            .getExtension(QueryablesConfiguration.class)
+            .map(QueryablesConfiguration::getPathSeparator)
+            .map(PathSeparator::toString)
+            .orElse(DEFAULT_FLATTENING_SEPARATOR);
 
     WithTransformationsApplied schemaFlattener =
         new WithTransformationsApplied(
             ImmutableMap.of(
                 PropertyTransformations.WILDCARD,
-                new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
-
-    String flatteningSeparator =
-        schemaFlattener.getFlatteningSeparator(schema).orElse(DEFAULT_FLATTENING_SEPARATOR);
-
-    List<String> queryablesWithSeparator =
-        Objects.equals(flatteningSeparator, DEFAULT_FLATTENING_SEPARATOR)
-            ? queryables
-            : queryables.stream()
-                .map(
-                    queryable ->
-                        queryable.replaceAll(
-                            Pattern.quote(DEFAULT_FLATTENING_SEPARATOR), flatteningSeparator))
-                .collect(Collectors.toList());
+                new Builder().flatten(flatteningSeparator).build()));
 
     SchemaDeriverCollectionProperties schemaDeriverCollectionProperties =
         new SchemaDeriverCollectionProperties(
@@ -79,9 +74,9 @@ class SchemaCacheQueryables extends JsonSchemaCache {
             collectionData.getLabel(),
             Optional.empty(),
             codelistSupplier.get(),
-            queryablesWithSeparator);
+            ImmutableList.of("*"));
 
     return (JsonSchemaDocument)
-        schema.accept(schemaFlattener).accept(schemaDeriverCollectionProperties);
+        queryablesSchema.accept(schemaFlattener).accept(schemaDeriverCollectionProperties);
   }
 }
