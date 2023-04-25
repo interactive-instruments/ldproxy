@@ -16,7 +16,6 @@ import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
@@ -30,8 +29,6 @@ import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
-import de.ii.xtraplatform.tiles.domain.TilesetMetadata.LonLat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -164,17 +161,11 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
     checkPathParameter(
         extensionRegistry, apiData, definitionPath, "tileMatrixSetId", tileMatrixSetId);
 
-    FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-    TilesetMetadata tilesetMetadata =
-        tilesProviders.getTilesetMetadataOrThrow(apiData, collectionData);
-
     TilesQueriesHandler.QueryInputTileSet queryInput =
         new Builder()
             .from(getGenericQueryInput(apiData))
             .collectionId(collectionId)
             .tileMatrixSetId(tileMatrixSetId)
-            .center(tilesetMetadata.getCenter().map(LonLat::asList).orElse(List.of()))
-            .zoomLevels(tilesetMetadata.getLevels().get(tileMatrixSetId))
             .path(definitionPath)
             .build();
 

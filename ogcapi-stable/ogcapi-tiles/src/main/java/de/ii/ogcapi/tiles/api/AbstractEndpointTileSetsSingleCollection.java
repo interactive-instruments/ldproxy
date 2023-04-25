@@ -30,11 +30,9 @@ import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
-import de.ii.xtraplatform.tiles.domain.TilesetMetadata.LonLat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
@@ -157,8 +155,7 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
       ApiRequestContext requestContext,
       String definitionPath,
       String collectionId,
-      boolean onlyWebMercatorQuad,
-      Set<String> tileEncodings) {
+      boolean onlyWebMercatorQuad) {
 
     checkPathParameter(
         extensionRegistry,
@@ -174,11 +171,10 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
         new Builder()
             .from(getGenericQueryInput(apiData))
             .collectionId(collectionId)
-            .center(tilesetMetadata.getCenter().map(LonLat::asList).orElse(List.of()))
-            .tileMatrixSetZoomLevels(tilesetMetadata.getLevels())
+            .tileMatrixSetIds(tilesetMetadata.getTileMatrixSets())
             .path(definitionPath)
             .onlyWebMercatorQuad(onlyWebMercatorQuad)
-            .tileEncodings(tileEncodings)
+            .tileEncodings(tilesetMetadata.getEncodings())
             .build();
 
     return queryHandler.handle(TilesQueriesHandler.Query.TILE_SETS, queryInput, requestContext);

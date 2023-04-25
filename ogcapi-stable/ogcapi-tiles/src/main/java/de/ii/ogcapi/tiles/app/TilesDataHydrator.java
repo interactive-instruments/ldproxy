@@ -7,8 +7,6 @@
  */
 package de.ii.ogcapi.tiles.app;
 
-import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
-
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -22,27 +20,15 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataHydratorExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tilematrixsets.domain.ImmutableTileMatrixSetsConfiguration;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration;
-import de.ii.ogcapi.tiles.domain.ImmutableTileProviderMbtiles;
-import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TileProviderMbtiles;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.infra.EndpointTileSetsMultiCollection;
 import de.ii.xtraplatform.base.domain.AppContext;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.tiles.domain.ImmutableMinMax;
-import de.ii.xtraplatform.tiles.domain.MbtilesMetadata;
-import de.ii.xtraplatform.tiles.domain.MbtilesMetadata.MbtilesFormat;
-import de.ii.xtraplatform.tiles.domain.MbtilesTileset;
-import de.ii.xtraplatform.tiles.domain.MinMax;
-import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
-import java.nio.file.Path;
 import java.util.AbstractMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -60,15 +46,18 @@ public class TilesDataHydrator implements OgcApiDataHydratorExtension {
   private final AppContext appContext;
   private final TileMatrixSetRepository tileMatrixSetRepository;
   private final ExtensionRegistry extensionRegistry;
+  private final TilesProviders tilesProviders;
 
   @Inject
   public TilesDataHydrator(
       AppContext appContext,
       TileMatrixSetRepository tileMatrixSetRepository,
-      ExtensionRegistry extensionRegistry) {
+      ExtensionRegistry extensionRegistry,
+      TilesProviders tilesProviders) {
     this.appContext = appContext;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
     this.extensionRegistry = extensionRegistry;
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -183,85 +172,16 @@ public class TilesDataHydrator implements OgcApiDataHydratorExtension {
   }
 
   private TilesConfiguration process(OgcApiDataV2 apiData, TilesConfiguration config) {
+    /*if (tilesProviders.hasTileProvider(apiData)) {
+      TileProvider tileProvider = tilesProviders.getTileProvider(apiData).get();
+      TileProviderData data = tileProvider.getData();
+      data.
+    }*/
+
     if (config.getTileProvider() instanceof TileProviderMbtiles) {
       TileProviderMbtiles tileProvider = (TileProviderMbtiles) config.getTileProvider();
-      if (Objects.nonNull(tileProvider.getFilename())) {
-        try {
-          Path mbtilesFile =
-              appContext
-                  .getDataDir()
-                  .resolve(API_RESOURCES_DIR)
-                  .resolve(TILES_DIR_NAME)
-                  .resolve(apiData.getId())
-                  .resolve(tileProvider.getFilename());
-          MbtilesMetadata metadata = new MbtilesTileset(mbtilesFile).getMetadata();
-
-          String tileMatrixSetId = tileProvider.getTileMatrixSetId();
-          TileMatrixSet tileMatrixSet =
-              tileMatrixSetRepository
-                  .get(tileMatrixSetId)
-                  .orElseThrow(
-                      () ->
-                          new IllegalStateException(
-                              String.format("Unknown tile matrix set: '%s'.", tileMatrixSetId)));
-          int minzoom = metadata.getMinzoom().orElse(tileMatrixSet.getMinLevel());
-          int maxzoom = metadata.getMaxzoom().orElse(tileMatrixSet.getMaxLevel());
-          Optional<Integer> defzoom =
-              metadata.getCenter().size() == 3
-                  ? Optional.of(Math.round(metadata.getCenter().get(2).floatValue()))
-                  : Optional.empty();
-          List<Double> center =
-              metadata.getCenter().size() >= 2
-                  ? ImmutableList.of(
-                      metadata.getCenter().get(0).doubleValue(),
-                      metadata.getCenter().get(1).doubleValue())
-                  : ImmutableList.of();
-          Map<String, MinMax> zoomLevels =
-              ImmutableMap.of(
-                  tileMatrixSetId,
-                  new ImmutableMinMax.Builder()
-                      .min(minzoom)
-                      .max(maxzoom)
-                      .getDefault(defzoom)
-                      .build());
-          List<Double> bbox = metadata.getBounds();
-          Optional<BoundingBox> bounds =
-              bbox.size() == 4
-                  ? Optional.of(
-                      BoundingBox.of(
-                          bbox.get(0), bbox.get(1), bbox.get(2), bbox.get(3), OgcCrs.CRS84))
-                  : Optional.empty();
-          String format = getFormat(metadata.getFormat());
-          config =
-              new ImmutableTilesConfiguration.Builder()
-                  .from(config)
-                  .tileProvider(
-                      ImmutableTileProviderMbtiles.builder()
-                          .from(tileProvider)
-                          .zoomLevels(zoomLevels)
-                          .tileEncoding(format)
-                          .center(center)
-                          .bounds(bounds)
-                          .vectorLayers(metadata.getVectorLayers())
-                          .build())
-                  .build();
-        } catch (Exception e) {
-          throw new RuntimeException("Could not derive metadata from Mbtiles tile provider.", e);
-        }
-      }
     }
     return config;
-  }
-
-  private String getFormat(MbtilesFormat format) {
-    if (format == MbtilesMetadata.MbtilesFormat.pbf) return "MVT";
-    else if (format == MbtilesMetadata.MbtilesFormat.jpg) return "JPEG";
-    else if (format == MbtilesMetadata.MbtilesFormat.png) return "PNG";
-    else if (format == MbtilesMetadata.MbtilesFormat.webp) return "WEBP";
-    else if (format == MbtilesMetadata.MbtilesFormat.tiff) return "TIFF";
-
-    throw new UnsupportedOperationException(
-        String.format("Mbtiles format '%s' is currently not supported.", format));
   }
 
   private TileMatrixSetsConfiguration process(

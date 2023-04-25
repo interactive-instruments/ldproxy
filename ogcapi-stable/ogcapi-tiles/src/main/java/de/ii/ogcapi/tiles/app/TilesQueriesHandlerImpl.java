@@ -15,12 +15,17 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
+import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
+import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
 import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -28,10 +33,15 @@ import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetOgcApi;
+import de.ii.ogcapi.tiles.domain.ImmutableTileLayer;
+import de.ii.ogcapi.tiles.domain.ImmutableTilePoint;
+import de.ii.ogcapi.tiles.domain.ImmutableTileSet;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSets;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSets.Builder;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
+import de.ii.ogcapi.tiles.domain.TileLayer;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
@@ -39,10 +49,17 @@ import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
+import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
+import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileQuery;
+import de.ii.xtraplatform.tiles.domain.ImmutableTilesBoundingBox;
 import de.ii.xtraplatform.tiles.domain.MinMax;
 import de.ii.xtraplatform.tiles.domain.TileGenerationParametersTransient;
 import de.ii.xtraplatform.tiles.domain.TileGenerationSchema;
@@ -51,7 +68,11 @@ import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import de.ii.xtraplatform.tiles.domain.TileProvider;
 import de.ii.xtraplatform.tiles.domain.TileQuery;
 import de.ii.xtraplatform.tiles.domain.TileResult;
+import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
+import de.ii.xtraplatform.tiles.domain.WithCenter.LonLat;
 import de.ii.xtraplatform.web.domain.ETag;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.Date;
@@ -59,6 +80,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -83,11 +105,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
   private final EntityRegistry entityRegistry;
   private final ExtensionRegistry extensionRegistry;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
-  private final FeaturesCoreProviders providers;
   private final TilesProviders tilesProviders;
   private final TileMatrixSetRepository tileMatrixSetRepository;
-  // TODO
-  private final FeaturesQuery featuresQuery;
 
   @Inject
   public TilesQueriesHandlerImpl(
@@ -96,19 +115,15 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       EntityRegistry entityRegistry,
       ExtensionRegistry extensionRegistry,
       TileMatrixSetLimitsGenerator limitsGenerator,
-      FeaturesCoreProviders providers,
       TilesProviders tilesProviders,
-      TileMatrixSetRepository tileMatrixSetRepository,
-      FeaturesQuery featuresQuery) {
+      TileMatrixSetRepository tileMatrixSetRepository) {
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
     this.entityRegistry = entityRegistry;
     this.extensionRegistry = extensionRegistry;
     this.limitsGenerator = limitsGenerator;
-    this.providers = providers;
     this.tilesProviders = tilesProviders;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
-    this.featuresQuery = featuresQuery;
 
     this.queryHandlers =
         ImmutableMap.<Query, QueryHandler<? extends QueryInput>>builder()
@@ -153,8 +168,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
 
     Optional<FeatureTypeConfigurationOgcApi> featureType =
         collectionId.map(s -> apiData.getCollections().get(s));
-    Map<String, MinMax> tileMatrixSetZoomLevels = queryInput.getTileMatrixSetZoomLevels();
-    List<Double> center = queryInput.getCenter();
+    List<String> tileMatrixSetIds = queryInput.getTileMatrixSetIds();
 
     List<TileFormatExtension> tileFormats =
         extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
@@ -192,7 +206,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             .links(links);
 
     List<TileMatrixSet> tileMatrixSets =
-        tileMatrixSetZoomLevels.keySet().stream()
+        tileMatrixSetIds.stream()
             .map(this::getTileMatrixSetById)
             .filter(
                 tileMatrixSet ->
@@ -205,11 +219,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 tileMatrixSets.stream()
                     .map(
                         tileMatrixSet ->
-                            TilesHelper.buildTileSet(
+                            buildTileSet(
                                 api,
                                 tileMatrixSet,
-                                tileMatrixSetZoomLevels.get(tileMatrixSet.getId()),
-                                center,
                                 collectionId,
                                 type,
                                 tilesLinkGenerator.generateTileSetEmbeddedLinks(
@@ -218,13 +230,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                     collectionId,
                                     tileFormats,
                                     i18n,
-                                    requestContext.getLanguage()),
-                                Optional.of(requestContext.getUriCustomizer().copy()),
-                                crsTransformerFactory,
-                                limitsGenerator,
-                                providers,
-                                entityRegistry,
-                                tilesProviders))
+                                    requestContext.getLanguage())))
                     .collect(Collectors.toUnmodifiableList())));
 
     TileSets tileSets = builder.build();
@@ -303,23 +309,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             i18n,
             requestContext.getLanguage());
 
-    MinMax zoomLevels = queryInput.getZoomLevels();
-    List<Double> center = queryInput.getCenter();
     TileSet tileset =
-        TilesHelper.buildTileSet(
-            api,
-            getTileMatrixSetById(tileMatrixSetId),
-            zoomLevels,
-            center,
-            collectionId,
-            dataType,
-            links,
-            Optional.of(requestContext.getUriCustomizer().copy()),
-            crsTransformerFactory,
-            limitsGenerator,
-            providers,
-            entityRegistry,
-            tilesProviders);
+        buildTileSet(api, getTileMatrixSetById(tileMatrixSetId), collectionId, dataType, links);
 
     Date lastModified = getLastModified(queryInput);
     EntityTag etag =
@@ -392,7 +383,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             HeaderContentDisposition.of(
                 String.format(
                     "%s_%s_%d_%d_%d.%s",
-                    tileQuery.getLayer(),
+                    tileQuery.getTileset(),
                     tileQuery.getTileMatrixSet().getId(),
                     tileQuery.getLevel(),
                     tileQuery.getRow(),
@@ -414,7 +405,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     ImmutableTileQuery.Builder tileQueryBuilder =
         ImmutableTileQuery.builder()
             .from(queryInput)
-            .layer(layer)
+            .tileset(layer)
             .mediaType(outputFormat.getMediaType().type());
 
     tileQueryBuilder
@@ -433,9 +424,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                             FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
                                 requestContext.getApiUri()))));
 
-    // TODO: TilesProviders along the line of FeaturesCoreProviders
-    Map<String, String> queryableTypes =
-        collectionData.map(cd -> featuresQuery.getQueryableTypes(apiData, cd)).orElse(Map.of());
+    Map<String, FeatureSchema> queryableTypes = Map.of();
+
     Optional<TileGenerationSchema> generationSchema =
         tileProvider.supportsGeneration()
             ? Optional.of(tileProvider.generator().getGenerationSchema(layer, queryableTypes))
@@ -461,5 +451,156 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
         .get(tileMatrixSetId)
         .orElseThrow(
             () -> new ServerErrorException("TileMatrixSet not found: " + tileMatrixSetId, 500));
+  }
+
+  /**
+   * generate the tile set metadata according to the OGC Tile Matrix Set standard (version 2.0.0,
+   * draft from June 2021)
+   *
+   * @param api the API
+   * @param tileMatrixSet the tile matrix set
+   * @param collectionId the collection, empty = all collections in the dataset
+   * @param dataType vector, map or coverage
+   * @param links links to include in the object
+   * @return the tile set metadata
+   */
+  public TileSet buildTileSet(
+      OgcApi api,
+      TileMatrixSet tileMatrixSet,
+      Optional<String> collectionId,
+      TileSet.DataType dataType,
+      List<Link> links) {
+    OgcApiDataV2 apiData = api.getData();
+    Optional<TilesetMetadata> tilesetMetadata =
+        tilesProviders.getTilesetMetadata(
+            apiData, collectionId.flatMap(apiData::getCollectionData));
+    Optional<MinMax> levels =
+        tilesetMetadata.flatMap(
+            metadata -> Optional.ofNullable(metadata.getLevels().get(tileMatrixSet.getId())));
+    Optional<LonLat> center = tilesetMetadata.flatMap(TilesetMetadata::getCenter);
+
+    ImmutableTileSet.Builder builder = ImmutableTileSet.builder().dataType(dataType);
+
+    builder.tileMatrixSetId(tileMatrixSet.getId());
+
+    if (tileMatrixSet.getURI().isPresent())
+      builder.tileMatrixSetURI(tileMatrixSet.getURI().get().toString());
+    else builder.tileMatrixSet(TileMatrixSetOgcApi.of(tileMatrixSet.getTileMatrixSetData()));
+
+    if (levels.isEmpty()) {
+      builder.tileMatrixSetLimits(ImmutableList.of());
+    } else
+      builder.tileMatrixSetLimits(
+          limitsGenerator.getTileMatrixSetLimits(api, tileMatrixSet, levels.get(), collectionId));
+
+    try {
+      BoundingBox boundingBox =
+          tilesetMetadata
+              .flatMap(TilesetMetadata::getBounds)
+              .orElse(
+                  api.getSpatialExtent(collectionId)
+                      .orElse(tileMatrixSet.getBoundingBoxCrs84(crsTransformerFactory)));
+      builder.boundingBox(
+          new ImmutableTilesBoundingBox.Builder()
+              .lowerLeft(
+                  BigDecimal.valueOf(boundingBox.getXmin()).setScale(7, RoundingMode.HALF_UP),
+                  BigDecimal.valueOf(boundingBox.getYmin()).setScale(7, RoundingMode.HALF_UP))
+              .upperRight(
+                  BigDecimal.valueOf(boundingBox.getXmax()).setScale(7, RoundingMode.HALF_UP),
+                  BigDecimal.valueOf(boundingBox.getYmax()).setScale(7, RoundingMode.HALF_UP))
+              .crs(OgcCrs.CRS84.toUriString())
+              .build());
+    } catch (CrsTransformationException e) {
+      builder.boundingBox(
+          new ImmutableTilesBoundingBox.Builder()
+              .lowerLeft(BigDecimal.valueOf(-180), BigDecimal.valueOf(-90))
+              .upperRight(BigDecimal.valueOf(180), BigDecimal.valueOf(90))
+              .crs(OgcCrs.CRS84.toUriString())
+              .build());
+    }
+
+    if (levels.flatMap(MinMax::getDefault).isPresent() || !center.isEmpty()) {
+      ImmutableTilePoint.Builder builder2 = new ImmutableTilePoint.Builder();
+      if (levels.isPresent()) {
+        levels
+            .flatMap(MinMax::getDefault)
+            .ifPresent(def -> builder2.tileMatrix(String.valueOf(def)));
+      }
+      if (!center.isEmpty()) {
+        builder2.coordinates(center.get().asList());
+      }
+      builder.centerPoint(builder2.build());
+    }
+
+    if (tilesetMetadata.isPresent()) {
+      JsonSchemaCache schemaCache =
+          new SchemaCacheTileSet(() -> entityRegistry.getEntitiesForType(Codelist.class));
+
+      Set<FeatureSchema> vectorSchemas =
+          tilesetMetadata.get().getVectorSchemas().getOrDefault(tileMatrixSet.getId(), Set.of());
+
+      vectorSchemas.forEach(
+          vectorSchema -> {
+            FeatureTypeConfigurationOgcApi collectionData =
+                collectionId
+                    .flatMap(apiData::getCollectionData)
+                    .orElseGet(
+                        () ->
+                            new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                                .id(api.getId())
+                                .label(apiData.getLabel())
+                                .description(apiData.getDescription())
+                                .build());
+
+            JsonSchemaDocument jsonSchema =
+                schemaCache.getSchema(vectorSchema, apiData, collectionData, Optional.empty());
+
+            ImmutableTileLayer.Builder builder2 =
+                ImmutableTileLayer.builder()
+                    .id(collectionData.getId())
+                    .title(collectionData.getLabel())
+                    .description(collectionData.getDescription())
+                    .dataType(dataType);
+
+            if (levels.isPresent()) {
+              builder2
+                  .minTileMatrix(String.valueOf(levels.get().getMin()))
+                  .maxTileMatrix(String.valueOf(levels.get().getMax()));
+            }
+
+            switch (vectorSchema
+                .getPrimaryGeometry()
+                .flatMap(FeatureSchema::getGeometryType)
+                .orElse(SimpleFeatureGeometry.ANY)) {
+              case POINT:
+              case MULTI_POINT:
+                builder2.geometryType(TileLayer.GeometryType.points);
+                break;
+              case LINE_STRING:
+              case MULTI_LINE_STRING:
+                builder2.geometryType(TileLayer.GeometryType.lines);
+                break;
+              case POLYGON:
+              case MULTI_POLYGON:
+                builder2.geometryType(TileLayer.GeometryType.polygons);
+                break;
+            }
+
+            final JsonSchemaObject properties =
+                (JsonSchemaObject) jsonSchema.getProperties().get("properties");
+            builder2.propertiesSchema(
+                new ImmutableJsonSchemaObject.Builder()
+                    .required(properties.getRequired())
+                    .properties(properties.getProperties())
+                    .patternProperties(properties.getPatternProperties())
+                    .build());
+
+            builder.addLayers(builder2.build());
+          });
+    }
+
+    builder.links(links);
+
+    return builder.build();
   }
 }

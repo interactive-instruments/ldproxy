@@ -8,7 +8,7 @@
 package de.ii.ogcapi.tiles.app;
 
 import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
-import static de.ii.xtraplatform.tiles.domain.LayerOptionsFeatures.COMBINE_ALL;
+import static de.ii.xtraplatform.tiles.domain.TilesetFeatures.COMBINE_ALL;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -55,17 +55,16 @@ import de.ii.xtraplatform.tiles.domain.Cache;
 import de.ii.xtraplatform.tiles.domain.Cache.Storage;
 import de.ii.xtraplatform.tiles.domain.Cache.Type;
 import de.ii.xtraplatform.tiles.domain.ImmutableCache;
-import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsFeatures;
-import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsFeaturesDefault;
-import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsHttp;
-import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsHttpDefault;
-import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsMbTiles;
-import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsMbTilesDefault;
 import de.ii.xtraplatform.tiles.domain.ImmutableMinMax;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileProviderFeaturesData;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileProviderHttpData;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileProviderMbtilesData;
-import de.ii.xtraplatform.tiles.domain.LayerOptionsFeatures;
+import de.ii.xtraplatform.tiles.domain.ImmutableTilesetFeatures;
+import de.ii.xtraplatform.tiles.domain.ImmutableTilesetFeaturesDefaults;
+import de.ii.xtraplatform.tiles.domain.ImmutableTilesetHttp;
+import de.ii.xtraplatform.tiles.domain.ImmutableTilesetHttpDefaults;
+import de.ii.xtraplatform.tiles.domain.ImmutableTilesetMbTiles;
+import de.ii.xtraplatform.tiles.domain.ImmutableTilesetMbTilesDefaults;
 import de.ii.xtraplatform.tiles.domain.LevelFilter;
 import de.ii.xtraplatform.tiles.domain.LevelTransformation;
 import de.ii.xtraplatform.tiles.domain.MinMax;
@@ -75,6 +74,7 @@ import de.ii.xtraplatform.tiles.domain.TileProviderData;
 import de.ii.xtraplatform.tiles.domain.TileProviderFeaturesData;
 import de.ii.xtraplatform.tiles.domain.TileProviderHttpData;
 import de.ii.xtraplatform.tiles.domain.TileProviderMbtilesData;
+import de.ii.xtraplatform.tiles.domain.TilesetFeatures;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
@@ -430,7 +430,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
       Set<String> tileEncodings =
           tilesProviders
               .getTilesetMetadataOrThrow(apiData, apiData.getCollectionData(collectionId))
-              .getTileEncodings();
+              .getEncodings();
       if (Objects.isNull(tileEncodings)) {
         builder.addStrictErrors(
             MessageFormat.format(
@@ -754,15 +754,15 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         .id(TilesProviders.toTilesId(apiId))
         .providerType(TileProviderMbtilesData.PROVIDER_TYPE)
         .providerSubType(TileProviderMbtilesData.PROVIDER_SUBTYPE)
-        .layerDefaults(
-            new ImmutableLayerOptionsMbTilesDefault.Builder()
+        .tilesetDefaults(
+            new ImmutableTilesetMbTilesDefaults.Builder()
                 .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
                 .build())
-        .putAllLayers(
+        .putAllTilesets(
             tilesConfiguration.hasDatasetTiles()
                 ? Map.of(
                     DATASET_TILES,
-                    new ImmutableLayerOptionsMbTiles.Builder()
+                    new ImmutableTilesetMbTiles.Builder()
                         .id(DATASET_TILES)
                         .source(
                             Path.of(
@@ -774,7 +774,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                         .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
                         .build())
                 : Map.of())
-        .putAllLayers(
+        .putAllTilesets(
             collections.entrySet().stream()
                 .map(
                     entry ->
@@ -792,7 +792,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                     entry ->
                         new SimpleImmutableEntry<>(
                             entry.getKey(),
-                            new ImmutableLayerOptionsMbTiles.Builder()
+                            new ImmutableTilesetMbTiles.Builder()
                                 .id(entry.getKey())
                                 .source(
                                     ((TileProviderMbtiles) entry.getValue().getTileProvider())
@@ -812,15 +812,15 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         .id(TilesProviders.toTilesId(apiId))
         .providerType(TileProviderHttpData.PROVIDER_TYPE)
         .providerSubType(TileProviderHttpData.PROVIDER_SUBTYPE)
-        .layerDefaults(
-            new ImmutableLayerOptionsHttpDefault.Builder()
+        .tilesetDefaults(
+            new ImmutableTilesetHttpDefaults.Builder()
                 .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
                 .build())
-        .putAllLayers(
+        .putAllTilesets(
             tilesConfiguration.hasDatasetTiles()
                 ? Map.of(
                     DATASET_TILES,
-                    new ImmutableLayerOptionsHttp.Builder()
+                    new ImmutableTilesetHttp.Builder()
                         .id(DATASET_TILES)
                         .urlTemplate(
                             tileProviderTileServer
@@ -830,7 +830,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                         .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
                         .build())
                 : Map.of())
-        .putAllLayers(
+        .putAllTilesets(
             collections.entrySet().stream()
                 .map(
                     entry ->
@@ -844,7 +844,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                     entry ->
                         new SimpleImmutableEntry<>(
                             entry.getKey(),
-                            new ImmutableLayerOptionsHttp.Builder()
+                            new ImmutableTilesetHttp.Builder()
                                 .id(entry.getKey())
                                 .urlTemplate(
                                     tileProviderTileServer
@@ -876,8 +876,8 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         .providerType(TileProviderFeaturesData.PROVIDER_TYPE)
         .providerSubType(TileProviderFeaturesData.PROVIDER_SUBTYPE)
         .addAllCaches(getCaches(tilesConfiguration, collectionConfigs))
-        .layerDefaults(
-            new ImmutableLayerOptionsFeaturesDefault.Builder()
+        .tilesetDefaults(
+            new ImmutableTilesetFeaturesDefaults.Builder()
                 .featureProvider(
                     featuresCore.flatMap(FeaturesCoreConfiguration::getFeatureProvider))
                 .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
@@ -886,17 +886,17 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                 .minimumSizeInPixel(tilesConfiguration.getMinimumSizeInPixelDerived())
                 .ignoreInvalidGeometries(tilesConfiguration.isIgnoreInvalidGeometriesDerived())
                 .build())
-        .putAllLayers(
+        .putAllTilesets(
             tilesConfiguration.hasDatasetTiles()
                 ? Map.of(
                     DATASET_TILES,
-                    new ImmutableLayerOptionsFeatures.Builder()
+                    new ImmutableTilesetFeatures.Builder()
                         .id(DATASET_TILES)
                         .addCombine(COMBINE_ALL)
                         .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
                         .build())
                 : Map.of())
-        .putAllLayers(
+        .putAllTilesets(
             collectionConfigs.entrySet().stream()
                 .map(
                     entry ->
@@ -983,9 +983,9 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
-  private static LayerOptionsFeatures getFeatureLayer(
+  private static TilesetFeatures getFeatureLayer(
       String id, TilesConfiguration cfg, Map<String, FeatureTypeConfigurationOgcApi> collections) {
-    return new ImmutableLayerOptionsFeatures.Builder()
+    return new ImmutableTilesetFeatures.Builder()
         .id(id)
         .featureProvider(
             collections

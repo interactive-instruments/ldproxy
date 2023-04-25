@@ -12,7 +12,6 @@ import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
-import de.ii.xtraplatform.tiles.domain.MinMax;
 import de.ii.xtraplatform.tiles.domain.TileCoordinates;
 import java.util.List;
 import java.util.Map;
@@ -45,9 +44,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
 
     Optional<String> getCollectionId();
 
-    List<Double> getCenter();
-
-    Map<String, MinMax> getTileMatrixSetZoomLevels();
+    List<String> getTileMatrixSetIds();
 
     String getPath();
 
@@ -62,10 +59,6 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     Optional<String> getCollectionId();
 
     String getTileMatrixSetId();
-
-    List<Double> getCenter();
-
-    MinMax getZoomLevels();
 
     String getPath();
   }

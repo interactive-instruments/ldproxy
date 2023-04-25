@@ -54,7 +54,7 @@ public class EndpointTileSetMultiCollection extends AbstractEndpointTileSetMulti
       TilesQueriesHandler queryHandler,
       FeaturesCoreProviders providers,
       TilesProviders tilesProviders) {
-    super(extensionRegistry, queryHandler, providers, tilesProviders);
+    super(extensionRegistry, queryHandler, providers);
     this.tilesProviders = tilesProviders;
   }
 

@@ -32,7 +32,7 @@ public abstract class TileFormatExtension implements FormatExtension {
             config ->
                 tilesProviders
                     .getTilesetMetadataOrThrow(apiData)
-                    .getTileEncodings()
+                    .getEncodings()
                     .contains(this.getMediaType().label()))
         .isPresent();
   }
@@ -47,7 +47,7 @@ public abstract class TileFormatExtension implements FormatExtension {
             config ->
                 tilesProviders
                     .getTilesetMetadataOrThrow(apiData, apiData.getCollectionData(collectionId))
-                    .getTileEncodings()
+                    .getEncodings()
                     .contains(this.getMediaType().label()))
         .isPresent();
   }
@@ -56,7 +56,7 @@ public abstract class TileFormatExtension implements FormatExtension {
     Set<String> formats =
         tilesProviders
             .getTilesetMetadata(apiData)
-            .map(TilesetMetadata::getTileEncodings)
+            .map(TilesetMetadata::getEncodings)
             .orElse(ImmutableSet.of());
     return isEnabledForApi(apiData)
         && definitionPath.startsWith("/tiles")
@@ -68,7 +68,7 @@ public abstract class TileFormatExtension implements FormatExtension {
     Set<String> formats =
         tilesProviders
             .getTilesetMetadata(apiData, apiData.getCollectionData(collectionId))
-            .map(TilesetMetadata::getTileEncodings)
+            .map(TilesetMetadata::getEncodings)
             .orElse(ImmutableSet.of());
     return isEnabledForApi(apiData, collectionId)
         && definitionPath.startsWith("/collections/{collectionId}/tiles")

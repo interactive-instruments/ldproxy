@@ -22,9 +22,7 @@ import de.ii.ogcapi.tiles.api.EndpointTileMixin;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
-import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
 import java.util.List;
-import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -103,18 +101,7 @@ public class EndpointTileSetsSingleCollection extends AbstractEndpointTileSetsSi
       @Context OgcApi api,
       @Context ApiRequestContext requestContext,
       @PathParam("collectionId") String collectionId) {
-
-    Set<String> tileEncodings =
-        tilesProviders
-            .getTilesetMetadata(api.getData(), api.getData().getCollectionData(collectionId))
-            .map(TilesetMetadata::getTileEncodings)
-            .orElseThrow(() -> new IllegalStateException("No tile encoding available."));
     return super.getTileSets(
-        api.getData(),
-        requestContext,
-        "/collections/{collectionId}/tiles",
-        collectionId,
-        false,
-        tileEncodings);
+        api.getData(), requestContext, "/collections/{collectionId}/tiles", collectionId, false);
   }
 }

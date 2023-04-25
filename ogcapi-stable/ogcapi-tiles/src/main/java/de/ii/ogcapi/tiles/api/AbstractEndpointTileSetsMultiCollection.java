@@ -28,10 +28,8 @@ import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
-import de.ii.xtraplatform.tiles.domain.TilesetMetadata.LonLat;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
@@ -121,8 +119,7 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
       OgcApiDataV2 apiData,
       ApiRequestContext requestContext,
       String definitionPath,
-      boolean onlyWebMercatorQuad,
-      Set<String> tileEncodings) {
+      boolean onlyWebMercatorQuad) {
 
     if (!isEnabledForApi(apiData))
       throw new NotFoundException("Multi-collection tiles are not available in this API.");
@@ -132,11 +129,10 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
     TilesQueriesHandler.QueryInputTileSets queryInput =
         new Builder()
             .from(getGenericQueryInput(apiData))
-            .center(tilesetMetadata.getCenter().map(LonLat::asList).orElse(List.of()))
-            .tileMatrixSetZoomLevels(tilesetMetadata.getLevels())
+            .tileMatrixSetIds(tilesetMetadata.getTileMatrixSets())
             .path(definitionPath)
             .onlyWebMercatorQuad(onlyWebMercatorQuad)
-            .tileEncodings(tileEncodings)
+            .tileEncodings(tilesetMetadata.getEncodings())
             .build();
 
     return queryHandler.handle(TilesQueriesHandler.Query.TILE_SETS, queryInput, requestContext);

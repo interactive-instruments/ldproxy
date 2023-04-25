@@ -9,8 +9,6 @@ package de.ii.ogcapi.tiles.app.json;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -20,16 +18,24 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tiles.app.TilesHelper;
+import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsOgcApi;
 import de.ii.ogcapi.tiles.domain.ImmutableTileJson;
 import de.ii.ogcapi.tiles.domain.TileJson;
+import de.ii.ogcapi.tiles.domain.TilePoint;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.tiles.domain.TilesBoundingBox;
+import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
+import de.ii.xtraplatform.tiles.domain.VectorLayer;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -51,21 +57,13 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
 
   private final Schema<?> schemaTileJson;
   private final Map<String, Schema<?>> referencedSchemas;
-  private final FeaturesCoreProviders providers;
   private final TilesProviders tilesProviders;
-  private final SchemaInfo schemaInfo;
 
   @Inject
-  public TileSetFormatTileJson(
-      ClassSchemaCache classSchemaCache,
-      FeaturesCoreProviders providers,
-      TilesProviders tilesProviders,
-      SchemaInfo schemaInfo) {
+  public TileSetFormatTileJson(ClassSchemaCache classSchemaCache, TilesProviders tilesProviders) {
     schemaTileJson = classSchemaCache.getSchema(TileJson.class);
     referencedSchemas = classSchemaCache.getReferencedSchemas(TileJson.class);
-    this.providers = providers;
     this.tilesProviders = tilesProviders;
-    this.schemaInfo = schemaInfo;
   }
 
   @Override
@@ -94,6 +92,25 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
       OgcApiDataV2 apiData,
       Optional<String> collectionId,
       ApiRequestContext requestContext) {
+    Optional<TilesetMetadata> tilesetMetadata =
+        tilesProviders.getTilesetMetadata(
+            apiData, collectionId.flatMap(apiData::getCollectionData));
+    Set<FeatureSchema> vectorSchemas =
+        tilesetMetadata
+            .flatMap(
+                t -> Optional.ofNullable(t.getVectorSchemas().get(tileset.getTileMatrixSetId())))
+            .orElse(Set.of());
+    Set<VectorLayer> vectorLayers =
+        vectorSchemas.stream()
+            .map(
+                schema ->
+                    VectorLayer.of(
+                        schema,
+                        tilesetMetadata.flatMap(
+                            metadata ->
+                                Optional.ofNullable(
+                                    metadata.getLevels().get(tileset.getTileMatrixSetId())))))
+            .collect(Collectors.toSet());
 
     // TODO: add support for attribution and version (manage revisions to the data)
     return ImmutableTileJson.builder()
@@ -101,18 +118,11 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
         .name(apiData.getLabel())
         .description(apiData.getDescription())
         .tiles(ImmutableList.of(getTilesUriTemplate(tileset)))
-        .bounds(TilesHelper.getBounds(tileset))
-        .minzoom(TilesHelper.getMinzoom(tileset))
-        .maxzoom(TilesHelper.getMaxzoom(tileset))
-        .center(TilesHelper.getCenter(tileset))
-        .vectorLayers(
-            TilesHelper.getVectorLayers(
-                apiData,
-                collectionId,
-                tileset.getTileMatrixSetId(),
-                providers,
-                tilesProviders,
-                schemaInfo))
+        .bounds(getBounds(tileset))
+        .minzoom(getMinzoom(tileset))
+        .maxzoom(getMaxzoom(tileset))
+        .center(getCenter(tileset))
+        .vectorLayers(vectorLayers)
         .build();
   }
 
@@ -128,5 +138,84 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
         .replace("{tileMatrix}", "{z}")
         .replace("{tileRow}", "{y}")
         .replace("{tileCol}", "{x}");
+  }
+
+  /**
+   * derive the bbox as a sequence left, bottom, right, upper
+   *
+   * @param tileset the tile set metadata according to the OGC Tile Matrix Set standard
+   * @return the bbox
+   */
+  private static List<Double> getBounds(TileSet tileset) {
+    TilesBoundingBox bbox = tileset.getBoundingBox();
+    return ImmutableList.of(
+        bbox.getLowerLeft()[0].doubleValue(),
+        bbox.getLowerLeft()[1].doubleValue(),
+        bbox.getUpperRight()[0].doubleValue(),
+        bbox.getUpperRight()[1].doubleValue());
+  }
+
+  /**
+   * derive the minimum zoom level
+   *
+   * @param tileset the tile set metadata according to the OGC Tile Matrix Set standard
+   * @return the zoom level
+   */
+  private static Optional<Integer> getMinzoom(TileSet tileset) {
+    return tileset.getTileMatrixSetLimits().stream()
+        .map(TileMatrixSetLimitsOgcApi::getTileMatrix)
+        .map(Integer::valueOf)
+        .min(Integer::compareTo);
+  }
+
+  /**
+   * derive the maximum zoom level
+   *
+   * @param tileset the tile set metadata according to the OGC Tile Matrix Set standard
+   * @return the zoom level
+   */
+  private static Optional<Integer> getMaxzoom(TileSet tileset) {
+    return tileset.getTileMatrixSetLimits().stream()
+        .map(TileMatrixSetLimitsOgcApi::getTileMatrix)
+        .map(Integer::valueOf)
+        .max(Integer::compareTo);
+  }
+
+  /**
+   * derive the default view as longitude, latitude, zoom level
+   *
+   * @param tileset the tile set metadata according to the OGC Tile Matrix Set standard
+   * @return the default view
+   */
+  private static List<Number> getCenter(TileSet tileset) {
+    TilesBoundingBox bbox = tileset.getBoundingBox();
+    double centerLon =
+        tileset
+            .getCenterPoint()
+            .map(TilePoint::getCoordinates)
+            .filter(coord -> coord.size() >= 2)
+            .map(coord -> coord.get(0))
+            .orElse(
+                bbox.getLowerLeft()[0].doubleValue()
+                    + (bbox.getUpperRight()[0].doubleValue() - bbox.getLowerLeft()[0].doubleValue())
+                        * 0.5);
+    double centerLat =
+        tileset
+            .getCenterPoint()
+            .map(TilePoint::getCoordinates)
+            .filter(coord -> coord.size() >= 2)
+            .map(coord -> coord.get(1))
+            .orElse(
+                bbox.getLowerLeft()[1].doubleValue()
+                    + (bbox.getUpperRight()[1].doubleValue() - bbox.getLowerLeft()[1].doubleValue())
+                        * 0.5);
+    int defaultZoomLevel =
+        tileset
+            .getCenterPoint()
+            .map(TilePoint::getTileMatrix)
+            .flatMap(level -> level)
+            .map(Integer::valueOf)
+            .orElse(0);
+    return ImmutableList.of(centerLon, centerLat, defaultZoomLevel);
   }
 }
