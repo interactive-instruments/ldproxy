@@ -822,6 +822,11 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                                 tilesConfiguration.getCenterDerived().get(0),
                                 tilesConfiguration.getCenterDerived().get(1)))
                         : Optional.empty())
+                .encodings(
+                    tilesConfiguration.getTileEncodingsDerived().stream()
+                        .map(enc -> new SimpleImmutableEntry<>(enc, enc.toLowerCase()))
+                        .collect(
+                            ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
                 .build())
         .putAllTilesets(
             tilesConfiguration.hasDatasetTiles()

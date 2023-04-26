@@ -9,12 +9,10 @@ package de.ii.ogcapi.tiles.api;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
@@ -28,7 +26,6 @@ import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
 import java.util.List;
 import java.util.Map;
@@ -44,37 +41,25 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
       LoggerFactory.getLogger(AbstractEndpointTileSetsSingleCollection.class);
 
   private final TilesQueriesHandler queryHandler;
-  private final FeaturesCoreProviders providers;
   private final TilesProviders tilesProviders;
 
   public AbstractEndpointTileSetsSingleCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
-      FeaturesCoreProviders providers,
       TilesProviders tilesProviders) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
-    this.providers = providers;
     this.tilesProviders = tilesProviders;
   }
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-    Optional<TilesConfiguration> config =
-        apiData.getCollections().get(collectionId).getExtension(TilesConfiguration.class);
-    if (config.filter(TilesConfiguration::isEnabled).isEmpty()) return false;
-    if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
-      // Tiles are pre-generated as a static tile set
-      return config.filter(ExtensionConfiguration::isEnabled).isPresent();
-    } else {
-      if (config.filter(TilesConfiguration::hasCollectionTiles).isEmpty()) return false;
-      // Tiles are generated on-demand from a data source;
-      // currently no vector tiles support for WFS backends
-      return providers
-          .getFeatureProvider(apiData, apiData.getCollections().get(collectionId))
-          .map(FeatureProvider2::supportsHighLoad)
-          .orElse(false);
-    }
+    return apiData
+        .getCollectionData(collectionId)
+        .flatMap(cfg -> cfg.getExtension(TilesConfiguration.class))
+        .filter(TilesConfiguration::isEnabled)
+        .filter(TilesConfiguration::hasCollectionTiles)
+        .isEmpty();
   }
 
   @Override

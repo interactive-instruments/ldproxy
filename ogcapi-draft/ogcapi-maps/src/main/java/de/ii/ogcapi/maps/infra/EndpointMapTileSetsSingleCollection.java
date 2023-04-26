@@ -9,7 +9,6 @@ package de.ii.ogcapi.maps.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
@@ -51,16 +50,12 @@ public class EndpointMapTileSetsSingleCollection extends AbstractEndpointTileSet
 
   private static final List<String> TAGS = ImmutableList.of("Access single-layer map tiles");
 
-  private final TilesProviders tilesProviders;
-
   @Inject
   EndpointMapTileSetsSingleCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
-      FeaturesCoreProviders providers,
       TilesProviders tilesProviders) {
-    super(extensionRegistry, queryHandler, providers, tilesProviders);
-    this.tilesProviders = tilesProviders;
+    super(extensionRegistry, queryHandler, tilesProviders);
   }
 
   @Override

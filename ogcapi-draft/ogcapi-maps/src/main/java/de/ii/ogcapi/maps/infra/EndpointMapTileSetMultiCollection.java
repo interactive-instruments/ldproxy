@@ -9,7 +9,6 @@ package de.ii.ogcapi.maps.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -43,10 +42,8 @@ public class EndpointMapTileSetMultiCollection extends AbstractEndpointTileSetMu
 
   @Inject
   EndpointMapTileSetMultiCollection(
-      ExtensionRegistry extensionRegistry,
-      TilesQueriesHandler queryHandler,
-      FeaturesCoreProviders providers) {
-    super(extensionRegistry, queryHandler, providers);
+      ExtensionRegistry extensionRegistry, TilesQueriesHandler queryHandler) {
+    super(extensionRegistry, queryHandler);
   }
 
   @Override

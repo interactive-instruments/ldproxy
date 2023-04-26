@@ -18,7 +18,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tilematrixsets.domain.ImmutableTileMatrixSetsConfiguration;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ogcapi.tiles.infra.EndpointTileSetsMultiCollection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -52,12 +51,17 @@ public class TilesDataHydrator implements OgcApiDataHydratorExtension {
     // for backwards compatibility: update TileMatrixSets configurations and enable them, if
     // Tiles is enabled
 
+    TilesConfiguration apiConfig = apiData.getExtension(TilesConfiguration.class).orElse(null);
+    TileMatrixSetsConfiguration tmsApiConfig =
+        apiData.getExtension(TileMatrixSetsConfiguration.class).orElse(null);
+
+    if (Objects.isNull(apiConfig) || Objects.isNull(tmsApiConfig)) {
+      return apiData;
+    }
+
     ImmutableSet.Builder<String> tileMatrixSetsBuilder = ImmutableSet.builder();
 
-    TilesConfiguration apiConfig = apiData.getExtension(TilesConfiguration.class).orElse(null);
-    if (Objects.nonNull(apiConfig)) {
-      tileMatrixSetsBuilder.addAll(apiConfig.getZoomLevelsDerived().keySet());
-    }
+    tileMatrixSetsBuilder.addAll(apiConfig.getZoomLevelsDerived().keySet());
 
     apiData
         .getCollections()
@@ -72,33 +76,21 @@ public class TilesDataHydrator implements OgcApiDataHydratorExtension {
 
     Set<String> tileMatrixSetIds = tileMatrixSetsBuilder.build();
 
-    TileMatrixSetsConfiguration tmsApiConfig =
-        apiData
-            .getExtension(TileMatrixSetsConfiguration.class)
-            .map(cfg -> process(cfg, tileMatrixSetIds))
-            .orElse(null);
-    if (Objects.nonNull(tmsApiConfig)
-        && extensionRegistry.getExtensionsForType(EndpointTileSetsMultiCollection.class).stream()
-            .anyMatch(tiles -> tiles.isEnabledForApi(apiData))) {
-      // update data with changes
-      return new ImmutableOgcApiDataV2.Builder()
-          .from(apiData)
-          .extensions(
-              new ImmutableList.Builder<ExtensionConfiguration>()
-                  // do not touch any other extensions
-                  .addAll(
-                      apiData.getExtensions().stream()
-                          .filter(
-                              ext ->
-                                  !ext.getBuildingBlock().equals(tmsApiConfig.getBuildingBlock()))
-                          .collect(Collectors.toUnmodifiableList()))
-                  // add the Tiles and TileMatrixSets configuration
-                  .add(tmsApiConfig)
-                  .build())
-          .build();
-    }
-
-    return apiData;
+    // update data with changes
+    return new ImmutableOgcApiDataV2.Builder()
+        .from(apiData)
+        .extensions(
+            new ImmutableList.Builder<ExtensionConfiguration>()
+                // do not touch any other extensions
+                .addAll(
+                    apiData.getExtensions().stream()
+                        .filter(
+                            ext -> !ext.getBuildingBlock().equals(tmsApiConfig.getBuildingBlock()))
+                        .collect(Collectors.toUnmodifiableList()))
+                // add the Tiles and TileMatrixSets configuration
+                .add(process(tmsApiConfig, tileMatrixSetIds))
+                .build())
+        .build();
   }
 
   private TileMatrixSetsConfiguration process(

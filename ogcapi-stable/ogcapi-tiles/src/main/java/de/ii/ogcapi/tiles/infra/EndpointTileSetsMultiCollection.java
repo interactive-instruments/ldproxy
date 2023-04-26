@@ -9,7 +9,6 @@ package de.ii.ogcapi.tiles.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
@@ -50,9 +49,8 @@ public class EndpointTileSetsMultiCollection extends AbstractEndpointTileSetsMul
   EndpointTileSetsMultiCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
-      FeaturesCoreProviders providers,
       TilesProviders tilesProviders) {
-    super(extensionRegistry, queryHandler, providers, tilesProviders);
+    super(extensionRegistry, queryHandler, tilesProviders);
     this.tilesProviders = tilesProviders;
   }
 
