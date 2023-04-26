@@ -34,6 +34,7 @@ import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.net.URI;
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -79,7 +80,12 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
       LOGGER.info("Validating service '{}'.", apiData.getId());
     }
 
-    for (ApiExtension extension : extensionRegistry.getExtensions()) {
+    List<ApiExtension> extensions =
+        extensionRegistry.getExtensions().stream()
+            .sorted(Comparator.comparingInt(ApiExtension::getStartupPriority))
+            .collect(Collectors.toList());
+
+    for (ApiExtension extension : extensions) {
       if (extension.isEnabledForApi(apiData)) {
         ValidationResult result = extension.onStartup(this, apiValidation);
         isSuccess = isSuccess && result.isSuccess();
