@@ -76,6 +76,7 @@ import de.ii.xtraplatform.tiles.domain.TileProviderFeaturesData;
 import de.ii.xtraplatform.tiles.domain.TileProviderHttpData;
 import de.ii.xtraplatform.tiles.domain.TileProviderMbtilesData;
 import de.ii.xtraplatform.tiles.domain.TilesetFeatures;
+import de.ii.xtraplatform.tiles.domain.WithCenter.LonLat;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
@@ -91,7 +92,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sqlite.SQLiteJDBCLoader;
 
 /**
  * @title Tiles
@@ -344,6 +344,11 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
   }
 
   @Override
+  public int getStartupPriority() {
+    return 10;
+  }
+
+  @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     // since building block / capability components are currently always enabled,
     // we need to test, if the TILES and TILE MATRIX SETS module are enabled for the API and stop,
@@ -384,18 +389,14 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
       }
     }
 
-    try {
-      SQLiteJDBCLoader.initialize();
-    } catch (Exception e) {
-      return ImmutableValidationResult.builder()
-          .mode(apiValidation)
-          .addStrictErrors(MessageFormat.format("Could not load SQLite: {}", e.getMessage()))
-          .build();
-    }
-
     if (apiValidation == MODE.NONE) {
       return ValidationResult.of();
     }
+
+    return validate(apiData, apiValidation);
+  }
+
+  public ValidationResult validate(OgcApiDataV2 apiData, MODE apiValidation) {
 
     ImmutableValidationResult.Builder builder =
         ImmutableValidationResult.builder().mode(apiValidation);
@@ -712,7 +713,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                         .filter(TilesConfiguration::isEnabled)
                         .filter(TilesConfiguration::hasCollectionTiles)
                         .isPresent())
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
     if (Objects.nonNull(tiles.get().getTileProvider())
         && tiles.get().getTileProvider() instanceof TileProviderMbtiles) {
@@ -814,6 +815,13 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         .tilesetDefaults(
             new ImmutableTilesetHttpDefaults.Builder()
                 .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
+                .center(
+                    tilesConfiguration.getCenterDerived().size() == 2
+                        ? Optional.of(
+                            LonLat.of(
+                                tilesConfiguration.getCenterDerived().get(0),
+                                tilesConfiguration.getCenterDerived().get(1)))
+                        : Optional.empty())
                 .build())
         .putAllTilesets(
             tilesConfiguration.hasDatasetTiles()
@@ -851,6 +859,13 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                                         .replaceAll("\\{", "{{")
                                         .replaceAll("}", "}}"))
                                 .putAllLevels(entry.getValue().getZoomLevelsDerived())
+                                .center(
+                                    entry.getValue().getCenterDerived().size() == 2
+                                        ? Optional.of(
+                                            LonLat.of(
+                                                entry.getValue().getCenterDerived().get(0),
+                                                entry.getValue().getCenterDerived().get(1)))
+                                        : Optional.empty())
                                 .build()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
         .build();
@@ -868,7 +883,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                     new SimpleImmutableEntry<>(
                         entry.getKey(),
                         entry.getValue().getExtension(TilesConfiguration.class).get()))
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
 
     return new ImmutableTileProviderFeaturesData.Builder()
         .id(TilesProviders.toTilesId(apiId))
@@ -884,6 +899,13 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                 .featureLimit(tilesConfiguration.getLimitDerived())
                 .minimumSizeInPixel(tilesConfiguration.getMinimumSizeInPixelDerived())
                 .ignoreInvalidGeometries(tilesConfiguration.isIgnoreInvalidGeometriesDerived())
+                .center(
+                    tilesConfiguration.getCenterDerived().size() == 2
+                        ? Optional.of(
+                            LonLat.of(
+                                tilesConfiguration.getCenterDerived().get(0),
+                                tilesConfiguration.getCenterDerived().get(1)))
+                        : Optional.empty())
                 .build())
         .putAllTilesets(
             tilesConfiguration.hasDatasetTiles()
@@ -902,7 +924,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                         new SimpleImmutableEntry<>(
                             entry.getKey(),
                             getFeatureLayer(entry.getKey(), entry.getValue(), collections)))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
+                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
         .build();
   }
 
@@ -1002,6 +1024,11 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         .featureLimit(cfg.getLimitDerived())
         .minimumSizeInPixel(cfg.getMinimumSizeInPixelDerived())
         .ignoreInvalidGeometries(cfg.isIgnoreInvalidGeometriesDerived())
+        .center(
+            cfg.getCenterDerived().size() == 2
+                ? Optional.of(
+                    LonLat.of(cfg.getCenterDerived().get(0), cfg.getCenterDerived().get(1)))
+                : Optional.empty())
         .build();
   }
 }

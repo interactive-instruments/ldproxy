@@ -34,7 +34,6 @@ import io.swagger.v3.oas.models.media.Schema;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -95,12 +94,9 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
     Optional<TilesetMetadata> tilesetMetadata =
         tilesProviders.getTilesetMetadata(
             apiData, collectionId.flatMap(apiData::getCollectionData));
-    Set<FeatureSchema> vectorSchemas =
-        tilesetMetadata
-            .flatMap(
-                t -> Optional.ofNullable(t.getVectorSchemas().get(tileset.getTileMatrixSetId())))
-            .orElse(Set.of());
-    Set<VectorLayer> vectorLayers =
+    List<FeatureSchema> vectorSchemas =
+        tilesetMetadata.map(TilesetMetadata::getVectorSchemas).orElse(List.of());
+    List<VectorLayer> vectorLayers =
         vectorSchemas.stream()
             .map(
                 schema ->
@@ -110,7 +106,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
                             metadata ->
                                 Optional.ofNullable(
                                     metadata.getLevels().get(tileset.getTileMatrixSetId())))))
-            .collect(Collectors.toSet());
+            .collect(Collectors.toList());
 
     // TODO: add support for attribution and version (manage revisions to the data)
     return ImmutableTileJson.builder()

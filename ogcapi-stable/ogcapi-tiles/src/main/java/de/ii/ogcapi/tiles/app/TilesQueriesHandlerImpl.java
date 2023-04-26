@@ -47,6 +47,7 @@ import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
+import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -80,7 +81,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -401,14 +401,22 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     OgcApiDataV2 apiData = requestContext.getApi().getData();
     Optional<FeatureTypeConfigurationOgcApi> collectionData =
         queryInput.getCollectionId().flatMap(apiData::getCollectionData);
-    // TODO: get layer name from cfg
-    String layer = queryInput.getCollectionId().orElse(DATASET_TILES);
     TileFormatExtension outputFormat = queryInput.getOutputFormat();
+    String tileset =
+        collectionData.isPresent()
+            ? collectionData
+                .flatMap(cd -> cd.getExtension(TilesConfiguration.class))
+                .flatMap(cfg -> Optional.ofNullable(cfg.getTileProviderTileset()))
+                .orElse(collectionData.get().getId())
+            : apiData
+                .getExtension(TilesConfiguration.class)
+                .flatMap(cfg -> Optional.ofNullable(cfg.getTileProviderTileset()))
+                .orElse(DATASET_TILES);
 
     ImmutableTileQuery.Builder tileQueryBuilder =
         ImmutableTileQuery.builder()
             .from(queryInput)
-            .tileset(layer)
+            .tileset(tileset)
             .mediaType(outputFormat.getMediaType().type());
 
     tileQueryBuilder
@@ -434,7 +442,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             .orElse(ImmutableMap.of());
     Optional<TileGenerationSchema> generationSchema =
         tileProvider.supportsGeneration()
-            ? Optional.of(tileProvider.generator().getGenerationSchema(layer, queryables))
+            ? Optional.of(tileProvider.generator().getGenerationSchema(tileset, queryables))
             : Optional.empty();
     ImmutableTileGenerationParametersTransient.Builder userParametersBuilder =
         new ImmutableTileGenerationParametersTransient.Builder();
@@ -542,8 +550,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       JsonSchemaCache schemaCache =
           new SchemaCacheTileSet(() -> entityRegistry.getEntitiesForType(Codelist.class));
 
-      Set<FeatureSchema> vectorSchemas =
-          tilesetMetadata.get().getVectorSchemas().getOrDefault(tileMatrixSet.getId(), Set.of());
+      List<FeatureSchema> vectorSchemas = tilesetMetadata.get().getVectorSchemas();
 
       vectorSchemas.forEach(
           vectorSchema -> {
@@ -553,9 +560,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     .orElseGet(
                         () ->
                             new ImmutableFeatureTypeConfigurationOgcApi.Builder()
-                                .id(api.getId())
-                                .label(apiData.getLabel())
-                                .description(apiData.getDescription())
+                                .id(vectorSchema.getName())
+                                .label(vectorSchema.getLabel().orElse(vectorSchema.getName()))
+                                .description(vectorSchema.getDescription())
                                 .build());
 
             JsonSchemaDocument jsonSchema =

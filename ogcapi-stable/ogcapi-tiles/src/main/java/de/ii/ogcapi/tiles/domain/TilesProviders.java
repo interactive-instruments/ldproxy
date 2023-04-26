@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
+import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
+
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -31,7 +33,7 @@ public interface TilesProviders {
     TileProvider provider = getTileProviderOrThrow(apiData);
     return apiData
         .getExtension(TilesConfiguration.class)
-        .map(TilesConfiguration::getTileLayer)
+        .map(cfg -> Optional.ofNullable(cfg.getTileProviderTileset()).orElse(DATASET_TILES))
         .flatMap(provider::metadata);
   }
 
@@ -53,7 +55,8 @@ public interface TilesProviders {
     TileProvider provider = getTileProviderOrThrow(apiData, collectionData);
     return collectionData
         .getExtension(TilesConfiguration.class)
-        .map(TilesConfiguration::getTileLayer)
+        .map(
+            cfg -> Optional.ofNullable(cfg.getTileProviderTileset()).orElse(collectionData.getId()))
         .flatMap(provider::metadata);
   }
 

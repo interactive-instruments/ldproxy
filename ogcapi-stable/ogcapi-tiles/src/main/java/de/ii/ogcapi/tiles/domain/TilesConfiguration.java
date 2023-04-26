@@ -336,13 +336,16 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   String getTileProviderId();
 
   /**
-   * @langEn Specifies the tile provider layer.
-   * @langDe Spezifiziert den Tile-Provider Layer.
-   * @default {collectionId}
+   * @langEn Specifies the tileset from the tile provider that should be used. The default is
+   *     `__all__` for dataset tiles and `{collectionId}` for collection tiles.
+   * @langDe Spezifiziert das Tileset vom Tile-Provider das verwendet werden soll. Der Default ist
+   *     `__all__` für Dataset Tiles und `{collectionId}` für Collection Tiles.
+   * @default __all__|{collectionId}
    * @since v3.3
    */
+  @JsonAlias("tileLayer")
   @Nullable
-  String getTileLayer();
+  String getTileProviderTileset();
 
   /**
    * @langEn Controls which formats are supported for the tileset resources. Available are [OGC
@@ -478,6 +481,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
    *     Zoomstufe als Default bei verwendet werden soll.
    * @default { "WebMercatorQuad" : { "min": 0, "max": 23 } }
    */
+  @Deprecated(since = "3.4")
   Map<String, MinMax> getZoomLevels();
 
   @Value.Auxiliary
