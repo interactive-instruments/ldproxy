@@ -92,6 +92,10 @@
           "_label": "Host",
           "_description": "The database host. To use a non-default port, add it to the host separated by `:`, e.g. `db:30305`."
         },
+        "geoPackage": {
+          "_label": "GeoPackage-file",
+          "_description": ""
+        },
         "database": {
           "_label": "Database",
           "_description": "The name of the database"
@@ -472,6 +476,10 @@
         "host": {
           "_label": "Host",
           "_description": "Der Datenbankhost. Wird ein anderer Port als der Standardport verwendet, ist dieser durch einen Doppelpunkt getrennt anzugeben, z.B. `db:30305`."
+        },
+        "geoPackage": {
+          "_label": "GeoPackage-Datei",
+          "_description": ""
         },
         "database": {
           "_label": "Datenbank",

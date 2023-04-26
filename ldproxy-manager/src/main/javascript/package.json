@@ -21,7 +21,7 @@
     "feature-u": "^3.0.0",
     "graphql": "^15.3.0",
     "graphql-anywhere": "^4.2.7",
-    "grommet": "^2.16.3",
+    "grommet": "^2.18.0",
     "grommet-icons": "^4.5.0",
     "jwt-decode": "^2.2.0",
     "prop-types": "^15",
@@ -31,7 +31,8 @@
     "react-i18next": "^11.8.5",
     "react-is": "^16",
     "react-router-dom": "^5.1.2",
-    "styled-components": "^5.0.1"
+    "styled-components": "^5.0.1",
+    "use-deep-compare-effect": "^1.8.1"
   },
   "devDependencies": {
     "@neutrinojs/airbnb": "^9.3.0",
