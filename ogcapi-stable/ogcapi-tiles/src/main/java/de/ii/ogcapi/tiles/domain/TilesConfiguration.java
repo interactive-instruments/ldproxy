@@ -27,6 +27,7 @@ import de.ii.xtraplatform.tiles.domain.ImmutableMinMax;
 import de.ii.xtraplatform.tiles.domain.LevelFilter;
 import de.ii.xtraplatform.tiles.domain.LevelTransformation;
 import de.ii.xtraplatform.tiles.domain.MinMax;
+import de.ii.xtraplatform.tiles.domain.SeedingOptions;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -428,12 +429,14 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
    *     [Tile-Provider](../../providers/tile/README.md) abhängig.
    * @default [ "MVT" ]
    */
+  @Deprecated(since = "3.4")
   List<String> getTileEncodings();
 
   // Note: Most configuration options have been moved to TileProviderFeatures and have been
   // deprecated here.
   // The getXyzDerived() methods support the deprecated configurations as well as the new style.
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -452,7 +455,6 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
                     : ImmutableList.of();
   }
 
-  // TODO: always get from provider?
   /**
    * @langEn *Deprecated* See [Tile-Provider Features](#features).
    * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
@@ -461,6 +463,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   @Deprecated
   List<Double> getCenter();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -484,6 +487,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   @Deprecated(since = "3.4")
   Map<String, MinMax> getZoomLevels();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -497,6 +501,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
                 : ImmutableMap.of();
   }
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -552,6 +557,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   @Deprecated
   Map<String, MinMax> getZoomLevelsCache();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -571,6 +577,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   @Deprecated
   Map<String, MinMax> getSeeding();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -583,15 +590,14 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated (will be renamed to `seeding` in v4.0)* Controls how and when tiles are
-   *     precomputed, see [Seeding options](#seeding-options).
-   * @langDe *Deprecated (wird in v4.0 zu `seeding` umbenannt)* Steuert wie und wann Kacheln
-   *     vorberechnet werden, siehe [Optionen für das * Seeding](#seeding-options).
+   * @langEn *Deprecated* See [Tile-Provider Features](#features).
+   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
    * @default {}
    */
   @Deprecated(since = "3.3")
   Optional<SeedingOptions> getSeedingOptions();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -610,6 +616,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   @Nullable
   Integer getLimit();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -632,6 +639,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   @Nullable
   Boolean getIgnoreInvalidGeometries();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -650,6 +658,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   @Deprecated
   Map<String, List<LevelFilter>> getFilters();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -669,6 +678,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   @Deprecated
   Map<String, List<LevelTransformation>> getRules();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -689,6 +699,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   @Nullable
   Double getMinimumSizeInPixel();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore

@@ -43,29 +43,36 @@ import org.immutables.value.Value;
 })
 public abstract class TileProvider {
 
+  @Deprecated(since = "3.4")
   @JsonIgnore
   @Value.Default
   public boolean tilesMayBeCached() {
     return false;
   }
 
+  @Deprecated(since = "3.4")
   @JsonIgnore
   @Value.Default
   public boolean requiresQuerySupport() {
     return true;
   }
 
+  @Deprecated(since = "3.4")
   @JsonIgnore
   @Value.Default
   public boolean supportsTilesHints() {
     return false;
   }
 
+  @Deprecated(since = "3.4")
   public abstract boolean isMultiCollectionEnabled();
 
+  @Deprecated(since = "3.4")
   public abstract boolean isSingleCollectionEnabled();
 
+  @Deprecated(since = "3.4")
   public abstract List<String> getTileEncodings();
 
+  @Deprecated(since = "3.4")
   public abstract TileProvider mergeInto(TileProvider tileProvider);
 }

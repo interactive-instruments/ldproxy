@@ -14,6 +14,7 @@ import com.google.common.collect.Maps;
 import de.ii.xtraplatform.tiles.domain.LevelFilter;
 import de.ii.xtraplatform.tiles.domain.LevelTransformation;
 import de.ii.xtraplatform.tiles.domain.MinMax;
+import de.ii.xtraplatform.tiles.domain.SeedingOptions;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -49,6 +50,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     derzeit nur Mapbox Vector Tiles ("MVT").
    * @default [ "MVT" ]
    */
+  @Deprecated(since = "3.4")
   @Override
   public abstract List<String> getTileEncodings();
 
@@ -59,6 +61,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     Zoomstufe als Default bei verwendet werden soll.
    * @default { "WebMercatorQuad" : { "min": 0, "max": 23 } }
    */
+  @Deprecated(since = "3.4")
   public abstract Map<String, MinMax> getZoomLevels();
 
   /**
@@ -66,6 +69,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    * @langDe Steuert die Zoomstufen, in denen erzeugte Kacheln gecacht werden.
    * @default {}
    */
+  @Deprecated(since = "3.4")
   public abstract Map<String, MinMax> getZoomLevelsCache();
 
   /**
@@ -74,6 +78,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     Seeding](#seeding-options).
    * @default
    */
+  @Deprecated(since = "3.4")
   public abstract Optional<SeedingOptions> getSeedingOptions();
 
   /**
@@ -83,6 +88,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     werden.
    * @default {}
    */
+  @Deprecated(since = "3.4")
   public abstract Map<String, MinMax> getSeeding();
 
   /**
@@ -93,6 +99,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     Beispiel unten.
    * @default {}
    */
+  @Deprecated(since = "3.4")
   public abstract Map<String, List<LevelFilter>> getFilters();
 
   /**
@@ -109,6 +116,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     in den verschmolzenen Features identisch sind.
    * @default {}
    */
+  @Deprecated(since = "3.4")
   public abstract Map<String, List<LevelTransformation>> getRules();
 
   /**
@@ -117,6 +125,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     werden sollte.
    * @default [ 0, 0 ]
    */
+  @Deprecated(since = "3.4")
   public abstract List<Double> getCenter();
 
   /**
@@ -125,6 +134,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     werden.
    * @default 100000
    */
+  @Deprecated(since = "3.4")
   @Nullable
   public abstract Integer getLimit();
 
@@ -135,6 +145,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     Kachel hat einen Layer mit den Features aus der Collection.
    * @default true
    */
+  @Deprecated(since = "3.4")
   @Nullable
   public abstract Boolean getSingleCollectionEnabled();
 
@@ -153,6 +164,7 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     einen Layer pro Collection mit den Features aus der Collection.
    * @default true
    */
+  @Deprecated(since = "3.4")
   @Nullable
   public abstract Boolean getMultiCollectionEnabled();
 
@@ -177,9 +189,11 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     in der Kachel ungültig werden.
    * @default false
    */
+  @Deprecated(since = "3.4")
   @Nullable
   public abstract Boolean getIgnoreInvalidGeometries();
 
+  @Deprecated(since = "3.4")
   @JsonIgnore
   @Value.Derived
   @Value.Auxiliary
@@ -198,9 +212,11 @@ public abstract class TileProviderFeatures extends TileProvider {
    *     Kachelkoordinatensystem.
    * @default 0.5
    */
+  @Deprecated(since = "3.4")
   @Nullable
   public abstract Double getMinimumSizeInPixel();
 
+  @Deprecated(since = "3.4")
   @Override
   @JsonIgnore
   @Value.Default

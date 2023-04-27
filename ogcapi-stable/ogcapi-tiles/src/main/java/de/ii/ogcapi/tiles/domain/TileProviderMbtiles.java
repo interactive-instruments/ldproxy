@@ -51,6 +51,7 @@ public abstract class TileProviderMbtiles extends TileProvider {
    * @langDe Dateiname der MBTiles-Datei im Verzeichnis `api-resources/tiles/{apiId}`.
    * @default null
    */
+  @Deprecated(since = "3.4")
   @Nullable
   public abstract String getFilename();
 
@@ -59,18 +60,22 @@ public abstract class TileProviderMbtiles extends TileProvider {
    * @langDe Kachelschema, das in der MBTiles-Datei verwendet wird.
    * @default WebMercatorQuad
    */
+  @Deprecated(since = "3.4")
   @Value.Default
   public String getTileMatrixSetId() {
     return "WebMercatorQuad";
   }
 
+  @Deprecated(since = "3.4")
   @JsonIgnore
   public abstract Map<String, MinMax> getZoomLevels();
 
+  @Deprecated(since = "3.4")
   @Nullable
   @JsonIgnore
   public abstract String getTileEncoding();
 
+  @Deprecated(since = "3.4")
   @JsonIgnore
   @Value.Auxiliary
   @Value.Derived
@@ -80,12 +85,15 @@ public abstract class TileProviderMbtiles extends TileProvider {
         : ImmutableList.of();
   }
 
+  @Deprecated(since = "3.4")
   @JsonIgnore
   public abstract List<Double> getCenter();
 
+  @Deprecated(since = "3.4")
   @JsonIgnore
   public abstract Optional<BoundingBox> getBounds();
 
+  @Deprecated(since = "3.4")
   @JsonIgnore
   public abstract List<VectorLayer> getVectorLayers();
 

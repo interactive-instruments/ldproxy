@@ -53,10 +53,12 @@ public class QueryParameterCollections extends ApiExtensionCache
         TileGenerationUserParameter {
 
   private final SchemaValidator schemaValidator;
+  private final TilesProviders tilesProviders;
 
   @Inject
-  QueryParameterCollections(SchemaValidator schemaValidator) {
+  QueryParameterCollections(SchemaValidator schemaValidator, TilesProviders tilesProviders) {
     this.schemaValidator = schemaValidator;
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -126,11 +128,7 @@ public class QueryParameterCollections extends ApiExtensionCache
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
-    return config.isPresent()
-        && config.get().isEnabled()
-        && config.get().hasDatasetTiles()
-        && config.get().getTileProvider().requiresQuerySupport();
+    return isEnabledForApi(apiData, tilesProviders);
   }
 
   @Override

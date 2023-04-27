@@ -56,6 +56,7 @@ public abstract class TileProviderTileServer extends TileProvider {
    *     `{tileMatrix}`, `{tileRow}`, `{tileCol}` und `{fileExtension}`.
    * @default null
    */
+  @Deprecated(since = "3.4")
   @Nullable
   public abstract String getUrlTemplate();
 
@@ -64,6 +65,7 @@ public abstract class TileProviderTileServer extends TileProvider {
    * @langDe URL-Template für den Zugriff auf Kacheln für eine Collection.
    * @default null
    */
+  @Deprecated(since = "3.4")
   @Nullable
   public abstract String getUrlTemplateSingleCollection();
 
@@ -72,9 +74,11 @@ public abstract class TileProviderTileServer extends TileProvider {
    * @langDe Liste der zu unterstützenden Kachelformate, erlaubt sind `PNG`, `WebP` und `JPEG`.
    * @default []
    */
+  @Deprecated(since = "3.4")
   @Override
   public abstract List<String> getTileEncodings();
 
+  @Deprecated(since = "3.4")
   @Override
   @JsonIgnore
   @Value.Derived
@@ -83,6 +87,7 @@ public abstract class TileProviderTileServer extends TileProvider {
     return Objects.nonNull(getUrlTemplate());
   }
 
+  @Deprecated(since = "3.4")
   @Override
   @JsonIgnore
   @Value.Derived
@@ -91,6 +96,7 @@ public abstract class TileProviderTileServer extends TileProvider {
     return Objects.nonNull(getUrlTemplateSingleCollection());
   }
 
+  @Deprecated(since = "3.4")
   @Override
   public TileProvider mergeInto(TileProvider source) {
     if (Objects.isNull(source) || !(source instanceof TileProviderTileServer)) return this;
