@@ -56,7 +56,6 @@ import javax.inject.Singleton;
  * @ref:pathParameters {@link de.ii.ogcapi.tiles3d.app.PathParameterCollectionId3dTiles}, {@link
  *     de.ii.ogcapi.tiles3d.app.PathParameterLevel}, {@link
  *     de.ii.ogcapi.tiles3d.app.PathParameterX}, {@link de.ii.ogcapi.tiles3d.app.PathParameterY}
- * @see de.ii.ogcapi.tiles.domain.SeedingOptions
  */
 @AutoBind
 @Singleton

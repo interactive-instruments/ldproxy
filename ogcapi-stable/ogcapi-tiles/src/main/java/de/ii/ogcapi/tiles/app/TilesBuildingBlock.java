@@ -177,7 +177,6 @@ import org.slf4j.LoggerFactory;
  *     de.ii.ogcapi.tiles.domain.PathParameterTileMatrix}, {@link
  *     de.ii.ogcapi.tiles.domain.PathParameterTileRow}, {@link
  *     de.ii.ogcapi.tiles.domain.PathParameterTileCol}
- * @see de.ii.ogcapi.tiles.domain.SeedingOptions
  * @ref:provider {@link de.ii.ogcapi.tiles.domain.TileProvider}
  * @ref:providerFeatures {@link de.ii.ogcapi.tiles.domain.TileProviderFeatures}
  * @ref:providerFeaturesProperties {@link de.ii.ogcapi.tiles.domain.ImmutableTileProviderFeatures}
@@ -895,6 +894,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
         .providerType(TileProviderFeaturesData.PROVIDER_TYPE)
         .providerSubType(TileProviderFeaturesData.PROVIDER_SUBTYPE)
         .addAllCaches(getCaches(tilesConfiguration, collectionConfigs))
+        .seeding(tilesConfiguration.getSeedingOptionsDerived())
         .tilesetDefaults(
             new ImmutableTilesetFeaturesDefaults.Builder()
                 .featureProvider(

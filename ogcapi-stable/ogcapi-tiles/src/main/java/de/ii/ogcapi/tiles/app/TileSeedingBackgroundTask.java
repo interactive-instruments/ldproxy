@@ -18,19 +18,19 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiBackgroundTask;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tiles.domain.SeedingOptions;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.xtraplatform.features.domain.DatasetChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.services.domain.TaskContext;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParameters;
+import de.ii.xtraplatform.tiles.domain.SeedingOptions;
 import de.ii.xtraplatform.tiles.domain.TileGenerationParameters;
 import de.ii.xtraplatform.tiles.domain.TileProvider;
+import de.ii.xtraplatform.tiles.domain.TileSeeding;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -77,10 +77,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
       return false;
     }
     // no vector tiles support for WFS backends
-    if (!providers
-        .getFeatureProvider(apiData)
-        .map(FeatureProvider2::supportsHighLoad)
-        .orElse(false)) {
+    if (!tilesProviders.getTileProvider(apiData).map(TileProvider::supportsSeeding).orElse(false)) {
       return false;
     }
 
@@ -126,11 +123,12 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
   @Override
   public boolean runOnStart(OgcApi api) {
     return isEnabledForApi(api.getData())
-        && api.getData()
-            .getExtension(TilesConfiguration.class)
-            .flatMap(TilesConfiguration::getSeedingOptionsDerived)
-            .filter(seedingOptions -> !seedingOptions.shouldRunOnStartup())
-            .isEmpty();
+        && tilesProviders
+            .getTileProvider(api.getData())
+            .map(TileProvider::seeding)
+            .map(TileSeeding::getOptions)
+            .filter(SeedingOptions::shouldRunOnStartup)
+            .isPresent();
   }
 
   @Override
@@ -138,17 +136,19 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
     if (!isEnabledForApi(api.getData())) {
       return Optional.empty();
     }
-    return api.getData()
-        .getExtension(TilesConfiguration.class)
-        .flatMap(TilesConfiguration::getSeedingOptionsDerived)
+    return tilesProviders
+        .getTileProvider(api.getData())
+        .map(TileProvider::seeding)
+        .map(TileSeeding::getOptions)
         .flatMap(SeedingOptions::getCronExpression);
   }
 
   @Override
   public int getMaxPartials(OgcApi api) {
-    return api.getData()
-        .getExtension(TilesConfiguration.class)
-        .flatMap(TilesConfiguration::getSeedingOptionsDerived)
+    return tilesProviders
+        .getTileProvider(api.getData())
+        .map(TileProvider::seeding)
+        .map(TileSeeding::getOptions)
         .map(SeedingOptions::getEffectiveMaxThreads)
         .orElse(1);
   }
@@ -159,9 +159,10 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
   }
 
   private boolean shouldPurge(OgcApi api) {
-    return api.getData()
-        .getExtension(TilesConfiguration.class)
-        .flatMap(TilesConfiguration::getSeedingOptionsDerived)
+    return tilesProviders
+        .getTileProvider(api.getData())
+        .map(TileProvider::seeding)
+        .map(TileSeeding::getOptions)
         .filter(SeedingOptions::shouldPurge)
         .isPresent();
   }
