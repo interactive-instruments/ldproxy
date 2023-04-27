@@ -66,7 +66,7 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
         .flatMap(cfg -> cfg.getExtension(TilesConfiguration.class))
         .filter(TilesConfiguration::isEnabled)
         .filter(TilesConfiguration::hasCollectionTiles)
-        .isEmpty();
+        .isPresent();
   }
 
   protected ApiEndpointDefinition computeDefinition(

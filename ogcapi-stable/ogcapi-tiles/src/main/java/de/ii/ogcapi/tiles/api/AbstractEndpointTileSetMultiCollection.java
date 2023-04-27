@@ -52,7 +52,7 @@ public abstract class AbstractEndpointTileSetMultiCollection extends Endpoint {
         .getExtension(TilesConfiguration.class)
         .filter(TilesConfiguration::isEnabled)
         .filter(TilesConfiguration::hasDatasetTiles)
-        .isEmpty();
+        .isPresent();
   }
 
   protected ApiEndpointDefinition computeDefinition(

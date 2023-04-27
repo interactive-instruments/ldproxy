@@ -59,7 +59,7 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
         .flatMap(cfg -> cfg.getExtension(TilesConfiguration.class))
         .filter(TilesConfiguration::isEnabled)
         .filter(TilesConfiguration::hasCollectionTiles)
-        .isEmpty();
+        .isPresent();
   }
 
   @Override

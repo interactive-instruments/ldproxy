@@ -50,7 +50,7 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
         .getExtension(TilesConfiguration.class)
         .filter(TilesConfiguration::isEnabled)
         .filter(TilesConfiguration::hasDatasetTiles)
-        .isEmpty();
+        .isPresent();
   }
 
   @Override
