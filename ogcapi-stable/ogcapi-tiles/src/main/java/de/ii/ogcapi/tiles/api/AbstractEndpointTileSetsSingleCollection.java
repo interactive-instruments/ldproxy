@@ -53,6 +53,15 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
   }
 
   @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+            .getExtension(TilesConfiguration.class)
+            .filter(TilesConfiguration::isEnabled)
+            .isPresent()
+        && super.isEnabledForApi(apiData);
+  }
+
+  @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
     return apiData
         .getCollectionData(collectionId)
