@@ -376,6 +376,21 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                 tilesConfiguration.get().getTileProviderId()));
 
       } else {
+        boolean tilesIdExists =
+            entityFactories.getAll("providers").stream()
+                .anyMatch(
+                    entityFactory ->
+                        TileProviderData.class.isAssignableFrom(entityFactory.dataClass())
+                            && entityFactory
+                                .instance(TilesProviders.toTilesId(apiData.getId()))
+                                .isPresent());
+        if (tilesIdExists) {
+          throw new IllegalStateException(
+              String.format(
+                  "Tile provider with id '%s' not found.",
+                  TilesProviders.toTilesId(apiData.getId())));
+        }
+
         Optional<Tuple<Class<? extends TileProviderData>, ? extends TileProviderData>>
             tileProviderData = getTileProviderData(apiData);
         if (tileProviderData.isPresent()) {

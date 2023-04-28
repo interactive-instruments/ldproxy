@@ -113,7 +113,9 @@ public class QueryParameterLimitTile extends ApiExtensionCache
               .map(TileProvider::getData)
               .map(TileProviderData::getTilesetDefaults)
               .filter(defaults -> defaults instanceof TileGenerationOptions)
-              .map(defaults -> ((TileGenerationOptions) defaults).getFeatureLimit());
+              .flatMap(
+                  defaults ->
+                      Optional.ofNullable(((TileGenerationOptions) defaults).getFeatureLimit()));
 
       limit.ifPresent(integer -> schema.setDefault(BigDecimal.valueOf(integer)));
 
@@ -135,7 +137,9 @@ public class QueryParameterLimitTile extends ApiExtensionCache
               .map(TileProvider::getData)
               .map(TileProviderData::getTilesetDefaults)
               .filter(defaults -> defaults instanceof TileGenerationOptions)
-              .map(defaults -> ((TileGenerationOptions) defaults).getFeatureLimit());
+              .flatMap(
+                  defaults ->
+                      Optional.ofNullable(((TileGenerationOptions) defaults).getFeatureLimit()));
 
       limit.ifPresent(integer -> schema.setDefault(BigDecimal.valueOf(integer)));
 
