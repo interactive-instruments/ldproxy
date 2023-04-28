@@ -965,7 +965,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
             .type(Type.DYNAMIC)
             .storage(storage)
             .putAllLevels(tilesConfiguration.getSeedingDerived())
-            .putAllLayerLevels(
+            .putAllTilesetLevels(
                 collectionConfigs.entrySet().stream()
                     .map(
                         entry ->
@@ -978,7 +978,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
             .storage(storage)
             .seeded(false)
             .putAllLevels(getNonSeededRanges(tilesConfiguration))
-            .putAllLayerLevels(
+            .putAllTilesetLevels(
                 collectionConfigs.entrySet().stream()
                     .map(
                         entry ->
