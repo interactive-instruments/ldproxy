@@ -95,7 +95,10 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
                             requestContext.getMediaType().type())));
 
     try (Stream<Path> fileStream =
-        resourcesStore.walk(Path.of(api.getId()), 1, (p, a) -> a.isValue())) {
+        resourcesStore.walk(
+            Path.of(api.getId()),
+            1,
+            (path, attributes) -> attributes.isValue() && !attributes.isHidden())) {
       List<Path> files = fileStream.sorted().collect(Collectors.toList());
 
       for (Path file : files) {
