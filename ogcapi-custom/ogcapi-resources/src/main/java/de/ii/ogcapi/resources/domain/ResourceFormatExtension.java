@@ -12,8 +12,6 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
-import java.io.IOException;
-import java.nio.file.Path;
 import javax.ws.rs.core.Response;
 
 public interface ResourceFormatExtension extends FormatExtension {
@@ -27,12 +25,7 @@ public interface ResourceFormatExtension extends FormatExtension {
       byte[] resource, String resourceId, OgcApiDataV2 apiData, ApiRequestContext requestContext);
 
   Response putResource(
-      Path resourcesStore,
-      byte[] resource,
-      String resourceId,
-      OgcApiDataV2 apiData,
-      ApiRequestContext requestContext)
-      throws IOException;
+      byte[] resource, String resourceId, OgcApiDataV2 apiData, ApiRequestContext requestContext);
 
   @Override
   default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
