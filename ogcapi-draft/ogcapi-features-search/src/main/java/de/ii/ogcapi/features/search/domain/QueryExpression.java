@@ -34,8 +34,6 @@ import io.swagger.v3.oas.models.media.StringSchema;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -99,12 +97,8 @@ public interface QueryExpression {
     return MAPPER.readValue(requestBody, QueryExpression.class);
   }
 
-  static QueryExpression of(Path path) throws IOException {
-    return MAPPER.readValue(Files.readAllBytes(path), QueryExpression.class);
-  }
-
-  static void writeToFile(QueryExpression query, Path path) throws IOException {
-    MAPPER.writeValue(path.toFile(), query);
+  static byte[] asBytes(QueryExpression query) throws IOException {
+    return MAPPER.writeValueAsBytes(query);
   }
 
   @Value.Default

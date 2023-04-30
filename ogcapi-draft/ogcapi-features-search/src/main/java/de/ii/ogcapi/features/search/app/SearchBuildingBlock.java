@@ -169,6 +169,7 @@ import javax.inject.Singleton;
 @AutoBind
 public class SearchBuildingBlock implements ApiBuildingBlock {
 
+  public static final String STORE_RESOURCE_TYPE = "queries";
   public static final String QUERY_ID_PATTERN = "[\\w\\-]+";
 
   @Inject
