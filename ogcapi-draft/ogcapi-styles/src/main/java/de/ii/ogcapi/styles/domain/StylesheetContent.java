@@ -7,27 +7,11 @@
  */
 package de.ii.ogcapi.styles.domain;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-
 public class StylesheetContent {
 
   final String descriptor;
   final byte[] content;
   final boolean inStore;
-
-  public StylesheetContent(File file) throws IOException {
-    content = java.nio.file.Files.readAllBytes(file.toPath());
-    descriptor = file.getAbsolutePath();
-    inStore = true;
-  }
-
-  public StylesheetContent(Path path) throws IOException {
-    content = java.nio.file.Files.readAllBytes(path);
-    descriptor = path.toFile().getAbsolutePath();
-    inStore = true;
-  }
 
   public StylesheetContent(byte[] content, String descriptor, boolean inStore) {
     this.content = content;
