@@ -27,7 +27,6 @@ import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration;
-import de.ii.ogcapi.tiles.domain.ImmutableTileProviderFeatures;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration.Builder;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileProviderFeatures;
@@ -277,27 +276,13 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
 
     return new Builder()
         .enabled(false)
-        .tileProvider(
-            ImmutableTileProviderFeatures.builder()
-                .tileEncodings(ImmutableList.of(TileFormatMVT.MEDIA_TYPE.label()))
-                .center(ImmutableList.of(0.0, 0.0))
-                .zoomLevels(
-                    ImmutableMap.of(
-                        "WebMercatorQuad", new ImmutableMinMax.Builder().min(0).max(23).build()))
-                .zoomLevelsCache(ImmutableMap.of())
-                .seeding(ImmutableMap.of())
-                .limit(LIMIT_DEFAULT)
-                .singleCollectionEnabled(true)
-                .multiCollectionEnabled(true)
-                .ignoreInvalidGeometries(false)
-                .minimumSizeInPixel(MINIMUM_SIZE_IN_PIXEL)
-                .build())
+        .collectionTiles(true)
+        .datasetTiles(true)
         .tileSetEncodings(
             extensionRegistry.getExtensionsForType(TileSetFormatExtension.class).stream()
                 .filter(FormatExtension::isEnabledByDefault)
                 .map(format -> format.getMediaType().label())
                 .collect(ImmutableList.toImmutableList()))
-        .cache(TilesConfiguration.TileCacheType.FILES)
         .style("DEFAULT")
         .build();
   }
