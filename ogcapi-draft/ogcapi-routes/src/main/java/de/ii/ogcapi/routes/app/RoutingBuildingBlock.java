@@ -58,6 +58,7 @@ import javax.inject.Singleton;
 @AutoBind
 public class RoutingBuildingBlock implements ApiBuildingBlock {
 
+  public static final String STORE_RESOURCE_TYPE = "routes";
   public static String CORE = "http://www.opengis.net/spec/ogcapi-routes-1/1.0.0-draft.1/conf/core";
   public static String MODE = "http://www.opengis.net/spec/ogcapi-routes-1/1.0.0-draft.1/conf/mode";
   public static String INTERMEDIATE_WAYPOINTS =
