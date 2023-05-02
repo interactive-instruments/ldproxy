@@ -94,7 +94,7 @@
         },
         "geoPackage": {
           "_label": "GeoPackage-file",
-          "_description": ""
+          "_description": "A .gpkg file with a size of at most 100MB."
         },
         "database": {
           "_label": "Database",
@@ -479,7 +479,7 @@
         },
         "geoPackage": {
           "_label": "GeoPackage-Datei",
-          "_description": ""
+          "_description": "Eine .gpkg Datei mit maximal 100MB."
         },
         "database": {
           "_label": "Datenbank",
