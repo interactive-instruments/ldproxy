@@ -122,6 +122,8 @@ public interface QueryExpression {
 
   Map<String, Object> getFilter();
 
+  Optional<String> getFilterCrs();
+
   Optional<FilterOperator> getFilterOperator();
 
   List<String> getSortby(); // String or Parameter
