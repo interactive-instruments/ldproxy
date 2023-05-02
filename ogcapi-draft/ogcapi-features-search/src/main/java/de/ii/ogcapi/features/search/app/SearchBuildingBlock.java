@@ -34,12 +34,14 @@ import javax.inject.Singleton;
  *     </code>
  *     <p>A query expression is expressed as a JSON object.
  *     <p>The query expression object can describe a single query (the properties "collections",
- *     "filter", "properties" and "sortby" are members of the query expression object) or multiple
- *     queries (a "queries" member with an array of query objects is present) in a single request.
+ *     "filter", "filterCrs", "properties" and "sortby" are members of the query expression object)
+ *     or multiple queries (a "queries" member with an array of query objects is present) in a
+ *     single request.
  *     <p>For each query:
  *     <p><code>
  * - The value of "collection" is an array with one item, the identifier of the collection to query.
  * - The value of "filter" is a CQL2 JSON filter expression. See the [Filter building block](filter.md).
+ * - The value of "filterCrs" is the URI of the coordinate reference system of coordinates in a "filter". The default is "http://www.opengis.net/def/crs/OGC/1.3/CRS84" (WGS 84, longitude/latitude).
  * - The value of "properties" is an array with the names of properties to include in the response. See the [Projections building block](projections.md).
  * - The value of "sortby" is used to sort the features in the response. See the [Sorting building block](sorting.md).
  *     </code>
@@ -96,6 +98,7 @@ import javax.inject.Singleton;
  *     <p><code>
  * - Der Wert von "collection" ist ein Array mit einem Element, dem Identifikator der abzufragenden Feature Collection.
  * - Der Wert von "filter" ist ein CQL2 JSON-Filterausdruck. Siehe das [Filter-Modul](filter.md).
+ * - Der Wert von "filterCrs" ist die URI des Koordinatenreferenzsystems der Koordinaten in einem "filter". Der Standardwert ist "http://www.opengis.net/def/crs/OGC/1.3/CRS84" (WGS 84, Longitude/Latitude).
  * - Der Wert von "properties" ist ein Array mit den Namen der Eigenschaften, die in die Antwort aufgenommen werden sollen. Siehe das [Projections-Modul](projections.md).
  * - Der Wert von "sortby" wird zum Sortieren der Merkmale in der Antwort verwendet. Siehe das [Sorting-Modul](sorting.md).
  *     </code>
@@ -103,8 +106,8 @@ import javax.inject.Singleton;
  *     <p><code>
  * - Wenn mehrere Abfragen angegeben werden, werden die Ergebnisse zusammengeführt. Die Antwort ist eine einzelne Feature Collection. Die Feature-IDs in der Antwort auf eine Abfrage mit mehreren Feature Collections müssen eindeutig sein. Da der Bezeichner eines Features nur pro Feature Collection eindeutig sein muss, müssen sie mit der Feature-Collection-ID kombiniert werden. Es wird eine Verkettung mit "." als Verbindungszeichen verwendet (z. B. "apronelement.123456").
  * - Die direkten Key-Value-Paare "filter" und "properties" stellen 'globale' Bedingungen dar, die in jeder Abfrage mit dem entsprechenden Key-Value-Paar kombiniert werden müssen. Die globale und die lokale Eigenschaftsauswahlliste werden verkettet. Die globalen und lokalen Filter werden mit dem logischen Operator kombiniert, der durch das Mitglied "filterOperator" angegeben wird.
- *   - Das globale Mitglied "filter" darf nur auf Queryables verweisen, die allen abgefragten Sammlungen gemeinsam sind.
- *   - Das globale Mitglied "properties" darf nur auf presentables verweisen, die allen abgefragten Sammlungen gemeinsam sind.
+ *   - Das globale Mitglied "filter" darf nur auf Queryables verweisen, die allen abgefragten Collections gemeinsam sind.
+ *   - Das globale Mitglied "properties" darf nur auf Presentables verweisen, die allen abgefragten Collections gemeinsam sind.
  *     </code>
  *     <p>Allgemeines:
  *     <p><code>

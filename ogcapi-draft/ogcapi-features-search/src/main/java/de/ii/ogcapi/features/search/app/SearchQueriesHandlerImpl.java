@@ -196,14 +196,14 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
 
       if (!query.hasParameters()) {
         // if we do not have parameters, we can also check that the filters are valid CQL2 JSON
-        getCql2Expression(query.getFilter());
-        query.getQueries().forEach(q -> getCql2Expression(q.getFilter()));
+        getCql2Expression(query.getFilter(), query.getFilterCrs());
+        query.getQueries().forEach(q -> getCql2Expression(q.getFilter(), query.getFilterCrs()));
       } else if (query.getParametersWithOpenApiSchema().values().stream()
           .allMatch(p -> Objects.nonNull(p.getDefault()))) {
         // .. or if all parameters have default values
         QueryExpression resolved = query.resolveParameters(ImmutableMap.of(), schemaValidator);
-        getCql2Expression(resolved.getFilter());
-        resolved.getQueries().forEach(q -> getCql2Expression(q.getFilter()));
+        getCql2Expression(resolved.getFilter(), query.getFilterCrs());
+        resolved.getQueries().forEach(q -> getCql2Expression(q.getFilter(), query.getFilterCrs()));
       }
     }
 
@@ -581,7 +581,8 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
 
   private MultiFeatureQuery getMultiFeatureQuery(
       OgcApi api, QueryExpression queryExpression, EpsgCrs crs) {
-    Optional<Cql2Expression> topLevelFilter = getCql2Expression(queryExpression.getFilter());
+    Optional<Cql2Expression> topLevelFilter =
+        getCql2Expression(queryExpression.getFilter(), queryExpression.getFilterCrs());
     List<SubQuery> queries =
         queryExpression.getCollections().size() == 1
             ? ImmutableList.of(
@@ -600,7 +601,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                         getSubQuery(
                             api.getData(),
                             q.getCollections().get(0),
-                            getCql2Expression(q.getFilter()),
+                            getCql2Expression(q.getFilter(), queryExpression.getFilterCrs()),
                             topLevelFilter,
                             queryExpression.getFilterOperator(),
                             q.getSortby(),
@@ -700,11 +701,20 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
     return cqlFilter;
   }
 
-  private Optional<Cql2Expression> getCql2Expression(Map<String, Object> filter) {
+  private Optional<Cql2Expression> getCql2Expression(
+      Map<String, Object> filter, Optional<String> filterCrs) {
     if (!filter.isEmpty()) {
+      Optional<EpsgCrs> crs;
+      try {
+        crs = filterCrs.map(EpsgCrs::fromString);
+      } catch (Throwable e) {
+        throw new IllegalArgumentException(
+            String.format("The CRS URI '%s' is invalid: %s", filterCrs.get(), e.getMessage()), e);
+      }
       try {
         String jsonFilter = new ObjectMapper().writeValueAsString(filter);
-        return Optional.ofNullable(cql.read(jsonFilter, Format.JSON));
+        return crs.map(epsgCrs -> cql.read(jsonFilter, Format.JSON, epsgCrs))
+            .or(() -> Optional.ofNullable(cql.read(jsonFilter, Format.JSON)));
       } catch (JsonProcessingException | CqlParseException e) {
         throw new IllegalArgumentException(
             String.format("The CQL2 JSON Filter is invalid: %s", filter), e);
