@@ -272,6 +272,7 @@ public class EndpointAdHocQuery extends EndpointRequiresFeatures implements Conf
                     .getExtension(SearchConfiguration.class)
                     .map(SearchConfiguration::getAllLinksAreLocal)
                     .orElse(false))
+            .isStoredQuery(false)
             .build();
 
     return queryHandler.handle(Query.QUERY, queryInput, requestContext);

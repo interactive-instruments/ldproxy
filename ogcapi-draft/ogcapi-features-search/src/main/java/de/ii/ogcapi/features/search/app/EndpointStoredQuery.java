@@ -236,6 +236,7 @@ public class EndpointStoredQuery extends EndpointRequiresFeatures {
                     .getExtension(SearchConfiguration.class)
                     .map(SearchConfiguration::getAllLinksAreLocal)
                     .orElse(false))
+            .isStoredQuery(true)
             .build();
 
     return queryHandler.handle(Query.QUERY, queryInput, requestContext);
