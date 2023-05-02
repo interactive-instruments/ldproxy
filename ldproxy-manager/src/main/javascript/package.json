@@ -16,7 +16,7 @@
     "@ogcapi/common": "^1.0.1",
     "@xtraplatform/core": "^2.1.0",
     "@xtraplatform/manager": "^2.0.0",
-    "@xtraplatform/services": "^2.1.0",
+    "@xtraplatform/services": "^2.1.1",
     "apollo-link-rest": "^0.8.0-beta.0",
     "feature-u": "^3.0.0",
     "graphql": "^15.3.0",
