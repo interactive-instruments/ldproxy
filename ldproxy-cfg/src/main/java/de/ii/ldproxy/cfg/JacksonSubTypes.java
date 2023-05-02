@@ -27,7 +27,6 @@ import de.ii.ogcapi.foundation.domain.JacksonSubTypeIdsFoundation;
 import de.ii.ogcapi.geometry.simplification.app.JacksonSubTypeIdsGeometrySimplification;
 import de.ii.ogcapi.html.app.JacksonSubTypeIdsHtml;
 import de.ii.ogcapi.json.app.JacksonSubTypeIdsJson;
-import de.ii.ogcapi.maps.app.JacksonSubTypeIdsMapTiles;
 import de.ii.ogcapi.oas30.app.JacksonSubTypeIdsOas30;
 import de.ii.ogcapi.projections.app.JacksonSubTypeIdsProjections;
 import de.ii.ogcapi.resources.app.JacksonSubTypeIdsResources;
@@ -51,7 +50,6 @@ public interface JacksonSubTypes {
         .add(new JacksonSubTypeIdsJsonFg())
         .add(new JacksonSubTypeIdsFilter())
         .add(new JacksonSubTypeIdsGeometrySimplification())
-        .add(new JacksonSubTypeIdsMapTiles())
         .add(new JacksonSubTypeIdsProjections())
         .add(new JacksonSubTypeIdsResources())
         .add(new JacksonSubTypeIdsSorting())

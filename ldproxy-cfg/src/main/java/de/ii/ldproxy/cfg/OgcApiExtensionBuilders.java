@@ -26,7 +26,6 @@ import de.ii.ogcapi.foundation.domain.ImmutableFoundationConfiguration;
 import de.ii.ogcapi.geometry.simplification.app.ImmutableGeometrySimplificationConfiguration;
 import de.ii.ogcapi.html.domain.ImmutableHtmlConfiguration;
 import de.ii.ogcapi.json.domain.ImmutableJsonConfiguration;
-import de.ii.ogcapi.maps.domain.ImmutableMapTilesConfiguration;
 import de.ii.ogcapi.oas30.domain.ImmutableOas30Configuration;
 import de.ii.ogcapi.projections.app.ImmutableProjectionsConfiguration;
 import de.ii.ogcapi.resources.domain.ImmutableResourcesConfiguration;
@@ -67,10 +66,6 @@ public interface OgcApiExtensionBuilders {
 
   default ImmutableGeometrySimplificationConfiguration.Builder geometrySimplification() {
     return new ImmutableGeometrySimplificationConfiguration.Builder();
-  }
-
-  default ImmutableMapTilesConfiguration.Builder mapTiles() {
-    return new ImmutableMapTilesConfiguration.Builder();
   }
 
   default ImmutableProjectionsConfiguration.Builder projections() {
