@@ -134,11 +134,19 @@ import javax.inject.Singleton;
  *     specification in OGC (e.g., whether the payload should be JSON or URL-encoded query
  *     parameters).
  *     </code>
+ *     <p>Ad-hoc queries have the following limitations:
+ *     <p><code>
+ * - Paging is not supported for ad-hoc queries and sufficiently large values for `limit` should be used. See [issue 906](https://github.com/interactive-instruments/ldproxy/issues/906).
+ *     </code>
  * @limitationsDe Für parametrisierte gespeicherte Abfragen gelten die folgenden Beschränkungen:
  *     <p><code>
  * - Parameter können nur in Filterausdrücken vorkommen.
  * - Das JSON-Schema eines Parameters unterstützt eine Teilmenge der Sprache. Insbesondere werden `patternProperties`, `additionalProperties`, `allOf`, `oneOf`, `prefixItems`, `additionalItems` und `items: false` nicht unterstützt.
  * - POST zur Ausführung einer gespeicherten Abfrage wird nicht unterstützt. Dies wird hinzugefügt, nachdem die Spezifikation in OGC diskutiert wurde (z.B. ob die Nutzlast JSON oder URL-kodierte Abfrageparameter sein sollen).
+ *     </code>
+ *     <p>Ad-hoc-Queries haben die folgenden Beschränkungen:
+ *     <p><code>
+ * - Paging wird für Ad-Hoc-Queries nicht unterstützt. Bis zur Klärung sollten ausreichend große Werte für `limit` verwendet werden. Siehe [Issue 906](https://github.com/interactive-instruments/ldproxy/issues/906).
  *     </code>
  * @ref:cfg {@link de.ii.ogcapi.features.search.domain.SearchConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.features.search.domain.ImmutableSearchConfiguration}

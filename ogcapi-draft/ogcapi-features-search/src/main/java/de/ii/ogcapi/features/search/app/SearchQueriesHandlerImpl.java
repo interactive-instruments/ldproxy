@@ -523,15 +523,17 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                 .collect(Collectors.toUnmodifiableList());
     EpsgCrs targetCrs = query.getCrs().orElse(queryInput.getDefaultCrs());
     List<Link> links =
-        new StoredQueriesLinkGenerator()
-            .generateFeaturesLinks(
-                requestContext.getUriCustomizer(),
-                query.getOffset(),
-                query.getLimit(),
-                requestContext.getMediaType(),
-                requestContext.getAlternateMediaTypes(),
-                i18n,
-                requestContext.getLanguage());
+        queryInput.isStoredQuery()
+            ? new StoredQueriesLinkGenerator()
+                .generateFeaturesLinks(
+                    requestContext.getUriCustomizer(),
+                    query.getOffset(),
+                    query.getLimit(),
+                    requestContext.getMediaType(),
+                    requestContext.getAlternateMediaTypes(),
+                    i18n,
+                    requestContext.getLanguage())
+            : ImmutableList.of();
     FeatureFormatExtension outputFormat =
         requestContext
             .getApi()

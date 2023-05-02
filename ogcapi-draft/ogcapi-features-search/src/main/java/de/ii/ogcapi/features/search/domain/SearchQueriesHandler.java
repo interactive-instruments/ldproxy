@@ -56,6 +56,8 @@ public interface SearchQueriesHandler extends QueriesHandler<SearchQueriesHandle
     default boolean getAllLinksAreLocal() {
       return false;
     }
+
+    boolean isStoredQuery();
   }
 
   @Value.Immutable
