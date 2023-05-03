@@ -492,8 +492,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       builder.tileMatrixSetLimits(
           limitsGenerator.getTileMatrixSetLimits(api, tileMatrixSet, levels.get(), collectionId));
 
+    BoundingBox boundingBox = null;
     try {
-      BoundingBox boundingBox =
+      boundingBox =
           tilesetMetadata
               .flatMap(TilesetMetadata::getBounds)
               .orElse(
@@ -518,14 +519,24 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
               .build());
     }
 
-    if (levels.flatMap(MinMax::getDefault).isPresent() || !center.isEmpty()) {
+    if (levels.flatMap(MinMax::getDefault).isPresent() || center.isPresent()) {
       ImmutableTilePoint.Builder builder2 = new ImmutableTilePoint.Builder();
       if (levels.isPresent()) {
         levels
             .flatMap(MinMax::getDefault)
             .ifPresent(def -> builder2.tileMatrix(String.valueOf(def)));
       }
-      center.ifPresent(lonLat -> builder2.coordinates(lonLat.asList()));
+      BoundingBox finalBoundingBox = boundingBox;
+      center.ifPresentOrElse(
+          lonLat -> builder2.coordinates(lonLat.asList()),
+          () -> {
+            if (Objects.nonNull(finalBoundingBox)) {
+              builder2.coordinates(
+                  ImmutableList.of(
+                      (finalBoundingBox.getXmax() + finalBoundingBox.getXmin()) / 2.0,
+                      (finalBoundingBox.getYmax() + finalBoundingBox.getYmin()) / 2.0));
+            }
+          });
       builder.centerPoint(builder2.build());
     }
 
