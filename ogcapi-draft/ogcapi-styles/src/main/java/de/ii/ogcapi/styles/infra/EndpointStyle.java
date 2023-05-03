@@ -10,7 +10,6 @@ package de.ii.ogcapi.styles.infra;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
-import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.Endpoint;
@@ -32,10 +31,8 @@ import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
-import java.io.File;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -84,17 +81,6 @@ public class EndpointStyle extends Endpoint {
   private Stream<StyleFormatExtension> getStyleFormatStream(OgcApiDataV2 apiData) {
     return extensionRegistry.getExtensionsForType(StyleFormatExtension.class).stream()
         .filter(styleFormatExtension -> styleFormatExtension.isEnabledForApi(apiData));
-  }
-
-  private List<ApiMediaType> getStylesheetMediaTypes(
-      OgcApiDataV2 apiData, File apiDir, String styleId) {
-    return getStyleFormatStream(apiData)
-        .filter(
-            styleFormat ->
-                new File(apiDir + File.separator + styleId + "." + styleFormat.getFileExtension())
-                    .exists())
-        .map(StyleFormatExtension::getMediaType)
-        .collect(Collectors.toList());
   }
 
   @Override

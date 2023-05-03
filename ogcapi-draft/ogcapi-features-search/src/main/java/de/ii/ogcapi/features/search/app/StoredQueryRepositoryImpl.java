@@ -7,8 +7,6 @@
  */
 package de.ii.ogcapi.features.search.app;
 
-import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
-
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.search.domain.QueryExpression;
@@ -18,15 +16,16 @@ import de.ii.ogcapi.features.search.domain.StoredQueryRepository;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
 import de.ii.xtraplatform.base.domain.LogContext;
+import de.ii.xtraplatform.store.domain.BlobStore;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.web.domain.LastModified;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.time.Instant;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -47,22 +46,12 @@ public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLife
   private static final Logger LOGGER = LoggerFactory.getLogger(StoredQueryRepositoryImpl.class);
 
   private final ExtensionRegistry extensionRegistry;
-  private static final String QUERIES_DIR = "queries";
-  private final Path store;
+  private final BlobStore queriesStore;
 
   @Inject
-  public StoredQueryRepositoryImpl(AppContext appContext, ExtensionRegistry extensionRegistry) {
-    this.store = appContext.getDataDir().resolve(API_RESOURCES_DIR).resolve(QUERIES_DIR);
+  public StoredQueryRepositoryImpl(BlobStore blobStore, ExtensionRegistry extensionRegistry) {
     this.extensionRegistry = extensionRegistry;
-  }
-
-  @Override
-  public void onStart() {
-    try {
-      Files.createDirectories(store);
-    } catch (IOException e) {
-      LOGGER.error("Could not create query repository: " + e.getMessage());
-    }
+    this.queriesStore = blobStore.with(SearchBuildingBlock.STORE_RESOURCE_TYPE);
   }
 
   @Override
@@ -90,47 +79,35 @@ public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLife
 
   @Override
   public List<QueryExpression> getAll(OgcApiDataV2 apiData) {
-    if (missing(apiData)) {
-      return ImmutableList.of();
-    }
-
-    try (Stream<Path> paths = Files.walk(getPath(apiData))) {
-      return getQueryExpressions(paths);
-    } catch (IOException e) {
-      if (LOGGER.isErrorEnabled()) {
-        LOGGER.error(
-            MessageFormat.format("Could not parse stored queries. Reason: {0}.", e.getMessage()));
-        if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
-          LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
-        }
-      }
-    }
-    return ImmutableList.of();
-  }
-
-  private List<QueryExpression> getQueryExpressions(Stream<Path> paths) {
-    return paths
-        .filter(Files::isRegularFile)
-        .filter(p -> p.toString().endsWith(".json"))
+    return getAllPaths(apiData).stream()
         .map(
             path -> {
               try {
-                return QueryExpression.of(path);
+                return QueryExpression.of(queriesStore.get(path).get());
               } catch (IOException e) {
-                if (LOGGER.isErrorEnabled()) {
-                  LOGGER.error(
-                      MessageFormat.format(
-                          "Could not parse stored query ''{0}''. Reason: {1}.",
-                          path.toString(), e.getMessage()));
-                  if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
-                    LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
-                  }
-                }
+                LogContext.error(LOGGER, e, "Could not parse stored query '{}'", path);
               }
               return null;
             })
         .filter(Objects::nonNull)
-        .collect(Collectors.toUnmodifiableList());
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  public List<Path> getAllPaths(OgcApiDataV2 apiData) {
+    Path parent = Path.of(apiData.getId());
+    try (Stream<Path> fileStream =
+        queriesStore.walk(
+            parent,
+            1,
+            (path, attributes) ->
+                attributes.isValue()
+                    && !attributes.isHidden()
+                    && path.toString().endsWith(".json"))) {
+      return fileStream.sorted().map(parent::resolve).collect(ImmutableList.toImmutableList());
+    } catch (IOException e) {
+      LogContext.error(LOGGER, e, "Could not parse stored queries");
+    }
+    return ImmutableList.of();
   }
 
   @Override
@@ -141,7 +118,7 @@ public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLife
     }
 
     try {
-      return QueryExpression.of(Files.readAllBytes(getPath(apiData, queryId)));
+      return QueryExpression.of(queriesStore.get(getPath(apiData, queryId)).get());
     } catch (IOException e) {
       throw new IllegalStateException(
           MessageFormat.format("The stored query ''{0}'' could not be parsed.", queryId), e);
@@ -150,56 +127,57 @@ public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLife
 
   @Override
   public boolean exists(OgcApiDataV2 apiData, String queryId) {
-    return getPath(apiData, queryId).toFile().exists();
-  }
-
-  private boolean missing(OgcApiDataV2 apiData) {
-    return !getPath(apiData).toFile().exists();
+    try {
+      return queriesStore.has(getPath(apiData, queryId));
+    } catch (IOException e) {
+      return false;
+    }
   }
 
   @Override
   public Date getLastModified(OgcApiDataV2 apiData, String queryId) {
-    if (!exists(apiData, queryId)) {
-      return null;
+    if (exists(apiData, queryId)) {
+      try {
+        return LastModified.from(queriesStore.lastModified(getPath(apiData, queryId)));
+      } catch (IOException e) {
+        // continue
+      }
     }
-    return Date.from(Instant.ofEpochMilli(getPath(apiData, queryId).toFile().lastModified()));
+    return null;
   }
 
   @Override
   public Date getLastModified(OgcApiDataV2 apiData) {
-    if (missing(apiData)) {
-      return null;
-    }
-    return Date.from(Instant.ofEpochMilli(getPath(apiData).getParent().toFile().lastModified()));
+    return getAllPaths(apiData).stream()
+        .map(
+            path -> {
+              try {
+                return queriesStore.lastModified(path);
+              } catch (IOException e) {
+                return null;
+              }
+            })
+        .filter(Objects::nonNull)
+        .max(Comparator.naturalOrder())
+        .map(LastModified::from)
+        .orElse(null);
   }
 
   @Override
   public ImmutableValidationResult.Builder validate(
       ImmutableValidationResult.Builder builder, OgcApiDataV2 apiData) {
-
-    if (missing(apiData)) {
-      return builder;
-    }
-
-    try (Stream<Path> paths = Files.walk(getPath(apiData))) {
-      paths
-          .filter(Files::isRegularFile)
-          .filter(p -> p.toString().endsWith(".json"))
-          .forEach(
-              path -> {
-                try {
-                  QueryExpression.of(Files.readAllBytes(path));
-                } catch (Exception e) {
-                  builder.addErrors(
-                      MessageFormat.format(
-                          "Could not parse stored query ''{0}''. Reason: {1}.",
-                          path.toString(), e.getMessage()));
-                }
-              });
-    } catch (IOException e) {
-      builder.addErrors(
-          MessageFormat.format("Could not parse stored queries. Reason: {0}.", e.getMessage()));
-    }
+    getAllPaths(apiData)
+        .forEach(
+            path -> {
+              try {
+                QueryExpression.of(queriesStore.get(path).get());
+              } catch (Exception e) {
+                builder.addErrors(
+                    MessageFormat.format(
+                        "Could not parse stored query ''{0}''. Reason: {1}.",
+                        path.toString(), e.getMessage()));
+              }
+            });
 
     return builder;
   }
@@ -214,23 +192,20 @@ public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLife
   @Override
   public void writeStoredQueryDocument(OgcApiDataV2 apiData, String queryId, QueryExpression query)
       throws IOException {
-    QueryExpression.writeToFile(query, getPath(apiData, queryId));
+    byte[] bytes = QueryExpression.asBytes(query);
+    queriesStore.put(getPath(apiData, queryId), new ByteArrayInputStream(bytes));
   }
 
   @Override
   public void deleteStoredQuery(OgcApiDataV2 apiData, String queryId) throws IOException {
-    Files.deleteIfExists(getPath(apiData, queryId));
+    queriesStore.delete(getPath(apiData, queryId));
   }
 
   private Path getPath(OgcApiDataV2 apiData) {
-    return store.resolve(apiData.getId());
+    return Path.of(apiData.getId());
   }
 
   private Path getPath(OgcApiDataV2 apiData, String queryId) {
-    Path dir = getPath(apiData);
-    if (!dir.toFile().exists()) {
-      dir.toFile().mkdirs();
-    }
-    return dir.resolve(String.format("%s.json", queryId));
+    return getPath(apiData).resolve(String.format("%s.json", queryId));
   }
 }

@@ -15,10 +15,11 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
+import de.ii.xtraplatform.store.domain.BlobStore;
 import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -34,12 +35,16 @@ public class ResourceFormatAny implements ResourceFormatExtension {
 
   public static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder().type(MediaType.WILDCARD_TYPE).build();
-
-  private final Schema schemaResource = new BinarySchema();
   public static final String SCHEMA_REF_RESOURCE = "#/components/schemas/Resource";
 
+  private final Schema schemaResource;
+  private final BlobStore resourcesStore;
+
   @Inject
-  ResourceFormatAny() {}
+  ResourceFormatAny(BlobStore blobStore) {
+    this.schemaResource = new BinarySchema();
+    this.resourcesStore = blobStore.with(ResourcesBuildingBlock.STORE_RESOURCE_TYPE);
+  }
 
   @Override
   public ApiMediaType getMediaType() {
@@ -63,21 +68,10 @@ public class ResourceFormatAny implements ResourceFormatExtension {
 
   @Override
   public Response putResource(
-      Path resourcesStore,
-      byte[] resource,
-      String resourceId,
-      OgcApiDataV2 apiData,
-      ApiRequestContext requestContext)
-      throws IOException {
-
-    final String apiId = apiData.getId();
-    Path apiDir = resourcesStore.resolve(apiId);
-    Files.createDirectories(apiDir);
-
-    Path resourceFile = apiDir.resolve(resourceId);
+      byte[] resource, String resourceId, OgcApiDataV2 apiData, ApiRequestContext requestContext) {
 
     try {
-      Files.write(resourceFile, resource);
+      resourcesStore.put(Path.of(apiData.getId(), resourceId), new ByteArrayInputStream(resource));
     } catch (IOException e) {
       throw new RuntimeException("Could not PUT resource: " + resourceId);
     }

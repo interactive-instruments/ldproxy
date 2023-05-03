@@ -7,11 +7,8 @@
  */
 package de.ii.ogcapi.resources.app;
 
-import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
-
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.ByteSource;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
@@ -25,21 +22,21 @@ import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.resources.domain.QueriesHandlerResources;
 import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
-import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.store.domain.BlobStore;
 import de.ii.xtraplatform.web.domain.ETag;
 import de.ii.xtraplatform.web.domain.LastModified;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLConnection;
-import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.time.Instant;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
@@ -56,17 +53,14 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
   private final I18n i18n;
   private final ExtensionRegistry extensionRegistry;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
-  private final java.nio.file.Path resourcesStore;
+  private final BlobStore resourcesStore;
 
   @Inject
   public QueriesHandlerResourcesImpl(
-      AppContext appContext, ExtensionRegistry extensionRegistry, I18n i18n) {
+      ExtensionRegistry extensionRegistry, I18n i18n, BlobStore blobStore) {
     this.extensionRegistry = extensionRegistry;
     this.i18n = i18n;
-    this.resourcesStore = appContext.getDataDir().resolve(API_RESOURCES_DIR).resolve("resources");
-    if (!resourcesStore.toFile().exists()) {
-      resourcesStore.toFile().mkdirs();
-    }
+    this.resourcesStore = blobStore.with(ResourcesBuildingBlock.STORE_RESOURCE_TYPE);
     this.queryHandlers =
         ImmutableMap.of(
             Query.RESOURCES,
@@ -83,33 +77,10 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
       QueryInputResources queryInput, ApiRequestContext requestContext) {
     OgcApi api = requestContext.getApi();
     OgcApiDataV2 apiData = api.getData();
-
-    final ResourcesLinkGenerator resourcesLinkGenerator = new ResourcesLinkGenerator();
-
-    final String apiId = api.getId();
-    File apiDir = new File(resourcesStore + File.separator + apiId);
-    if (!apiDir.exists()) {
-      apiDir.mkdirs();
-    }
-
-    Resources resources =
-        ImmutableResources.builder()
-            .resources(
-                Arrays.stream(apiDir.listFiles())
-                    .filter(file -> !file.isHidden())
-                    .map(File::getName)
-                    .sorted()
-                    .map(
-                        filename ->
-                            ImmutableResource.builder()
-                                .id(filename)
-                                .link(
-                                    resourcesLinkGenerator.generateResourceLink(
-                                        requestContext.getUriCustomizer(), filename))
-                                .build())
-                    .collect(Collectors.toList()))
-            .links(getLinks(requestContext, i18n))
-            .build();
+    ResourcesLinkGenerator resourcesLinkGenerator = new ResourcesLinkGenerator();
+    long maxLastModified = 0L;
+    ImmutableResources.Builder resourcesBuilder =
+        ImmutableResources.builder().links(getLinks(requestContext, i18n));
 
     ResourcesFormatExtension format =
         extensionRegistry.getExtensionsForType(ResourcesFormatExtension.class).stream()
@@ -123,14 +94,35 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
                             "The requested media type {0} cannot be generated.",
                             requestContext.getMediaType().type())));
 
-    Date lastModified =
-        Arrays.stream(apiDir.listFiles())
-            .filter(file -> !file.isHidden())
-            .map(File::lastModified)
-            .max(Comparator.naturalOrder())
-            .map(Instant::ofEpochMilli)
-            .map(Date::from)
-            .orElse(null);
+    try (Stream<Path> fileStream =
+        resourcesStore.walk(
+            Path.of(api.getId()),
+            1,
+            (path, attributes) -> attributes.isValue() && !attributes.isHidden())) {
+      List<Path> files = fileStream.sorted().collect(Collectors.toList());
+
+      for (Path file : files) {
+        long lastModified = resourcesStore.lastModified(file);
+        String filename = file.getFileName().toString();
+
+        if (lastModified > maxLastModified) {
+          maxLastModified = lastModified;
+        }
+
+        resourcesBuilder.addResources(
+            ImmutableResource.builder()
+                .id(filename)
+                .link(
+                    resourcesLinkGenerator.generateResourceLink(
+                        requestContext.getUriCustomizer(), filename))
+                .build());
+      }
+    } catch (IOException e) {
+      throw new ServerErrorException("resources could not be read", 500);
+    }
+
+    Resources resources = resourcesBuilder.build();
+    Date lastModified = LastModified.from(maxLastModified);
     EntityTag etag =
         !format.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
                 || apiData
@@ -160,12 +152,7 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
     String resourceId = queryInput.getResourceId();
 
     final String apiId = api.getId();
-    final java.nio.file.Path resourceFile = resourcesStore.resolve(apiId).resolve(resourceId);
-
-    if (Files.notExists(resourceFile)) {
-      throw new NotFoundException(
-          MessageFormat.format("The file ''{0}'' does not exist.", resourceId));
-    }
+    final java.nio.file.Path resourcePath = Path.of(apiId).resolve(resourceId);
 
     final ResourceFormatExtension format =
         extensionRegistry.getExtensionsForType(ResourceFormatExtension.class).stream()
@@ -178,39 +165,50 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
                         MessageFormat.format(
                             "The requested media type {0} cannot be generated.",
                             requestContext.getMediaType().type())));
-    ;
-    final byte[] resource;
+
     try {
-      resource = Files.readAllBytes(resourceFile);
+      Optional<InputStream> resourceStream = resourcesStore.get(resourcePath);
+
+      if (resourceStream.isEmpty()) {
+        throw new NotFoundException(
+            MessageFormat.format("The resource ''{0}'' does not exist.", resourceId));
+      }
+
+      byte[] resource = resourceStream.get().readAllBytes();
+      String contentType = guessContentType(resourceId, resourceStream.get());
+      // TODO
+      Date lastModified = LastModified.from(resourcesStore.lastModified(resourcePath));
+      EntityTag etag = ETag.from(resource);
+      Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+      if (Objects.nonNull(response)) return response.build();
+
+      return prepareSuccessResponse(
+              requestContext,
+              null,
+              HeaderCaching.of(lastModified, etag, queryInput),
+              null,
+              HeaderContentDisposition.of(resourceId))
+          .entity(format.getResourceEntity(resource, resourceId, apiData, requestContext))
+          .type(contentType)
+          .build();
+
     } catch (IOException e) {
       throw new ServerErrorException("resource could not be read: " + resourceId, 500);
     }
+  }
 
+  private String guessContentType(String resourceId, InputStream resourceStream) {
     // TODO: URLConnection content-type guessing doesn't seem to work well, maybe try Apache Tika
     String contentType = URLConnection.guessContentTypeFromName(resourceId);
     if (contentType == null) {
       try {
-        contentType =
-            URLConnection.guessContentTypeFromStream(ByteSource.wrap(resource).openStream());
+        contentType = URLConnection.guessContentTypeFromStream(resourceStream);
       } catch (IOException e) {
         // nothing we can do here, just take the default
       }
     }
     if (contentType == null || contentType.isEmpty()) contentType = "application/octet-stream";
 
-    Date lastModified = LastModified.from(resourceFile.toFile().lastModified());
-    EntityTag etag = ETag.from(resource);
-    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
-
-    return prepareSuccessResponse(
-            requestContext,
-            null,
-            HeaderCaching.of(lastModified, etag, queryInput),
-            null,
-            HeaderContentDisposition.of(resourceId))
-        .entity(format.getResourceEntity(resource, resourceId, apiData, requestContext))
-        .type(contentType)
-        .build();
+    return contentType;
   }
 }

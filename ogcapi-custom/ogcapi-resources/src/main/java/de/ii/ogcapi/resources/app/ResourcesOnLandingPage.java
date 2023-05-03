@@ -7,8 +7,6 @@
  */
 package de.ii.ogcapi.resources.app;
 
-import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
-
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.common.domain.ImmutableLandingPage;
 import de.ii.ogcapi.common.domain.ImmutableLandingPage.Builder;
@@ -22,14 +20,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
-import de.ii.xtraplatform.base.domain.AppContext;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -42,26 +32,10 @@ import javax.inject.Singleton;
 public class ResourcesOnLandingPage implements LandingPageExtension {
 
   private final I18n i18n;
-  private final Path resourcesStore;
 
   @Inject
-  public ResourcesOnLandingPage(AppContext appContext, I18n i18n) {
-    this.resourcesStore = appContext.getDataDir().resolve(API_RESOURCES_DIR).resolve("resources");
+  public ResourcesOnLandingPage(I18n i18n) {
     this.i18n = i18n;
-  }
-
-  @Override
-  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
-    ImmutableValidationResult.Builder builder =
-        ImmutableValidationResult.builder().mode(apiValidation);
-
-    try {
-      Files.createDirectories(resourcesStore);
-    } catch (IOException e) {
-      builder.addErrors();
-    }
-
-    return builder.build();
   }
 
   @Override
@@ -95,12 +69,6 @@ public class ResourcesOnLandingPage implements LandingPageExtension {
 
     List<Link> links = linkGenerator.generateLandingPageLinks(uriCustomizer, i18n, language);
     landingPageBuilder.addAllLinks(links);
-
-    final String datasetId = api.getId();
-    File apiDir = new File(resourcesStore + File.separator + datasetId);
-    if (!apiDir.exists()) {
-      apiDir.mkdirs();
-    }
 
     return landingPageBuilder;
   }

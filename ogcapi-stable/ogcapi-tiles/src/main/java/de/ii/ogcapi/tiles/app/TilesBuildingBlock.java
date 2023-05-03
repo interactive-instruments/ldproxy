@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.tiles.app;
 
-import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
 import static de.ii.xtraplatform.tiles.domain.TilesetFeatures.COMBINE_ALL;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
@@ -765,13 +764,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                     DATASET_TILES,
                     new ImmutableTilesetMbTiles.Builder()
                         .id(DATASET_TILES)
-                        .source(
-                            Path.of(
-                                    API_RESOURCES_DIR,
-                                    TILES_DIR_NAME,
-                                    apiId,
-                                    tileProviderMbtiles.getFilename())
-                                .toString())
+                        .source(Path.of(apiId, tileProviderMbtiles.getFilename()).toString())
                         .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
                         .build())
                 : Map.of())

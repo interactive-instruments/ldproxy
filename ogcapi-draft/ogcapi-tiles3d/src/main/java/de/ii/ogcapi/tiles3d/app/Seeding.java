@@ -9,7 +9,6 @@ package de.ii.ogcapi.tiles3d.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
@@ -621,31 +620,23 @@ public class Seeding implements OgcApiBackgroundTask {
 
         if (Objects.nonNull(response.getEntity())) {
           try {
-            Files.write((byte[]) response.getEntity(), tileResourcesCache.getFile(content));
+            tileResourcesCache.storeTileResource(content, (byte[]) response.getEntity());
           } catch (IOException e) {
-            if (LOGGER.isErrorEnabled()) {
-              LOGGER.error(
-                  "Could not write feature response to file: {}",
-                  tileResourcesCache.getFile(content),
-                  e);
-            }
+            LogContext.error(
+                LOGGER, e, "Could not write feature response to resource '{}'", tileResourcesCache);
           }
         }
       }
     } catch (Exception e) {
-      if (LOGGER.isWarnEnabled()) {
-        LOGGER.warn(
-            "{}: writing content failed -> {}, {}/{}/{} | {}",
-            getLabel(),
-            content.getCollectionId(),
-            content.getLevel(),
-            content.getX(),
-            content.getY(),
-            e.getMessage());
-        if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
-          LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
-        }
-      }
+      LogContext.errorAsWarn(
+          LOGGER,
+          e,
+          "{}: writing content failed -> {}, {}/{}/{}",
+          getLabel(),
+          content.getCollectionId(),
+          content.getLevel(),
+          content.getX(),
+          content.getY());
     }
   }
 

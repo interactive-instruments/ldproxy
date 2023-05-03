@@ -10,7 +10,6 @@ package de.ii.ogcapi.tiles3d.infra;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -38,6 +37,7 @@ import de.ii.ogcapi.tiles3d.domain.TileResourceCache;
 import de.ii.ogcapi.tiles3d.domain.TileResourceDescriptor;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.cql.domain.Cql;
 import io.dropwizard.auth.Auth;
 import java.io.ByteArrayOutputStream;
@@ -248,33 +248,26 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
       Tiles3dConfiguration cfg,
       TileResourceDescriptor r)
       throws URISyntaxException {
-    try {
-      Response response =
-          Tiles3dContentUtil.getContent(
-              providers.getFeatureProviderOrThrow(
-                  apiData, apiData.getCollectionData(collectionId).orElseThrow()),
-              queriesHandlerFeatures,
-              cql,
-              cfg,
-              r,
-              r.getQuery(providers),
-              requestContext.getUriCustomizer(),
-              Optional.of(getGenericQueryInput(apiData)));
+    Response response =
+        Tiles3dContentUtil.getContent(
+            providers.getFeatureProviderOrThrow(
+                apiData, apiData.getCollectionData(collectionId).orElseThrow()),
+            queriesHandlerFeatures,
+            cql,
+            cfg,
+            r,
+            r.getQuery(providers),
+            requestContext.getUriCustomizer(),
+            Optional.of(getGenericQueryInput(apiData)));
 
-      if (Objects.nonNull(response.getEntity())) {
-        try {
-          Files.write((byte[]) response.getEntity(), tileResourceCache.getFile(r));
-        } catch (IOException e) {
-          if (LOGGER.isErrorEnabled()) {
-            LOGGER.error(
-                "Could not write feature response to file: {}", tileResourceCache.getFile(r), e);
-          }
-        }
+    if (Objects.nonNull(response.getEntity())) {
+      try {
+        tileResourceCache.storeTileResource(r, (byte[]) response.getEntity());
+      } catch (IOException e) {
+        LogContext.error(LOGGER, e, "Could not write feature response to resource '{}'", r);
       }
-
-      return response;
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
     }
+
+    return response;
   }
 }

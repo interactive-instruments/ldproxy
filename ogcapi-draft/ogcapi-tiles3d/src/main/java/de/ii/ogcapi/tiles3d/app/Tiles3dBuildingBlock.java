@@ -61,6 +61,8 @@ import javax.inject.Singleton;
 @Singleton
 public class Tiles3dBuildingBlock implements ApiBuildingBlock {
 
+  public static final String STORE_RESOURCE_TYPE = "tiles3d";
+
   @Inject
   public Tiles3dBuildingBlock() {}
 
