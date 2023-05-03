@@ -20,6 +20,8 @@ import com.google.common.collect.Maps;
 import de.ii.ogcapi.features.core.domain.SfFlatConfiguration;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -893,5 +895,28 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
         .from(this)
         .transformations(transformations)
         .build();
+  }
+
+  static Optional<FeatureTypeConfigurationOgcApi> getCollectionData(
+      OgcApiDataV2 apiData, String tileset) {
+    Optional<FeatureTypeConfigurationOgcApi> collectionData =
+        apiData.getCollections().values().stream()
+            .filter(
+                collection ->
+                    collection
+                        .getExtension(TilesConfiguration.class)
+                        .map(TilesConfiguration::getTileProviderTileset)
+                        .filter(tileset::equals)
+                        .isPresent())
+            .findFirst();
+
+    if (collectionData.isEmpty()) {
+      collectionData =
+          apiData.getCollections().values().stream()
+              .filter(collection -> collection.getId().equals(tileset))
+              .findFirst();
+    }
+
+    return collectionData;
   }
 }

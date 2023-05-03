@@ -150,10 +150,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     OgcApiDataV2 apiData = api.getData();
     Optional<String> collectionId = queryInput.getCollectionId();
     String definitionPath = queryInput.getPath();
-    String path =
-        collectionId
-            .map(value -> definitionPath.replace("{collectionId}", value))
-            .orElse(definitionPath);
     boolean onlyWebMercatorQuad = queryInput.getOnlyWebMercatorQuad();
 
     TileSetsFormatExtension outputFormat =
@@ -268,11 +264,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     String tileMatrixSetId = queryInput.getTileMatrixSetId();
     Optional<String> collectionId = queryInput.getCollectionId();
     String definitionPath = queryInput.getPath();
-    String path =
-        collectionId
-            .map(value -> definitionPath.replace("{collectionId}", value))
-            .orElse(definitionPath)
-            .replace("{tileMatrixSetId}", tileMatrixSetId);
 
     TileSetFormatExtension outputFormat =
         api.getOutputFormat(
@@ -501,8 +492,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       builder.tileMatrixSetLimits(
           limitsGenerator.getTileMatrixSetLimits(api, tileMatrixSet, levels.get(), collectionId));
 
+    BoundingBox boundingBox = null;
     try {
-      BoundingBox boundingBox =
+      boundingBox =
           tilesetMetadata
               .flatMap(TilesetMetadata::getBounds)
               .orElse(
@@ -527,16 +519,24 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
               .build());
     }
 
-    if (levels.flatMap(MinMax::getDefault).isPresent() || !center.isEmpty()) {
+    if (levels.flatMap(MinMax::getDefault).isPresent() || center.isPresent()) {
       ImmutableTilePoint.Builder builder2 = new ImmutableTilePoint.Builder();
       if (levels.isPresent()) {
         levels
             .flatMap(MinMax::getDefault)
             .ifPresent(def -> builder2.tileMatrix(String.valueOf(def)));
       }
-      if (!center.isEmpty()) {
-        builder2.coordinates(center.get().asList());
-      }
+      BoundingBox finalBoundingBox = boundingBox;
+      center.ifPresentOrElse(
+          lonLat -> builder2.coordinates(lonLat.asList()),
+          () -> {
+            if (Objects.nonNull(finalBoundingBox)) {
+              builder2.coordinates(
+                  ImmutableList.of(
+                      (finalBoundingBox.getXmax() + finalBoundingBox.getXmin()) / 2.0,
+                      (finalBoundingBox.getYmax() + finalBoundingBox.getYmin()) / 2.0));
+            }
+          });
       builder.centerPoint(builder2.build());
     }
 
@@ -553,11 +553,14 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     .flatMap(apiData::getCollectionData)
                     .orElseGet(
                         () ->
-                            new ImmutableFeatureTypeConfigurationOgcApi.Builder()
-                                .id(vectorSchema.getName())
-                                .label(vectorSchema.getLabel().orElse(vectorSchema.getName()))
-                                .description(vectorSchema.getDescription())
-                                .build());
+                            TilesConfiguration.getCollectionData(apiData, vectorSchema.getName())
+                                .orElse(
+                                    new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                                        .id(vectorSchema.getName())
+                                        .label(
+                                            vectorSchema.getLabel().orElse(vectorSchema.getName()))
+                                        .description(vectorSchema.getDescription())
+                                        .build()));
 
             JsonSchemaDocument jsonSchema =
                 schemaCache.getSchema(vectorSchema, apiData, collectionData, Optional.empty());

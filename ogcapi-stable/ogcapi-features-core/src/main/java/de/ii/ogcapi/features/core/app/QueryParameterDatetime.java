@@ -29,6 +29,7 @@ import de.ii.xtraplatform.cql.domain.Or;
 import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.TIntersects;
 import de.ii.xtraplatform.cql.domain.TemporalLiteral;
+import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.Tuple;
 import java.time.Instant;
@@ -109,10 +110,19 @@ public class QueryParameterDatetime extends AbstractQueryParameterDatetime
                         String.format(
                             "The parameter '%s' could not be processed, no feature schema provided.",
                             getName())));
+
     Optional<FeatureSchema> primaryInstant = featureSchema.getPrimaryInstant();
     if (primaryInstant.isPresent()) {
       Property property = Property.of(primaryInstant.get().getFullPathAsString());
-      return Or.of(TIntersects.of(property, temporalLiteral), IsNull.of(property));
+      boolean supportsIsNull =
+          providers
+              .getFeatureProvider(api.getData(), collectionData)
+              .filter(provider -> provider instanceof FeatureQueries)
+              .map(provider -> ((FeatureQueries) provider).supportsIsNull())
+              .orElse(false);
+      return supportsIsNull
+          ? Or.of(TIntersects.of(property, temporalLiteral), IsNull.of(property))
+          : TIntersects.of(property, temporalLiteral);
     }
     Optional<Tuple<FeatureSchema, FeatureSchema>> primaryInterval =
         featureSchema.getPrimaryInterval();

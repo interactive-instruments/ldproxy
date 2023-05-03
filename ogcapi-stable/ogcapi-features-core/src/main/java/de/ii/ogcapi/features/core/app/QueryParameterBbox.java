@@ -39,6 +39,7 @@ import de.ii.xtraplatform.crs.domain.ImmutableBoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
+import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.NumberSchema;
@@ -202,8 +203,18 @@ public class QueryParameterBbox extends ApiExtensionCache
     }
 
     Property property = Property.of(primaryGeometry.get().getFullPathAsString());
+
+    boolean supportsIsNull =
+        providers
+            .getFeatureProvider(api.getData(), collectionData)
+            .filter(provider -> provider instanceof FeatureQueries)
+            .map(provider -> ((FeatureQueries) provider).supportsIsNull())
+            .orElse(false);
+
     Cql2Expression cql2Expression =
-        Or.of(SIntersects.of(property, SpatialLiteral.of(envelope)), IsNull.of(property));
+        supportsIsNull
+            ? Or.of(SIntersects.of(property, SpatialLiteral.of(envelope)), IsNull.of(property))
+            : SIntersects.of(property, SpatialLiteral.of(envelope));
 
     if (collectionData
         .getExtension(FeaturesCoreConfiguration.class)
