@@ -18,11 +18,11 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -382,15 +382,15 @@ public interface FeaturesCoreConfiguration
 
   static String getCollectionId(OgcApiDataV2 apiData, String featureType) {
     return apiData.getCollections().values().stream()
-        .map(
+        .filter(
             collection ->
                 collection
                     .getExtension(FeaturesCoreConfiguration.class)
-                    .flatMap(FeaturesCoreConfiguration::getFeatureType))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .filter(ft -> Objects.equals(ft, featureType))
+                    .flatMap(FeaturesCoreConfiguration::getFeatureType)
+                    .filter(featureType::equals)
+                    .isPresent())
         .findFirst()
+        .map(FeatureTypeConfiguration::getId)
         .orElse(featureType);
   }
 }
