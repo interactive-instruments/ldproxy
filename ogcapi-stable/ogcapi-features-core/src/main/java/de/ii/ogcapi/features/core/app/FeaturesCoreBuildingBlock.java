@@ -48,8 +48,6 @@ import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Collection;
-import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -276,7 +274,7 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
   private DatasetChangeListener onDatasetChange(OgcApi api) {
     return change -> {
       for (String featureType : change.getFeatureTypes()) {
-        String collectionId = getCollectionId(api.getData().getCollections().values(), featureType);
+        String collectionId = FeaturesCoreConfiguration.getCollectionId(api.getData(), featureType);
 
         initMetadata(api, collectionId, change.getModified());
       }
@@ -286,7 +284,7 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
   private FeatureChangeListener onFeatureChange(OgcApi api) {
     return change -> {
       String collectionId =
-          getCollectionId(api.getData().getCollections().values(), change.getFeatureType());
+          FeaturesCoreConfiguration.getCollectionId(api.getData(), change.getFeatureType());
       switch (change.getAction()) {
         case CREATE:
           api.updateItemCount(collectionId, (long) change.getFeatureIds().size());
@@ -384,20 +382,5 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
       return featureProvider.get().extents().getTemporalExtent(featureType).map(TemporalExtent::of);
     }
     return Optional.empty();
-  }
-
-  private String getCollectionId(
-      Collection<FeatureTypeConfigurationOgcApi> collections, String featureType) {
-    return collections.stream()
-        .map(
-            collection ->
-                collection
-                    .getExtension(FeaturesCoreConfiguration.class)
-                    .flatMap(FeaturesCoreConfiguration::getFeatureType))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .filter(ft -> Objects.equals(ft, featureType))
-        .findFirst()
-        .orElse(featureType);
   }
 }

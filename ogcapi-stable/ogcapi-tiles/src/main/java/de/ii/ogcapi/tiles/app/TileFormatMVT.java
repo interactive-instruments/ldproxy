@@ -18,6 +18,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -38,7 +39,9 @@ public class TileFormatMVT extends TileFormatExtension implements ConformanceCla
           .build();
 
   @Inject
-  public TileFormatMVT() {}
+  public TileFormatMVT(TilesProviders tilesProviders) {
+    super(tilesProviders);
+  }
 
   @Override
   public ApiMediaType getMediaType() {

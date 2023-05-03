@@ -198,7 +198,7 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
     }
     if (contentType == null || contentType.isEmpty()) contentType = "application/octet-stream";
 
-    Date lastModified = LastModified.from(resourceFile);
+    Date lastModified = LastModified.from(resourceFile.toFile().lastModified());
     EntityTag etag = ETag.from(resource);
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
     if (Objects.nonNull(response)) return response.build();

@@ -23,6 +23,7 @@ import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tiles.api.EndpointTileMixin;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
@@ -56,17 +57,20 @@ public class EndpointTileSingleCollection extends EndpointSubCollection
   private final TilesQueriesHandler queryHandler;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
   private final TileMatrixSetRepository tileMatrixSetRepository;
+  private final TilesProviders tilesProviders;
 
   @Inject
   EndpointTileSingleCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
       TileMatrixSetLimitsGenerator limitsGenerator,
-      TileMatrixSetRepository tileMatrixSetRepository) {
+      TileMatrixSetRepository tileMatrixSetRepository,
+      TilesProviders tilesProviders) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
     this.limitsGenerator = limitsGenerator;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -101,6 +105,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection
         extensionRegistry,
         this,
         apiData,
+        tilesProviders,
         "collections",
         ApiEndpointDefinition.SORT_PRIORITY_TILE_COLLECTION,
         "/collections/{collectionId}",
@@ -132,6 +137,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection
             limitsGenerator,
             tileMatrixSetRepository,
             api,
+            tilesProviders,
             requestContext,
             uriInfo,
             "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",

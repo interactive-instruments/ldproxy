@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.domain;
+package de.ii.ogcapi.tiles.app.html;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -25,7 +25,10 @@ import de.ii.ogcapi.html.domain.MapClient.Source.TYPE;
 import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.ogcapi.html.domain.OgcApiView;
 import de.ii.ogcapi.tiles.domain.TileLayer.GeometryType;
+import de.ii.ogcapi.tiles.domain.TilePoint;
+import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
+import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.tiles.domain.TileMatrix;
@@ -43,9 +46,6 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-// TODO class needs to be in 'domain', since it is also accessed from MAP_TILES; find better
-// solution
 
 @Value.Style(builder = "new")
 @Value.Immutable
@@ -370,40 +370,6 @@ public abstract class TileSetsView extends OgcApiView {
   public abstract URICustomizer uriCustomizer();
 
   public abstract Map<String, TileMatrixSet> tileMatrixSets();
-
-  /*@Value.Check
-  TileSetsView chek(){
-
-
-    List<Link> tileTemplates =
-        tiles().getTilesets().stream()
-            .map(OgcResourceMetadata::getLinks)
-            .flatMap(Collection::stream)
-            .filter(link -> Objects.equals(link.getRel(), "item"))
-            .collect(Collectors.toUnmodifiableList());
-
-    Optional<String> tileTemplate =
-        tileTemplates.stream()
-            .filter(link -> Objects.equals(link.getType(), "application/vnd.mapbox-vector-tile"))
-            .map(Link::getHref)
-            .map(
-                href ->
-                    href.replaceAll(
-                        "/\\w+/\\{tileMatrix}/\\{tileRow}/\\{tileCol}",
-                        "/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-            .findFirst();
-    if (tileTemplate.isPresent()) {
-      return new ImmutableTileSetsView.Builder()
-          .from(this)
-          .isVector(true)
-          .build();
-    } else {
-      return new ImmutableTileSetsView.Builder()
-          .from(this)
-          .isVector(false)
-          .build(); }
-    return this;
-  }*/
 
   public TileSetsView() {
     super("tiles.mustache");

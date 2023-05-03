@@ -22,6 +22,7 @@ public class FeatureEncoderCsv extends FeatureEncoderSfFlat {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderCsv.class);
 
+  private final String collectionId;
   private final FeatureSchema featureSchema;
 
   private List<String> headers;
@@ -29,6 +30,7 @@ public class FeatureEncoderCsv extends FeatureEncoderSfFlat {
   public FeatureEncoderCsv(EncodingContextCsv encodingContext) {
     super(encodingContext);
     this.featureSchema = encodingContext.getSchema();
+    this.collectionId = encodingContext.getCollectionId();
   }
 
   @Override

@@ -7,13 +7,20 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import java.util.List;
+import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
+import java.util.Set;
 
 public abstract class TileFormatExtension implements FormatExtension {
+
+  private final TilesProviders tilesProviders;
+
+  public TileFormatExtension(TilesProviders tilesProviders) {
+    this.tilesProviders = tilesProviders;
+  }
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
@@ -21,7 +28,12 @@ public abstract class TileFormatExtension implements FormatExtension {
         .getExtension(TilesConfiguration.class)
         .filter(TilesConfiguration::isEnabled)
         .filter(TilesConfiguration::hasDatasetTiles)
-        .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
+        .filter(
+            config ->
+                tilesProviders
+                    .getTilesetMetadataOrThrow(apiData)
+                    .getEncodings()
+                    .contains(this.getMediaType().label()))
         .isPresent();
   }
 
@@ -31,16 +43,21 @@ public abstract class TileFormatExtension implements FormatExtension {
         .getExtension(TilesConfiguration.class, collectionId)
         .filter(TilesConfiguration::isEnabled)
         .filter(TilesConfiguration::hasCollectionTiles)
-        .filter(config -> config.getTileEncodingsDerived().contains(this.getMediaType().label()))
+        .filter(
+            config ->
+                tilesProviders
+                    .getTilesetMetadataOrThrow(apiData, apiData.getCollectionData(collectionId))
+                    .getEncodings()
+                    .contains(this.getMediaType().label()))
         .isPresent();
   }
 
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-    List<String> formats =
-        apiData
-            .getExtension(TilesConfiguration.class)
-            .map(TilesConfiguration::getTileEncodingsDerived)
-            .orElse(ImmutableList.of());
+    Set<String> formats =
+        tilesProviders
+            .getTilesetMetadata(apiData)
+            .map(TilesetMetadata::getEncodings)
+            .orElse(ImmutableSet.of());
     return isEnabledForApi(apiData)
         && definitionPath.startsWith("/tiles")
         && ((formats.isEmpty() && isEnabledByDefault())
@@ -48,11 +65,11 @@ public abstract class TileFormatExtension implements FormatExtension {
   }
 
   public boolean isApplicable(OgcApiDataV2 apiData, String collectionId, String definitionPath) {
-    List<String> formats =
-        apiData
-            .getExtension(TilesConfiguration.class, collectionId)
-            .map(TilesConfiguration::getTileEncodingsDerived)
-            .orElse(ImmutableList.of());
+    Set<String> formats =
+        tilesProviders
+            .getTilesetMetadata(apiData, apiData.getCollectionData(collectionId))
+            .map(TilesetMetadata::getEncodings)
+            .orElse(ImmutableSet.of());
     return isEnabledForApi(apiData, collectionId)
         && definitionPath.startsWith("/collections/{collectionId}/tiles")
         && ((formats.isEmpty() && isEnabledByDefault())

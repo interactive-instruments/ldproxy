@@ -52,4 +52,8 @@ public interface ApiExtension {
     // optional start actions
     return ValidationResult.of();
   }
+
+  default int getStartupPriority() {
+    return 1000;
+  }
 }

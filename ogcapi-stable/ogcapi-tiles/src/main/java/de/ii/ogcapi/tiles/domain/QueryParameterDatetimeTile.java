@@ -49,9 +49,12 @@ import javax.inject.Singleton;
 public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
     implements TypedQueryParameter<TemporalLiteral>, TileGenerationUserParameter, ConformanceClass {
 
+  private final TilesProviders tilesProviders;
+
   @Inject
-  QueryParameterDatetimeTile(SchemaValidator schemaValidator) {
+  QueryParameterDatetimeTile(SchemaValidator schemaValidator, TilesProviders tilesProviders) {
     super(schemaValidator);
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -69,11 +72,7 @@ public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    //noinspection ConstantConditions
-    return apiData
-        .getExtension(TilesConfiguration.class)
-        .filter(cfg -> cfg.isEnabled() && cfg.getTileProvider().requiresQuerySupport())
-        .isPresent();
+    return isEnabledForApi(apiData, tilesProviders);
   }
 
   @Override

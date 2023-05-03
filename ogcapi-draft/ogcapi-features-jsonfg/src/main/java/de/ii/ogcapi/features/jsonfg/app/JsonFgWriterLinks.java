@@ -131,13 +131,11 @@ public class JsonFgWriterLinks implements GeoJsonWriter {
 
   private Link replace(Link link) {
     if (hasTemplate(link)) {
-      final String href =
-          StringTemplateFilters.applyTemplate(link.getHref(), isHtml -> {}, currentMap::get);
-      final String rel =
-          StringTemplateFilters.applyTemplate(link.getRel(), isHtml -> {}, currentMap::get);
+      final String href = StringTemplateFilters.applyTemplate(link.getHref(), currentMap::get);
+      final String rel = StringTemplateFilters.applyTemplate(link.getRel(), currentMap::get);
       final String title =
           Objects.nonNull(link.getTitle())
-              ? StringTemplateFilters.applyTemplate(link.getTitle(), isHtml -> {}, currentMap::get)
+              ? StringTemplateFilters.applyTemplate(link.getTitle(), currentMap::get)
               : null;
       link = new ImmutableLink.Builder().from(link).href(href).rel(rel).title(title).build();
     }

@@ -9,14 +9,11 @@ package de.ii.ogcapi.tiles.api;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
@@ -27,8 +24,8 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSet.Builder;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -43,15 +40,15 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
       LoggerFactory.getLogger(AbstractEndpointTileSetSingleCollection.class);
 
   private final TilesQueriesHandler queryHandler;
-  private final FeaturesCoreProviders providers;
+  private final TilesProviders tilesProviders;
 
   public AbstractEndpointTileSetSingleCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
-      FeaturesCoreProviders providers) {
+      TilesProviders tilesProviders) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
-    this.providers = providers;
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -63,24 +60,22 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
   }
 
   @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+            .getExtension(TilesConfiguration.class)
+            .filter(TilesConfiguration::isEnabled)
+            .isPresent()
+        && super.isEnabledForApi(apiData);
+  }
+
+  @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-    Optional<TilesConfiguration> config =
-        apiData.getCollections().get(collectionId).getExtension(TilesConfiguration.class);
-    if (config.map(cfg -> !cfg.getTileProvider().requiresQuerySupport()).orElse(false)) {
-      // Tiles are pre-generated as a static tile set
-      return config.filter(ExtensionConfiguration::isEnabled).isPresent();
-    } else {
-      // Tiles are generated on-demand from a data source
-      if (config
-          .filter(TilesConfiguration::isEnabled)
-          .filter(TilesConfiguration::hasCollectionTiles)
-          .isEmpty()) return false;
-      // currently no vector tiles support for WFS backends
-      return providers
-          .getFeatureProvider(apiData, apiData.getCollections().get(collectionId))
-          .map(FeatureProvider2::supportsHighLoad)
-          .orElse(false);
-    }
+    return apiData
+        .getCollectionData(collectionId)
+        .flatMap(cfg -> cfg.getExtension(TilesConfiguration.class))
+        .filter(TilesConfiguration::isEnabled)
+        .filter(TilesConfiguration::hasCollectionTiles)
+        .isPresent();
   }
 
   protected ApiEndpointDefinition computeDefinition(
@@ -124,29 +119,8 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
                 .pathParameters(pathParameters);
         Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
         Optional<String> operationId =
-            collectionId.startsWith("{")
-                ? operationIdWithPlaceholders.map(
-                    id ->
-                        id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER + ".", "")
-                            .replace(
-                                EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
-                                apiData
-                                        .getExtension(TilesConfiguration.class)
-                                        .map(c -> c.getTileEncodingsDerived().contains("MVT"))
-                                        .orElse(false)
-                                    ? "vector"
-                                    : "map"))
-                : operationIdWithPlaceholders.map(
-                    id ->
-                        id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER, collectionId)
-                            .replace(
-                                EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
-                                apiData
-                                        .getExtension(TilesConfiguration.class, collectionId)
-                                        .map(c -> c.getTileEncodingsDerived().contains("MVT"))
-                                        .orElse(false)
-                                    ? "vector"
-                                    : "map"));
+            EndpointTileMixin.getOperationId(
+                operationIdWithPlaceholders, collectionId, apiData, tilesProviders);
         ApiOperation.getResource(
                 apiData,
                 resourcePath,
@@ -179,17 +153,11 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
     checkPathParameter(
         extensionRegistry, apiData, definitionPath, "tileMatrixSetId", tileMatrixSetId);
 
-    FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
-    TilesConfiguration tilesConfiguration =
-        featureType.getExtension(TilesConfiguration.class).get();
-
     TilesQueriesHandler.QueryInputTileSet queryInput =
         new Builder()
             .from(getGenericQueryInput(apiData))
             .collectionId(collectionId)
             .tileMatrixSetId(tileMatrixSetId)
-            .center(tilesConfiguration.getCenterDerived())
-            .zoomLevels(tilesConfiguration.getZoomLevelsDerived().get(tileMatrixSetId))
             .path(definitionPath)
             .build();
 
