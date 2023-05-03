@@ -3887,7 +3887,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ogcapi/common@^1.0.1, @ogcapi/common@workspace:../../../../ogcapi-stable/ogcapi-common/src/main/javascript":
+"@ogcapi/common@^1.1.0, @ogcapi/common@workspace:../../../../ogcapi-stable/ogcapi-common/src/main/javascript":
   version: 0.0.0-use.local
   resolution: "@ogcapi/common@workspace:../../../../ogcapi-stable/ogcapi-common/src/main/javascript"
   dependencies:
@@ -3901,10 +3901,10 @@ __metadata:
     "@storybook/addon-essentials": ^6.3.8
     "@storybook/addon-links": ^6.3.8
     "@storybook/react": ^6.3.8
-    "@xtraplatform/core": ^2.0.0
+    "@xtraplatform/core": ^2.1.1
     "@xtraplatform/manager": ^2.0.0
     "@xtraplatform/neutrino": ^2.0.0
-    "@xtraplatform/services": ^2.0.1
+    "@xtraplatform/services": ^2.1.4
     apollo-link-rest: ^0.8.0-beta.0
     babel-loader: "*"
     core-js: ^3
@@ -5756,7 +5756,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xtraplatform/core@^2.0.0, @xtraplatform/core@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/core":
+"@xtraplatform/core@^2.1.1, @xtraplatform/core@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/core":
   version: 0.0.0-use.local
   resolution: "@xtraplatform/core@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-manager/src/main/javascript/core"
   dependencies:
@@ -5814,7 +5814,7 @@ __metadata:
     "@apollo/client": ^3
     "@neutrinojs/airbnb": ^9.5.0
     "@neutrinojs/mocha": ^9.5.0
-    "@xtraplatform/core": ^2.0.0
+    "@xtraplatform/core": ^2.1.1
     "@xtraplatform/neutrino": ^2.0.0
     apollo-link-rest: ^0.8.0-beta.0
     core-js: ^3
@@ -5846,7 +5846,7 @@ __metadata:
     styled-components: ^5
   peerDependencies:
     "@apollo/client": ^3
-    "@xtraplatform/core": ^2.0.0
+    "@xtraplatform/core": ^2.1.1
     feature-u: ^3
     grommet: ^2
     grommet-icons: ^4
@@ -5872,14 +5872,14 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@xtraplatform/services@^2.0.1, @xtraplatform/services@^2.0.2, @xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript":
+"@xtraplatform/services@^2.1.4, @xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript":
   version: 0.0.0-use.local
   resolution: "@xtraplatform/services@workspace:../../../../../xtraplatform/xtraplatform-core/xtraplatform-services/src/main/javascript"
   dependencies:
     "@apollo/client": ^3
     "@neutrinojs/airbnb": ^9.5.0
     "@neutrinojs/mocha": ^9.5.0
-    "@xtraplatform/core": ^2.0.0
+    "@xtraplatform/core": ^2.1.1
     "@xtraplatform/manager": ^2.0.0
     "@xtraplatform/neutrino": ^2.0.0
     apollo-link-rest: ^0.8.0-beta.0
@@ -5909,7 +5909,7 @@ __metadata:
     styled-components: ^5
   peerDependencies:
     "@apollo/client": ^3
-    "@xtraplatform/core": ^2.0.0
+    "@xtraplatform/core": ^2.1.1
     "@xtraplatform/manager": ^2.0.0
     feature-u: ^3
     grommet: ^2
@@ -11123,6 +11123,19 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"grommet-icons@npm:^4.10.0":
+  version: 4.10.0
+  resolution: "grommet-icons@npm:4.10.0"
+  dependencies:
+    grommet-styles: ^0.2.0
+  peerDependencies:
+    react: ^16.6.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.6.0 || ^17.0.0 || ^18.0.0
+    styled-components: ">= 5.x"
+  checksum: 82e555625fbb9b73bd1f3a54a950debf26ce34a3231adb704d975df496595bf34b0fec53fe9169ca6c5470ffe59f83d2d78e25e6ce4beba7678f499bf5ff5538
+  languageName: node
+  linkType: hard
+
 "grommet-icons@npm:^4.5.0":
   version: 4.5.0
   resolution: "grommet-icons@npm:4.5.0"
@@ -11165,21 +11178,19 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"grommet@npm:^2.16.3":
-  version: 2.16.3
-  resolution: "grommet@npm:2.16.3"
+"grommet@npm:^2.18.0":
+  version: 2.32.0
+  resolution: "grommet@npm:2.32.0"
   dependencies:
-    grommet-icons: ^4.5.0
+    grommet-icons: ^4.10.0
     hoist-non-react-statics: ^3.2.0
-    markdown-to-jsx: ^6.11.4
-    polished: ^3.4.1
-    prop-types: ^15.7.2
-    react-desc: ^4.1.2
+    markdown-to-jsx: ^7.2.0
+    prop-types: ^15.8.1
   peerDependencies:
-    react: ">= 16.6.1"
-    react-dom: ">= 16.6.1"
+    react: ^16.6.1 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.6.1 || ^17.0.0 || ^18.0.0
     styled-components: ">= 5.1"
-  checksum: 5a182e8dd27862aa3b25d9df7cb992c5f9ab6be45a78efe49ee772c41ce11ba521d7d5d25ce7e80e6e37dbc8c24d2808b7c3d5f1a1a9c9acb8c60fef07149c4e
+  checksum: 43a280b8f4f84f4ea9ce9f7a078fcb47856a6cadcfdb36d49aeaf10a17ce4bf456631b8b824f556034f6b20f9b9ea041435c7747bd4bc07b39bb43f8d08d28c1
   languageName: node
   linkType: hard
 
@@ -13104,19 +13115,19 @@ fsevents@^1.2.7:
     "@neutrinojs/airbnb": ^9.3.0
     "@neutrinojs/mocha": ^9.3.0
     "@neutrinojs/react": ^9.3.0
-    "@ogcapi/common": ^1.0.1
+    "@ogcapi/common": ^1.1.0
     "@pmmmwh/react-refresh-webpack-plugin": ^0.4.3
-    "@xtraplatform/core": ^2.0.0
+    "@xtraplatform/core": ^2.1.1
     "@xtraplatform/manager": ^2.0.0
     "@xtraplatform/neutrino": ^2.0.0
-    "@xtraplatform/services": ^2.0.2
+    "@xtraplatform/services": ^2.1.4
     apollo-link-rest: ^0.8.0-beta.0
     eslint: ^7
     eslint-plugin-babel: "*"
     feature-u: ^3.0.0
     graphql: ^15.3.0
     graphql-anywhere: ^4.2.7
-    grommet: ^2.16.3
+    grommet: ^2.18.0
     grommet-icons: ^4.5.0
     jwt-decode: ^2.2.0
     mocha: ^8
@@ -13131,6 +13142,7 @@ fsevents@^1.2.7:
     react-refresh: ^0.9.0
     react-router-dom: ^5.1.2
     styled-components: ^5.0.1
+    use-deep-compare-effect: ^1.8.1
     webpack: ^4
     webpack-cli: ^3
     webpack-dev-server: ^3
@@ -13476,6 +13488,15 @@ fsevents@^1.2.7:
   peerDependencies:
     react: ">= 0.14.0"
   checksum: a4bb85c3acca011034ee8f94c3987582bb0317fbbf7d57c76f338b65f5022e5b3756ffa9743d5691abfd43068da7fa7b4fd1d64782d72596733dd14baa0d5f38
+  languageName: node
+  linkType: hard
+
+"markdown-to-jsx@npm:^7.2.0":
+  version: 7.2.0
+  resolution: "markdown-to-jsx@npm:7.2.0"
+  peerDependencies:
+    react: ">= 0.14.0"
+  checksum: 1bf3bc3b6ca0d9a61f69220309462453d960fc6f3b804b38e4a2343ab84cd0ad48e676fedaf682bf101d51a31e6ba68115e97cd978bd0549766c1d215b564142
   languageName: node
   linkType: hard
 
@@ -15564,6 +15585,17 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
+"prop-types@npm:^15.8.1":
+  version: 15.8.1
+  resolution: "prop-types@npm:15.8.1"
+  dependencies:
+    loose-envify: ^1.4.0
+    object-assign: ^4.1.1
+    react-is: ^16.13.1
+  checksum: 4c0e99ebb880135a5f00d56364545f9ae123ec88a7d78d004218cdb4d8184f53455696cbc50c2994916748c38f12f3b535d7be06cb4f893c2ad8fd03c23245c5
+  languageName: node
+  linkType: hard
+
 "property-information@npm:^5.0.0, property-information@npm:^5.3.0":
   version: 5.5.0
   resolution: "property-information@npm:5.5.0"
@@ -15984,7 +16016,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"react-is@npm:^16, react-is@npm:^16.6.0, react-is@npm:^16.7.0, react-is@npm:^16.8.1, react-is@npm:^16.8.6":
+"react-is@npm:^16, react-is@npm:^16.13.1, react-is@npm:^16.6.0, react-is@npm:^16.7.0, react-is@npm:^16.8.1, react-is@npm:^16.8.6":
   version: 16.13.1
   resolution: "react-is@npm:16.13.1"
   checksum: 11bcf1267a314a522615f626f3ce3727a3a24cdbf61c4d452add3550a7875326669631326cfb1ba3e92b6f72244c32ffecf93ad21c0cad8455d3e169d0e3f060
@@ -18794,7 +18826,7 @@ resolve@^2.0.0-next.3:
   languageName: node
   linkType: hard
 
-"use-deep-compare-effect@npm:^1.7.0":
+"use-deep-compare-effect@npm:^1.7.0, use-deep-compare-effect@npm:^1.8.1":
   version: 1.8.1
   resolution: "use-deep-compare-effect@npm:1.8.1"
   dependencies:
