@@ -15,5 +15,7 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 public interface EncodingContextCsv extends EncodingContextSfFlat {
 
+  String getCollectionId();
+
   FeatureSchema getSchema();
 }

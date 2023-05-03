@@ -12,7 +12,6 @@ import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
@@ -435,14 +434,9 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                             FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
                                 requestContext.getApiUri()))));
 
-    Map<String, FeatureSchema> queryables =
-        collectionData
-            .flatMap(cd -> cd.getExtension(QueryablesConfiguration.class))
-            .map(cfg -> cfg.getQueryables(apiData, collectionData.get(), providers))
-            .orElse(ImmutableMap.of());
     Optional<TileGenerationSchema> generationSchema =
         tileProvider.supportsGeneration()
-            ? Optional.of(tileProvider.generator().getGenerationSchema(tileset, queryables))
+            ? Optional.of(tileProvider.generator().getGenerationSchema(tileset))
             : Optional.empty();
     ImmutableTileGenerationParametersTransient.Builder userParametersBuilder =
         new ImmutableTileGenerationParametersTransient.Builder();

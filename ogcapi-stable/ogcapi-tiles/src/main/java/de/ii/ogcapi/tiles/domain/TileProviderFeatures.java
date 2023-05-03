@@ -28,6 +28,7 @@ import org.immutables.value.Value;
  * @langDe Bei diesem Tile-Provider werden die Kacheln im Format Mapbox Vector Tiles aus den von der
  *     API bereitgestellten Features im Gebiet der Kachel abgeleitet.
  */
+@Deprecated(since = "3.4")
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableTileProviderFeatures.Builder.class)

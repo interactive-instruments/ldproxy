@@ -108,6 +108,7 @@ import org.slf4j.LoggerFactory;
  *     </code>
  *     <p>For tiles that are derived from feature data, only Mapbox Vector Tiles are supported as a
  *     file format.
+ *     <p>All tiles of an API are sourced from a single tile provider.
  * @scopeDe Dieses Modul unterstützt Kacheln, die aus Features abgeleitet sind, oder Kacheln, die
  *     von einer externen Quelle bereitgestellt werden.
  *     <p>Die unterstützten Kachelformate sind:
@@ -120,6 +121,7 @@ import org.slf4j.LoggerFactory;
  *     </code>
  *     <p>Für Kacheln, die aus Features abgeleitet werden, wird nur Mapbox Vector Tiles als
  *     Kachelformat unterstützt.
+ *     <p>Alle Kacheln einer API kommen vom selben Tile-Provider.
  * @conformanceEn The module implements the conformance classes "Core", "TileSet", "TileSets List",
  *     "Dataset TileSets", "GeoData TileSets", "Collections Selection", "DateTime", "OpenAPI
  *     Specification 3.0 API definition", "Mapbox Vector Tiles", "PNG", "JPEG", and "TIFF" of the

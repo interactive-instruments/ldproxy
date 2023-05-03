@@ -31,6 +31,7 @@ import org.immutables.value.Value;
  *     alle anderen Eigenschaften der Tileset-Ressource ergeben sich aus dem Inhalt der
  *     MBTiles-Datei. Unterstützt wird nur das Kachelschema "WebMercatorQuad".
  */
+@Deprecated(since = "3.4")
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableTileProviderMbtiles.Builder.class)

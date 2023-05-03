@@ -17,6 +17,8 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 public interface EncodingContextFlatgeobuf extends EncodingContextSfFlat {
 
+  String getCollectionId();
+
   FeatureSchema getSchema();
 
   Optional<CrsTransformer> getCrsTransformer();

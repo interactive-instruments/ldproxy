@@ -32,6 +32,7 @@ import org.immutables.value.Value;
  *     <p>Dieser Tile-Provider ist experimentell und seine Konfigurationsoptionen können sich in
  *     zukünftigen Versionen ändern.
  */
+@Deprecated(since = "3.4")
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableTileProviderTileServer.Builder.class)
@@ -46,8 +47,6 @@ public abstract class TileProviderTileServer extends TileProvider {
   public String getType() {
     return "TILESERVER";
   }
-
-  // TODO add optional support for multiple styles once the specification is stable
 
   /**
    * @langEn URL template for accessing tiles. Parameters to use are `{tileMatrix}`, `{tileRow}`,

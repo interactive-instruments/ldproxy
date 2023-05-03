@@ -32,6 +32,7 @@ import org.immutables.value.Value;
  * - `TILESERVER`: Die Kacheln werden von einer TileServer-GL-Instanz abgerufen.
  *     </code>
  */
+@Deprecated(since = "3.4")
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,

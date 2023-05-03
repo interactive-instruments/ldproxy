@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -108,7 +109,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
                                     metadata.getLevels().get(tileset.getTileMatrixSetId())))))
             .collect(Collectors.toList());
 
-    // TODO: add support for attribution and version (manage revisions to the data)
+    // TODO: add support for version (manage revisions to the data)
     return ImmutableTileJson.builder()
         .tilejson("3.0.0")
         .name(apiData.getLabel())
@@ -119,6 +120,7 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
         .maxzoom(getMaxzoom(tileset))
         .center(getCenter(tileset))
         .vectorLayers(vectorLayers)
+        .attribution(apiData.getMetadata().flatMap(ApiMetadata::getAttribution))
         .build();
   }
 
