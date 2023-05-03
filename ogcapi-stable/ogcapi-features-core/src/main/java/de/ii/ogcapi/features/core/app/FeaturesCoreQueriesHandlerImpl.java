@@ -40,6 +40,7 @@ import de.ii.xtraplatform.features.domain.FeatureStream.Result;
 import de.ii.xtraplatform.features.domain.FeatureStream.ResultBase;
 import de.ii.xtraplatform.features.domain.FeatureStream.ResultReduced;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
@@ -164,6 +165,14 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                         MessageFormat.format(
                             "The requested media type ''{0}'' is not supported for this resource.",
                             requestContext.getMediaType())));
+
+    if (outputFormat.getMediaType().type().equals(MediaType.TEXT_HTML_TYPE)
+        && !api.getData()
+            .getExtension(HtmlConfiguration.class, collectionId)
+            .map(HtmlConfiguration::getSendEtags)
+            .orElse(false)) {
+      query = ImmutableFeatureQuery.builder().from(query).eTag(Optional.empty()).build();
+    }
 
     String persistentUri = null;
     Optional<String> template =
