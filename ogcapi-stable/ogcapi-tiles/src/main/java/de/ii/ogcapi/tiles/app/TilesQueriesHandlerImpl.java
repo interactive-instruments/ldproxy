@@ -150,10 +150,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     OgcApiDataV2 apiData = api.getData();
     Optional<String> collectionId = queryInput.getCollectionId();
     String definitionPath = queryInput.getPath();
-    String path =
-        collectionId
-            .map(value -> definitionPath.replace("{collectionId}", value))
-            .orElse(definitionPath);
     boolean onlyWebMercatorQuad = queryInput.getOnlyWebMercatorQuad();
 
     TileSetsFormatExtension outputFormat =
@@ -268,11 +264,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     String tileMatrixSetId = queryInput.getTileMatrixSetId();
     Optional<String> collectionId = queryInput.getCollectionId();
     String definitionPath = queryInput.getPath();
-    String path =
-        collectionId
-            .map(value -> definitionPath.replace("{collectionId}", value))
-            .orElse(definitionPath)
-            .replace("{tileMatrixSetId}", tileMatrixSetId);
 
     TileSetFormatExtension outputFormat =
         api.getOutputFormat(
@@ -534,9 +525,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
             .flatMap(MinMax::getDefault)
             .ifPresent(def -> builder2.tileMatrix(String.valueOf(def)));
       }
-      if (!center.isEmpty()) {
-        builder2.coordinates(center.get().asList());
-      }
+      center.ifPresent(lonLat -> builder2.coordinates(lonLat.asList()));
       builder.centerPoint(builder2.build());
     }
 
@@ -553,11 +542,14 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                     .flatMap(apiData::getCollectionData)
                     .orElseGet(
                         () ->
-                            new ImmutableFeatureTypeConfigurationOgcApi.Builder()
-                                .id(vectorSchema.getName())
-                                .label(vectorSchema.getLabel().orElse(vectorSchema.getName()))
-                                .description(vectorSchema.getDescription())
-                                .build());
+                            TilesConfiguration.getCollectionData(apiData, vectorSchema.getName())
+                                .orElse(
+                                    new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                                        .id(vectorSchema.getName())
+                                        .label(
+                                            vectorSchema.getLabel().orElse(vectorSchema.getName()))
+                                        .description(vectorSchema.getDescription())
+                                        .build()));
 
             JsonSchemaDocument jsonSchema =
                 schemaCache.getSchema(vectorSchema, apiData, collectionData, Optional.empty());
