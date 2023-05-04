@@ -45,7 +45,7 @@ export const extractInterval = (obj) => {
     const starting = temporalExtent.interval[0][0];
     const ending = temporalExtent.interval[0][1];
     const startingUnix = moment.utc(starting).valueOf();
-    const endingUnix = moment.utc(ending).valueOf();
+    const endingUnix = ending ? moment.utc(ending).valueOf() : moment.utc().valueOf();
     return { start: startingUnix, end: endingUnix };
   };
 
