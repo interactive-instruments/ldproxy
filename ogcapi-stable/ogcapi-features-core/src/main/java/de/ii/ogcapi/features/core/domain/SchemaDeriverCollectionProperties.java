@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
-import com.google.common.base.CaseFormat;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -54,7 +53,7 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
   protected JsonSchema getSchemaForGeometry(FeatureSchema schema) {
     JsonSchema jsonSchema;
     SimpleFeatureGeometry type = schema.getGeometryType().orElse(SimpleFeatureGeometry.ANY);
-    String baseUrlFormat = "https://geojson.org/schema/%s.json";
+    String baseFormat = "geometry-%s";
     switch (type) {
       case POINT:
       case MULTI_POINT:
@@ -64,11 +63,8 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
       case MULTI_POLYGON:
       case GEOMETRY_COLLECTION:
         jsonSchema =
-            new ImmutableJsonSchemaRef.Builder()
-                .ref(
-                    String.format(
-                        baseUrlFormat,
-                        CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, type.name())))
+            new ImmutableJsonSchemaGeometry.Builder()
+                .format(String.format(baseFormat, type.name().toLowerCase().replace("_", "")))
                 .build();
         break;
       case NONE:
@@ -77,9 +73,7 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
       case ANY:
       default:
         jsonSchema =
-            new ImmutableJsonSchemaRef.Builder()
-                .ref(String.format(baseUrlFormat, "Geometry"))
-                .build();
+            new ImmutableJsonSchemaRef.Builder().ref(String.format(baseFormat, "any")).build();
         break;
     }
     return adjustGeometry(schema, jsonSchema);

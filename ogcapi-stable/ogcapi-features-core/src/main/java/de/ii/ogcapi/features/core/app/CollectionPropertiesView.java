@@ -14,6 +14,7 @@ import de.ii.ogcapi.features.core.domain.ImmutableCollectionProperty;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
 import de.ii.ogcapi.features.core.domain.JsonSchemaArray;
 import de.ii.ogcapi.features.core.domain.JsonSchemaBoolean;
+import de.ii.ogcapi.features.core.domain.JsonSchemaGeometry;
 import de.ii.ogcapi.features.core.domain.JsonSchemaInteger;
 import de.ii.ogcapi.features.core.domain.JsonSchemaNumber;
 import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
@@ -124,12 +125,9 @@ public abstract class CollectionPropertiesView extends OgcApiView {
                     .getEnums().stream().map(String::valueOf).collect(Collectors.toList()));
           } else if (value instanceof JsonSchemaBoolean) {
             builder2.type("boolean");
-          } else if (value instanceof JsonSchemaRef) {
+          } else if (value instanceof JsonSchemaGeometry) {
             builder2.type(
-                ((JsonSchemaRef) value)
-                    .getRef()
-                    .replace("https://geojson.org/schema/", "")
-                    .replace(".json", ""));
+                ((JsonSchemaGeometry) value).getFormat().replace("geometry-", "geometry (") + ")");
           } else if (value instanceof JsonSchemaRef) {
             builder2.type(
                 ((JsonSchemaRef) value)
