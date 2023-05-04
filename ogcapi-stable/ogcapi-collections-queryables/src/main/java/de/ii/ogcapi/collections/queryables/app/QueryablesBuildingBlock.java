@@ -55,11 +55,11 @@ import javax.inject.Singleton;
  *     Eigenschaft im Feature-Provider abgeleitet. Unterstützte Kodierungen sind JSON Schema 2019-09
  *     und HTML.
  * @conformanceEn *Feature Collections - Queryables* implements all requirements and recommendations
- *     of section 6.2 ("Queryables") of the [draft OGC API - Features - Part 3:
- *     Filtering](https://docs.ogc.org/DRAFTS/19-079r1.html#filter-queryables).
- * @conformanceDe Das Modul implementiert die Vorgaben und Empfehlungen aus Abschnitt 6.2
- *     ("Queryables") des [Entwurfs von OGC API - Features - Part 3:
- *     Filtering](https://docs.ogc.org/DRAFTS/19-079r1.html#filter-queryables).
+ *     of chapter 6 ("Queryables") of the [draft OGC API - Features - Part 3:
+ *     Filtering](https://docs.ogc.org/DRAFTS/19-079r1.html#queryables).
+ * @conformanceDe Das Modul implementiert die Vorgaben und Empfehlungen aus Kapitel 6 ("Queryables")
+ *     des [Entwurfs von OGC API - Features - Part 3:
+ *     Filtering](https://docs.ogc.org/DRAFTS/19-079r1.html#queryables).
  * @ref:cfg {@link de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration}
  * @ref:cfgProperties {@link
  *     de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfiguration}

@@ -258,6 +258,8 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
       builder = new ImmutableJsonSchemaNumber.Builder().from(jsonSchema);
     } else if (jsonSchema instanceof JsonSchemaString) {
       builder = new ImmutableJsonSchemaString.Builder().from(jsonSchema);
+    } else if (jsonSchema instanceof JsonSchemaGeometry) {
+      builder = new ImmutableJsonSchemaGeometry.Builder().from(jsonSchema);
     }
 
     if (Objects.nonNull(builder)) {
