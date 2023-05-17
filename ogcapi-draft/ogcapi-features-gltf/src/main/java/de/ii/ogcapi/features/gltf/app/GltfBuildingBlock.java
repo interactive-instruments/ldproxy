@@ -9,7 +9,6 @@ package de.ii.ogcapi.features.gltf.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.gltf.domain.ImmutableGltfConfiguration;
-import de.ii.ogcapi.features.gltf.infra.EndpointGltfSchema;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import javax.inject.Inject;
@@ -77,7 +76,7 @@ import javax.inject.Singleton;
  *     </code>
  * @ref:cfg {@link de.ii.ogcapi.features.gltf.domain.GltfConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.features.gltf.domain.ImmutableGltfConfiguration}
- * @ref:endpoints {@link EndpointGltfSchema}
+ * @ref:endpoints {@link de.ii.ogcapi.features.gltf.infra.EndpointGltfSchema}
  * @ref:queryParameters {@link de.ii.ogcapi.features.gltf.app.QueryParameterClampToEllipsoid},
  *     {@link de.ii.ogcapi.features.gltf.app.QueryParameterFGltfSchema}
  * @ref:pathParameters {@link de.ii.ogcapi.features.gltf.app.PathParameterCollectionIdGltf}
