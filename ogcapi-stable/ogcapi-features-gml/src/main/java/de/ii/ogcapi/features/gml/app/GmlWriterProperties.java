@@ -131,13 +131,19 @@ public class GmlWriterProperties implements GmlWriter {
         boolean inMeasure = state.getInMeasure();
 
         if (inLink) {
-          writeLinkAttribute(context, schema, value);
+          writeLinkAttribute(context, schema.getName(), value);
         } else if (inMeasure) {
           writeMeasure(context, schema, value);
         } else {
           if (context.encoding().getXmlAttributes().contains(schema.getFullPathAsString())) {
             // encode as XML attribute
             context.encoding().writeAsXmlAtt(schema.getName(), value);
+          } else if (schema.getType() == Type.FEATURE_REF
+              || schema.getType() == Type.FEATURE_REF_ARRAY) {
+            context.encoding().write("<");
+            context.encoding().write(schema.getName());
+            writeLinkAttribute(context, "href", value);
+            context.encoding().write("/>");
           } else {
             // opening tag of property element
             context.encoding().write("<");
@@ -219,13 +225,13 @@ public class GmlWriterProperties implements GmlWriter {
   }
 
   private void writeLinkAttribute(
-      EncodingAwareContextGml context, FeatureSchema schema, String value) {
+      EncodingAwareContextGml context, String xlinkAttribute, String value) {
     // we are already in the property element that has the link object as its value,
     // just add the XLink attribute
     context.encoding().write(" xlink:");
-    context.encoding().write(schema.getName());
+    context.encoding().write(xlinkAttribute);
     context.encoding().write("=\"");
-    if (schema.getName().equals("href") && context.encoding().getAllLinksAreLocal()) {
+    if (xlinkAttribute.equals("href") && context.encoding().getAllLinksAreLocal()) {
       String localHref =
           context.encoding().getIdsIncludeCollectionId()
               ? String.format(
@@ -236,9 +242,9 @@ public class GmlWriterProperties implements GmlWriter {
                   "#%s%s",
                   context.encoding().getGmlIdPrefix().orElse(""),
                   value.substring(value.indexOf("/items/") + 7));
-      writeValue(context, localHref, schema.getType());
+      writeValue(context, localHref, Type.STRING);
     } else {
-      writeValue(context, value, schema.getType());
+      writeValue(context, value, Type.STRING);
     }
     context.encoding().write("\"");
   }

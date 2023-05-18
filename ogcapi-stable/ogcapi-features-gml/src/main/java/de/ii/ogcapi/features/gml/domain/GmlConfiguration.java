@@ -11,6 +11,8 @@ import static de.ii.ogcapi.features.gml.domain.GmlConfiguration.GmlVersion.GML32
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.List;
 import java.util.Map;
@@ -410,6 +412,51 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
    */
   @Nullable
   String getGmlIdPrefix();
+
+  String REF_WILDCARD = "*{type=FEATURE_REF}";
+  String REF_ARRAY_WILDCARD = "*{type=FEATURE_REF_ARRAY}";
+
+  @Value.Check
+  default GmlConfiguration transformRefs() {
+    if (!hasTransformation(
+        REF_WILDCARD, transformation -> transformation.getStringFormat().isPresent())) {
+
+      Map<String, List<PropertyTransformation>> transformations =
+          withTransformation(
+              REF_WILDCARD,
+              new ImmutablePropertyTransformation.Builder()
+                  .stringFormat("{{apiUri}}/collections/{{type}}/items/{{value}}?f=json")
+                  .build());
+
+      return new ImmutableGmlConfiguration.Builder()
+          .from(this)
+          .transformations(transformations)
+          .build();
+    }
+
+    return this;
+  }
+
+  @Value.Check
+  default GmlConfiguration transformRefArrays() {
+    if (!hasTransformation(
+        REF_ARRAY_WILDCARD, transformation -> transformation.getStringFormat().isPresent())) {
+
+      Map<String, List<PropertyTransformation>> transformations =
+          withTransformation(
+              REF_ARRAY_WILDCARD,
+              new ImmutablePropertyTransformation.Builder()
+                  .stringFormat("{{apiUri}}/collections/{{type}}/items/{{value}}?f=json")
+                  .build());
+
+      return new ImmutableGmlConfiguration.Builder()
+          .from(this)
+          .transformations(transformations)
+          .build();
+    }
+
+    return this;
+  }
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
