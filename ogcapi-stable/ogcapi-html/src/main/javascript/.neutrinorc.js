@@ -1,6 +1,7 @@
 const airbnb = require("@neutrinojs/airbnb");
 const react = require("@neutrinojs/react");
 const mocha = require("@neutrinojs/mocha");
+const copy = require("@neutrinojs/copy");
 const xtraplatform = require("@xtraplatform/neutrino");
 const path = require("path");
 const fs = require("fs");
@@ -49,6 +50,14 @@ fs.readdirSync(path.join(__dirname, "src/styles")).forEach(
     })
 );
 
+const cesiumEngine = path.dirname(require.resolve("@cesium/engine"));
+const cesiumWidgets = path.dirname(require.resolve("@cesium/widgets"));
+const cesiumVersion = JSON.parse(
+  fs.readFileSync(path.join(cesiumWidgets, "package.json"), "utf-8")
+).version;
+const cesiumPath = path.join("cesium", cesiumVersion);
+const cesiumTarget = path.join("assets", cesiumPath);
+
 module.exports = {
   options: {
     root: __dirname,
@@ -64,6 +73,21 @@ module.exports = {
       publicPath: "",
     }),
     mocha(),
+    copy({
+      patterns: [
+        { from: path.join(cesiumEngine, "Build/Workers"), to: path.join(cesiumTarget, "Workers") },
+        { from: path.join(cesiumEngine, "Source/Assets"), to: path.join(cesiumTarget, "Assets") },
+        {
+          from: path.join(cesiumEngine, "Source/ThirdParty"),
+          to: path.join(cesiumTarget, "ThirdParty"),
+        },
+        {
+          from: path.join(cesiumEngine, "Source/Widget"),
+          to: path.join(cesiumTarget, "Widgets/CesiumWidget"),
+        },
+        { from: path.join(cesiumWidgets, "Source"), to: path.join(cesiumTarget, "Widgets") },
+      ],
+    }),
     xtraplatform({
       lib: false,
       modulePrefixes: ["ogcapi", "@ogcapi"],
@@ -95,9 +119,9 @@ module.exports = {
       //for cesium/c137
       neutrino.config.module
         .rule("importmeta")
-        .test(new RegExp(`^.*?\\/\\.yarn\\/cache\\/c137.*?$`))
+        .test(new RegExp(`^.*?\\/\\.yarn\\/cache\\/@cesium-[a-z]*.*?$`))
         .use("im")
-        .loader(require.resolve('@open-wc/webpack-import-meta-loader'));
+        .loader(require.resolve("@open-wc/webpack-import-meta-loader"));
       neutrino.config.module
         .rule("compile")
         .use("babel")
@@ -107,12 +131,14 @@ module.exports = {
         }));
       neutrino.config.module
         .rule("compile")
-        .include.add(new RegExp(`^.*?\\/\\.yarn\\/cache\\/c137.*?$`)); //TODO: add cache in addition to $$virtual in @xtraplatform/neutrino, use modulePrefixes
+        .include.add(new RegExp(`^.*?\\/\\.yarn\\/cache\\/@cesium-[a-z]*.*?$`)); //TODO: add cache in addition to $$virtual in @xtraplatform/neutrino, use modulePrefixes
 
       //for dev server
       neutrino.config
         .plugin("env")
-        .use(require.resolve("webpack/lib/EnvironmentPlugin"), [{ APP: process.env.APP }]);
+        .use(require.resolve("webpack/lib/EnvironmentPlugin"), [
+          { APP: process.env.APP, CESIUM_PATH: cesiumPath },
+        ]);
     },
   ],
 };

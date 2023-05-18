@@ -18,14 +18,15 @@ import org.immutables.value.Value;
 @Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutableTilePoint.Builder.class)
 public interface TilePoint {
-  List<Double> getCoordinates();
-
-  Optional<String> getTileMatrix();
 
   @SuppressWarnings("UnstableApiUsage")
-  public static final Funnel<TilePoint> FUNNEL =
+  Funnel<TilePoint> FUNNEL =
       (from, into) -> {
         from.getCoordinates().forEach(into::putDouble);
         from.getTileMatrix().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
       };
+
+  List<Double> getCoordinates();
+
+  Optional<String> getTileMatrix();
 }

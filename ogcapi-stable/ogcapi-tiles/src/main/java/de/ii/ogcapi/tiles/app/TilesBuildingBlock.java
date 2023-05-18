@@ -7,15 +7,10 @@
  */
 package de.ii.ogcapi.tiles.app;
 
-import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
-import static de.ii.xtraplatform.tiles.domain.LayerOptionsFeatures.COMBINE_ALL;
-
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Range;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
@@ -27,19 +22,17 @@ import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration;
-import de.ii.ogcapi.tiles.domain.ImmutableTileProviderFeatures;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration.Builder;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileProviderFeatures;
-import de.ii.ogcapi.tiles.domain.TileProviderMbtiles;
-import de.ii.ogcapi.tiles.domain.TileProviderTileServer;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
-import de.ii.ogcapi.tiles.domain.TilesConfiguration.TileCacheType;
+import de.ii.ogcapi.tiles.domain.TilesMigrationV4;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.base.domain.util.Tuple;
 import de.ii.xtraplatform.cql.domain.Cql;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.docs.DocDefs;
 import de.ii.xtraplatform.docs.DocStep;
 import de.ii.xtraplatform.docs.DocStep.Step;
@@ -51,45 +44,25 @@ import de.ii.xtraplatform.store.domain.entities.EntityFactories;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
-import de.ii.xtraplatform.tiles.domain.Cache;
-import de.ii.xtraplatform.tiles.domain.Cache.Storage;
-import de.ii.xtraplatform.tiles.domain.Cache.Type;
-import de.ii.xtraplatform.tiles.domain.ImmutableCache;
-import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsFeatures;
-import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsFeaturesDefault;
-import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsHttp;
-import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsHttpDefault;
-import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsMbTiles;
-import de.ii.xtraplatform.tiles.domain.ImmutableLayerOptionsMbTilesDefault;
 import de.ii.xtraplatform.tiles.domain.ImmutableMinMax;
-import de.ii.xtraplatform.tiles.domain.ImmutableTileProviderFeaturesData;
-import de.ii.xtraplatform.tiles.domain.ImmutableTileProviderHttpData;
-import de.ii.xtraplatform.tiles.domain.ImmutableTileProviderMbtilesData;
-import de.ii.xtraplatform.tiles.domain.LayerOptionsFeatures;
 import de.ii.xtraplatform.tiles.domain.LevelFilter;
 import de.ii.xtraplatform.tiles.domain.LevelTransformation;
 import de.ii.xtraplatform.tiles.domain.MinMax;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import de.ii.xtraplatform.tiles.domain.TileProviderData;
-import de.ii.xtraplatform.tiles.domain.TileProviderFeaturesData;
-import de.ii.xtraplatform.tiles.domain.TileProviderHttpData;
-import de.ii.xtraplatform.tiles.domain.TileProviderMbtilesData;
-import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.sqlite.SQLiteJDBCLoader;
 
 /**
  * @title Tiles
@@ -107,6 +80,7 @@ import org.sqlite.SQLiteJDBCLoader;
  *     </code>
  *     <p>For tiles that are derived from feature data, only Mapbox Vector Tiles are supported as a
  *     file format.
+ *     <p>All tiles of an API are sourced from a single tile provider.
  * @scopeDe Dieses Modul unterstützt Kacheln, die aus Features abgeleitet sind, oder Kacheln, die
  *     von einer externen Quelle bereitgestellt werden.
  *     <p>Die unterstützten Kachelformate sind:
@@ -119,6 +93,7 @@ import org.sqlite.SQLiteJDBCLoader;
  *     </code>
  *     <p>Für Kacheln, die aus Features abgeleitet werden, wird nur Mapbox Vector Tiles als
  *     Kachelformat unterstützt.
+ *     <p>Alle Kacheln einer API kommen vom selben Tile-Provider.
  * @conformanceEn The module implements the conformance classes "Core", "TileSet", "TileSets List",
  *     "Dataset TileSets", "GeoData TileSets", "Collections Selection", "DateTime", "OpenAPI
  *     Specification 3.0 API definition", "Mapbox Vector Tiles", "PNG", "JPEG", and "TIFF" of the
@@ -175,7 +150,6 @@ import org.sqlite.SQLiteJDBCLoader;
  *     de.ii.ogcapi.tiles.domain.PathParameterTileMatrix}, {@link
  *     de.ii.ogcapi.tiles.domain.PathParameterTileRow}, {@link
  *     de.ii.ogcapi.tiles.domain.PathParameterTileCol}
- * @see de.ii.ogcapi.tiles.domain.SeedingOptions
  * @ref:provider {@link de.ii.ogcapi.tiles.domain.TileProvider}
  * @ref:providerFeatures {@link de.ii.ogcapi.tiles.domain.TileProviderFeatures}
  * @ref:providerFeaturesProperties {@link de.ii.ogcapi.tiles.domain.ImmutableTileProviderFeatures}
@@ -276,27 +250,13 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
 
     return new Builder()
         .enabled(false)
-        .tileProvider(
-            ImmutableTileProviderFeatures.builder()
-                .tileEncodings(ImmutableList.of(TileFormatMVT.MEDIA_TYPE.label()))
-                .center(ImmutableList.of(0.0, 0.0))
-                .zoomLevels(
-                    ImmutableMap.of(
-                        "WebMercatorQuad", new ImmutableMinMax.Builder().min(0).max(23).build()))
-                .zoomLevelsCache(ImmutableMap.of())
-                .seeding(ImmutableMap.of())
-                .limit(LIMIT_DEFAULT)
-                .singleCollectionEnabled(true)
-                .multiCollectionEnabled(true)
-                .ignoreInvalidGeometries(false)
-                .minimumSizeInPixel(MINIMUM_SIZE_IN_PIXEL)
-                .build())
+        .collectionTiles(true)
+        .datasetTiles(true)
         .tileSetEncodings(
             extensionRegistry.getExtensionsForType(TileSetFormatExtension.class).stream()
                 .filter(FormatExtension::isEnabledByDefault)
                 .map(format -> format.getMediaType().label())
                 .collect(ImmutableList.toImmutableList()))
-        .cache(TilesConfiguration.TileCacheType.FILES)
         .style("DEFAULT")
         .build();
   }
@@ -342,6 +302,11 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
   }
 
   @Override
+  public int getStartupPriority() {
+    return 10;
+  }
+
+  @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     // since building block / capability components are currently always enabled,
     // we need to test, if the TILES and TILE MATRIX SETS module are enabled for the API and stop,
@@ -370,8 +335,24 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                 tilesConfiguration.get().getTileProviderId()));
 
       } else {
+        boolean tilesIdExists =
+            entityFactories.getAll("providers").stream()
+                .anyMatch(
+                    entityFactory ->
+                        TileProviderData.class.isAssignableFrom(entityFactory.dataClass())
+                            && entityFactory
+                                .instance(TilesProviders.toTilesId(apiData.getId()))
+                                .isPresent());
+        if (tilesIdExists) {
+          throw new IllegalStateException(
+              String.format(
+                  "Tile provider with id '%s' not found.",
+                  TilesProviders.toTilesId(apiData.getId())));
+        }
+
+        TilesMigrationV4 tilesMigrationV4 = new TilesMigrationV4();
         Optional<Tuple<Class<? extends TileProviderData>, ? extends TileProviderData>>
-            tileProviderData = getTileProviderData(apiData);
+            tileProviderData = tilesMigrationV4.getTileProviderData(apiData);
         if (tileProviderData.isPresent()) {
           entityFactories
               .get(tileProviderData.get().first())
@@ -382,18 +363,14 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
       }
     }
 
-    try {
-      SQLiteJDBCLoader.initialize();
-    } catch (Exception e) {
-      return ImmutableValidationResult.builder()
-          .mode(apiValidation)
-          .addStrictErrors(MessageFormat.format("Could not load SQLite: {}", e.getMessage()))
-          .build();
-    }
-
     if (apiValidation == MODE.NONE) {
       return ValidationResult.of();
     }
+
+    return validate(apiData, apiValidation);
+  }
+
+  public ValidationResult validate(OgcApiDataV2 apiData, MODE apiValidation) {
 
     ImmutableValidationResult.Builder builder =
         ImmutableValidationResult.builder().mode(apiValidation);
@@ -426,14 +403,17 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
               .filter(formatExtension -> formatExtension.isEnabledForApi(apiData))
               .map(format -> format.getMediaType().label())
               .collect(Collectors.toUnmodifiableList());
-      List<String> tileEncodings = config.getTileEncodingsDerived();
+      Set<String> tileEncodings =
+          tilesProviders
+              .getTilesetMetadataOrThrow(apiData, apiData.getCollectionData(collectionId))
+              .getEncodings();
       if (Objects.isNull(tileEncodings)) {
         builder.addStrictErrors(
             MessageFormat.format(
                 "No tile encoding has been specified in the TILES module configuration of collection ''{0}''.",
                 collectionId));
       } else {
-        for (String encoding : config.getTileEncodingsDerived()) {
+        for (String encoding : tileEncodings) {
           if (!formatLabels.contains(encoding)) {
             builder.addStrictErrors(
                 MessageFormat.format(
@@ -611,26 +591,24 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                           "A filter in the TILES module of collection ''{0}'' for tile matrix set ''{1}'' is specified to end at level ''{2}'', but the maximum level is ''{3}''.",
                           collectionId, tileMatrixSetId, filter.getMax(), zoomLevelsCfg.getMax()));
                 }
-                // try to convert the filter to CQL2-text
+                // try to parse the filter as CQL2 Text
                 String expression = filter.getFilter();
                 FeatureTypeConfigurationOgcApi collectionData =
                     apiData.getCollections().get(collectionId);
-                final Map<String, String> filterableFields =
-                    queryParser.getFilterableFields(apiData, collectionData);
-                final Map<String, String> queryableTypes =
-                    queryParser.getQueryableTypes(apiData, collectionData);
-                try {
-                  queryParser.getFilterFromQuery(
-                      ImmutableMap.of("filter", expression),
-                      filterableFields,
-                      ImmutableSet.of("filter"),
-                      queryableTypes,
-                      Cql.Format.TEXT);
-                } catch (Exception e) {
-                  builder.addErrors(
-                      MessageFormat.format(
-                          "A filter ''{0}'' in the TILES module of collection ''{1}'' for tile matrix set ''{2}'' is invalid. Reason: {3}",
-                          expression, collectionId, tileMatrixSetId, e.getMessage()));
+                if (collectionData != null) {
+                  Map<String, FeatureSchema> queryables =
+                      collectionData
+                          .getExtension(QueryablesConfiguration.class)
+                          .map(cfg -> cfg.getQueryables(apiData, collectionData, providers))
+                          .orElse(ImmutableMap.of());
+                  queryParser
+                      .validateFilter(expression, Cql.Format.TEXT, OgcCrs.CRS84, queryables)
+                      .ifPresent(
+                          error ->
+                              builder.addErrors(
+                                  MessageFormat.format(
+                                      "A filter ''{0}'' in the TILES module of collection ''{1}'' for tile matrix set ''{2}'' is invalid. Reason: {3}",
+                                      expression, collectionId, tileMatrixSetId, error)));
                 }
               }
             }
@@ -685,320 +663,5 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     }
 
     return builder.build();
-  }
-
-  private Optional<Tuple<Class<? extends TileProviderData>, ? extends TileProviderData>>
-      getTileProviderData(OgcApiDataV2 apiData) {
-    Optional<TilesConfiguration> tiles =
-        apiData.getExtension(TilesConfiguration.class).filter(ExtensionConfiguration::isEnabled);
-
-    if (tiles.isEmpty()) {
-      return Optional.empty();
-    }
-
-    Optional<FeaturesCoreConfiguration> featuresCore =
-        apiData.getExtension(FeaturesCoreConfiguration.class);
-
-    Map<String, FeatureTypeConfigurationOgcApi> collections =
-        apiData.getCollections().entrySet().stream()
-            .filter(
-                entry ->
-                    entry
-                        .getValue()
-                        .getExtension(TilesConfiguration.class)
-                        .filter(TilesConfiguration::isEnabled)
-                        .filter(TilesConfiguration::hasCollectionTiles)
-                        .isPresent())
-            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-    if (Objects.nonNull(tiles.get().getTileProvider())
-        && tiles.get().getTileProvider() instanceof TileProviderMbtiles) {
-      return Optional.of(
-          Tuple.of(
-              TileProviderMbtilesData.class,
-              getMbTilesData(
-                  apiData.getId(),
-                  tiles.get(),
-                  (TileProviderMbtiles) tiles.get().getTileProvider(),
-                  collections)));
-    }
-
-    if (Objects.nonNull(tiles.get().getTileProvider())
-        && tiles.get().getTileProvider() instanceof TileProviderTileServer) {
-      return Optional.of(
-          Tuple.of(
-              TileProviderHttpData.class,
-              getTileServerData(
-                  apiData.getId(),
-                  tiles.get(),
-                  (TileProviderTileServer) tiles.get().getTileProvider(),
-                  collections)));
-    }
-
-    return Optional.of(
-        Tuple.of(
-            TileProviderFeaturesData.class,
-            getFeaturesData(apiData.getId(), tiles.get(), featuresCore, collections)));
-  }
-
-  private static TileProviderMbtilesData getMbTilesData(
-      String apiId,
-      TilesConfiguration tilesConfiguration,
-      TileProviderMbtiles tileProviderMbtiles,
-      Map<String, FeatureTypeConfigurationOgcApi> collections) {
-    return new ImmutableTileProviderMbtilesData.Builder()
-        .id(TilesProviders.toTilesId(apiId))
-        .providerType(TileProviderMbtilesData.PROVIDER_TYPE)
-        .providerSubType(TileProviderMbtilesData.PROVIDER_SUBTYPE)
-        .layerDefaults(
-            new ImmutableLayerOptionsMbTilesDefault.Builder()
-                .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
-                .build())
-        .putAllLayers(
-            tilesConfiguration.hasDatasetTiles()
-                ? Map.of(
-                    DATASET_TILES,
-                    new ImmutableLayerOptionsMbTiles.Builder()
-                        .id(DATASET_TILES)
-                        .source(
-                            Path.of(
-                                    API_RESOURCES_DIR,
-                                    TILES_DIR_NAME,
-                                    apiId,
-                                    tileProviderMbtiles.getFilename())
-                                .toString())
-                        .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
-                        .build())
-                : Map.of())
-        .putAllLayers(
-            collections.entrySet().stream()
-                .map(
-                    entry ->
-                        new SimpleImmutableEntry<>(
-                            entry.getKey(),
-                            entry.getValue().getExtension(TilesConfiguration.class).get()))
-                .filter(
-                    entry ->
-                        Objects.nonNull(entry.getValue().getTileProvider())
-                            && entry.getValue().getTileProvider() instanceof TileProviderMbtiles
-                            && Objects.nonNull(
-                                ((TileProviderMbtiles) entry.getValue().getTileProvider())
-                                    .getFilename()))
-                .map(
-                    entry ->
-                        new SimpleImmutableEntry<>(
-                            entry.getKey(),
-                            new ImmutableLayerOptionsMbTiles.Builder()
-                                .id(entry.getKey())
-                                .source(
-                                    ((TileProviderMbtiles) entry.getValue().getTileProvider())
-                                        .getFilename())
-                                .putAllLevels(entry.getValue().getZoomLevelsDerived())
-                                .build()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
-        .build();
-  }
-
-  private static TileProviderHttpData getTileServerData(
-      String apiId,
-      TilesConfiguration tilesConfiguration,
-      TileProviderTileServer tileProviderTileServer,
-      Map<String, FeatureTypeConfigurationOgcApi> collections) {
-    return new ImmutableTileProviderHttpData.Builder()
-        .id(TilesProviders.toTilesId(apiId))
-        .providerType(TileProviderHttpData.PROVIDER_TYPE)
-        .providerSubType(TileProviderHttpData.PROVIDER_SUBTYPE)
-        .layerDefaults(
-            new ImmutableLayerOptionsHttpDefault.Builder()
-                .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
-                .build())
-        .putAllLayers(
-            tilesConfiguration.hasDatasetTiles()
-                ? Map.of(
-                    DATASET_TILES,
-                    new ImmutableLayerOptionsHttp.Builder()
-                        .id(DATASET_TILES)
-                        .urlTemplate(
-                            tileProviderTileServer
-                                .getUrlTemplate()
-                                .replaceAll("\\{", "{{")
-                                .replaceAll("}", "}}"))
-                        .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
-                        .build())
-                : Map.of())
-        .putAllLayers(
-            collections.entrySet().stream()
-                .map(
-                    entry ->
-                        new SimpleImmutableEntry<>(
-                            entry.getKey(),
-                            entry.getValue().getExtension(TilesConfiguration.class).get()))
-                .filter(
-                    entry ->
-                        Objects.nonNull(tileProviderTileServer.getUrlTemplateSingleCollection()))
-                .map(
-                    entry ->
-                        new SimpleImmutableEntry<>(
-                            entry.getKey(),
-                            new ImmutableLayerOptionsHttp.Builder()
-                                .id(entry.getKey())
-                                .urlTemplate(
-                                    tileProviderTileServer
-                                        .getUrlTemplateSingleCollection()
-                                        .replaceAll("\\{", "{{")
-                                        .replaceAll("}", "}}"))
-                                .putAllLevels(entry.getValue().getZoomLevelsDerived())
-                                .build()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
-        .build();
-  }
-
-  private static TileProviderFeaturesData getFeaturesData(
-      String apiId,
-      TilesConfiguration tilesConfiguration,
-      Optional<FeaturesCoreConfiguration> featuresCore,
-      Map<String, FeatureTypeConfigurationOgcApi> collections) {
-    Map<String, TilesConfiguration> collectionConfigs =
-        collections.entrySet().stream()
-            .map(
-                entry ->
-                    new SimpleImmutableEntry<>(
-                        entry.getKey(),
-                        entry.getValue().getExtension(TilesConfiguration.class).get()))
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-
-    return new ImmutableTileProviderFeaturesData.Builder()
-        .id(TilesProviders.toTilesId(apiId))
-        .providerType(TileProviderFeaturesData.PROVIDER_TYPE)
-        .providerSubType(TileProviderFeaturesData.PROVIDER_SUBTYPE)
-        .addAllCaches(getCaches(tilesConfiguration, collectionConfigs))
-        .layerDefaults(
-            new ImmutableLayerOptionsFeaturesDefault.Builder()
-                .featureProvider(
-                    featuresCore.flatMap(FeaturesCoreConfiguration::getFeatureProvider))
-                .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
-                .putAllTransformations(tilesConfiguration.getRulesDerived())
-                .featureLimit(tilesConfiguration.getLimitDerived())
-                .minimumSizeInPixel(tilesConfiguration.getMinimumSizeInPixelDerived())
-                .ignoreInvalidGeometries(tilesConfiguration.isIgnoreInvalidGeometriesDerived())
-                .build())
-        .putAllLayers(
-            tilesConfiguration.hasDatasetTiles()
-                ? Map.of(
-                    DATASET_TILES,
-                    new ImmutableLayerOptionsFeatures.Builder()
-                        .id(DATASET_TILES)
-                        .addCombine(COMBINE_ALL)
-                        .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
-                        .build())
-                : Map.of())
-        .putAllLayers(
-            collectionConfigs.entrySet().stream()
-                .map(
-                    entry ->
-                        new SimpleImmutableEntry<>(
-                            entry.getKey(),
-                            getFeatureLayer(entry.getKey(), entry.getValue(), collections)))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
-        .build();
-  }
-
-  private static List<Cache> getCaches(
-      TilesConfiguration tilesConfiguration, Map<String, TilesConfiguration> collectionConfigs) {
-
-    if (Objects.equals(tilesConfiguration.getCache(), TileCacheType.NONE)) {
-      return List.of();
-    }
-
-    Storage storage =
-        Objects.equals(tilesConfiguration.getCache(), TileCacheType.MBTILES)
-            ? Storage.MBTILES
-            : Storage.PLAIN;
-
-    return List.of(
-        new ImmutableCache.Builder()
-            .type(Type.DYNAMIC)
-            .storage(storage)
-            .putAllLevels(tilesConfiguration.getSeedingDerived())
-            .putAllLayerLevels(
-                collectionConfigs.entrySet().stream()
-                    .map(
-                        entry ->
-                            new SimpleImmutableEntry<>(
-                                entry.getKey(), entry.getValue().getSeedingDerived()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
-            .build(),
-        new ImmutableCache.Builder()
-            .type(Type.DYNAMIC)
-            .storage(storage)
-            .seeded(false)
-            .putAllLevels(getNonSeededRanges(tilesConfiguration))
-            .putAllLayerLevels(
-                collectionConfigs.entrySet().stream()
-                    .map(
-                        entry ->
-                            new SimpleImmutableEntry<>(
-                                entry.getKey(), getNonSeededRanges(entry.getValue())))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)))
-            .build());
-  }
-
-  private static Map<String, MinMax> getNonSeededRanges(TilesConfiguration tilesConfiguration) {
-    Map<String, MinMax> seeding = tilesConfiguration.getSeedingDerived();
-    Map<String, MinMax> cache = tilesConfiguration.getZoomLevelsCacheDerived();
-
-    return tilesConfiguration.getZoomLevelsDerived().entrySet().stream()
-        .map(
-            entry -> {
-              if (seeding.containsKey(entry.getKey())) {
-                Range<Integer> range;
-                if (cache.containsKey(entry.getKey())) {
-                  range =
-                      Range.closed(
-                          Math.max(
-                              seeding.get(entry.getKey()).getMax() + 1,
-                              cache.get(entry.getKey()).getMin()),
-                          cache.get(entry.getKey()).getMax());
-                } else {
-                  range =
-                      Range.closed(
-                          Math.max(
-                              Math.min(
-                                  seeding.get(entry.getKey()).getMax() + 1,
-                                  entry.getValue().getMax()),
-                              entry.getValue().getMin()),
-                          entry.getValue().getMax());
-                }
-
-                return new SimpleImmutableEntry<>(entry.getKey(), MinMax.of(range));
-              } else if (cache.containsKey(entry.getKey())) {
-                return new SimpleImmutableEntry<>(entry.getKey(), cache.get(entry.getKey()));
-              }
-              return entry;
-            })
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-  }
-
-  private static LayerOptionsFeatures getFeatureLayer(
-      String id, TilesConfiguration cfg, Map<String, FeatureTypeConfigurationOgcApi> collections) {
-    return new ImmutableLayerOptionsFeatures.Builder()
-        .id(id)
-        .featureProvider(
-            collections
-                .get(id)
-                .getExtension(FeaturesCoreConfiguration.class)
-                .flatMap(FeaturesCoreConfiguration::getFeatureProvider))
-        .featureType(
-            collections
-                .get(id)
-                .getExtension(FeaturesCoreConfiguration.class)
-                .flatMap(FeaturesCoreConfiguration::getFeatureType))
-        .putAllLevels(cfg.getZoomLevelsDerived())
-        .putAllTransformations(cfg.getRulesDerived())
-        .putAllFilters(cfg.getFiltersDerived())
-        .featureLimit(cfg.getLimitDerived())
-        .minimumSizeInPixel(cfg.getMinimumSizeInPixelDerived())
-        .ignoreInvalidGeometries(cfg.isIgnoreInvalidGeometriesDerived())
-        .build();
   }
 }

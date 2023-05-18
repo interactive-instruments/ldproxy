@@ -12,10 +12,12 @@ import static de.ii.ogcapi.foundation.domain.ApiEndpointDefinition.SORT_PRIORITY
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
 
@@ -103,19 +105,26 @@ public interface EndpointExtension extends ApiExtension {
         .collect(ImmutableList.toImmutableList());
   }
 
-  default ImmutableList<OgcApiQueryParameter> getQueryParameters(
+  default List<OgcApiQueryParameter> getQueryParameters(
       ExtensionRegistry extensionRegistry, OgcApiDataV2 apiData, String definitionPath) {
     return getQueryParameters(extensionRegistry, apiData, definitionPath, HttpMethods.GET);
   }
 
-  default ImmutableList<OgcApiQueryParameter> getQueryParameters(
+  default List<OgcApiQueryParameter> getQueryParameters(
       ExtensionRegistry extensionRegistry,
       OgcApiDataV2 apiData,
       String definitionPath,
       HttpMethods method) {
-    return extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class).stream()
-        .filter(param -> param.isApplicable(apiData, definitionPath, method))
-        .sorted(Comparator.comparing(ParameterExtension::getName))
+    return Stream.concat(
+            extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class).stream()
+                .filter(param -> param.isApplicable(apiData, definitionPath, method))
+                .sorted(Comparator.comparing(ParameterExtension::getName)),
+            extensionRegistry.getExtensionsForType(RuntimeQueryParametersExtension.class).stream()
+                .map(
+                    extension ->
+                        extension.getRuntimeParameters(
+                            apiData, Optional.empty(), definitionPath, method))
+                .flatMap(Collection::stream))
         .collect(ImmutableList.toImmutableList());
   }
 

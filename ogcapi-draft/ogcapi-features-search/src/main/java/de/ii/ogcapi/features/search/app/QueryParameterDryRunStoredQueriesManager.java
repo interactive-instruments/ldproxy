@@ -11,12 +11,17 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.search.domain.SearchConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.Map;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -29,7 +34,9 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterDryRunStoredQueriesManager extends ApiExtensionCache
-    implements OgcApiQueryParameter {
+    implements OgcApiQueryParameter, TypedQueryParameter<Boolean> {
+
+  // TODO #846
 
   private final Schema<?> schema = new BooleanSchema()._default(false);
   private final SchemaValidator schemaValidator;
@@ -48,6 +55,15 @@ public class QueryParameterDryRunStoredQueriesManager extends ApiExtensionCache
   @Override
   public String getName() {
     return "dry-run";
+  }
+
+  @Override
+  public Boolean parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    return Boolean.parseBoolean(value);
   }
 
   @Override

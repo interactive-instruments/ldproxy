@@ -16,10 +16,14 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.ParameterExtension;
+import de.ii.ogcapi.foundation.domain.RuntimeQueryParametersExtension;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
@@ -53,7 +57,7 @@ public abstract class EndpointSubCollection extends Endpoint {
     }
   }
 
-  public ImmutableList<OgcApiQueryParameter> getQueryParameters(
+  public List<OgcApiQueryParameter> getQueryParameters(
       ExtensionRegistry extensionRegistry,
       OgcApiDataV2 apiData,
       String definitionPath,
@@ -62,7 +66,7 @@ public abstract class EndpointSubCollection extends Endpoint {
         extensionRegistry, apiData, definitionPath, collectionId, HttpMethods.GET);
   }
 
-  public ImmutableList<OgcApiQueryParameter> getQueryParameters(
+  public List<OgcApiQueryParameter> getQueryParameters(
       ExtensionRegistry extensionRegistry,
       OgcApiDataV2 apiData,
       String definitionPath,
@@ -76,9 +80,17 @@ public abstract class EndpointSubCollection extends Endpoint {
       collectionId = representativeCollectionId.get();
     }
     String finalCollectionId = collectionId;
-    return extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class).stream()
-        .filter(param -> param.isApplicable(apiData, definitionPath, finalCollectionId, method))
-        .sorted(Comparator.comparing(ParameterExtension::getName))
+    return Stream.concat(
+            extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class).stream()
+                .filter(
+                    param -> param.isApplicable(apiData, definitionPath, finalCollectionId, method))
+                .sorted(Comparator.comparing(ParameterExtension::getName)),
+            extensionRegistry.getExtensionsForType(RuntimeQueryParametersExtension.class).stream()
+                .map(
+                    extension ->
+                        extension.getRuntimeParameters(
+                            apiData, Optional.of(finalCollectionId), definitionPath, method))
+                .flatMap(Collection::stream))
         .collect(ImmutableList.toImmutableList());
   }
 

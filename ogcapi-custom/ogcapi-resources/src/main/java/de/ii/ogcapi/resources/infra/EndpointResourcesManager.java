@@ -7,8 +7,6 @@
  */
 package de.ii.ogcapi.resources.infra;
 
-import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
-
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -27,18 +25,14 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.resources.app.ResourcesBuildingBlock;
 import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.base.domain.AppContext;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import de.ii.xtraplatform.store.domain.BlobStore;
 import io.dropwizard.auth.Auth;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
@@ -74,27 +68,13 @@ public class EndpointResourcesManager extends Endpoint {
   private static final List<String> TAGS =
       ImmutableList.of("Create, update and delete other resources");
 
-  private final java.nio.file.Path resourcesStore;
+  private final BlobStore resourcesStore;
 
   @Inject
-  public EndpointResourcesManager(AppContext appContext, ExtensionRegistry extensionRegistry) {
+  public EndpointResourcesManager(BlobStore blobStore, ExtensionRegistry extensionRegistry) {
     super(extensionRegistry);
 
-    this.resourcesStore = appContext.getDataDir().resolve(API_RESOURCES_DIR).resolve("resources");
-  }
-
-  @Override
-  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
-    ImmutableValidationResult.Builder builder =
-        ImmutableValidationResult.builder().mode(apiValidation);
-
-    try {
-      Files.createDirectories(resourcesStore);
-    } catch (IOException e) {
-      builder.addErrors();
-    }
-
-    return builder.build();
+    this.resourcesStore = blobStore.with(ResourcesBuildingBlock.STORE_RESOURCE_TYPE);
   }
 
   @Override
@@ -217,7 +197,7 @@ public class EndpointResourcesManager extends Endpoint {
                     MessageFormat.format(
                         "The provided media type ''{0}'' is not supported for this resource.",
                         requestContext.getMediaType())))
-        .putResource(resourcesStore, requestBody, resourceId, api.getData(), requestContext);
+        .putResource(requestBody, resourceId, api.getData(), requestContext);
   }
 
   /**
@@ -233,14 +213,11 @@ public class EndpointResourcesManager extends Endpoint {
       @PathParam("resourceId") String resourceId,
       @Context OgcApi dataset) {
 
-    final String datasetId = dataset.getId();
-    File apiDir = new File(resourcesStore + File.separator + datasetId);
-    if (!apiDir.exists()) {
-      apiDir.mkdirs();
+    try {
+      resourcesStore.delete(java.nio.file.Path.of(dataset.getId(), resourceId));
+    } catch (IOException e) {
+      // ignore
     }
-
-    File resourceFile = new File(apiDir + File.separator + resourceId);
-    if (resourceFile.exists()) resourceFile.delete();
 
     return Response.noContent().build();
   }

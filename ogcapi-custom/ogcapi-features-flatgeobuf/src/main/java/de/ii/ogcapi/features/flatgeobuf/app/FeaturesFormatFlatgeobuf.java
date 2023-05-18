@@ -147,6 +147,7 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
         new FeatureEncoderFlatgeobuf(
             ImmutableEncodingContextFlatgeobuf.builder()
                 .from(transformationContext)
+                .collectionId(collectionId)
                 .schema(schema)
                 .crsTransformer(transformationContext.getCrsTransformer())
                 .is3d(crsInfo.is3d(crs))

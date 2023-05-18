@@ -9,7 +9,6 @@ package de.ii.ogcapi.tiles.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
@@ -21,6 +20,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.api.AbstractEndpointTileSetsMultiCollection;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import java.util.List;
 import javax.inject.Inject;
@@ -43,12 +43,15 @@ public class EndpointTileSetsMultiCollection extends AbstractEndpointTileSetsMul
 
   private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
 
+  private final TilesProviders tilesProviders;
+
   @Inject
   EndpointTileSetsMultiCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
-      FeaturesCoreProviders providers) {
-    super(extensionRegistry, queryHandler, providers);
+      TilesProviders tilesProviders) {
+    super(extensionRegistry, queryHandler, tilesProviders);
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -77,23 +80,12 @@ public class EndpointTileSetsMultiCollection extends AbstractEndpointTileSetsMul
         "tiles",
         ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS,
         "/tiles",
-        apiData
-                .getExtension(TilesConfiguration.class)
-                .map(c -> c.getTileEncodingsDerived().contains("MVT"))
-                .orElse(false)
-            ? "vector"
-            : "map",
+        tilesProviders.getTilesetMetadataOrThrow(apiData).isVector() ? "vector" : "map",
         TAGS);
   }
 
   @GET
   public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext) {
-
-    List<String> tileEncodings =
-        api.getData()
-            .getExtension(TilesConfiguration.class)
-            .map(TilesConfiguration::getTileEncodingsDerived)
-            .orElseThrow(() -> new IllegalStateException("No tile encoding available."));
-    return super.getTileSets(api.getData(), requestContext, "/tiles", false, tileEncodings);
+    return super.getTileSets(api.getData(), requestContext, "/tiles", false);
   }
 }

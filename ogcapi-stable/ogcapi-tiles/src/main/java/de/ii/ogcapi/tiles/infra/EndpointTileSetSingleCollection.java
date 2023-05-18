@@ -9,7 +9,6 @@ package de.ii.ogcapi.tiles.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
@@ -22,6 +21,7 @@ import de.ii.ogcapi.tiles.api.AbstractEndpointTileSetSingleCollection;
 import de.ii.ogcapi.tiles.api.EndpointTileMixin;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import java.util.List;
 import javax.inject.Inject;
@@ -50,8 +50,8 @@ public class EndpointTileSetSingleCollection extends AbstractEndpointTileSetSing
   EndpointTileSetSingleCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
-      FeaturesCoreProviders providers) {
-    super(extensionRegistry, queryHandler, providers);
+      TilesProviders tilesProviders) {
+    super(extensionRegistry, queryHandler, tilesProviders);
   }
 
   @Override

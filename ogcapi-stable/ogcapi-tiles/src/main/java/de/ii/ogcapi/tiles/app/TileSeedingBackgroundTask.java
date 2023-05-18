@@ -14,25 +14,23 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiBackgroundTask;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tiles.domain.SeedingOptions;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.xtraplatform.features.domain.DatasetChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.services.domain.TaskContext;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParameters;
+import de.ii.xtraplatform.tiles.domain.SeedingOptions;
 import de.ii.xtraplatform.tiles.domain.TileGenerationParameters;
 import de.ii.xtraplatform.tiles.domain.TileProvider;
+import de.ii.xtraplatform.tiles.domain.TileSeeding;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,15 +75,17 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
       return false;
     }
     // no vector tiles support for WFS backends
-    if (!providers
-        .getFeatureProvider(apiData)
-        .map(FeatureProvider2::supportsHighLoad)
-        .orElse(false)) {
+    if (!tilesProviders.getTileProvider(apiData).map(TileProvider::supportsSeeding).orElse(false)) {
       return false;
     }
 
     // no formats available
     if (extensionRegistry.getExtensionsForType(TileFormatExtension.class).isEmpty()) {
+      return false;
+    }
+
+    // check that we have a tile provider
+    if (tilesProviders.getTileProvider(apiData).isEmpty()) {
       return false;
     }
 
@@ -126,11 +126,12 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
   @Override
   public boolean runOnStart(OgcApi api) {
     return isEnabledForApi(api.getData())
-        && api.getData()
-            .getExtension(TilesConfiguration.class)
-            .flatMap(TilesConfiguration::getSeedingOptionsDerived)
-            .filter(seedingOptions -> !seedingOptions.shouldRunOnStartup())
-            .isEmpty();
+        && tilesProviders
+            .getTileProvider(api.getData())
+            .map(TileProvider::seeding)
+            .map(TileSeeding::getOptions)
+            .filter(SeedingOptions::shouldRunOnStartup)
+            .isPresent();
   }
 
   @Override
@@ -138,17 +139,19 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
     if (!isEnabledForApi(api.getData())) {
       return Optional.empty();
     }
-    return api.getData()
-        .getExtension(TilesConfiguration.class)
-        .flatMap(TilesConfiguration::getSeedingOptionsDerived)
+    return tilesProviders
+        .getTileProvider(api.getData())
+        .map(TileProvider::seeding)
+        .map(TileSeeding::getOptions)
         .flatMap(SeedingOptions::getCronExpression);
   }
 
   @Override
   public int getMaxPartials(OgcApi api) {
-    return api.getData()
-        .getExtension(TilesConfiguration.class)
-        .flatMap(TilesConfiguration::getSeedingOptionsDerived)
+    return tilesProviders
+        .getTileProvider(api.getData())
+        .map(TileProvider::seeding)
+        .map(TileSeeding::getOptions)
         .map(SeedingOptions::getEffectiveMaxThreads)
         .orElse(1);
   }
@@ -159,9 +162,10 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
   }
 
   private boolean shouldPurge(OgcApi api) {
-    return api.getData()
-        .getExtension(TilesConfiguration.class)
-        .flatMap(TilesConfiguration::getSeedingOptionsDerived)
+    return tilesProviders
+        .getTileProvider(api.getData())
+        .map(TileProvider::seeding)
+        .map(TileSeeding::getOptions)
         .filter(SeedingOptions::shouldPurge)
         .isPresent();
   }
@@ -180,7 +184,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
 
     try {
       if (!taskContext.isStopped()) {
-        seedLayers(api, outputFormats, reseed, taskContext);
+        seedTilesets(api, outputFormats, reseed, taskContext);
       }
 
     } catch (IOException e) {
@@ -199,13 +203,11 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
     }
   }
 
-  private void seedLayers(
+  private void seedTilesets(
       OgcApi api, List<TileFormatExtension> outputFormats, boolean reseed, TaskContext taskContext)
       throws IOException {
     OgcApiDataV2 apiData = api.getData();
 
-    // TODO: isEnabled should check that we have a tile provider
-    // TODO: different tile provider per collection
     TileProvider tileProvider = tilesProviders.getTileProviderOrThrow(apiData);
 
     if (!tileProvider.supportsSeeding()) {
@@ -219,28 +221,33 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
             .map(format -> format.getMediaType().type())
             .collect(Collectors.toList());
 
-    Map<String, TileGenerationParameters> layers = new LinkedHashMap<>();
+    Map<String, TileGenerationParameters> tilesets = new LinkedHashMap<>();
 
     for (String collectionId : apiData.getCollections().keySet()) {
       Optional<TilesConfiguration> tilesConfiguration =
           getTilesConfiguration(api.getData(), collectionId);
 
       if (tilesConfiguration.isPresent()) {
-        TileGenerationParameters generationParameters =
-            new ImmutableTileGenerationParameters.Builder()
-                .clipBoundingBox(api.getSpatialExtent(collectionId))
-                .propertyTransformations(
-                    api.getData()
-                        .getCollectionData(collectionId)
-                        .flatMap(cd -> cd.getExtension(FeaturesCoreConfiguration.class))
-                        .map(
-                            pt ->
-                                pt.withSubstitutions(
-                                    FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
-                                        api.getUri().toString()))))
-                .build();
+        String tileset =
+            tilesConfiguration.map(TilesConfiguration::getTileProviderTileset).orElse(collectionId);
+        if (!tilesets.containsKey(tileset)) {
 
-        layers.put(collectionId, generationParameters);
+          TileGenerationParameters generationParameters =
+              new ImmutableTileGenerationParameters.Builder()
+                  .clipBoundingBox(api.getSpatialExtent(collectionId))
+                  .propertyTransformations(
+                      api.getData()
+                          .getCollectionData(collectionId)
+                          .flatMap(cd -> cd.getExtension(FeaturesCoreConfiguration.class))
+                          .map(
+                              pt ->
+                                  pt.withSubstitutions(
+                                      FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
+                                          api.getUri().toString()))))
+                  .build();
+
+          tilesets.put(tileset, generationParameters);
+        }
       }
     }
 
@@ -248,29 +255,33 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
         apiData.getExtension(TilesConfiguration.class).filter(TilesConfiguration::hasDatasetTiles);
 
     if (tilesConfiguration.isPresent()) {
-      TileGenerationParameters generationParameters =
-          new ImmutableTileGenerationParameters.Builder()
-              .clipBoundingBox(api.getSpatialExtent())
-              .propertyTransformations(
-                  api.getData()
-                      .getExtension(FeaturesCoreConfiguration.class)
-                      .map(
-                          pt ->
-                              pt.withSubstitutions(
-                                  FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
-                                      api.getUri().toString()))))
-              .build();
+      String tileset =
+          tilesConfiguration.map(TilesConfiguration::getTileProviderTileset).orElse(DATASET_TILES);
+      if (!tilesets.containsKey(tileset)) {
+        TileGenerationParameters generationParameters =
+            new ImmutableTileGenerationParameters.Builder()
+                .clipBoundingBox(api.getSpatialExtent())
+                .propertyTransformations(
+                    api.getData()
+                        .getExtension(FeaturesCoreConfiguration.class)
+                        .map(
+                            pt ->
+                                pt.withSubstitutions(
+                                    FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
+                                        api.getUri().toString()))))
+                .build();
 
-      layers.put(DATASET_TILES, generationParameters);
+        tilesets.put(tileset, generationParameters);
+      }
     }
 
-    tileProvider.seeding().seed(layers, formats, reseed, taskContext);
+    tileProvider.seeding().seed(tilesets, formats, reseed, taskContext);
   }
 
   private DatasetChangeListener onDatasetChange(OgcApi api) {
     return change -> {
       for (String featureType : change.getFeatureTypes()) {
-        String collectionId = getCollectionId(api.getData().getCollections().values(), featureType);
+        String collectionId = FeaturesCoreConfiguration.getCollectionId(api.getData(), featureType);
 
         try {
           tilesProviders.deleteTiles(
@@ -292,7 +303,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
   private FeatureChangeListener onFeatureChange(OgcApi api) {
     return change -> {
       String collectionId =
-          getCollectionId(api.getData().getCollections().values(), change.getFeatureType());
+          FeaturesCoreConfiguration.getCollectionId(api.getData(), change.getFeatureType());
       switch (change.getAction()) {
         case CREATE:
         case UPDATE:
@@ -321,22 +332,6 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
           break;
       }
     };
-  }
-
-  // TODO centralize
-  private String getCollectionId(
-      Collection<FeatureTypeConfigurationOgcApi> collections, String featureType) {
-    return collections.stream()
-        .map(
-            collection ->
-                collection
-                    .getExtension(FeaturesCoreConfiguration.class)
-                    .flatMap(FeaturesCoreConfiguration::getFeatureType))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .filter(ft -> Objects.equals(ft, featureType))
-        .findFirst()
-        .orElse(featureType);
   }
 
   private Optional<TilesConfiguration> getTilesConfiguration(

@@ -8,17 +8,14 @@
 package de.ii.ogcapi.features.core.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
-import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeatures.Builder;
-import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -29,8 +26,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.ParameterExtension;
-import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
@@ -44,7 +40,6 @@ import io.dropwizard.auth.Auth;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -88,10 +83,8 @@ public class EndpointFeatures extends EndpointFeaturesDefinition {
       FeaturesCoreProviders providers,
       FeaturesQuery ogcApiFeaturesQuery,
       FeaturesCoreQueriesHandler queryHandler,
-      FeaturesCoreValidation featuresCoreValidator,
-      SchemaGeneratorOpenApi schemaGeneratorFeature,
-      SchemaValidator schemaValidator) {
-    super(extensionRegistry, schemaGeneratorFeature, providers, schemaValidator);
+      FeaturesCoreValidation featuresCoreValidator) {
+    super(extensionRegistry, providers);
     this.entityRegistry = entityRegistry;
     this.ogcApiFeaturesQuery = ogcApiFeaturesQuery;
     this.queryHandler = queryHandler;
@@ -165,31 +158,6 @@ public class EndpointFeatures extends EndpointFeaturesDefinition {
       }
     }
 
-    transformationKeys =
-        coreConfigs.entrySet().stream()
-            .map(
-                entry ->
-                    new AbstractMap.SimpleImmutableEntry<>(
-                        entry.getKey(),
-                        entry
-                            .getValue()
-                            .getQueryables()
-                            .orElse(FeaturesCollectionQueryables.of())
-                            .getAll()))
-            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-
-    for (Map.Entry<String, Collection<String>> stringCollectionEntry :
-        featuresCoreValidator
-            .getInvalidPropertyKeys(transformationKeys, featureSchemas)
-            .entrySet()) {
-      for (String property : stringCollectionEntry.getValue()) {
-        builder.addStrictErrors(
-            MessageFormat.format(
-                "A queryable ''{0}'' in collection ''{1}'' is invalid, because the property was not found in the provider schema.",
-                property, stringCollectionEntry.getKey()));
-      }
-    }
-
     for (Map.Entry<String, FeaturesCoreConfiguration> entry : coreConfigs.entrySet()) {
       String collectionId = entry.getKey();
       FeaturesCoreConfiguration config = entry.getValue();
@@ -243,15 +211,10 @@ public class EndpointFeatures extends EndpointFeaturesDefinition {
         new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("collections")
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_FEATURES);
-    ImmutableList<OgcApiQueryParameter> allQueryParameters =
-        extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class).stream()
-            .sorted(Comparator.comparing(ParameterExtension::getName))
-            .collect(ImmutableList.toImmutableList());
 
     generateDefinition(
         apiData,
         definitionBuilder,
-        allQueryParameters,
         "/items",
         "retrieve features in the feature collection '",
         "The response is a document consisting of features in the collection. "
@@ -298,25 +261,24 @@ public class EndpointFeatures extends EndpointFeaturesDefinition {
                             "Features are not supported in API ''{0}'', collection ''{1}''.",
                             api.getId(), collectionId)));
 
-    int minimumPageSize = coreConfiguration.getMinimumPageSize();
     int defaultPageSize = coreConfiguration.getDefaultPageSize();
-    int maxPageSize = coreConfiguration.getMaximumPageSize();
     boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
 
-    List<OgcApiQueryParameter> allowedParameters =
+    List<OgcApiQueryParameter> parameterDefinitions =
         getQueryParameters(
             extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
+    QueryParameterSet queryParameterSet =
+        QueryParameterSet.of(parameterDefinitions, toFlatMap(uriInfo.getQueryParameters()))
+            .evaluate(api, Optional.of(collectionData));
+
     FeatureQuery query =
         ogcApiFeaturesQuery.requestToFeatureQuery(
-            api,
+            api.getData(),
             collectionData,
             coreConfiguration.getDefaultEpsgCrs(),
             coreConfiguration.getCoordinatePrecision(),
-            minimumPageSize,
             defaultPageSize,
-            maxPageSize,
-            toFlatMap(uriInfo.getQueryParameters()),
-            allowedParameters);
+            queryParameterSet);
     FeaturesCoreQueriesHandler.QueryInputFeatures queryInput =
         new Builder()
             .from(getGenericQueryInput(api.getData()))

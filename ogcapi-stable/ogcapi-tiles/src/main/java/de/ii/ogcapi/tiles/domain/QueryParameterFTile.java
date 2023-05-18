@@ -12,13 +12,7 @@ import de.ii.ogcapi.common.domain.QueryParameterF;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-import io.swagger.v3.oas.models.media.Schema;
-import io.swagger.v3.oas.models.media.StringSchema;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -60,40 +54,5 @@ public class QueryParameterFTile extends QueryParameterF {
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return TilesConfiguration.class;
-  }
-
-  // TODO: remove the getSchema methods again, this is a temporary solution/hack to remove any
-  // MapTile formats
-
-  @Override
-  public Schema getSchema(OgcApiDataV2 apiData) {
-    int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
-    if (!schemaMap.get(apiHashCode).containsKey("*")) {
-      List<String> fEnum = new ArrayList<>();
-      extensionRegistry.getExtensionsForType(getFormatClass()).stream()
-          .filter(f -> !f.getClass().getSimpleName().startsWith("Map")) // TODO
-          .filter(f -> f.isEnabledForApi(apiData))
-          .filter(f -> !f.getMediaType().parameter().equals("*"))
-          .forEach(f -> fEnum.add(f.getMediaType().parameter()));
-      schemaMap.get(apiHashCode).put("*", new StringSchema()._enum(fEnum));
-    }
-    return schemaMap.get(apiHashCode).get("*");
-  }
-
-  @Override
-  public Schema getSchema(OgcApiDataV2 apiData, String collectionId) {
-    int apiHashCode = apiData.hashCode();
-    if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
-    if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
-      List<String> fEnum = new ArrayList<>();
-      extensionRegistry.getExtensionsForType(getFormatClass()).stream()
-          .filter(f -> !f.getClass().getSimpleName().startsWith("Map")) // TODO
-          .filter(f -> f.isEnabledForApi(apiData, collectionId))
-          .filter(f -> !f.getMediaType().parameter().equals("*"))
-          .forEach(f -> fEnum.add(f.getMediaType().parameter()));
-      schemaMap.get(apiHashCode).put(collectionId, new StringSchema()._enum(fEnum));
-    }
-    return schemaMap.get(apiHashCode).get(collectionId);
   }
 }

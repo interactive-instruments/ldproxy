@@ -9,18 +9,15 @@ package de.ii.ogcapi.tiles3d.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
-import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiBackgroundTask;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
-import de.ii.ogcapi.tiles.domain.SeedingOptions;
 import de.ii.ogcapi.tiles3d.domain.Availability;
 import de.ii.ogcapi.tiles3d.domain.ImmutableQueryInputSubtree;
 import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles.QueryInputSubtree;
@@ -35,6 +32,7 @@ import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.services.domain.TaskContext;
+import de.ii.xtraplatform.tiles.domain.SeedingOptions;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -69,7 +67,6 @@ public class Seeding implements OgcApiBackgroundTask {
   private final FeaturesCoreProviders providers;
   private final FeaturesCoreQueriesHandler queryHandlerFeatures;
   private final Cql cql;
-  private final FeaturesQuery featuresQuery;
 
   @Inject
   public Seeding(
@@ -77,14 +74,12 @@ public class Seeding implements OgcApiBackgroundTask {
       ServicesContext servicesContext,
       FeaturesCoreProviders providers,
       FeaturesCoreQueriesHandler queryHandlerFeatures,
-      Cql cql,
-      FeaturesQuery featuresQuery) {
+      Cql cql) {
     this.tileResourcesCache = tileResourcesCache;
     this.servicesUri = servicesContext.getUri();
     this.providers = providers;
     this.queryHandlerFeatures = queryHandlerFeatures;
     this.cql = cql;
-    this.featuresQuery = featuresQuery;
   }
 
   @Override
@@ -612,7 +607,7 @@ public class Seeding implements OgcApiBackgroundTask {
                 cql,
                 cfg,
                 content,
-                content.getQuery(featuresQuery),
+                content.getQuery(providers),
                 new URICustomizer(
                     String.format(
                         "%s/collections/%s/3dtiles/content_%d_%d_%d",
@@ -625,31 +620,23 @@ public class Seeding implements OgcApiBackgroundTask {
 
         if (Objects.nonNull(response.getEntity())) {
           try {
-            Files.write((byte[]) response.getEntity(), tileResourcesCache.getFile(content));
+            tileResourcesCache.storeTileResource(content, (byte[]) response.getEntity());
           } catch (IOException e) {
-            if (LOGGER.isErrorEnabled()) {
-              LOGGER.error(
-                  "Could not write feature response to file: {}",
-                  tileResourcesCache.getFile(content),
-                  e);
-            }
+            LogContext.error(
+                LOGGER, e, "Could not write feature response to resource '{}'", tileResourcesCache);
           }
         }
       }
     } catch (Exception e) {
-      if (LOGGER.isWarnEnabled()) {
-        LOGGER.warn(
-            "{}: writing content failed -> {}, {}/{}/{} | {}",
-            getLabel(),
-            content.getCollectionId(),
-            content.getLevel(),
-            content.getX(),
-            content.getY(),
-            e.getMessage());
-        if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
-          LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
-        }
-      }
+      LogContext.errorAsWarn(
+          LOGGER,
+          e,
+          "{}: writing content failed -> {}, {}/{}/{}",
+          getLabel(),
+          content.getCollectionId(),
+          content.getLevel(),
+          content.getX(),
+          content.getY());
     }
   }
 

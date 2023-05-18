@@ -8,20 +8,23 @@
 package de.ii.ogcapi.crud.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
+import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.EnumSchema;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-import de.ii.xtraplatform.features.domain.FeatureSchemaBase;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
+import de.ii.xtraplatform.features.domain.FeatureSchemaBase.Scope;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -38,7 +41,9 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterSchemaFeatures extends ApiExtensionCache
-    implements OgcApiQueryParameter, FeatureQueryTransformer {
+    implements OgcApiQueryParameter, FeatureQueryParameter, TypedQueryParameter<Scope> {
+
+  private static final Schema<?> SCHEMA = new EnumSchema("receivables").example("receivables");
 
   private final SchemaValidator schemaValidator;
 
@@ -50,6 +55,27 @@ public class QueryParameterSchemaFeatures extends ApiExtensionCache
   @Override
   public String getName() {
     return "schema";
+  }
+
+  @Override
+  public Scope parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    if ("receivables".equals(value)) {
+      return Scope.MUTATIONS;
+    }
+    return null;
+  }
+
+  @Override
+  public void applyTo(
+      Builder queryBuilder,
+      QueryParameterSet parameters,
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData) {
+    parameters.getValue(this).ifPresent(queryBuilder::schemaScope);
   }
 
   @Override
@@ -68,16 +94,14 @@ public class QueryParameterSchemaFeatures extends ApiExtensionCache
                     || definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
   }
 
-  private final Schema<?> schema = new EnumSchema("receivables").example("receivables");
-
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {
-    return schema;
+    return SCHEMA;
   }
 
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId) {
-    return schema;
+    return SCHEMA;
   }
 
   @Override
@@ -88,28 +112,5 @@ public class QueryParameterSchemaFeatures extends ApiExtensionCache
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return CrudConfiguration.class;
-  }
-
-  @Override
-  public ImmutableFeatureQuery.Builder transformQuery(
-      ImmutableFeatureQuery.Builder queryBuilder,
-      Map<String, String> parameters,
-      OgcApiDataV2 datasetData,
-      FeatureTypeConfigurationOgcApi featureTypeConfiguration) {
-    if (!isExtensionEnabled(
-        datasetData.getCollections().get(featureTypeConfiguration.getId()),
-        CrudConfiguration.class)) {
-      return queryBuilder;
-    }
-    if (parameters.containsKey(getName())
-        && Objects.equals(parameters.get(getName()), "receivables")) {
-      try {
-        queryBuilder.schemaScope(FeatureSchemaBase.Scope.MUTATIONS);
-      } catch (NumberFormatException e) {
-        // ignore
-      }
-    }
-
-    return queryBuilder;
   }
 }

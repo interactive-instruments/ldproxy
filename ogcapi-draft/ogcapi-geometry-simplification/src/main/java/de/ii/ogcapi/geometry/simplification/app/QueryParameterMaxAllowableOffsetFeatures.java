@@ -8,19 +8,23 @@
 package de.ii.ogcapi.geometry.simplification.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.features.core.domain.FeatureQueryTransformer;
+import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -43,7 +47,7 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache
-    implements OgcApiQueryParameter, FeatureQueryTransformer {
+    implements OgcApiQueryParameter, FeatureQueryParameter, TypedQueryParameter<Double> {
 
   private final SchemaValidator schemaValidator;
 
@@ -55,6 +59,32 @@ public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache
   @Override
   public String getName() {
     return "maxAllowableOffset";
+  }
+
+  @Override
+  public Double parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    try {
+      return Double.parseDouble(value);
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Invalid value for query parameter '%s'. The value must be a number. Found: %s.",
+              getName(), value),
+          e);
+    }
+  }
+
+  @Override
+  public void applyTo(
+      Builder queryBuilder,
+      QueryParameterSet parameters,
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData) {
+    parameters.getValue(this).ifPresent(queryBuilder::maxAllowableOffset);
   }
 
   @Override
@@ -94,27 +124,5 @@ public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return GeometrySimplificationConfiguration.class;
-  }
-
-  @Override
-  public ImmutableFeatureQuery.Builder transformQuery(
-      ImmutableFeatureQuery.Builder queryBuilder,
-      Map<String, String> parameters,
-      OgcApiDataV2 datasetData,
-      FeatureTypeConfigurationOgcApi featureTypeConfiguration) {
-    if (!isExtensionEnabled(
-        datasetData.getCollections().get(featureTypeConfiguration.getId()),
-        GeometrySimplificationConfiguration.class)) {
-      return queryBuilder;
-    }
-    if (parameters.containsKey("maxAllowableOffset")) {
-      try {
-        queryBuilder.maxAllowableOffset(Double.valueOf(parameters.get("maxAllowableOffset")));
-      } catch (NumberFormatException e) {
-        // ignore
-      }
-    }
-
-    return queryBuilder;
   }
 }

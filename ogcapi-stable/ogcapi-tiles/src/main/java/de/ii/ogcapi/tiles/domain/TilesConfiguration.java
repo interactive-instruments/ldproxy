@@ -20,6 +20,8 @@ import com.google.common.collect.Maps;
 import de.ii.ogcapi.features.core.domain.SfFlatConfiguration;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -27,6 +29,7 @@ import de.ii.xtraplatform.tiles.domain.ImmutableMinMax;
 import de.ii.xtraplatform.tiles.domain.LevelFilter;
 import de.ii.xtraplatform.tiles.domain.LevelTransformation;
 import de.ii.xtraplatform.tiles.domain.MinMax;
+import de.ii.xtraplatform.tiles.domain.SeedingOptions;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -55,49 +58,21 @@ import org.immutables.value.Value;
  *     oder Regeln neu aufgebaut wird.
  * @examplesEn Example of the specifications in the configuration file from the API for [Vineyards
  *     in Rhineland-Palatinate](https://demo.ldproxy.net/vineyards).
- *     <p>At API level:
+ *     <p>At API level (since there is only a single feature type, the dataset tileset is the same
+ *     as the tileset of the single collection):
  *     <p><code>
  * ```yaml
  * - buildingBlock: TILES
  *   enabled: true
- *   zoomLevels:
- *     WebMercatorQuad:
- *       min: 5
- *       max: 16
- *       default: 8
- *   seedingOptions:
- *     maxThreads: 1
+ *   tileProviderTileset: vineyards
  * ```
  *     </code>
- *     <p>For the vineyard features (aggregation of adjacent features up to zoom level 9):
+ *     <p>The tile provider, includes configuration for caches (two caches,
+ *     an immutable cache up to level 12 and an unseeded dynamic cache for the other levels)
+ *     adjacent features are aggregated up to zoom level 9:
  *     <p><code>
  * ```yaml
- *     - buildingBlock: TILES
- *       rules:
- *         WebMercatorQuad:
- *         - min: 5
- *           max: 7
- *           merge: true
- *           groupBy:
- *           - region
- *         - min: 8
- *           max: 8
- *           merge: true
- *           groupBy:
- *           - region
- *           - subregion
- *         - min: 9
- *           max: 9
- *           merge: true
- *           groupBy:
- *           - region
- *           - subregion
- *           - cluster
- * ```
- *     </code>
- *     <p>The tile provider, includes configuration for caches and seeding:
- *     <p><code>
- * ```yaml
+ * ---
  * id: vineyards-tiles
  * providerType: TILE
  * providerSubType: FEATURES
@@ -107,43 +82,62 @@ import org.immutables.value.Value;
  *   levels:
  *     WebMercatorQuad:
  *       min: 5
- *       max: 11
+ *       max: 12
  * - type: DYNAMIC
  *   storage: MBTILES
  *   seeded: false
  *   levels:
  *     WebMercatorQuad:
- *       min: 12
- *       max: 16
- * layerDefaults:
- *   levels:
- *     WebMercatorQuad:
- *       min: 5
- *       max: 16
- * layers:
- *   __all__:
- *     id: __all__
- *     combine: ['*']
+ *       min: 13
+ *       max: 18
+ * tilesets:
  *   vineyards:
  *     id: vineyards
+ *     levels:
+ *       WebMercatorQuad:
+ *         min: 5
+ *         max: 18
+ *     transformations:
+ *       WebMercatorQuad:
+ *       - min: 5
+ *         max: 7
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *       - min: 8
+ *         max: 8
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *       - min: 9
+ *         max: 9
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *         - cluster
  * ```
  *     </code>
- *     <p>Seeding example (no seeding at startup, rebuilding the cache every hour):
+ *     <p>Seeding example (no seeding at startup, rebuilding the cache every hour) in a Features
+ *     tile provider:
  *     <p><code>
  * ```yaml
- * - buildingBlock: TILES
- *   seedingOptions:
- *     runOnStartup: false
- *     runPeriodic: '0 * * * *'
- *     purge: true
+ * providerType: TILE
+ * providerSubType: FEATURES
+ * seeding:
+ *   runOnStartup: false
+ *   runPeriodic: '0 * * * *'
+ *   purge: true
  * ```
  *     </code>
  *     <p>Example of using four threads for seeding:
  *     <p><code>
  * ```yaml
- * - buildingBlock: TILES
- *   seedingOptions:
- *     maxThreads: 4
+ * providerType: TILE
+ * providerSubType: FEATURES
+ * seeding:
+ *   maxThreads: 4
  * ```
  *     </code>
  *     <p>For this, at least 4 threads must be configured for background processes in the global
@@ -160,67 +154,51 @@ import org.immutables.value.Value;
  *     <p>If `maxThreads` in the seeding options is greater than 1, it means that the seeding will
  *     be split into n parts, where n is the number of threads available when the seeding starts,
  *     bounded by `seedingOptions.maxThreads`.
- *     <p>So, for example, setting `seedingOptions.maxThreads` to 2 with the specified `cfg.yml`
+ *     <p>So, for example, setting `seeding.maxThreads` to 2 with the specified `cfg.yml`
  *     will split the seeding into 2 parts if at least 2 of the 4 threads are available. If 3
  *     threads are used by other services, it will not be split. And if all 4 threads are busy, it
  *     will wait until at least 1 thread becomes available.
- *     <p>Example configuration (from the API [Earth at
- *     Night](https://demo.ldproxy.net/earthatnight)):
+ *     <p>Example of the specifications in the configuration file from the API [Earth at
+ *     Night](https://demo.ldproxy.net/earthatnight), which has an MBTiles tile provider..
+ *     <p>At API level, only the TILES building block needs to be enabled and the tileset in the
+ *     tile provider is referenced:
  *     <p><code>
  * ```yaml
  * - buildingBlock: TILES
  *   enabled: true
- *   tileProvider:
- *     type: MBTILES
- *     filename: dnb_land_ocean_ice.2012.54000x27000_geo.mbtiles
+ *   tileProviderTileset: earthatnight
+ * ```
+ *     </code>
+ *     <p>The tile provider defines a single tileset and references the MBTiles file:
+ *     <p><code>
+ * ```yaml
+ * ---
+ * id: earthatnight-tiles
+ * providerType: TILE
+ * providerSubType: MBTILES
+ * tilesets:
+ *   earthatnight:
+ *     id: earthatnight
+ *     source: earthatnight/dnb_land_ocean_ice.2012.54000x27000_geo.mbtiles
  * ```
  *     </code>
  * @examplesDe Beispiel für die Angaben in der Konfigurationsdatei aus der API für [Weinlagen in
  *     Rheinland-Pfalz](https://demo.ldproxy.net/vineyards).
- *     <p>Auf API-Ebene:
+ *     <p>Auf API-Ebene (da es nur eine einzige Objektart gibt, ist das Tileset des Datensatzes
+ *     dasselbe wie das Tileset der einzigen Collection):
  *     <p><code>
  * ```yaml
  * - buildingBlock: TILES
  *   enabled: true
- *   zoomLevels:
- *     WebMercatorQuad:
- *       min: 5
- *       max: 16
- *       default: 8
- *   seedingOptions:
- *     maxThreads: 1
+ *   tileProviderTileset: vineyards
  * ```
  *     </code>
- *     <p>Für die Weinlagen-Objekte (Aggregation von aneinander angrenzenden Objekten bis Zoomstufe
- *     9):
+ *     <p>Der Tile Provider, mit der Konfiguration für Caches (zwei Caches, ein unveränderlicher
+ *     Cache bis zur Ebene 12 und ein dynamischer Cache ohne Seeding für die anderen Ebenen).
+ *     Angrenzende Features werden bis zur Zoomstufe 9 zusammengefasst:
  *     <p><code>
  * ```yaml
- *     - buildingBlock: TILES
- *       rules:
- *         WebMercatorQuad:
- *         - min: 5
- *           max: 7
- *           merge: true
- *           groupBy:
- *           - region
- *         - min: 8
- *           max: 8
- *           merge: true
- *           groupBy:
- *           - region
- *           - subregion
- *         - min: 9
- *           max: 9
- *           merge: true
- *           groupBy:
- *           - region
- *           - subregion
- *           - cluster
- * ```
- *     </code>
- *     <p>Der Tile Provider, mit der Konfiguration für Caches und das Seeding von Kacheln:
- *     <p><code>
- * ```yaml
+ * ---
  * id: vineyards-tiles
  * providerType: TILE
  * providerSubType: FEATURES
@@ -230,43 +208,62 @@ import org.immutables.value.Value;
  *   levels:
  *     WebMercatorQuad:
  *       min: 5
- *       max: 11
+ *       max: 12
  * - type: DYNAMIC
  *   storage: MBTILES
  *   seeded: false
  *   levels:
  *     WebMercatorQuad:
- *       min: 12
- *       max: 16
- * layerDefaults:
- *   levels:
- *     WebMercatorQuad:
- *       min: 5
- *       max: 16
- * layers:
- *   __all__:
- *     id: __all__
- *     combine: ['*']
+ *       min: 13
+ *       max: 18
+ * tilesets:
  *   vineyards:
  *     id: vineyards
+ *     levels:
+ *       WebMercatorQuad:
+ *         min: 5
+ *         max: 18
+ *     transformations:
+ *       WebMercatorQuad:
+ *       - min: 5
+ *         max: 7
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *       - min: 8
+ *         max: 8
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *       - min: 9
+ *         max: 9
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *         - cluster
  * ```
  *     </code>
- *     <p>Seeding-Beispiel (kein Seeding beim Start, Neuaufbau des Cache zu jeder Stunde)
+ *     <p>Seeding-Beispiel (kein Seeding beim Start, Neuaufbau des Cache zu jeder Stunde) im
+ *     Features-Tile-Provider:
  *     <p><code>
  * ```yaml
- * - buildingBlock: TILES
- *   seedingOptions:
- *     runOnStartup: false
- *     runPeriodic: '0 * * * *'
- *     purge: true
+ * providerType: TILE
+ * providerSubType: FEATURES
+ * seeding:
+ *   runOnStartup: false
+ *   runPeriodic: '0 * * * *'
+ *   purge: true
  * ```
  *     </code>
  *     <p>Beispiel für die Verwendung von mehreren Threads für das Seeding:
  *     <p><code>
  * ```yaml
- * - buildingBlock: TILES
- *   seedingOptions:
- *     maxThreads: 4
+ * providerType: TILE
+ * providerSubType: FEATURES
+ * seeding:
+ *   maxThreads: 4
  * ```
  *     </code>
  *     <p>Hierfür müssen in der globalen Konfiguration (`cfg.yml`) mindestens 4 Threads für Hintergrundprozesse
@@ -282,7 +279,7 @@ import org.immutables.value.Value;
  *     für 4 APIs ermöglichen.
  *     <p>Wenn `maxThreads` in den Seeding-Optionen größer als 1 ist, bedeutet das, dass das Seeding
  *     in n Teile geteilt wird, wobei n die Anzahl der verfügbaren Threads ist, wenn das Seeding
- *     beginnt, begrenzt durch `seedingOptions.maxThreads`.
+ *     beginnt, begrenzt durch `seeding.maxThreads`.
  *     <p>Wenn man also zum Beispiel `seedingOptions.maxThreads` mit der angegebenen `cfg.yml` auf 2
  *     setzt, wird das Seeding in 2 Teile aufgeteilt, wenn mindestens 2 der 4 Threads verfügbar
  *     sind. Wenn 3 Threads von anderen Diensten benutzt werden, wird es nicht aufgeteilt. Und wenn
@@ -297,6 +294,30 @@ import org.immutables.value.Value;
  *     type: MBTILES
  *     filename: dnb_land_ocean_ice.2012.54000x27000_geo.mbtiles
  * ```
+ *     <p>Beispielkonfiguration für die API [Earth at Night](https://demo.ldproxy.net/earthatnight),
+ *     die einen MBTiles-Tile-Provider hat.
+ *     <p>In der API muss das TILES-Modul aktiviert werden und das Tileset im Provider referenziert
+ *     werden:
+ *     <p><code>
+ * ```yaml
+ * - buildingBlock: TILES
+ *   enabled: true
+ *   tileProviderTileset: earthatnight
+ * ```
+ *     </code>
+ *     <p>Der Tile-Provider definiert ein einziges Tileset und referenziert die MBTiles-Datei:
+ *     <p><code>
+ * ```yaml
+ * ---
+ * id: earthatnight-tiles
+ * providerType: TILE
+ * providerSubType: MBTILES
+ * tilesets:
+ *   earthatnight:
+ *     id: earthatnight
+ *     source: earthatnight/dnb_land_ocean_ice.2012.54000x27000_geo.mbtiles
+ * ```
+ *     </code>
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
@@ -314,8 +335,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
    * @langEn *Deprecated (from v4.0 on you have to use [Tile
    *     Provider](../../providers/tile/README.md) entities)* Specifies the data source for the
    *     tiles, see [Tile provider objects](#tile-provider).
-   * @langDe *Deprecated (von v4.0 an müssen [Tile-Provider](../../providers/tile/README.md)
-   *     Entities verwendet werden )* Spezifiziert die Datenquelle für die Kacheln, siehe
+   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
+   *     verwendet werden)* Spezifiziert die Datenquelle für die Kacheln, siehe
    *     [Tile-Provider-Objekte](#tile-provider).
    * @default { "type": "FEATURES", ... }
    */
@@ -336,13 +357,16 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   String getTileProviderId();
 
   /**
-   * @langEn Specifies the tile provider layer.
-   * @langDe Spezifiziert den Tile-Provider Layer.
-   * @default {collectionId}
+   * @langEn Specifies the tileset from the tile provider that should be used. The default is
+   *     `__all__` for dataset tiles and `{collectionId}` for collection tiles.
+   * @langDe Spezifiziert das Tileset vom Tile-Provider das verwendet werden soll. Der Default ist
+   *     `__all__` für Dataset Tiles und `{collectionId}` für Collection Tiles.
+   * @default __all__ \| {collectionId}
    * @since v3.3
    */
+  @JsonAlias("tileLayer")
   @Nullable
-  String getTileLayer();
+  String getTileProviderTileset();
 
   /**
    * @langEn Controls which formats are supported for the tileset resources. Available are [OGC
@@ -357,9 +381,12 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   List<String> getTileSetEncodings();
 
   /**
-   * @langEn *Deprecated* `FILES` stores each tile as a file in the file system. `MBTILES` stores
-   *     the tiles in an MBTiles file (one MBTiles file per tileset).
-   * @langDe *Deprecated* `FILES` speichert jede Kachel als Datei im Dateisystem. `MBTILES`
+   * @langEn *Deprecated (from v4.0 on you have to use [Tile
+   *     Provider](../../providers/tile/README.md) entities) `FILES` stores each tile as a file in
+   *     the file system. `MBTILES` stores the tiles in an MBTiles file (one MBTiles file per
+   *     tileset).
+   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
+   *     verwendet werden) `FILES` speichert jede Kachel als Datei im Dateisystem. `MBTILES`
    *     speichert die Kacheln in einer MBTiles-Datei (eine MBTiles-Datei pro Tileset).
    * @default FILES
    */
@@ -417,20 +444,24 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   Boolean getRemoveZoomLevelConstraints();
 
   /**
-   * @langEn List of tile formats to be supported, in general `MVT` (Mapbox Vector Tiles), `PNG`,
-   *     `WebP` and `JPEG` are allowed. The actually supported formats depend on the [Tile
-   *     Provider](../../providers/tile/README.md).
-   * @langDe Liste der zu unterstützenden Kachelformate, generell erlaubt sind `MVT` (Mapbox Vector
-   *     Tiles), `PNG`, `WebP` und `JPEG`. Die konkret unterstützten Formate sind vom
+   * @langEn *Deprecated (from v4.0 on you have to use [Tile
+   *     Provider](../../providers/tile/README.md) entities)* List of tile formats to be supported,
+   *     in general `MVT` (Mapbox Vector Tiles), `PNG`, `WebP` and `JPEG` are allowed. The actually
+   *     supported formats depend on the [Tile Provider](../../providers/tile/README.md).
+   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
+   *     verwendet werden)* Liste der zu unterstützenden Kachelformate, generell erlaubt sind `MVT`
+   *     (Mapbox Vector Tiles), `PNG`, `WebP` und `JPEG`. Die konkret unterstützten Formate sind vom
    *     [Tile-Provider](../../providers/tile/README.md) abhängig.
    * @default [ "MVT" ]
    */
+  @Deprecated(since = "3.4")
   List<String> getTileEncodings();
 
   // Note: Most configuration options have been moved to TileProviderFeatures and have been
   // deprecated here.
   // The getXyzDerived() methods support the deprecated configurations as well as the new style.
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -449,15 +480,17 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
                     : ImmutableList.of();
   }
 
-  // TODO: always get from provider?
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
+   * @langEn *Deprecated (from v4.0 on you have to use [Tile
+   *     Provider](../../providers/tile/README.md) entities)*
+   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
+   *     verwendet werden)*
    * @default [ 0, 0 ]
    */
   @Deprecated
   List<Double> getCenter();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -472,14 +505,18 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn Controls the zoom levels available for each active tiling scheme as well as which zoom
-   *     level to use as default.
-   * @langDe Steuert die Zoomstufen, die für jedes aktive Kachelschema verfügbar sind sowie welche
-   *     Zoomstufe als Default bei verwendet werden soll.
+   * @langEn *Deprecated (from v4.0 on you have to use [Tile
+   *     Provider](../../providers/tile/README.md) entities)* Controls the zoom levels available for
+   *     each active tiling scheme as well as which zoom level to use as default.
+   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
+   *     verwendet werden)* Steuert die Zoomstufen, die für jedes aktive Kachelschema verfügbar sind
+   *     sowie welche Zoomstufe als Default bei verwendet werden soll.
    * @default { "WebMercatorQuad" : { "min": 0, "max": 23 } }
    */
+  @Deprecated(since = "3.4")
   Map<String, MinMax> getZoomLevels();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -493,6 +530,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
                 : ImmutableMap.of();
   }
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -541,13 +579,16 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
+   * @langEn *Deprecated (from v4.0 on you have to use [Tile
+   *     Provider](../../providers/tile/README.md) entities)*
+   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
+   *     verwendet werden)*
    * @default {}
    */
-  @Deprecated
+  @Deprecated(since = "3.2")
   Map<String, MinMax> getZoomLevelsCache();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -560,13 +601,16 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
+   * @langEn *Deprecated (from v4.0 on you have to use [Tile
+   *     Provider](../../providers/tile/README.md) entities)*
+   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
+   *     verwendet werden)*
    * @default {}
    */
-  @Deprecated
+  @Deprecated(since = "3.2")
   Map<String, MinMax> getSeeding();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -579,15 +623,16 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated (will be renamed to `seeding` in v4.0)* Controls how and when tiles are
-   *     precomputed, see [Seeding options](#seeding-options).
-   * @langDe *Deprecated (wird in v4.0 zu `seeding` umbenannt)* Steuert wie und wann Kacheln
-   *     vorberechnet werden, siehe [Optionen für das * Seeding](#seeding-options).
+   * @langEn *Deprecated (from v4.0 on you have to use [Tile
+   *     Provider](../../providers/tile/README.md) entities)*
+   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
+   *     verwendet werden)*
    * @default {}
    */
   @Deprecated(since = "3.3")
   Optional<SeedingOptions> getSeedingOptions();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -598,14 +643,17 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
+   * @langEn *Deprecated (from v4.0 on you have to use [Tile
+   *     Provider](../../providers/tile/README.md) entities)*
+   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
+   *     verwendet werden)*
    * @default 100000
    */
-  @Deprecated
+  @Deprecated(since = "3.2")
   @Nullable
   Integer getLimit();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -620,14 +668,17 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
+   * @langEn *Deprecated (from v4.0 on you have to use [Tile
+   *     Provider](../../providers/tile/README.md) entities)*
+   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
+   *     verwendet werden)*
    * @default false
    */
-  @Deprecated
+  @Deprecated(since = "3.2")
   @Nullable
   Boolean getIgnoreInvalidGeometries();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -639,13 +690,16 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
+   * @langEn *Deprecated (from v4.0 on you have to use [Tile
+   *     Provider](../../providers/tile/README.md) entities)*
+   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
+   *     verwendet werden)*
    * @default {}
    */
-  @Deprecated
+  @Deprecated(since = "3.2")
   Map<String, List<LevelFilter>> getFilters();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -658,13 +712,16 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
+   * @langEn *Deprecated (from v4.0 on you have to use [Tile
+   *     Provider](../../providers/tile/README.md) entities)*
+   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
+   *     verwendet werden)*
    * @default {}
    */
-  @Deprecated
+  @Deprecated(since = "3.2")
   Map<String, List<LevelTransformation>> getRules();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -677,14 +734,17 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn *Deprecated* See [Tile-Provider Features](#features).
-   * @langDe *Deprecated* Siehe [Tile-Provider Features](#features).
+   * @langEn *Deprecated (from v4.0 on you have to use [Tile
+   *     Provider](../../providers/tile/README.md) entities)*
+   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
+   *     verwendet werden)*
    * @default 0.5
    */
-  @Deprecated
+  @Deprecated(since = "3.2")
   @Nullable
   Double getMinimumSizeInPixel();
 
+  @Deprecated(since = "3.4")
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
@@ -835,5 +895,28 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
         .from(this)
         .transformations(transformations)
         .build();
+  }
+
+  static Optional<FeatureTypeConfigurationOgcApi> getCollectionData(
+      OgcApiDataV2 apiData, String tileset) {
+    Optional<FeatureTypeConfigurationOgcApi> collectionData =
+        apiData.getCollections().values().stream()
+            .filter(
+                collection ->
+                    collection
+                        .getExtension(TilesConfiguration.class)
+                        .map(TilesConfiguration::getTileProviderTileset)
+                        .filter(tileset::equals)
+                        .isPresent())
+            .findFirst();
+
+    if (collectionData.isEmpty()) {
+      collectionData =
+          apiData.getCollections().values().stream()
+              .filter(collection -> collection.getId().equals(tileset))
+              .findFirst();
+    }
+
+    return collectionData;
   }
 }

@@ -14,7 +14,6 @@ import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
-import java.io.File;
 import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
@@ -70,11 +69,6 @@ public interface FeaturesCoreQueriesHandler
     @Value.Default
     default boolean sendResponseAsStream() {
       return false;
-    }
-
-    @Value.Default
-    default Optional<File> getSaveContentAsFile() {
-      return Optional.empty();
     }
   }
 }

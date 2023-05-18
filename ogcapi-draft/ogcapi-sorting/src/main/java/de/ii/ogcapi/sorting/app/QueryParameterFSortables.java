@@ -43,7 +43,7 @@ public class QueryParameterFSortables extends QueryParameterFSubCollection {
 
   @Override
   protected boolean matchesPath(String definitionPath) {
-    return definitionPath.equals("/collections/{collectionId}/sortables");
+    return "/collections/{collectionId}/sortables".equals(definitionPath);
   }
 
   @Override

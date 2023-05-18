@@ -11,14 +11,19 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ApiSecurity;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FoundationConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import java.util.Map;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -33,7 +38,10 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterToken extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterToken extends ApiExtensionCache
+    implements OgcApiQueryParameter, TypedQueryParameter<String> {
+
+  // TODO #846, do we need to do anything here? This is probably all handled by dropwizard.
 
   private Schema<?> schema = null;
   private final SchemaValidator schemaValidator;
@@ -46,6 +54,15 @@ public class QueryParameterToken extends ApiExtensionCache implements OgcApiQuer
   @Override
   public String getName() {
     return OAuthCredentialAuthFilter.OAUTH_ACCESS_TOKEN_PARAM;
+  }
+
+  @Override
+  public String parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    return value;
   }
 
   @Override

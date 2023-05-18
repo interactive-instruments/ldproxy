@@ -9,7 +9,6 @@ package de.ii.ogcapi.tiles3d.domain;
 
 import de.ii.ogcapi.foundation.domain.ApiExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
@@ -53,14 +52,6 @@ public interface TileResourceCache extends ApiExtension {
    * @throws IOException an error occurred while accessing files
    */
   void deleteTileResource(TileResourceDescriptor r) throws IOException;
-
-  /**
-   * get a file handle for a resource
-   *
-   * @param r the tile resource
-   * @throws IOException an error occurred while accessing files
-   */
-  File getFile(TileResourceDescriptor r) throws IOException;
 
   /**
    * delete the cached resources for the API

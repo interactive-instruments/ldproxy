@@ -51,6 +51,7 @@ public class FeatureEncoderFlatgeobuf extends FeatureEncoderSfFlat {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeatureEncoderFlatgeobuf.class);
 
+  private final String collectionId;
   private final FeatureSchema featureSchema;
   private final GeometryFactory geometryFactory;
   private final int srid;
@@ -68,6 +69,7 @@ public class FeatureEncoderFlatgeobuf extends FeatureEncoderSfFlat {
             .orElse(4326);
     this.is3d = encodingContext.getIs3d();
     this.featureSchema = encodingContext.getSchema();
+    this.collectionId = encodingContext.getCollectionId();
     this.geometryFactory = new GeometryFactory();
     this.builder = new FlatBufferBuilder(16 * 1024); // 16kB
   }

@@ -56,11 +56,12 @@ import javax.inject.Singleton;
  * @ref:pathParameters {@link de.ii.ogcapi.tiles3d.app.PathParameterCollectionId3dTiles}, {@link
  *     de.ii.ogcapi.tiles3d.app.PathParameterLevel}, {@link
  *     de.ii.ogcapi.tiles3d.app.PathParameterX}, {@link de.ii.ogcapi.tiles3d.app.PathParameterY}
- * @see de.ii.ogcapi.tiles.domain.SeedingOptions
  */
 @AutoBind
 @Singleton
 public class Tiles3dBuildingBlock implements ApiBuildingBlock {
+
+  public static final String STORE_RESOURCE_TYPE = "tiles3d";
 
   @Inject
   public Tiles3dBuildingBlock() {}

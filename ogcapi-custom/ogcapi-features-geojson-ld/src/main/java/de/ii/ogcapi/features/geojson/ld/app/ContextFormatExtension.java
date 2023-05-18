@@ -8,14 +8,5 @@
 package de.ii.ogcapi.features.geojson.ld.app;
 
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
-public interface ContextFormatExtension extends FormatExtension {
-
-  default InputStream getInputStream(Path context) throws IOException {
-    return Files.newInputStream(context);
-  }
-}
+public interface ContextFormatExtension extends FormatExtension {}

@@ -9,7 +9,6 @@ package de.ii.ogcapi.filter.api;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.crs.domain.CrsSupport;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -18,6 +17,7 @@ import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
@@ -28,9 +28,9 @@ import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.inject.Inject;
@@ -102,13 +102,29 @@ public class QueryParameterFilterCrs extends ApiExtensionCache
   }
 
   @Override
-  public EpsgCrs parse(String value, OgcApiDataV2 apiData) {
+  public EpsgCrs parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> collectionData) {
+    EpsgCrs filterCrs;
     try {
-      return EpsgCrs.fromString(value);
+      filterCrs = EpsgCrs.fromString(value);
     } catch (Throwable e) {
       throw new IllegalArgumentException(
-          String.format("Invalid value for query parameter '%s'.", getName()), e);
+          String.format("The parameter '%s' is invalid: %s", getName(), e.getMessage()), e);
     }
+    // CRS84 is always supported
+    if (collectionData
+            .map(cd -> !crsSupport.isSupported(api.getData(), cd, filterCrs))
+            .orElse(!crsSupport.isSupported(api.getData(), filterCrs))
+        && !filterCrs.equals(OgcCrs.CRS84)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "The parameter '%s' is invalid: the crs '%s' is not supported",
+              getName(), filterCrs.toUriString()));
+    }
+    return filterCrs;
   }
 
   private ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =
@@ -166,38 +182,6 @@ public class QueryParameterFilterCrs extends ApiExtensionCache
   @Override
   public SchemaValidator getSchemaValidator() {
     return schemaValidator;
-  }
-
-  @Override
-  public Map<String, String> transformParameters(
-      FeatureTypeConfigurationOgcApi featureTypeConfiguration,
-      Map<String, String> parameters,
-      OgcApiDataV2 datasetData) {
-    if (!isEnabledForApi(datasetData, featureTypeConfiguration.getId())) {
-      return parameters;
-    }
-    if (parameters.containsKey(FILTER_CRS)) {
-      EpsgCrs filterCrs;
-      try {
-        filterCrs = EpsgCrs.fromString(parameters.get(FILTER_CRS));
-      } catch (Throwable e) {
-        throw new IllegalArgumentException(
-            String.format("The parameter '%s' is invalid: %s", FILTER_CRS, e.getMessage()), e);
-      }
-      // CRS84 is always supported
-      if (!crsSupport.isSupported(datasetData, featureTypeConfiguration, filterCrs)
-          && !filterCrs.equals(OgcCrs.CRS84)) {
-        throw new IllegalArgumentException(
-            String.format(
-                "The parameter '%s' is invalid: the crs '%s' is not supported",
-                FILTER_CRS, filterCrs.toUriString()));
-      }
-
-      Map<String, String> newParameters = new HashMap<>(parameters);
-      newParameters.put(FILTER_CRS, filterCrs.toUriString());
-      return ImmutableMap.copyOf(newParameters);
-    }
-    return parameters;
   }
 
   @Override

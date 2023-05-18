@@ -12,13 +12,17 @@ import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
+import de.ii.xtraplatform.tiles.domain.TileGenerationOptions;
 import de.ii.xtraplatform.tiles.domain.TileGenerationSchema;
+import de.ii.xtraplatform.tiles.domain.TileProvider;
+import de.ii.xtraplatform.tiles.domain.TileProviderData;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
@@ -41,10 +45,12 @@ public class QueryParameterLimitTile extends ApiExtensionCache
     implements OgcApiQueryParameter, TypedQueryParameter<Integer>, TileGenerationUserParameter {
 
   private final SchemaValidator schemaValidator;
+  private final TilesProviders tilesProviders;
 
   @Inject
-  QueryParameterLimitTile(SchemaValidator schemaValidator) {
+  QueryParameterLimitTile(SchemaValidator schemaValidator, TilesProviders tilesProviders) {
     this.schemaValidator = schemaValidator;
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -102,7 +108,15 @@ public class QueryParameterLimitTile extends ApiExtensionCache
       Schema<?> schema = new IntegerSchema().minimum(BigDecimal.valueOf(0));
 
       Optional<Integer> limit =
-          apiData.getExtension(TilesConfiguration.class).map(TilesConfiguration::getLimitDerived);
+          tilesProviders
+              .getTileProvider(apiData)
+              .map(TileProvider::getData)
+              .map(TileProviderData::getTilesetDefaults)
+              .filter(defaults -> defaults instanceof TileGenerationOptions)
+              .flatMap(
+                  defaults ->
+                      Optional.ofNullable(((TileGenerationOptions) defaults).getFeatureLimit()));
+
       limit.ifPresent(integer -> schema.setDefault(BigDecimal.valueOf(integer)));
 
       schemaMap.get(apiHashCode).put("*", schema);
@@ -117,11 +131,16 @@ public class QueryParameterLimitTile extends ApiExtensionCache
     if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
       Schema<?> schema = new IntegerSchema().minimum(BigDecimal.valueOf(0));
 
-      FeatureTypeConfigurationOgcApi featureType = apiData.getCollections().get(collectionId);
       Optional<Integer> limit =
-          featureType
-              .getExtension(TilesConfiguration.class)
-              .map(TilesConfiguration::getLimitDerived);
+          tilesProviders
+              .getTileProvider(apiData, apiData.getCollectionData(collectionId))
+              .map(TileProvider::getData)
+              .map(TileProviderData::getTilesetDefaults)
+              .filter(defaults -> defaults instanceof TileGenerationOptions)
+              .flatMap(
+                  defaults ->
+                      Optional.ofNullable(((TileGenerationOptions) defaults).getFeatureLimit()));
+
       limit.ifPresent(integer -> schema.setDefault(BigDecimal.valueOf(integer)));
 
       schemaMap.get(apiHashCode).put(collectionId, schema);
@@ -135,7 +154,11 @@ public class QueryParameterLimitTile extends ApiExtensionCache
   }
 
   @Override
-  public Integer parse(String value, OgcApiDataV2 apiData) {
+  public Integer parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> collectionData) {
     try {
       return Integer.parseInt(value);
     } catch (Throwable e) {
@@ -154,15 +177,12 @@ public class QueryParameterLimitTile extends ApiExtensionCache
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    Optional<TilesConfiguration> config = apiData.getExtension(TilesConfiguration.class);
-    return config.isPresent() && config.get().getTileProvider().requiresQuerySupport();
+    return isEnabledForApi(apiData, tilesProviders);
   }
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-    Optional<TilesConfiguration> config =
-        apiData.getCollections().get(collectionId).getExtension(TilesConfiguration.class);
-    return config.isPresent() && config.get().getTileProvider().requiresQuerySupport();
+    return isEnabledForApi(apiData, collectionId, tilesProviders);
   }
 
   @Override

@@ -15,6 +15,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -34,7 +35,9 @@ public class TileFormatWEBP extends TileFormatExtension {
           .build();
 
   @Inject
-  TileFormatWEBP() {}
+  TileFormatWEBP(TilesProviders tilesProviders) {
+    super(tilesProviders);
+  }
 
   @Override
   public ApiMediaType getMediaType() {

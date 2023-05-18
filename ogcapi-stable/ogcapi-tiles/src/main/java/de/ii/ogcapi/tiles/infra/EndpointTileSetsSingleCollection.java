@@ -9,7 +9,6 @@ package de.ii.ogcapi.tiles.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
@@ -20,6 +19,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.api.AbstractEndpointTileSetsSingleCollection;
 import de.ii.ogcapi.tiles.api.EndpointTileMixin;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import java.util.List;
 import javax.inject.Inject;
@@ -53,8 +53,8 @@ public class EndpointTileSetsSingleCollection extends AbstractEndpointTileSetsSi
   EndpointTileSetsSingleCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
-      FeaturesCoreProviders providers) {
-    super(extensionRegistry, queryHandler, providers);
+      TilesProviders tilesProviders) {
+    super(extensionRegistry, queryHandler, tilesProviders);
   }
 
   @Override
@@ -96,18 +96,7 @@ public class EndpointTileSetsSingleCollection extends AbstractEndpointTileSetsSi
       @Context OgcApi api,
       @Context ApiRequestContext requestContext,
       @PathParam("collectionId") String collectionId) {
-
-    List<String> tileEncodings =
-        api.getData()
-            .getExtension(TilesConfiguration.class, collectionId)
-            .map(TilesConfiguration::getTileEncodingsDerived)
-            .orElseThrow(() -> new IllegalStateException("No tile encoding available."));
     return super.getTileSets(
-        api.getData(),
-        requestContext,
-        "/collections/{collectionId}/tiles",
-        collectionId,
-        false,
-        tileEncodings);
+        api.getData(), requestContext, "/collections/{collectionId}/tiles", collectionId, false);
   }
 }

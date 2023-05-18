@@ -16,7 +16,9 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.AbstractQueryParameterDatetime;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
@@ -28,6 +30,7 @@ import de.ii.xtraplatform.cql.domain.TemporalLiteral;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
 import de.ii.xtraplatform.tiles.domain.TileGenerationSchema;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -46,9 +49,12 @@ import javax.inject.Singleton;
 public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
     implements TypedQueryParameter<TemporalLiteral>, TileGenerationUserParameter, ConformanceClass {
 
+  private final TilesProviders tilesProviders;
+
   @Inject
-  QueryParameterDatetimeTile(SchemaValidator schemaValidator) {
+  QueryParameterDatetimeTile(SchemaValidator schemaValidator, TilesProviders tilesProviders) {
     super(schemaValidator);
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -66,11 +72,7 @@ public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    //noinspection ConstantConditions
-    return apiData
-        .getExtension(TilesConfiguration.class)
-        .filter(cfg -> cfg.isEnabled() && cfg.getTileProvider().requiresQuerySupport())
-        .isPresent();
+    return isEnabledForApi(apiData, tilesProviders);
   }
 
   @Override
@@ -84,7 +86,11 @@ public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
   }
 
   @Override
-  public TemporalLiteral parse(String value, OgcApiDataV2 apiData) {
+  public TemporalLiteral parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> collectionData) {
     try {
       if (value.contains(DATETIME_INTERVAL_SEPARATOR)) {
         return TemporalLiteral.of(Splitter.on(DATETIME_INTERVAL_SEPARATOR).splitToList(value));

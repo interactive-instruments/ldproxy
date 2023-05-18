@@ -63,6 +63,8 @@ import javax.inject.Singleton;
 @AutoBind
 public class GeoJsonLdBuildingBlock implements ApiBuildingBlock {
 
+  public static final String STORE_RESOURCE_TYPE = "json-ld-contexts";
+
   @Inject
   public GeoJsonLdBuildingBlock() {}
 

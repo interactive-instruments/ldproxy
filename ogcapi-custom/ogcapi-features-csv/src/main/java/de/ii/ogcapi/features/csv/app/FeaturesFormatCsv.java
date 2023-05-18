@@ -135,6 +135,7 @@ public class FeaturesFormatCsv implements ConformanceClass, FeatureFormatExtensi
         new FeatureEncoderCsv(
             ImmutableEncodingContextCsv.builder()
                 .from(transformationContext)
+                .collectionId(collectionId)
                 .schema(schema)
                 .build()));
   }

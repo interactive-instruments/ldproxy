@@ -119,6 +119,8 @@ import javax.inject.Singleton;
 @AutoBind
 public class StylesBuildingBlock implements ApiBuildingBlock {
 
+  public static final String STORE_RESOURCE_TYPE = "styles";
+
   private final ExtensionRegistry extensionRegistry;
 
   @Inject

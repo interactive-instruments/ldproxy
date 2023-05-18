@@ -1,5 +1,54 @@
 # Changelog
 
+## v3.4.0 (05/05/2023)
+
+#### Implemented enhancements
+
+-  add option to suppress empty collections in the HTML page for the Feature Collections overview [#945](https://github.com/interactive-instruments/ldproxy/issues/945)
+-  3D Tiles: add option to include building outlines [#939](https://github.com/interactive-instruments/ldproxy/issues/939)
+-  option to suppress the global CRS list [#937](https://github.com/interactive-instruments/ldproxy/issues/937)
+-  support allOf in provider schema [#931](https://github.com/interactive-instruments/ldproxy/issues/931)
+-  styling of 3D Tiles should be configurable [#921](https://github.com/interactive-instruments/ldproxy/issues/921)
+-  support role 'secondary geometry' and querying polyhedron geometries [#915](https://github.com/interactive-instruments/ldproxy/issues/915)
+-  JSON Schema as feature schema [#908](https://github.com/interactive-instruments/ldproxy/issues/908)
+-  support JSON values in SQL databases [#907](https://github.com/interactive-instruments/ldproxy/issues/907)
+-  Search: support equivalent to 'filter-crs' parameter [#905](https://github.com/interactive-instruments/ldproxy/issues/905)
+-  property tooltips with descriptions [#897](https://github.com/interactive-instruments/ldproxy/issues/897)
+-  make path separator in queryables/sortables configurable [#871](https://github.com/interactive-instruments/ldproxy/issues/871)
+-  add Search building block [#755](https://github.com/interactive-instruments/ldproxy/issues/755)
+-  support 3D Tiles [#692](https://github.com/interactive-instruments/ldproxy/issues/692)
+-  support GPKG in the Manager [#504](https://github.com/interactive-instruments/ldproxy/issues/504)
+
+#### Improvements
+
+-  upgrade CesiumJS to 1.105 [#941](https://github.com/interactive-instruments/ldproxy/issues/941)
+-  publish software bill of materials [#909](https://github.com/interactive-instruments/ldproxy/issues/909)
+-  improve HTML filter editor [#899](https://github.com/interactive-instruments/ldproxy/issues/899)
+-  q: comparison should be case-insensitive  [#872](https://github.com/interactive-instruments/ldproxy/issues/872)
+-  unstable order of links in collection schema [#639](https://github.com/interactive-instruments/ldproxy/issues/639)
+-  make Cesium implementation more robust [#545](https://github.com/interactive-instruments/ldproxy/issues/545)
+
+#### Fixed bugs
+
+-  GPKG: Incorrect CRS detection in auto mode [#959](https://github.com/interactive-instruments/ldproxy/issues/959)
+-  Sorting: Invalid features when sorting using a nullable attribute [#952](https://github.com/interactive-instruments/ldproxy/issues/952)
+-  glTF: A building without a solid geometry throws an exception [#951](https://github.com/interactive-instruments/ldproxy/issues/951)
+-  fetching style metadata can lead to server errors [#659](https://github.com/interactive-instruments/ldproxy/issues/659)
+
+#### Dependency updates
+
+-  upgrade dropwizard from 2.0.34 to 2.1.6 [#911](https://github.com/interactive-instruments/ldproxy/issues/911)
+-  upgrade swagger from 2.1.13 to 2.2.8 [#790](https://github.com/interactive-instruments/ldproxy/issues/790)
+
+---
+## v3.3.6 (14/04/2023)
+
+#### Fixed bugs
+
+-  properties are not always sorted according to provider schema [#949](https://github.com/interactive-instruments/ldproxy/issues/949)
+
+---
+
 ## v3.3.5 (13/03/2023)
 
 #### Fixed bugs

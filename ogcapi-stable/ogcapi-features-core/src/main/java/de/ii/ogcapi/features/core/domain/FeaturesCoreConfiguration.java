@@ -11,23 +11,21 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.features.domain.FeatureQueryEncoder;
+import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -239,15 +237,16 @@ public interface FeaturesCoreConfiguration
   Optional<ItemType> getItemType();
 
   /**
-   * @langEn Controls which of the attributes in queries can be used for filtering data. A
-   *     distinction is made between spatial (`spatial`), temporal (`temporal`) and "regular" (`q`,
-   *     `other`) attributes. The attributes under `spatial` must be of type `GEOMETRY` in the
-   *     provider schema, the attributes under `temporal` of type `DATETIME` or `DATE`. The
-   *     searchable attributes are each listed by their name in an array. The queryables can be used
-   *     in filter expressions ([building block "filter"](filter.md)). The primary spatial and
-   *     temporal attributes (see provider configuration) can be used for selection via the
-   *     [parameters `bbox`](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_bbox) and
-   *     [parameters
+   * @langEn *Deprecated* Use [Module Feature Collections -
+   *     Queryables](collections_-_queryables.md). Controls which of the attributes in queries can
+   *     be used for filtering data. A distinction is made between spatial (`spatial`), temporal
+   *     (`temporal`) and "regular" (`q`, `other`) attributes. The attributes under `spatial` must
+   *     be of type `GEOMETRY` in the provider schema, the attributes under `temporal` of type
+   *     `DATETIME` or `DATE`. The searchable attributes are each listed by their name in an array.
+   *     The queryables can be used in filter expressions ([building block "filter"](filter.md)).
+   *     The primary spatial and temporal attributes (see provider configuration) can be used for
+   *     selection via the [parameters
+   *     `bbox`](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_bbox) and [parameters
    *     `datetime`](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_datetime),
    *     respectively. The remaining attributes are defined as [additional parameters for the
    *     respective feature
@@ -272,6 +271,7 @@ public interface FeaturesCoreConfiguration
    *     bei der freien Textsuche im Query-Parameter mit demselben Namen berücksichtigt.
    * @default {}
    */
+  @Deprecated(since = "3.4.0")
   Optional<FeaturesCollectionQueryables> getQueryables();
 
   /**
@@ -298,82 +298,30 @@ public interface FeaturesCoreConfiguration
   @JsonIgnore
   @Value.Derived
   @Value.Auxiliary
-  default Map<String, String> getAllFilterParameters() {
-    if (getQueryables().isPresent()) {
-      FeaturesCollectionQueryables queryables = getQueryables().get();
-      Map<String, String> parameters = new LinkedHashMap<>();
-
-      if (!queryables.getSpatial().isEmpty()) {
-        parameters.put(PARAMETER_BBOX, queryables.getSpatial().get(0));
-      } else {
-        parameters.put(PARAMETER_BBOX, FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE);
-      }
-
-      if (queryables.getTemporal().size() > 1) {
-        parameters.put(
-            PARAMETER_DATETIME,
-            String.format(
-                "%s%s%s",
-                queryables.getTemporal().get(0),
-                DATETIME_INTERVAL_SEPARATOR,
-                queryables.getTemporal().get(1)));
-      } else if (!queryables.getTemporal().isEmpty()) {
-        parameters.put(PARAMETER_DATETIME, queryables.getTemporal().get(0));
-      } else {
-        parameters.put(PARAMETER_DATETIME, FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE);
-      }
-
-      queryables.getSpatial().forEach(property -> parameters.put(property, property));
-      queryables.getTemporal().forEach(property -> parameters.put(property, property));
-
-      getFilterParameters().forEach(property -> parameters.put(property, property));
-
-      return parameters;
-    }
-
-    return ImmutableMap.of(
-        PARAMETER_BBOX, FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE,
-        PARAMETER_DATETIME, FeatureQueryEncoder.PROPERTY_NOT_AVAILABLE);
-  }
-
-  @JsonIgnore
-  @Value.Derived
-  @Value.Auxiliary
-  default List<String> getFilterParameters() {
-    if (getQueryables().isPresent()) {
-      return Stream.concat(
-              getQueryables().get().getQ().stream(), getQueryables().get().getOther().stream())
-          .collect(Collectors.toList());
-    }
-
-    return ImmutableList.of();
-  }
-
-  @JsonIgnore
-  @Value.Derived
-  @Value.Auxiliary
+  @Deprecated(since = "3.4.0")
   default boolean hasDeprecatedQueryables() {
     return getQueryables().orElse(FeaturesCollectionQueryables.of()).getAll().stream()
-        .anyMatch(key -> key.matches(".*\\[[^\\]]*\\].*"));
+        .anyMatch(key -> key.matches(".*\\[[^]]*].*"));
   }
 
+  @Deprecated(since = "3.4.0")
   default List<String> normalizeQueryables(List<String> queryables, String collectionId) {
     return queryables.stream()
         .map(
             queryable -> {
-              if (queryable.matches(".*\\[[^\\]]*\\].*")) {
-                // TODO use info for now, but upgrade to warn after some time
-                LOGGER.info(
+              if (queryable.matches(".*\\[[^]]*].*")) {
+                LOGGER.warn(
                     "The queryable '{}' in collection '{}' uses a deprecated style that includes square brackets for arrays. The brackets have been dropped during hydration.",
                     queryable,
                     collectionId);
-                return queryable.replaceAll("\\[[^\\]]*\\]", "");
+                return queryable.replaceAll("\\[[^]]*]", "");
               }
               return queryable;
             })
         .collect(Collectors.toUnmodifiableList());
   }
 
+  @Deprecated(since = "3.4.0")
   default Optional<FeaturesCollectionQueryables> normalizeQueryables(String collectionId) {
     Optional<FeaturesCollectionQueryables> queryables = getQueryables();
     if (queryables.isPresent()) {
@@ -381,33 +329,6 @@ public interface FeaturesCoreConfiguration
       List<String> temporal = normalizeQueryables(queryables.get().getTemporal(), collectionId);
       List<String> q = normalizeQueryables(queryables.get().getQ(), collectionId);
       List<String> other = normalizeQueryables(queryables.get().getOther(), collectionId);
-      queryables =
-          Optional.of(
-              new ImmutableFeaturesCollectionQueryables.Builder()
-                  .spatial(spatial)
-                  .temporal(temporal)
-                  .q(q)
-                  .other(other)
-                  .build());
-    }
-    return queryables;
-  }
-
-  default List<String> removeQueryables(
-      List<String> queryables, Collection<String> queryablesToRemove) {
-    return queryables.stream()
-        .filter(queryable -> !queryablesToRemove.contains(queryable))
-        .collect(Collectors.toUnmodifiableList());
-  }
-
-  default Optional<FeaturesCollectionQueryables> removeQueryables(
-      Collection<String> queryablesToRemove) {
-    Optional<FeaturesCollectionQueryables> queryables = getQueryables();
-    if (queryables.isPresent()) {
-      List<String> spatial = removeQueryables(queryables.get().getSpatial(), queryablesToRemove);
-      List<String> temporal = removeQueryables(queryables.get().getTemporal(), queryablesToRemove);
-      List<String> q = removeQueryables(queryables.get().getQ(), queryablesToRemove);
-      List<String> other = removeQueryables(queryables.get().getOther(), queryablesToRemove);
       queryables =
           Optional.of(
               new ImmutableFeaturesCollectionQueryables.Builder()
@@ -457,5 +378,19 @@ public interface FeaturesCoreConfiguration
             .build());
 
     return builder.build();
+  }
+
+  static String getCollectionId(OgcApiDataV2 apiData, String featureType) {
+    return apiData.getCollections().values().stream()
+        .filter(
+            collection ->
+                collection
+                    .getExtension(FeaturesCoreConfiguration.class)
+                    .flatMap(FeaturesCoreConfiguration::getFeatureType)
+                    .filter(featureType::equals)
+                    .isPresent())
+        .findFirst()
+        .map(FeatureTypeConfiguration::getId)
+        .orElse(featureType);
   }
 }

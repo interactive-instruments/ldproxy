@@ -10,15 +10,21 @@ package de.ii.ogcapi.common.domain;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FoundationConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -33,7 +39,10 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterLang extends ApiExtensionCache implements OgcApiQueryParameter {
+public class QueryParameterLang extends ApiExtensionCache
+    implements OgcApiQueryParameter, TypedQueryParameter<Locale> {
+
+  // TODO #846
 
   private Schema<?> schema = null;
   private final SchemaValidator schemaValidator;
@@ -46,6 +55,18 @@ public class QueryParameterLang extends ApiExtensionCache implements OgcApiQuery
   @Override
   public String getName() {
     return "lang";
+  }
+
+  @Override
+  public Locale parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    return I18n.getLanguages().stream()
+        .filter(lang -> Objects.equals(lang.getLanguage(), value))
+        .findFirst()
+        .orElse(null);
   }
 
   @Override

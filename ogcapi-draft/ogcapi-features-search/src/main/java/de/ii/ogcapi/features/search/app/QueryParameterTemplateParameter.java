@@ -7,17 +7,22 @@
  */
 package de.ii.ogcapi.features.search.app;
 
+import de.ii.ogcapi.features.search.domain.SearchConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.Objects;
 import org.immutables.value.Value;
 
 @Value.Immutable
 public abstract class QueryParameterTemplateParameter extends ApiExtensionCache
     implements OgcApiQueryParameter {
+
+  // TODO #846
 
   public abstract String getApiId();
 
@@ -66,6 +71,16 @@ public abstract class QueryParameterTemplateParameter extends ApiExtensionCache
     return computeIfAbsent(
         this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
         () -> false);
+  }
+
+  @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return SearchConfiguration.class;
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return Objects.equals(apiData.getId(), getApiId());
   }
 
   @Override

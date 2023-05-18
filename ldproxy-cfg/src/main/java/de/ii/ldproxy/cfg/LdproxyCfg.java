@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
-import de.ii.xtraplatform.base.domain.ImmutableStoreSourceDefault32;
+import de.ii.xtraplatform.base.domain.ImmutableStoreSourceDefaultV3;
 import de.ii.xtraplatform.base.domain.Jackson;
 import de.ii.xtraplatform.base.domain.JacksonProvider;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
@@ -74,7 +74,7 @@ public class LdproxyCfg implements Cfg {
     this.builders = new Builders() {};
     StoreConfiguration storeConfiguration =
         new ImmutableStoreConfiguration.Builder()
-            .addSources(new ImmutableStoreSourceDefault32.Builder().build())
+            .addSources(new ImmutableStoreSourceDefaultV3.Builder().build())
             .build();
     Jackson jackson = new JacksonProvider(JacksonSubTypes::ids);
     this.objectMapper = new ValueEncodingJackson<EntityData>(jackson, false).getMapper(FORMAT.YML);

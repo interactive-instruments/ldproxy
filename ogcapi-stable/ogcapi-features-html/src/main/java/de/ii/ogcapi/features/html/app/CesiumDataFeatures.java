@@ -43,7 +43,15 @@ public class CesiumDataFeatures {
 
   public String getFeatureExtent() {
     determineBbox();
-    return "Rectangle.fromDegrees(" + minLon + "," + minLat + "," + maxLon + "," + maxLat + ")";
+    return "{minLon:"
+        + minLon
+        + ",minLat:"
+        + minLat
+        + ",maxLon:"
+        + maxLon
+        + ",maxLat:"
+        + maxLat
+        + "}";
   }
 
   public String getEncodedRegion() {

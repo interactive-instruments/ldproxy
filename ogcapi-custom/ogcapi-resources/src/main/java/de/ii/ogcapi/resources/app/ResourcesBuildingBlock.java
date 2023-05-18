@@ -36,6 +36,8 @@ import javax.inject.Singleton;
 @AutoBind
 public class ResourcesBuildingBlock implements ApiBuildingBlock {
 
+  public static final String STORE_RESOURCE_TYPE = "api-resources";
+
   @Inject
   public ResourcesBuildingBlock() {}
 

@@ -92,7 +92,7 @@ public class EndpointRouteDefinition extends Endpoint {
             .apiEntrypoint("routes")
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_ROUTE_DEFINITION);
     String path = "/routes/{routeId}/definition";
-    ImmutableList<OgcApiQueryParameter> queryParameters =
+    List<OgcApiQueryParameter> queryParameters =
         getQueryParameters(extensionRegistry, apiData, path);
     List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
     if (pathParameters.stream().noneMatch(param -> param.getName().equals("routeId"))) {

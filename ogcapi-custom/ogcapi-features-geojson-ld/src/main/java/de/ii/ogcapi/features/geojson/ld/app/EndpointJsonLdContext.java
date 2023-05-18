@@ -7,8 +7,6 @@
  */
 package de.ii.ogcapi.features.geojson.ld.app;
 
-import static de.ii.ogcapi.foundation.domain.FoundationConfiguration.API_RESOURCES_DIR;
-
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
@@ -25,9 +23,9 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.store.domain.BlobStore;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Objects;
@@ -52,13 +50,12 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointJsonLdContext.class);
   private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-  private final java.nio.file.Path contextDirectory;
+  private final BlobStore contextStore;
 
   @Inject
-  EndpointJsonLdContext(AppContext appContext, ExtensionRegistry extensionRegistry) {
+  EndpointJsonLdContext(BlobStore blobStore, ExtensionRegistry extensionRegistry) {
     super(extensionRegistry);
-    this.contextDirectory =
-        appContext.getDataDir().resolve(API_RESOURCES_DIR).resolve("json-ld-contexts");
+    this.contextStore = blobStore.with(GeoJsonLdBuildingBlock.STORE_RESOURCE_TYPE);
   }
 
   @Override
@@ -69,8 +66,8 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
   private java.nio.file.Path getContextPath(
       String apiId, String collectionId, String contextFileName, String extension) {
     return Objects.nonNull(contextFileName)
-        ? contextDirectory.resolve(apiId).resolve(contextFileName)
-        : contextDirectory.resolve(apiId).resolve(collectionId + "." + extension);
+        ? java.nio.file.Path.of(apiId).resolve(contextFileName)
+        : java.nio.file.Path.of(apiId).resolve(collectionId + "." + extension);
   }
 
   @Path("/{collectionId}/context")
@@ -100,21 +97,23 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
             .get(collectionId)
             .getExtension(GeoJsonLdConfiguration.class)
             .map(cfg -> cfg.getContextFileName());
-    java.nio.file.Path context =
+    java.nio.file.Path contextPath =
         getContextPath(
             api.getId(),
             collectionId,
             contextFileName.orElse(null),
             format.getMediaType().parameter());
 
-    if (!Files.isRegularFile(context)) {
+    Optional<InputStream> context = contextStore.get(contextPath);
+
+    if (context.isEmpty()) {
       throw new NotFoundException(
           String.format("The %s context was not found.", format.getMediaType().label()));
     }
 
     // TODO validate, that it is a valid JSON-LD Context document
 
-    return Response.ok(format.getInputStream(context), "application/ld+json").build();
+    return Response.ok(context.get(), "application/ld+json").build();
   }
 
   @Override

@@ -30,7 +30,6 @@ import de.ii.ogcapi.foundation.domain.FoundationBuildingBlock;
 import de.ii.ogcapi.geometry.simplification.app.GeometrySimplificationBuildingBlock;
 import de.ii.ogcapi.html.app.HtmlBuildingBlock;
 import de.ii.ogcapi.json.app.JsonBuildingBlock;
-import de.ii.ogcapi.maps.app.MapTilesBuildingBlock;
 import de.ii.ogcapi.oas30.app.OpenApiBuildingBlock;
 import de.ii.ogcapi.projections.app.ProjectionsBuildingBlock;
 import de.ii.ogcapi.resources.app.ResourcesBuildingBlock;
@@ -49,7 +48,7 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
   OgcApiExtensionRegistry() {
     this.apiExtensions =
         ImmutableSet.<ApiExtension>builder()
-            .add(new QueryablesBuildingBlock())
+            .add(new QueryablesBuildingBlock(null, null))
             .add(new SchemaBuildingBlock())
             .add(new FeaturesExtensionsBuildingBlock())
             .add(new FeaturesFlatgeobufBuildingBlock())
@@ -57,7 +56,6 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
             .add(new JsonFgBuildingBlock())
             .add(new FilterBuildingBlock())
             .add(new GeometrySimplificationBuildingBlock())
-            .add(new MapTilesBuildingBlock())
             .add(new ProjectionsBuildingBlock())
             .add(new ResourcesBuildingBlock())
             .add(new SortingBuildingBlock(null, null))
