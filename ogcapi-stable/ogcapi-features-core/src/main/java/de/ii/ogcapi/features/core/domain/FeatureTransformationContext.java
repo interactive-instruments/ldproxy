@@ -8,7 +8,6 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -101,11 +100,6 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
   @Value.Default
   default boolean isHitsOnlyIfMore() {
     return false;
-  }
-
-  @Value.Default
-  default Map<String, List<String>> getFields() {
-    return ImmutableMap.of("*", ImmutableList.of("*"));
   }
 
   ApiRequestContext getOgcApiRequest();
