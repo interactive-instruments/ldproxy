@@ -17,7 +17,10 @@ import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
+import de.ii.ogcapi.features.core.domain.ImmutableProfileTransformations;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
+import de.ii.ogcapi.features.core.domain.Profile;
+import de.ii.ogcapi.features.core.domain.ProfileTransformations;
 import de.ii.ogcapi.features.html.domain.FeatureEncoderHtml;
 import de.ii.ogcapi.features.html.domain.FeatureTransformationContextHtml;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
@@ -45,6 +48,8 @@ import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -157,6 +162,76 @@ public class FeaturesFormatHtml
   @Override
   public boolean canEncodeFeatures() {
     return true;
+  }
+
+  @Override
+  public boolean supportsProfile(Profile profile) {
+    return profile == Profile.AS_KEY || profile == Profile.AS_URI || profile == Profile.AS_LINK;
+  }
+
+  @Override
+  public Optional<PropertyTransformations> getPropertyTransformations(
+      FeatureTypeConfigurationOgcApi collectionData,
+      Optional<FeatureSchema> schema,
+      Profile profile) {
+    if (schema.isEmpty()) {
+      return getPropertyTransformations(collectionData);
+    }
+
+    ImmutableProfileTransformations.Builder builder = new ImmutableProfileTransformations.Builder();
+    switch (profile) {
+      default:
+      case AS_KEY:
+        return getPropertyTransformations(collectionData);
+      case AS_URI:
+        schema
+            .map(SchemaBase::getAllNestedProperties)
+            .ifPresent(
+                properties ->
+                    properties.stream()
+                        .filter(SchemaBase::isFeatureRef)
+                        .forEach(
+                            property ->
+                                FeatureFormatExtension.getTemplate(property)
+                                    .ifPresent(
+                                        template ->
+                                            builder.putTransformations(
+                                                property.getFullPathAsString(),
+                                                ImmutableList.of(
+                                                    new ImmutablePropertyTransformation.Builder()
+                                                        .stringFormat(template)
+                                                        .build())))));
+        break;
+      case AS_LINK:
+        schema
+            .map(SchemaBase::getAllNestedProperties)
+            .ifPresent(
+                properties ->
+                    properties.stream()
+                        .filter(SchemaBase::isFeatureRef)
+                        .forEach(
+                            property ->
+                                getLinkTemplate(FeatureFormatExtension.getTemplate(property))
+                                    .ifPresent(
+                                        template ->
+                                            builder.putTransformations(
+                                                property.getFullPathAsString(),
+                                                ImmutableList.of(
+                                                    new ImmutablePropertyTransformation.Builder()
+                                                        .stringFormat(template)
+                                                        .build())))));
+        break;
+    }
+
+    ProfileTransformations profileTransformations = builder.build();
+    return Optional.of(
+        getPropertyTransformations(collectionData)
+            .map(pts -> pts.mergeInto(profileTransformations))
+            .orElse(profileTransformations));
+  }
+
+  private static Optional<String> getLinkTemplate(Optional<String> template) {
+    return template.map(t -> String.format("<a href=\"%s\">{{value}}</a>", t));
   }
 
   @Override

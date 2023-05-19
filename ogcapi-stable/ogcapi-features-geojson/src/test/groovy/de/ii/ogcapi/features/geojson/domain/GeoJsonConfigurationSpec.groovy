@@ -51,8 +51,6 @@ class GeoJsonConfigurationSpec extends AbstractExtensionConfigurationSpec implem
     @Override
     GeoJsonConfiguration getSimpleFullMerged() {
         def transformations = new LinkedHashMap(getFull().getTransformations())
-        transformations.remove(GeoJsonConfiguration.REF_WILDCARD)
-        transformations.remove(GeoJsonConfiguration.REF_ARRAY_WILDCARD)
 
         return new ImmutableGeoJsonConfiguration.Builder()
                 .from(getFull())

@@ -262,51 +262,6 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
     return this;
   }
 
-  String REF_WILDCARD = "*{type=FEATURE_REF}";
-  String REF_ARRAY_WILDCARD = "*{type=FEATURE_REF_ARRAY}";
-
-  @Value.Check
-  default GeoJsonConfiguration transformRefs() {
-    if (!hasTransformation(
-        REF_WILDCARD, transformation -> transformation.getStringFormat().isPresent())) {
-
-      Map<String, List<PropertyTransformation>> transformations =
-          withTransformation(
-              REF_WILDCARD,
-              new ImmutablePropertyTransformation.Builder()
-                  .stringFormat("{{apiUri}}/collections/{{type}}/items/{{value}}?f=json")
-                  .build());
-
-      return new ImmutableGeoJsonConfiguration.Builder()
-          .from(this)
-          .transformations(transformations)
-          .build();
-    }
-
-    return this;
-  }
-
-  @Value.Check
-  default GeoJsonConfiguration transformRefArrays() {
-    if (!hasTransformation(
-        REF_ARRAY_WILDCARD, transformation -> transformation.getStringFormat().isPresent())) {
-
-      Map<String, List<PropertyTransformation>> transformations =
-          withTransformation(
-              REF_ARRAY_WILDCARD,
-              new ImmutablePropertyTransformation.Builder()
-                  .stringFormat("{{apiUri}}/collections/{{type}}/items/{{value}}?f=json")
-                  .build());
-
-      return new ImmutableGeoJsonConfiguration.Builder()
-          .from(this)
-          .transformations(transformations)
-          .build();
-    }
-
-    return this;
-  }
-
   @Override
   default Builder getBuilder() {
     return new ImmutableGeoJsonConfiguration.Builder();

@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentMap;
 public abstract class QueryParameterProfile extends ApiExtensionCache
     implements OgcApiQueryParameter {
 
+  public static final String PROFILE = "profile";
   protected final ExtensionRegistry extensionRegistry;
   protected final SchemaValidator schemaValidator;
 
@@ -33,7 +34,7 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
 
   @Override
   public final String getName() {
-    return "profile";
+    return PROFILE;
   }
 
   @Override

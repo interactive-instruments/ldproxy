@@ -17,6 +17,9 @@ import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
+import de.ii.ogcapi.features.core.domain.ImmutableProfileTransformations;
+import de.ii.ogcapi.features.core.domain.Profile;
+import de.ii.ogcapi.features.core.domain.ProfileTransformations;
 import de.ii.ogcapi.features.gml.domain.GmlConfiguration;
 import de.ii.ogcapi.features.gml.domain.GmlConfiguration.Conformance;
 import de.ii.ogcapi.features.gml.domain.GmlWriter;
@@ -35,8 +38,11 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.WithConnectionInfo;
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.gml.domain.ConnectionInfoWfsHttp;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
@@ -241,6 +247,46 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return GmlConfiguration.class;
+  }
+
+  @Override
+  public boolean supportsProfile(Profile profile) {
+    return profile == Profile.AS_LINK;
+  }
+
+  @Override
+  public Optional<PropertyTransformations> getPropertyTransformations(
+      FeatureTypeConfigurationOgcApi collectionData,
+      Optional<FeatureSchema> schema,
+      Profile profile) {
+    if (schema.isEmpty()) {
+      return getPropertyTransformations(collectionData);
+    }
+
+    ImmutableProfileTransformations.Builder builder = new ImmutableProfileTransformations.Builder();
+    schema
+        .map(SchemaBase::getAllNestedProperties)
+        .ifPresent(
+            properties ->
+                properties.stream()
+                    .filter(SchemaBase::isFeatureRef)
+                    .forEach(
+                        property ->
+                            FeatureFormatExtension.getTemplate(property)
+                                .ifPresent(
+                                    template ->
+                                        builder.putTransformations(
+                                            property.getFullPathAsString(),
+                                            ImmutableList.of(
+                                                new ImmutablePropertyTransformation.Builder()
+                                                    .stringFormat(template)
+                                                    .build())))));
+
+    ProfileTransformations profileTransformations = builder.build();
+    return Optional.of(
+        getPropertyTransformations(collectionData)
+            .map(pts -> pts.mergeInto(profileTransformations))
+            .orElse(profileTransformations));
   }
 
   @Override

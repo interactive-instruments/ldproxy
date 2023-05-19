@@ -316,8 +316,6 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   }
 
   String LINK_WILDCARD = "*{objectType=Link}";
-  String REF_WILDCARD = "*{type=FEATURE_REF}";
-  String REF_ARRAY_WILDCARD = "*{type=FEATURE_REF_ARRAY}";
 
   @Value.Check
   default FeaturesHtmlConfiguration transformLinks() {
@@ -340,6 +338,7 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
     return this;
   }
 
+  /* TODO: remove once asLink is supported
   @Value.Check
   default FeaturesHtmlConfiguration transformRefs() {
     if (!hasTransformation(
@@ -362,6 +361,7 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
     return this;
   }
 
+  // TODO: remove once asLink is supported
   @Value.Check
   default FeaturesHtmlConfiguration transformRefArrays() {
     if (!hasTransformation(
@@ -383,6 +383,7 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
 
     return this;
   }
+   */
 
   class IgnoreLinksWildcardSerializer
       extends StdConverter<

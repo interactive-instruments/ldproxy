@@ -22,6 +22,7 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
 
   public List<Link> generateLinks(
       URICustomizer uriBuilder,
+      Profile profile,
       ApiMediaType mediaType,
       List<ApiMediaType> alternateMediaTypes,
       ApiMediaType collectionMediaType,
@@ -53,6 +54,13 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
             .rel("collection")
             .type(collectionMediaType.type().toString())
             .title(i18n.get("collectionLink", language))
+            .build());
+
+    builder.add(
+        new ImmutableLink.Builder()
+            .href(profile.getUri())
+            .rel("profile")
+            .title(i18n.get("profileLink", language))
             .build());
 
     return builder.build();

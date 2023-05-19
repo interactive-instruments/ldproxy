@@ -17,6 +17,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesLinksGenerator;
 import de.ii.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
+import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
@@ -35,6 +36,7 @@ import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.features.domain.FeatureStream.Result;
 import de.ii.xtraplatform.features.domain.FeatureStream.ResultBase;
@@ -136,6 +138,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         null,
         queryInput,
         query,
+        queryInput.getProfile(),
         queryInput.getFeatureProvider(),
         null,
         outputFormat,
@@ -195,6 +198,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         featureId,
         queryInput,
         query,
+        queryInput.getProfile(),
         queryInput.getFeatureProvider(),
         persistentUri,
         outputFormat,
@@ -213,6 +217,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       String featureId,
       QueryInput queryInput,
       FeatureQuery query,
+      Profile requestedProfile,
       FeatureProvider2 featureProvider,
       String canonicalUri,
       FeatureFormatExtension outputFormat,
@@ -225,6 +230,12 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
 
     QueriesHandler.ensureCollectionIdExists(api.getData(), collectionId);
     QueriesHandler.ensureFeatureProviderSupportsQueries(featureProvider);
+
+    // negotiate profile, if the format does not support the selected profile
+    Profile profile =
+        outputFormat.supportsProfile(requestedProfile)
+            ? requestedProfile
+            : outputFormat.negotiateProfile(requestedProfile);
 
     Optional<CrsTransformer> crsTransformer = Optional.empty();
 
@@ -245,6 +256,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                     query.getOffset(),
                     query.getLimit(),
                     defaultPageSize.orElse(0),
+                    profile,
                     requestContext.getMediaType(),
                     alternateMediaTypes,
                     i18n,
@@ -252,6 +264,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             : new FeatureLinksGenerator()
                 .generateLinks(
                     requestContext.getUriCustomizer(),
+                    profile,
                     requestContext.getMediaType(),
                     alternateMediaTypes,
                     outputFormat.getCollectionMediaType(),
@@ -267,14 +280,13 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             .map(cfg -> cfg.getFeatureType().orElse(collectionId))
             .orElse(collectionId);
 
+    Optional<FeatureSchema> schema =
+        Optional.ofNullable(featureProvider.getData().getTypes().get(featureTypeId));
     ImmutableFeatureTransformationContextGeneric.Builder transformationContext =
         new ImmutableFeatureTransformationContextGeneric.Builder()
             .api(api)
             .apiData(api.getData())
-            .featureSchemas(
-                ImmutableMap.of(
-                    collectionId,
-                    Optional.ofNullable(featureProvider.getData().getTypes().get(featureTypeId))))
+            .featureSchemas(ImmutableMap.of(collectionId, schema))
             .ogcApiRequest(requestContext)
             .crsTransformer(crsTransformer)
             .codelists(
@@ -320,7 +332,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
 
       propertyTransformations =
           outputFormat
-              .getPropertyTransformations(api.getData().getCollections().get(collectionId))
+              .getPropertyTransformations(
+                  api.getData().getCollections().get(collectionId), schema, profile)
               .map(
                   pt ->
                       ImmutableMap.of(

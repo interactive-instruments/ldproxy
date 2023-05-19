@@ -35,6 +35,8 @@ public interface FeaturesCoreQueriesHandler
 
     FeatureQuery getQuery();
 
+    Profile getProfile();
+
     FeatureProvider2 getFeatureProvider();
 
     EpsgCrs getDefaultCrs();
@@ -61,6 +63,8 @@ public interface FeaturesCoreQueriesHandler
     String getFeatureId();
 
     FeatureQuery getQuery();
+
+    Profile getProfile();
 
     FeatureProvider2 getFeatureProvider();
 
