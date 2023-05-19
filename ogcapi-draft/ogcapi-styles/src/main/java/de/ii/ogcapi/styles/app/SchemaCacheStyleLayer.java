@@ -10,7 +10,7 @@ package de.ii.ogcapi.styles.app;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
-import de.ii.ogcapi.features.geojson.domain.SchemaDeriverReturnables;
+import de.ii.ogcapi.features.core.domain.SchemaDeriverFeatures;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -38,14 +38,14 @@ public class SchemaCacheStyleLayer extends JsonSchemaCache {
 
     WithTransformationsApplied schemaTransformer = new WithTransformationsApplied();
 
-    SchemaDeriverReturnables schemaDeriverReturnables =
-        new SchemaDeriverReturnables(
+    SchemaDeriverFeatures schemaDeriverFeatures =
+        new SchemaDeriverFeatures(
             version,
             schemaUri,
             collectionData.getLabel(),
             Optional.empty(),
             codelistSupplier.get());
 
-    return (JsonSchemaDocument) schema.accept(schemaTransformer).accept(schemaDeriverReturnables);
+    return (JsonSchemaDocument) schema.accept(schemaTransformer).accept(schemaDeriverFeatures);
   }
 }

@@ -10,8 +10,8 @@ package de.ii.ogcapi.collections.schema.app;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
+import de.ii.ogcapi.features.core.domain.SchemaDeriverFeatures;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
-import de.ii.ogcapi.features.geojson.domain.SchemaDeriverReturnables;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -22,13 +22,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public class SchemaCacheReturnables extends JsonSchemaCache {
-
-  private static final String DEFAULT_FLATTENING_SEPARATOR = ".";
+public class SchemaCacheFeatures extends JsonSchemaCache {
 
   private final Supplier<List<Codelist>> codelistSupplier;
 
-  public SchemaCacheReturnables(Supplier<List<Codelist>> codelistSupplier) {
+  public SchemaCacheFeatures(Supplier<List<Codelist>> codelistSupplier) {
+    super();
     this.codelistSupplier = codelistSupplier;
   }
 
@@ -50,14 +49,14 @@ public class SchemaCacheReturnables extends JsonSchemaCache {
             .map(WithTransformationsApplied::new)
             .orElse(new WithTransformationsApplied());
 
-    SchemaDeriverReturnables schemaDeriverReturnables =
-        new SchemaDeriverReturnables(
+    SchemaDeriverFeatures schemaDeriverFeatures =
+        new SchemaDeriverFeatures(
             version,
             schemaUri,
             collectionData.getLabel(),
             Optional.empty(),
             codelistSupplier.get());
 
-    return (JsonSchemaDocument) schema.accept(schemaTransformer).accept(schemaDeriverReturnables);
+    return (JsonSchemaDocument) schema.accept(schemaTransformer).accept(schemaDeriverFeatures);
   }
 }

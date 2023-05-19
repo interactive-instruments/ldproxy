@@ -97,7 +97,13 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
 
   @Override
   protected Schema<?> getSchemaForLiteralType(
-      Type type, Optional<String> label, Optional<String> description, Optional<String> unit) {
+      Type type,
+      Optional<String> label,
+      Optional<String> description,
+      Optional<String> unit,
+      Optional<String> role,
+      Optional<String> refCollectionId,
+      Optional<String> refApiLandingPage) {
     Schema<?> valueSchema;
     switch (type) {
       case INTEGER:
@@ -128,7 +134,7 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
   }
 
   @Override
-  protected Schema<?> getSchemaForGeometry(FeatureSchema schema) {
+  protected Schema<?> getSchemaForGeometry(FeatureSchema schema, Optional<String> role) {
     Schema<?> oapiSchema;
     switch (schema.getGeometryType().orElse(SimpleFeatureGeometry.ANY)) {
       case POINT:
@@ -191,6 +197,18 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
   @Override
   protected Schema<?> withRequired(Schema<?> oapiSchema) {
     oapiSchema.nullable(false);
+    return oapiSchema;
+  }
+
+  @Override
+  protected Schema<?> withReadOnly(Schema<?> oapiSchema) {
+    oapiSchema.readOnly(true);
+    return oapiSchema;
+  }
+
+  @Override
+  protected Schema<?> withWriteOnly(Schema<?> oapiSchema) {
+    oapiSchema.writeOnly(true);
     return oapiSchema;
   }
 

@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
+import com.google.common.base.CaseFormat;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -75,7 +76,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
     JsonSchemaDocument.Builder builder =
         version == VERSION.V7
             ? ImmutableJsonSchemaDocumentV7.builder()
-            : ImmutableJsonSchemaDocument.builder();
+            : ImmutableJsonSchemaDocument.builder().schema(version.url());
 
     builder
         .id(schemaUri)
@@ -144,24 +145,35 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
 
   @Override
   protected JsonSchema getSchemaForLiteralType(
-      Type type, Optional<String> label, Optional<String> description, Optional<String> unit) {
+      Type type,
+      Optional<String> label,
+      Optional<String> description,
+      Optional<String> unit,
+      Optional<String> role,
+      Optional<String> refCollectionId,
+      Optional<String> refUriTemplate) {
     switch (type) {
       case INTEGER:
         return new ImmutableJsonSchemaInteger.Builder()
             .title(label)
             .description(description)
             .unit(unit)
+            .role(role)
+            .refCollectionId(refCollectionId)
+            .refUriTemplate(refUriTemplate)
             .build();
       case FLOAT:
         return new ImmutableJsonSchemaNumber.Builder()
             .title(label)
             .description(description)
             .unit(unit)
+            .role(role)
             .build();
       case BOOLEAN:
         return new ImmutableJsonSchemaBoolean.Builder()
             .title(label)
             .description(description)
+            .role(role)
             .build();
       case DATETIME:
         return new ImmutableJsonSchemaString.Builder()
@@ -169,6 +181,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
             .format("date-time")
             .title(label)
             .description(description)
+            .role(role)
             .build();
       case DATE:
         return new ImmutableJsonSchemaString.Builder()
@@ -176,6 +189,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
             .format("date")
             .title(label)
             .description(description)
+            .role(role)
             .build();
       case STRING:
       default:
@@ -183,12 +197,15 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
             .title(label)
             .description(description)
             .unit(unit)
+            .role(role)
+            .refCollectionId(refCollectionId)
+            .refUriTemplate(refUriTemplate)
             .build();
     }
   }
 
   @Override
-  protected JsonSchema getSchemaForGeometry(FeatureSchema schema) {
+  protected JsonSchema getSchemaForGeometry(FeatureSchema schema, Optional<String> role) {
     JsonSchema jsonSchema;
     switch (schema.getGeometryType().orElse(SimpleFeatureGeometry.ANY)) {
       case POINT:
@@ -220,7 +237,17 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
         jsonSchema = JsonSchemaBuildingBlocks.GEOMETRY;
         break;
     }
-    return adjustGeometry(schema, jsonSchema);
+    return adjustGeometry(
+        schema,
+        schema
+            .getRole()
+            .map(Enum::name)
+            .map(r -> CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, r))
+            .map(
+                r ->
+                    (JsonSchema)
+                        new ImmutableJsonSchemaGeometry.Builder().from(jsonSchema).role(r).build())
+            .orElse(jsonSchema));
   }
 
   protected JsonSchema adjustGeometry(FeatureSchema schema, JsonSchema jsonSchema) {
@@ -235,6 +262,16 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
   @Override
   protected JsonSchema withRequired(JsonSchema jsonSchema) {
     return modify(jsonSchema, builder -> builder.isRequired(true));
+  }
+
+  @Override
+  protected JsonSchema withReadOnly(JsonSchema jsonSchema) {
+    return modify(jsonSchema, builder -> builder.readOnly(Optional.of(true)));
+  }
+
+  @Override
+  protected JsonSchema withWriteOnly(JsonSchema jsonSchema) {
+    return modify(jsonSchema, builder -> builder.writeOnly(Optional.of(true)));
   }
 
   protected JsonSchema modify(JsonSchema jsonSchema, Consumer<JsonSchema.Builder> modifier) {

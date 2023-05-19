@@ -41,7 +41,7 @@ public class QueryParameterFSchema extends QueryParameterF {
 
   @Override
   protected boolean matchesPath(String definitionPath) {
-    return definitionPath.equals("/collections/{collectionId}/schemas/{type}");
+    return definitionPath.equals("/collections/{collectionId}/schema");
   }
 
   @Override

@@ -10,7 +10,6 @@ package de.ii.ogcapi.features.core.domain;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,35 +46,5 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
           }
         });
     builder.additionalProperties(ImmutableJsonSchemaFalse.builder().build());
-  }
-
-  @Override
-  protected JsonSchema getSchemaForGeometry(FeatureSchema schema) {
-    JsonSchema jsonSchema;
-    SimpleFeatureGeometry type = schema.getGeometryType().orElse(SimpleFeatureGeometry.ANY);
-    String baseFormat = "geometry-%s";
-    switch (type) {
-      case POINT:
-      case MULTI_POINT:
-      case LINE_STRING:
-      case MULTI_LINE_STRING:
-      case POLYGON:
-      case MULTI_POLYGON:
-      case GEOMETRY_COLLECTION:
-        jsonSchema =
-            new ImmutableJsonSchemaGeometry.Builder()
-                .format(String.format(baseFormat, type.name().toLowerCase().replace("_", "")))
-                .build();
-        break;
-      case NONE:
-        jsonSchema = JsonSchemaBuildingBlocks.NULL;
-        break;
-      case ANY:
-      default:
-        jsonSchema =
-            new ImmutableJsonSchemaRef.Builder().ref(String.format(baseFormat, "any")).build();
-        break;
-    }
-    return adjustGeometry(schema, jsonSchema);
   }
 }

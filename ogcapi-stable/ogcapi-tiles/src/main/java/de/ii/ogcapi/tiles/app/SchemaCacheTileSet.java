@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
-import de.ii.ogcapi.features.geojson.domain.SchemaDeriverReturnables;
+import de.ii.ogcapi.features.core.domain.SchemaDeriverFeatures;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -47,14 +47,14 @@ class SchemaCacheTileSet extends JsonSchemaCache {
                 PropertyTransformations.WILDCARD,
                 new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
 
-    SchemaDeriverReturnables schemaDeriverReturnables =
-        new SchemaDeriverReturnables(
+    SchemaDeriverFeatures schemaDeriverFeatures =
+        new SchemaDeriverFeatures(
             version,
             schemaUri,
             collectionData.getLabel(),
             Optional.empty(),
             codelistSupplier.get());
 
-    return (JsonSchemaDocument) schema.accept(schemaFlattener).accept(schemaDeriverReturnables);
+    return (JsonSchemaDocument) schema.accept(schemaFlattener).accept(schemaDeriverFeatures);
   }
 }

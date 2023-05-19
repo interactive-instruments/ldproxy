@@ -18,7 +18,7 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 public abstract class JsonSchemaDocument extends JsonSchemaObject {
   @JsonProperty("$schema")
-  @Value.Derived
+  @Value.Default
   public String getSchema() {
     return VERSION.V201909.url();
   }
@@ -30,6 +30,7 @@ public abstract class JsonSchemaDocument extends JsonSchemaObject {
   public abstract Map<String, JsonSchema> getDefinitions();
 
   public enum VERSION {
+    V202012("https://json-schema.org/draft/2020-12/schema", "$defs"),
     V201909("https://json-schema.org/draft/2019-09/schema", "$defs"),
     V7("http://json-schema.org/draft-07/schema#", "definitions");
 

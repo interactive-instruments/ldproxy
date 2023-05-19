@@ -36,7 +36,7 @@ public class PathParameterCollectionIdSchema extends AbstractPathParameterCollec
 
   @Override
   public boolean matchesPath(String definitionPath) {
-    return definitionPath.equals("/collections/{collectionId}/schemas/{type}");
+    return definitionPath.equals("/collections/{collectionId}/schema");
   }
 
   @Override
