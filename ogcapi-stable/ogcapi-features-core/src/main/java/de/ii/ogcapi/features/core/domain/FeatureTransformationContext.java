@@ -138,6 +138,9 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
 
   Optional<String> getQueryDescription();
 
+  // TODO: remove once a property transformation that maps to a Link object exists
+  Optional<Profile> getProfile();
+
   @Nullable
   State getState();
 

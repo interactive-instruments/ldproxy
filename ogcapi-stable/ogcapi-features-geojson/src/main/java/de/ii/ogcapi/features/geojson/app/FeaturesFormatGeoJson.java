@@ -130,18 +130,7 @@ public class FeaturesFormatGeoJson
 
   @Override
   public boolean supportsProfile(Profile profile) {
-    return profile == Profile.AS_KEY
-        || profile == Profile.AS_URI /* TODO || profile == Profile.AS_LINK */;
-  }
-
-  // TODO: remove once AS_LINK is supported
-  @Override
-  public Profile negotiateProfile(Profile profile) {
-    if (supportsProfile(profile)) {
-      return profile;
-    }
-
-    return Profile.AS_URI;
+    return profile == Profile.AS_KEY || profile == Profile.AS_URI || profile == Profile.AS_LINK;
   }
 
   @Override

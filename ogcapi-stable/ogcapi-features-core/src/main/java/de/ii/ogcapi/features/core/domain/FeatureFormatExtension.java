@@ -109,8 +109,13 @@ public interface FeatureFormatExtension extends FormatExtension {
     switch (profile) {
       default:
       case AS_KEY:
+        // nothing to transform
         return getPropertyTransformations(collectionData);
       case AS_URI:
+      case AS_LINK:
+        // TODO: Currently there is no PropertyTransformation to convert a FEATURE_REF to a Link
+        //       object, so we just map it to the URI for now. For now, the Link object must be
+        //       handled in the feature encoders of the formats that support 'rel-as-link'.
         schema
             .map(SchemaBase::getAllNestedProperties)
             .ifPresent(
@@ -128,27 +133,6 @@ public interface FeatureFormatExtension extends FormatExtension {
                                                     new ImmutablePropertyTransformation.Builder()
                                                         .stringFormat(template)
                                                         .build())))));
-        break;
-      case AS_LINK:
-        schema
-            .map(SchemaBase::getAllNestedProperties)
-            .ifPresent(
-                properties ->
-                    properties.stream()
-                        .filter(SchemaBase::isFeatureRef)
-                        .forEach(
-                            property ->
-                                getTemplate(property)
-                                    .ifPresent(
-                                        template ->
-                                            builder.putTransformations(
-                                                property.getFullPathAsString(),
-                                                ImmutableList.of(
-                                                    new ImmutablePropertyTransformation.Builder()
-                                                        // TODO: asLink not yet implemented
-                                                        .asLink(template)
-                                                        .build())))));
-        break;
     }
 
     ProfileTransformations profileTransformations = builder.build();

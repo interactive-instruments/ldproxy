@@ -303,7 +303,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             .maxAllowableOffset(query.getMaxAllowableOffset())
             .geometryPrecision(query.getGeometryPrecision())
             .isHitsOnlyIfMore(onlyHitsIfMore)
-            .showsFeatureSelfLink(showsFeatureSelfLink);
+            .showsFeatureSelfLink(showsFeatureSelfLink)
+            .profile(profile);
 
     FeatureStream featureStream;
     FeatureTokenEncoder<?> encoder;
