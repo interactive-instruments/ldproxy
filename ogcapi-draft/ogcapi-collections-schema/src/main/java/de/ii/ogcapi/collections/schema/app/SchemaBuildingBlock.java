@@ -21,9 +21,9 @@ import javax.inject.Singleton;
  * @langEn Publish the JSON Schema of the features.
  * @langDe Veröffentlichen des JSON Schema der Features.
  * @scopeEn The schema is automatically derived from the type definitions in the feature provider.
- *     Currently, JSON Schema 2020-12 and 2019-09 are supported.
+ *     Currently, JSON Schema 2020-12, 2019-09 and 07 are supported.
  * @scopeDe Das Schema wird aus den Schemainformationen im Feature-Provider abgeleitet. Aktuell wird
- *     JSON Schema 2020-12 und 2019-09 unterstützt.
+ *     JSON Schema 2020-12, 2019-09 und 07 unterstützt.
  * @conformanceEn *Feature Collections - Schema* is based on the [OGC API Features proposal for a
  *     new part
  *     'Schemas'](https://github.com/opengeospatial/ogcapi-features/tree/master/proposals/schemas)
