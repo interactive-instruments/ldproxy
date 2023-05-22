@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.hash.Funnel;
+import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.BooleanSchema;
@@ -131,6 +132,8 @@ public interface QueryExpression {
   Optional<Integer> getLimit(); // Integer or Parameter
 
   Optional<Integer> getOffset();
+
+  Optional<Profile> getProfile();
 
   Map<String, JsonNode> getParameters();
 

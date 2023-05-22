@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
+import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.features.search.domain.ImmutableParameter;
 import de.ii.ogcapi.features.search.domain.ImmutableParameters;
 import de.ii.ogcapi.features.search.domain.ImmutableStoredQueries;
@@ -546,6 +547,13 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                             "The requested media type ''{0}'' is not supported for this resource.",
                             requestContext.getMediaType())));
 
+    // negotiate profile, if the format does not support the selected profile
+    Profile requestedProfile = queryExpression.getProfile().orElse(Profile.AS_LINK);
+    Profile profile =
+        outputFormat.supportsProfile(requestedProfile)
+            ? requestedProfile
+            : outputFormat.negotiateProfile(requestedProfile);
+
     StreamingOutput streamingOutput =
         getStreamingOutput(
             requestContext,
@@ -555,6 +563,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
             collectionIds,
             featureProvider,
             outputFormat,
+            profile,
             queryInput.getShowsFeatureSelfLink(),
             queryInput.getDefaultCrs(),
             targetCrs,
@@ -731,6 +740,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       List<String> collectionIds,
       FeatureProvider2 featureProvider,
       FeatureFormatExtension outputFormat,
+      Profile profile,
       boolean showsFeatureSelfLink,
       EpsgCrs defaultCrs,
       EpsgCrs targetCrs,
@@ -781,7 +791,8 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
             .idsIncludeCollectionId(collectionIds.size() > 1)
             .queryId(queryExpression.getId())
             .queryTitle(queryExpression.getTitle())
-            .queryDescription(queryExpression.getDescription());
+            .queryDescription(queryExpression.getDescription())
+            .profile(profile);
 
     FeatureStream featureStream;
     FeatureTokenEncoder<?> encoder;
@@ -804,6 +815,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
               collectionIds,
               featureProvider,
               outputFormat,
+              profile,
               transformationContextGeneric.getServiceUrl());
     } else {
       throw new NotAcceptableException(
@@ -821,6 +833,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       List<String> collectionIds,
       FeatureProvider2 featureProvider,
       FeatureFormatExtension outputFormat,
+      Profile profile,
       String serviceUrl) {
     return IntStream.range(0, collectionIds.size())
         .boxed()
@@ -829,10 +842,15 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                 n -> getFeatureTypeId(query, n),
                 n -> {
                   String collectionId = collectionIds.get(n);
+                  Optional<FeatureSchema> schema =
+                      Optional.ofNullable(
+                          featureProvider.getData().getTypes().get(getFeatureTypeId(query, n)));
                   PropertyTransformations pt =
                       outputFormat
                           .getPropertyTransformations(
-                              Objects.requireNonNull(apiData.getCollections().get(collectionId)))
+                              Objects.requireNonNull(apiData.getCollections().get(collectionId)),
+                              schema,
+                              profile)
                           .orElseThrow();
                   if (collectionIds.size() > 1) {
                     pt =
