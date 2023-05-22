@@ -138,8 +138,7 @@ public class GmlWriterProperties implements GmlWriter {
           if (context.encoding().getXmlAttributes().contains(schema.getFullPathAsString())) {
             // encode as XML attribute
             context.encoding().writeAsXmlAtt(schema.getName(), value);
-          } else if (schema.getType() == Type.FEATURE_REF
-              || schema.getType() == Type.FEATURE_REF_ARRAY) {
+          } else if (schema.isFeatureRef()) {
             context.encoding().write("<");
             context.encoding().write(schema.getName());
             writeLinkAttribute(context, "href", value);
