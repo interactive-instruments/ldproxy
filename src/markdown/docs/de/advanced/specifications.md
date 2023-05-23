@@ -14,7 +14,7 @@ Unterstützt werden derzeit die folgenden OGC-Standards bzw. aktuellen Entwürfe
 * [OGC API - Styles, draft](https://docs.ogc.org/DRAFTS/20-009.html)
 * [OGC API - Routes - Part 1: Core, draft](https://docs.ogc.org/DRAFTS/21-000.html)
 * [OGC API - 3D GeoVolumes, draft](https://github.com/opengeospatial/ogcapi-3d-geovolumes)
-* [Common Query Language (CQL2), draft](https://docs.ogc.org/DRAFTS/21-0065.html)
+* [Common Query Language (CQL2), draft](https://docs.ogc.org/DRAFTS/21-065.html)
 
 Die in ldproxy implementierte Funktionalität weicht bei Entwürfen aufgrund der dynamischen Entwicklung i.d.R. von der in den aktuellen Entwürfen beschriebenen Spezifikation ab.
 
