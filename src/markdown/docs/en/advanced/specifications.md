@@ -14,7 +14,7 @@ The following published standards and drafts of future standards for geospatial 
 * [OGC API - Styles, draft](https://docs.ogc.org/DRAFTS/20-009.html)
 * [OGC API - Routes - Part 1: Core, draft](https://docs.ogc.org/DRAFTS/21-000.html)
 * [OGC API - 3D GeoVolumes, draft](https://github.com/opengeospatial/ogcapi-3d-geovolumes)
-* [Common Query Language (CQL2), draft](https://docs.ogc.org/DRAFTS/21-0065.html)
+* [Common Query Language (CQL2), draft](https://docs.ogc.org/DRAFTS/21-065.html)
 
 The functionality implemented in lproxy will in general differ from the current draft specifications since the drafts are changing.
 
