@@ -21,8 +21,9 @@ import de.ii.xtraplatform.docs.DocVar;
 
 /**
  * @langEn # Building Blocks
- *     <p>The OGC API functionality is split up into modules based on the OGC API standards. The
- *     modules are classified according to:
+ *     <p>The OGC API functionality is split up into modules based on [OGC API standards and other
+ *     specifications](../../advanced/specifications.html).
+ *     <p>The modules are classified according to:
  *     <p><code>
  * - The state of the **specification**
  *   - **stable**: related to approved standards or drafts in the final voting stage
@@ -40,8 +41,8 @@ import de.ii.xtraplatform.docs.DocVar;
  *     <p>## Overview
  *     <p>{@docTable:overview}
  * @langDe # Module
- *     <p>Die API-Funktionalität ist in Module aufgeteilt, die sich an den OGC API Standards
- *     orientieren.
+ *     <p>Die API-Funktionalität ist in Module aufgeteilt, die sich an den [OGC API Standards und
+ *     weiteren Spezifikationen](../../advanced/specifications.html) orientieren.
  *     <p>Die Module sind klassifiziert nach:
  *     <p><code>
  * - Dem Status der **Spezifikation**

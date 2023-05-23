@@ -1,22 +1,26 @@
 # Supported specifications and technologies
 
+This is an overview. For constraints and limitations see the documentation of the ldproxy building blocks.
+
 ## Web API Specifications
 
 The following published standards and drafts of future standards for geospatial Web APIs or HTTP APIs are implemented in ldproxy:
 
-* [OGC API - Features - Part 1: Core, Version 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0)
-* [OGC API - Features - Part 2: Coordinate Reference Systems by Reference 1.0](http://www.opengis.net/doc/IS/ogcapi-features-2/1.0)
+* [OGC API - Features - Part 1: Core, Version 1.0.1](https://docs.ogc.org/is/17-069r4/17-069r4.html)
+* [OGC API - Features - Part 2: Coordinate Reference Systems by Reference 1.0.1](https://docs.ogc.org/is/18-058r1/18-058r1.html)
 * [OGC API - Features - Part 3: Filtering, draft](https://docs.ogc.org/DRAFTS/19-079r1.html)
 * [OGC API - Features - Part 4: Create, Replace, Update and Delete, draft](https://docs.ogc.org/DRAFTS/20-002.html)
-* [OGC API - Tiles - Part 1: Core, draft](https://docs.ogc.org/DRAFTS/20-057.html)
+* [OGC API - Tiles - Part 1: Core, Version 1.0.0](https://docs.ogc.org/is/20-057/20-057.html)
 * [OGC API - Styles, draft](https://docs.ogc.org/DRAFTS/20-009.html)
-* [Common Query Language (CQL2), draft](https://docs.ogc.org/DRAFTS/21-0065.html)
+* [OGC API - Routes - Part 1: Core, draft](https://docs.ogc.org/DRAFTS/21-000.html)
+* [OGC API - 3D GeoVolumes, draft](https://github.com/opengeospatial/ogcapi-3d-geovolumes)
+* [Common Query Language (CQL2), draft](https://docs.ogc.org/DRAFTS/21-065.html)
 
-The functionality implemented in lproxy differs from the current draft specifications since the drafts are changing.
+The functionality implemented in lproxy will in general differ from the current draft specifications since the drafts are changing.
 
 Additionally, several ldproxy extensions are supported for which no official drafts are available at this time.
 
-ldproxy is certified as [OGC reference implementation for "OGC API - Features - Part 1: Core" and "OGC API - Features - Part 2: Coordinate Reference Systems by Reference"](http://www.ogc.org/resource/products/details/?pid=1705).
+ldproxy is certified as an [OGC reference implementation for "OGC API - Features - Part 1: Core" and "OGC API - Features - Part 2: Coordinate Reference Systems by Reference"](http://www.ogc.org/resource/products/details/?pid=1705).
 
 <img src='https://cite.opengeospatial.org/teamengine/site/certification-logo.gif' alt='Certified OGC Compliant Logo' height='74' style='padding:0;margin:0;border:0;'/>
 
@@ -29,26 +33,49 @@ ldproxy supports the following formats that are supported by existing tools and 
   * HTML
   * XML (only for resources specified in OGC API Features)
 * API definitions
-  * [OpenAPI 3.0](http://spec.openapis.org/oas/v3.0.3) as JSON, YAML and HTML
+  * [OpenAPI 3.0.3](http://spec.openapis.org/oas/v3.0.3) as JSON, YAML and HTML
 * Features
-  * [GeoJSON](http://tools.ietf.org/rfc/rfc7946.txt)
-  * [JSON-FG](https://github.com/opengeospatial/ogc-feat-geo-json)
+  * [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946)
+  * [JSON-FG 0.1.1](https://docs.ogc.org/DRAFTS/21-045.html)
   * HTML
-  * [GML Simple Features Profile](http://portal.opengeospatial.org/files/?artifact_id=42729) (only for WFS feature providers)
-* Tiles
+  * [GML 3.2.2](https://portal.ogc.org/files/?artifact_id=74183&version=2)
+  * [FlatGeobuf](https://flatgeobuf.org/)
+  * CSV
+  * [CityJSON 1.0](https://www.cityjson.org/specs/1.0.3/) and [CityJSON 1.1](https://www.cityjson.org/specs/1.1.3/)
+  * [glTF 2.0](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)
+    * [KHR_mesh_quantization](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_mesh_quantization)
+    * [EXT_mesh_features](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features)
+    * [EXT_structural_metadata](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata)
+    * [CESIUM_primitive_outline](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Vendor/CESIUM_primitive_outline)
+* 2D Tiles
   * [Mapbox Vector Tiles 2.1](https://github.com/mapbox/vector-tile-spec/tree/master/2.1)
-  * PNG (only for MBTiles-Tile-Provider or Map Tiles)
-  * JPEG (only for MBTiles-Tile-Provider or Map Tiles)
-  * WebP (only for MBTiles-Tile-Provider or Map Tiles)
-  * TIFF (only for MBTiles-Tile-Provider)
-* Tile set descriptions
-  * [TileJSON](https://github.com/mapbox/tilejson-spec)
-* Style encodings
-  * [Mapbox Styles](https://www.mapbox.com/mapbox-gl-js/style-spec/)
+  * PNG (not for Feature Tile Providers)
+  * JPEG (not for Feature Tile Providers)
+  * WebP (not for Feature Tile Providers)
+  * TIFF (not for Feature Tile Providers)
+* 3D Tiles
+  * [3D Tiles 1.1](https://docs.ogc.org/cs/22-025r4/22-025r4.html)
+* Tile Set metadata
+  * [OGC Two Dimensional Tile Matrix Set and Tile Set Metadata 2.0](https://docs.ogc.org/is/17-083r4/17-083r4.html)
+  * [TileJSON 3.0.0](https://github.com/mapbox/tilejson-spec/tree/master/3.0.0)
+* Tile Matrix Sets
+  * [OGC Two Dimensional Tile Matrix Set and Tile Set Metadata 2.0](https://docs.ogc.org/is/17-083r4/17-083r4.html)
+* Style encodings (styles in most formats can be shared via OGC API Styles, but are not processed by ldproxy)
+  * [MapLibre Style Spec](https://maplibre.org/maplibre-style-spec/) (styles can be used in HTML representations where MapLibre GL JS is the map client)
+  * [3D Tiles Styling](https://docs.ogc.org/cs/22-025r4/22-025r4.html#toc45) (styles can be used in HTML representations where CesiumJS is the map client)
+  * OGC SLD 1.0 
+  * OGC SLD 1.1
+  * QGIS QML
+  * ArcGIS Desktop (lyr)
+  * ArcGIS Pro (lyrx)
+* Route Encodings 
+  * [OGC Route Exchange Model, draft](https://docs.ogc.org/DRAFTS/21-001.html)
 
 HTML can be annotated with [schema.org](https://schema.org/) markup ([schema:Place](https://schema.org/Place), [schema:Dataset](https://schema.org/Dataset) and [schema:DataCatalog](https://schema.org/DataCatalog)).
 
 ## Data Providers
+
+### Features
 
 All feature data in ldproxy is provided by feature providers, where each API has one provider. Two types of providers are supported:
 
@@ -58,12 +85,16 @@ All feature data in ldproxy is provided by feature providers, where each API has
 * OGC Web Feature Services (WFS)
   * The WFS should support the query parameters `COUNT` and `STARTINDEX` in the GetFeature operation.
   
-### Tiles
+### 2D Tiles
 
 All tiles are provided by a tile provider.
 
 Three types of tile providers are supported:
 
 * Features (provided by the same API)
-* MBTiles
-* TileServer GL (only for Map Tiles)
+* [MBTiles](https://github.com/mapbox/mbtiles-spec/blob/master/1.3/spec.md)
+* HTTP (access via a xyz-URI-Template)
+
+### 3D Tiles
+
+All tiles are generated from a PostgreSQL feature provider with CityGML building features (LoD 1, LoD 2).
