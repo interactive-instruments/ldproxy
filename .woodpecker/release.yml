@@ -26,6 +26,8 @@ pipeline:
   docker:
     image: docker.ci.interactive-instruments.de/cicd/drone-docker-buildx
     privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     settings: 
       repo: iide/ldproxy
       auto_tag: true
@@ -45,6 +47,8 @@ pipeline:
   docker-latest:
     image: docker.ci.interactive-instruments.de/cicd/drone-docker-buildx
     privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     settings: 
       repo: iide/ldproxy
       tags: latest
