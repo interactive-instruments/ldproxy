@@ -56,6 +56,19 @@ public abstract class JsonSchema {
   @JsonProperty("default")
   public abstract Optional<Object> getDefault_();
 
+  public abstract Optional<Boolean> getWriteOnly();
+
+  public abstract Optional<Boolean> getReadOnly();
+
+  @JsonProperty("x-ogc-role")
+  public abstract Optional<String> getRole();
+
+  @JsonProperty("x-ogc-collectionId")
+  public abstract Optional<String> getRefCollectionId();
+
+  @JsonProperty("x-ogc-uriTemplate")
+  public abstract Optional<String> getRefUriTemplate();
+
   @JsonIgnore
   @Value.Auxiliary
   public abstract Optional<String> getName();
@@ -83,6 +96,10 @@ public abstract class JsonSchema {
     public abstract Builder name(String name);
 
     public abstract Builder isRequired(boolean isRequired);
+
+    public abstract Builder readOnly(Optional<Boolean> readOnly);
+
+    public abstract Builder writeOnly(Optional<Boolean> writeOnly);
 
     public abstract JsonSchema build();
   }

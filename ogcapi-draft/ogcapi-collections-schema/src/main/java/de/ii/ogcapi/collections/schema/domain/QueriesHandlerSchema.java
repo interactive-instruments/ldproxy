@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.collections.schema.domain;
 
-import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.collections.schema.domain.QueriesHandlerSchema.Query;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
@@ -41,7 +40,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.immutables.value.Value;
 
-@AutoMultiBind
 public interface QueriesHandlerSchema extends QueriesHandler<Query> {
 
   enum Query implements QueryIdentifier {
@@ -51,20 +49,6 @@ public interface QueriesHandlerSchema extends QueriesHandler<Query> {
   @Value.Immutable
   interface QueryInputSchema extends QueryInput {
     String getCollectionId();
-
-    boolean getIncludeLinkHeader();
-
-    Optional<String> getProfile();
-
-    String getType();
-  }
-
-  List<String> getSupportedTypes();
-
-  @Override
-  default boolean canHandle(Query queryIdentifier, QueryInput queryInput) {
-    return queryInput instanceof QueryInputSchema
-        && getSupportedTypes().contains(((QueryInputSchema) queryInput).getType());
   }
 
   default Response getResponse(
@@ -108,13 +92,7 @@ public interface QueriesHandlerSchema extends QueriesHandler<Query> {
                     .build());
 
     JsonSchemaDocument schema =
-        getJsonSchema(
-            featureSchema,
-            apiData,
-            collectionData,
-            schemaUri,
-            getVersion(queryInput.getProfile()),
-            queryInput.getType());
+        getJsonSchema(featureSchema, apiData, collectionData, schemaUri, outputFormat.getVersion());
 
     Date lastModified = getLastModified(queryInput);
     EntityTag etag =
@@ -134,8 +112,7 @@ public interface QueriesHandlerSchema extends QueriesHandler<Query> {
             HeaderCaching.of(lastModified, etag, queryInput),
             null,
             HeaderContentDisposition.of(
-                String.format(
-                    "%s.schema.%s", collectionId, outputFormat.getMediaType().fileExtension())))
+                String.format("%s.%s", collectionId, outputFormat.getMediaType().fileExtension())))
         .entity(outputFormat.getEntity(schema, collectionId, api, requestContext))
         .build();
   }
@@ -145,27 +122,12 @@ public interface QueriesHandlerSchema extends QueriesHandler<Query> {
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
       Optional<String> schemaUri,
-      VERSION version,
-      String type);
+      VERSION version);
 
   static void checkCollectionId(OgcApiDataV2 apiData, String collectionId) {
     if (!apiData.isCollectionEnabled(collectionId)) {
       throw new NotFoundException(
           String.format("The collection '%s' does not exist in this API.", collectionId));
-    }
-  }
-
-  static VERSION getVersion(Optional<String> profile) {
-    if (profile.isEmpty()) {
-      return VERSION.current();
-    }
-    switch (profile.get()) {
-      case "2019-09":
-        return VERSION.V201909;
-      case "07":
-        return VERSION.V7;
-      default:
-        return VERSION.current();
     }
   }
 }

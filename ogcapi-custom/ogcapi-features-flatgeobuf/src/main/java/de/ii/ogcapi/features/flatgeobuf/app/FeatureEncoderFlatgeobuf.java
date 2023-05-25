@@ -244,7 +244,9 @@ public class FeatureEncoderFlatgeobuf extends FeatureEncoderSfFlat {
       case OBJECT:
       case OBJECT_ARRAY:
       case VALUE_ARRAY:
+      case FEATURE_REF_ARRAY:
       case STRING:
+      case FEATURE_REF:
         column.type = ColumnType.String;
         break;
       default:

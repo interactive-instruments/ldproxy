@@ -338,6 +338,53 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
     return this;
   }
 
+  /* TODO: remove once asLink is supported
+  @Value.Check
+  default FeaturesHtmlConfiguration transformRefs() {
+    if (!hasTransformation(
+        REF_WILDCARD, transformation -> transformation.getStringFormat().isPresent())) {
+
+      Map<String, List<PropertyTransformation>> transformations =
+          withTransformation(
+              REF_WILDCARD,
+              new ImmutablePropertyTransformation.Builder()
+                  .stringFormat(
+                      "<a href=\"{{apiUri}}/collections/{{type}}/items/{{value}}\">{{value}}</a>")
+                  .build());
+
+      return new ImmutableFeaturesHtmlConfiguration.Builder()
+          .from(this)
+          .transformations(transformations)
+          .build();
+    }
+
+    return this;
+  }
+
+  // TODO: remove once asLink is supported
+  @Value.Check
+  default FeaturesHtmlConfiguration transformRefArrays() {
+    if (!hasTransformation(
+        REF_ARRAY_WILDCARD, transformation -> transformation.getStringFormat().isPresent())) {
+
+      Map<String, List<PropertyTransformation>> transformations =
+          withTransformation(
+              REF_ARRAY_WILDCARD,
+              new ImmutablePropertyTransformation.Builder()
+                  .stringFormat(
+                      "<a href=\"{{apiUri}}/collections/{{type}}/items/{{value}}\">{{value}}</a>")
+                  .build());
+
+      return new ImmutableFeaturesHtmlConfiguration.Builder()
+          .from(this)
+          .transformations(transformations)
+          .build();
+    }
+
+    return this;
+  }
+   */
+
   class IgnoreLinksWildcardSerializer
       extends StdConverter<
           Map<String, List<PropertyTransformation>>, Map<String, List<PropertyTransformation>>> {

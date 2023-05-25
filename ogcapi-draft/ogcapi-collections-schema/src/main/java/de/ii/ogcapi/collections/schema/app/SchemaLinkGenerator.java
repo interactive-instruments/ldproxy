@@ -37,23 +37,11 @@ public class SchemaLinkGenerator {
                     uriBuilder
                         .copy()
                         .ensureNoTrailingSlash()
-                        .ensureLastPathSegments("schemas", "feature")
+                        .ensureLastPathSegment("schema")
                         .removeParameters("f")
                         .toString())
                 .rel("http://www.opengis.net/def/rel/ogc/0.0/schema-item")
                 .title(i18n.get("schemaLinkFeature", language).replace("{{collection}}", label))
-                .build())
-        .add(
-            new ImmutableLink.Builder()
-                .href(
-                    uriBuilder
-                        .copy()
-                        .ensureNoTrailingSlash()
-                        .ensureLastPathSegments("schemas", "collection")
-                        .removeParameters("f")
-                        .toString())
-                .rel("http://www.opengis.net/def/rel/ogc/0.0/schema-collection")
-                .title(i18n.get("schemaLinkCollection", language).replace("{{collection}}", label))
                 .build())
         .build();
   }

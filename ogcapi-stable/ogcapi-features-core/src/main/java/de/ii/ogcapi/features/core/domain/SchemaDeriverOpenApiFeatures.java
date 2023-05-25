@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class SchemaDeriverOpenApiReturnables extends SchemaDeriverOpenApi {
+public class SchemaDeriverOpenApiFeatures extends SchemaDeriverOpenApi {
 
-  public SchemaDeriverOpenApiReturnables(
+  public SchemaDeriverOpenApiFeatures(
       String label, Optional<String> description, List<Codelist> codelists) {
     super(label, description, codelists);
   }

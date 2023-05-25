@@ -17,7 +17,6 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
-import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -596,13 +595,11 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 break;
             }
 
-            final JsonSchemaObject properties =
-                (JsonSchemaObject) jsonSchema.getProperties().get("properties");
             builder2.propertiesSchema(
                 new ImmutableJsonSchemaObject.Builder()
-                    .required(properties.getRequired())
-                    .properties(properties.getProperties())
-                    .patternProperties(properties.getPatternProperties())
+                    .required(jsonSchema.getRequired())
+                    .properties(jsonSchema.getProperties())
+                    .patternProperties(jsonSchema.getPatternProperties())
                     .build());
 
             builder.addLayers(builder2.build());

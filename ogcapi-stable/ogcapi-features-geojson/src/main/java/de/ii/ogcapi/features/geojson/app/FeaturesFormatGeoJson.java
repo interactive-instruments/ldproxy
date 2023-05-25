@@ -20,6 +20,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
+import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.features.geojson.domain.FeatureEncoderGeoJson;
@@ -125,6 +126,11 @@ public class FeaturesFormatGeoJson
   @Override
   public boolean canSupportTransactions() {
     return true;
+  }
+
+  @Override
+  public boolean supportsProfile(Profile profile) {
+    return profile == Profile.AS_KEY || profile == Profile.AS_URI || profile == Profile.AS_LINK;
   }
 
   @Override

@@ -11,103 +11,26 @@ public interface JsonSchemaBuildingBlocks {
 
   JsonSchemaNull NULL = new ImmutableJsonSchemaNull.Builder().build();
 
-  JsonSchemaArray COORDINATES =
-      new ImmutableJsonSchemaArray.Builder()
-          .minItems(2)
-          .maxItems(3)
-          .items(new ImmutableJsonSchemaNumber.Builder().build())
-          .build();
-
-  JsonSchemaObject POINT =
-      new ImmutableJsonSchemaObject.Builder()
-          .title("GeoJSON Point")
-          .addRequired("type", "coordinates")
-          .putProperties("type", getEnum("Point"))
-          .putProperties("coordinates", COORDINATES)
-          .build();
-
-  JsonSchemaObject MULTI_POINT =
-      new ImmutableJsonSchemaObject.Builder()
-          .title("GeoJSON MultiPoint")
-          .addRequired("type", "coordinates")
-          .putProperties("type", getEnum("MultiPoint"))
-          .putProperties(
-              "coordinates", new ImmutableJsonSchemaArray.Builder().items(COORDINATES).build())
-          .build();
-
-  JsonSchemaObject LINE_STRING =
-      new ImmutableJsonSchemaObject.Builder()
-          .title("GeoJSON LineString")
-          .addRequired("type", "coordinates")
-          .putProperties("type", getEnum("LineString"))
-          .putProperties(
-              "coordinates",
-              new ImmutableJsonSchemaArray.Builder().minItems(2).items(COORDINATES).build())
-          .build();
-
-  JsonSchemaObject MULTI_LINE_STRING =
-      new ImmutableJsonSchemaObject.Builder()
-          .title("GeoJSON MultiLineString")
-          .addRequired("type", "coordinates")
-          .putProperties("type", getEnum("MultiLineString"))
-          .putProperties(
-              "coordinates",
-              new ImmutableJsonSchemaArray.Builder()
-                  .items(
-                      new ImmutableJsonSchemaArray.Builder().minItems(2).items(COORDINATES).build())
-                  .build())
-          .build();
-
-  JsonSchemaObject POLYGON =
-      new ImmutableJsonSchemaObject.Builder()
-          .title("GeoJSON Polygon")
-          .addRequired("type", "coordinates")
-          .putProperties("type", getEnum("Polygon"))
-          .putProperties(
-              "coordinates",
-              new ImmutableJsonSchemaArray.Builder()
-                  .minItems(1)
-                  .items(
-                      new ImmutableJsonSchemaArray.Builder().minItems(4).items(COORDINATES).build())
-                  .build())
-          .build();
-
-  JsonSchemaObject MULTI_POLYGON =
-      new ImmutableJsonSchemaObject.Builder()
-          .title("GeoJSON MultiPolygon")
-          .addRequired("type", "coordinates")
-          .putProperties("type", getEnum("MultiPolygon"))
-          .putProperties(
-              "coordinates",
-              new ImmutableJsonSchemaArray.Builder()
-                  .items(
-                      new ImmutableJsonSchemaArray.Builder()
-                          .minItems(1)
-                          .items(
-                              new ImmutableJsonSchemaArray.Builder()
-                                  .minItems(4)
-                                  .items(COORDINATES)
-                                  .build())
-                          .build())
-                  .build())
-          .build();
-
-  // TODO add additional JSON-FG geometries
-
-  JsonSchemaOneOf GEOMETRY =
-      new ImmutableJsonSchemaOneOf.Builder()
-          .title("GeoJSON Geometry")
-          .addOneOf(POINT, MULTI_POINT, LINE_STRING, MULTI_LINE_STRING, POLYGON, MULTI_POLYGON)
-          .build();
-
-  JsonSchemaObject GEOMETRY_COLLECTION =
-      new ImmutableJsonSchemaObject.Builder()
-          .title("GeoJSON GeometryCollection")
-          .addRequired("type", "geometries")
-          .putProperties("type", getEnum("GeometryCollection"))
-          .putProperties(
-              "geometries", new ImmutableJsonSchemaArray.Builder().items(GEOMETRY).build())
-          .build();
+  JsonSchemaGeometry POINT =
+      new ImmutableJsonSchemaGeometry.Builder().format("geometry-point").build();
+  JsonSchemaGeometry MULTI_POINT =
+      new ImmutableJsonSchemaGeometry.Builder().format("geometry-multipoint").build();
+  JsonSchemaGeometry LINE_STRING =
+      new ImmutableJsonSchemaGeometry.Builder().format("geometry-linestring").build();
+  JsonSchemaGeometry MULTI_LINE_STRING =
+      new ImmutableJsonSchemaGeometry.Builder().format("geometry-multilinestring").build();
+  JsonSchemaGeometry POLYGON =
+      new ImmutableJsonSchemaGeometry.Builder().format("geometry-polygon").build();
+  JsonSchemaGeometry MULTI_POLYGON =
+      new ImmutableJsonSchemaGeometry.Builder().format("geometry-multipolygon").build();
+  JsonSchemaGeometry POLYHEDRON =
+      new ImmutableJsonSchemaGeometry.Builder().format("geometry-polyhedron").build();
+  JsonSchemaGeometry MULTI_POLYHEDRON =
+      new ImmutableJsonSchemaGeometry.Builder().format("geometry-multipolyhedron").build();
+  JsonSchemaGeometry GEOMETRY =
+      new ImmutableJsonSchemaGeometry.Builder().format("geometry-all").build();
+  JsonSchemaGeometry GEOMETRY_COLLECTION =
+      new ImmutableJsonSchemaGeometry.Builder().format("geometry-geometrycollection").build();
 
   JsonSchemaObject LINK_JSON =
       new ImmutableJsonSchemaObject.Builder()

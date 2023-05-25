@@ -8,7 +8,6 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -103,11 +102,6 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
     return false;
   }
 
-  @Value.Default
-  default Map<String, List<String>> getFields() {
-    return ImmutableMap.of("*", ImmutableList.of("*"));
-  }
-
   ApiRequestContext getOgcApiRequest();
 
   int getLimit();
@@ -143,6 +137,9 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
   Optional<String> getQueryTitle();
 
   Optional<String> getQueryDescription();
+
+  // TODO: remove once a property transformation that maps to a Link object exists
+  Optional<Profile> getProfile();
 
   @Nullable
   State getState();

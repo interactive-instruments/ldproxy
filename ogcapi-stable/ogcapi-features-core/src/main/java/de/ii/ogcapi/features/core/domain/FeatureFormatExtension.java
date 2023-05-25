@@ -8,13 +8,17 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Locale;
 import java.util.Optional;
@@ -39,6 +43,25 @@ public interface FeatureFormatExtension extends FormatExtension {
 
   default boolean canEncodeFeatures() {
     return false;
+  }
+
+  default boolean supportsProfile(Profile profile) {
+    return profile == Profile.AS_KEY || profile == Profile.AS_URI;
+  }
+
+  default Profile negotiateProfile(Profile profile) {
+    if (supportsProfile(profile)) {
+      return profile;
+    } else if (supportsProfile(Profile.AS_LINK)) {
+      return Profile.AS_LINK;
+    } else if (supportsProfile(Profile.AS_KEY)) {
+      return Profile.AS_KEY;
+    } else if (supportsProfile(Profile.AS_URI)) {
+      return Profile.AS_URI;
+    }
+
+    throw new IllegalStateException(
+        String.format("Format '%s' does not support any profile.", getMediaType().label()));
   }
 
   default Optional<FeatureTokenEncoder<?>> getFeatureEncoderPassThrough(
@@ -72,6 +95,64 @@ public interface FeatureFormatExtension extends FormatExtension {
     return formatTransformations
         .map(ft -> coreTransformations.map(ft::mergeInto).orElse(ft))
         .or(() -> coreTransformations);
+  }
+
+  default Optional<PropertyTransformations> getPropertyTransformations(
+      FeatureTypeConfigurationOgcApi collectionData,
+      Optional<FeatureSchema> schema,
+      Profile profile) {
+    if (schema.isEmpty()) {
+      return getPropertyTransformations(collectionData);
+    }
+
+    ImmutableProfileTransformations.Builder builder = new ImmutableProfileTransformations.Builder();
+    switch (profile) {
+      default:
+      case AS_KEY:
+        // nothing to transform
+        return getPropertyTransformations(collectionData);
+      case AS_URI:
+      case AS_LINK:
+        // TODO: Currently there is no PropertyTransformation to convert a FEATURE_REF to a Link
+        //       object, so we just map it to the URI for now. For now, the Link object must be
+        //       handled in the feature encoders of the formats that support 'rel-as-link'.
+        schema
+            .map(SchemaBase::getAllNestedProperties)
+            .ifPresent(
+                properties ->
+                    properties.stream()
+                        .filter(SchemaBase::isFeatureRef)
+                        .forEach(
+                            property ->
+                                getTemplate(property)
+                                    .ifPresent(
+                                        template ->
+                                            builder.putTransformations(
+                                                property.getFullPathAsString(),
+                                                ImmutableList.of(
+                                                    new ImmutablePropertyTransformation.Builder()
+                                                        .stringFormat(template)
+                                                        .build())))));
+    }
+
+    ProfileTransformations profileTransformations = builder.build();
+    return Optional.of(
+        getPropertyTransformations(collectionData)
+            .map(pts -> pts.mergeInto(profileTransformations))
+            .orElse(profileTransformations));
+  }
+
+  static Optional<String> getTemplate(FeatureSchema property) {
+    return Optional.ofNullable(
+        property
+            .getRefUriTemplate()
+            .orElse(
+                property
+                    .getRefType()
+                    .map(
+                        refType ->
+                            String.format("{{apiUri}}/collections/%s/items/{{value}}", refType))
+                    .orElse(null)));
   }
 
   default boolean supportsHitsOnly() {

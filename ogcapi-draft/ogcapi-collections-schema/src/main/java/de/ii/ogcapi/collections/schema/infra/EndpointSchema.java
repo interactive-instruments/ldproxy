@@ -9,16 +9,13 @@ package de.ii.ogcapi.collections.schema.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import dagger.Lazy;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
-import de.ii.ogcapi.collections.schema.domain.ImmutableQueryInputSchema.Builder;
+import de.ii.ogcapi.collections.schema.domain.ImmutableQueryInputSchema;
 import de.ii.ogcapi.collections.schema.domain.QueriesHandlerSchema;
-import de.ii.ogcapi.collections.schema.domain.QueriesHandlerSchema.Query;
 import de.ii.ogcapi.collections.schema.domain.QueriesHandlerSchema.QueryInputSchema;
 import de.ii.ogcapi.collections.schema.domain.SchemaConfiguration;
 import de.ii.ogcapi.collections.schema.domain.SchemaFormatExtension;
-import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
@@ -37,11 +34,9 @@ import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -54,11 +49,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @title Feature Schema
- * @path collections/{collectionId}/schemas/{type}
- * @langEn JSON Schema of the GeoJSON features (`type`: "feature") or GeoJSON feature collection
- *     (`type`: "collection") for the collection `collectionId`.
- * @langDe JSON Schema der GeoJSON-Features (`type`: "feature") oder GeoJSON-Feature-Collection
- *     (`type`: "collection") für die Collection `collectionId`.
+ * @path collections/{collectionId}/schema
+ * @langEn JSON Schema of the features of the collection `collectionId`.
+ * @langDe JSON Schema der Features der Collection `collectionId`.
  * @ref:formats {@link de.ii.ogcapi.collections.schema.domain.SchemaFormatExtension}
  */
 @Singleton
@@ -69,36 +62,17 @@ public class EndpointSchema extends EndpointSubCollection {
 
   private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-  private final Lazy<Set<QueriesHandlerSchema>> queryHandlers;
+  private final QueriesHandlerSchema queryHandler;
 
   @Inject
-  public EndpointSchema(
-      ExtensionRegistry extensionRegistry, Lazy<Set<QueriesHandlerSchema>> queryHandlers) {
+  public EndpointSchema(ExtensionRegistry extensionRegistry, QueriesHandlerSchema queryHandler) {
     super(extensionRegistry);
-    this.queryHandlers = queryHandlers;
+    this.queryHandler = queryHandler;
   }
 
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return SchemaConfiguration.class;
-  }
-
-  @Override
-  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return super.isEnabledForApi(apiData)
-        && apiData
-            .getExtension(GeoJsonConfiguration.class)
-            .map(ExtensionConfiguration::isEnabled)
-            .orElse(false);
-  }
-
-  @Override
-  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-    return super.isEnabledForApi(apiData, collectionId)
-        && apiData
-            .getExtension(GeoJsonConfiguration.class, collectionId)
-            .map(ExtensionConfiguration::isEnabled)
-            .orElse(false);
   }
 
   @Override
@@ -114,7 +88,7 @@ public class EndpointSchema extends EndpointSubCollection {
         new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("collections")
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_SCHEMA);
-    String subSubPath = "/schemas/{type}";
+    String subSubPath = "/schema";
     String path = "/collections/{collectionId}" + subSubPath;
     List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
     Optional<OgcApiPathParameter> optCollectionIdParam =
@@ -163,40 +137,25 @@ public class EndpointSchema extends EndpointSubCollection {
   }
 
   @GET
-  @Path("/{collectionId}/schemas/{type}")
+  @Path("/{collectionId}/schema")
   @Produces("application/schema+json")
   public Response getSchema(
       @Auth Optional<User> optionalUser,
       @Context OgcApi api,
       @Context ApiRequestContext requestContext,
       @Context UriInfo uriInfo,
-      @PathParam("collectionId") String collectionId,
-      @PathParam("type") String type) {
+      @PathParam("collectionId") String collectionId) {
 
-    String definitionPath = "/collections/{collectionId}/schemas/{type}";
+    String definitionPath = "/collections/{collectionId}/schema";
     checkPathParameter(
         extensionRegistry, api.getData(), definitionPath, "collectionId", collectionId);
-    checkPathParameter(extensionRegistry, api.getData(), definitionPath, "type", type);
-
-    Optional<String> profile = Optional.ofNullable(requestContext.getParameters().get("profile"));
 
     QueryInputSchema queryInput =
-        new Builder()
+        new ImmutableQueryInputSchema.Builder()
             .from(getGenericQueryInput(api.getData()))
             .collectionId(collectionId)
-            .profile(profile)
-            .type(type)
             .build();
 
-    QueriesHandlerSchema queriesHandler =
-        queryHandlers.get().stream()
-            .filter(handler -> handler.canHandle(Query.SCHEMA, queryInput))
-            .findFirst()
-            .orElseThrow(
-                () ->
-                    new NotFoundException(
-                        String.format("Schema type %s is not supported", queryInput.getType())));
-
-    return queriesHandler.handle(QueriesHandlerSchema.Query.SCHEMA, queryInput, requestContext);
+    return queryHandler.handle(QueriesHandlerSchema.Query.SCHEMA, queryInput, requestContext);
   }
 }

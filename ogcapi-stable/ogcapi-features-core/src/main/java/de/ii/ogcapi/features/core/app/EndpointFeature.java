@@ -143,6 +143,7 @@ public class EndpointFeature extends EndpointFeaturesDefinition {
             .collectionId(collectionId)
             .featureId(featureId)
             .query(query)
+            .profile(QueryParameterProfileFeatures.evaluate(queryParameterSet))
             .featureProvider(providers.getFeatureProviderOrThrow(api.getData(), collectionData))
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs());
 

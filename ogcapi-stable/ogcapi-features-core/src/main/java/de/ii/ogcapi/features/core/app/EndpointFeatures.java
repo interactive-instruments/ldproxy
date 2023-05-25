@@ -284,6 +284,7 @@ public class EndpointFeatures extends EndpointFeaturesDefinition {
             .from(getGenericQueryInput(api.getData()))
             .collectionId(collectionId)
             .query(query)
+            .profile(QueryParameterProfileFeatures.evaluate(queryParameterSet))
             .featureProvider(providers.getFeatureProviderOrThrow(api.getData(), collectionData))
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .defaultPageSize(Optional.of(defaultPageSize))

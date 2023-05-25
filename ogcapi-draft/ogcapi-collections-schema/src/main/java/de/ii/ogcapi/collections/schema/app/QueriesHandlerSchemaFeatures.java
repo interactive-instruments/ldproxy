@@ -23,7 +23,6 @@ import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
@@ -32,19 +31,15 @@ import javax.ws.rs.core.Response;
 
 @Singleton
 @AutoBind
-public class QueriesHandlerSchemaReturnables implements QueriesHandlerSchema {
-
-  private static final String SCHEMA_TYPE_FEATURE = "feature";
-  private static final String SCHEMA_TYPE_COLLECTION = "collection";
+public class QueriesHandlerSchemaFeatures implements QueriesHandlerSchema {
 
   private final FeaturesCoreProviders providers;
   private final I18n i18n;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
   private final JsonSchemaCache schemaCache;
-  private final JsonSchemaCache schemaCacheCollection;
 
   @Inject
-  public QueriesHandlerSchemaReturnables(
+  public QueriesHandlerSchemaFeatures(
       I18n i18n, FeaturesCoreProviders providers, EntityRegistry entityRegistry) {
     this.i18n = i18n;
     this.providers = providers;
@@ -52,13 +47,7 @@ public class QueriesHandlerSchemaReturnables implements QueriesHandlerSchema {
         ImmutableMap.of(
             Query.SCHEMA, QueryHandler.with(QueryInputSchema.class, this::getSchemaResponse));
     this.schemaCache =
-        new SchemaCacheReturnables(() -> entityRegistry.getEntitiesForType(Codelist.class));
-    this.schemaCacheCollection = new SchemaCacheReturnablesCollection();
-  }
-
-  @Override
-  public List<String> getSupportedTypes() {
-    return List.of(SCHEMA_TYPE_FEATURE, SCHEMA_TYPE_COLLECTION);
+        new SchemaCacheFeatures(() -> entityRegistry.getEntitiesForType(Codelist.class));
   }
 
   @Override
@@ -78,18 +67,7 @@ public class QueriesHandlerSchemaReturnables implements QueriesHandlerSchema {
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
       Optional<String> schemaUri,
-      VERSION version,
-      String type) {
-    JsonSchemaDocument schema = null;
-
-    if (type.equals(SCHEMA_TYPE_FEATURE)) {
-      schema = schemaCache.getSchema(featureSchema, apiData, collectionData, schemaUri, version);
-    } else if (type.equals(SCHEMA_TYPE_COLLECTION)) {
-      schema =
-          schemaCacheCollection.getSchema(
-              featureSchema, apiData, collectionData, schemaUri, version);
-    }
-
-    return schema;
+      VERSION version) {
+    return schemaCache.getSchema(featureSchema, apiData, collectionData, schemaUri, version);
   }
 }
