@@ -85,7 +85,8 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
   private final FeaturesCoreProviders providers;
   private final EntityRegistry entityRegistry;
   private final FeaturesCoreValidation featuresCoreValidator;
-  private final CrsTransformer toEcef;
+  private final CrsTransformerFactory crsTransformerFactory;
+  private CrsTransformer toEcef;
   private final URI serviceUri;
   private final Metadata3dSchemaCache schemaCache;
 
@@ -100,13 +101,8 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
     this.providers = providers;
     this.entityRegistry = entityRegistry;
     this.featuresCoreValidator = featuresCoreValidator;
-    this.toEcef =
-        crsTransformerFactory
-            .getTransformer(OgcCrs.CRS84h, EpsgCrs.of(4978))
-            .orElseThrow(
-                () ->
-                    new IllegalStateException(
-                        "Could not create a CRS transformer from CRS84h to EPSG:4978."));
+    this.crsTransformerFactory = crsTransformerFactory;
+    this.toEcef = null;
     this.serviceUri = servicesContext.getUri();
     this.schemaCache = schemaCache;
   }
@@ -139,14 +135,26 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
   @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
 
+    ImmutableValidationResult.Builder builder =
+        ImmutableValidationResult.builder().mode(apiValidation);
+
+    if (toEcef == null) {
+      toEcef =
+          crsTransformerFactory
+              .getTransformer(OgcCrs.CRS84h, EpsgCrs.of(4978))
+              .orElseGet(
+                  () -> {
+                    builder.addErrors(
+                        "Could not create a CRS transformer from CRS84h to EPSG:4978.");
+                    return null;
+                  });
+    }
+
     // no additional operational checks for now, only validation; we can stop, if no validation is
     // requested
     if (apiValidation == MODE.NONE) {
-      return ValidationResult.of();
+      return builder.build();
     }
-
-    ImmutableValidationResult.Builder builder =
-        ImmutableValidationResult.builder().mode(apiValidation);
 
     final OgcApiDataV2 apiData = api.getData();
     final Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(apiData);
@@ -336,7 +344,7 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
     if (!OgcCrs.CRS84h.equals(crs)) {
       throw new IllegalArgumentException(
           String.format(
-              "glTF-Binary requires a 3D coordinate reference system. Found: '%s'",
+              "glTF-Binary requires that coordinates are in WGS 84 longitude/latitude/ellipsoidal height (OGC:CRS84h). Found: '%s'",
               crs.toUriString()));
     }
 
