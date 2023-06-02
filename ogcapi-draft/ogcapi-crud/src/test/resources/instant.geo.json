@@ -1,0 +1,12 @@
+{
+    "type": "Feature", 
+    "id": 1, 
+    "geometry": { "type": "Point", "coordinates": [7.2789399, 50.7772485] }, 
+    "properties": {
+        "foo": {"instant": "2019-02-05T07:00:00Z"}, 
+        "bar": {
+            "title": "5209062A5209047O", 
+            "href": "https://demo.ldproxy.net/strassen/collections/abschnitteaeste/items/5209062A5209047O"
+        }
+    }
+}

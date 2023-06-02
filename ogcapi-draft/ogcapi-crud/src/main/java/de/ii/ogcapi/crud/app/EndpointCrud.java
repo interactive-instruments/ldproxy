@@ -13,11 +13,13 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputFeatureCreate;
-import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputFeatureDelete;
 import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputFeatureReplace;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.QueryInputFeature;
+import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeature;
+import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -397,6 +399,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             .featureProvider(featureProvider)
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .requestBody(requestBody)
+            .profile(Profile.AS_KEY)
             .build();
 
     return commandHandler.putItemResponse(queryInput, apiRequestContext);
@@ -465,6 +468,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             .featureProvider(featureProvider)
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .requestBody(requestBody)
+            .profile(Profile.AS_KEY)
             .build();
 
     return commandHandler.patchItemResponse(queryInput, apiRequestContext);
@@ -485,11 +489,44 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
 
     checkTransactional(featureProvider);
 
-    QueryInputFeatureDelete queryInput =
-        ImmutableQueryInputFeatureDelete.builder()
-            .featureProvider(featureProvider)
+    FeatureTypeConfigurationOgcApi collectionData =
+        api.getData().getCollections().get(collectionId);
+
+    FeaturesCoreConfiguration coreConfiguration =
+        collectionData
+            .getExtension(FeaturesCoreConfiguration.class)
+            .filter(ExtensionConfiguration::isEnabled)
+            .filter(
+                cfg ->
+                    cfg.getItemType().orElse(FeaturesCoreConfiguration.ItemType.feature)
+                        != FeaturesCoreConfiguration.ItemType.unknown)
+            .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
+
+    String featureType = coreConfiguration.getFeatureType().orElse(collectionId);
+
+    // FIXME Use FeaturesQuery to generate the query
+    ImmutableFeatureQuery.Builder queryBuilder =
+        ImmutableFeatureQuery.builder()
+            .type(featureType)
+            .filter(In.of(ScalarLiteral.of(featureId)))
+            .returnsSingleFeature(true)
+            .crs(coreConfiguration.getDefaultEpsgCrs())
+            .schemaScope(FeatureSchemaBase.Scope.MUTATIONS)
+            .eTag(Type.STRONG);
+
+    FeatureQuery query =
+        processCoordinatePrecision(queryBuilder, coreConfiguration.getCoordinatePrecision())
+            .build();
+
+    QueryInputFeature queryInput =
+        new ImmutableQueryInputFeature.Builder()
+            .from(getGenericQueryInput(api.getData()))
             .collectionId(collectionId)
             .featureId(featureId)
+            .query(query)
+            .featureProvider(featureProvider)
+            .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
+            .profile(Profile.AS_KEY)
             .build();
 
     return commandHandler.deleteItemResponse(queryInput, apiRequestContext);
