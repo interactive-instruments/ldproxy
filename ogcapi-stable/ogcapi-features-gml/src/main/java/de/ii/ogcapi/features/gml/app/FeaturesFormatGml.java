@@ -258,8 +258,8 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
   public Optional<PropertyTransformations> getPropertyTransformations(
       FeatureTypeConfigurationOgcApi collectionData,
       Optional<FeatureSchema> schema,
-      Profile profile) {
-    if (schema.isEmpty()) {
+      Optional<Profile> profile) {
+    if (profile.isEmpty() || schema.isEmpty()) {
       return getPropertyTransformations(collectionData);
     }
 

@@ -547,12 +547,14 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                             "The requested media type ''{0}'' is not supported for this resource.",
                             requestContext.getMediaType())));
 
-    // negotiate profile, if the format does not support the selected profile
-    Profile requestedProfile = queryExpression.getProfile().orElse(Profile.AS_LINK);
-    Profile profile =
-        outputFormat.supportsProfile(requestedProfile)
-            ? requestedProfile
-            : outputFormat.negotiateProfile(requestedProfile);
+    // negotiate profile, if profiles are applicable and the format does not support the selected
+    // profile
+    Optional<Profile> profile =
+        queryInput.getProfileIsApplicable()
+            ? Optional.of(
+                outputFormat.negotiateProfile(
+                    queryExpression.getProfile().orElse(Profile.getDefault())))
+            : Optional.empty();
 
     StreamingOutput streamingOutput =
         getStreamingOutput(
@@ -740,7 +742,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       List<String> collectionIds,
       FeatureProvider2 featureProvider,
       FeatureFormatExtension outputFormat,
-      Profile profile,
+      Optional<Profile> profile,
       boolean showsFeatureSelfLink,
       EpsgCrs defaultCrs,
       EpsgCrs targetCrs,
@@ -833,7 +835,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       List<String> collectionIds,
       FeatureProvider2 featureProvider,
       FeatureFormatExtension outputFormat,
-      Profile profile,
+      Optional<Profile> profile,
       String serviceUrl) {
     return IntStream.range(0, collectionIds.size())
         .boxed()

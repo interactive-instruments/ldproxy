@@ -173,13 +173,13 @@ public class FeaturesFormatHtml
   public Optional<PropertyTransformations> getPropertyTransformations(
       FeatureTypeConfigurationOgcApi collectionData,
       Optional<FeatureSchema> schema,
-      Profile profile) {
-    if (schema.isEmpty()) {
+      Optional<Profile> profile) {
+    if (profile.isEmpty() || schema.isEmpty()) {
       return getPropertyTransformations(collectionData);
     }
 
     ImmutableProfileTransformations.Builder builder = new ImmutableProfileTransformations.Builder();
-    switch (profile) {
+    switch (profile.get()) {
       default:
       case AS_KEY:
         return getPropertyTransformations(collectionData);
