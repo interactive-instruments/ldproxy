@@ -64,7 +64,9 @@ public class QueryParametersStoredQueries implements RuntimeQueryParametersExten
       Optional<String> collectionId,
       String definitionPath,
       HttpMethods method) {
-    if (collectionId.isPresent() || !"/search/{queryId}".equals(definitionPath)) {
+    if (collectionId.isPresent()
+        || !"/search/{queryId}".equals(definitionPath)
+        || method != HttpMethods.GET) {
       return ImmutableList.of();
     }
 
