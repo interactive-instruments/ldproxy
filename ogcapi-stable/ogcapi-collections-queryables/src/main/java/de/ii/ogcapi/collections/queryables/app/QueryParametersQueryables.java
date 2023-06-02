@@ -90,7 +90,9 @@ public class QueryParametersQueryables
       Optional<String> collectionId,
       String definitionPath,
       HttpMethods method) {
-    if (collectionId.isEmpty() || !"/collections/{collectionId}/items".equals(definitionPath)) {
+    if (collectionId.isEmpty()
+        || !"/collections/{collectionId}/items".equals(definitionPath)
+        || method != HttpMethods.GET) {
       return ImmutableList.of();
     }
 
