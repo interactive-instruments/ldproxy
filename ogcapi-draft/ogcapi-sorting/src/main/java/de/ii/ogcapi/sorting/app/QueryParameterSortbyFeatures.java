@@ -103,6 +103,11 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    if (Objects.isNull(value)) {
+      // no default value
+      return null;
+    }
+
     // the validation against the schema has verified that only valid properties are listed
     ImmutableList.Builder<SortKey> builder = new ImmutableList.Builder<>();
     for (String key : KEYS_SPLITTER.split(value)) {

@@ -128,6 +128,11 @@ public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    if (Objects.isNull(value)) {
+      // no default value
+      return null;
+    }
+
     switch (getType()) {
       case INTEGER:
       case FLOAT:

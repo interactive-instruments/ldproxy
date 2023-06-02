@@ -72,6 +72,11 @@ public abstract class QueryParameterF extends ApiExtensionCache
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    if (Objects.isNull(value)) {
+      // no default value
+      return null;
+    }
+
     return extensionRegistry.getExtensionsForType(getFormatClass()).stream()
         .filter(f -> f.isEnabledForApi(api.getData()))
         .map(FormatExtension::getMediaType)

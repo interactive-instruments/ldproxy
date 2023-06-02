@@ -25,11 +25,13 @@ import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -83,7 +85,7 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
     EpsgCrs targetCrs;
     try {
-      targetCrs = EpsgCrs.fromString(value);
+      targetCrs = Objects.nonNull(value) ? EpsgCrs.fromString(value) : OgcCrs.CRS84;
     } catch (Throwable e) {
       throw new IllegalArgumentException(
           String.format("The parameter '%s' is invalid: %s", getName(), e.getMessage()), e);

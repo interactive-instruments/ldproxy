@@ -92,6 +92,10 @@ public class QueryParameterProfileFeatures extends QueryParameterProfile
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    if (value == null) {
+      return Profile.getDefault();
+    }
+
     switch (value) {
       case "rel-as-key":
         return Profile.AS_KEY;
