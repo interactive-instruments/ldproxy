@@ -13,6 +13,7 @@ import de.ii.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ogcapi.crs.domain.CrsSupport;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.DefaultCrs;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -85,7 +86,21 @@ public class QueryParameterCrsFeatures extends ApiExtensionCache
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
     EpsgCrs targetCrs;
     try {
-      targetCrs = Objects.nonNull(value) ? EpsgCrs.fromString(value) : OgcCrs.CRS84;
+      if (Objects.nonNull(value)) {
+        targetCrs = EpsgCrs.fromString(value);
+      } else {
+        DefaultCrs defaultCrs =
+            optionalCollectionData
+                .map(cd -> cd.getExtension(FeaturesCoreConfiguration.class))
+                .flatMap(cfg -> cfg.map(FeaturesCoreConfiguration::getDefaultCrs))
+                .or(
+                    () ->
+                        api.getData()
+                            .getExtension(FeaturesCoreConfiguration.class)
+                            .map(FeaturesCoreConfiguration::getDefaultCrs))
+                .orElse(DefaultCrs.CRS84);
+        targetCrs = (defaultCrs == DefaultCrs.CRS84h) ? OgcCrs.CRS84h : OgcCrs.CRS84;
+      }
     } catch (Throwable e) {
       throw new IllegalArgumentException(
           String.format("The parameter '%s' is invalid: %s", getName(), e.getMessage()), e);
