@@ -24,7 +24,6 @@ import de.ii.ogcapi.html.domain.MapClient.Popup;
 import de.ii.ogcapi.html.domain.MapClient.Source.TYPE;
 import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.ogcapi.html.domain.OgcApiView;
-import de.ii.ogcapi.tiles.domain.TileLayer.GeometryType;
 import de.ii.ogcapi.tiles.domain.TilePoint;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
@@ -51,6 +50,9 @@ import org.slf4j.LoggerFactory;
 @Value.Immutable
 public abstract class TileSetsView extends OgcApiView {
   private static final Logger LOGGER = LoggerFactory.getLogger(TileSetsView.class);
+
+  private static final Map<Integer, String> GEOMETRY_TYPES =
+      ImmutableMap.of(0, "points", 1, "lines", 2, "polygons");
 
   public abstract I18n i18n();
 
@@ -410,15 +412,19 @@ public abstract class TileSetsView extends OgcApiView {
         .filter(layer -> layer.getDataType() == DataType.vector)
         .map(
             layer ->
-                layer.getGeometryType().isPresent()
-                    ? new SimpleImmutableEntry<>(
-                        layer.getId(), ImmutableList.of(layer.getGeometryType().get().name()))
-                    : new SimpleImmutableEntry<>(
-                        layer.getId(),
-                        ImmutableList.of(
-                            GeometryType.points.name(),
-                            GeometryType.lines.name(),
-                            GeometryType.polygons.name())))
+                layer
+                    .getGeometryDimension()
+                    .map(
+                        dim ->
+                            new SimpleImmutableEntry<>(
+                                layer.getId(), ImmutableList.of(GEOMETRY_TYPES.get(dim))))
+                    .orElse(
+                        new SimpleImmutableEntry<>(
+                            layer.getId(),
+                            ImmutableList.of(
+                                GEOMETRY_TYPES.get(0),
+                                GEOMETRY_TYPES.get(1),
+                                GEOMETRY_TYPES.get(2)))))
         .collect(
             ImmutableSetMultimap.toImmutableSetMultimap(Map.Entry::getKey, Map.Entry::getValue));
   }
