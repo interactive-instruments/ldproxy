@@ -59,8 +59,7 @@ public class TilesOnCollection implements CollectionExtension {
     // The hrefs are URI templates and not URIs, so the templates should not be percent encoded!
     final TilesLinkGenerator tilesLinkGenerator = new TilesLinkGenerator();
 
-    if (!isNested
-        && isExtensionEnabled(featureTypeConfiguration, TilesConfiguration.class)
+    if (isExtensionEnabled(featureTypeConfiguration, TilesConfiguration.class)
         && isExtensionEnabled(
             featureTypeConfiguration,
             TilesConfiguration.class,
@@ -83,7 +82,7 @@ public class TilesOnCollection implements CollectionExtension {
 
       collection.addAllLinks(
           tilesLinkGenerator.generateCollectionLinks(
-              uriCustomizer, dataType.get(), i18n, language));
+              uriCustomizer, featureTypeConfiguration.getId(), dataType.get(), i18n, language));
     }
 
     return collection;
