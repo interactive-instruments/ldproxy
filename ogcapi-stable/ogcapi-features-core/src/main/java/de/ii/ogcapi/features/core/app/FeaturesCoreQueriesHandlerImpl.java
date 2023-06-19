@@ -217,7 +217,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       String featureId,
       QueryInput queryInput,
       FeatureQuery query,
-      Profile requestedProfile,
+      Optional<Profile> requestedProfile,
       FeatureProvider2 featureProvider,
       String canonicalUri,
       FeatureFormatExtension outputFormat,
@@ -232,10 +232,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     QueriesHandler.ensureFeatureProviderSupportsQueries(featureProvider);
 
     // negotiate profile, if the format does not support the selected profile
-    Profile profile =
-        outputFormat.supportsProfile(requestedProfile)
-            ? requestedProfile
-            : outputFormat.negotiateProfile(requestedProfile);
+    Optional<Profile> profile = requestedProfile.map(outputFormat::negotiateProfile);
 
     Optional<CrsTransformer> crsTransformer = Optional.empty();
 

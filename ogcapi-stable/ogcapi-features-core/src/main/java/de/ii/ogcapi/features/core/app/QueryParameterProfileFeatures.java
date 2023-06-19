@@ -10,19 +10,19 @@ package de.ii.ogcapi.features.core.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.common.domain.QueryParameterProfile;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -52,10 +52,15 @@ import javax.inject.Singleton;
 public class QueryParameterProfileFeatures extends QueryParameterProfile
     implements TypedQueryParameter<Profile> {
 
+  private final FeaturesCoreProviders providers;
+
   @Inject
   public QueryParameterProfileFeatures(
-      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+      ExtensionRegistry extensionRegistry,
+      SchemaValidator schemaValidator,
+      FeaturesCoreProviders providers) {
     super(extensionRegistry, schemaValidator);
+    this.providers = providers;
   }
 
   @Override
@@ -65,8 +70,9 @@ public class QueryParameterProfileFeatures extends QueryParameterProfile
 
   @Override
   protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-    return definitionPath.equals("/collections/{collectionId}/items")
-        || definitionPath.equals("/collections/{collectionId}/items/{featureId}");
+    return (definitionPath.equals("/collections/{collectionId}/items")
+            || definitionPath.equals("/collections/{collectionId}/items/{featureId}"))
+        && usesFeatureRef(apiData);
   }
 
   @Override
@@ -92,6 +98,10 @@ public class QueryParameterProfileFeatures extends QueryParameterProfile
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    if (value == null) {
+      return Profile.getDefault();
+    }
+
     switch (value) {
       case "rel-as-key":
         return Profile.AS_KEY;
@@ -111,9 +121,16 @@ public class QueryParameterProfileFeatures extends QueryParameterProfile
     }
   }
 
-  public static Profile evaluate(QueryParameterSet queryParameterSet) {
-    return (Profile)
-        Objects.requireNonNullElse(
-            queryParameterSet.getTypedValues().get(PROFILE), Profile.getDefault());
+  private boolean usesFeatureRef(OgcApiDataV2 apiData) {
+    return apiData.getCollections().values().stream()
+        .anyMatch(
+            collectionData ->
+                providers
+                    .getFeatureSchema(apiData, collectionData)
+                    .map(
+                        schema ->
+                            schema.getAllNestedProperties().stream()
+                                .anyMatch(SchemaBase::isFeatureRef))
+                    .orElse(false));
   }
 }

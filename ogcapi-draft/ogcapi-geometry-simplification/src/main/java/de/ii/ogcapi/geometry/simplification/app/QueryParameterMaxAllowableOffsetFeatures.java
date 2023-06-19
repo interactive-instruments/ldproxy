@@ -24,6 +24,7 @@ import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -67,6 +68,11 @@ public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    if (Objects.isNull(value)) {
+      // no default value
+      return null;
+    }
+
     try {
       return Double.parseDouble(value);
     } catch (NumberFormatException e) {

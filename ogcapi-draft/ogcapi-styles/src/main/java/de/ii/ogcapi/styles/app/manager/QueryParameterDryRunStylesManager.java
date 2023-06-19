@@ -66,7 +66,7 @@ public class QueryParameterDryRunStylesManager extends ApiExtensionCache
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
-    return Boolean.parseBoolean(value);
+    return Objects.nonNull(value) && Boolean.parseBoolean(value);
   }
 
   @Override

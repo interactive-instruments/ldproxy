@@ -31,6 +31,7 @@ import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransien
 import de.ii.xtraplatform.tiles.domain.TileGenerationSchema;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -91,6 +92,11 @@ public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> collectionData) {
+    if (Objects.isNull(value)) {
+      // no default value
+      return null;
+    }
+
     try {
       if (value.contains(DATETIME_INTERVAL_SEPARATOR)) {
         return TemporalLiteral.of(Splitter.on(DATETIME_INTERVAL_SEPARATOR).splitToList(value));

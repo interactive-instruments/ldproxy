@@ -27,6 +27,7 @@ import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -159,6 +160,22 @@ public class QueryParameterLimitTile extends ApiExtensionCache
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> collectionData) {
+    if (Objects.isNull(value)) {
+      return collectionData
+          .flatMap(
+              cd ->
+                  tilesProviders
+                      .getTileProvider(api.getData(), cd)
+                      .map(TileProvider::getData)
+                      .map(TileProviderData::getTilesetDefaults)
+                      .filter(defaults -> defaults instanceof TileGenerationOptions)
+                      .flatMap(
+                          defaults ->
+                              Optional.ofNullable(
+                                  ((TileGenerationOptions) defaults).getFeatureLimit())))
+          .orElse(null);
+    }
+
     try {
       return Integer.parseInt(value);
     } catch (Throwable e) {
