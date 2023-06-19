@@ -35,7 +35,7 @@ public interface FeaturesCoreQueriesHandler
 
     FeatureQuery getQuery();
 
-    Profile getProfile();
+    Optional<Profile> getProfile();
 
     FeatureProvider2 getFeatureProvider();
 
@@ -64,7 +64,7 @@ public interface FeaturesCoreQueriesHandler
 
     FeatureQuery getQuery();
 
-    Profile getProfile();
+    Optional<Profile> getProfile();
 
     FeatureProvider2 getFeatureProvider();
 

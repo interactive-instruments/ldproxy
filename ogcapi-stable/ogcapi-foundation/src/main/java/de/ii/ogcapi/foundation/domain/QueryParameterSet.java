@@ -48,8 +48,7 @@ public interface QueryParameterSet {
     for (int pass = 1; pass <= numberOfParsingPasses; pass++) {
       for (OgcApiQueryParameter parameter : getDefinitions()) {
         if (parameter instanceof TypedQueryParameter<?>
-            && ((TypedQueryParameter<?>) parameter).getPriority() == pass
-            && values.containsKey(parameter.getName())) {
+            && ((TypedQueryParameter<?>) parameter).getPriority() == pass) {
           Object parsedValue =
               ((TypedQueryParameter<?>) parameter)
                   .parse(values.get(parameter.getName()), typedValues, api, optionalCollectionData);

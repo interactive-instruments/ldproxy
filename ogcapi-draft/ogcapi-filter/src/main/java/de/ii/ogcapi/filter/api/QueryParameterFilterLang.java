@@ -110,10 +110,6 @@ public class QueryParameterFilterLang extends ApiExtensionCache
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> collectionData) {
-    if (value == null) {
-      // no default value
-      return null;
-    }
     return Objects.equals(value, FILTER_LANG_CQL2_JSON) ? Cql.Format.JSON : Cql.Format.TEXT;
   }
 

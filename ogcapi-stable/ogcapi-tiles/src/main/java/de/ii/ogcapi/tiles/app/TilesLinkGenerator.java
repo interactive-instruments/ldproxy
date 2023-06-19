@@ -211,7 +211,11 @@ public class TilesLinkGenerator extends DefaultLinksGenerator {
    * @return a list with links
    */
   public List<Link> generateCollectionLinks(
-      URICustomizer uriBuilder, DataType dataType, I18n i18n, Optional<Locale> language) {
+      URICustomizer uriBuilder,
+      String collectionId,
+      DataType dataType,
+      I18n i18n,
+      Optional<Locale> language) {
 
     return ImmutableList.<Link>builder()
         .add(
@@ -220,7 +224,8 @@ public class TilesLinkGenerator extends DefaultLinksGenerator {
                     uriBuilder
                         .copy()
                         .ensureNoTrailingSlash()
-                        .ensureLastPathSegment("tiles")
+                        .ensureLastPathSegment(collectionId)
+                        .ensureLastPathSegments("tiles")
                         .removeParameters("f")
                         .toString())
                 .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-" + dataType.toString())

@@ -39,7 +39,6 @@ import de.ii.ogcapi.tiles.domain.ImmutableTileSets;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSets.Builder;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
-import de.ii.ogcapi.tiles.domain.TileLayer;
 import de.ii.ogcapi.tiles.domain.TileSet;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
@@ -583,15 +582,15 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 .orElse(SimpleFeatureGeometry.ANY)) {
               case POINT:
               case MULTI_POINT:
-                builder2.geometryType(TileLayer.GeometryType.points);
+                builder2.geometryDimension(0);
                 break;
               case LINE_STRING:
               case MULTI_LINE_STRING:
-                builder2.geometryType(TileLayer.GeometryType.lines);
+                builder2.geometryDimension(1);
                 break;
               case POLYGON:
               case MULTI_POLYGON:
-                builder2.geometryType(TileLayer.GeometryType.polygons);
+                builder2.geometryDimension(2);
                 break;
             }
 

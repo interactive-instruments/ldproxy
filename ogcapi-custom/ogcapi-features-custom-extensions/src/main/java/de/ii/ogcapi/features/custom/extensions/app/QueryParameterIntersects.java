@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -103,6 +104,11 @@ public class QueryParameterIntersects extends ApiExtensionCache
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    if (Objects.isNull(value)) {
+      // no default value
+      return null;
+    }
+
     FeatureTypeConfigurationOgcApi collectionData =
         optionalCollectionData.orElseThrow(
             () ->

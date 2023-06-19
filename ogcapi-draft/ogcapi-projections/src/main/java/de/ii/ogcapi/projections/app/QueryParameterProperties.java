@@ -30,6 +30,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -139,6 +140,11 @@ public class QueryParameterProperties extends ApiExtensionCache
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> collectionData) {
+    if (Objects.isNull(value)) {
+      // no default value
+      return null;
+    }
+
     try {
       return Splitter.on(',').omitEmptyStrings().trimResults().splitToList(value);
     } catch (Throwable e) {

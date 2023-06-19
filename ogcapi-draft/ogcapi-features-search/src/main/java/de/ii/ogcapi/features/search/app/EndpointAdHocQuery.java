@@ -40,6 +40,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -243,7 +244,8 @@ public class EndpointAdHocQuery extends EndpointRequiresFeatures implements Conf
       @Context HttpServletRequest request,
       InputStream requestBody) {
 
-    ensureSupportForFeatures(api.getData());
+    OgcApiDataV2 apiData = api.getData();
+    ensureSupportForFeatures(apiData);
 
     QueryExpression query;
     try {
@@ -254,13 +256,13 @@ public class EndpointAdHocQuery extends EndpointRequiresFeatures implements Conf
     }
 
     FeaturesCoreConfiguration coreConfiguration =
-        api.getData().getExtension(FeaturesCoreConfiguration.class).orElseThrow();
+        apiData.getExtension(FeaturesCoreConfiguration.class).orElseThrow();
 
     QueryInputQuery queryInput =
         new ImmutableQueryInputQuery.Builder()
-            .from(getGenericQueryInput(api.getData()))
+            .from(getGenericQueryInput(apiData))
             .query(query)
-            .featureProvider(providers.getFeatureProviderOrThrow(api.getData()))
+            .featureProvider(providers.getFeatureProviderOrThrow(apiData))
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .minimumPageSize(Optional.ofNullable(coreConfiguration.getMinimumPageSize()))
             .defaultPageSize(Optional.ofNullable(coreConfiguration.getDefaultPageSize()))
@@ -273,6 +275,17 @@ public class EndpointAdHocQuery extends EndpointRequiresFeatures implements Conf
                     .map(SearchConfiguration::getAllLinksAreLocal)
                     .orElse(false))
             .isStoredQuery(false)
+            .profileIsApplicable(
+                apiData.getCollections().values().stream()
+                    .anyMatch(
+                        collectionData ->
+                            providers
+                                .getFeatureSchema(apiData, collectionData)
+                                .map(
+                                    schema ->
+                                        schema.getAllNestedProperties().stream()
+                                            .anyMatch(SchemaBase::isFeatureRef))
+                                .orElse(false)))
             .build();
 
     return queryHandler.handle(Query.QUERY, queryInput, requestContext);
