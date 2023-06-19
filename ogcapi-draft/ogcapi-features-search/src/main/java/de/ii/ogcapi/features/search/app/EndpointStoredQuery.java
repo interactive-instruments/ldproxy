@@ -35,6 +35,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -201,7 +202,7 @@ public class EndpointStoredQuery extends EndpointRequiresFeatures {
     QueryExpression query = repository.get(apiData, queryId);
 
     List<OgcApiQueryParameter> parameterDefinitions =
-        getQueryParameters(extensionRegistry, api.getData(), "/search/{queryId}");
+        getQueryParameters(extensionRegistry, apiData, "/search/{queryId}");
     QueryParameterSet queryParameterSet =
         QueryParameterSet.of(parameterDefinitions, requestContext.getParameters())
             .evaluate(api, Optional.empty());
@@ -218,13 +219,13 @@ public class EndpointStoredQuery extends EndpointRequiresFeatures {
     query = query.resolveParameters(requestContext.getParameters(), schemaValidator);
 
     FeaturesCoreConfiguration coreConfiguration =
-        api.getData().getExtension(FeaturesCoreConfiguration.class).orElseThrow();
+        apiData.getExtension(FeaturesCoreConfiguration.class).orElseThrow();
 
     QueryInputQuery queryInput =
         new ImmutableQueryInputQuery.Builder()
-            .from(getGenericQueryInput(api.getData()))
+            .from(getGenericQueryInput(apiData))
             .query(query)
-            .featureProvider(providers.getFeatureProviderOrThrow(api.getData()))
+            .featureProvider(providers.getFeatureProviderOrThrow(apiData))
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .minimumPageSize(Optional.ofNullable(coreConfiguration.getMinimumPageSize()))
             .defaultPageSize(Optional.ofNullable(coreConfiguration.getDefaultPageSize()))
@@ -236,6 +237,17 @@ public class EndpointStoredQuery extends EndpointRequiresFeatures {
                     .getExtension(SearchConfiguration.class)
                     .map(SearchConfiguration::getAllLinksAreLocal)
                     .orElse(false))
+            .profileIsApplicable(
+                apiData.getCollections().values().stream()
+                    .anyMatch(
+                        collectionData ->
+                            providers
+                                .getFeatureSchema(apiData, collectionData)
+                                .map(
+                                    schema ->
+                                        schema.getAllNestedProperties().stream()
+                                            .anyMatch(SchemaBase::isFeatureRef))
+                                .orElse(false)))
             .isStoredQuery(true)
             .build();
 
