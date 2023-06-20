@@ -347,7 +347,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       lastModified = getLastModified(queryInput);
 
     } else {
-      ResultReduced<byte[]> result = reduce(featureStream, true, encoder, propertyTransformations);
+      ResultReduced<byte[]> result =
+          reduce(featureStream, Objects.nonNull(featureId), encoder, propertyTransformations);
 
       bytes = result.reduced();
 
@@ -358,7 +359,9 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     }
 
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
 
     // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched
     // and OGC-numberReturned headers also when streaming the response
@@ -389,7 +392,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
 
   private StreamingOutput stream(
       FeatureStream featureTransformStream,
-      boolean failIfEmpty,
+      boolean failIfNoFeatures,
       final FeatureTokenEncoder<?> encoder,
       Map<String, PropertyTransformations> propertyTransformations) {
 
@@ -403,13 +406,13 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                   .toCompletableFuture()
                   .join();
 
-      run(stream, failIfEmpty);
+      run(stream, failIfNoFeatures);
     };
   }
 
   private ResultReduced<byte[]> reduce(
       FeatureStream featureTransformStream,
-      boolean failIfEmpty,
+      boolean failIfNoFeatures,
       final FeatureTokenEncoder<?> encoder,
       Map<String, PropertyTransformations> propertyTransformations) {
 
@@ -422,16 +425,16 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 .toCompletableFuture()
                 .join();
 
-    return run(stream, failIfEmpty);
+    return run(stream, failIfNoFeatures);
   }
 
-  private <U extends ResultBase> U run(Supplier<U> stream, boolean failIfEmpty) {
+  private <U extends ResultBase> U run(Supplier<U> stream, boolean failIfNoFeatures) {
     try {
       U result = stream.get();
 
       result.getError().ifPresent(FeatureStream::processStreamError);
 
-      if (result.isEmpty() && failIfEmpty) {
+      if (failIfNoFeatures && !result.hasFeatures()) {
         throw new NotFoundException("The requested feature does not exist.");
       }
 
