@@ -2,6 +2,6 @@
 dependencies {
     layers group: 'de.interactive_instruments', name: 'xtraplatform-core', version: '5.2.0'
     layers group: 'de.interactive_instruments', name: 'xtraplatform-native', version: "2.2.0-${platform}"
-    layers group: 'de.interactive_instruments', name: 'xtraplatform-spatial', version: '6.2.0-maintenance-6.2-SNAPSHOT'
+    layers group: 'de.interactive_instruments', name: 'xtraplatform-spatial', version: '6.2.1-maintenance-6.2-SNAPSHOT'
 }
 
