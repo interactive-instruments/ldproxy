@@ -315,9 +315,11 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
       if (tileResourceCache.tileResourceExists(r)) {
         Optional<InputStream> subtreeContent = tileResourceCache.getTileResource(r);
         if (subtreeContent.isPresent()) {
-          ByteArrayOutputStream baos = new ByteArrayOutputStream();
-          ByteStreams.copy(subtreeContent.get(), baos);
-          result = baos.toByteArray();
+          try (InputStream is = subtreeContent.get()) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ByteStreams.copy(is, baos);
+            result = baos.toByteArray();
+          }
         }
       }
     } catch (IOException e) {

@@ -554,7 +554,7 @@ public class Seeding implements OgcApiBackgroundTask {
             .getTileResource(subtree)
             .map(
                 stream -> {
-                  try {
+                  try (stream) {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     ByteStreams.copy(stream, baos);
                     return baos.toByteArray();

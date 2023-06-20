@@ -230,9 +230,11 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
       if (tileResourceCache.tileResourceExists(r)) {
         Optional<InputStream> contentStream = tileResourceCache.getTileResource(r);
         if (contentStream.isPresent()) {
-          ByteArrayOutputStream baos = new ByteArrayOutputStream();
-          ByteStreams.copy(contentStream.get(), baos);
-          content = baos.toByteArray();
+          try (InputStream is = contentStream.get()) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ByteStreams.copy(is, baos);
+            content = baos.toByteArray();
+          }
         }
       }
     } catch (IOException e) {
