@@ -1,5 +1,23 @@
 # Changelog
 
+## v3.4.1 (21/06/2023)
+
+#### Improvements
+
+-  improve stability during startup [#985](https://github.com/interactive-instruments/ldproxy/issues/985)
+
+#### Fixed bugs
+
+-  3D Tiles seeding fails with 'too many open files' [#997](https://github.com/interactive-instruments/ldproxy/issues/997)
+-  accessing a non-existent feature does not return a 404 [#996](https://github.com/interactive-instruments/ldproxy/issues/996)
+-  fix CRUD issues [#988](https://github.com/interactive-instruments/ldproxy/issues/988)
+-  memory leak when seeding a MBTiles cache [#968](https://github.com/interactive-instruments/ldproxy/issues/968)
+
+#### Dependency updates
+
+-  upgrade sqlite driver from 3.40.0.0 to 3.41.2.2 [#1002](https://github.com/interactive-instruments/ldproxy/issues/1002)
+
+---
 ## v3.4.0 (05/05/2023)
 
 #### Implemented enhancements
