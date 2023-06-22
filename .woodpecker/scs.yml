@@ -1,4 +1,7 @@
 
+depends_on:
+  - release
+
 clone: 
   git:
     image: woodpeckerci/plugin-git
