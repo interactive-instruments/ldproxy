@@ -151,6 +151,12 @@ public interface FeatureFormatExtension extends FormatExtension {
                     .map(
                         refType ->
                             String.format("{{apiUri}}/collections/%s/items/{{value}}", refType))
+                    .or(
+                        () ->
+                            property.getConcat().stream()
+                                .filter(p -> p.getRefType().isPresent())
+                                .map(p -> "{{apiUri}}/collections/{{type}}/items/{{value}}")
+                                .findFirst())
                     .orElse(null)));
   }
 

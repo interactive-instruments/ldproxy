@@ -104,6 +104,11 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
                 property instanceof JsonSchemaArray
                     ? ((JsonSchemaArray) property).getItems()
                     : property)
+        .flatMap(
+            property ->
+                property instanceof JsonSchemaOneOf
+                    ? ((JsonSchemaOneOf) property).getOneOf().stream()
+                    : Stream.of(property))
         .filter(property -> property instanceof JsonSchemaRef && property.getName().isPresent())
         .filter(
             ref ->
@@ -419,5 +424,19 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
   @Override
   protected JsonSchema withArrayWrapper(JsonSchema schema) {
     return new ImmutableJsonSchemaArray.Builder().name(schema.getName()).items(schema).build();
+  }
+
+  @Override
+  protected JsonSchema withOneOfWrapper(
+      Collection<JsonSchema> schema,
+      Optional<String> name,
+      Optional<String> label,
+      Optional<String> description) {
+    return new ImmutableJsonSchemaOneOf.Builder()
+        .oneOf(schema)
+        .name(name)
+        .title(label)
+        .description(description)
+        .build();
   }
 }
