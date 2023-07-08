@@ -8,16 +8,25 @@
 package de.ii.ogcapi.features.jsonfg.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.schema.domain.SchemaConfiguration;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
+import de.ii.ogcapi.features.geojson.domain.ModifiableStateGeoJson;
 import de.ii.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableLink;
+import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -26,7 +35,6 @@ import javax.inject.Singleton;
 public class JsonFgWriterDescribedby implements GeoJsonWriter {
 
   private final I18n i18n;
-  boolean isEnabled;
 
   @Inject
   public JsonFgWriterDescribedby(I18n i18n) {
@@ -48,108 +56,120 @@ public class JsonFgWriterDescribedby implements GeoJsonWriter {
   public void onStart(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
-    isEnabled = isEnabled(context.encoding());
+    Map<String, Optional<Link>> collectionMap = getCollectionMap(context.encoding());
+    boolean isEnabled =
+        collectionMap.keySet().stream()
+            .anyMatch(collectionId -> isEnabled(context.encoding(), collectionId));
 
-    if (isEnabled && context.encoding().isFeatureCollection()) {
-      String label =
-          context
-              .encoding()
-              .getApiData()
-              .getCollections()
-              .get(context.encoding().getCollectionId())
-              .getLabel();
-      context
-          .encoding()
-          .getState()
-          .addCurrentFeatureCollectionLinks(
-              new ImmutableLink.Builder()
-                  .rel("describedby")
-                  .href(
-                      context.encoding().getServiceUrl()
-                          + "/collections/"
-                          + context.encoding().getCollectionId()
-                          + "/schemas/collection")
-                  .type("application/schema+json")
-                  .title(
-                      i18n.get("schemaLinkCollection", context.encoding().getLanguage())
-                          .replace("{{collection}}", label))
-                  .build(),
-              new ImmutableLink.Builder()
-                  .rel("describedby")
-                  .href("https://geojson.org/schema/FeatureCollection.json")
-                  .type("application/schema+json")
-                  .title("This document is a GeoJSON FeatureCollection") // TODO add i18n
-                  .build());
+    if (isEnabled) {
+      ModifiableStateGeoJson state = context.encoding().getState();
+
+      List<Optional<Link>> links =
+          collectionMap.values().stream().distinct().collect(Collectors.toUnmodifiableList());
+      if (links.size() == 1 && links.get(0).isPresent()) {
+        Link link = links.get(0).get();
+        if (context.encoding().isFeatureCollection()) {
+          state.addCurrentFeatureCollectionLinks(link);
+        } else {
+          state.addCurrentFeatureLinks(link);
+        }
+      }
+
+      // add generic schemas
+      if (context.encoding().isFeatureCollection()) {
+        state.addCurrentFeatureCollectionLinks(
+            new ImmutableLink.Builder()
+                .rel("describedby")
+                .href("https://beta.schemas.opengis.net/json-fg/featurecollection.json")
+                .type("application/schema+json")
+                .title("This document is a JSON-FG FeatureCollection") // TODO add i18n
+                .build(),
+            new ImmutableLink.Builder()
+                .rel("describedby")
+                .href("https://geojson.org/schema/FeatureCollection.json")
+                .type("application/schema+json")
+                .title("This document is a GeoJSON FeatureCollection") // TODO add i18n
+                .build());
+      } else {
+        state.addCurrentFeatureLinks(
+            new ImmutableLink.Builder()
+                .rel("describedby")
+                .href("https://beta.schemas.opengis.net/json-fg/feature.json")
+                .type("application/schema+json")
+                .title("This document is a JSON-FG Feature") // TODO add i18n
+                .build(),
+            new ImmutableLink.Builder()
+                .rel("describedby")
+                .href("https://geojson.org/schema/Feature.json")
+                .type("application/schema+json")
+                .title("This document is a GeoJSON Feature") // TODO add i18n
+                .build());
+      }
     }
 
     // next chain for extensions
     next.accept(context);
   }
 
-  @Override
-  public void onFeatureStart(
-      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
-      throws IOException {
-    if (isEnabled && !context.encoding().isFeatureCollection()) {
-      String label =
-          context
-              .encoding()
-              .getApiData()
-              .getCollections()
-              .get(context.encoding().getCollectionId())
-              .getLabel();
-      context
-          .encoding()
-          .getState()
-          .addCurrentFeatureLinks(
-              new ImmutableLink.Builder()
-                  .rel("describedby")
-                  .href(
-                      context.encoding().getServiceUrl()
-                          + "/collections/"
-                          + context.encoding().getCollectionId()
-                          + "/schemas/item")
-                  .type("application/schema+json")
-                  .title(
-                      i18n.get("schemaLinkFeature", context.encoding().getLanguage())
-                          .replace("{{collection}}", label))
-                  .build(),
-              new ImmutableLink.Builder()
-                  .rel("describedby")
-                  .href("https://geojson.org/schema/Feature.json")
-                  .type("application/schema+json")
-                  .title("This document is a GeoJSON Feature") // TODO add i18n
-                  .build());
-    }
+  private Map<String, Optional<Link>> getCollectionMap(
+      FeatureTransformationContextGeoJson transformationContext) {
+    ImmutableMap.Builder<String, Optional<Link>> builder = ImmutableMap.builder();
+    boolean isFeatureCollection = transformationContext.isFeatureCollection();
+    transformationContext
+        .getFeatureSchemas()
+        .keySet()
+        .forEach(
+            collectionId -> {
+              if (transformationContext
+                      .getApiData()
+                      .getExtension(SchemaConfiguration.class, collectionId)
+                      .filter(ExtensionConfiguration::isEnabled)
+                      .isPresent()
+                  && isEnabled(transformationContext, collectionId)) {
+                String label =
+                    Optional.ofNullable(
+                            transformationContext.getApiData().getCollections().get(collectionId))
+                        .map(FeatureTypeConfiguration::getLabel)
+                        .orElse(collectionId);
+                Link link =
+                    new ImmutableLink.Builder()
+                        .rel("describedby")
+                        .href(
+                            transformationContext.getServiceUrl()
+                                + "/collections/"
+                                + collectionId
+                                + "/schemas/"
+                                + (isFeatureCollection ? "collection" : "feature"))
+                        .type("application/schema+json")
+                        .title(
+                            i18n.get("schemaLinkCollection", transformationContext.getLanguage())
+                                .replace("{{collection}}", label))
+                        .build();
+                builder.put(collectionId, Optional.of(link));
+              } else {
+                builder.put(collectionId, Optional.empty());
+              }
+            });
 
-    // next chain for extensions
-    next.accept(context);
+    return builder.build();
   }
 
-  private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {
+  private boolean isEnabled(
+      FeatureTransformationContextGeoJson transformationContext, String collectionId) {
     return transformationContext
-            .getApiData()
-            .getCollections()
-            .get(transformationContext.getCollectionId())
-            .getExtension(JsonFgConfiguration.class)
-            .filter(JsonFgConfiguration::isEnabled)
-            .filter(cfg -> Objects.requireNonNullElse(cfg.getDescribedby(), false))
-            .filter(
-                cfg ->
-                    cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.describedby)
+        .getApiData()
+        .getExtension(JsonFgConfiguration.class, collectionId)
+        .map(
+            cfg ->
+                cfg.isEnabled()
+                    && Objects.requireNonNullElse(cfg.getDescribedby(), false)
+                    && (cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.describedby)
                         || transformationContext
                             .getMediaType()
                             .equals(FeaturesFormatJsonFg.MEDIA_TYPE)
                         || transformationContext
                             .getMediaType()
-                            .equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE))
-            .isPresent()
-        && transformationContext
-            .getApiData()
-            .getCollections()
-            .get(transformationContext.getCollectionId())
-            .getExtension(SchemaConfiguration.class)
-            .filter(SchemaConfiguration::isEnabled)
-            .isPresent();
+                            .equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE)))
+        .orElse(false);
   }
 }
