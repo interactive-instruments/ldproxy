@@ -36,6 +36,8 @@ public class JsonFgWriterDescribedby implements GeoJsonWriter {
 
   private final I18n i18n;
 
+  Map<String, Optional<Link>> collectionMap;
+
   @Inject
   public JsonFgWriterDescribedby(I18n i18n) {
     this.i18n = i18n;
@@ -56,55 +58,67 @@ public class JsonFgWriterDescribedby implements GeoJsonWriter {
   public void onStart(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
-    Map<String, Optional<Link>> collectionMap = getCollectionMap(context.encoding());
+    collectionMap = getCollectionMap(context.encoding());
     boolean isEnabled =
         collectionMap.keySet().stream()
             .anyMatch(collectionId -> isEnabled(context.encoding(), collectionId));
 
-    if (isEnabled) {
+    if (isEnabled && context.encoding().isFeatureCollection()) {
       ModifiableStateGeoJson state = context.encoding().getState();
 
       List<Optional<Link>> links =
           collectionMap.values().stream().distinct().collect(Collectors.toUnmodifiableList());
       if (links.size() == 1 && links.get(0).isPresent()) {
-        Link link = links.get(0).get();
-        if (context.encoding().isFeatureCollection()) {
-          state.addCurrentFeatureCollectionLinks(link);
-        } else {
-          state.addCurrentFeatureLinks(link);
-        }
+        state.addCurrentFeatureCollectionLinks(links.get(0).get());
       }
 
       // add generic schemas
-      if (context.encoding().isFeatureCollection()) {
-        state.addCurrentFeatureCollectionLinks(
-            new ImmutableLink.Builder()
-                .rel("describedby")
-                .href("https://beta.schemas.opengis.net/json-fg/featurecollection.json")
-                .type("application/schema+json")
-                .title("This document is a JSON-FG FeatureCollection") // TODO add i18n
-                .build(),
-            new ImmutableLink.Builder()
-                .rel("describedby")
-                .href("https://geojson.org/schema/FeatureCollection.json")
-                .type("application/schema+json")
-                .title("This document is a GeoJSON FeatureCollection") // TODO add i18n
-                .build());
-      } else {
-        state.addCurrentFeatureLinks(
-            new ImmutableLink.Builder()
-                .rel("describedby")
-                .href("https://beta.schemas.opengis.net/json-fg/feature.json")
-                .type("application/schema+json")
-                .title("This document is a JSON-FG Feature") // TODO add i18n
-                .build(),
-            new ImmutableLink.Builder()
-                .rel("describedby")
-                .href("https://geojson.org/schema/Feature.json")
-                .type("application/schema+json")
-                .title("This document is a GeoJSON Feature") // TODO add i18n
-                .build());
-      }
+      state.addCurrentFeatureCollectionLinks(
+          new ImmutableLink.Builder()
+              .rel("describedby")
+              .href("https://beta.schemas.opengis.net/json-fg/featurecollection.json")
+              .type("application/schema+json")
+              .title("This document is a JSON-FG FeatureCollection") // TODO add i18n
+              .build(),
+          new ImmutableLink.Builder()
+              .rel("describedby")
+              .href("https://geojson.org/schema/FeatureCollection.json")
+              .type("application/schema+json")
+              .title("This document is a GeoJSON FeatureCollection") // TODO add i18n
+              .build());
+    }
+
+    // next chain for extensions
+    next.accept(context);
+  }
+
+  @Override
+  public void onFeatureStart(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+
+    boolean isEnabled = isEnabled(context.encoding(), context.type());
+
+    if (isEnabled && !context.encoding().isFeatureCollection()) {
+      ModifiableStateGeoJson state = context.encoding().getState();
+
+      Objects.requireNonNullElse(collectionMap.get(context.type()), Optional.<Link>empty())
+          .ifPresent(link -> state.addCurrentFeatureLinks(link));
+
+      // add generic schemas
+      state.addCurrentFeatureLinks(
+          new ImmutableLink.Builder()
+              .rel("describedby")
+              .href("https://beta.schemas.opengis.net/json-fg/feature.json")
+              .type("application/schema+json")
+              .title("This document is a JSON-FG Feature") // TODO add i18n
+              .build(),
+          new ImmutableLink.Builder()
+              .rel("describedby")
+              .href("https://geojson.org/schema/Feature.json")
+              .type("application/schema+json")
+              .title("This document is a GeoJSON Feature") // TODO add i18n
+              .build());
     }
 
     // next chain for extensions
