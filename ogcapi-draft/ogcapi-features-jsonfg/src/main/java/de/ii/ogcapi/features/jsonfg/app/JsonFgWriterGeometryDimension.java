@@ -9,14 +9,18 @@ package de.ii.ogcapi.features.jsonfg.app;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ogcapi.features.jsonfg.domain.FeaturesFormatJsonFgBase;
 import de.ii.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -43,34 +47,52 @@ public class JsonFgWriterGeometryDimension implements GeoJsonWriter {
   public void onStart(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
-    if (isEnabled(context.encoding()) && context.encoding().isFeatureCollection()) {
-      writeGeometryDimension(
-          context.encoding(),
-          context
-              .encoding()
-              .getFeatureSchema()
-              .flatMap(FeaturesFormatJsonFgBase::getGeometryDimension));
+    if (context.encoding().isFeatureCollection()) {
+      Map<String, Optional<Integer>> collectionMap = getCollectionMap(context.encoding());
+      List<Optional<Integer>> dims =
+          collectionMap.values().stream().distinct().collect(Collectors.toUnmodifiableList());
+      if (dims.size() == 1) {
+        writeGeometryDimension(context.encoding(), dims.get(0));
+      }
     }
 
     // next chain for extensions
     next.accept(context);
   }
 
-  private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {
-    return transformationContext
-        .getApiData()
-        .getCollections()
-        .get(transformationContext.getCollectionId())
-        .getExtension(JsonFgConfiguration.class)
-        .filter(JsonFgConfiguration::isEnabled)
-        .filter(
-            cfg ->
-                cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.geometryDimension)
-                    || transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE)
-                    || transformationContext
-                        .getMediaType()
-                        .equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE))
-        .isPresent();
+  private Map<String, Optional<Integer>> getCollectionMap(
+      FeatureTransformationContextGeoJson transformationContext) {
+    ImmutableMap.Builder<String, Optional<Integer>> builder = ImmutableMap.builder();
+    transformationContext
+        .getFeatureSchemas()
+        .forEach(
+            (collectionId, schema) ->
+                transformationContext
+                    .getApiData()
+                    .getExtension(JsonFgConfiguration.class, collectionId)
+                    .ifPresentOrElse(
+                        cfg -> {
+                          boolean enabled =
+                              cfg.isEnabled()
+                                  && schema
+                                      .flatMap(FeaturesFormatJsonFgBase::getGeometryDimension)
+                                      .isPresent()
+                                  && (cfg.getIncludeInGeoJson()
+                                          .contains(JsonFgConfiguration.OPTION.geometryDimension)
+                                      || transformationContext
+                                          .getMediaType()
+                                          .equals(FeaturesFormatJsonFg.MEDIA_TYPE)
+                                      || transformationContext
+                                          .getMediaType()
+                                          .equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE));
+                          builder.put(
+                              collectionId,
+                              enabled
+                                  ? schema.flatMap(FeaturesFormatJsonFgBase::getGeometryDimension)
+                                  : Optional.empty());
+                        },
+                        () -> builder.put(collectionId, Optional.empty())));
+    return builder.build();
   }
 
   private void writeGeometryDimension(
