@@ -9,13 +9,11 @@ package de.ii.ogcapi.features.jsonfg.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.collections.schema.domain.SchemaConfiguration;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ogcapi.features.geojson.domain.ModifiableStateGeoJson;
 import de.ii.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
-import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableLink;
 import de.ii.ogcapi.foundation.domain.Link;
@@ -134,38 +132,49 @@ public class JsonFgWriterDescribedby implements GeoJsonWriter {
         .keySet()
         .forEach(
             collectionId -> {
-              if (transformationContext
-                      .getApiData()
-                      .getExtension(SchemaConfiguration.class, collectionId)
-                      .filter(ExtensionConfiguration::isEnabled)
-                      .isPresent()
-                  && isEnabled(transformationContext, collectionId)) {
-                String label =
-                    Optional.ofNullable(
-                            transformationContext.getApiData().getCollections().get(collectionId))
-                        .map(FeatureTypeConfiguration::getLabel)
-                        .orElse(collectionId);
-                Link link =
-                    new ImmutableLink.Builder()
-                        .rel("describedby")
-                        .href(
-                            transformationContext.getServiceUrl()
-                                + "/collections/"
-                                + collectionId
-                                + "/schemas/"
-                                + (isFeatureCollection ? "collection" : "feature"))
-                        .type("application/schema+json")
-                        .title(
-                            i18n.get("schemaLinkCollection", transformationContext.getLanguage())
-                                .replace("{{collection}}", label))
-                        .build();
-                builder.put(collectionId, Optional.of(link));
+              if (isEnabled(transformationContext, collectionId)) {
+                getSchemaUri(transformationContext, collectionId, isFeatureCollection)
+                    .ifPresent(
+                        schemaUri -> {
+                          String label =
+                              Optional.ofNullable(
+                                      transformationContext
+                                          .getApiData()
+                                          .getCollections()
+                                          .get(collectionId))
+                                  .map(FeatureTypeConfiguration::getLabel)
+                                  .orElse(collectionId);
+                          Link link =
+                              new ImmutableLink.Builder()
+                                  .rel("describedby")
+                                  .href(schemaUri)
+                                  .type("application/schema+json")
+                                  .title(
+                                      i18n.get(
+                                              isFeatureCollection
+                                                  ? "schemaLinkCollection"
+                                                  : "schemaLinkFeature",
+                                              transformationContext.getLanguage())
+                                          .replace("{{collection}}", label))
+                                  .build();
+                          builder.put(collectionId, Optional.of(link));
+                        });
               } else {
                 builder.put(collectionId, Optional.empty());
               }
             });
 
     return builder.build();
+  }
+
+  private Optional<String> getSchemaUri(
+      FeatureTransformationContextGeoJson transformationContext,
+      String collectionId,
+      boolean isFeatureCollection) {
+    return transformationContext
+        .getApiData()
+        .getExtension(JsonFgConfiguration.class, collectionId)
+        .map(cfg -> isFeatureCollection ? cfg.getSchemaCollection() : cfg.getSchemaFeature());
   }
 
   private boolean isEnabled(

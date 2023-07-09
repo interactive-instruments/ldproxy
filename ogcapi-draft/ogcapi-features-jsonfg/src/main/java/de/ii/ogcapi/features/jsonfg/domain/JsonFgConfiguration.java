@@ -97,21 +97,49 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
   }
 
   /**
-   * @langEn Enables that links to JSON Schema documents that specify the syntax of the JSON
-   *     document are added to the JSON-FG response document. The links have the link relation type
-   *     "describedby". The schemas can be used to validate the JSON document or to derive
-   *     additional information about the content of the JSON document, such as a textual
-   *     description of the feature properties or their value range.
-   * @langDe Aktiviert, dass Links zu JSON-Schema-Dokumenten, die die Syntax des JSON-Dokuments
-   *     spezifizieren, in das JSON-FG-Antwortdokument eingefügt werden. Die Links haben den
-   *     Relationstyp "describedby". Die Schemas können zur Validierung des JSON-Dokuments oder zur
-   *     Ableitung zusätzlicher Informationen über den Inhalt des JSON-Dokuments verwendet werden,
-   *     wie z. B. eine textuelle Beschreibung der Objekteigenschaften oder ihres Wertebereichs.
+   * @langEn *Partially Deprecated* For schemas specific to the feature type, use `schemaCollection`
+   *     and `schemaFeature`. Enables that links to the generic JSON-FG and GeoJSON JSON Schema
+   *     documents tare added to the JSON-FG response document. The links have the link relation
+   *     type "describedby". The schemas can be used to validate the JSON document.
+   * @langDe *Teilweise Deprecated* Für Objektart-spezifische Schemas siehe `schemaCollection` and
+   *     `schemaFeature`. Aktiviert, dass Links zu den generischen JSON-FG und GeoJSON
+   *     JSON-Schema-Dokumenten in das JSON-FG-Antwortdokument eingefügt werden. Die Links haben den
+   *     Relationstyp "describedby". Die Schemas können zur Validierung des JSON-Dokuments verwendet
+   *     werden.
    * @default true
    * @since v3.1
    */
   @Nullable
   Boolean getDescribedby();
+
+  /**
+   * @langEn The URI of a JSON Schema document describing a feature collection with the features of
+   *     the collection/dataset. The schema will be referenced from JSON-FG feature collection
+   *     responses by a link with the link relation type "describedby". The schemas can be used to
+   *     validate the JSON document.
+   * @langDe Die URI eines JSON-Schema-Dokuments, das eine Feature Collection mit den Features der
+   *     Collection/des Datensatzes beschreibt. Das Schema wird von JSON-FG
+   *     Feature-Collection-Responses durch einen Link mit dem Relationstyp "describedby"
+   *     referenziert. Die Schemas können zur Validierung des JSON-Dokuments verwendet werden.
+   * @default null
+   * @since v3.5
+   */
+  @Nullable
+  String getSchemaCollection();
+
+  /**
+   * @langEn The URI of a JSON Schema document describing a feature of the collection/dataset. The
+   *     schema will be referenced from JSON-FG feature responses by a link with the link relation
+   *     type "describedby". The schemas can be used to validate the JSON document.
+   * @langDe Die URI eines JSON-Schema-Dokuments, das ein Feature der Collection/des Datensatzes
+   *     beschreibt. Das Schema wird von JSON-FG Feature-Responses durch einen Link mit dem
+   *     Relationstyp "describedby" referenziert. Die Schemas können zur Validierung des
+   *     JSON-Dokuments verwendet werden.
+   * @default null
+   * @since v3.5
+   */
+  @Nullable
+  String getSchemaFeature();
 
   /**
    * @langEn Activates the output of the coordinate reference system in a JSON member "coordRefSys"
