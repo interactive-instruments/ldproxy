@@ -386,6 +386,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                     new AbstractMap.SimpleImmutableEntry<>(
                         entry.getKey(),
                         entry.getValue().getExtension(TilesConfiguration.class).get()))
+            .filter(entry -> entry.getValue().isEnabled())
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
             .entrySet()) {
       String collectionId = entry.getKey();
