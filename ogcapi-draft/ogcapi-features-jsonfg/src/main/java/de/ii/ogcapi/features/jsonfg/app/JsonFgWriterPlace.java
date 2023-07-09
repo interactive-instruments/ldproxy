@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.jsonfg.app;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.TokenBuffer;
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
@@ -19,6 +20,8 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -37,6 +40,7 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
     return new JsonFgWriterPlace();
   }
 
+  Map<String, Boolean> collectionMap;
   boolean isEnabled;
   private boolean geometryOpen;
   private boolean additionalArray;
@@ -64,24 +68,7 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
   public void onStart(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
-    isEnabled = isEnabled(context.encoding());
-    hasSecondaryGeometry =
-        context.encoding().getFeatureSchema().orElseThrow().getSecondaryGeometry().isPresent();
-    boolean primaryGeometryIsSimpleFeature =
-        context
-            .encoding()
-            .getFeatureSchema()
-            .orElseThrow()
-            .getPrimaryGeometry()
-            .filter(SchemaBase::isSimpleFeatureGeometry)
-            .isPresent();
-
-    // set 'place' to null, if the geometry is in WGS84 (in this case it is in "geometry")
-    // and a simple feature geometry type unless a separate property is used for place
-    suppressPlace =
-        !hasSecondaryGeometry
-            && primaryGeometryIsSimpleFeature
-            && context.encoding().getTargetCrs().equals(context.encoding().getDefaultCrs());
+    collectionMap = getCollectionMap(context.encoding());
 
     next.accept(context);
   }
@@ -90,6 +77,23 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
   public void onFeatureStart(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
+    isEnabled = Objects.requireNonNullElse(collectionMap.get(context.type()), false);
+
+    hasSecondaryGeometry =
+        context.schema().map(schema -> schema.getSecondaryGeometry().isPresent()).orElse(false);
+    boolean primaryGeometryIsSimpleFeature =
+        context
+            .schema()
+            .flatMap(schema -> schema.getPrimaryGeometry().map(SchemaBase::isSimpleFeatureGeometry))
+            .orElse(false);
+
+    // set 'place' to null, if the geometry is in WGS84 (in this case it is in "geometry")
+    // and a simple feature geometry type unless a separate property is used for place
+    suppressPlace =
+        !hasSecondaryGeometry
+            && primaryGeometryIsSimpleFeature
+            && context.encoding().getTargetCrs().equals(context.encoding().getDefaultCrs());
+
     if (isEnabled) reset(context);
 
     next.accept(context);
@@ -208,21 +212,33 @@ public class JsonFgWriterPlace implements GeoJsonWriter {
     next.accept(context);
   }
 
-  private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {
-    return transformationContext
-        .getApiData()
-        .getCollections()
-        .get(transformationContext.getCollectionId())
-        .getExtension(JsonFgConfiguration.class)
-        .filter(JsonFgConfiguration::isEnabled)
-        .filter(
-            cfg ->
-                cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.place)
-                    || transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE)
-                    || transformationContext
-                        .getMediaType()
-                        .equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE))
-        .isPresent();
+  private Map<String, Boolean> getCollectionMap(
+      FeatureTransformationContextGeoJson transformationContext) {
+    ImmutableMap.Builder<String, Boolean> builder = ImmutableMap.builder();
+    transformationContext
+        .getFeatureSchemas()
+        .keySet()
+        .forEach(
+            collectionId ->
+                transformationContext
+                    .getApiData()
+                    .getExtension(JsonFgConfiguration.class, collectionId)
+                    .ifPresentOrElse(
+                        cfg -> {
+                          boolean enabled =
+                              cfg.isEnabled()
+                                  && (cfg.getIncludeInGeoJson()
+                                          .contains(JsonFgConfiguration.OPTION.place)
+                                      || transformationContext
+                                          .getMediaType()
+                                          .equals(FeaturesFormatJsonFg.MEDIA_TYPE)
+                                      || transformationContext
+                                          .getMediaType()
+                                          .equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE));
+                          builder.put(collectionId, enabled);
+                        },
+                        () -> builder.put(collectionId, false)));
+    return builder.build();
   }
 
   private boolean hasSecondaryGeometry(FeatureSchema schema) {
