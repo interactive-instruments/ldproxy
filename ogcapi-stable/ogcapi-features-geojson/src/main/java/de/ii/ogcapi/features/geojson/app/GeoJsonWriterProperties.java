@@ -182,7 +182,8 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         } else {
           json.writeFieldName(schema.getName());
           Type valueType =
-              schema.getCoalesce().isEmpty() || schema.getType() != Type.VALUE
+              schema.getCoalesce().isEmpty()
+                      || (schema.getType() != Type.VALUE && schema.getType() != Type.FEATURE_REF)
                   ? schema.getType()
                   : schema
                       .getValueType()
