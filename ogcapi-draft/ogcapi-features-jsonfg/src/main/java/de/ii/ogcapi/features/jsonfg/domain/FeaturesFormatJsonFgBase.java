@@ -13,6 +13,7 @@ import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableSortedSet;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.features.geojson.domain.FeatureEncoderGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
@@ -168,6 +169,11 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
                     p.getConstraints().map(SchemaConstraints::isClosed).orElse(false)))
         .flatMap(Optional::stream)
         .max(Comparator.naturalOrder());
+  }
+
+  @Override
+  default boolean supportsProfile(Profile profile) {
+    return profile == Profile.AS_KEY || profile == Profile.AS_URI || profile == Profile.AS_LINK;
   }
 
   @Override
