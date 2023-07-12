@@ -151,6 +151,11 @@ public interface FeatureFormatExtension extends FormatExtension {
                     .map(
                         refType ->
                             String.format("{{apiUri}}/collections/%s/items/{{value}}", refType))
+                    .or(
+                        () ->
+                            property.getConcat().isEmpty() && property.getCoalesce().isEmpty()
+                                ? Optional.empty()
+                                : Optional.of("{{apiUri}}/collections/{{type}}/items/{{value}}"))
                     .orElse(null)));
   }
 
