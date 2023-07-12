@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
 import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.features.search.domain.ImmutableParameter;
@@ -859,7 +860,8 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                         new IdTransform(featureProvider, getFeatureTypeId(query, n), collectionId)
                             .mergeInto(pt);
                   }
-                  return pt.withSubstitutions(ImmutableMap.of("serviceUrl", serviceUrl));
+                  return pt.withSubstitutions(
+                      FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(serviceUrl));
                 }));
   }
 
