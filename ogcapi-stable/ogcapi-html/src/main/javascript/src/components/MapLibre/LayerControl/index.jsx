@@ -46,6 +46,10 @@ const LayerControl = ({ layerGroups }) => {
     [selected]
   );
 
+  const isSubLayerOpen = (name) => {
+    return open.includes(name);
+  };
+
   return (
     <div
       className="accordion"
@@ -59,6 +63,8 @@ const LayerControl = ({ layerGroups }) => {
               style={{
                 backgroundColor: "white",
                 borderRadius: "0.25rem",
+                padding: "10px",
+                paddingLeft: "2px",
               }}
               color="secondary"
               outline
@@ -67,29 +73,27 @@ const LayerControl = ({ layerGroups }) => {
                 onSelect(name);
                 onOpen(name);
               }}
-              active={selected.includes(name)}
-              className="accordion-button"
+              active={isSubLayerOpen}
+              className={`accordion-button ${isSubLayerOpen(name) ? "collapsed" : ""}`}
               type="button"
-              data-mdb-toggle="collapse"
-              data-mdb-target={`#collapse-${name}`}
-              aria-expanded={open.includes(name)}
+              data-bs-toggle="collapse"
+              data-bs-target={`#collapse-${name}`}
+              aria-expanded={isSubLayerOpen(name)}
               aria-controls={`collapse-${name}`}
             >
-              {name}
+              <span style={{ marginRight: "10px" }}>{name}</span>
             </button>
           </h2>
           {layerGroups[name].map((subLayer) => (
             <Collapse
-              isOpen={open.includes(name)}
+              isOpen={isSubLayerOpen(name)}
               id={`collapse-${subLayer}`}
               key={subLayer}
               className="accordion-collapse"
               aria-labelledby={`heading-${subLayer}`}
-              data-mdb-parent="#layer-control"
+              data-bs-parent="#layer-control"
             >
-              <div className="accordion-body" id={`${subLayer}`}>
-                {subLayer}
-              </div>
+              <span style={{ marginLeft: "25px" }}>{subLayer}</span>
             </Collapse>
           ))}
         </div>
