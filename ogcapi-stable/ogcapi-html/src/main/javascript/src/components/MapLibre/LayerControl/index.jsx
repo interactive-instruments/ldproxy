@@ -4,23 +4,27 @@ import { Collapse } from "reactstrap";
 import { useMaplibreUIEffect } from "react-maplibre-ui";
 
 const LayerControl = ({ layerGroups }) => {
-  const [selected, setSelected] = useState(Object.keys(layerGroups));
+  const [selected, setSelected] = useState(
+    layerGroups[0].entries.map((entry) => {
+      return entry.id;
+    })
+  );
   const [open, setOpen] = useState([]);
 
-  const onSelect = (name) => {
-    const index = selected.indexOf(name);
+  const onSelect = (entry) => {
+    const index = selected.indexOf(entry.id);
     if (index < 0) {
-      selected.push(name);
+      selected.push(entry.id);
     } else {
       selected.splice(index, 1);
     }
     setSelected([...selected]);
   };
 
-  const onOpen = (name) => {
-    const index = open.indexOf(name);
+  const onOpen = (entry) => {
+    const index = open.indexOf(entry.id);
     if (index < 0) {
-      open.push(name);
+      open.push(entry.id);
     } else {
       open.splice(index, 1);
     }
@@ -29,18 +33,19 @@ const LayerControl = ({ layerGroups }) => {
 
   useMaplibreUIEffect(
     ({ map }) => {
-      Object.keys(layerGroups).forEach((name) => {
-        layerGroups[name].forEach((layerId) => {
-          if (map.getLayer(layerId)) {
-            const visible = map.getLayoutProperty(layerId, "visibility") !== "none";
-
-            if (visible && !selected.includes(name)) {
-              map.setLayoutProperty(layerId, "visibility", "none");
-            } else if (!visible && selected.includes(name)) {
-              map.setLayoutProperty(layerId, "visibility", "visible");
+      layerGroups[0].entries.forEach((entry) => {
+        if (entry.type === "source-layer" && entry.subLayers) {
+          entry.subLayers.forEach(({ id: layerId }) => {
+            if (map.getLayer(layerId)) {
+              const visible = map.getLayoutProperty(layerId, "visibility") !== "none";
+              if (visible && !selected.includes(entry.id)) {
+                map.setLayoutProperty(layerId, "visibility", "none");
+              } else if (!visible && selected.includes(entry.id)) {
+                map.setLayoutProperty(layerId, "visibility", "visible");
+              }
             }
-          }
-        });
+          });
+        }
       });
     },
     [selected]
@@ -50,15 +55,26 @@ const LayerControl = ({ layerGroups }) => {
     return open.includes(name);
   };
 
+  /*    Test von entry.id und subLayer.id:
+  layerGroups[0].entries.map((entry) => {
+    console.log("aaa", entry.id);
+    if (entry.subLayers) {
+      entry.subLayers.map((subLayer) => {
+        console.log("zzzz", subLayer.id);
+      });
+    }
+  });
+  */
+
   return (
     <div
       className="accordion"
       id="layer-control"
       style={{ position: "absolute", zIndex: 1, top: "40px", left: "30px" }}
     >
-      {Object.keys(layerGroups).map((name) => (
-        <div className="accordion-item" key={name}>
-          <h2 className="accordion-header" id={name}>
+      {layerGroups[0].entries.map((entry) => (
+        <div className="accordion-item" key={entry.id}>
+          <h2 className="accordion-header" id={entry.id}>
             <button
               style={{
                 backgroundColor: "white",
@@ -70,37 +86,40 @@ const LayerControl = ({ layerGroups }) => {
               outline
               onClick={(e) => {
                 e.target.blur();
-                onSelect(name);
-                onOpen(name);
+                onSelect(entry);
+                onOpen(entry);
               }}
-              active={isSubLayerOpen}
-              className={`accordion-button ${isSubLayerOpen(name) ? "collapsed" : ""}`}
+              active={isSubLayerOpen(entry.id)}
+              className={`accordion-button ${isSubLayerOpen(entry.id) ? "collapsed" : ""}`}
               type="button"
               data-bs-toggle="collapse"
-              data-bs-target={`#collapse-${name}`}
-              aria-expanded={isSubLayerOpen(name)}
-              aria-controls={`collapse-${name}`}
+              data-bs-target={`#collapse-${entry.id}`}
+              aria-expanded={isSubLayerOpen(entry.id)}
+              aria-controls={`collapse-${entry.id}`}
             >
-              <span style={{ marginRight: "10px" }}>{name}</span>
+              <span style={{ marginRight: "10px" }}>{entry.id}</span>
             </button>
           </h2>
-          {layerGroups[name].map((subLayer) => (
-            <Collapse
-              isOpen={isSubLayerOpen(name)}
-              id={`collapse-${subLayer}`}
-              key={subLayer}
-              className="accordion-collapse"
-              aria-labelledby={`heading-${subLayer}`}
-              data-bs-parent="#layer-control"
-            >
-              <span style={{ marginLeft: "25px" }}>{subLayer}</span>
-            </Collapse>
-          ))}
+          {entry.subLayers
+            ? entry.subLayers.map((subLayer) => (
+                <Collapse
+                  isOpen={isSubLayerOpen(entry.id)}
+                  id={`collapse-${subLayer.id}`}
+                  key={subLayer.id}
+                  className="accordion-collapse"
+                  aria-labelledby={`heading-${subLayer.id}`}
+                  data-bs-parent="#layer-control"
+                >
+                  <span style={{ marginLeft: "25px" }}>{subLayer.id}</span>
+                </Collapse>
+              ))
+            : null}
         </div>
       ))}
     </div>
   );
 };
+
 LayerControl.displayName = "LayerControl";
 
 LayerControl.propTypes = {

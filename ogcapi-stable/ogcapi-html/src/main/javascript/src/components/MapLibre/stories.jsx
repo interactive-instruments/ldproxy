@@ -13,21 +13,64 @@ export const Plain = Template.bind({});
 
 Plain.args = {
   styleUrl: "https://demo.ldproxy.net/daraa/styles/topographic-with-basemap?f=mbs",
-  layerGroupControl: {
-    TransportationGroundCrv: [
-      "transportationgroundcrv.0a",
-      "transportationgroundcrv.0b",
-      "transportationgroundcrv.1",
-      "transportationgroundcrv.2",
-      "transportationgroundcrv.3",
-      "transportationgroundcrv.4",
-      "transportationgroundcrv.5",
-      "transportationgroundcrv.6",
-      "transportationgroundcrv.7",
-      "transportationgroundcrv.8",
-      "transportationgroundcrv.9",
-    ],
-  },
+  layerGroupControl: [
+    {
+      id: "All",
+      type: "group",
+      entries: [
+        {
+          id: "TransportationGroundCrv",
+          type: "source-layer",
+          subLayers: [
+            {
+              id: "transportationgroundcrv.0a",
+              layers: ["transportationgroundcrv.0a"],
+            },
+            {
+              id: "transportationgroundcrv.0b",
+              layers: ["transportationgroundcrv.0b"],
+            },
+            {
+              id: "transportationgroundcrv.1",
+              layers: ["transportationgroundcrv.1"],
+            },
+            {
+              id: "transportationgroundcrv.2",
+              layers: ["transportationgroundcrv.2"],
+            },
+            {
+              id: "transportationgroundcrv.3",
+              layers: ["transportationgroundcrv.3"],
+            },
+            {
+              id: "transportationgroundcrv.4",
+              layers: ["transportationgroundcrv.4"],
+            },
+            {
+              id: "transportationgroundcrv.5",
+              layers: ["transportationgroundcrv.5"],
+            },
+            {
+              id: "transportationgroundcrv.6",
+              layers: ["transportationgroundcrv.6"],
+            },
+            {
+              id: "transportationgroundcrv.7",
+              layers: ["transportationgroundcrv.7"],
+            },
+            {
+              id: "transportationgroundcrv.8",
+              layers: ["transportationgroundcrv.8"],
+            },
+            {
+              id: "transportationgroundcrv.9",
+              layers: ["transportationgroundcrv.9"],
+            },
+          ],
+        },
+      ],
+    },
+  ],
   /*styleUrl:
         'http://localhost:7080/rest/services/feuerwehr/v1/styles/default?f=mbs', */
 };
