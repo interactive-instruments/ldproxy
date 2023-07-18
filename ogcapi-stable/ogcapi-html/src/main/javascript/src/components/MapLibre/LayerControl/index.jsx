@@ -85,9 +85,10 @@ const LayerControl = ({ layerGroups }) => {
               color="secondary"
               outline
               onClick={(e) => {
-                e.target.blur();
-                onSelect(entry);
-                onOpen(entry);
+                if (!e.target.classList.contains("form-check-input")) {
+                  e.target.blur();
+                  onOpen(entry);
+                }
               }}
               active={isSubLayerOpen(entry.id)}
               className={`accordion-button ${isSubLayerOpen(entry.id) ? "collapsed" : ""}`}
@@ -97,6 +98,17 @@ const LayerControl = ({ layerGroups }) => {
               aria-expanded={isSubLayerOpen(entry.id)}
               aria-controls={`collapse-${entry.id}`}
             >
+              <input
+                style={{ margin: "5px" }}
+                className="form-check-input"
+                type="checkbox"
+                id={`checkbox-${entry.id}`}
+                checked={selected.includes(entry.id)}
+                onChange={(e) => {
+                  e.target.blur();
+                  onSelect(entry);
+                }}
+              />
               <span style={{ marginRight: "10px" }}>{entry.id}</span>
             </button>
           </h2>
@@ -110,7 +122,15 @@ const LayerControl = ({ layerGroups }) => {
                   aria-labelledby={`heading-${subLayer.id}`}
                   data-bs-parent="#layer-control"
                 >
-                  <span style={{ marginLeft: "25px" }}>{subLayer.id}</span>
+                  <input
+                    style={{ marginLeft: "5px" }}
+                    className="form-check-input"
+                    type="checkbox"
+                    id={`checkbox-${subLayer.id}`}
+                    checked={selected.includes(subLayer.id)}
+                    onChange={() => onSelect(subLayer)}
+                  />
+                  <span style={{ marginLeft: "10px" }}>{subLayer.id}</span>
                 </Collapse>
               ))
             : null}
