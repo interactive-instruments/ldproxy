@@ -68,6 +68,17 @@ Plain.args = {
             },
           ],
         },
+
+        {
+          id: "Test",
+          type: "source-layer",
+          subLayers: [
+            {
+              id: "transportationgroundcrv.0a",
+              layers: ["transportationgroundcrv.0a"],
+            },
+          ],
+        },
       ],
     },
   ],
