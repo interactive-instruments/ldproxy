@@ -5,18 +5,39 @@ import { useMaplibreUIEffect } from "react-maplibre-ui";
 
 const LayerControl = ({ layerGroups }) => {
   const [selected, setSelected] = useState(
-    layerGroups[0].entries.map((entry) => {
-      return entry.id;
+    layerGroups[0].entries.flatMap((entry) => {
+      return entry.subLayers.map((subLayer) => subLayer.id);
     })
   );
   const [open, setOpen] = useState([]);
 
   const onSelectParent = () => {
-    if (!layerGroups[0].entries.every((entry) => selected.includes(entry.id))) {
-      const allEntries = layerGroups[0].entries.map((entry) => entry.id);
-      setSelected(allEntries);
+    const allEntries = layerGroups[0].entries;
+    const allSubLayerIds = allEntries.flatMap((entry) => {
+      return entry.subLayers.map((subLayer) => subLayer.id);
+    });
+    if (!allSubLayerIds.every((id) => selected.includes(id))) {
+      setSelected(allSubLayerIds);
     } else {
       setSelected([]);
+    }
+  };
+
+  const parentCheck = () => {
+    const allEntries = layerGroups[0].entries;
+    const allSubLayerIds = allEntries.flatMap((entry) => {
+      return entry.subLayers.map((subLayer) => subLayer.id);
+    });
+    return allSubLayerIds.every((id) => selected.includes(id));
+  };
+
+  const onSelectEntry = (entry) => {
+    const subLayerIds = entry.subLayers.map((subLayer) => subLayer.id);
+
+    if (subLayerIds.every((id) => selected.includes(id))) {
+      setSelected(selected.filter((id) => !subLayerIds.includes(id)));
+    } else {
+      setSelected([...selected, ...subLayerIds]);
     }
   };
 
@@ -57,9 +78,9 @@ const LayerControl = ({ layerGroups }) => {
           entry.subLayers.forEach(({ id: layerId }) => {
             if (map.getLayer(layerId)) {
               const visible = map.getLayoutProperty(layerId, "visibility") !== "none";
-              if (visible && !selected.includes(entry.id)) {
+              if (visible && !selected.includes(layerId)) {
                 map.setLayoutProperty(layerId, "visibility", "none");
-              } else if (!visible && selected.includes(entry.id)) {
+              } else if (!visible && selected.includes(layerId)) {
                 map.setLayoutProperty(layerId, "visibility", "visible");
               }
             }
@@ -128,7 +149,7 @@ const LayerControl = ({ layerGroups }) => {
                 className="form-check-input"
                 type="checkbox"
                 id={`checkbox-${layerGroups[0].id}`}
-                checked={layerGroups[0].entries.every((entry) => selected.includes(entry.id))}
+                checked={parentCheck()}
                 onChange={(e) => {
                   e.target.blur();
                   onSelectParent();
@@ -155,7 +176,6 @@ const LayerControl = ({ layerGroups }) => {
                     backgroundColor: "white",
                     borderRadius: "0.25rem",
                     padding: "10px",
-                    paddingLeft: "2px",
                   }}
                   color="secondary"
                   outline
@@ -178,10 +198,10 @@ const LayerControl = ({ layerGroups }) => {
                     className="form-check-input"
                     type="checkbox"
                     id={`checkbox-${entry.id}`}
-                    checked={selected.includes(entry.id)}
+                    checked={entry.subLayers.every((subLayer) => selected.includes(subLayer.id))}
                     onChange={(e) => {
                       e.target.blur();
-                      onSelect(entry);
+                      onSelectEntry(entry);
                     }}
                   />
                   <span style={{ marginRight: "10px" }}>{entry.id}</span>
@@ -200,7 +220,7 @@ const LayerControl = ({ layerGroups }) => {
                         data-bs-parent="#layer-control"
                       >
                         <input
-                          style={{ marginLeft: "5px" }}
+                          style={{ margin: "5px" }}
                           className="form-check-input"
                           type="checkbox"
                           id={`checkbox-${subLayer.id}`}
