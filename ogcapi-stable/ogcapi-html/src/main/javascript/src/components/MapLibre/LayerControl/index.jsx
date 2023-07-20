@@ -153,6 +153,7 @@ const LayerControl = ({ layerGroups }) => {
         zIndex: 1,
         top: "40px",
         left: "30px",
+        width: "275px",
       }}
     >
       {parent.map((p) =>
@@ -164,7 +165,7 @@ const LayerControl = ({ layerGroups }) => {
                   backgroundColor: "white",
                   borderRadius: "0.25rem",
                   padding: "10px",
-                  paddingLeft: "2px",
+                  paddingLeft: "10px",
                 }}
                 color="secondary"
                 outline
@@ -237,7 +238,7 @@ const LayerControl = ({ layerGroups }) => {
                             aria-controls={`collapse-${entry.id}`}
                           >
                             <input
-                              style={{ margin: "5px" }}
+                              style={{ marginRight: "5px" }}
                               className="form-check-input"
                               type="checkbox"
                               id={`checkbox-${entry.id}`}
@@ -256,7 +257,7 @@ const LayerControl = ({ layerGroups }) => {
                       ) : (
                         <div>
                           <input
-                            style={{ margin: "5px" }}
+                            style={{ margin: "10px" }}
                             className="form-check-input"
                             type="radio"
                             id={`radiobutton-${entry.id}`}
@@ -285,7 +286,7 @@ const LayerControl = ({ layerGroups }) => {
                               data-bs-parent="#layer-control"
                             >
                               <input
-                                style={{ margin: "5px" }}
+                                style={{ marginLeft: "5px" }}
                                 className="form-check-input"
                                 type="checkbox"
                                 id={`checkbox-${subLayer.id}`}
