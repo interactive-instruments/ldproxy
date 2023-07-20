@@ -25,9 +25,14 @@ const LayerControl = ({ layerGroups }) => {
     return Ids;
   });
 
+  const [layerControlVisible, setLayerControlVisible] = useState(true);
   const [selectedBasemap, setSelectedBasemap] = useState([basemaps[0].entries[0].id]);
   const [selected, setSelected] = useState(subLayerIds);
   const [open, setOpen] = useState([]);
+
+  const handleButtonClick = () => {
+    setLayerControlVisible(!layerControlVisible);
+  };
 
   const onSelectParent = () => {
     if (selected.every((id) => !subLayerIds.includes(id))) {
@@ -144,167 +149,207 @@ const LayerControl = ({ layerGroups }) => {
 */
 
   return (
-    <div
-      className="accordion"
-      id="layer-control"
-      style={{
-        backgroundColor: "white",
-        position: "absolute",
-        zIndex: 1,
-        top: "40px",
-        left: "30px",
-        width: "275px",
-      }}
-    >
-      {parent.map((p) =>
-        p.id ? (
-          <div className="accordion-item" key={p.id}>
-            <h2 className="accordion-header" id={p.id}>
-              <button
-                style={{
-                  backgroundColor: "white",
-                  borderRadius: "0.25rem",
-                  padding: "10px",
-                  paddingLeft: "10px",
-                }}
-                color="secondary"
-                outline
-                onClick={(e) => {
-                  if (!e.target.classList.contains("form-check-input")) {
-                    e.target.blur();
-                    onOpenParent(p);
-                  }
-                }}
-                active={isSubLayerOpen(p.id)}
-                className={`accordion-button ${isSubLayerOpen(p.id) ? "collapsed" : ""}`}
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target={`#collapse-${p.id}`}
-                aria-expanded={isSubLayerOpen(p.id)}
-                aria-controls={`collapse-${p.id}`}
-              >
-                {p.isBasemap !== true ? (
-                  <input
-                    style={{ margin: "5px" }}
-                    className="form-check-input"
-                    type="checkbox"
-                    id={`checkbox-${p.id}`}
-                    checked={parentCheck()}
-                    onChange={(e) => {
+    <>
+      <div
+        className="Button"
+        style={{
+          backgroundColor: "white",
+          position: "absolute",
+          zIndex: 1,
+          top: "40px",
+          left: "30px",
+          backgroundColor: "white",
+          borderRadius: "8px",
+          height: "40px",
+        }}
+      >
+        <button
+          style={{
+            backgroundColor: "white",
+            borderRadius: "0.25rem",
+            padding: "10px",
+            paddingLeft: "10px",
+            height: "40px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          onClick={handleButtonClick}
+        >
+          Layer Control
+        </button>
+      </div>
+      <div
+        className="accordion"
+        id="layer-control"
+        style={{
+          backgroundColor: "white",
+          position: "absolute",
+          zIndex: 1,
+          top: "87px",
+          left: "30px",
+          width: "275px",
+          display: layerControlVisible ? "block" : "none",
+          backgroundColor: "white",
+          height: "auto",
+          maxHeight: "100%",
+          overflow: "auto",
+          borderRadius: "8px",
+          border: "1px solid black",
+          scrollbarWidth: "thin",
+          scrollbarColor: "darkgrey #f1f1f1",
+        }}
+      >
+        {parent.map((p) =>
+          p.id ? (
+            <div className="accordion-item" key={p.id}>
+              <h2 className="accordion-header" id={p.id}>
+                <button
+                  style={{
+                    backgroundColor: "white",
+                    borderRadius: "0.25rem",
+                    padding: "10px",
+                    paddingLeft: "10px",
+                  }}
+                  color="secondary"
+                  outline
+                  onClick={(e) => {
+                    if (!e.target.classList.contains("form-check-input")) {
                       e.target.blur();
-                      onSelectParent();
-                    }}
-                  />
-                ) : null}
-                <span style={{ marginRight: "10px" }}>{p.id}</span>
-              </button>
-            </h2>
+                      onOpenParent(p);
+                    }
+                  }}
+                  active={isSubLayerOpen(p.id)}
+                  className={`accordion-button ${isSubLayerOpen(p.id) ? "collapsed" : ""}`}
+                  type="button"
+                  data-bs-toggle="collapse"
+                  data-bs-target={`#collapse-${p.id}`}
+                  aria-expanded={isSubLayerOpen(p.id)}
+                  aria-controls={`collapse-${p.id}`}
+                >
+                  {p.isBasemap !== true ? (
+                    <input
+                      style={{ margin: "5px" }}
+                      className="form-check-input"
+                      type="checkbox"
+                      id={`checkbox-${p.id}`}
+                      checked={parentCheck()}
+                      onChange={(e) => {
+                        e.target.blur();
+                        onSelectParent();
+                      }}
+                    />
+                  ) : null}
+                  <span style={{ marginRight: "10px" }}>{p.id}</span>
+                </button>
+              </h2>
 
-            {allParentGroups
-              ? p.entries.map((entry) => (
-                  <div key={entry.id}>
-                    <Collapse
-                      isOpen={isSubLayerOpen(p.id)}
-                      id={`collapse-${entry.id}`}
-                      key={entry.id}
-                      className="accordion-collapse"
-                      aria-labelledby={`heading-${entry.id}`}
-                      data-bs-parent="#layer-control"
-                    >
-                      {p.isBasemap !== true ? (
-                        <div>
-                          <button
-                            style={{
-                              backgroundColor: "white",
-                              borderRadius: "0.25rem",
-                              padding: "10px",
-                            }}
-                            color="secondary"
-                            outline
-                            onClick={(e) => {
-                              if (!e.target.classList.contains("form-check-input")) {
-                                e.target.blur();
-                                onOpen(entry);
-                              }
-                            }}
-                            active={isSubLayerOpen(entry.id)}
-                            className={`accordion-button ${
-                              isSubLayerOpen(entry.id) ? "collapsed" : ""
-                            }`}
-                            type="button"
-                            data-bs-toggle="collapse"
-                            data-bs-target={`#collapse-${entry.id}`}
-                            aria-expanded={isSubLayerOpen(entry.id)}
-                            aria-controls={`collapse-${entry.id}`}
-                          >
-                            <input
-                              style={{ marginRight: "5px" }}
-                              className="form-check-input"
-                              type="checkbox"
-                              id={`checkbox-${entry.id}`}
-                              checked={entry.subLayers.every((subLayer) =>
-                                selected.includes(subLayer.id)
-                              )}
-                              onChange={(e) => {
-                                e.target.blur();
-                                onSelectEntry(entry);
+              {allParentGroups
+                ? p.entries.map((entry) => (
+                    <div key={entry.id}>
+                      <Collapse
+                        isOpen={isSubLayerOpen(p.id)}
+                        id={`collapse-${entry.id}`}
+                        key={entry.id}
+                        className="accordion-collapse"
+                        aria-labelledby={`heading-${entry.id}`}
+                        data-bs-parent="#layer-control"
+                      >
+                        {p.isBasemap !== true ? (
+                          <div>
+                            <button
+                              style={{
+                                backgroundColor: "white",
+                                borderRadius: "0.25rem",
+                                padding: "10px",
                               }}
-                            />
-
-                            <span style={{ marginRight: "10px" }}>{entry.id}</span>
-                          </button>
-                        </div>
-                      ) : (
-                        <div>
-                          <input
-                            style={{ margin: "10px" }}
-                            className="form-check-input"
-                            type="radio"
-                            id={`radiobutton-${entry.id}`}
-                            name="basemap"
-                            value={`${entry.id}`}
-                            checked={selectedBasemap.includes(entry.id)}
-                            onClick={(e) => {
-                              e.target.blur();
-                              onSelectRadio(entry);
-                            }}
-                          />
-                          <span style={{ marginRight: "10px" }}>{entry.id}</span>
-                        </div>
-                      )}
-                    </Collapse>
-
-                    {entry.subLayers && entry.subLayers.length > 0
-                      ? entry.subLayers.map((subLayer) => (
-                          <div key={subLayer.id}>
-                            <Collapse
-                              isOpen={isSubLayerOpen(entry.id)}
-                              id={`collapse-${subLayer.id}`}
-                              key={subLayer.id}
-                              className="accordion-collapse"
-                              aria-labelledby={`heading-${subLayer.id}`}
-                              data-bs-parent="#layer-control"
+                              color="secondary"
+                              outline
+                              onClick={(e) => {
+                                if (!e.target.classList.contains("form-check-input")) {
+                                  e.target.blur();
+                                  onOpen(entry);
+                                }
+                              }}
+                              active={isSubLayerOpen(entry.id)}
+                              className={`accordion-button ${
+                                isSubLayerOpen(entry.id) ? "collapsed" : ""
+                              }`}
+                              type="button"
+                              data-bs-toggle="collapse"
+                              data-bs-target={`#collapse-${entry.id}`}
+                              aria-expanded={isSubLayerOpen(entry.id)}
+                              aria-controls={`collapse-${entry.id}`}
                             >
                               <input
-                                style={{ marginLeft: "5px" }}
+                                style={{ marginRight: "5px" }}
                                 className="form-check-input"
                                 type="checkbox"
-                                id={`checkbox-${subLayer.id}`}
-                                checked={selected.includes(subLayer.id)}
-                                onChange={() => onSelect(subLayer)}
+                                id={`checkbox-${entry.id}`}
+                                checked={entry.subLayers.every((subLayer) =>
+                                  selected.includes(subLayer.id)
+                                )}
+                                onChange={(e) => {
+                                  e.target.blur();
+                                  onSelectEntry(entry);
+                                }}
                               />
-                              <span style={{ marginLeft: "10px" }}>{subLayer.id}</span>
-                            </Collapse>
+
+                              <span style={{ marginRight: "10px" }}>{entry.id}</span>
+                            </button>
                           </div>
-                        ))
-                      : null}
-                  </div>
-                ))
-              : null}
-          </div>
-        ) : null
-      )}
-    </div>
+                        ) : (
+                          <div>
+                            <input
+                              style={{ margin: "10px" }}
+                              className="form-check-input"
+                              type="radio"
+                              id={`radiobutton-${entry.id}`}
+                              name="basemap"
+                              value={`${entry.id}`}
+                              checked={selectedBasemap.includes(entry.id)}
+                              onClick={(e) => {
+                                e.target.blur();
+                                onSelectRadio(entry);
+                              }}
+                            />
+                            <span style={{ marginRight: "10px" }}>{entry.id}</span>
+                          </div>
+                        )}
+                      </Collapse>
+
+                      {entry.subLayers && entry.subLayers.length > 0
+                        ? entry.subLayers.map((subLayer) => (
+                            <div key={subLayer.id}>
+                              <Collapse
+                                isOpen={isSubLayerOpen(entry.id)}
+                                id={`collapse-${subLayer.id}`}
+                                key={subLayer.id}
+                                className="accordion-collapse"
+                                aria-labelledby={`heading-${subLayer.id}`}
+                                data-bs-parent="#layer-control"
+                              >
+                                <input
+                                  style={{ marginLeft: "5px" }}
+                                  className="form-check-input"
+                                  type="checkbox"
+                                  id={`checkbox-${subLayer.id}`}
+                                  checked={selected.includes(subLayer.id)}
+                                  onChange={() => onSelect(subLayer)}
+                                />
+                                <span style={{ marginLeft: "10px" }}>{subLayer.id}</span>
+                              </Collapse>
+                            </div>
+                          ))
+                        : null}
+                    </div>
+                  ))
+                : null}
+            </div>
+          ) : null
+        )}
+      </div>
+    </>
   );
 };
 
