@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Collapse } from "reactstrap";
 import { useMaplibreUIEffect } from "react-maplibre-ui";
+import { useMapVisibility } from "./fetchStyle";
 
 const LayerControl = ({ layerGroups }) => {
   const parent = layerGroups.filter((entry) => entry.type === "group");
   const basemaps = layerGroups.filter((entry) => entry.isBasemap === true);
+  const visibility = useMapVisibility();
 
   const allParentGroups = parent.flatMap((p) => {
     return p.entries.map((value) => {
@@ -25,7 +27,7 @@ const LayerControl = ({ layerGroups }) => {
     return Ids;
   });
 
-  const [layerControlVisible, setLayerControlVisible] = useState(true);
+  const [layerControlVisible, setLayerControlVisible] = useState(false);
   const [selectedBasemap, setSelectedBasemap] = useState([basemaps[0].entries[0].id]);
   const [selected, setSelected] = useState(subLayerIds);
   const [open, setOpen] = useState([]);
