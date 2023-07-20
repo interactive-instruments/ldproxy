@@ -76,14 +76,14 @@ public class LdproxyCfg implements Cfg {
         new ImmutableStoreConfiguration.Builder()
             .addSources(new ImmutableStoreSourceDefaultV3.Builder().build())
             .build();
-    Jackson jackson = new JacksonProvider(JacksonSubTypes::ids);
+    Jackson jackson = new JacksonProvider(JacksonSubTypes::ids, false);
     this.objectMapper = new ValueEncodingJackson<EntityData>(jackson, false).getMapper(FORMAT.YML);
     EventStoreDriver storeDriver = new EventStoreDriverFs(dataDirectory);
     EventStore eventStore =
         new EventStoreDefault(
             new StoreImpl(dataDirectory, storeConfiguration),
             storeDriver,
-            new EventSubscriptionsMock());
+            new EventSubscriptionsSync());
     ((EventStoreDefault) eventStore).onStart();
     AppContext appContext = new AppContextCfg();
     OgcApiExtensionRegistry extensionRegistry = new OgcApiExtensionRegistry();
@@ -100,6 +100,22 @@ public class LdproxyCfg implements Cfg {
   @Override
   public Builders builder() {
     return builders;
+  }
+
+  public Path getDataDirectory() {
+    return dataDirectory;
+  }
+
+  public ObjectMapper getObjectMapper() {
+    return objectMapper;
+  }
+
+  public EntityDataDefaultsStore getEntityDataDefaultsStore() {
+    return entityDataDefaultsStore;
+  }
+
+  public EntityDataStore<EntityData> getEntityDataStore() {
+    return entityDataStore;
   }
 
   @Override
