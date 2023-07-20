@@ -4,40 +4,49 @@ import { Collapse } from "reactstrap";
 import { useMaplibreUIEffect } from "react-maplibre-ui";
 
 const LayerControl = ({ layerGroups }) => {
-  const [selected, setSelected] = useState(
-    layerGroups[0].entries.flatMap((entry) => {
-      return entry.subLayers.map((subLayer) => subLayer.id);
-    })
-  );
+  const parent = layerGroups.filter((entry) => entry.type === "group");
+
+  const allParentGroups = parent.flatMap((p) => {
+    return p.entries.map((value) => {
+      return value;
+    });
+  });
+
+  const allSubLayers = allParentGroups.map((group) => {
+    return group.subLayers && group.subLayers.length > 0
+      ? group.subLayers.map((subLayer) => {
+          return subLayer.id;
+        })
+      : [];
+  });
+
+  const subLayerIds = allSubLayers.flatMap((Ids) => {
+    return Ids;
+  });
+
+  const [selected, setSelected] = useState(subLayerIds);
   const [open, setOpen] = useState([]);
 
   const onSelectParent = () => {
-    const allEntries = layerGroups[0].entries;
-    const allSubLayerIds = allEntries.flatMap((entry) => {
-      return entry.subLayers.map((subLayer) => subLayer.id);
-    });
-    if (!allSubLayerIds.every((id) => selected.includes(id))) {
-      setSelected(allSubLayerIds);
+    if (!subLayerIds.every((id) => selected.includes(id))) {
+      setSelected(subLayerIds);
     } else {
       setSelected([]);
     }
   };
 
   const parentCheck = () => {
-    const allEntries = layerGroups[0].entries;
-    const allSubLayerIds = allEntries.flatMap((entry) => {
-      return entry.subLayers.map((subLayer) => subLayer.id);
-    });
-    return allSubLayerIds.every((id) => selected.includes(id));
+    return subLayerIds.every((id) => selected.includes(id));
   };
 
   const onSelectEntry = (entry) => {
-    const subLayerIds = entry.subLayers.map((subLayer) => subLayer.id);
-
-    if (subLayerIds.every((id) => selected.includes(id))) {
-      setSelected(selected.filter((id) => !subLayerIds.includes(id)));
+    const subLayers = entry.subLayers.map((subLayer) => {
+      return subLayer.id;
+    });
+    if (subLayers.every((id) => selected.includes(id))) {
+      setSelected(selected.filter((id) => !subLayers.includes(id)));
     } else {
-      setSelected([...selected, ...subLayerIds]);
+      setSelected([...selected, ...subLayers]);
     }
   };
 
@@ -51,13 +60,36 @@ const LayerControl = ({ layerGroups }) => {
     setSelected([...selected]);
   };
 
-  const onOpenParent = (entry) => {
-    const index = open.indexOf(entry.id);
+  const onSelectRadio = (entry) => {
+    const index = selected.indexOf(entry.id);
     if (index < 0) {
-      open.push(entry.id);
-      setOpen([...open]);
+      setSelected([entry.id]);
     } else {
-      setOpen([]);
+      setSelected(selected.filter((id) => id !== entry.id));
+    }
+  };
+
+  const onOpenParent = (entry) => {
+    if (entry.isBasemap !== true) {
+      const entryIds = [entry.id, ...entry.entries.map((e) => e.id)];
+      const subLayerIds = entry.entries.flatMap((e) => e.subLayers.map((subLayer) => subLayer.id));
+      const idsToRemove = [...entryIds, ...subLayerIds];
+
+      const index = open.indexOf(entry.id);
+      if (index < 0) {
+        open.push(entry.id);
+        setOpen([...open]);
+      } else {
+        setOpen(open.filter((ids) => !idsToRemove.includes(ids)));
+      }
+    } else {
+      const index = open.indexOf(entry.id);
+      if (index < 0) {
+        open.push(entry.id);
+        setOpen([...open]);
+      } else {
+        setOpen(open.filter((ids) => !entry.id.includes(ids)));
+      }
     }
   };
 
@@ -73,7 +105,7 @@ const LayerControl = ({ layerGroups }) => {
 
   useMaplibreUIEffect(
     ({ map }) => {
-      layerGroups[0].entries.forEach((entry) => {
+      allParentGroups.forEach((entry) => {
         if (entry.type === "source-layer" && entry.subLayers) {
           entry.subLayers.forEach(({ id: layerId }) => {
             if (map.getLayer(layerId)) {
@@ -85,6 +117,15 @@ const LayerControl = ({ layerGroups }) => {
               }
             }
           });
+        } else {
+          if (map.getLayer(entry.id)) {
+            const visible = map.getLayoutProperty(entry.id, "visibility") !== "none";
+            if (visible && !selected.includes(entry.id)) {
+              map.setLayoutProperty(entry.id, "visibility", "none");
+            } else if (!visible && selected.includes(entry.id)) {
+              map.setLayoutProperty(entry.id, "visibility", "visible");
+            }
+          }
         }
       });
     },
@@ -94,16 +135,15 @@ const LayerControl = ({ layerGroups }) => {
   const isSubLayerOpen = (name) => {
     return open.includes(name);
   };
-
-  //   Test von entry.id und subLayer.id:
-  /*  layerGroups[0].entries.map((entry) => {
-    console.log("aaa", entry.id);
-    if (entry.subLayers) {
-      entry.subLayers.map((subLayer) => {
-        console.log("zzzz", subLayer.id);
-      });
-    }
-  });
+  /*
+  //   Test von allParentGroups und parent.id:
+  console.log("allPGroups", allParentGroups);
+  console.log(
+    "parent",
+    parent.map((p) => {
+      return p;
+    })
+  );
 */
 
   return (
@@ -118,123 +158,153 @@ const LayerControl = ({ layerGroups }) => {
         left: "30px",
       }}
     >
-      {layerGroups[0].id ? (
-        <div className="accordion-item" key={layerGroups[0].id}>
-          <h2 className="accordion-header" id={layerGroups[0].id}>
-            <button
-              style={{
-                backgroundColor: "white",
-                borderRadius: "0.25rem",
-                padding: "10px",
-                paddingLeft: "2px",
-              }}
-              color="secondary"
-              outline
-              onClick={(e) => {
-                if (!e.target.classList.contains("form-check-input")) {
-                  e.target.blur();
-                  onOpenParent(layerGroups[0]);
-                }
-              }}
-              active={isSubLayerOpen(layerGroups[0].id)}
-              className={`accordion-button ${isSubLayerOpen(layerGroups[0].id) ? "collapsed" : ""}`}
-              type="button"
-              data-bs-toggle="collapse"
-              data-bs-target={`#collapse-${layerGroups[0].id}`}
-              aria-expanded={isSubLayerOpen(layerGroups[0].id)}
-              aria-controls={`collapse-${layerGroups[0].id}`}
-            >
-              <input
-                style={{ margin: "5px" }}
-                className="form-check-input"
-                type="checkbox"
-                id={`checkbox-${layerGroups[0].id}`}
-                checked={parentCheck()}
-                onChange={(e) => {
-                  e.target.blur();
-                  onSelectParent();
+      {parent.map((p) =>
+        p.id ? (
+          <div className="accordion-item" key={p.id}>
+            <h2 className="accordion-header" id={p.id}>
+              <button
+                style={{
+                  backgroundColor: "white",
+                  borderRadius: "0.25rem",
+                  padding: "10px",
+                  paddingLeft: "2px",
                 }}
-              />
-              <span style={{ marginRight: "10px" }}>{layerGroups[0].id}</span>
-            </button>
-          </h2>
-        </div>
-      ) : null}
-      {layerGroups[0].entries
-        ? layerGroups[0].entries.map((entry) => (
-            <div key={entry.id}>
-              <Collapse
-                isOpen={isSubLayerOpen(layerGroups[0].id)}
-                id={`collapse-${entry.id}`}
-                key={entry.id}
-                className="accordion-collapse"
-                aria-labelledby={`heading-${entry.id}`}
-                data-bs-parent="#layer-control"
+                color="secondary"
+                outline
+                onClick={(e) => {
+                  if (!e.target.classList.contains("form-check-input")) {
+                    e.target.blur();
+                    onOpenParent(p);
+                  }
+                }}
+                active={isSubLayerOpen(p.id)}
+                className={`accordion-button ${isSubLayerOpen(p.id) ? "collapsed" : ""}`}
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target={`#collapse-${p.id}`}
+                aria-expanded={isSubLayerOpen(p.id)}
+                aria-controls={`collapse-${p.id}`}
               >
-                <button
-                  style={{
-                    backgroundColor: "white",
-                    borderRadius: "0.25rem",
-                    padding: "10px",
-                  }}
-                  color="secondary"
-                  outline
-                  onClick={(e) => {
-                    if (!e.target.classList.contains("form-check-input")) {
-                      e.target.blur();
-                      onOpen(entry);
-                    }
-                  }}
-                  active={isSubLayerOpen(entry.id)}
-                  className={`accordion-button ${isSubLayerOpen(entry.id) ? "collapsed" : ""}`}
-                  type="button"
-                  data-bs-toggle="collapse"
-                  data-bs-target={`#collapse-${entry.id}`}
-                  aria-expanded={isSubLayerOpen(entry.id)}
-                  aria-controls={`collapse-${entry.id}`}
-                >
+                {p.isBasemap !== true ? (
                   <input
                     style={{ margin: "5px" }}
                     className="form-check-input"
                     type="checkbox"
-                    id={`checkbox-${entry.id}`}
-                    checked={entry.subLayers.every((subLayer) => selected.includes(subLayer.id))}
+                    id={`checkbox-${p.id}`}
+                    checked={parentCheck()}
                     onChange={(e) => {
                       e.target.blur();
-                      onSelectEntry(entry);
+                      onSelectParent();
                     }}
                   />
-                  <span style={{ marginRight: "10px" }}>{entry.id}</span>
-                </button>
-              </Collapse>
+                ) : null}
+                <span style={{ marginRight: "10px" }}>{p.id}</span>
+              </button>
+            </h2>
 
-              {entry.subLayers
-                ? entry.subLayers.map((subLayer) => (
-                    <div key={subLayer.id}>
-                      <Collapse
-                        isOpen={isSubLayerOpen(entry.id)}
-                        id={`collapse-${subLayer.id}`}
-                        key={subLayer.id}
-                        className="accordion-collapse"
-                        aria-labelledby={`heading-${subLayer.id}`}
-                        data-bs-parent="#layer-control"
-                      >
-                        <input
-                          style={{ margin: "5px" }}
-                          className="form-check-input"
-                          type="checkbox"
-                          id={`checkbox-${subLayer.id}`}
-                          checked={selected.includes(subLayer.id)}
-                          onChange={() => onSelect(subLayer)}
-                        />
-                        <span style={{ marginLeft: "10px" }}>{subLayer.id}</span>
-                      </Collapse>
-                    </div>
-                  ))
-                : null}
-            </div>
-          ))
-        : null}
+            {allParentGroups
+              ? p.entries.map((entry) => (
+                  <div key={entry.id}>
+                    <Collapse
+                      isOpen={isSubLayerOpen(p.id)}
+                      id={`collapse-${entry.id}`}
+                      key={entry.id}
+                      className="accordion-collapse"
+                      aria-labelledby={`heading-${entry.id}`}
+                      data-bs-parent="#layer-control"
+                    >
+                      {entry.type === "source-layer" ? (
+                        <div>
+                          <button
+                            style={{
+                              backgroundColor: "white",
+                              borderRadius: "0.25rem",
+                              padding: "10px",
+                            }}
+                            color="secondary"
+                            outline
+                            onClick={(e) => {
+                              if (!e.target.classList.contains("form-check-input")) {
+                                e.target.blur();
+                                onOpen(entry);
+                              }
+                            }}
+                            active={isSubLayerOpen(entry.id)}
+                            className={`accordion-button ${
+                              isSubLayerOpen(entry.id) ? "collapsed" : ""
+                            }`}
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target={`#collapse-${entry.id}`}
+                            aria-expanded={isSubLayerOpen(entry.id)}
+                            aria-controls={`collapse-${entry.id}`}
+                          >
+                            <input
+                              style={{ margin: "5px" }}
+                              className="form-check-input"
+                              type="checkbox"
+                              id={`checkbox-${entry.id}`}
+                              checked={entry.subLayers.every((subLayer) =>
+                                selected.includes(subLayer.id)
+                              )}
+                              onChange={(e) => {
+                                e.target.blur();
+                                onSelectEntry(entry);
+                              }}
+                            />
+
+                            <span style={{ marginRight: "10px" }}>{entry.id}</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <input
+                            style={{ margin: "5px" }}
+                            className="form-check-input"
+                            type="radio"
+                            id={`radiobutton-${entry.id}`}
+                            name="basemap"
+                            value={`${entry.id}`}
+                            onChange={(e) => {
+                              e.target.blur();
+                              onSelectRadio(entry);
+                            }}
+                          />
+                          <span style={{ marginRight: "10px" }}>{entry.id}</span>
+                        </div>
+                      )}
+                    </Collapse>
+
+                    {entry.subLayers && entry.subLayers.length > 0
+                      ? entry.subLayers.map((subLayer) => (
+                          <div key={subLayer.id}>
+                            <Collapse
+                              isOpen={isSubLayerOpen(entry.id)}
+                              id={`collapse-${subLayer.id}`}
+                              key={subLayer.id}
+                              className="accordion-collapse"
+                              aria-labelledby={`heading-${subLayer.id}`}
+                              data-bs-parent="#layer-control"
+                            >
+                              <input
+                                style={{ margin: "5px" }}
+                                className="form-check-input"
+                                type="checkbox"
+                                id={`checkbox-${subLayer.id}`}
+                                checked={selected.includes(subLayer.id)}
+                                onChange={() => onSelect(subLayer)}
+                              />
+                              <span style={{ marginLeft: "10px" }}>{subLayer.id}</span>
+                            </Collapse>
+                          </div>
+                        ))
+                      : null}
+                  </div>
+                ))
+              : null}
+          </div>
+        ) : null
+      )}
     </div>
   );
 };

@@ -15,6 +15,21 @@ Plain.args = {
   styleUrl: "https://demo.ldproxy.net/daraa/styles/topographic-with-basemap?f=mbs",
   layerGroupControl: [
     {
+      id: "Basemap",
+      type: "group",
+      isBasemap: true,
+      entries: [
+        {
+          id: "basemap.de Grau",
+          layers: ["agriculturesrf"],
+        },
+        {
+          id: "vegetationsrf",
+          layers: ["vegetationsrf"],
+        },
+      ],
+    },
+    {
       id: "All",
       type: "group",
       entries: [
