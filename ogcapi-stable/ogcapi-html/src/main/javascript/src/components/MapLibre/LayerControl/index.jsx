@@ -5,6 +5,7 @@ import { useMaplibreUIEffect } from "react-maplibre-ui";
 
 const LayerControl = ({ layerGroups }) => {
   const parent = layerGroups.filter((entry) => entry.type === "group");
+  const basemaps = layerGroups.filter((entry) => entry.isBasemap === true);
 
   const allParentGroups = parent.flatMap((p) => {
     return p.entries.map((value) => {
@@ -24,14 +25,15 @@ const LayerControl = ({ layerGroups }) => {
     return Ids;
   });
 
+  const [selectedBasemap, setSelectedBasemap] = useState([basemaps[0].entries[0].id]);
   const [selected, setSelected] = useState(subLayerIds);
   const [open, setOpen] = useState([]);
 
   const onSelectParent = () => {
-    if (!subLayerIds.every((id) => selected.includes(id))) {
-      setSelected(subLayerIds);
+    if (selected.every((id) => !subLayerIds.includes(id))) {
+      setSelected([...selected, ...subLayerIds]);
     } else {
-      setSelected([]);
+      setSelected(selected.filter((id) => !subLayerIds.includes(id)));
     }
   };
 
@@ -61,11 +63,9 @@ const LayerControl = ({ layerGroups }) => {
   };
 
   const onSelectRadio = (entry) => {
-    const index = selected.indexOf(entry.id);
-    if (index < 0) {
-      setSelected([entry.id]);
-    } else {
-      setSelected(selected.filter((id) => id !== entry.id));
+    if (!selectedBasemap.includes(entry.id)) {
+      setSelectedBasemap(null);
+      setSelectedBasemap([entry.id]);
     }
   };
 
@@ -103,34 +103,31 @@ const LayerControl = ({ layerGroups }) => {
     setOpen([...open]);
   };
 
-  useMaplibreUIEffect(
-    ({ map }) => {
-      allParentGroups.forEach((entry) => {
-        if (entry.type === "source-layer" && entry.subLayers) {
-          entry.subLayers.forEach(({ id: layerId }) => {
-            if (map.getLayer(layerId)) {
-              const visible = map.getLayoutProperty(layerId, "visibility") !== "none";
-              if (visible && !selected.includes(layerId)) {
-                map.setLayoutProperty(layerId, "visibility", "none");
-              } else if (!visible && selected.includes(layerId)) {
-                map.setLayoutProperty(layerId, "visibility", "visible");
-              }
-            }
-          });
-        } else {
-          if (map.getLayer(entry.id)) {
-            const visible = map.getLayoutProperty(entry.id, "visibility") !== "none";
-            if (visible && !selected.includes(entry.id)) {
-              map.setLayoutProperty(entry.id, "visibility", "none");
-            } else if (!visible && selected.includes(entry.id)) {
-              map.setLayoutProperty(entry.id, "visibility", "visible");
+  useMaplibreUIEffect(({ map }) => {
+    allParentGroups.forEach((entry) => {
+      if (entry.type === "source-layer" && entry.subLayers) {
+        entry.subLayers.forEach(({ id: layerId }) => {
+          if (map.getLayer(layerId)) {
+            const visible = map.getLayoutProperty(layerId, "visibility") !== "none";
+            if (visible && !selected.includes(layerId)) {
+              map.setLayoutProperty(layerId, "visibility", "none");
+            } else if (!visible && selected.includes(layerId)) {
+              map.setLayoutProperty(layerId, "visibility", "visible");
             }
           }
+        });
+      } else {
+        if (map.getLayer(entry.id)) {
+          const visible = map.getLayoutProperty(entry.id, "visibility") !== "none";
+          if (visible && !selectedBasemap.includes(entry.id)) {
+            map.setLayoutProperty(entry.id, "visibility", "none");
+          } else if (!visible && selectedBasemap.includes(entry.id)) {
+            map.setLayoutProperty(entry.id, "visibility", "visible");
+          }
         }
-      });
-    },
-    [selected]
-  );
+      }
+    });
+  }, [selected] + [selectedBasemap]);
 
   const isSubLayerOpen = (name) => {
     return open.includes(name);
@@ -213,7 +210,7 @@ const LayerControl = ({ layerGroups }) => {
                       aria-labelledby={`heading-${entry.id}`}
                       data-bs-parent="#layer-control"
                     >
-                      {entry.type === "source-layer" ? (
+                      {p.isBasemap !== true ? (
                         <div>
                           <button
                             style={{
@@ -265,7 +262,8 @@ const LayerControl = ({ layerGroups }) => {
                             id={`radiobutton-${entry.id}`}
                             name="basemap"
                             value={`${entry.id}`}
-                            onChange={(e) => {
+                            checked={selectedBasemap.includes(entry.id)}
+                            onClick={(e) => {
                               e.target.blur();
                               onSelectRadio(entry);
                             }}

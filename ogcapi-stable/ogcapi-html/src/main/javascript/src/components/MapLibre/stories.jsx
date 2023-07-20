@@ -20,7 +20,7 @@ Plain.args = {
       isBasemap: true,
       entries: [
         {
-          id: "basemap.de Grau",
+          id: "agriculturesrf",
           layers: ["agriculturesrf"],
         },
         {
