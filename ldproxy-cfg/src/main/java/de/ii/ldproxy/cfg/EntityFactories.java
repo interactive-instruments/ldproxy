@@ -204,6 +204,28 @@ public interface EntityFactories {
               @Override
               public void addEntityGoneListener(Consumer<PersistentEntity> listener) {}
             })
+        .add(
+            new UserFactory(null) {
+              @Override
+              public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
+
+              @Override
+              public CompletableFuture<PersistentEntity> updateInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
+
+              @Override
+              public void deleteInstance(String id) {}
+
+              @Override
+              public void addEntityListener(
+                  Consumer<PersistentEntity> listener, boolean existing) {}
+
+              @Override
+              public void addEntityGoneListener(Consumer<PersistentEntity> listener) {}
+            })
         .build();
   }
 }
