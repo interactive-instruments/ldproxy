@@ -196,7 +196,9 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
                                     .put("buildingBlock", buildingBlock)
                                     .putAll(value)
                                     .build()))))
-        .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Map.Entry::getKey, Map.Entry::getValue, (first, second) -> second));
   }
 
   @AssistedFactory
