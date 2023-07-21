@@ -12,10 +12,14 @@ import de.ii.ogcapi.foundation.app.OgcApiFactory;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.xtraplatform.auth.app.UserFactory;
 import de.ii.xtraplatform.codelists.app.CodelistFactory;
+import de.ii.xtraplatform.features.gml.app.FeatureProviderWfsFactory;
 import de.ii.xtraplatform.features.sql.app.FeatureProviderSqlFactory;
 import de.ii.xtraplatform.store.domain.entities.EntityData;
 import de.ii.xtraplatform.store.domain.entities.EntityFactory;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
+import de.ii.xtraplatform.tiles.app.TileProviderFeaturesFactory;
+import de.ii.xtraplatform.tiles.app.TileProviderHttpFactory;
+import de.ii.xtraplatform.tiles.app.TileProviderMbTilesFactory;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -48,6 +52,94 @@ public interface EntityFactories {
             })
         .add(
             new FeatureProviderSqlFactory() {
+              @Override
+              public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
+
+              @Override
+              public CompletableFuture<PersistentEntity> updateInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
+
+              @Override
+              public void deleteInstance(String id) {}
+
+              @Override
+              public void addEntityListener(
+                  Consumer<PersistentEntity> listener, boolean existing) {}
+
+              @Override
+              public void addEntityGoneListener(Consumer<PersistentEntity> listener) {}
+            })
+        .add(
+            new FeatureProviderWfsFactory() {
+              @Override
+              public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
+
+              @Override
+              public CompletableFuture<PersistentEntity> updateInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
+
+              @Override
+              public void deleteInstance(String id) {}
+
+              @Override
+              public void addEntityListener(
+                  Consumer<PersistentEntity> listener, boolean existing) {}
+
+              @Override
+              public void addEntityGoneListener(Consumer<PersistentEntity> listener) {}
+            })
+        .add(
+            new TileProviderFeaturesFactory() {
+              @Override
+              public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
+
+              @Override
+              public CompletableFuture<PersistentEntity> updateInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
+
+              @Override
+              public void deleteInstance(String id) {}
+
+              @Override
+              public void addEntityListener(
+                  Consumer<PersistentEntity> listener, boolean existing) {}
+
+              @Override
+              public void addEntityGoneListener(Consumer<PersistentEntity> listener) {}
+            })
+        .add(
+            new TileProviderHttpFactory() {
+              @Override
+              public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
+
+              @Override
+              public CompletableFuture<PersistentEntity> updateInstance(EntityData entityData) {
+                return CompletableFuture.completedFuture(null);
+              }
+
+              @Override
+              public void deleteInstance(String id) {}
+
+              @Override
+              public void addEntityListener(
+                  Consumer<PersistentEntity> listener, boolean existing) {}
+
+              @Override
+              public void addEntityGoneListener(Consumer<PersistentEntity> listener) {}
+            })
+        .add(
+            new TileProviderMbTilesFactory() {
               @Override
               public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
                 return CompletableFuture.completedFuture(null);
