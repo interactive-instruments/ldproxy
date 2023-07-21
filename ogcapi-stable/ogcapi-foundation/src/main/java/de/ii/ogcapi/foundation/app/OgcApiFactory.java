@@ -58,6 +58,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
   private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiFactory.class);
 
   private final ExtensionRegistry extensionRegistry;
+  private final boolean skipHydration;
 
   @SuppressWarnings(
       "PMD.UnusedFormalParameter") // crsTransformerFactory is needed here because dagger-auto does
@@ -70,6 +71,14 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
       OgcApiFactoryAssisted ogcApiFactoryAssisted) {
     super(ogcApiFactoryAssisted);
     this.extensionRegistry = extensionRegistry;
+    this.skipHydration = false;
+  }
+
+  // for ldproxy-cfg
+  public OgcApiFactory(ExtensionRegistry extensionRegistry) {
+    super(null);
+    this.extensionRegistry = extensionRegistry;
+    this.skipHydration = true;
   }
 
   @Override
@@ -116,6 +125,10 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
   public EntityData hydrateData(EntityData entityData) {
     try {
       OgcApiDataV2 hydrated = (OgcApiDataV2) entityData;
+
+      if (skipHydration) {
+        return hydrated;
+      }
 
       if (hydrated.isAuto() && LOGGER.isInfoEnabled()) {
         LOGGER.info(

@@ -47,8 +47,7 @@ public interface EntityFactories {
               public void addEntityGoneListener(Consumer<PersistentEntity> listener) {}
             })
         .add(
-            new FeatureProviderSqlFactory(
-                null, null, null, null, null, null, null, null, null, null) {
+            new FeatureProviderSqlFactory() {
               @Override
               public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
                 return CompletableFuture.completedFuture(null);
