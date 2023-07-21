@@ -120,6 +120,8 @@ const Entries = ({
                 isSubLayerOpen={isSubLayerOpen}
                 selected={selected}
                 setSelected={setSelected}
+                allParentGroups={allParentGroups}
+                open={open}
               />
             </div>
           ))

@@ -64,7 +64,7 @@ const ParentGroups = ({
           zIndex: 1,
           top: "87px",
           left: "30px",
-          width: "300px",
+          width: "350px",
           display: layerControlVisible ? "block" : "none",
           backgroundColor: "white",
           height: "auto",
@@ -85,7 +85,6 @@ const ParentGroups = ({
                     backgroundColor: "white",
                     borderRadius: "0.25rem",
                     padding: "10px",
-                    paddingLeft: "10px",
                   }}
                   color="secondary"
                   outline
@@ -123,7 +122,6 @@ const ParentGroups = ({
                   )}
                 </button>
               </h2>
-
               <Entries
                 p={p}
                 isSubLayerOpen={isSubLayerOpen}

@@ -25,7 +25,6 @@ export function useMapVisibility() {
           const basemapLayer = data.layers.find((layer) => layer.id === "basemap");
           const visibility = basemapLayer.layout.visibility;
 
-          console.log('Sichtbarkeit der Ebene "basemap":', visibility);
           if (visibility === "visible") {
             setVisibility(true);
           } else {

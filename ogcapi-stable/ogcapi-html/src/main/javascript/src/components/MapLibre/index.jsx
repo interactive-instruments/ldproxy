@@ -110,8 +110,7 @@ MapLibre.defaultProps = {
   styleUrl: null,
   removeZoomLevelConstraints: false,
   backgroundUrl: "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-  attribution:
-    '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
   center: [0, 0],
   zoom: 0,
   bounds: null,

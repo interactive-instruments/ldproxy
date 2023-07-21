@@ -30,7 +30,7 @@ const LayerControl = ({ layerGroups }) => {
     return Ids;
   });
 
-  const [layerControlVisible, setLayerControlVisible] = useState(true);
+  const [layerControlVisible, setLayerControlVisible] = useState(false);
   const [selectedBasemap, setSelectedBasemap] = useState([basemaps[0].entries[0].id]);
   const [selected, setSelected] = useState(subLayerIds);
   const [open, setOpen] = useState([]);
@@ -100,6 +100,7 @@ const LayerControl = ({ layerGroups }) => {
           Layer Control
         </button>
       </div>
+
       <ParentGroups
         layerControlVisible={layerControlVisible}
         parent={parent}
