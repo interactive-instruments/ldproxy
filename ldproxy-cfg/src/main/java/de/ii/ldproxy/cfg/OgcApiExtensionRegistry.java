@@ -15,14 +15,18 @@ import de.ii.ogcapi.collections.schema.app.SchemaBuildingBlock;
 import de.ii.ogcapi.common.domain.CommonBuildingBlock;
 import de.ii.ogcapi.crs.app.CrsBuildingBlock;
 import de.ii.ogcapi.crud.app.CrudBuildingBlock;
+import de.ii.ogcapi.features.cityjson.app.CityJsonBuildingBlock;
 import de.ii.ogcapi.features.core.app.FeaturesCoreBuildingBlock;
+import de.ii.ogcapi.features.csv.app.FeaturesCsvBuildingBlock;
 import de.ii.ogcapi.features.custom.extensions.app.FeaturesExtensionsBuildingBlock;
 import de.ii.ogcapi.features.flatgeobuf.app.FeaturesFlatgeobufBuildingBlock;
 import de.ii.ogcapi.features.geojson.app.GeoJsonBuildingBlock;
 import de.ii.ogcapi.features.geojson.ld.app.GeoJsonLdBuildingBlock;
+import de.ii.ogcapi.features.gltf.app.GltfBuildingBlock;
 import de.ii.ogcapi.features.gml.app.GmlBuildingBlock;
 import de.ii.ogcapi.features.html.app.FeaturesHtmlBuildingBlock;
 import de.ii.ogcapi.features.jsonfg.app.JsonFgBuildingBlock;
+import de.ii.ogcapi.features.search.app.SearchBuildingBlock;
 import de.ii.ogcapi.filter.app.FilterBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ApiExtension;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -33,9 +37,13 @@ import de.ii.ogcapi.json.app.JsonBuildingBlock;
 import de.ii.ogcapi.oas30.app.OpenApiBuildingBlock;
 import de.ii.ogcapi.projections.app.ProjectionsBuildingBlock;
 import de.ii.ogcapi.resources.app.ResourcesBuildingBlock;
+import de.ii.ogcapi.routes.app.RoutingBuildingBlock;
 import de.ii.ogcapi.sorting.app.SortingBuildingBlock;
 import de.ii.ogcapi.styles.app.StylesBuildingBlock;
+import de.ii.ogcapi.text.search.app.TextSearchBuildingBlock;
+import de.ii.ogcapi.tilematrixsets.app.TileMatrixSetsBuildingBlock;
 import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
+import de.ii.ogcapi.tiles3d.app.Tiles3dBuildingBlock;
 import de.ii.ogcapi.xml.app.XmlBuildingBlock;
 import java.util.List;
 import java.util.Set;
@@ -48,35 +56,43 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
   OgcApiExtensionRegistry() {
     this.apiExtensions =
         ImmutableSet.<ApiExtension>builder()
-            .add(new QueryablesBuildingBlock(null, null))
-            .add(new SchemaBuildingBlock())
+            .add(new CityJsonBuildingBlock())
+            .add(new CrudBuildingBlock())
+            .add(new CollectionsBuildingBlock())
+            .add(new CommonBuildingBlock())
+            .add(new CrsBuildingBlock(null, null))
+            .add(new FeaturesCsvBuildingBlock())
+            .add(new FeaturesCoreBuildingBlock(null, null, null))
             .add(new FeaturesExtensionsBuildingBlock())
+            .add(new FeaturesHtmlBuildingBlock())
             .add(new FeaturesFlatgeobufBuildingBlock())
-            .add(new GeoJsonLdBuildingBlock())
-            .add(new JsonFgBuildingBlock())
             .add(new FilterBuildingBlock())
+            .add(new FoundationBuildingBlock())
+            .add(new GeoJsonBuildingBlock())
+            .add(new GeoJsonLdBuildingBlock())
             .add(new GeometrySimplificationBuildingBlock())
+            .add(new GltfBuildingBlock())
+            .add(new GmlBuildingBlock())
+            .add(new HtmlBuildingBlock())
+            .add(new JsonBuildingBlock())
+            .add(new JsonFgBuildingBlock())
+            .add(new OpenApiBuildingBlock())
             .add(new ProjectionsBuildingBlock())
+            .add(new QueryablesBuildingBlock(null, null))
             .add(new ResourcesBuildingBlock())
+            .add(new RoutingBuildingBlock())
+            .add(new SchemaBuildingBlock())
+            .add(new SearchBuildingBlock())
             .add(new SortingBuildingBlock(null, null))
             .add(new StylesBuildingBlock(this)) // TODO: StyleFormatExtensions
+            .add(new TextSearchBuildingBlock())
+            .add(new TileMatrixSetsBuildingBlock())
             .add(
                 new TilesBuildingBlock(
                     this, null, null, null, null, null,
                     null)) // TODO: TileFormatWithQuerySupportExtension,
             // TileSetFormatExtension
-            .add(new CrudBuildingBlock())
-            .add(new CollectionsBuildingBlock())
-            .add(new CommonBuildingBlock())
-            .add(new CrsBuildingBlock(null, null))
-            .add(new FeaturesCoreBuildingBlock(null, null, null))
-            .add(new GeoJsonBuildingBlock())
-            .add(new GmlBuildingBlock())
-            .add(new FeaturesHtmlBuildingBlock())
-            .add(new FoundationBuildingBlock())
-            .add(new HtmlBuildingBlock())
-            .add(new JsonBuildingBlock())
-            .add(new OpenApiBuildingBlock())
+            .add(new Tiles3dBuildingBlock())
             .add(new XmlBuildingBlock())
             .build();
   }
