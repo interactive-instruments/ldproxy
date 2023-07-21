@@ -14,14 +14,18 @@ import de.ii.ogcapi.collections.schema.app.JacksonSubTypeIdsSchema;
 import de.ii.ogcapi.common.domain.JacksonSubTypeIdsOgcApiCommon;
 import de.ii.ogcapi.crs.app.JacksonSubTypeIdsCrs;
 import de.ii.ogcapi.crud.app.JacksonSubTypeIdsCrud;
+import de.ii.ogcapi.features.cityjson.app.JacksonSubTypeIdsCityJson;
 import de.ii.ogcapi.features.core.app.JacksonSubTypeIdsFeaturesCore;
+import de.ii.ogcapi.features.csv.app.JacksonSubTypeIdsCsv;
 import de.ii.ogcapi.features.custom.extensions.app.JacksonSubTypeIdsFeaturesExtensions;
 import de.ii.ogcapi.features.flatgeobuf.app.JacksonSubTypeIdsFlatgeobuf;
 import de.ii.ogcapi.features.geojson.app.JacksonSubTypeIdsGeoJson;
 import de.ii.ogcapi.features.geojson.ld.app.JacksonSubTypeIdsGeoJsonLd;
+import de.ii.ogcapi.features.gltf.app.JacksonSubTypeIdsGltf;
 import de.ii.ogcapi.features.gml.app.JacksonSubTypeIdsGml;
 import de.ii.ogcapi.features.html.app.JacksonSubTypeIdsFeaturesHtml;
 import de.ii.ogcapi.features.jsonfg.app.JacksonSubTypeIdsJsonFg;
+import de.ii.ogcapi.features.search.app.JacksonSubTypeIdsSearch;
 import de.ii.ogcapi.filter.domain.JacksonSubTypeIdsFilter;
 import de.ii.ogcapi.foundation.domain.JacksonSubTypeIdsFoundation;
 import de.ii.ogcapi.geometry.simplification.app.JacksonSubTypeIdsGeometrySimplification;
@@ -30,46 +34,65 @@ import de.ii.ogcapi.json.app.JacksonSubTypeIdsJson;
 import de.ii.ogcapi.oas30.app.JacksonSubTypeIdsOas30;
 import de.ii.ogcapi.projections.app.JacksonSubTypeIdsProjections;
 import de.ii.ogcapi.resources.app.JacksonSubTypeIdsResources;
+import de.ii.ogcapi.routes.app.JacksonSubTypeIdsRouting;
 import de.ii.ogcapi.sorting.app.JacksonSubTypeIdsSorting;
 import de.ii.ogcapi.styles.app.JacksonSubTypeIdsStyles;
+import de.ii.ogcapi.text.search.app.JacksonSubTypeIdsTextSearch;
+import de.ii.ogcapi.tilematrixsets.app.JacksonSubTypeIdsTileMatrixSets;
 import de.ii.ogcapi.tiles.app.JacksonSubTypeIdsTiles;
+import de.ii.ogcapi.tiles3d.app.JacksonSubTypeIds3dTiles;
 import de.ii.ogcapi.xml.app.JacksonSubTypeIdsXml;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
+import de.ii.xtraplatform.feature.changes.sql.app.JacksonSubTypeIdsFeatureChanges;
+import de.ii.xtraplatform.features.gml.app.JacksonSubTypeIdsWfs;
 import de.ii.xtraplatform.features.sql.app.FeatureProviderRegisterSql;
+import de.ii.xtraplatform.routes.sql.app.JacksonSubTypeIdsRoutes;
+import de.ii.xtraplatform.schemas.ext.app.JacksonSubTypeIdsJsonSchema;
 import java.util.Set;
 
 public interface JacksonSubTypes {
 
   static Set<JacksonSubTypeIds> ids() {
     return ImmutableSet.<JacksonSubTypeIds>builder()
-        .add(new JacksonSubTypeIdsQueryables())
-        .add(new JacksonSubTypeIdsSchema())
-        .add(new JacksonSubTypeIdsFeaturesExtensions())
-        .add(new JacksonSubTypeIdsFlatgeobuf())
-        .add(new JacksonSubTypeIdsGeoJsonLd())
-        .add(new JacksonSubTypeIdsJsonFg())
-        .add(new JacksonSubTypeIdsFilter())
-        .add(new JacksonSubTypeIdsGeometrySimplification())
-        .add(new JacksonSubTypeIdsProjections())
-        .add(new JacksonSubTypeIdsResources())
-        .add(new JacksonSubTypeIdsSorting())
-        .add(new JacksonSubTypeIdsStyles())
-        .add(new JacksonSubTypeIdsTiles())
-        .add(new JacksonSubTypeIdsCrud())
-        .add(new JacksonSubTypeIdsOgcApiCollections())
-        .add(new JacksonSubTypeIdsOgcApiCommon())
+        .add(new JacksonSubTypeIdsCityJson())
         .add(new JacksonSubTypeIdsCrs())
+        .add(new JacksonSubTypeIdsCrud())
+        .add(new JacksonSubTypeIdsCsv())
         .add(new JacksonSubTypeIdsFeaturesCore())
-        .add(new JacksonSubTypeIdsGeoJson())
-        .add(new JacksonSubTypeIdsGml())
+        .add(new JacksonSubTypeIdsFeaturesExtensions())
         .add(new JacksonSubTypeIdsFeaturesHtml())
+        .add(new JacksonSubTypeIdsFilter())
+        .add(new JacksonSubTypeIdsFlatgeobuf())
         .add(new JacksonSubTypeIdsFoundation())
+        .add(new JacksonSubTypeIdsGeoJson())
+        .add(new JacksonSubTypeIdsGeoJsonLd())
+        .add(new JacksonSubTypeIdsGeometrySimplification())
+        .add(new JacksonSubTypeIdsGltf())
+        .add(new JacksonSubTypeIdsGml())
         .add(new JacksonSubTypeIdsHtml())
         .add(new JacksonSubTypeIdsJson())
+        .add(new JacksonSubTypeIdsJsonFg())
         .add(new JacksonSubTypeIdsOas30())
+        .add(new JacksonSubTypeIdsOgcApiCollections())
+        .add(new JacksonSubTypeIdsOgcApiCommon())
+        .add(new JacksonSubTypeIdsProjections())
+        .add(new JacksonSubTypeIdsQueryables())
+        .add(new JacksonSubTypeIdsResources())
+        .add(new JacksonSubTypeIdsRouting())
+        .add(new JacksonSubTypeIdsSchema())
+        .add(new JacksonSubTypeIdsSearch())
+        .add(new JacksonSubTypeIdsSorting())
+        .add(new JacksonSubTypeIdsStyles())
+        .add(new JacksonSubTypeIdsTextSearch())
+        .add(new JacksonSubTypeIdsTileMatrixSets())
+        .add(new JacksonSubTypeIdsTiles())
+        .add(new JacksonSubTypeIds3dTiles())
         .add(new JacksonSubTypeIdsXml())
         .add(new FeatureProviderRegisterSql())
-        // .add(new FeatureProviderRegisterWfs())
+        .add(new JacksonSubTypeIdsWfs())
+        .add(new JacksonSubTypeIdsFeatureChanges())
+        .add(new JacksonSubTypeIdsJsonSchema())
+        .add(new JacksonSubTypeIdsRoutes())
         .build();
   }
 }
