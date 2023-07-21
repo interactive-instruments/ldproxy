@@ -8,6 +8,9 @@ const LayerControl = ({ layerGroups }) => {
   const parent = layerGroups.filter((entry) => entry.type === "group");
   const basemaps = layerGroups.filter((entry) => entry.isBasemap === true);
   const visibility = useMapVisibility();
+  if (visibility !== null) {
+    console.log("vis", visibility);
+  }
 
   const allParentGroups = parent.flatMap((p) => {
     return p.entries.map((value) => {
@@ -27,7 +30,7 @@ const LayerControl = ({ layerGroups }) => {
     return Ids;
   });
 
-  const [layerControlVisible, setLayerControlVisible] = useState(false);
+  const [layerControlVisible, setLayerControlVisible] = useState(true);
   const [selectedBasemap, setSelectedBasemap] = useState([basemaps[0].entries[0].id]);
   const [selected, setSelected] = useState(subLayerIds);
   const [open, setOpen] = useState([]);

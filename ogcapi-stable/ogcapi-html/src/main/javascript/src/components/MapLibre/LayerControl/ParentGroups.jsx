@@ -51,6 +51,8 @@ const ParentGroups = ({
     }
   };
 
+  // map height: 383px
+
   return (
     <>
       <div
@@ -62,11 +64,11 @@ const ParentGroups = ({
           zIndex: 1,
           top: "87px",
           left: "30px",
-          width: "275px",
+          width: "300px",
           display: layerControlVisible ? "block" : "none",
           backgroundColor: "white",
           height: "auto",
-          maxHeight: "100%",
+          maxHeight: "65%",
           overflow: "auto",
           borderRadius: "8px",
           border: "1px solid black",
@@ -102,19 +104,23 @@ const ParentGroups = ({
                   aria-controls={`collapse-${p.id}`}
                 >
                   {p.isBasemap !== true ? (
-                    <input
-                      style={{ margin: "5px" }}
-                      className="form-check-input"
-                      type="checkbox"
-                      id={`checkbox-${p.id}`}
-                      checked={parentCheck()}
-                      onChange={(e) => {
-                        e.target.blur();
-                        onSelectParent();
-                      }}
-                    />
-                  ) : null}
-                  <span style={{ marginRight: "10px" }}>{p.id}</span>
+                    <>
+                      <input
+                        style={{ margin: "5px" }}
+                        className="form-check-input"
+                        type="checkbox"
+                        id={`checkbox-${p.id}`}
+                        checked={parentCheck()}
+                        onChange={(e) => {
+                          e.target.blur();
+                          onSelectParent();
+                        }}
+                      />
+                      <span style={{ marginRight: "10px" }}>{p.id}</span>
+                    </>
+                  ) : (
+                    <span style={{ marginLeft: "5px", marginRight: "5px" }}>{p.id}</span>
+                  )}
                 </button>
               </h2>
 

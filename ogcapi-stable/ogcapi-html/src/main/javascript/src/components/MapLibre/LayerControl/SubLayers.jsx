@@ -27,14 +27,14 @@ const SubLayers = ({ entry, isSubLayerOpen, selected, setSelected }) => {
                 data-bs-parent="#layer-control"
               >
                 <input
-                  style={{ marginLeft: "5px" }}
+                  style={{ marginLeft: "55px" }}
                   className="form-check-input"
                   type="checkbox"
                   id={`checkbox-${subLayer.id}`}
                   checked={selected.includes(subLayer.id)}
                   onChange={() => onSelect(subLayer)}
                 />
-                <span style={{ marginLeft: "10px" }}>{subLayer.id}</span>
+                <span style={{ marginLeft: "5px", marginRight: "5px" }}>{subLayer.id}</span>
               </Collapse>
             </div>
           ))

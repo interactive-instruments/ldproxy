@@ -80,7 +80,7 @@ const Entries = ({
                       aria-controls={`collapse-${entry.id}`}
                     >
                       <input
-                        style={{ marginRight: "5px" }}
+                        style={{ marginLeft: "25px" }}
                         className="form-check-input"
                         type="checkbox"
                         id={`checkbox-${entry.id}`}
@@ -93,13 +93,13 @@ const Entries = ({
                         }}
                       />
 
-                      <span style={{ marginRight: "10px" }}>{entry.id}</span>
+                      <span style={{ marginRight: "5px", marginLeft: "5px" }}>{entry.id}</span>
                     </button>
                   </div>
                 ) : (
                   <div>
                     <input
-                      style={{ margin: "10px" }}
+                      style={{ marginRight: "10px", marginLeft: "15px" }}
                       className="form-check-input"
                       type="radio"
                       id={`radiobutton-${entry.id}`}
