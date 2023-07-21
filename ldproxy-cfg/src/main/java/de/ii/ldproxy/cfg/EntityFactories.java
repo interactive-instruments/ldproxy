@@ -69,7 +69,7 @@ public interface EntityFactories {
               public void addEntityGoneListener(Consumer<PersistentEntity> listener) {}
             })
         .add(
-            new OgcApiFactory(null, extensionRegistry, null, null) {
+            new OgcApiFactory(extensionRegistry) {
               @Override
               public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
                 return CompletableFuture.completedFuture(null);
