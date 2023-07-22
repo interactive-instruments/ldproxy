@@ -18,7 +18,7 @@ import org.immutables.value.Value;
 
 /** */
 @Value.Immutable
-@Value.Style(deepImmutablesDetection = true)
+@Value.Style(builder = "new", deepImmutablesDetection = true)
 @JsonDeserialize(builder = ImmutableGltfPropertyDefinition.Builder.class)
 public interface GltfPropertyDefinition {
 
