@@ -62,15 +62,13 @@ tasks.shadowJar {
     it.name.endsWith('.class') && includePaths.any {path -> it.path.startsWith(path)}
   }
   minimize()
-  relocate('com', 'shadow.com') {
-      exclude 'componentType'
-  }
-  relocate('dagger', 'shadow.dagger')
-  relocate('io', 'shadow.io')
-  relocate('javax', 'shadow.javax') {
+  relocate('com.', 'shadow.com.')
+  relocate('dagger.', 'shadow.dagger.')
+  relocate('io.', 'shadow.io.')
+  relocate('javax.', 'shadow.javax.') {
     exclude 'javax.management.*'
   }
-  relocate('org', 'shadow.org') {
+  relocate('org.', 'shadow.org.') {
     exclude 'org.slf4j.*'
     exclude 'org.slf4j.event.*'
     exclude 'org.w3c.dom.*'

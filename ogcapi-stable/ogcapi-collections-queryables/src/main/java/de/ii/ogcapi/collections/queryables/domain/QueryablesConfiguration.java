@@ -105,10 +105,8 @@ public interface QueryablesConfiguration extends ExtensionConfiguration, Caching
    * @default DOT
    * @since v3.4
    */
-  @Value.Default
-  default PathSeparator getPathSeparator() {
-    return PathSeparator.DOT;
-  }
+  @Nullable
+  PathSeparator getPathSeparator();
 
   /**
    * @langEn If `true`, the Queryables endpoint will be enabled.

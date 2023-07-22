@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
@@ -98,10 +99,8 @@ public interface SortingConfiguration extends ExtensionConfiguration {
    * @default DOT
    * @since v3.4
    */
-  @Value.Default
-  default PathSeparator getPathSeparator() {
-    return PathSeparator.DOT;
-  }
+  @Nullable
+  PathSeparator getPathSeparator();
 
   default Map<String, FeatureSchema> getSortables(
       OgcApiDataV2 apiData,
