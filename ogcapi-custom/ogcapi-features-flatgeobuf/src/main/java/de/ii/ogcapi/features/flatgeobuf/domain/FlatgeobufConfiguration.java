@@ -10,10 +10,7 @@ package de.ii.ogcapi.features.flatgeobuf.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.features.core.domain.SfFlatConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
-import java.util.List;
-import java.util.Map;
 import org.immutables.value.Value;
 
 /**
@@ -49,19 +46,5 @@ public interface FlatgeobufConfiguration extends SfFlatConfiguration {
                     .getTransformations());
 
     return builder.build();
-  }
-
-  @Value.Check
-  default FlatgeobufConfiguration alwaysFlatten() {
-    Map<String, List<PropertyTransformation>> transformations = extendWithFlattenIfMissing();
-    if (transformations.isEmpty()) {
-      // a flatten transformation is already set
-      return this;
-    }
-
-    return new ImmutableFlatgeobufConfiguration.Builder()
-        .from(this)
-        .transformations(transformations)
-        .build();
   }
 }

@@ -279,4 +279,8 @@ public interface ApiBuildingBlock extends ApiExtension {
   }
 
   ExtensionConfiguration getDefaultConfiguration();
+
+  default <T extends ExtensionConfiguration> T hydrateConfiguration(T cfg) {
+    return cfg;
+  }
 }

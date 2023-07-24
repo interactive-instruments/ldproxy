@@ -31,12 +31,15 @@ import de.ii.xtraplatform.services.domain.ImmutableServiceDataCommon;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.KeyPathAlias;
+import de.ii.xtraplatform.store.domain.KeyPathAliasUnwrap;
 import de.ii.xtraplatform.store.domain.entities.AbstractEntityFactory;
 import de.ii.xtraplatform.store.domain.entities.EntityData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityFactory;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -143,6 +146,20 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
         }
       }
 
+      List<ExtensionConfiguration> configs = new ArrayList<>();
+      Map<Class<?>, ApiBuildingBlock> buildingBlocks =
+          extensionRegistry.getExtensionsForType(ApiBuildingBlock.class).stream()
+              .map(bb -> new SimpleEntry<>(bb.getBuildingBlockConfigurationType(), bb))
+              .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      for (ExtensionConfiguration cfg : hydrated.getExtensions()) {
+        if (buildingBlocks.containsKey(cfg.getClass())) {
+          configs.add(buildingBlocks.get(cfg.getClass()).hydrateConfiguration(cfg));
+        } else {
+          LOGGER.error("Building block not found: {}", cfg.getBuildingBlock());
+        }
+      }
+      hydrated = new ImmutableOgcApiDataV2.Builder().from(hydrated).extensions(configs).build();
+
       return hydrated;
     } catch (Throwable e) {
       if (LOGGER.isErrorEnabled()) {
@@ -159,6 +176,11 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
         .filter(entry -> Objects.equals(keyPath, entry.getKey()))
         .map(Map.Entry::getValue)
         .findFirst();
+  }
+
+  @Override
+  public Optional<KeyPathAliasUnwrap> getKeyPathAliasReverse(String parentPath) {
+    return Optional.ofNullable(reverseAliases.get(parentPath));
   }
 
   private ApiMetadata getMetadata() {
@@ -199,6 +221,20 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
             ImmutableMap.toImmutableMap(
                 Map.Entry::getKey, Map.Entry::getValue, (first, second) -> second));
   }
+
+  private static Map<String, KeyPathAliasUnwrap> reverseAliases =
+      ImmutableMap.of(
+          "api",
+          value ->
+              ((List<Map<String, Object>>) value)
+                  .stream()
+                      .map(
+                          buildingBlock ->
+                              new AbstractMap.SimpleImmutableEntry<String, Object>(
+                                  ((String) buildingBlock.get("buildingBlock")).toLowerCase(),
+                                  buildingBlock))
+                      .collect(
+                          ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)));
 
   @AssistedFactory
   public interface OgcApiFactoryAssisted extends FactoryAssisted<OgcApiDataV2, OgcApiEntity> {

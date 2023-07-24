@@ -37,6 +37,7 @@ import de.ii.xtraplatform.store.domain.entities.EntityData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
 import de.ii.xtraplatform.store.domain.entities.EntityDataStore;
+import de.ii.xtraplatform.store.domain.entities.EntityFactoriesImpl;
 import de.ii.xtraplatform.store.domain.entities.EntityFactory;
 import de.ii.xtraplatform.store.infra.EventStoreDriverFs;
 import java.io.File;
@@ -60,6 +61,7 @@ public class LdproxyCfg implements Cfg {
   private final Builders builders;
   private final ObjectMapper objectMapper;
   private final RequiredIncludes requiredIncludes;
+  private final de.ii.xtraplatform.store.domain.entities.EntityFactories entityFactories;
 
   public LdproxyCfg(Path dataDirectory) {
     this.dataDirectory = dataDirectory;
@@ -88,6 +90,7 @@ public class LdproxyCfg implements Cfg {
     AppContext appContext = new AppContextCfg();
     OgcApiExtensionRegistry extensionRegistry = new OgcApiExtensionRegistry();
     Set<EntityFactory> factories = EntityFactories.factories(extensionRegistry);
+    this.entityFactories = new EntityFactoriesImpl(() -> factories);
     this.entityDataDefaultsStore =
         new EntityDataDefaultsStoreImpl(appContext, eventStore, jackson, () -> factories);
     ((EntityDataDefaultsStoreImpl) entityDataDefaultsStore).onStart();
@@ -116,6 +119,10 @@ public class LdproxyCfg implements Cfg {
 
   public EntityDataStore<EntityData> getEntityDataStore() {
     return entityDataStore;
+  }
+
+  public de.ii.xtraplatform.store.domain.entities.EntityFactories getEntityFactories() {
+    return entityFactories;
   }
 
   @Override

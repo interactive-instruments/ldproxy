@@ -40,6 +40,7 @@ import de.ii.xtraplatform.docs.DocTable;
 import de.ii.xtraplatform.docs.DocTable.ColumnSet;
 import de.ii.xtraplatform.docs.DocVar;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.store.domain.entities.EntityFactories;
 import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
@@ -259,6 +260,23 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                 .collect(ImmutableList.toImmutableList()))
         .style("DEFAULT")
         .build();
+  }
+
+  @Override
+  public <T extends ExtensionConfiguration> T hydrateConfiguration(T cfg) {
+    if (cfg instanceof TilesConfiguration) {
+      TilesConfiguration config = (TilesConfiguration) cfg;
+      Map<String, List<PropertyTransformation>> transformations =
+          config.extendWithFlattenIfMissing();
+
+      if (Objects.equals(transformations, config.getTransformations())) {
+        return (T) config;
+      }
+
+      return (T) new Builder().from(config).transformations(transformations).build();
+    }
+
+    return cfg;
   }
 
   private MinMax getZoomLevels(

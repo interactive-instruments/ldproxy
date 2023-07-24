@@ -29,6 +29,7 @@ import javax.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Deprecated(since = "3.4")
 @Singleton
 @AutoBind
 public class FeaturesHtmlDataHydrator implements OgcApiDataHydratorExtension {
