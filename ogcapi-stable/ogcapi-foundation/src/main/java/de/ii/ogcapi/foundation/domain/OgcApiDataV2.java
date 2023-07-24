@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
@@ -390,10 +391,8 @@ public interface OgcApiDataV2 extends ServiceData, ExtendableConfiguration {
    * @default NONE
    * @since v2.1
    */
-  @Value.Default
-  default MODE getApiValidation() {
-    return MODE.NONE;
-  }
+  @Nullable
+  MODE getApiValidation();
 
   /**
    * @langEn Tags for this API. Every tag is a string without white space. Tags are shown in the

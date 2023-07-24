@@ -37,6 +37,7 @@ import de.ii.xtraplatform.store.domain.entities.EntityData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityFactory;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -103,6 +104,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
   public EntityDataBuilder<OgcApiDataV2> dataBuilder() {
     return new ImmutableOgcApiDataV2.Builder()
         .enabled(true)
+        .apiValidation(MODE.NONE)
         .metadata(getMetadata())
         .defaultExtent(
             new ImmutableCollectionExtent.Builder()
@@ -116,6 +118,16 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
   @Override
   public EntityDataBuilder<? extends EntityData> superDataBuilder() {
     return new ImmutableServiceDataCommon.Builder().enabled(true);
+  }
+
+  @Override
+  public EntityDataBuilder<OgcApiDataV2> emptyDataBuilder() {
+    return new ImmutableOgcApiDataV2.Builder();
+  }
+
+  @Override
+  public EntityDataBuilder<? extends EntityData> emptySuperDataBuilder() {
+    return new ImmutableServiceDataCommon.Builder();
   }
 
   @Override

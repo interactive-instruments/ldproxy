@@ -64,6 +64,10 @@ public class LdproxyCfg implements Cfg {
   private final de.ii.xtraplatform.store.domain.entities.EntityFactories entityFactories;
 
   public LdproxyCfg(Path dataDirectory) {
+    this(dataDirectory, false);
+  }
+
+  public LdproxyCfg(Path dataDirectory, boolean noDefaults) {
     this.dataDirectory = dataDirectory;
     Path store = dataDirectory.resolve(StoreConfiguration.DEFAULT_LOCATION);
     try {
@@ -96,7 +100,7 @@ public class LdproxyCfg implements Cfg {
     ((EntityDataDefaultsStoreImpl) entityDataDefaultsStore).onStart();
     this.entityDataStore =
         new EntityDataStoreImpl(
-            appContext, eventStore, jackson, () -> factories, entityDataDefaultsStore);
+            appContext, eventStore, jackson, () -> factories, entityDataDefaultsStore, noDefaults);
     ((EntityDataStoreImpl) entityDataStore).onStart();
   }
 
