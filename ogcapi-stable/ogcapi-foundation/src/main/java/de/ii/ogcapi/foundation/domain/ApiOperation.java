@@ -340,7 +340,11 @@ public interface ApiOperation {
 
     addErrorResponses(op, errorCodes);
 
-    if (apiData.getSecured() && isMutation) {
+    if (apiData.getAccessControl().isPresent()
+        && apiData
+            .getAccessControl()
+            .get()
+            .isSecured(isMutation ? ApiSecurity.SCOPE_WRITE : ApiSecurity.SCOPE_READ)) {
       op.addSecurityItem(new SecurityRequirement().addList("JWT"));
     }
   }

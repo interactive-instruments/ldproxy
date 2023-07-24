@@ -100,7 +100,6 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
   public EntityDataBuilder<OgcApiDataV2> dataBuilder() {
     return new ImmutableOgcApiDataV2.Builder()
         .enabled(true)
-        .secured(true)
         .metadata(getMetadata())
         .defaultExtent(
             new ImmutableCollectionExtent.Builder()
@@ -113,7 +112,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
 
   @Override
   public EntityDataBuilder<? extends EntityData> superDataBuilder() {
-    return new ImmutableServiceDataCommon.Builder().enabled(true).secured(true);
+    return new ImmutableServiceDataCommon.Builder().enabled(true);
   }
 
   @Override

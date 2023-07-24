@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
+import de.ii.ogcapi.foundation.domain.ApiSecurity;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
@@ -71,7 +72,8 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
                               ExtendableOpenApiDefinitionImpl.class, "/openapi.json"))
                       .openBufferedStream());
 
-      if (apiData.getSecured() && authConfig.isActive()) {
+      if (apiData.getAccessControl().filter(ApiSecurity::isEnabled).isPresent()
+          && authConfig.isActive()) {
         openAPI
             .getComponents()
             .addSecuritySchemes(
