@@ -9,24 +9,34 @@ package de.ii.ldproxy.cfg;
 
 import de.ii.xtraplatform.store.app.EventSubscriptions;
 import de.ii.xtraplatform.store.domain.EventStoreSubscriber;
+import de.ii.xtraplatform.store.domain.Identifier;
 import de.ii.xtraplatform.store.domain.ImmutableStateChangeEvent;
+import de.ii.xtraplatform.store.domain.ReplayEvent;
 import de.ii.xtraplatform.store.domain.StateChangeEvent;
 import de.ii.xtraplatform.store.domain.TypedEvent;
 import de.ii.xtraplatform.streams.domain.Event;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-class EventSubscriptionsSync implements EventSubscriptions {
+public class EventSubscriptionsSync implements EventSubscriptions {
 
   private final Map<String, List<Event>> eventStreams;
+  private final Map<String, List<Identifier>> ignore;
   private boolean isStarted;
 
   protected EventSubscriptionsSync() {
     this.eventStreams = new ConcurrentHashMap<>();
+    this.ignore = new LinkedHashMap<>();
+  }
+
+  public void addIgnore(String type, Identifier identifier) {
+    List<Identifier> identifiers = ignore.computeIfAbsent(type, k -> new ArrayList<>());
+    identifiers.add(identifier);
   }
 
   @Override
@@ -34,8 +44,17 @@ class EventSubscriptionsSync implements EventSubscriptions {
     for (String eventType : subscriber.getEventTypes()) {
       List<Event> eventStream = getEventStream(eventType);
       CompletableFuture<Void> cmp = new CompletableFuture<>();
+
       eventStream.forEach(
           event -> {
+            if (ignore.containsKey(eventType)
+                && event instanceof ReplayEvent
+                && ignore.get(eventType).contains(((ReplayEvent) event).identifier())) {
+              // System.out.println("IGNORE " + ((ReplayEvent) event).identifier());
+              cmp.complete(null);
+
+              return;
+            }
             if (event instanceof StateChangeEvent
                 && ((StateChangeEvent) event).state() == StateChangeEvent.STATE.LISTENING) {
               subscriber.onEmit(event);

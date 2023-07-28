@@ -8,7 +8,14 @@
 package de.ii.ldproxy.cfg;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.Resources;
+import com.networknt.schema.JsonMetaSchema;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SpecVersion.VersionFlag;
+import com.networknt.schema.ValidationMessage;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
@@ -31,7 +38,9 @@ import de.ii.xtraplatform.store.app.entities.EntityDataDefaultsStoreImpl;
 import de.ii.xtraplatform.store.app.entities.EntityDataStoreImpl;
 import de.ii.xtraplatform.store.domain.EventStore;
 import de.ii.xtraplatform.store.domain.EventStoreDriver;
+import de.ii.xtraplatform.store.domain.EventStoreSubscriber;
 import de.ii.xtraplatform.store.domain.Identifier;
+import de.ii.xtraplatform.store.domain.ReplayEvent;
 import de.ii.xtraplatform.store.domain.ValueEncoding.FORMAT;
 import de.ii.xtraplatform.store.domain.entities.EntityData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
@@ -40,14 +49,20 @@ import de.ii.xtraplatform.store.domain.entities.EntityDataStore;
 import de.ii.xtraplatform.store.domain.entities.EntityFactoriesImpl;
 import de.ii.xtraplatform.store.domain.entities.EntityFactory;
 import de.ii.xtraplatform.store.infra.EventStoreDriverFs;
+import de.ii.xtraplatform.streams.domain.Event;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
 import java.util.zip.ZipEntry;
@@ -62,6 +77,9 @@ public class LdproxyCfg implements Cfg {
   private final ObjectMapper objectMapper;
   private final RequiredIncludes requiredIncludes;
   private final de.ii.xtraplatform.store.domain.entities.EntityFactories entityFactories;
+  private final Map<String, JsonSchema> entitySchemas;
+  private final List<Identifier> entityIdentifiers;
+  private final EventSubscriptionsSync eventSubscriptions;
 
   public LdproxyCfg(Path dataDirectory) {
     this(dataDirectory, false);
@@ -84,24 +102,44 @@ public class LdproxyCfg implements Cfg {
             .build();
     Jackson jackson = new JacksonProvider(JacksonSubTypes::ids, false);
     this.objectMapper = new ValueEncodingJackson<EntityData>(jackson, false).getMapper(FORMAT.YML);
+    this.eventSubscriptions = new EventSubscriptionsSync();
     EventStoreDriver storeDriver = new EventStoreDriverFs(dataDirectory);
     EventStore eventStore =
         new EventStoreDefault(
-            new StoreImpl(dataDirectory, storeConfiguration),
-            storeDriver,
-            new EventSubscriptionsSync());
+            new StoreImpl(dataDirectory, storeConfiguration), storeDriver, eventSubscriptions);
     ((EventStoreDefault) eventStore).onStart();
+    this.entityIdentifiers = new ArrayList<>();
+    eventStore.subscribe(
+        new EventStoreSubscriber() {
+          @Override
+          public List<String> getEventTypes() {
+            return List.of(
+                EntityDataDefaultsStore.EVENT_TYPE,
+                EntityDataStore.EVENT_TYPE_ENTITIES,
+                EntityDataStore.EVENT_TYPE_OVERRIDES);
+          }
+
+          @Override
+          public void onEmit(Event event) {
+            if (event instanceof ReplayEvent) {
+              // System.out.println("EVENT " + ((ReplayEvent) event).asPath());
+              if (Objects.equals(((ReplayEvent) event).type(), EntityDataStore.EVENT_TYPE_ENTITIES)
+                  && Objects.equals(((ReplayEvent) event).format().toLowerCase(), "yml")) {
+                entityIdentifiers.add(((ReplayEvent) event).identifier());
+              }
+            }
+          }
+        });
     AppContext appContext = new AppContextCfg();
     OgcApiExtensionRegistry extensionRegistry = new OgcApiExtensionRegistry();
     Set<EntityFactory> factories = EntityFactories.factories(extensionRegistry);
     this.entityFactories = new EntityFactoriesImpl(() -> factories);
     this.entityDataDefaultsStore =
         new EntityDataDefaultsStoreImpl(appContext, eventStore, jackson, () -> factories);
-    ((EntityDataDefaultsStoreImpl) entityDataDefaultsStore).onStart();
     this.entityDataStore =
         new EntityDataStoreImpl(
             appContext, eventStore, jackson, () -> factories, entityDataDefaultsStore, noDefaults);
-    ((EntityDataStoreImpl) entityDataStore).onStart();
+    this.entitySchemas = new HashMap<>();
   }
 
   @Override
@@ -127,6 +165,56 @@ public class LdproxyCfg implements Cfg {
 
   public de.ii.xtraplatform.store.domain.entities.EntityFactories getEntityFactories() {
     return entityFactories;
+  }
+
+  public List<Identifier> getEntityIdentifiers() {
+    return entityIdentifiers;
+  }
+
+  public EventSubscriptionsSync getEventSubscriptions() {
+    return eventSubscriptions;
+  }
+
+  public void init() throws IOException {
+    ObjectMapper jsonMapper = entityDataStore.getValueEncoding().getMapper(FORMAT.JSON);
+    JsonMetaSchema metaSchema =
+        JsonMetaSchema.builder(
+                "https://json-schema.org/draft/2020-12/schema", JsonMetaSchema.getV202012())
+            .addKeyword(new DeprecatedKeyword())
+            .build();
+    JsonSchemaFactory factory =
+        JsonSchemaFactory.builder(JsonSchemaFactory.getInstance(VersionFlag.V202012))
+            .addMetaSchema(metaSchema)
+            .objectMapper(jsonMapper)
+            .build();
+
+    for (String entityType : List.of("codelists", "providers", "services", "users")) {
+      URL schemaResource =
+          Resources.getResource(
+              LdproxyCfg.class, String.format("/json-schema/entities/%s.json", entityType));
+
+      JsonSchema schema = factory.getSchema(Resources.asByteSource(schemaResource).openStream());
+      schema.initializeValidators();
+
+      this.entitySchemas.put(entityType, schema);
+    }
+  }
+
+  public void initStore() {
+    ((EntityDataDefaultsStoreImpl) entityDataDefaultsStore).onStart();
+    ((EntityDataStoreImpl) entityDataStore).onStart();
+  }
+
+  public Set<ValidationMessage> validateEntity(Path entityPath, String entityType)
+      throws IOException {
+    if (!entitySchemas.containsKey(entityType)) {
+      throw new IllegalStateException();
+    }
+    // System.out.println("VALIDATE " + entityPath);
+
+    JsonNode jsonNode = objectMapper.readTree(entityPath.toFile());
+
+    return entitySchemas.get(entityType).validate(jsonNode);
   }
 
   @Override
