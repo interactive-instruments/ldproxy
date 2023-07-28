@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.geojson.ld.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -30,6 +31,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new")
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "GEO_JSON_LD")
 @JsonDeserialize(builder = ImmutableGeoJsonLdConfiguration.Builder.class)
 public interface GeoJsonLdConfiguration extends ExtensionConfiguration {
 

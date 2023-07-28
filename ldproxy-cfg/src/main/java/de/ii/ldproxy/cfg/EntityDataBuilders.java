@@ -26,7 +26,7 @@ public interface EntityDataBuilders {
     return new ImmutableFeatureProviderSqlData.Builder()
         .entityStorageVersion(2)
         .providerType(FeatureProvider2.PROVIDER_TYPE)
-        .providerSubType(FeatureProviderSql.PROVIDER_TYPE);
+        .providerSubType(FeatureProviderSql.PROVIDER_SUB_TYPE);
   }
 
   default ImmutableCodelistData.Builder codelist() {

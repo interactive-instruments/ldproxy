@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.google.common.base.CaseFormat;
 import de.ii.xtraplatform.base.domain.JacksonProvider;
+import de.ii.xtraplatform.docs.JsonTypeInfoAlias;
 import de.ii.xtraplatform.store.domain.entities.Mergeable;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.Buildable;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableBuilder;
@@ -25,6 +26,7 @@ import org.immutables.value.Value;
     use = JsonTypeInfo.Id.CUSTOM,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "buildingBlock")
+@JsonTypeInfoAlias("extensionType")
 @JsonTypeIdResolver(JacksonProvider.DynamicTypeIdResolver.class)
 public interface ExtensionConfiguration
     extends Buildable<ExtensionConfiguration>, Mergeable<ExtensionConfiguration> {

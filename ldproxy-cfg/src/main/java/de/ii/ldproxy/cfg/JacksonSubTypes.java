@@ -93,6 +93,7 @@ public interface JacksonSubTypes {
         .add(new JacksonSubTypeIdsFeatureChanges())
         .add(new JacksonSubTypeIdsJsonSchema())
         .add(new JacksonSubTypeIdsRoutes())
+        .add(new JacksonSubTypeIdsCatchAll())
         .build();
   }
 }

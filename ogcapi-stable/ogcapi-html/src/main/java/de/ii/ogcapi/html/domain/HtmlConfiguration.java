@@ -13,6 +13,7 @@ import de.ii.ogcapi.foundation.domain.ApiCatalogEntry;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.xtraplatform.base.domain.LogContext;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -103,6 +104,7 @@ import org.slf4j.LoggerFactory;
  */
 @Value.Immutable
 @Value.Style(builder = "new", attributeBuilderDetection = true)
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "HTML")
 @JsonDeserialize(builder = ImmutableHtmlConfiguration.Builder.class)
 public interface HtmlConfiguration extends ExtensionConfiguration {
   Logger LOGGER = LoggerFactory.getLogger(HtmlConfiguration.class);

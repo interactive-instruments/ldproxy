@@ -9,6 +9,7 @@ package de.ii.ogcapi.crud.app;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import org.immutables.value.Value;
 
 /**
@@ -23,6 +24,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new")
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "CRUD", aliases = "TRANSACTIONS")
 @JsonDeserialize(builder = ImmutableCrudConfiguration.Builder.class)
 public interface CrudConfiguration extends ExtensionConfiguration {
 

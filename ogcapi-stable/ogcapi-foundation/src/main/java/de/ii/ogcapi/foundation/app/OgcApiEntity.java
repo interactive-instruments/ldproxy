@@ -28,8 +28,11 @@ import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.services.domain.AbstractService;
+import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.entities.ChangingValue;
+import de.ii.xtraplatform.store.domain.entities.Entity;
+import de.ii.xtraplatform.store.domain.entities.Entity.SubType;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.net.URI;
@@ -43,6 +46,10 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Entity(
+    type = Service.TYPE,
+    subTypes = {@SubType(key = Service.SERVICE_TYPE_KEY, value = OgcApiDataV2.SERVICE_TYPE)},
+    data = OgcApiDataV2.class)
 public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcApi {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiEntity.class);

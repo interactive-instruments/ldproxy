@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.csv.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.features.core.domain.SfFlatConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import org.immutables.value.Value;
 
@@ -79,6 +80,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "CSV")
 @JsonDeserialize(builder = ImmutableCsvConfiguration.Builder.class)
 public interface CsvConfiguration extends SfFlatConfiguration {
 

@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/UserData",
+  "$defs": {
+    "UserData": {
+      "title": "UserData",
+      "description": "",
+      "type": "object",
+      "properties": {
+        "id": {
+          "title": "id",
+          "description": "Unique identifier of the entity, has to match the filename. Allowed characters are     (A-Z, a-z), numbers (0-9), underscore and hyphen.",
+          "type": "string"
+        },
+        "createdAt": {
+          "title": "createdAt",
+          "description": "",
+          "type": "number"
+        },
+        "lastModified": {
+          "title": "lastModified",
+          "description": "",
+          "type": "number"
+        },
+        "entityStorageVersion": {
+          "title": "entityStorageVersion",
+          "description": "",
+          "type": "number"
+        },
+        "password": {
+          "title": "password",
+          "description": "",
+          "type": "string"
+        },
+        "role": {
+          "title": "role",
+          "description": "",
+          "type": "string"
+        },
+        "passwordExpiresAt": {
+          "title": "passwordExpiresAt",
+          "description": "",
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
