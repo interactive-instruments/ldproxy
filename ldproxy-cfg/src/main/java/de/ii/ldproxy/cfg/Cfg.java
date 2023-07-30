@@ -16,6 +16,8 @@ public interface Cfg {
 
   Builders builder();
 
+  Migrations migrations();
+
   <T extends EntityData> void writeEntity(T data, Path... patches) throws IOException;
 
   <T extends EntityData> void writeDefaults(T data, Path... defaults) throws IOException;

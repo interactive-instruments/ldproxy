@@ -368,7 +368,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
                   TilesProviders.toTilesId(apiData.getId())));
         }
 
-        TilesMigrationV4 tilesMigrationV4 = new TilesMigrationV4();
+        TilesMigrationV4 tilesMigrationV4 = new TilesMigrationV4(null);
         Optional<Tuple<Class<? extends TileProviderData>, ? extends TileProviderData>>
             tileProviderData = tilesMigrationV4.getTileProviderData(apiData);
         if (tileProviderData.isPresent()) {

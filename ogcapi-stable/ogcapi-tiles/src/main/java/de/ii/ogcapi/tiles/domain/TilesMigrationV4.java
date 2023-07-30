@@ -52,31 +52,41 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class TilesMigrationV4 implements EntityMigration<OgcApiDataV2, OgcApiDataV2> {
+public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2> {
+
+  public TilesMigrationV4(EntityMigrationContext context) {
+    super(context);
+  }
+
+  @Override
+  public String getSubject() {
+    return "api[buildingBlock=TILES]";
+  }
 
   @Override
   public String getDescription() {
-    return "The current TILES configuration is deprecated and will stop working in v4.";
+    return "the TILES building block will be migrated to a separate tile provider entity";
   }
 
   @Override
-  public Optional<String> getDescriptionDetails() {
-    return Optional.of("This will migrate the TILES configuration to a separate tile provider.");
-  }
+  public boolean isApplicable(EntityData entityData) {
+    if (!(entityData instanceof OgcApiDataV2)) {
+      return false;
+    }
 
-  @Override
-  public boolean isApplicable(
-      EntityMigrationContext<OgcApiDataV2> context, OgcApiDataV2 entityData) {
+    OgcApiDataV2 apiData = (OgcApiDataV2) entityData;
+
     Optional<TilesConfiguration> tilesConfiguration =
-        entityData.getExtension(TilesConfiguration.class);
+        apiData.getExtension(TilesConfiguration.class);
 
     if (tilesConfiguration.isEmpty()
         || Objects.nonNull(tilesConfiguration.get().getTileProviderId())) {
       return false;
     }
 
-    return !context.exists(
-        Identifier.from(TilesProviders.toTilesId(entityData.getId()), "providers"));
+    // TODO: might be in any group
+    return !getContext()
+        .exists(Identifier.from(TilesProviders.toTilesId(apiData.getId()), "providers"));
   }
 
   @Override
@@ -126,9 +136,9 @@ public class TilesMigrationV4 implements EntityMigration<OgcApiDataV2, OgcApiDat
   }
 
   @Override
-  public Map<Identifier, ? extends EntityData> getAdditionalEntities(OgcApiDataV2 entityData) {
+  public Map<Identifier, ? extends EntityData> getAdditionalEntities(EntityData entityData) {
     Optional<Tuple<Class<? extends TileProviderData>, ? extends TileProviderData>>
-        tileProviderData = getTileProviderData(entityData);
+        tileProviderData = getTileProviderData((OgcApiDataV2) entityData, true);
 
     if (tileProviderData.isPresent()) {
       return Map.of(
@@ -141,8 +151,15 @@ public class TilesMigrationV4 implements EntityMigration<OgcApiDataV2, OgcApiDat
 
   public Optional<Tuple<Class<? extends TileProviderData>, ? extends TileProviderData>>
       getTileProviderData(OgcApiDataV2 apiData) {
+    return getTileProviderData(apiData, false);
+  }
+
+  public Optional<Tuple<Class<? extends TileProviderData>, ? extends TileProviderData>>
+      getTileProviderData(OgcApiDataV2 apiData, boolean ignoreEnabled) {
     Optional<TilesConfiguration> tiles =
-        apiData.getExtension(TilesConfiguration.class).filter(ExtensionConfiguration::isEnabled);
+        apiData
+            .getExtension(TilesConfiguration.class)
+            .filter(tilesConfiguration -> ignoreEnabled || tilesConfiguration.isEnabled());
 
     if (tiles.isEmpty()) {
       return Optional.empty();
