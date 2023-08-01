@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import Entries from "./EntriesLayer";
 
 const ParentGroups = ({
   layerControlVisible,
-  parent,
+  parents,
   isSubLayerOpen,
   selected,
   selectedBasemap,
@@ -30,8 +30,8 @@ const ParentGroups = ({
   const onOpenParent = (entry) => {
     if (entry.isBasemap !== true) {
       const entryIds = [entry.id, ...entry.entries.map((e) => e.id)];
-      const subLayerIds = entry.entries.flatMap((e) => e.subLayers.map((subLayer) => subLayer.id));
-      const idsToRemove = [...entryIds, ...subLayerIds];
+      const subLayerIds2 = entry.entries.flatMap((e) => e.subLayers.map((subLayer) => subLayer.id));
+      const idsToRemove = [...entryIds, ...subLayerIds2];
 
       const index = open.indexOf(entry.id);
       if (index < 0) {
@@ -59,7 +59,6 @@ const ParentGroups = ({
         className="accordion"
         id="layer-control"
         style={{
-          backgroundColor: "white",
           position: "absolute",
           zIndex: 1,
           top: "87px",
@@ -76,10 +75,10 @@ const ParentGroups = ({
           scrollbarColor: "darkgrey #f1f1f1",
         }}
       >
-        {parent.map((p) =>
-          p.id ? (
-            <div className="accordion-item" key={p.id}>
-              <h2 className="accordion-header" id={p.id}>
+        {parents.map((parent) =>
+          parent.id ? (
+            <div className="accordion-item" key={parent.id}>
+              <h2 className="accordion-header" id={parent.id}>
                 <button
                   style={{
                     backgroundColor: "white",
@@ -91,39 +90,39 @@ const ParentGroups = ({
                   onClick={(e) => {
                     if (!e.target.classList.contains("form-check-input")) {
                       e.target.blur();
-                      onOpenParent(p);
+                      onOpenParent(parent);
                     }
                   }}
-                  active={isSubLayerOpen(p.id)}
-                  className={`accordion-button ${isSubLayerOpen(p.id) ? "collapsed" : ""}`}
+                  active={isSubLayerOpen(parent.id)}
+                  className={`accordion-button ${isSubLayerOpen(parent.id) ? "collapsed" : ""}`}
                   type="button"
                   data-bs-toggle="collapse"
-                  data-bs-target={`#collapse-${p.id}`}
-                  aria-expanded={isSubLayerOpen(p.id)}
-                  aria-controls={`collapse-${p.id}`}
+                  data-bs-target={`#collapse-${parent.id}`}
+                  aria-expanded={isSubLayerOpen(parent.id)}
+                  aria-controls={`collapse-${parent.id}`}
                 >
-                  {p.isBasemap !== true ? (
+                  {parent.isBasemap !== true ? (
                     <>
                       <input
                         style={{ margin: "5px" }}
                         className="form-check-input"
                         type="checkbox"
-                        id={`checkbox-${p.id}`}
+                        id={`checkbox-${parent.id}`}
                         checked={parentCheck()}
                         onChange={(e) => {
                           e.target.blur();
                           onSelectParent();
                         }}
                       />
-                      <span style={{ marginRight: "10px" }}>{p.id}</span>
+                      <span style={{ marginRight: "10px" }}>{parent.id}</span>
                     </>
                   ) : (
-                    <span style={{ marginLeft: "5px", marginRight: "5px" }}>{p.id}</span>
+                    <span style={{ marginLeft: "5px", marginRight: "5px" }}>{parent.id}</span>
                   )}
                 </button>
               </h2>
               <Entries
-                p={p}
+                parent={parent}
                 isSubLayerOpen={isSubLayerOpen}
                 selected={selected}
                 selectedBasemap={selectedBasemap}
@@ -140,5 +139,23 @@ const ParentGroups = ({
     </>
   );
 };
+
+ParentGroups.displayName = "ParentGroups";
+
+ParentGroups.propTypes = {
+  layerControlVisible: PropTypes.bool.isRequired,
+  parents: PropTypes.arrayOf(PropTypes.object).isRequired,
+  isSubLayerOpen: PropTypes.func.isRequired,
+  selected: PropTypes.arrayOf(PropTypes.string).isRequired,
+  selectedBasemap: PropTypes.arrayOf(PropTypes.string).isRequired,
+  setSelected: PropTypes.func.isRequired,
+  setSelectedBasemap: PropTypes.func.isRequired,
+  allParentGroups: PropTypes.arrayOf(PropTypes.object).isRequired,
+  open: PropTypes.arrayOf(PropTypes.string).isRequired,
+  setOpen: PropTypes.func.isRequired,
+  subLayerIds: PropTypes.arrayOf(PropTypes.string).isRequired,
+};
+
+ParentGroups.defaultProps = {};
 
 export default ParentGroups;

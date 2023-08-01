@@ -97,8 +97,6 @@ Plain.args = {
       ],
     },
   ],
-  /*styleUrl:
-        'http://localhost:7080/rest/services/feuerwehr/v1/styles/default?f=mbs', */
 };
 
 export const Items = Template.bind({});

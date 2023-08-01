@@ -1,26 +1,26 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Collapse } from "reactstrap";
-import { LegendSymbolReact } from "./LegendSymbol";
 import { useMaplibreUIEffect } from "react-maplibre-ui";
+import { LegendSymbolReact } from "./LegendSymbol";
 
-const SubLayers = ({ entry, isSubLayerOpen, selected, setSelected, allParentGroups, open }) => {
+const SubLayers = ({ layer, isSubLayerOpen, selected, setSelected, allParentGroups, open }) => {
   const [style, setStyle] = useState();
   const [sprite, setSprite] = useState("https://demo.ldproxy.net/daraa/resources/sprites");
   const [zoom, setZoom] = useState(12);
 
   useMaplibreUIEffect(
     ({ map }) => {
-      allParentGroups.forEach((entry) => {
-        if (entry.type === "source-layer" && entry.subLayers) {
-          entry.subLayers.forEach(({ id: layerId }) => {
+      allParentGroups.forEach((group) => {
+        if (group.type === "source-layer" && group.subLayers) {
+          group.subLayers.forEach(({ id: layerId }) => {
             if (map.getLayer(layerId)) {
-              const style = map.getStyle();
-              const sprite = style.sprite;
-              const zoom = style.zoom;
-              setStyle(style);
-              setSprite(sprite);
-              setZoom(zoom);
+              const style2 = map.getStyle();
+              const sprite2 = style2.sprite;
+              const zoom2 = style2.zoom;
+              setStyle(style2);
+              setSprite(sprite2);
+              setZoom(zoom2);
             }
           });
         }
@@ -41,24 +41,25 @@ const SubLayers = ({ entry, isSubLayerOpen, selected, setSelected, allParentGrou
 
   const findLayerIndexById = (layerId) => {
     if (style && style.layers) {
-      const allLayerIds = style.layers.map((layer) => layer.id);
+      const allLayerIds = style.layers.map((l) => l.id);
       const index = allLayerIds.indexOf(layerId);
       if (index >= 0) {
         return [index];
       }
     }
+    return null;
   };
 
   return (
     <>
-      {entry.subLayers && entry.subLayers.length > 0
-        ? entry.subLayers.map((subLayer) => {
+      {layer.subLayers && layer.subLayers.length > 0
+        ? layer.subLayers.map((subLayer) => {
             const layerIndex = findLayerIndexById(subLayer.id);
-            console.log("layerIndex", `style.layers[${layerIndex}]`);
+            // console.log("layerIndex", `style.layers[${layerIndex}]`);
             return (
               <div key={subLayer.id}>
                 <Collapse
-                  isOpen={isSubLayerOpen(entry.id)}
+                  isOpen={isSubLayerOpen(layer.id)}
                   id={`collapse-${subLayer.id}`}
                   key={subLayer.id}
                   className="accordion-collapse"
@@ -100,5 +101,19 @@ const SubLayers = ({ entry, isSubLayerOpen, selected, setSelected, allParentGrou
     </>
   );
 };
+
+SubLayers.displayName = "SubLayers";
+
+SubLayers.propTypes = {
+  // eslint-disable-next-line react/forbid-prop-types
+  layer: PropTypes.object.isRequired,
+  isSubLayerOpen: PropTypes.func.isRequired,
+  selected: PropTypes.arrayOf(PropTypes.string).isRequired,
+  setSelected: PropTypes.func.isRequired,
+  allParentGroups: PropTypes.arrayOf(PropTypes.object).isRequired,
+  open: PropTypes.arrayOf(PropTypes.string).isRequired,
+};
+
+SubLayers.defaultProps = {};
 
 export default SubLayers;

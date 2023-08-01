@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { useMaplibreUIEffect } from "react-maplibre-ui";
-import { useMapVisibility } from "./fetchStyle";
+// import { useMapVisibility } from "./fetchStyle";
 import ParentGroups from "./ParentGroups";
 
 const LayerControl = ({ layerGroups }) => {
-  const parent = layerGroups.filter((entry) => entry.type === "group");
+  const parents = layerGroups.filter((entry) => entry.type === "group");
   const basemaps = layerGroups.filter((entry) => entry.isBasemap === true);
-  const visibility = useMapVisibility();
-  if (visibility !== null) {
+  // const visibility = useMapVisibility();
+  /* if (visibility !== null) {
     console.log("vis", visibility);
-  }
+  } */
 
-  const allParentGroups = parent.flatMap((p) => {
+  const allParentGroups = parents.flatMap((p) => {
     return p.entries.map((value) => {
       return value;
     });
@@ -52,14 +52,12 @@ const LayerControl = ({ layerGroups }) => {
             }
           }
         });
-      } else {
-        if (map.getLayer(entry.id)) {
-          const visible = map.getLayoutProperty(entry.id, "visibility") !== "none";
-          if (visible && !selectedBasemap.includes(entry.id)) {
-            map.setLayoutProperty(entry.id, "visibility", "none");
-          } else if (!visible && selectedBasemap.includes(entry.id)) {
-            map.setLayoutProperty(entry.id, "visibility", "visible");
-          }
+      } else if (map.getLayer(entry.id)) {
+        const visible = map.getLayoutProperty(entry.id, "visibility") !== "none";
+        if (visible && !selectedBasemap.includes(entry.id)) {
+          map.setLayoutProperty(entry.id, "visibility", "none");
+        } else if (!visible && selectedBasemap.includes(entry.id)) {
+          map.setLayoutProperty(entry.id, "visibility", "visible");
         }
       }
     });
@@ -74,7 +72,6 @@ const LayerControl = ({ layerGroups }) => {
       <div
         className="Button"
         style={{
-          backgroundColor: "white",
           position: "absolute",
           zIndex: 1,
           top: "40px",
@@ -85,6 +82,7 @@ const LayerControl = ({ layerGroups }) => {
         }}
       >
         <button
+          type="button"
           style={{
             backgroundColor: "white",
             borderRadius: "0.25rem",
@@ -103,7 +101,7 @@ const LayerControl = ({ layerGroups }) => {
 
       <ParentGroups
         layerControlVisible={layerControlVisible}
-        parent={parent}
+        parents={parents}
         isSubLayerOpen={isSubLayerOpen}
         selected={selected}
         selectedBasemap={selectedBasemap}

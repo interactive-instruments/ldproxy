@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { Collapse } from "reactstrap";
 import SubLayers from "./SubLayers";
 
 const Entries = ({
-  p,
+  parent,
   isSubLayerOpen,
   selected,
   selectedBasemap,
@@ -45,17 +45,17 @@ const Entries = ({
   return (
     <>
       {allParentGroups
-        ? p.entries.map((entry) => (
+        ? parent.entries.map((entry) => (
             <div key={entry.id}>
               <Collapse
-                isOpen={isSubLayerOpen(p.id)}
+                isOpen={isSubLayerOpen(parent.id)}
                 id={`collapse-${entry.id}`}
                 key={entry.id}
                 className="accordion-collapse"
                 aria-labelledby={`heading-${entry.id}`}
                 data-bs-parent="#layer-control"
               >
-                {p.isBasemap !== true ? (
+                {parent.isBasemap !== true ? (
                   <div>
                     <button
                       style={{
@@ -116,7 +116,7 @@ const Entries = ({
                 )}
               </Collapse>
               <SubLayers
-                entry={entry}
+                layer={entry}
                 isSubLayerOpen={isSubLayerOpen}
                 selected={selected}
                 setSelected={setSelected}
@@ -129,5 +129,22 @@ const Entries = ({
     </>
   );
 };
+
+Entries.displayName = "Entries";
+
+Entries.propTypes = {
+  // eslint-disable-next-line react/forbid-prop-types
+  parent: PropTypes.object.isRequired,
+  isSubLayerOpen: PropTypes.func.isRequired,
+  selected: PropTypes.arrayOf(PropTypes.string).isRequired,
+  selectedBasemap: PropTypes.arrayOf(PropTypes.string).isRequired,
+  setSelected: PropTypes.func.isRequired,
+  setSelectedBasemap: PropTypes.func.isRequired,
+  allParentGroups: PropTypes.arrayOf(PropTypes.object).isRequired,
+  open: PropTypes.arrayOf(PropTypes.string).isRequired,
+  setOpen: PropTypes.func.isRequired,
+};
+
+Entries.defaultProps = {};
 
 export default Entries;
