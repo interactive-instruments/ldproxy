@@ -1,15 +1,22 @@
 import React from "react";
-import LegendSymbol from "@watergis/legend-symbol";
+import LegendSymbol from "./main";
+
+const camelCase = (obj) =>
+  Object.assign(
+    {},
+    ...Object.keys(obj).map((key) => {
+      const camelCased = key.includes("-")
+        ? key.replace(/-[a-z]/g, (g) => g[1].toUpperCase())
+        : key;
+      return { [camelCased]: obj[key] };
+    })
+  );
 
 function CSSstring(string) {
   const cssJson = `{"${string.replace(/;$/, "").replace(/;/g, '", "').replace(/: /g, '": "')}"}`;
   const obj = JSON.parse(cssJson);
 
-  const keyValues = Object.keys(obj).map((key) => {
-    const camelCased = key.replace(/-[a-z]/g, (g) => g[1].toUpperCase());
-    return { [camelCased]: obj[key] };
-  });
-  return Object.assign({}, ...keyValues);
+  return camelCase(obj);
 }
 
 function asReact(tree, outerStyle) {
@@ -28,7 +35,7 @@ function asReact(tree, outerStyle) {
 
   return React.createElement(
     tree.element,
-    { ...attributes, style: newStyle },
+    { ...camelCase(attributes), style: newStyle },
     tree.children ? tree.children.map((c) => asReact(c)) : null
   );
 }

@@ -3353,6 +3353,7 @@ __metadata:
     "@cesium/widgets": ^2.2.0
     "@mapbox/geojson-extent": ^1.0.1
     "@mapbox/mapbox-gl-draw": ^1.3.0
+    "@mapbox/mapbox-gl-style-spec": ^13.16.0
     "@mdx-js/react": ^1.6.22
     "@neutrinojs/airbnb": ^9.3.0
     "@neutrinojs/copy": ^9.3.0
@@ -3365,7 +3366,6 @@ __metadata:
     "@storybook/addon-links": ^6.3.8
     "@storybook/react": ^6.3.8
     "@turf/combine": ^6.5.0
-    "@watergis/legend-symbol": ^0.2.3
     "@xtraplatform/neutrino": ^2.0.0
     bootstrap: ^4.6.0
     d3-scale: 3.2.3
@@ -4944,15 +4944,6 @@ __metadata:
   version: 1.1.2
   resolution: "@ungap/promise-all-settled@npm:1.1.2"
   checksum: 08d37fdfa23a6fe8139f1305313562ebad973f3fac01bcce2773b2bda5bcb0146dfdcf3cb6a722cf0a5f2ca0bc56a827eac8f1e7b3beddc548f654addf1fc34c
-  languageName: node
-  linkType: hard
-
-"@watergis/legend-symbol@npm:^0.2.3":
-  version: 0.2.3
-  resolution: "@watergis/legend-symbol@npm:0.2.3"
-  dependencies:
-    "@mapbox/mapbox-gl-style-spec": ^13.16.0
-  checksum: 62c8d16f162b170011be6198ba4bb9277858e0898864cac8ebcbff6b261dc773337fd5028d533bf4465c26b7313c4473427de9779f8438dd102b95a367b235da
   languageName: node
   linkType: hard
 

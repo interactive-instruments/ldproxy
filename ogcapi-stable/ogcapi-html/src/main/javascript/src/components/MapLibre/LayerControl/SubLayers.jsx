@@ -58,8 +58,9 @@ const SubLayers = ({ layer, isSubLayerOpen, selected, setSelected, style }) => {
                               boxSizing: "content-box",
                             }}
                             sprite={style.sprite}
-                            zoom={style.zoom}
+                            zoom={subLayer.zoom || style.zoom}
                             layer={style.layers[layerIndex]}
+                            properties={subLayer.properties}
                           />
                         )}
                         {subLayer.id}
