@@ -69,15 +69,19 @@
     {{#popup}}
       popup: '{{.}}',
     {{/popup}}
-      layerGroupControl: {
+      layerGroupControl: [
     {{#layerGroupControl}}
-        '{{key}}': [
+        {
+        id : '{{key}}',
+        type: 'source-layer',
+        'sub-layers': [
         {{#value}}
-          '{{.}}',
+          {id: '{{.}}', layers: ['{{.}}']},
         {{/value}}
         ],
+        },
     {{/layerGroupControl}}
-      },
+      ],
       tileMatrixSets: [
       {{#tileCollections}}
         {

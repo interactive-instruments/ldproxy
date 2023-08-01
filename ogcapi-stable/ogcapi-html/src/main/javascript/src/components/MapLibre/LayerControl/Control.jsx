@@ -2,33 +2,32 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import ParentGroups from "./ParentGroups";
 
-const Control = ({ layerGroups, mapHeight, map }) => {
-  const parents = layerGroups.filter((entry) => entry.type === "group");
-  const basemaps = layerGroups.filter((entry) => entry.isBasemap === true);
-
-  const allParentGroups = parents.flatMap((p) => {
-    return p.entries.map((value) => {
-      return value;
+const getSubLayerIds = (allParentGroups) =>
+  allParentGroups
+    .map((group) => {
+      return group.subLayers && group.subLayers.length > 0
+        ? group.subLayers.map((subLayer) => {
+            return subLayer.id;
+          })
+        : [];
+    })
+    .flatMap((Ids) => {
+      return Ids;
     });
-  });
 
-  const allSubLayers = allParentGroups.map((group) => {
-    return group.subLayers && group.subLayers.length > 0
-      ? group.subLayers.map((subLayer) => {
-          return subLayer.id;
-        })
-      : [];
-  });
-
-  const subLayerIds = allSubLayers.flatMap((Ids) => {
-    return Ids;
-  });
-
+const Control = ({ layerGroups: layerGroupsDefault, mapHeight, map }) => {
+  const [parents, setParents] = useState([]);
+  const [allParentGroups, setAllParentGroups] = useState([]);
+  const [subLayerIds, setSubLayerIds] = useState([]);
   const [layerControlVisible, setLayerControlVisible] = useState(true);
-  const [selectedBasemap, setSelectedBasemap] = useState([basemaps[0].entries[0].id]);
-  const [selected, setSelected] = useState(subLayerIds);
-  const [open, setOpen] = useState(["Basemap", "All", "TransportationGroundCrv", "Test"]); // (allParentGroups.map((p) => p.id) + basemaps.map((p) => p.id));
+  const [selectedBasemap, setSelectedBasemap] = useState([]);
+  const [selected, setSelected] = useState([]);
+  const [open, setOpen] = useState([]);
   const [style, setStyle] = useState();
+
+  const isSubLayerOpen = (name) => {
+    return open.includes(name);
+  };
 
   const handleButtonClick = () => {
     setLayerControlVisible(!layerControlVisible);
@@ -36,9 +35,34 @@ const Control = ({ layerGroups, mapHeight, map }) => {
 
   useEffect(() => {
     map.on("style.load", () => {
-      setStyle(map.getStyle());
+      const s = map.getStyle();
+      const layerGroups =
+        s.metadata && s.metadata["ldproxy:layers"]
+          ? s.metadata["ldproxy:layers"]
+          : layerGroupsDefault;
+      const p = layerGroups.filter(
+        (entry) => entry.type === "group" || entry.type === "source-layer"
+      );
+      const b = layerGroups.filter((entry) => entry.isBasemap === true);
+      const a = p.flatMap((parent) => parent.entries);
+      const ids = getSubLayerIds(a);
+
+      setStyle(s);
+      setParents(p);
+      setAllParentGroups(a);
+      setSubLayerIds(ids);
+      setSelectedBasemap(
+        b.length > 0 && b[0].entries && b[0].entries.length > 0 ? [b[0].entries[0].id] : []
+      );
+      setSelected(ids);
+      setOpen(
+        a
+          .concat(b)
+          .concat(p)
+          .map((item) => item.id)
+      );
     });
-  }, [map, setStyle]);
+  }, [layerGroupsDefault, map]);
 
   useEffect(() => {
     allParentGroups.forEach((entry) => {
@@ -64,10 +88,6 @@ const Control = ({ layerGroups, mapHeight, map }) => {
     });
   }, [map, allParentGroups, selected, selectedBasemap]);
 
-  const isSubLayerOpen = (name) => {
-    return open.includes(name);
-  };
-
   return (
     <>
       <div className="maplibregl-ctrl maplibregl-ctrl-group" style={{}}>
@@ -89,22 +109,23 @@ const Control = ({ layerGroups, mapHeight, map }) => {
           </svg>
         </button>
       </div>
-
-      <ParentGroups
-        layerControlVisible={layerControlVisible}
-        parents={parents}
-        isSubLayerOpen={isSubLayerOpen}
-        selected={selected}
-        selectedBasemap={selectedBasemap}
-        setSelected={setSelected}
-        setSelectedBasemap={setSelectedBasemap}
-        allParentGroups={allParentGroups}
-        open={open}
-        setOpen={setOpen}
-        subLayerIds={subLayerIds}
-        mapHeight={mapHeight}
-        style={style}
-      />
+      {style && (
+        <ParentGroups
+          layerControlVisible={layerControlVisible}
+          parents={parents}
+          isSubLayerOpen={isSubLayerOpen}
+          selected={selected}
+          selectedBasemap={selectedBasemap}
+          setSelected={setSelected}
+          setSelectedBasemap={setSelectedBasemap}
+          allParentGroups={allParentGroups}
+          open={open}
+          setOpen={setOpen}
+          subLayerIds={subLayerIds}
+          mapHeight={mapHeight}
+          style={style}
+        />
+      )}
     </>
   );
 };
