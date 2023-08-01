@@ -1,7 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { Collapse } from "reactstrap";
+import { Collapse, Row, Col, FormGroup, Label, Input } from "reactstrap";
 import SubLayers from "./SubLayers";
+import CollapseButton from "./CollapseButton";
+import { LegendSymbolReact } from "./LegendSymbol";
 
 const Entries = ({
   parent,
@@ -13,6 +15,7 @@ const Entries = ({
   allParentGroups,
   open,
   setOpen,
+  style,
 }) => {
   const onSelectEntry = (entry) => {
     const subLayers = entry.subLayers.map((subLayer) => {
@@ -42,89 +45,109 @@ const Entries = ({
     setOpen([...open]);
   };
 
+  const findLayerIndexById = (layerId) => {
+    if (style && style.layers) {
+      const allLayerIds = style.layers.map((l) => l.id);
+      const index = allLayerIds.indexOf(layerId);
+      if (index >= 0) {
+        return [index];
+      }
+    }
+    return null;
+  };
+
   return (
     <>
       {allParentGroups
-        ? parent.entries.map((entry) => (
-            <div key={entry.id}>
+        ? parent.entries.map((entry, i) => {
+            const layerIndex = findLayerIndexById(entry.id);
+            return (
               <Collapse
+                key={entry.id}
                 isOpen={isSubLayerOpen(parent.id)}
                 id={`collapse-${entry.id}`}
-                key={entry.id}
-                className="accordion-collapse"
-                aria-labelledby={`heading-${entry.id}`}
-                data-bs-parent="#layer-control"
+                style={{ paddingBottom: i === parent.entries.length - 1 ? "5px" : null }}
               >
-                {parent.isBasemap !== true ? (
-                  <div>
-                    <button
-                      style={{
-                        backgroundColor: "white",
-                        borderRadius: "0.25rem",
-                        padding: "10px",
-                      }}
-                      color="secondary"
-                      outline
-                      onClick={(e) => {
-                        if (!e.target.classList.contains("form-check-input")) {
-                          e.target.blur();
-                          onOpen(entry);
-                        }
-                      }}
-                      active={isSubLayerOpen(entry.id)}
-                      className={`accordion-button ${isSubLayerOpen(entry.id) ? "collapsed" : ""}`}
-                      type="button"
-                      data-bs-toggle="collapse"
-                      data-bs-target={`#collapse-${entry.id}`}
-                      aria-expanded={isSubLayerOpen(entry.id)}
-                      aria-controls={`collapse-${entry.id}`}
-                    >
-                      <input
-                        style={{ marginLeft: "25px" }}
-                        className="form-check-input"
-                        type="checkbox"
-                        id={`checkbox-${entry.id}`}
-                        checked={entry.subLayers.every((subLayer) =>
-                          selected.includes(subLayer.id)
-                        )}
-                        onChange={(e) => {
-                          e.target.blur();
-                          onSelectEntry(entry);
-                        }}
-                      />
-
-                      <span style={{ marginRight: "5px", marginLeft: "5px" }}>{entry.id}</span>
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <input
-                      style={{ marginRight: "10px", marginLeft: "15px" }}
-                      className="form-check-input"
-                      type="radio"
-                      id={`radiobutton-${entry.id}`}
-                      name="basemap"
-                      value={`${entry.id}`}
-                      checked={selectedBasemap.includes(entry.id)}
-                      onClick={(e) => {
-                        e.target.blur();
-                        onSelectRadio(entry);
-                      }}
-                    />
-                    <span style={{ marginRight: "10px" }}>{entry.id}</span>
-                  </div>
-                )}
+                <Row key={entry.id}>
+                  {parent.isBasemap !== true && entry.type === "source-layer" ? (
+                    <>
+                      <Col xs="10" style={{ display: "flex", alignItems: "center" }}>
+                        <FormGroup check style={{ marginLeft: "20px" }}>
+                          <Label check>
+                            <Input
+                              type="checkbox"
+                              id={`checkbox-${parent.id}`}
+                              checked={entry.subLayers.every((subLayer) =>
+                                selected.includes(subLayer.id)
+                              )}
+                              onChange={(e) => {
+                                e.target.blur();
+                                onSelectEntry(entry);
+                              }}
+                            />
+                            {entry.id}
+                          </Label>
+                        </FormGroup>
+                      </Col>
+                      <Col xs="2">
+                        <CollapseButton
+                          collapsed={!isSubLayerOpen(entry.id)}
+                          toggleCollapsed={() => onOpen(entry)}
+                        />
+                      </Col>
+                    </>
+                  ) : (
+                    <Col xs="12" style={{ display: "flex", alignItems: "center" }}>
+                      <FormGroup check>
+                        <Label check style={{ display: "flex", alignItems: "center" }}>
+                          <Input
+                            style={{
+                              position: "relative",
+                              marginRight: "5px",
+                              marginTop: "0",
+                            }}
+                            type="radio"
+                            name={parent.id}
+                            value={`${entry.id}`}
+                            checked={selectedBasemap.includes(entry.id)}
+                            onChange={(e) => {
+                              e.target.blur();
+                              onSelectRadio(entry);
+                            }}
+                          />
+                          {style && style.layers && style.layers[layerIndex] && (
+                            <LegendSymbolReact
+                              style={{
+                                display: "inline-block",
+                                width: "16px",
+                                height: "16px",
+                                marginRight: "5px",
+                                border: "1px solid #ddd",
+                                boxSizing: "content-box",
+                              }}
+                              sprite={style.sprite}
+                              zoom={style.zoom}
+                              layer={style.layers[layerIndex]}
+                            />
+                          )}
+                          {entry.id}
+                        </Label>
+                      </FormGroup>
+                    </Col>
+                  )}
+                </Row>
+                <SubLayers
+                  layer={entry}
+                  isSubLayerOpen={isSubLayerOpen}
+                  selected={selected}
+                  setSelected={setSelected}
+                  allParentGroups={allParentGroups}
+                  open={open}
+                  style={style}
+                />
               </Collapse>
-              <SubLayers
-                layer={entry}
-                isSubLayerOpen={isSubLayerOpen}
-                selected={selected}
-                setSelected={setSelected}
-                allParentGroups={allParentGroups}
-                open={open}
-              />
-            </div>
-          ))
+            );
+          })
         : null}
     </>
   );
@@ -143,6 +166,8 @@ Entries.propTypes = {
   allParentGroups: PropTypes.arrayOf(PropTypes.object).isRequired,
   open: PropTypes.arrayOf(PropTypes.string).isRequired,
   setOpen: PropTypes.func.isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
+  style: PropTypes.object.isRequired,
 };
 
 Entries.defaultProps = {};

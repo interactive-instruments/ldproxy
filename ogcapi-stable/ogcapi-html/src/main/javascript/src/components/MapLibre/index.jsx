@@ -102,7 +102,7 @@ MapLibre.propTypes = {
   defaultStyle: PropTypes.object,
   // eslint-disable-next-line react/forbid-prop-types
   fitBoundsOptions: PropTypes.object,
-  layerGroupControl: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string)),
+  layerGroupControl: PropTypes.arrayOf(PropTypes.object),
   ...Configuration.propTypes,
 };
 

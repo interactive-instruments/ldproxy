@@ -1,34 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import PropTypes from "prop-types";
-import { Collapse } from "reactstrap";
-import { useMaplibreUIEffect } from "react-maplibre-ui";
+import { Collapse, Row, Col, FormGroup, Label, Input } from "reactstrap";
 import { LegendSymbolReact } from "./LegendSymbol";
 
-const SubLayers = ({ layer, isSubLayerOpen, selected, setSelected, allParentGroups, open }) => {
-  const [style, setStyle] = useState();
-  const [sprite, setSprite] = useState("https://demo.ldproxy.net/daraa/resources/sprites");
-  const [zoom, setZoom] = useState(12);
-
-  useMaplibreUIEffect(
-    ({ map }) => {
-      allParentGroups.forEach((group) => {
-        if (group.type === "source-layer" && group.subLayers) {
-          group.subLayers.forEach(({ id: layerId }) => {
-            if (map.getLayer(layerId)) {
-              const style2 = map.getStyle();
-              const sprite2 = style2.sprite;
-              const zoom2 = style2.zoom;
-              setStyle(style2);
-              setSprite(sprite2);
-              setZoom(zoom2);
-            }
-          });
-        }
-      });
-    },
-    [open]
-  );
-
+const SubLayers = ({ layer, isSubLayerOpen, selected, setSelected, style }) => {
   const onSelect = (entry) => {
     const index = selected.indexOf(entry.id);
     if (index < 0) {
@@ -53,48 +28,46 @@ const SubLayers = ({ layer, isSubLayerOpen, selected, setSelected, allParentGrou
   return (
     <>
       {layer.subLayers && layer.subLayers.length > 0
-        ? layer.subLayers.map((subLayer) => {
+        ? layer.subLayers.map((subLayer, i) => {
             const layerIndex = findLayerIndexById(subLayer.id);
-            // console.log("layerIndex", `style.layers[${layerIndex}]`);
+
             return (
-              <div key={subLayer.id}>
-                <Collapse
-                  isOpen={isSubLayerOpen(layer.id)}
-                  id={`collapse-${subLayer.id}`}
-                  key={subLayer.id}
-                  className="accordion-collapse"
-                  aria-labelledby={`heading-${subLayer.id}`}
-                  data-bs-parent="#layer-control"
-                >
-                  <span
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      marginLeft: "5px",
-                      marginRight: "5px",
-                    }}
-                  >
-                    <input
-                      style={{ marginLeft: "55px", marginRight: "5px" }}
-                      className="form-check-input"
-                      type="checkbox"
-                      id={`checkbox-${subLayer.id}`}
-                      checked={selected.includes(subLayer.id)}
-                      onChange={() => onSelect(subLayer)}
-                    />
-                    <div style={{ height: "25px", width: "15px", marginRight: "5px" }}>
-                      {style && zoom && layerIndex ? (
-                        <LegendSymbolReact
-                          sprite={sprite}
-                          zoom={zoom}
-                          layer={style.layers[layerIndex]}
+              <Collapse
+                isOpen={isSubLayerOpen(layer.id)}
+                id={`collapse-${subLayer.id}`}
+                key={subLayer.id}
+                style={{ paddingBottom: i === layer.subLayers.length - 1 ? "5px" : null }}
+              >
+                <Row key={subLayer.id}>
+                  <Col xs="12" style={{ display: "flex", alignItems: "center" }}>
+                    <FormGroup check style={{ marginLeft: "40px" }}>
+                      <Label check>
+                        <Input
+                          type="checkbox"
+                          id={`checkbox-${subLayer.id}`}
+                          checked={selected.includes(subLayer.id)}
+                          onChange={() => onSelect(subLayer)}
                         />
-                      ) : null}
-                    </div>
-                    {subLayer.id}
-                  </span>
-                </Collapse>
-              </div>
+                        {style && style.layers && style.layers[layerIndex] && (
+                          <LegendSymbolReact
+                            style={{
+                              width: "16px",
+                              height: "16px",
+                              marginRight: "5px",
+                              border: "1px solid #ddd",
+                              boxSizing: "content-box",
+                            }}
+                            sprite={style.sprite}
+                            zoom={style.zoom}
+                            layer={style.layers[layerIndex]}
+                          />
+                        )}
+                        {subLayer.id}
+                      </Label>
+                    </FormGroup>
+                  </Col>
+                </Row>
+              </Collapse>
             );
           })
         : null}
@@ -110,8 +83,8 @@ SubLayers.propTypes = {
   isSubLayerOpen: PropTypes.func.isRequired,
   selected: PropTypes.arrayOf(PropTypes.string).isRequired,
   setSelected: PropTypes.func.isRequired,
-  allParentGroups: PropTypes.arrayOf(PropTypes.object).isRequired,
-  open: PropTypes.arrayOf(PropTypes.string).isRequired,
+  // eslint-disable-next-line react/forbid-prop-types
+  style: PropTypes.object.isRequired,
 };
 
 SubLayers.defaultProps = {};

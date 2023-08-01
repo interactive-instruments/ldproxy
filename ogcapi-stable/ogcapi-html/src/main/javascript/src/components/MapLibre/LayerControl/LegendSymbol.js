@@ -12,18 +12,27 @@ function CSSstring(string) {
   return Object.assign({}, ...keyValues);
 }
 
-function asReact(tree) {
-  if (tree.attributes.style) {
-    // eslint-disable-next-line no-param-reassign
-    tree.attributes.style = CSSstring(tree.attributes.style);
+function asReact(tree, outerStyle) {
+  let newStyle = {};
+  const { style, ...attributes } = tree.attributes;
+
+  if (typeof style === "string") {
+    newStyle = CSSstring(style);
+  } else if (typeof style === "object") {
+    newStyle = style;
   }
+
+  if (outerStyle) {
+    newStyle = { ...newStyle, ...outerStyle };
+  }
+
   return React.createElement(
     tree.element,
-    tree.attributes,
-    tree.children ? tree.children.map(asReact) : null
+    { ...attributes, style: newStyle },
+    tree.children ? tree.children.map((c) => asReact(c)) : null
   );
 }
 
 export function LegendSymbolReact(props) {
-  return asReact(LegendSymbol(props));
+  return asReact(LegendSymbol(props), props.style);
 }
