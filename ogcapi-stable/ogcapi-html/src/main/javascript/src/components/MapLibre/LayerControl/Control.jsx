@@ -1,35 +1,161 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import ParentGroups from "./ParentGroups";
+import ControlButton from "./ControlButton";
 
 const getSubLayerIds = (allParentGroups) =>
   allParentGroups
     .map((group) => {
-      return group.subLayers && group.subLayers.length > 0
-        ? group.subLayers.map((subLayer) => {
-            return subLayer.id;
-          })
-        : [];
+      if (group.subLayers) {
+        return group.subLayers;
+      }
+      if (group.entries) {
+        return group.entries.filter(
+          (entry) => entry.type !== "group" && entry.type !== "source-layer"
+        );
+      }
+      return [];
     })
-    .flatMap((Ids) => {
-      return Ids;
+    .flatMap((layers) => {
+      return layers.flatMap((subLayer) =>
+        subLayer.layers ? [...new Set([subLayer.id].concat(subLayer.layers))] : [subLayer.id]
+      );
     });
+
+const getRadioGroups = (groups, selected) => {
+  const radioGroups = {};
+
+  groups
+    .filter((g) => g.isBasemap === true)
+    .forEach((g) => {
+      if (selected) {
+        radioGroups[g.id] = g.entries && g.entries.length > 0 ? g.entries[0].id : null;
+      } else {
+        radioGroups[g.id] = g.entries ? g.entries.map((e) => e.id) : [];
+      }
+    });
+
+  return radioGroups;
+};
+
+const getDeps = (groups, parents = []) => {
+  const deps = {};
+
+  groups.forEach((g) => {
+    const children = g.entries || g.subLayers || g.layers || [];
+    const childDeps = getDeps(children, parents.concat(g.id ? [g.id] : [g]));
+    deps[g.id || g] = [
+      ...new Set(
+        parents
+          .concat(g.id ? [g.id] : [g])
+          .concat(Object.values(childDeps).flatMap((c) => c.id || c))
+      ),
+    ];
+    Object.keys(childDeps).forEach((c) => {
+      deps[c] = childDeps[c];
+    });
+  });
+
+  return deps;
+};
+
+const getParentDeps = (groups, parents = []) => {
+  const deps = {};
+
+  groups.forEach((g) => {
+    const id = g.id || g;
+    const children = g.entries || g.subLayers || g.layers || [];
+    const childDeps = getParentDeps(children, [id].concat(parents));
+    deps[id] = parents.filter((id2) => id2 !== id);
+    Object.keys(childDeps).forEach((c) => {
+      deps[c] = childDeps[c];
+    });
+  });
+
+  return deps;
+};
+
+const getChildDeps = (groups, tmp) => {
+  const deps = { clean: {}, tmp: {} };
+
+  groups.forEach((g) => {
+    const id = g.id || g;
+    const children = g.entries || g.subLayers || g.layers || [];
+    const childDeps = getChildDeps(children, true);
+    deps.tmp[id] =
+      Object.keys(childDeps.tmp).length > 0
+        ? [...new Set([id].concat(Object.values(childDeps.tmp).flatMap((c) => c.id || c)))]
+        : [id];
+    deps.clean[id] = deps.tmp[id].filter((id2) => id2 !== id);
+    Object.keys(childDeps.clean).forEach((c) => {
+      deps.clean[c] = childDeps.clean[c];
+    });
+  });
+
+  return tmp ? deps : deps.clean;
+};
 
 const Control = ({ layerGroups: layerGroupsDefault, mapHeight, map }) => {
   const [parents, setParents] = useState([]);
-  const [allParentGroups, setAllParentGroups] = useState([]);
+  const [radioGroups, setRadioGroups] = useState([]);
   const [subLayerIds, setSubLayerIds] = useState([]);
-  const [layerControlVisible, setLayerControlVisible] = useState(true);
-  const [selectedBasemap, setSelectedBasemap] = useState([]);
+  const [layerControlVisible, setLayerControlVisible] = useState(false);
+  const [selectedRadioGroups, setSelectedRadioGroups] = useState({});
   const [selected, setSelected] = useState([]);
   const [open, setOpen] = useState([]);
   const [style, setStyle] = useState();
+  const [deps, setDeps] = useState({});
 
-  const isSubLayerOpen = (name) => {
+  const onOpen = (id) => {
+    if (open.includes(id)) {
+      setOpen(open.filter((id2) => id2 !== id));
+    } else {
+      setOpen([...open, id]);
+    }
+  };
+
+  const isOpened = (name) => {
     return open.includes(name);
   };
 
-  const handleButtonClick = () => {
+  const onSelect = (id, radioGroup) => {
+    if (radioGroup) {
+      if (selectedRadioGroups[radioGroup] !== id) {
+        setSelectedRadioGroups({ ...selectedRadioGroups, [radioGroup]: id });
+      }
+      return;
+    }
+    if (selected.includes(id)) {
+      setSelected(selected.filter((id2) => !deps.all[id].includes(id2)));
+    } else {
+      const newSelected = [...selected, id];
+
+      deps.child[id].forEach((child) => {
+        if (!newSelected.includes(child)) {
+          newSelected.push(child);
+        }
+      });
+
+      deps.parent[id].forEach((parent) => {
+        if (
+          !newSelected.includes(parent) &&
+          deps.child[parent].every((child) => newSelected.includes(child))
+        ) {
+          newSelected.push(parent);
+        }
+      });
+
+      setSelected(newSelected);
+    }
+  };
+
+  const isSelected = useCallback(
+    (id, radioGroup) =>
+      radioGroup ? selectedRadioGroups[radioGroup] === id : selected.includes(id),
+    [selected, selectedRadioGroups]
+  );
+
+  const toggleLayerControlVisible = () => {
     setLayerControlVisible(!layerControlVisible);
   };
 
@@ -43,87 +169,76 @@ const Control = ({ layerGroups: layerGroupsDefault, mapHeight, map }) => {
       const p = layerGroups.filter(
         (entry) => entry.type === "group" || entry.type === "source-layer"
       );
-      const b = layerGroups.filter((entry) => entry.isBasemap === true);
-      const a = p.flatMap((parent) => parent.entries);
+      const r = getRadioGroups(layerGroups, true);
+      const r2 = getRadioGroups(layerGroups);
+      const a = p.flatMap((parent) =>
+        [parent].concat(
+          parent.entries
+            ? parent.entries.filter(
+                (entry) => entry.type === "group" || entry.type === "source-layer"
+              )
+            : []
+        )
+      );
       const ids = getSubLayerIds(a);
+      const d = getDeps(layerGroups);
+      const c = getChildDeps(layerGroups);
+      const dp = getParentDeps(layerGroups);
 
       setStyle(s);
       setParents(p);
-      setAllParentGroups(a);
+      setRadioGroups(r2);
       setSubLayerIds(ids);
-      setSelectedBasemap(
-        b.length > 0 && b[0].entries && b[0].entries.length > 0 ? [b[0].entries[0].id] : []
-      );
-      setSelected(ids);
+      setSelectedRadioGroups(r);
+      setSelected(ids.concat(a.map((item) => item.id)));
       setOpen(
         a
-          .concat(b)
+          .concat(r)
           .concat(p)
           .map((item) => item.id)
       );
+      setDeps({ all: d, parent: dp, child: c });
     });
   }, [layerGroupsDefault, map]);
 
   useEffect(() => {
-    allParentGroups.forEach((entry) => {
-      if (entry.type === "source-layer" && entry.subLayers) {
-        entry.subLayers.forEach(({ id: layerId }) => {
-          if (map.getLayer(layerId)) {
-            const visible = map.getLayoutProperty(layerId, "visibility") !== "none";
-            if (visible && !selected.includes(layerId)) {
-              map.setLayoutProperty(layerId, "visibility", "none");
-            } else if (!visible && selected.includes(layerId)) {
-              map.setLayoutProperty(layerId, "visibility", "visible");
-            }
-          }
-        });
-      } else if (map.getLayer(entry.id)) {
-        const visible = map.getLayoutProperty(entry.id, "visibility") !== "none";
-        if (visible && !selectedBasemap.includes(entry.id)) {
-          map.setLayoutProperty(entry.id, "visibility", "none");
-        } else if (!visible && selectedBasemap.includes(entry.id)) {
-          map.setLayoutProperty(entry.id, "visibility", "visible");
+    subLayerIds.forEach((id) => {
+      if (map.getLayer(id)) {
+        const visible = map.getLayoutProperty(id, "visibility") !== "none";
+        if (visible && !isSelected(id)) {
+          map.setLayoutProperty(id, "visibility", "none");
+        } else if (!visible && isSelected(id)) {
+          map.setLayoutProperty(id, "visibility", "visible");
         }
       }
     });
-  }, [map, allParentGroups, selected, selectedBasemap]);
+    Object.keys(radioGroups).forEach((group) => {
+      radioGroups[group].forEach((id) => {
+        if (map.getLayer(id)) {
+          const visible = map.getLayoutProperty(id, "visibility") !== "none";
+          if (visible && !isSelected(id, group)) {
+            map.setLayoutProperty(id, "visibility", "none");
+          } else if (!visible && isSelected(id, group)) {
+            map.setLayoutProperty(id, "visibility", "visible");
+          }
+        }
+      });
+    });
+  }, [map, subLayerIds, radioGroups, isSelected]);
 
   return (
     <>
-      <div className="maplibregl-ctrl maplibregl-ctrl-group" style={{}}>
-        <button
-          type="button"
-          style={{
-            backgroundColor: layerControlVisible ? "rgb(0 0 0/5%)" : "transparent",
-          }}
-          onClick={handleButtonClick}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            fill="currentColor"
-            viewBox="0 0 16 16"
-          >
-            <path d="M8.235 1.559a.5.5 0 0 0-.47 0l-7.5 4a.5.5 0 0 0 0 .882L3.188 8 .264 9.559a.5.5 0 0 0 0 .882l7.5 4a.5.5 0 0 0 .47 0l7.5-4a.5.5 0 0 0 0-.882L12.813 8l2.922-1.559a.5.5 0 0 0 0-.882l-7.5-4zm3.515 7.008L14.438 10 8 13.433 1.562 10 4.25 8.567l3.515 1.874a.5.5 0 0 0 .47 0l3.515-1.874zM8 9.433 1.562 6 8 2.567 14.438 6 8 9.433z" />
-          </svg>
-        </button>
-      </div>
+      <ControlButton isEnabled={layerControlVisible} toggle={toggleLayerControlVisible} />
       {style && (
         <ParentGroups
-          layerControlVisible={layerControlVisible}
           parents={parents}
-          isSubLayerOpen={isSubLayerOpen}
-          selected={selected}
-          selectedBasemap={selectedBasemap}
-          setSelected={setSelected}
-          setSelectedBasemap={setSelectedBasemap}
-          allParentGroups={allParentGroups}
-          open={open}
-          setOpen={setOpen}
-          subLayerIds={subLayerIds}
-          mapHeight={mapHeight}
           style={style}
+          mapHeight={mapHeight}
+          isVisible={layerControlVisible}
+          isOpened={isOpened}
+          isSelected={isSelected}
+          onSelect={onSelect}
+          onOpen={onOpen}
         />
       )}
     </>
