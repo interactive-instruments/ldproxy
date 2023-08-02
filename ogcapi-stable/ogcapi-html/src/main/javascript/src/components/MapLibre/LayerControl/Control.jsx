@@ -1,99 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
-import ParentGroups from "./ParentGroups";
+import ControlPanel from "./ControlPanel";
 import ControlButton from "./ControlButton";
-
-const getSubLayerIds = (allParentGroups) =>
-  allParentGroups
-    .map((group) => {
-      if (group.subLayers) {
-        return group.subLayers;
-      }
-      if (group.entries) {
-        return group.entries.filter(
-          (entry) => entry.type !== "group" && entry.type !== "source-layer"
-        );
-      }
-      return [];
-    })
-    .flatMap((layers) => {
-      return layers.flatMap((subLayer) =>
-        subLayer.layers ? [...new Set([subLayer.id].concat(subLayer.layers))] : [subLayer.id]
-      );
-    });
-
-const getRadioGroups = (groups, selected) => {
-  const radioGroups = {};
-
-  groups
-    .filter((g) => g.isBasemap === true)
-    .forEach((g) => {
-      if (selected) {
-        radioGroups[g.id] = g.entries && g.entries.length > 0 ? g.entries[0].id : null;
-      } else {
-        radioGroups[g.id] = g.entries ? g.entries.map((e) => e.id) : [];
-      }
-    });
-
-  return radioGroups;
-};
-
-const getDeps = (groups, parents = []) => {
-  const deps = {};
-
-  groups.forEach((g) => {
-    const children = g.entries || g.subLayers || g.layers || [];
-    const childDeps = getDeps(children, parents.concat(g.id ? [g.id] : [g]));
-    deps[g.id || g] = [
-      ...new Set(
-        parents
-          .concat(g.id ? [g.id] : [g])
-          .concat(Object.values(childDeps).flatMap((c) => c.id || c))
-      ),
-    ];
-    Object.keys(childDeps).forEach((c) => {
-      deps[c] = childDeps[c];
-    });
-  });
-
-  return deps;
-};
-
-const getParentDeps = (groups, parents = []) => {
-  const deps = {};
-
-  groups.forEach((g) => {
-    const id = g.id || g;
-    const children = g.entries || g.subLayers || g.layers || [];
-    const childDeps = getParentDeps(children, [id].concat(parents));
-    deps[id] = parents.filter((id2) => id2 !== id);
-    Object.keys(childDeps).forEach((c) => {
-      deps[c] = childDeps[c];
-    });
-  });
-
-  return deps;
-};
-
-const getChildDeps = (groups, tmp) => {
-  const deps = { clean: {}, tmp: {} };
-
-  groups.forEach((g) => {
-    const id = g.id || g;
-    const children = g.entries || g.subLayers || g.layers || [];
-    const childDeps = getChildDeps(children, true);
-    deps.tmp[id] =
-      Object.keys(childDeps.tmp).length > 0
-        ? [...new Set([id].concat(Object.values(childDeps.tmp).flatMap((c) => c.id || c)))]
-        : [id];
-    deps.clean[id] = deps.tmp[id].filter((id2) => id2 !== id);
-    Object.keys(childDeps.clean).forEach((c) => {
-      deps.clean[c] = childDeps.clean[c];
-    });
-  });
-
-  return tmp ? deps : deps.clean;
-};
+import { getRadioGroups, getSubLayerIds, getDeps, getParentDeps, getChildDeps } from "./config";
 
 const Control = ({ layerGroups: layerGroupsDefault, mapHeight, map }) => {
   const [parents, setParents] = useState([]);
@@ -159,6 +68,7 @@ const Control = ({ layerGroups: layerGroupsDefault, mapHeight, map }) => {
     setLayerControlVisible(!layerControlVisible);
   };
 
+  // initialize state from configuration when style is loaded
   useEffect(() => {
     map.on("style.load", () => {
       const s = map.getStyle();
@@ -201,6 +111,7 @@ const Control = ({ layerGroups: layerGroupsDefault, mapHeight, map }) => {
     });
   }, [layerGroupsDefault, map]);
 
+  // apply selection state to map
   useEffect(() => {
     subLayerIds.forEach((id) => {
       if (map.getLayer(id)) {
@@ -230,7 +141,7 @@ const Control = ({ layerGroups: layerGroupsDefault, mapHeight, map }) => {
     <>
       <ControlButton isEnabled={layerControlVisible} toggle={toggleLayerControlVisible} />
       {style && (
-        <ParentGroups
+        <ControlPanel
           parents={parents}
           style={style}
           mapHeight={mapHeight}

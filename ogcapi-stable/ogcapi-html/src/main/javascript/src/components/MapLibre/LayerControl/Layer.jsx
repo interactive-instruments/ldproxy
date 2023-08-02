@@ -14,7 +14,7 @@ const findLayerIndexById = (style, layerId) => {
   return null;
 };
 
-const SubLayers = ({ layer, style, level, radioGroup, isSelected, onSelect }) => {
+const Layer = ({ layer, style, level, radioGroup, isSelected, onSelect }) => {
   const layerIndex = findLayerIndexById(style, layer.layers ? layer.layers[0] : layer.id);
 
   return (
@@ -55,9 +55,9 @@ const SubLayers = ({ layer, style, level, radioGroup, isSelected, onSelect }) =>
   );
 };
 
-SubLayers.displayName = "SubLayers";
+Layer.displayName = "Layer";
 
-SubLayers.propTypes = {
+Layer.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   layer: PropTypes.object.isRequired,
   // eslint-disable-next-line react/forbid-prop-types
@@ -68,9 +68,9 @@ SubLayers.propTypes = {
   onSelect: PropTypes.func.isRequired,
 };
 
-SubLayers.defaultProps = {
+Layer.defaultProps = {
   level: 0,
   radioGroup: undefined,
 };
 
-export default SubLayers;
+export default Layer;

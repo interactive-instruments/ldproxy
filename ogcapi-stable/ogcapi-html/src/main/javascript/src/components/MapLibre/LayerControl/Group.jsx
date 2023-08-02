@@ -2,10 +2,10 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Collapse, Row, Col, FormGroup, Label, Input } from "reactstrap";
-import SubLayers from "./SubLayers";
+import Layer from "./Layer";
 import CollapseButton from "./CollapseButton";
 
-const Entries = ({ parent, style, isOpened, isSelected, onSelect, onOpen }) => {
+const Group = ({ parent, style, isOpened, isSelected, onSelect, onOpen }) => {
   if (parent.type === "source-layer") {
     return (
       parent.subLayers &&
@@ -16,7 +16,7 @@ const Entries = ({ parent, style, isOpened, isSelected, onSelect, onOpen }) => {
           style={{ paddingBottom: j === parent.subLayers.length - 1 ? "5px" : null }}
         >
           <Row>
-            <SubLayers
+            <Layer
               layer={subLayer}
               isSelected={isSelected}
               onSelect={onSelect}
@@ -64,7 +64,7 @@ const Entries = ({ parent, style, isOpened, isSelected, onSelect, onOpen }) => {
               </Col>
             </>
           ) : parent.type === "source-layer" ? (
-            <SubLayers
+            <Layer
               layer={entry}
               isSelected={isSelected}
               onSelect={onSelect}
@@ -72,7 +72,7 @@ const Entries = ({ parent, style, isOpened, isSelected, onSelect, onOpen }) => {
               level={1}
             />
           ) : (
-            <SubLayers
+            <Layer
               layer={entry}
               isSelected={isSelected}
               onSelect={onSelect}
@@ -90,7 +90,7 @@ const Entries = ({ parent, style, isOpened, isSelected, onSelect, onOpen }) => {
               style={{ paddingBottom: j === entry.subLayers.length - 1 ? "5px" : null }}
             >
               <Row>
-                <SubLayers
+                <Layer
                   layer={subLayer}
                   isSelected={isSelected}
                   onSelect={onSelect}
@@ -105,9 +105,9 @@ const Entries = ({ parent, style, isOpened, isSelected, onSelect, onOpen }) => {
   });
 };
 
-Entries.displayName = "Entries";
+Group.displayName = "Group";
 
-Entries.propTypes = {
+Group.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   parent: PropTypes.object.isRequired,
   // eslint-disable-next-line react/forbid-prop-types
@@ -118,6 +118,6 @@ Entries.propTypes = {
   onOpen: PropTypes.func.isRequired,
 };
 
-Entries.defaultProps = {};
+Group.defaultProps = {};
 
-export default Entries;
+export default Group;

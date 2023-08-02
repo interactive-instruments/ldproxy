@@ -1,10 +1,10 @@
 import React from "react";
 import PropTypes from "prop-types";
 import { Container, Row, Col, Input, FormGroup, Label } from "reactstrap";
-import Entries from "./EntriesLayer";
+import Group from "./Group";
 import CollapseButton from "./CollapseButton";
 
-const ParentGroups = ({
+const ControlPanel = ({
   parents,
   style,
   mapHeight,
@@ -72,7 +72,7 @@ const ParentGroups = ({
                     />
                   </Col>
                 </Row>
-                <Entries
+                <Group
                   key={`${parent.id}entries`}
                   parent={parent}
                   style={style}
@@ -89,9 +89,9 @@ const ParentGroups = ({
   );
 };
 
-ParentGroups.displayName = "ParentGroups";
+ControlPanel.displayName = "ControlPanel";
 
-ParentGroups.propTypes = {
+ControlPanel.propTypes = {
   parents: PropTypes.arrayOf(PropTypes.object).isRequired,
   // eslint-disable-next-line react/forbid-prop-types
   style: PropTypes.object.isRequired,
@@ -103,6 +103,6 @@ ParentGroups.propTypes = {
   onOpen: PropTypes.func.isRequired,
 };
 
-ParentGroups.defaultProps = {};
+ControlPanel.defaultProps = {};
 
-export default ParentGroups;
+export default ControlPanel;
