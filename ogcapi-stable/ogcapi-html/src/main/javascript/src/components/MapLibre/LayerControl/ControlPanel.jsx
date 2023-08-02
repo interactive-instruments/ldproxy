@@ -60,7 +60,7 @@ const ControlPanel = ({
                               onSelect(parent.id);
                             }}
                           />
-                          {parent.id}
+                          <span style={{ whiteSpace: "nowrap" }}>{parent.id}</span>
                         </Label>
                       </FormGroup>
                     </Col>

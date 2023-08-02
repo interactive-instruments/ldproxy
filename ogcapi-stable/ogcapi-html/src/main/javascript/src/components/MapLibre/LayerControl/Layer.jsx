@@ -48,7 +48,7 @@ const Layer = ({ layer, style, level, radioGroup, isSelected, onSelect }) => {
               properties={layer.properties}
             />
           )}
-          {layer.id}
+          <span style={{ whiteSpace: "nowrap" }}>{layer.id}</span>
         </Label>
       </FormGroup>
     </Col>

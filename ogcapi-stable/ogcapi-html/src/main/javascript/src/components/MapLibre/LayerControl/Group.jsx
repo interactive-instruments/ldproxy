@@ -7,26 +7,25 @@ import CollapseButton from "./CollapseButton";
 
 const Group = ({ parent, style, isOpened, isSelected, onSelect, onOpen }) => {
   if (parent.type === "source-layer") {
-    return (
-      parent.subLayers &&
-      parent.subLayers.map((subLayer, j) => (
-        <Collapse
-          key={subLayer.id}
-          isOpen={isOpened(parent.id)}
-          style={{ paddingBottom: j === parent.subLayers.length - 1 ? "5px" : null }}
-        >
-          <Row>
-            <Layer
-              layer={subLayer}
-              isSelected={isSelected}
-              onSelect={onSelect}
-              style={style}
-              level={2}
-            />
-          </Row>
-        </Collapse>
-      ))
-    );
+    return parent.subLayers
+      ? parent.subLayers.map((subLayer, j) => (
+          <Collapse
+            key={subLayer.id}
+            isOpen={isOpened(parent.id)}
+            style={{ paddingBottom: j === parent.subLayers.length - 1 ? "5px" : null }}
+          >
+            <Row>
+              <Layer
+                layer={subLayer}
+                isSelected={isSelected}
+                onSelect={onSelect}
+                style={style}
+                level={2}
+              />
+            </Row>
+          </Collapse>
+        ))
+      : null;
   }
 
   return parent.entries.map((entry, i) => {
@@ -52,7 +51,7 @@ const Group = ({ parent, style, isOpened, isSelected, onSelect, onOpen }) => {
                         onSelect(entry.id);
                       }}
                     />
-                    {entry.id}
+                    <span style={{ whiteSpace: "nowrap" }}>{entry.id}</span>
                   </Label>
                 </FormGroup>
               </Col>
