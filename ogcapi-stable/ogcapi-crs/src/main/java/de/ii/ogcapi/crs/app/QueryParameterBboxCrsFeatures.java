@@ -27,6 +27,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -86,7 +87,7 @@ public class QueryParameterBboxCrsFeatures extends ApiExtensionCache
 
     EpsgCrs bboxCrs;
     try {
-      bboxCrs = EpsgCrs.fromString(value);
+      bboxCrs = Objects.nonNull(value) ? EpsgCrs.fromString(value) : OgcCrs.CRS84;
     } catch (Throwable e) {
       throw new IllegalArgumentException(
           String.format("The parameter '%s' is invalid: %s", BBOX_CRS, e.getMessage()), e);

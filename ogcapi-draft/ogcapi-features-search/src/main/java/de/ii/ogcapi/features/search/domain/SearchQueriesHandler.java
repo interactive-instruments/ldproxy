@@ -57,6 +57,8 @@ public interface SearchQueriesHandler extends QueriesHandler<SearchQueriesHandle
       return false;
     }
 
+    boolean getProfileIsApplicable();
+
     boolean isStoredQuery();
   }
 

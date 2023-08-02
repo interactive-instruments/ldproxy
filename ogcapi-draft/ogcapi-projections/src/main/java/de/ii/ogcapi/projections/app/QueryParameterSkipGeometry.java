@@ -23,6 +23,7 @@ import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -62,7 +63,7 @@ public class QueryParameterSkipGeometry extends ApiExtensionCache
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
-    return "true".equalsIgnoreCase(value);
+    return Objects.nonNull(value) && Boolean.parseBoolean(value);
   }
 
   @Override

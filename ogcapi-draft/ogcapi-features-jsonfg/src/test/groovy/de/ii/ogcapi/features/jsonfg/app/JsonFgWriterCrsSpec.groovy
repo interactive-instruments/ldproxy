@@ -105,6 +105,7 @@ class JsonFgWriterCrsSpec extends Specification {
         context.encoding().getJson()
                 .writeStartObject()
         encoder.onStart(context)
+        context.setType("xyz")
         encoder.onFeatureStart(context)
         context.encoding().getJson()
                 .writeEndObject()

@@ -25,6 +25,7 @@ import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -66,7 +67,7 @@ public class QueryParameterOffsetFeatures extends ApiExtensionCache
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
     try {
-      return Integer.parseInt(value);
+      return Objects.nonNull(value) ? Integer.parseInt(value) : 0;
     } catch (Throwable e) {
       throw new IllegalArgumentException(
           String.format(

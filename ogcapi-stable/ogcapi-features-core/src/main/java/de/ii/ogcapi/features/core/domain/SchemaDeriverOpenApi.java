@@ -24,6 +24,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -290,5 +291,20 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
         .items(oapiSchema)
         .name(oapiSchema.getName())
         .description(oapiSchema.getDescription());
+  }
+
+  @Override
+  protected Schema<?> withOneOfWrapper(
+      Collection<Schema<?>> schema,
+      Optional<String> name,
+      Optional<String> label,
+      Optional<String> description) {
+    Schema<?> schema1 = new Schema<>();
+    schema1.oneOf(new ArrayList<>(schema));
+    name.ifPresent(schema1::name);
+    label.ifPresent(schema1::title);
+    description.ifPresent(schema1::description);
+
+    return schema1;
   }
 }

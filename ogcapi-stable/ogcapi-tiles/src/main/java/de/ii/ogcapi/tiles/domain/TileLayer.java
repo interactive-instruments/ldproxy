@@ -23,19 +23,13 @@ import org.immutables.value.Value;
 @JsonDeserialize(as = ImmutableTileLayer.class)
 public abstract class TileLayer extends OgcResourceMetadata {
 
-  public enum GeometryType {
-    points,
-    lines,
-    polygons
-  }
-
   public abstract String getId();
 
   public abstract TileSet.DataType getDataType();
 
   public abstract Optional<String> getFeatureType();
 
-  public abstract Optional<GeometryType> getGeometryType();
+  public abstract Optional<Integer> getGeometryDimension();
 
   public abstract Optional<String> getTheme();
 
@@ -65,8 +59,7 @@ public abstract class TileLayer extends OgcResourceMetadata {
         into.putString(from.getId(), StandardCharsets.UTF_8);
         into.putString(from.getDataType().toString(), StandardCharsets.UTF_8);
         from.getFeatureType().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
-        from.getGeometryType()
-            .ifPresent(val -> into.putString(val.toString(), StandardCharsets.UTF_8));
+        from.getGeometryDimension().ifPresent(into::putInt);
         from.getTheme().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
         from.getMinTileMatrix().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
         from.getMaxTileMatrix().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));

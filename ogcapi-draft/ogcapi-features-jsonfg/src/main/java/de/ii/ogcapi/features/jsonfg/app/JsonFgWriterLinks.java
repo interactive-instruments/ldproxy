@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.jsonfg.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
@@ -34,6 +35,7 @@ public class JsonFgWriterLinks implements GeoJsonWriter {
   static final String OPEN_TEMPLATE = "{{";
   static final String CLOSE_TEMPLATE = "}}";
 
+  Map<String, List<Link>> collectionMap;
   boolean isEnabled;
   List<Link> links;
   List<Link> currentLinks;
@@ -56,19 +58,7 @@ public class JsonFgWriterLinks implements GeoJsonWriter {
   public void onStart(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
-    isEnabled = isEnabled(context.encoding());
-    if (isEnabled) {
-      links =
-          context
-              .encoding()
-              .getApiData()
-              .getCollections()
-              .get(context.encoding().getCollectionId())
-              .getExtension(JsonFgConfiguration.class)
-              .filter(JsonFgConfiguration::isEnabled)
-              .map(JsonFgConfiguration::getLinks)
-              .orElse(ImmutableList.of());
-    }
+    collectionMap = getCollectionMap(context.encoding());
 
     // next chain for extensions
     next.accept(context);
@@ -77,6 +67,9 @@ public class JsonFgWriterLinks implements GeoJsonWriter {
   @Override
   public void onFeatureStart(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) {
+    List<Link> links =
+        Objects.requireNonNullElse(collectionMap.get(context.type()), ImmutableList.of());
+    isEnabled = !links.isEmpty();
     if (isEnabled) {
       currentLinks =
           links.stream()
@@ -148,21 +141,34 @@ public class JsonFgWriterLinks implements GeoJsonWriter {
         || Objects.requireNonNullElse(link.getRel(), "").contains(OPEN_TEMPLATE);
   }
 
-  private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {
-    return transformationContext
-        .getApiData()
-        .getCollections()
-        .get(transformationContext.getCollectionId())
-        .getExtension(JsonFgConfiguration.class)
-        .filter(JsonFgConfiguration::isEnabled)
-        .filter(cfg -> !Objects.requireNonNullElse(cfg.getLinks(), ImmutableList.of()).isEmpty())
-        .filter(
-            cfg ->
-                cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.links)
-                    || transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE)
-                    || transformationContext
-                        .getMediaType()
-                        .equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE))
-        .isPresent();
+  private Map<String, List<Link>> getCollectionMap(
+      FeatureTransformationContextGeoJson transformationContext) {
+    ImmutableMap.Builder<String, List<Link>> builder = ImmutableMap.builder();
+    transformationContext
+        .getFeatureSchemas()
+        .keySet()
+        .forEach(
+            collectionId ->
+                transformationContext
+                    .getApiData()
+                    .getExtension(JsonFgConfiguration.class, collectionId)
+                    .ifPresentOrElse(
+                        cfg -> {
+                          boolean enabled =
+                              cfg.isEnabled()
+                                  && !Objects.requireNonNullElse(cfg.getLinks(), ImmutableList.of())
+                                      .isEmpty()
+                                  && (cfg.getIncludeInGeoJson()
+                                          .contains(JsonFgConfiguration.OPTION.links)
+                                      || transformationContext
+                                          .getMediaType()
+                                          .equals(FeaturesFormatJsonFg.MEDIA_TYPE)
+                                      || transformationContext
+                                          .getMediaType()
+                                          .equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE));
+                          builder.put(collectionId, enabled ? cfg.getLinks() : ImmutableList.of());
+                        },
+                        () -> builder.put(collectionId, ImmutableList.of())));
+    return builder.build();
   }
 }

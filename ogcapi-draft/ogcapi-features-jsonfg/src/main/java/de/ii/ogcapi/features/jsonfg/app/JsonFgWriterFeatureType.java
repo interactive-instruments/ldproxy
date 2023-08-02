@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.jsonfg.app;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
@@ -17,6 +18,7 @@ import de.ii.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -30,9 +32,9 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
   static final String OPEN_TEMPLATE = "{{";
   public static String JSON_KEY = "featureType";
 
+  Map<String, List<String>> collectionMap;
   boolean isEnabled;
-  List<String> types;
-  boolean templated;
+  boolean homogeneuous;
   List<String> writeAtEnd;
 
   @Inject
@@ -52,22 +54,17 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
   public void onStart(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
-    isEnabled = isEnabled(context.encoding());
-
-    types =
-        isEnabled
-            ? context
-                .encoding()
-                .getApiData()
-                .getExtension(JsonFgConfiguration.class, context.encoding().getCollectionId())
-                .map(JsonFgConfiguration::getFeatureType)
-                .orElse(ImmutableList.of())
-            : ImmutableList.of();
-    templated = types.stream().anyMatch(type -> type.contains(OPEN_TEMPLATE));
+    collectionMap = getCollectionMap(context.encoding());
+    isEnabled = collectionMap.values().stream().anyMatch(types -> !types.isEmpty());
+    homogeneuous =
+        collectionMap.values().stream()
+                .noneMatch(types -> types.stream().anyMatch(type -> type.contains(OPEN_TEMPLATE)))
+            && context.encoding().isFeatureCollection()
+            && collectionMap.size() == 1;
     writeAtEnd = ImmutableList.of();
 
-    if (isEnabled && !templated && context.encoding().isFeatureCollection()) {
-      writeTypes(context.encoding(), types);
+    if (isEnabled && homogeneuous) {
+      writeTypes(context.encoding(), collectionMap.values().iterator().next());
     }
 
     // next chain for extensions
@@ -78,10 +75,14 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
   public void onFeatureStart(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
-    if (isEnabled) {
-      if (templated) writeAtEnd = types;
-      else if (!context.encoding().isFeatureCollection()) {
-        writeTypes(context.encoding(), types);
+    if (isEnabled && !homogeneuous) {
+      List<String> types = collectionMap.get(context.type());
+      if (Objects.nonNull(types) && !types.isEmpty()) {
+        if (types.stream().anyMatch(type -> type.contains(OPEN_TEMPLATE))) {
+          writeAtEnd = types;
+        } else {
+          writeTypes(context.encoding(), types);
+        }
       }
     }
 
@@ -121,22 +122,36 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
     next.accept(context);
   }
 
-  private boolean isEnabled(FeatureTransformationContextGeoJson transformationContext) {
-    return transformationContext
-        .getApiData()
-        .getCollections()
-        .get(transformationContext.getCollectionId())
-        .getExtension(JsonFgConfiguration.class)
-        .filter(JsonFgConfiguration::isEnabled)
-        .filter(cfg -> Objects.nonNull(cfg.getFeatureType()) && !cfg.getFeatureType().isEmpty())
-        .filter(
-            cfg ->
-                cfg.getIncludeInGeoJson().contains(JsonFgConfiguration.OPTION.featureType)
-                    || transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE)
-                    || transformationContext
-                        .getMediaType()
-                        .equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE))
-        .isPresent();
+  private Map<String, List<String>> getCollectionMap(
+      FeatureTransformationContextGeoJson transformationContext) {
+    ImmutableMap.Builder<String, List<String>> builder = ImmutableMap.builder();
+    transformationContext
+        .getFeatureSchemas()
+        .keySet()
+        .forEach(
+            collectionId ->
+                transformationContext
+                    .getApiData()
+                    .getExtension(JsonFgConfiguration.class, collectionId)
+                    .ifPresentOrElse(
+                        cfg -> {
+                          boolean enabled =
+                              cfg.isEnabled()
+                                  && Objects.nonNull(cfg.getFeatureType())
+                                  && !cfg.getFeatureType().isEmpty()
+                                  && (cfg.getIncludeInGeoJson()
+                                          .contains(JsonFgConfiguration.OPTION.featureType)
+                                      || transformationContext
+                                          .getMediaType()
+                                          .equals(FeaturesFormatJsonFg.MEDIA_TYPE)
+                                      || transformationContext
+                                          .getMediaType()
+                                          .equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE));
+                          builder.put(
+                              collectionId, enabled ? cfg.getFeatureType() : ImmutableList.of());
+                        },
+                        () -> builder.put(collectionId, ImmutableList.of())));
+    return builder.build();
   }
 
   private void writeTypes(

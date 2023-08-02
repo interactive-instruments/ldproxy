@@ -100,13 +100,13 @@ public interface FeatureFormatExtension extends FormatExtension {
   default Optional<PropertyTransformations> getPropertyTransformations(
       FeatureTypeConfigurationOgcApi collectionData,
       Optional<FeatureSchema> schema,
-      Profile profile) {
-    if (schema.isEmpty()) {
+      Optional<Profile> profile) {
+    if (profile.isEmpty() || schema.isEmpty()) {
       return getPropertyTransformations(collectionData);
     }
 
     ImmutableProfileTransformations.Builder builder = new ImmutableProfileTransformations.Builder();
-    switch (profile) {
+    switch (profile.get()) {
       default:
       case AS_KEY:
         // nothing to transform
@@ -134,7 +134,6 @@ public interface FeatureFormatExtension extends FormatExtension {
                                                         .stringFormat(template)
                                                         .build())))));
     }
-
     ProfileTransformations profileTransformations = builder.build();
     return Optional.of(
         getPropertyTransformations(collectionData)
@@ -152,6 +151,11 @@ public interface FeatureFormatExtension extends FormatExtension {
                     .map(
                         refType ->
                             String.format("{{apiUri}}/collections/%s/items/{{value}}", refType))
+                    .or(
+                        () ->
+                            property.getConcat().isEmpty() && property.getCoalesce().isEmpty()
+                                ? Optional.empty()
+                                : Optional.of("{{apiUri}}/collections/{{type}}/items/{{value}}"))
                     .orElse(null)));
   }
 

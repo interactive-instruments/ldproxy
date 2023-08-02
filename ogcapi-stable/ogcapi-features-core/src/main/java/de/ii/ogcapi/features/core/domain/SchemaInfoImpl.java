@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
@@ -186,7 +187,7 @@ public class SchemaInfoImpl implements SchemaInfo {
         providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId));
     if (schema.isEmpty()) return ImmutableList.of();
 
-    return schema.get().getProperties().stream()
+    return schema.get().accept(new WithTransformationsApplied()).getProperties().stream()
         .filter(featureProperty -> !featureProperty.isSpatial() || withSpatial)
         .map(featureProperty -> getPropertyNames(featureProperty, "", withArrayBrackets, false))
         .flatMap(List::stream)

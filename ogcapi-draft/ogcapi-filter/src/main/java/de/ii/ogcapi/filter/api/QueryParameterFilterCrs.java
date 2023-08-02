@@ -30,6 +30,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -109,7 +110,7 @@ public class QueryParameterFilterCrs extends ApiExtensionCache
       Optional<FeatureTypeConfigurationOgcApi> collectionData) {
     EpsgCrs filterCrs;
     try {
-      filterCrs = EpsgCrs.fromString(value);
+      filterCrs = Objects.nonNull(value) ? EpsgCrs.fromString(value) : OgcCrs.CRS84;
     } catch (Throwable e) {
       throw new IllegalArgumentException(
           String.format("The parameter '%s' is invalid: %s", getName(), e.getMessage()), e);
