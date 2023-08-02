@@ -115,7 +115,7 @@ public abstract class EndpointSubCollection extends Endpoint {
   }
 
   @Override
-  protected Optional<String> getOperationId(String name, String... prefixes) {
+  protected String getOperationId(String name, String... prefixes) {
     // prefixes is never empty and the first prefix is the collectionId or the collectionId template
     if ("{collectionId}".equals(prefixes[0])) {
       prefixes[0] = "collection";

@@ -7,10 +7,12 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
+import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.xtraplatform.base.domain.util.Tuple;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
@@ -20,6 +22,10 @@ import org.immutables.value.Value;
 
 public interface FeaturesCoreQueriesHandler
     extends QueriesHandler<FeaturesCoreQueriesHandler.Query> {
+
+  String SCOPE_DATA = "data";
+  Tuple<Scope, String> SCOPE_DATA_READ = Tuple.of(Scope.READ, SCOPE_DATA);
+  Tuple<Scope, String> SCOPE_DATA_WRITE = Tuple.of(Scope.WRITE, SCOPE_DATA);
 
   @Override
   Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();

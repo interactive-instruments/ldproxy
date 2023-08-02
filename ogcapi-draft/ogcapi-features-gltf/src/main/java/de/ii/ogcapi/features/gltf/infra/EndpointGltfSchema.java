@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.gltf.infra;
 
+import static de.ii.ogcapi.tiles.domain.TilesQueriesHandler.SCOPE_TILES_READ;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
@@ -135,6 +137,7 @@ public class EndpointGltfSchema extends EndpointSubCollection {
                 operationDescription,
                 Optional.empty(),
                 getOperationId("getGltfSchema", collectionId),
+                SCOPE_TILES_READ,
                 TAGS)
             .ifPresent(
                 operation ->

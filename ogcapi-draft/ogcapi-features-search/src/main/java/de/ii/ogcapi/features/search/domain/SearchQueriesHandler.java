@@ -7,10 +7,12 @@
  */
 package de.ii.ogcapi.features.search.domain;
 
+import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.xtraplatform.base.domain.util.Tuple;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import java.util.Map;
@@ -18,6 +20,10 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 public interface SearchQueriesHandler extends QueriesHandler<SearchQueriesHandler.Query> {
+
+  String SCOPE_QUERIES = "queries";
+  Tuple<Scope, String> SCOPE_QUERIES_READ = Tuple.of(Scope.READ, SCOPE_QUERIES);
+  Tuple<Scope, String> SCOPE_QUERIES_WRITE = Tuple.of(Scope.WRITE, SCOPE_QUERIES);
 
   @Override
   Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();

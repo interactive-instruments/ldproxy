@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.common.infra;
 
+import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.SCOPE_EXPLORE_READ;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.common.app.ImmutableQueryInputConformance;
@@ -109,6 +111,7 @@ public class EndpointConformance extends Endpoint {
             operationDescription,
             Optional.empty(),
             getOperationId("getConformanceDeclaration"),
+            SCOPE_EXPLORE_READ,
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder.build());

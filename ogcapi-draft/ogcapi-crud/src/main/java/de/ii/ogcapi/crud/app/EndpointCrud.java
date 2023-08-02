@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.crud.app;
 
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.SCOPE_DATA_WRITE;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -188,6 +190,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationDescription,
                 Optional.empty(),
                 getOperationId("createItem", collectionId),
+                SCOPE_DATA_WRITE,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.POST.name(), operation));
@@ -235,6 +238,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationDescription,
                 Optional.empty(),
                 getOperationId("replaceItem", collectionId),
+                SCOPE_DATA_WRITE,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
@@ -257,6 +261,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationDescription,
                 Optional.empty(),
                 getOperationId("updateItem", collectionId),
+                SCOPE_DATA_WRITE,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PATCH.name(), operation));
@@ -276,6 +281,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationDescription,
                 Optional.empty(),
                 getOperationId("deleteItem", collectionId),
+                SCOPE_DATA_WRITE,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));

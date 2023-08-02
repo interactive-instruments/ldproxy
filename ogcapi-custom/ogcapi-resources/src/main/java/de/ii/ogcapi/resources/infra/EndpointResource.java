@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.resources.infra;
 
+import static de.ii.ogcapi.styles.domain.QueriesHandlerStyles.SCOPE_STYLES_READ;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
@@ -125,6 +127,7 @@ public class EndpointResource extends Endpoint {
               operationDescription,
               Optional.empty(),
               getOperationId("getResource"),
+              SCOPE_STYLES_READ,
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
       definitionBuilder.putResources(path, resourceBuilder.build());

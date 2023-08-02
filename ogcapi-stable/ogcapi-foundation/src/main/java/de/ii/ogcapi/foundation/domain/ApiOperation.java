@@ -10,6 +10,8 @@ package de.ii.ogcapi.foundation.domain;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
+import de.ii.xtraplatform.base.domain.util.Tuple;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -63,7 +65,9 @@ public interface ApiOperation {
 
   Set<String> getTags();
 
-  Optional<String> getOperationId();
+  String getOperationId();
+
+  Tuple<Scope, String> getScope();
 
   List<OgcApiQueryParameter> getQueryParameters();
 
@@ -94,7 +98,8 @@ public interface ApiOperation {
       String operationSummary,
       Optional<String> operationDescription,
       Optional<ExternalDocumentation> externalDocs,
-      Optional<String> operationId,
+      String operationId,
+      Tuple<Scope, String> scope,
       List<String> tags) {
     if (responseContent.isEmpty()) {
       if (LOGGER.isErrorEnabled()) {
@@ -156,6 +161,7 @@ public interface ApiOperation {
             .description(operationDescription)
             .externalDocs(externalDocs)
             .operationId(operationId)
+            .scope(scope)
             .tags(tags)
             .queryParameters(postUrlEncoded ? ImmutableList.of() : queryParameters)
             .headers(
@@ -186,7 +192,8 @@ public interface ApiOperation {
       String operationSummary,
       Optional<String> operationDescription,
       Optional<ExternalDocumentation> externalDocs,
-      Optional<String> operationId,
+      String operationId,
+      Tuple<Scope, String> scope,
       List<String> tags) {
     if ((method == HttpMethods.POST || method == HttpMethods.PUT || method == HttpMethods.PATCH)
         && requestContent.isEmpty()) {
@@ -205,6 +212,7 @@ public interface ApiOperation {
             .description(operationDescription)
             .externalDocs(externalDocs)
             .operationId(operationId)
+            .scope(scope)
             .tags(tags)
             .queryParameters(queryParameters)
             .headers(
@@ -242,7 +250,8 @@ public interface ApiOperation {
       String operationSummary,
       Optional<String> operationDescription,
       Optional<ExternalDocumentation> externalDocs,
-      Optional<String> operationId,
+      String operationId,
+      Tuple<Scope, String> scope,
       List<String> tags) {
     ImmutableApiResponse.Builder responseBuilder =
         new ImmutableApiResponse.Builder()
@@ -261,6 +270,7 @@ public interface ApiOperation {
             .description(operationDescription)
             .externalDocs(externalDocs)
             .operationId(operationId)
+            .scope(scope)
             .tags(tags)
             .queryParameters(queryParameters)
             .headers(
@@ -297,7 +307,7 @@ public interface ApiOperation {
               op.externalDocs(docs);
             });
     getTags().forEach(op::addTagsItem);
-    getOperationId().ifPresent(op::operationId);
+    op.operationId(getOperationId());
 
     resource
         .getPathParameters()

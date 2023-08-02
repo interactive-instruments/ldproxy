@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.tiles.api;
 
+import static de.ii.ogcapi.tiles.domain.TilesQueriesHandler.SCOPE_TILES_READ;
+
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
@@ -84,7 +86,7 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
       int sortPriority,
       String basePath,
       String subSubPath,
-      Optional<String> operationIdWithPlaceholders,
+      String operationIdWithPlaceholders,
       List<String> tags) {
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
@@ -120,7 +122,7 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
                 .pathParameters(pathParameters)
                 .subResourceType("Tile Set");
         Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
-        Optional<String> operationId =
+        String operationId =
             EndpointTileMixin.getOperationId(
                 operationIdWithPlaceholders, collectionId, apiData, tilesProviders);
         ApiOperation.getResource(
@@ -134,6 +136,7 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
                 operationDescription,
                 Optional.empty(),
                 operationId,
+                SCOPE_TILES_READ,
                 tags)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));

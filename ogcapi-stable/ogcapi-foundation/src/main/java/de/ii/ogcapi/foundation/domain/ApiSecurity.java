@@ -9,9 +9,12 @@ package de.ii.ogcapi.foundation.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import java.util.List;
+import com.google.common.collect.Sets;
+import de.ii.xtraplatform.base.domain.util.Tuple;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -21,7 +24,7 @@ import org.immutables.value.Value;
  *     <p><code>
  * - `write`: every operation with HTTP method `POST`, `PUT`, `PATCH` or `DELETE`
  * - `read`: any other operation
- *     </code>
+ * </code>
  *     <p>To support authenticated users, a bearer token has to be included in the `Authorization`
  *     header in requests to the API. Validation and evaluation of these tokens has to be configured
  *     in the [global configuration](../application/70-reference.md).
@@ -30,7 +33,7 @@ import org.immutables.value.Value;
  *     <p><code>
  * - `write`: alle Operationen mit HTTP-Methode `POST`, `PUT`, `PATCH` oder `DELETE`
  * - `read`: alle anderen Operationen
- *     </code>
+ * </code>
  *     <p>Um authentifizierte Benutzer zu unterstützen, muss ein Bearer-Token im
  *     `Authorization`-Header in Anfragen an die API inkludiert werden. Die Validierung und
  *     Auswertung dieser Tokens muss in der [globalen Konfiguration](../application/70-reference.md)
@@ -49,8 +52,19 @@ public interface ApiSecurity {
     FORMAT
   }
 
-  String SCOPE_READ = "read";
-  String SCOPE_WRITE = "write";
+  enum Scope {
+    READ,
+    WRITE;
+
+    @Override
+    public String toString() {
+      return name().toLowerCase();
+    }
+  }
+
+  String SCOPE_PUBLIC = "public";
+  Tuple<Scope, String> SCOPE_PUBLIC_READ = Tuple.of(Scope.READ, SCOPE_PUBLIC);
+  String ROLE_PUBLIC = "public";
 
   /**
    * @langEn Option to disable access control.
@@ -70,7 +84,9 @@ public interface ApiSecurity {
    * @default [read]
    * @since v3.3
    */
-  List<String> getPublicScopes();
+  Set<String> getPublicScopes();
+
+  Map<String, Set<String>> getRoles();
 
   @JsonIgnore
   @Value.Derived
@@ -78,7 +94,15 @@ public interface ApiSecurity {
     return !Objects.equals(getEnabled(), false);
   }
 
-  default boolean isSecured(String scope) {
-    return isEnabled() && !getPublicScopes().contains(scope);
+  default boolean isSecured(Set<String> permissions) {
+    return isEnabled()
+        && Sets.intersection(getRoles().getOrDefault("public", Set.of()), permissions).isEmpty();
+  }
+
+  default Set<String> getRolesWith(Set<String> permissions) {
+    return getRoles().entrySet().stream()
+        .filter(role -> !Sets.intersection(role.getValue(), permissions).isEmpty())
+        .map(Map.Entry::getKey)
+        .collect(Collectors.toSet());
   }
 }
