@@ -23,7 +23,7 @@
     "d3-scale": "3.2.3",
     "date-fns": "2.16.1",
     "jquery": "^3",
-    "maplibre-gl": "^2.1.1",
+    "maplibre-gl": "3.2.1",
     "moment": "^2.29.1",
     "ol": "^6.9.0",
     "popper.js": "^1.16.1",
@@ -66,7 +66,7 @@
     "webpack-dev-server": "^3"
   },
   "resolutions": {
-    "react-maplibre-ui/maplibre-gl": "1.15.2",
+    "react-maplibre-ui/maplibre-gl": "3.2.1",
     "react-maplibre-ui": "patch:react-maplibre-ui@npm:2.0.0#.yarn/patches/react-maplibre-ui-npm-2.0.0-641e2a759e"
   },
   "packageManager": "yarn@3.1.1"
