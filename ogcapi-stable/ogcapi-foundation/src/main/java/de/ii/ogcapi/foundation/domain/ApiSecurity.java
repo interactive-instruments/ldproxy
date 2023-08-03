@@ -9,12 +9,16 @@ package de.ii.ogcapi.foundation.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import de.ii.xtraplatform.base.domain.util.Tuple;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -43,18 +47,45 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableApiSecurity.Builder.class)
 public interface ApiSecurity {
 
-  enum ScopeElements {
-    READ_WRITE,
-    TAG,
-    MODULE,
-    OPERATION,
-    METHOD,
-    FORMAT
-  }
-
   enum Scope {
     READ,
     WRITE;
+
+    public String with(String group) {
+      return join(group, toString());
+    }
+
+    public String with(String group, String operation) {
+      return join(group, operation);
+    }
+
+    public Set<String> setOf(String group, String operation) {
+      return ImmutableSet.of(this.toString(), group, with(group), with(group, operation));
+    }
+
+    public Set<String> setOf(String group, String operation, String api) {
+      return setOf(group, operation).stream()
+          .flatMap(permission -> Stream.of(permission, join(permission, api, true)))
+          .collect(ImmutableSet.toImmutableSet());
+    }
+
+    public Set<String> setOf(String group, String operation, String api, String collection) {
+      return setOf(group, operation, api).stream()
+          .flatMap(
+              permission ->
+                  permission.endsWith(join("", api, true))
+                      ? Stream.of(permission, join(permission, collection))
+                      : Stream.of(permission))
+          .collect(ImmutableSet.toImmutableSet());
+    }
+
+    private static String join(String first, String second) {
+      return join(first, second, false);
+    }
+
+    private static String join(String first, String second, boolean separator) {
+      return first + (separator ? "::" : ":") + second;
+    }
 
     @Override
     public String toString() {
@@ -62,8 +93,8 @@ public interface ApiSecurity {
     }
   }
 
-  String SCOPE_PUBLIC = "public";
-  Tuple<Scope, String> SCOPE_PUBLIC_READ = Tuple.of(Scope.READ, SCOPE_PUBLIC);
+  String SCOPE_DISCOVER = "discover";
+  Tuple<Scope, String> SCOPE_DISCOVER_READ = Tuple.of(Scope.READ, SCOPE_DISCOVER);
   String ROLE_PUBLIC = "public";
 
   /**
@@ -75,17 +106,27 @@ public interface ApiSecurity {
   @Nullable
   Boolean getEnabled();
 
-  @JsonIgnore
-  Set<ScopeElements> getScopeElements();
-
   /**
-   * @langEn List of permissions that every user possesses, if authenticated or not.
-   * @langDe Liste der Berechtigungen, die jeder Benutzer besitzt, ob angemeldet oder nicht.
+   * @langEn *Deprecated, see `roles'.* List of permissions that every user possesses, if
+   *     authenticated or not.
+   * @langDe *Deprecated, siehe `roles'.* Liste der Berechtigungen, die jeder Benutzer besitzt, ob
+   *     angemeldet oder nicht.
    * @default [read]
    * @since v3.3
    */
+  @Deprecated(since = "3.5")
   Set<String> getPublicScopes();
 
+  /**
+   * @langEn Definition of roles, the key is the role name, the value a list of permissions. The
+   *     role `public` defines the list of permissions that every user possesses, if authenticated
+   *     or not.
+   * @langDe Definition von Rollen, der Key ist der Name der Rolle, der Werte eine Liste von
+   *     Berechtigungen. Die Rolle `public` definiert die Liste der Berechtigungen, die jeder
+   *     Benutzer besitzt, ob angemeldet oder nicht.
+   * @default {public: [read]}
+   * @since v3.5
+   */
   Map<String, Set<String>> getRoles();
 
   @JsonIgnore
@@ -94,7 +135,24 @@ public interface ApiSecurity {
     return !Objects.equals(getEnabled(), false);
   }
 
-  default boolean isSecured(Set<String> permissions) {
+  @Value.Check
+  default ApiSecurity backwardsCompatibility() {
+    if (!getPublicScopes().isEmpty()) {
+      Map<String, Set<String>> roles = new LinkedHashMap<>(getRoles());
+      Set<String> rolesPublic = new LinkedHashSet<>(getRoles().getOrDefault(ROLE_PUBLIC, Set.of()));
+      rolesPublic.addAll(getPublicScopes());
+      roles.put(ROLE_PUBLIC, rolesPublic);
+
+      return new ImmutableApiSecurity.Builder()
+          .from(this)
+          .roles(roles)
+          .publicScopes(Set.of())
+          .build();
+    }
+    return this;
+  }
+
+  default boolean isRestricted(Set<String> permissions) {
     return isEnabled()
         && Sets.intersection(getRoles().getOrDefault("public", Set.of()), permissions).isEmpty();
   }

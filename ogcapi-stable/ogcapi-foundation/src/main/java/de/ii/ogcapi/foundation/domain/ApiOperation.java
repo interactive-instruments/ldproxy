@@ -87,6 +87,14 @@ public interface ApiOperation {
     return false;
   }
 
+  @Value.Derived
+  @Value.Auxiliary
+  default String getOperationIdWithoutPrefix() {
+    return getOperationId().contains(".")
+        ? getOperationId().substring(getOperationId().lastIndexOf('.') + 1)
+        : getOperationId();
+  }
+
   // Construct a standard fetch operation (GET, or URL-encoded POST)
   static Optional<ApiOperation> getResource(
       OgcApiDataV2 apiData,
