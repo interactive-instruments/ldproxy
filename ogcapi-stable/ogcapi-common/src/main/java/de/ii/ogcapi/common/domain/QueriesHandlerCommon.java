@@ -14,6 +14,6 @@ import de.ii.xtraplatform.base.domain.util.Tuple;
 
 public interface QueriesHandlerCommon extends QueriesHandler<QueriesHandlerCommonImpl.Query> {
 
-  String SCOPE_EXPLORE = "explore";
-  Tuple<Scope, String> SCOPE_EXPLORE_READ = Tuple.of(Scope.READ, SCOPE_EXPLORE);
+  String SCOPE_METADATA = "metadata";
+  Tuple<Scope, String> SCOPE_METADATA_READ = Tuple.of(Scope.READ, SCOPE_METADATA);
 }

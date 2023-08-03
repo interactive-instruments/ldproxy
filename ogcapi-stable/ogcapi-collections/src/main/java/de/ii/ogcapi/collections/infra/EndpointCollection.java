@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.collections.infra;
 
-import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.SCOPE_EXPLORE_READ;
+import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.SCOPE_METADATA_READ;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -262,7 +262,7 @@ public class EndpointCollection extends EndpointSubCollection {
                 operationDescription,
                 Optional.empty(),
                 getOperationId("getCollection", collectionId),
-                SCOPE_EXPLORE_READ,
+                SCOPE_METADATA_READ,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
