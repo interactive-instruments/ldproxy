@@ -347,7 +347,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
               requestContext.getMediaType().type()));
     }
 
-    Date lastModified = null;
+    Date lastModified = getLastModified(queryInput);
     EntityTag etag = null;
     byte[] bytes = null;
     StreamingOutput streamingOutput = null;
@@ -355,7 +355,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     if (sendResponseAsStream) {
       streamingOutput =
           stream(featureStream, Objects.nonNull(featureId), encoder, propertyTransformations);
-      lastModified = getLastModified(queryInput);
 
     } else {
       ResultReduced<byte[]> result =
@@ -366,6 +365,11 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       if (result.getETag().isPresent()) {
         etag = result.getETag().get();
         LOGGER.debug("ETAG {}", etag);
+      }
+
+      if (result.getLastModified().isPresent()) {
+        lastModified = Date.from(result.getLastModified().get());
+        LOGGER.debug("LastModified {}", lastModified);
       }
     }
 

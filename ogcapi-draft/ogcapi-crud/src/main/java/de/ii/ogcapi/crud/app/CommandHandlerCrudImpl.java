@@ -40,8 +40,8 @@ import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -127,12 +127,13 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
     EpsgCrs crs = queryInput.getQuery().getCrs().orElseGet(queryInput::getDefaultCrs);
 
-    Response feature = getFeatureWithETag(queryInput, requestContext, crs);
+    Response feature = getFeatureAndEvaluatePreconditions(queryInput, requestContext, crs);
     EntityTag eTag = feature.getEntityTag();
+    Date lastModified = feature.getLastModified();
     JsonNode content = GeoJsonHelper.parseFeatureResponse(feature);
 
     Response.ResponseBuilder response =
-        queriesHandler.evaluatePreconditions(requestContext, null, eTag);
+        queriesHandler.evaluatePreconditions(requestContext, lastModified, eTag);
     if (Objects.nonNull(response)) return response.build();
 
     FeatureTokenSource featureTokenSource =
@@ -171,18 +172,18 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
     EpsgCrs crs = queryInput.getQuery().getCrs().orElseGet(queryInput::getDefaultCrs);
 
-    Response feature = getFeatureWithETag(queryInput, requestContext, crs);
+    Response feature = getFeatureAndEvaluatePreconditions(queryInput, requestContext, crs);
     EntityTag eTag = feature.getEntityTag();
+    Date lastModified = feature.getLastModified();
     JsonNode content = GeoJsonHelper.parseFeatureResponse(feature);
 
     Response.ResponseBuilder response =
-        queriesHandler.evaluatePreconditions(requestContext, null, eTag);
+        queriesHandler.evaluatePreconditions(requestContext, lastModified, eTag);
     if (Objects.nonNull(response)) return response.build();
 
     byte[] prev = (byte[]) feature.getEntity();
     InputStream merged =
         new SequenceInputStream(new ByteArrayInputStream(prev), queryInput.getRequestBody());
-    LOGGER.debug("PREV {}", new String(prev, StandardCharsets.UTF_8));
 
     FeatureTokenSource mergedSource =
         GeoJsonHelper.getFeatureSource(
@@ -216,12 +217,14 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
   public Response deleteItemResponse(
       QueryInputFeature queryInput, ApiRequestContext requestContext) {
 
-    Response feature = getFeatureWithETag(queryInput, requestContext, OgcCrs.CRS84);
+    Response feature = getFeatureAndEvaluatePreconditions(queryInput, requestContext, OgcCrs.CRS84);
+
     EntityTag eTag = feature.getEntityTag();
+    Date lastModified = feature.getLastModified();
     JsonNode content = GeoJsonHelper.parseFeatureResponse(feature);
 
     Response.ResponseBuilder response =
-        queriesHandler.evaluatePreconditions(requestContext, null, eTag);
+        queriesHandler.evaluatePreconditions(requestContext, lastModified, eTag);
     if (Objects.nonNull(response)) {
       return response.build();
     }
@@ -247,7 +250,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     return Response.noContent().build();
   }
 
-  private @NotNull Response getFeatureWithETag(
+  private @NotNull Response getFeatureAndEvaluatePreconditions(
       QueryInputFeature queryInput, ApiRequestContext requestContext, EpsgCrs crs) {
     try {
       if (formats == null) {
@@ -257,6 +260,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
       ApiRequestContext requestContextGeoJson =
           new Builder()
               .from(requestContext)
+              .request(Optional.empty())
               .requestUri(
                   requestContext
                       .getUriCustomizer()
@@ -310,6 +314,9 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
             .oldInterval(oldInterval)
             .newInterval(newInterval)
             .build();
+    if (LOGGER.isTraceEnabled()) {
+      LOGGER.trace("Feature Change: {}", change);
+    }
     featureProvider.getChangeHandler().handle(change);
   }
 
