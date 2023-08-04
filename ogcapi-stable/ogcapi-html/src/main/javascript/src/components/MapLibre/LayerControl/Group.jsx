@@ -6,7 +6,7 @@ import Layer from "./Layer";
 import Header from "./Header";
 import Separator from "./Separator";
 
-const Group = ({ parent, style, level, isOpened, isSelected, onSelect, onOpen }) => {
+const Group = ({ parent, style, level, isControlable, isOpened, isSelected, onSelect, onOpen }) => {
   if (parent.type === "radio-group") {
     return (
       <Collapse isOpen={isOpened(parent.id)}>
@@ -19,6 +19,7 @@ const Group = ({ parent, style, level, isOpened, isSelected, onSelect, onOpen })
                   id={entry.id}
                   label={entry.label}
                   icons={[entry]}
+                  isControlable={isControlable}
                   isSelected={isSelected}
                   onSelect={onSelect}
                   style={style}
@@ -42,6 +43,7 @@ const Group = ({ parent, style, level, isOpened, isSelected, onSelect, onOpen })
         <Layer
           id={parent.id}
           icons={parent.entries}
+          isControlable={isControlable}
           isSelected={isSelected}
           onSelect={onSelect}
           style={style}
@@ -63,6 +65,7 @@ const Group = ({ parent, style, level, isOpened, isSelected, onSelect, onOpen })
                     id={entry.id}
                     label={entry.label}
                     icons={[entry]}
+                    isControlable={isControlable}
                     isSelected={isSelected}
                     onSelect={onSelect}
                     style={style}
@@ -81,6 +84,7 @@ const Group = ({ parent, style, level, isOpened, isSelected, onSelect, onOpen })
                   label={entry.label}
                   level={level + 1}
                   check={entry.type !== "radio-group"}
+                  isControlable={isControlable}
                   isOpened={isOpened}
                   isSelected={isSelected}
                   onOpen={onOpen}
@@ -91,6 +95,7 @@ const Group = ({ parent, style, level, isOpened, isSelected, onSelect, onOpen })
                 parent={entry}
                 style={style}
                 level={level + 1}
+                isControlable={isControlable}
                 isOpened={isOpened}
                 isSelected={isSelected}
                 onSelect={onSelect}
@@ -114,6 +119,7 @@ Group.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   style: PropTypes.object.isRequired,
   level: PropTypes.number,
+  isControlable: PropTypes.bool.isRequired,
   isOpened: PropTypes.func.isRequired,
   isSelected: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,

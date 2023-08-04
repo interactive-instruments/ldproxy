@@ -9,44 +9,71 @@ const HeaderPlain = ({ label, level = 0 }) => (
 );
 
 // eslint-disable-next-line react/prop-types
-export const HeaderCheck = ({ id, level, radioGroup, isSelected, onSelect, children }) => (
-  <FormGroup check style={{ marginLeft: `${level * 20}px` }}>
-    <Label check style={{ display: "flex", alignItems: "center" }}>
-      <Input
-        style={{
-          position: "relative",
-          marginRight: "5px",
-          marginTop: "0",
-        }}
-        type={radioGroup ? "radio" : "checkbox"}
-        name={radioGroup}
-        checked={isSelected(id, radioGroup)}
-        onChange={(e) => {
-          e.target.blur();
-          onSelect(id, radioGroup);
-        }}
-      />
+export const HeaderCheck = ({
+  id,
+  level,
+  radioGroup,
+  isControlable,
+  isSelected,
+  onSelect,
+  children,
+}) =>
+  isControlable ? (
+    <FormGroup check style={{ marginLeft: `${level * 20}px` }}>
+      <Label check style={{ display: "flex", alignItems: "center" }}>
+        <Input
+          style={{
+            position: "relative",
+            marginRight: "5px",
+            marginTop: "0",
+          }}
+          type={radioGroup ? "radio" : "checkbox"}
+          name={radioGroup}
+          checked={isSelected(id, radioGroup)}
+          onChange={(e) => {
+            e.target.blur();
+            onSelect(id, radioGroup);
+          }}
+        />
+
+        {children}
+      </Label>
+    </FormGroup>
+  ) : (
+    <div style={{ marginLeft: `${level * 20}px`, display: "flex", alignItems: "center" }}>
       {children}
-    </Label>
-  </FormGroup>
-);
+    </div>
+  );
 
 HeaderCheck.displayName = "HeaderCheck";
 
 HeaderCheck.propTypes = {
   id: PropTypes.string.isRequired,
   level: PropTypes.number,
+  isControlable: PropTypes.bool,
   radioGroup: PropTypes.string,
   isSelected: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
+  children: PropTypes.element.isRequired,
 };
 
 HeaderCheck.defaultProps = {
   level: 0,
+  isControlable: true,
   radioGroup: undefined,
 };
 
-const Header = ({ id, label, level, check, isOpened, onOpen, isSelected, onSelect }) => {
+const Header = ({
+  id,
+  label,
+  level,
+  check,
+  isControlable,
+  isOpened,
+  onOpen,
+  isSelected,
+  onSelect,
+}) => {
   return (
     <Row
       key={id}
@@ -56,7 +83,13 @@ const Header = ({ id, label, level, check, isOpened, onOpen, isSelected, onSelec
     >
       <Col xs="10" style={{ display: "flex", alignItems: "center" }}>
         {check ? (
-          <HeaderCheck id={id} level={level} isSelected={isSelected} onSelect={onSelect}>
+          <HeaderCheck
+            id={id}
+            level={level}
+            isControlable={isControlable}
+            isSelected={isSelected}
+            onSelect={onSelect}
+          >
             <HeaderPlain label={label || id} />
           </HeaderCheck>
         ) : (
@@ -77,6 +110,7 @@ Header.propTypes = {
   label: PropTypes.string,
   level: PropTypes.number,
   check: PropTypes.bool,
+  isControlable: PropTypes.bool,
   isOpened: PropTypes.func.isRequired,
   onOpen: PropTypes.func.isRequired,
   isSelected: PropTypes.func.isRequired,
@@ -87,6 +121,7 @@ Header.defaultProps = {
   label: undefined,
   level: 0,
   check: false,
+  isControlable: true,
 };
 
 export default Header;

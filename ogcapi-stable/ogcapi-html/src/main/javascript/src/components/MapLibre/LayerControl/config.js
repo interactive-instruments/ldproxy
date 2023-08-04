@@ -195,11 +195,13 @@ export const parse = (style, entriesCfg, preferStyle) => {
       ? style.metadata["ldproxy:layerControl"]
       : {};
 
-  const { entries = entriesCfg } = cfg;
+  const { opened, onlyLegend, entries = entriesCfg } = cfg;
   const layers = getLayers(style);
   const hydrated = hydrate(entries, layers);
 
   return {
+    opened,
+    onlyLegend,
     entries: hydrated,
     allIds: getIds(hydrated),
     layerIds: getIds(hydrated, ["layer"]),

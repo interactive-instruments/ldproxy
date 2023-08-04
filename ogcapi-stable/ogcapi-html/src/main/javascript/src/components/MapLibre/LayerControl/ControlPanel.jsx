@@ -11,6 +11,7 @@ const ControlPanel = ({
   style,
   maxHeight,
   isVisible,
+  isControlable,
   isOpened,
   isSelected,
   onSelect,
@@ -52,6 +53,7 @@ const ControlPanel = ({
                   id={entry.id}
                   label={entry.label}
                   icons={[entry]}
+                  isControlable={isControlable}
                   isSelected={isSelected}
                   onSelect={onSelect}
                   style={style}
@@ -66,6 +68,7 @@ const ControlPanel = ({
                   id={entry.id}
                   label={entry.label}
                   check={entry.type !== "radio-group"}
+                  isControlable={isControlable}
                   isOpened={isOpened}
                   isSelected={isSelected}
                   onOpen={onOpen}
@@ -75,6 +78,7 @@ const ControlPanel = ({
               <Group
                 parent={entry}
                 style={style}
+                isControlable={isControlable}
                 isOpened={isOpened}
                 isSelected={isSelected}
                 onSelect={onSelect}
@@ -96,6 +100,7 @@ ControlPanel.propTypes = {
   style: PropTypes.object.isRequired,
   maxHeight: PropTypes.number.isRequired,
   isVisible: PropTypes.bool.isRequired,
+  isControlable: PropTypes.bool.isRequired,
   isOpened: PropTypes.func.isRequired,
   isSelected: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,

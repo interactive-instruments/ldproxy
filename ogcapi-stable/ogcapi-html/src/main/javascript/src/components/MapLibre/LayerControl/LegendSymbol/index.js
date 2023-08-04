@@ -1,5 +1,6 @@
 import React from "react";
 import LegendSymbol from "./main";
+import Raster from "./Raster";
 
 const camelCase = (obj) =>
   Object.assign(
@@ -20,10 +21,6 @@ function CSSstring(string) {
 }
 
 function asReact(tree, outerStyle) {
-  if (!tree) {
-    return null;
-  }
-
   let newStyle = {};
   const { style, ...attributes } = tree.attributes;
 
@@ -45,5 +42,11 @@ function asReact(tree, outerStyle) {
 }
 
 export function LegendSymbolReact(props) {
-  return asReact(LegendSymbol(props), props.style);
+  const icon = LegendSymbol(props);
+
+  if (!icon) {
+    return Raster(props);
+  }
+
+  return asReact(icon, props.style);
 }

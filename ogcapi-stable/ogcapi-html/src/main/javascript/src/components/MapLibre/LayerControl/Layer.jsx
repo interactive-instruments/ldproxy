@@ -4,10 +4,27 @@ import { Col } from "reactstrap";
 import { LegendSymbolReact } from "./LegendSymbol";
 import { HeaderCheck } from "./Header";
 
-const Layer = ({ id, label, icons, style, level, radioGroup, isSelected, onSelect }) => {
+const Layer = ({
+  id,
+  label,
+  icons,
+  style,
+  level,
+  isControlable,
+  radioGroup,
+  isSelected,
+  onSelect,
+}) => {
   const hasFill = icons.some(
     (icon) =>
       style && style.layers && style.layers[icon.index] && style.layers[icon.index].type === "fill"
+  );
+  const hasRaster = icons.some(
+    (icon) =>
+      style &&
+      style.layers &&
+      style.layers[icon.index] &&
+      style.layers[icon.index].type === "raster"
   );
   const cleanIcons = hasFill
     ? icons.filter(
@@ -25,6 +42,7 @@ const Layer = ({ id, label, icons, style, level, radioGroup, isSelected, onSelec
         id={id}
         level={level}
         radioGroup={radioGroup}
+        isControlable={isControlable}
         isSelected={isSelected}
         onSelect={onSelect}
       >
@@ -34,7 +52,7 @@ const Layer = ({ id, label, icons, style, level, radioGroup, isSelected, onSelec
             width: "16px",
             height: "16px",
             marginRight: "5px",
-            border: "1px solid #ddd",
+            border: hasRaster ? null : "1px solid #ddd",
             boxSizing: "content-box",
           }}
         >
@@ -73,6 +91,7 @@ Layer.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   style: PropTypes.object.isRequired,
   level: PropTypes.number,
+  isControlable: PropTypes.number,
   radioGroup: PropTypes.string,
   isSelected: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
@@ -81,6 +100,7 @@ Layer.propTypes = {
 Layer.defaultProps = {
   label: undefined,
   level: 0,
+  isControlable: false,
   radioGroup: undefined,
 };
 

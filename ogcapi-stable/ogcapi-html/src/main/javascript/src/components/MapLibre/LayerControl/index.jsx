@@ -4,7 +4,7 @@ import PropTypes from "prop-types/prop-types";
 import { useMaplibreUIEffect } from "react-maplibre-ui";
 import Control from "./Control";
 
-const LayerControl = ({ onlyLegend, preferStyle, entries }) => {
+const LayerControl = ({ opened, onlyLegend, preferStyle, entries }) => {
   useMaplibreUIEffect(({ map }) => {
     const container = document.createElement("div");
 
@@ -14,6 +14,7 @@ const LayerControl = ({ onlyLegend, preferStyle, entries }) => {
           ReactDOM.render(
             <React.StrictMode>
               <Control
+                opened={opened}
                 onlyLegend={onlyLegend}
                 preferStyle={preferStyle}
                 entries={entries}
@@ -72,12 +73,14 @@ groupBase.entries = PropTypes.arrayOf(
 const Group = PropTypes.shape(groupBase);
 
 LayerControl.propTypes = {
+  opened: PropTypes.bool,
   onlyLegend: PropTypes.bool,
   preferStyle: PropTypes.bool,
   entries: PropTypes.arrayOf(PropTypes.oneOfType([Layer, MergeGroup, RadioGroup, Group])),
 };
 
 LayerControl.defaultProps = {
+  opened: false,
   onlyLegend: false,
   preferStyle: true,
   entries: [],

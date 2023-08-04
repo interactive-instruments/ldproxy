@@ -5,12 +5,13 @@ import ControlButton from "./ControlButton";
 import { parse, initialCfg } from "./config";
 
 // eslint-disable-next-line no-unused-vars
-const Control = ({ entries, maxHeight, map, onlyLegend, preferStyle }) => {
+const Control = ({ entries, maxHeight, map, opened, onlyLegend, preferStyle }) => {
+  const [isVisible, setIsVisible] = useState(opened);
+  const [isControlable, setIsControlable] = useState(!onlyLegend);
   const [cfg, setCfg] = useState(initialCfg);
-  const [isVisible, setIsVisible] = useState(false);
-  const [selectedRadioGroups, setSelectedRadioGroups] = useState({});
-  const [selected, setSelected] = useState([]);
-  const [open, setOpen] = useState([]);
+  const [selectedRadioGroups, setSelectedRadioGroups] = useState(initialCfg.radioIds);
+  const [selected, setSelected] = useState(initialCfg.allIds);
+  const [open, setOpen] = useState(initialCfg.groupIds);
 
   const onOpen = (id) => {
     if (open.includes(id)) {
@@ -71,6 +72,8 @@ const Control = ({ entries, maxHeight, map, onlyLegend, preferStyle }) => {
       const config = parse(map.getStyle(), entries, preferStyle);
 
       setCfg(config);
+      if (config.opened === true) setIsVisible(true);
+      if (config.onlyLegend === true) setIsControlable(false);
       setSelectedRadioGroups(config.radioIds);
       setSelected(config.allIds);
       setOpen(config.groupIds);
@@ -112,6 +115,7 @@ const Control = ({ entries, maxHeight, map, onlyLegend, preferStyle }) => {
           style={cfg.style}
           maxHeight={maxHeight}
           isVisible={isVisible}
+          isControlable={isControlable}
           isOpened={isOpened}
           isSelected={isSelected}
           onSelect={onSelect}
@@ -125,6 +129,7 @@ const Control = ({ entries, maxHeight, map, onlyLegend, preferStyle }) => {
 Control.displayName = "Control";
 
 Control.propTypes = {
+  opened: PropTypes.bool,
   onlyLegend: PropTypes.bool,
   preferStyle: PropTypes.bool,
   entries: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.object, PropTypes.string])),
@@ -134,6 +139,7 @@ Control.propTypes = {
 };
 
 Control.defaultProps = {
+  opened: false,
   onlyLegend: false,
   preferStyle: true,
   entries: [],
