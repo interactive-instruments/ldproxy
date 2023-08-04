@@ -189,6 +189,38 @@ const hydrate = (entries, layers) => {
     .filter((entry) => entry !== null);
 };
 
+const loadImage = (url) => {
+  let cancelled = false;
+  const promise = new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.onload = () => {
+      if (!cancelled) resolve(img);
+    };
+    img.onerror = (e) => {
+      if (!cancelled) reject(e);
+    };
+    img.src = url;
+  });
+  promise.cancel = () => {
+    cancelled = true;
+  };
+  return promise;
+};
+
+const loadJson = (url) => {
+  return fetch(url).then((res) => res.json());
+};
+
+const loadSprite = (url) => {
+  return Promise.allSettled([loadImage(`${url}@2x.png`), loadJson(`${url}@2x.json`)]).then(
+    ([image, json]) => ({
+      image,
+      json,
+    })
+  );
+};
+
 export const parse = (style, entriesCfg, preferStyle) => {
   const cfg =
     preferStyle && style.metadata && style.metadata["ldproxy:layerControl"]
@@ -199,7 +231,7 @@ export const parse = (style, entriesCfg, preferStyle) => {
   const layers = getLayers(style);
   const hydrated = hydrate(entries, layers);
 
-  return {
+  const config = {
     opened,
     onlyLegend,
     entries: hydrated,
@@ -213,6 +245,14 @@ export const parse = (style, entriesCfg, preferStyle) => {
     depsChild: getChildDeps(hydrated),
     style,
   };
+
+  if (style.sprite) {
+    return loadSprite(style.sprite).then((sprite) => {
+      style.spriteLoaded = { json: sprite.json.value, image: sprite.image.value };
+      return config;
+    });
+  }
+  return Promise.resolve(config);
 };
 
 export const initialCfg = {

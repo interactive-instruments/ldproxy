@@ -1,17 +1,29 @@
 function renderIconSymbol({ expr, layer, image }) {
   const imgKey = expr(layer, "layout", "icon-image");
+  const imgSize = expr(layer, "layout", "icon-size");
 
   if (!imgKey) {
     return null;
   }
-  const dataUrl = image(imgKey);
+  const {
+    url: dataUrl,
+    dimensions: { width, height },
+  } = image(imgKey);
+
+  // eslint-disable-next-line no-nested-ternary
+  const backgroundSize = imgSize
+    ? imgSize * width > 16 || imgSize * height > 16
+      ? "contain"
+      : `${imgSize * width}px ${imgSize * height}px`
+    : "contain";
+
   if (dataUrl) {
     return {
       element: "div",
       attributes: {
         style: {
           backgroundImage: `url(${dataUrl})`,
-          backgroundSize: "contain",
+          backgroundSize,
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           width: "100%",

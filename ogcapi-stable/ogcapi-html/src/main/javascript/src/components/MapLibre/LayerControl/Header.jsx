@@ -54,7 +54,8 @@ HeaderCheck.propTypes = {
   radioGroup: PropTypes.string,
   isSelected: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
-  children: PropTypes.element.isRequired,
+  children: PropTypes.oneOfType([PropTypes.arrayOf(PropTypes.element), PropTypes.element])
+    .isRequired,
 };
 
 HeaderCheck.defaultProps = {

@@ -69,14 +69,14 @@ const Control = ({ entries, maxHeight, map, opened, onlyLegend, preferStyle }) =
   // initialize state from configuration when style is loaded
   useEffect(() => {
     map.on("style.load", () => {
-      const config = parse(map.getStyle(), entries, preferStyle);
-
-      setCfg(config);
-      if (config.opened === true) setIsVisible(true);
-      if (config.onlyLegend === true) setIsControlable(false);
-      setSelectedRadioGroups(config.radioIds);
-      setSelected(config.allIds);
-      setOpen(config.groupIds);
+      parse(map.getStyle(), entries, preferStyle).then((config) => {
+        setCfg(config);
+        if (config.opened === true) setIsVisible(true);
+        if (config.onlyLegend === true) setIsControlable(false);
+        setSelectedRadioGroups(config.radioIds);
+        setSelected(config.allIds);
+        setOpen(config.groupIds);
+      });
     });
   }, [entries, map, preferStyle]);
 

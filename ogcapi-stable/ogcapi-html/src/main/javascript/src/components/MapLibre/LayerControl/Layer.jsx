@@ -35,7 +35,6 @@ const Layer = ({
           style.layers[icon.index].type !== "line"
       )
     : icons;
-
   return (
     <Col xs="12" style={{ display: "flex", alignItems: "center" }}>
       <HeaderCheck
@@ -67,8 +66,10 @@ const Layer = ({
                       position: "absolute",
                       top: 0,
                       left: 0,
+                      width: "16px",
+                      height: "16px",
                     }}
-                    sprite={style.sprite}
+                    sprite={style.spriteLoaded}
                     zoom={icon.zoom || style.zoom}
                     layer={style.layers[icon.index]}
                     properties={icon.properties}
@@ -91,7 +92,7 @@ Layer.propTypes = {
   // eslint-disable-next-line react/forbid-prop-types
   style: PropTypes.object.isRequired,
   level: PropTypes.number,
-  isControlable: PropTypes.number,
+  isControlable: PropTypes.bool,
   radioGroup: PropTypes.string,
   isSelected: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
