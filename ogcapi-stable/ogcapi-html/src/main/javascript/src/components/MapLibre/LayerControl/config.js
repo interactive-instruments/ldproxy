@@ -1,21 +1,12 @@
-export const getSubLayerIds = (allParentGroups) =>
-  allParentGroups
-    .map((group) => {
-      if (group.subLayers) {
-        return group.subLayers;
-      }
-      if (group.entries) {
-        return group.entries.filter(
-          (entry) => entry.type !== "group" && entry.type !== "source-layer"
-        );
-      }
-      return [];
-    })
-    .flatMap((layers) => {
-      return layers.flatMap((subLayer) =>
-        subLayer.layers ? [...new Set([subLayer.id].concat(subLayer.layers))] : [subLayer.id]
-      );
-    });
+/* eslint-disable no-param-reassign */
+export const getId = (entry) => (typeof entry === "string" ? entry : entry.id);
+
+export const getLabel = (entry) => (typeof entry === "string" ? entry : entry.label || entry.id);
+
+export const asLayer = (entry) =>
+  typeof entry === "string"
+    ? { id: entry, isLayer: true, type: "layer" }
+    : { ...entry, isLayer: true, type: "layer" };
 
 export const getRadioGroups = (groups, selected) => {
   const radioGroups = {};
@@ -31,6 +22,37 @@ export const getRadioGroups = (groups, selected) => {
     });
 
   return radioGroups;
+};
+
+const getRadioGroupLayers = (groups, selectedOnly) => {
+  const radioGroups = {};
+
+  groups
+    .filter((g) => g.type === "radio-group")
+    .forEach((g) => {
+      if (selectedOnly) {
+        radioGroups[g.id] = g.entries && g.entries.length > 0 ? getId(g.entries[0]) : null;
+      } else {
+        radioGroups[g.id] = g.entries ? g.entries.map((e) => getId(e)) : [];
+      }
+    });
+
+  return radioGroups;
+};
+
+export const getIds = (entries, types) => {
+  const ids = [];
+
+  entries.forEach((e) => {
+    if (!types || types.includes(e.type)) {
+      ids.push(e.id);
+    }
+    if (e.entries) {
+      getIds(e.entries, types).forEach((id) => ids.push(id));
+    }
+  });
+
+  return ids;
 };
 
 export const getDeps = (groups, parents = []) => {
@@ -88,4 +110,118 @@ export const getChildDeps = (groups, tmp) => {
   });
 
   return tmp ? deps : deps.clean;
+};
+
+const getLayers = (style) =>
+  style && style.layers
+    ? style.layers.reduce((layers, layer, index) => {
+        layers[layer.id] = {
+          id: layer.id,
+          isLayer: true,
+          type: "layer",
+          sourceLayer: layer["source-layer"],
+          index,
+        };
+        return layers;
+      }, {})
+    : {};
+
+const getLayersFor = (sourceLayer, layers) =>
+  Object.values(layers)
+    .filter((layer) => layer.sourceLayer === sourceLayer)
+    .toSorted((layer) => layer.index);
+
+const enrichLayer = (target, layers) =>
+  Object.hasOwn(layers, target.id) ? { ...target, ...layers[target.id] } : target;
+
+const mergeLayers = (from, into) => {
+  return from.map((layer) => {
+    const matching = into.find((layer2) => layer2.id === layer.id);
+    if (matching) {
+      return { ...matching, ...layer };
+    }
+    return layer;
+  });
+};
+
+const types = ["merge-group", "radio-group", "group", "layer", undefined];
+
+const validate = (entry) => {
+  if (typeof entry !== "string" && !Object.hasOwn(entry, "id")) {
+    // eslint-disable-next-line no-console
+    console.error("Invalid entry, only strings or objects with id allowed.", entry);
+    return false;
+  }
+  if (!types.includes(entry.type)) {
+    // eslint-disable-next-line no-console
+    console.error("Invalid entry, unknown type:", entry.type);
+    return false;
+  }
+  return true;
+};
+
+const hydrate = (entries, layers) => {
+  return entries
+    .map((entry) => {
+      if (!validate(entry)) {
+        return null;
+      }
+      if (entry.type === "merge-group" && entry.sourceLayer) {
+        const matching = getLayersFor(entry.sourceLayer, layers);
+        return {
+          ...entry,
+          entries: entry.entries ? mergeLayers(matching, hydrate(entry.entries, layers)) : matching,
+        };
+      }
+      if (entry.entries) {
+        return {
+          ...entry,
+          entries: hydrate(entry.entries, layers),
+        };
+      }
+
+      if (entry.layers || entry.subLayers) {
+        return entry;
+      }
+
+      return enrichLayer(asLayer(entry), layers);
+    })
+    .filter((entry) => entry !== null);
+};
+
+export const parse = (style, entriesCfg, preferStyle) => {
+  const cfg =
+    preferStyle && style.metadata && style.metadata["ldproxy:layerControl"]
+      ? style.metadata["ldproxy:layerControl"]
+      : {};
+
+  const { entries = entriesCfg } = cfg;
+  const layers = getLayers(style);
+  const hydrated = hydrate(entries, layers);
+
+  return {
+    entries: hydrated,
+    allIds: getIds(hydrated),
+    layerIds: getIds(hydrated, ["layer"]),
+    groupIds: getIds(hydrated, ["group", "radio-group"]),
+    radioIds: getRadioGroupLayers(hydrated, true),
+    radioGroups: getRadioGroupLayers(hydrated),
+    deps: getDeps(hydrated),
+    depsParent: getParentDeps(hydrated),
+    depsChild: getChildDeps(hydrated),
+    style,
+  };
+};
+
+export const initialCfg = {
+  entries: [],
+  allIds: [],
+  layerIds: [],
+  groupIds: [],
+  radioIds: {},
+  radioGroups: {},
+  deps: {},
+  depsParent: {},
+  depsChild: {},
+  style: null,
 };

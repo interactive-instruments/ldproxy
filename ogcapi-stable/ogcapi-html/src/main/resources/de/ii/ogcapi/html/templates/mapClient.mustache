@@ -73,10 +73,10 @@
     {{#layerGroupControl}}
         {
         id : '{{key}}',
-        type: 'source-layer',
-        'subLayers': [
+        type: 'merge-group',
+        'entries': [
         {{#value}}
-          {id: '{{.}}', layers: ['{{.}}']},
+          '{{.}}',
         {{/value}}
         ],
         },

@@ -2,18 +2,15 @@ import React, { useState, useEffect, useCallback } from "react";
 import PropTypes from "prop-types";
 import ControlPanel from "./ControlPanel";
 import ControlButton from "./ControlButton";
-import { getRadioGroups, getSubLayerIds, getDeps, getParentDeps, getChildDeps } from "./config";
+import { parse, initialCfg } from "./config";
 
-const Control = ({ layerGroups: layerGroupsDefault, mapHeight, map }) => {
-  const [parents, setParents] = useState([]);
-  const [radioGroups, setRadioGroups] = useState([]);
-  const [subLayerIds, setSubLayerIds] = useState([]);
-  const [layerControlVisible, setLayerControlVisible] = useState(false);
+// eslint-disable-next-line no-unused-vars
+const Control = ({ entries, maxHeight, map, onlyLegend, preferStyle }) => {
+  const [cfg, setCfg] = useState(initialCfg);
+  const [isVisible, setIsVisible] = useState(false);
   const [selectedRadioGroups, setSelectedRadioGroups] = useState({});
   const [selected, setSelected] = useState([]);
   const [open, setOpen] = useState([]);
-  const [style, setStyle] = useState();
-  const [deps, setDeps] = useState({});
 
   const onOpen = (id) => {
     if (open.includes(id)) {
@@ -35,20 +32,20 @@ const Control = ({ layerGroups: layerGroupsDefault, mapHeight, map }) => {
       return;
     }
     if (selected.includes(id)) {
-      setSelected(selected.filter((id2) => !deps.all[id].includes(id2)));
+      setSelected(selected.filter((id2) => !cfg.deps[id].includes(id2)));
     } else {
       const newSelected = [...selected, id];
 
-      deps.child[id].forEach((child) => {
+      cfg.depsChild[id].forEach((child) => {
         if (!newSelected.includes(child)) {
           newSelected.push(child);
         }
       });
 
-      deps.parent[id].forEach((parent) => {
+      cfg.depsParent[id].forEach((parent) => {
         if (
           !newSelected.includes(parent) &&
-          deps.child[parent].every((child) => newSelected.includes(child))
+          cfg.depsChild[parent].every((child) => newSelected.includes(child))
         ) {
           newSelected.push(parent);
         }
@@ -65,55 +62,24 @@ const Control = ({ layerGroups: layerGroupsDefault, mapHeight, map }) => {
   );
 
   const toggleLayerControlVisible = () => {
-    setLayerControlVisible(!layerControlVisible);
+    setIsVisible(!isVisible);
   };
 
   // initialize state from configuration when style is loaded
   useEffect(() => {
     map.on("style.load", () => {
-      const s = map.getStyle();
-      const layerGroups =
-        s.metadata && s.metadata["ldproxy:layers"]
-          ? s.metadata["ldproxy:layers"]
-          : layerGroupsDefault;
-      const p = layerGroups.filter(
-        (entry) => entry.type === "group" || entry.type === "source-layer"
-      );
-      const r = getRadioGroups(layerGroups, true);
-      const r2 = getRadioGroups(layerGroups);
-      const a = p.flatMap((parent) =>
-        [parent].concat(
-          parent.entries
-            ? parent.entries.filter(
-                (entry) => entry.type === "group" || entry.type === "source-layer"
-              )
-            : []
-        )
-      );
-      const ids = getSubLayerIds(a);
-      const d = getDeps(layerGroups);
-      const c = getChildDeps(layerGroups);
-      const dp = getParentDeps(layerGroups);
+      const config = parse(map.getStyle(), entries, preferStyle);
 
-      setStyle(s);
-      setParents(p);
-      setRadioGroups(r2);
-      setSubLayerIds(ids);
-      setSelectedRadioGroups(r);
-      setSelected(ids.concat(a.map((item) => item.id)));
-      setOpen(
-        a
-          .concat(r)
-          .concat(p)
-          .map((item) => item.id)
-      );
-      setDeps({ all: d, parent: dp, child: c });
+      setCfg(config);
+      setSelectedRadioGroups(config.radioIds);
+      setSelected(config.allIds);
+      setOpen(config.groupIds);
     });
-  }, [layerGroupsDefault, map]);
+  }, [entries, map, preferStyle]);
 
   // apply selection state to map
   useEffect(() => {
-    subLayerIds.forEach((id) => {
+    cfg.layerIds.forEach((id) => {
       if (map.getLayer(id)) {
         const visible = map.getLayoutProperty(id, "visibility") !== "none";
         if (visible && !isSelected(id)) {
@@ -123,8 +89,8 @@ const Control = ({ layerGroups: layerGroupsDefault, mapHeight, map }) => {
         }
       }
     });
-    Object.keys(radioGroups).forEach((group) => {
-      radioGroups[group].forEach((id) => {
+    Object.keys(cfg.radioGroups).forEach((group) => {
+      cfg.radioGroups[group].forEach((id) => {
         if (map.getLayer(id)) {
           const visible = map.getLayoutProperty(id, "visibility") !== "none";
           if (visible && !isSelected(id, group)) {
@@ -135,17 +101,17 @@ const Control = ({ layerGroups: layerGroupsDefault, mapHeight, map }) => {
         }
       });
     });
-  }, [map, subLayerIds, radioGroups, isSelected]);
+  }, [map, cfg, isSelected]);
 
   return (
     <>
-      <ControlButton isEnabled={layerControlVisible} toggle={toggleLayerControlVisible} />
-      {style && (
+      <ControlButton isEnabled={isVisible} toggle={toggleLayerControlVisible} />
+      {cfg && cfg.style && (
         <ControlPanel
-          parents={parents}
-          style={style}
-          mapHeight={mapHeight}
-          isVisible={layerControlVisible}
+          entries={cfg.entries}
+          style={cfg.style}
+          maxHeight={maxHeight}
+          isVisible={isVisible}
           isOpened={isOpened}
           isSelected={isSelected}
           onSelect={onSelect}
@@ -159,14 +125,18 @@ const Control = ({ layerGroups: layerGroupsDefault, mapHeight, map }) => {
 Control.displayName = "Control";
 
 Control.propTypes = {
-  layerGroups: PropTypes.arrayOf(PropTypes.object),
-  mapHeight: PropTypes.number.isRequired,
+  onlyLegend: PropTypes.bool,
+  preferStyle: PropTypes.bool,
+  entries: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.object, PropTypes.string])),
+  maxHeight: PropTypes.number.isRequired,
   // eslint-disable-next-line react/forbid-prop-types
   map: PropTypes.object.isRequired,
 };
 
 Control.defaultProps = {
-  layerGroups: [],
+  onlyLegend: false,
+  preferStyle: true,
+  entries: [],
 };
 
 export default Control;

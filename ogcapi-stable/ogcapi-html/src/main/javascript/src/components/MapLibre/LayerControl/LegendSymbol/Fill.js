@@ -5,7 +5,7 @@ export default function Fill(props) {
   const style = {
     width: "100%",
     height: "100%",
-    backgroundImage: `url(${dataUrl})`,
+    backgroundImage: dataUrl ? `url(${dataUrl})` : null,
     backgroundColor: expr(layer, "paint", "fill-color"),
     opacity: expr(layer, "paint", "fill-opacity"),
     backgroundSize: "66% 66%",

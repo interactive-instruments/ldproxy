@@ -20,6 +20,10 @@ function CSSstring(string) {
 }
 
 function asReact(tree, outerStyle) {
+  if (!tree) {
+    return null;
+  }
+
   let newStyle = {};
   const { style, ...attributes } = tree.attributes;
 

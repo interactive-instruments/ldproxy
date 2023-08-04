@@ -2921,27 +2921,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mapbox/mapbox-gl-style-spec@npm:^13.16.0":
-  version: 13.28.0
-  resolution: "@mapbox/mapbox-gl-style-spec@npm:13.28.0"
-  dependencies:
-    "@mapbox/jsonlint-lines-primitives": ~2.0.2
-    "@mapbox/point-geometry": ^0.1.0
-    "@mapbox/unitbezier": ^0.0.0
-    csscolorparser: ~1.0.2
-    json-stringify-pretty-compact: ^2.0.0
-    minimist: ^1.2.6
-    rw: ^1.3.3
-    sort-object: ^0.3.2
-  bin:
-    gl-style-composite: bin/gl-style-composite.js
-    gl-style-format: bin/gl-style-format.js
-    gl-style-migrate: bin/gl-style-migrate.js
-    gl-style-validate: bin/gl-style-validate.js
-  checksum: 17246a849cbdb5062e077760a6e71aa7339299b965523ecd6f414926de11568e2070b3f3a792c34745715c53ce8c7b87d7df5f448d9152fffe8c74a111239f34
-  languageName: node
-  linkType: hard
-
 "@mapbox/mapbox-gl-style-spec@npm:^13.20.1":
   version: 13.23.0
   resolution: "@mapbox/mapbox-gl-style-spec@npm:13.23.0"
@@ -3364,7 +3343,7 @@ __metadata:
     "@cesium/widgets": ^2.2.0
     "@mapbox/geojson-extent": ^1.0.1
     "@mapbox/mapbox-gl-draw": ^1.3.0
-    "@mapbox/mapbox-gl-style-spec": ^13.16.0
+    "@maplibre/maplibre-gl-style-spec": ^19.2.2
     "@mdx-js/react": ^1.6.22
     "@neutrinojs/airbnb": ^9.3.0
     "@neutrinojs/copy": ^9.3.0

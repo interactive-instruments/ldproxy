@@ -1,5 +1,5 @@
 /* eslint-disable react/destructuring-assignment */
-import { expression, latest, function as styleFunction } from "@mapbox/mapbox-gl-style-spec";
+import { expression, latest, function as styleFunction } from "@maplibre/maplibre-gl-style-spec";
 
 const PROP_MAP = [
   ["background"],

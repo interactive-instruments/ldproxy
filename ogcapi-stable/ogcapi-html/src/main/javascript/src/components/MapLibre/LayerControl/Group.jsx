@@ -1,107 +1,109 @@
 /* eslint-disable no-nested-ternary */
 import React from "react";
 import PropTypes from "prop-types";
-import { Collapse, Row, Col, FormGroup, Label, Input } from "reactstrap";
+import { Collapse, Row } from "reactstrap";
 import Layer from "./Layer";
-import CollapseButton from "./CollapseButton";
+import Header from "./Header";
+import Separator from "./Separator";
 
-const Group = ({ parent, style, isOpened, isSelected, onSelect, onOpen }) => {
-  if (parent.type === "source-layer") {
-    return parent.subLayers
-      ? parent.subLayers.map((subLayer, j) => (
-          <Collapse
-            key={subLayer.id}
-            isOpen={isOpened(parent.id)}
-            style={{ paddingBottom: j === parent.subLayers.length - 1 ? "5px" : null }}
-          >
-            <Row>
-              <Layer
-                layer={subLayer}
-                isSelected={isSelected}
-                onSelect={onSelect}
-                style={style}
-                level={2}
-              />
-            </Row>
-          </Collapse>
-        ))
-      : null;
-  }
-
-  return parent.entries.map((entry, i) => {
+const Group = ({ parent, style, level, isOpened, isSelected, onSelect, onOpen }) => {
+  if (parent.type === "radio-group") {
     return (
-      <Collapse
-        key={entry.id}
-        isOpen={isOpened(parent.id)}
-        id={`collapse-${entry.id}`}
-        style={{ paddingBottom: i === parent.entries.length - 1 ? "5px" : null }}
-      >
-        <Row key={entry.id}>
-          {parent.isBasemap !== true && entry.type === "source-layer" ? (
-            <>
-              <Col xs="10" style={{ display: "flex", alignItems: "center" }}>
-                <FormGroup check style={{ marginLeft: "20px" }}>
-                  <Label check>
-                    <Input
-                      type="checkbox"
-                      id={`checkbox-${parent.id}`}
-                      checked={isSelected(entry.id)}
-                      onChange={(e) => {
-                        e.target.blur();
-                        onSelect(entry.id);
-                      }}
-                    />
-                    <span style={{ whiteSpace: "nowrap" }}>{entry.id}</span>
-                  </Label>
-                </FormGroup>
-              </Col>
-              <Col xs="2">
-                <CollapseButton
-                  collapsed={!isOpened(entry.id)}
-                  toggleCollapsed={() => onOpen(entry.id)}
-                />
-              </Col>
-            </>
-          ) : parent.type === "source-layer" ? (
-            <Layer
-              layer={entry}
-              isSelected={isSelected}
-              onSelect={onSelect}
-              style={style}
-              level={1}
-            />
-          ) : (
-            <Layer
-              layer={entry}
-              isSelected={isSelected}
-              onSelect={onSelect}
-              style={style}
-              level={1}
-              radioGroup={parent.id}
-            />
-          )}
-        </Row>
-        {entry.subLayers &&
-          entry.subLayers.map((subLayer, j) => (
-            <Collapse
-              key={subLayer.id}
-              isOpen={isOpened(entry.id)}
-              style={{ paddingBottom: j === entry.subLayers.length - 1 ? "5px" : null }}
-            >
+      <Collapse isOpen={isOpened(parent.id)}>
+        {parent.entries.map((entry, i) => {
+          return (
+            <React.Fragment key={entry.id}>
+              {i > 0 && <Separator />}
               <Row>
                 <Layer
-                  layer={subLayer}
+                  id={entry.id}
+                  label={entry.label}
+                  icons={[entry]}
                   isSelected={isSelected}
                   onSelect={onSelect}
                   style={style}
-                  level={2}
+                  level={level + 1}
+                  radioGroup={parent.id}
                 />
               </Row>
-            </Collapse>
-          ))}
+            </React.Fragment>
+          );
+        })}
       </Collapse>
     );
-  });
+  }
+  if (parent.type === "merge-group") {
+    return (
+      <Row
+        style={{
+          flexWrap: "nowrap",
+        }}
+      >
+        <Layer
+          id={parent.id}
+          icons={parent.entries}
+          isSelected={isSelected}
+          onSelect={onSelect}
+          style={style}
+          level={level}
+        />
+      </Row>
+    );
+  }
+  if (parent.type === "group") {
+    return (
+      <Collapse isOpen={isOpened(parent.id)}>
+        {parent.entries.map((entry, i) => {
+          if (entry.isLayer) {
+            return (
+              <React.Fragment key={entry.id}>
+                {i > 0 && <Separator />}
+                <Row>
+                  <Layer
+                    id={entry.id}
+                    label={entry.label}
+                    icons={[entry]}
+                    isSelected={isSelected}
+                    onSelect={onSelect}
+                    style={style}
+                    level={level + 1}
+                  />
+                </Row>
+              </React.Fragment>
+            );
+          }
+          return (
+            <React.Fragment key={entry.id}>
+              {i > 0 && <Separator />}
+              {entry.type !== "merge-group" && (
+                <Header
+                  id={entry.id}
+                  label={entry.label}
+                  level={level + 1}
+                  check={entry.type !== "radio-group"}
+                  isOpened={isOpened}
+                  isSelected={isSelected}
+                  onOpen={onOpen}
+                  onSelect={onSelect}
+                />
+              )}
+              <Group
+                parent={entry}
+                style={style}
+                level={level + 1}
+                isOpened={isOpened}
+                isSelected={isSelected}
+                onSelect={onSelect}
+                onOpen={onOpen}
+              />
+            </React.Fragment>
+          );
+        })}
+      </Collapse>
+    );
+  }
+
+  return null;
 };
 
 Group.displayName = "Group";
@@ -111,12 +113,15 @@ Group.propTypes = {
   parent: PropTypes.object.isRequired,
   // eslint-disable-next-line react/forbid-prop-types
   style: PropTypes.object.isRequired,
+  level: PropTypes.number,
   isOpened: PropTypes.func.isRequired,
   isSelected: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
   onOpen: PropTypes.func.isRequired,
 };
 
-Group.defaultProps = {};
+Group.defaultProps = {
+  level: 0,
+};
 
 export default Group;

@@ -43,19 +43,21 @@ export default function Line(props) {
               patternUnits: "userSpaceOnUse",
               patternTransform: `translate(${-(sw / 2)} ${-(sw / 2)}) rotate(45)`,
             },
-            children: [
-              {
-                element: "image",
-                attributes: {
-                  key: "img",
-                  xlinkHref: linePatternDataUrl,
-                  x: 0,
-                  y: 0,
-                  width: style.strokeWidth,
-                  height: style.strokeWidth,
-                },
-              },
-            ],
+            children: linePatternDataUrl
+              ? [
+                  {
+                    element: "image",
+                    attributes: {
+                      key: "img",
+                      xlinkHref: linePatternDataUrl,
+                      x: 0,
+                      y: 0,
+                      width: style.strokeWidth,
+                      height: style.strokeWidth,
+                    },
+                  },
+                ]
+              : [],
           },
         ],
       },

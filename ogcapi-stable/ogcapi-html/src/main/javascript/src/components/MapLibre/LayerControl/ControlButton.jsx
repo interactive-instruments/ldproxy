@@ -1,13 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 
 const ControlButton = ({ isEnabled, toggle }) => {
+  const [hover, setHover] = useState(false);
+
   return (
     <div className="maplibregl-ctrl maplibregl-ctrl-group" style={{}}>
       <button
         type="button"
         style={{
-          backgroundColor: isEnabled ? "rgb(0 0 0/5%)" : "transparent",
+          backgroundColor: isEnabled || hover ? "rgb(0 0 0/5%)" : "transparent",
+        }}
+        onMouseEnter={() => {
+          setHover(true);
+        }}
+        onMouseLeave={() => {
+          setHover(false);
         }}
         onClick={toggle}
       >

@@ -76,8 +76,8 @@ const MapLibre = ({
         popup={popup}
         custom={custom}
       />
-      {layerGroupControl && Object.keys(layerGroupControl).length > 0 && (
-        <LayerControl layerGroups={layerGroupControl} />
+      {layerGroupControl && layerGroupControl.length > 0 && (
+        <LayerControl entries={layerGroupControl} />
       )}
       {children}
     </Map>
@@ -102,7 +102,7 @@ MapLibre.propTypes = {
   defaultStyle: PropTypes.object,
   // eslint-disable-next-line react/forbid-prop-types
   fitBoundsOptions: PropTypes.object,
-  layerGroupControl: PropTypes.arrayOf(PropTypes.object),
+  layerGroupControl: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.object, PropTypes.string])),
   ...Configuration.propTypes,
 };
 

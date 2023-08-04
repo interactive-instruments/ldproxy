@@ -14,7 +14,7 @@ function extractPartOfImage(img, { x, y, width, height }) {
   return el.toDataURL();
 }
 
-export default function ({ sprite, zoom, layer, properties }) {
+export default function LegendSymbol({ sprite, zoom, layer, properties }) {
   const TYPE_MAP = {
     circle: Circle,
     symbol: Symbol,
