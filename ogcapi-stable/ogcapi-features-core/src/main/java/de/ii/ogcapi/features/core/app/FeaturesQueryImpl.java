@@ -27,6 +27,7 @@ import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.FeatureSchemaBase;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.web.domain.ETag;
 import java.util.List;
@@ -76,7 +77,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
       Map<String, Integer> coordinatePrecision,
       QueryParameterSet queryParameterSet,
       String featureId,
-      Optional<ETag.Type> withEtag) {
+      Optional<ETag.Type> withEtag,
+      FeatureSchemaBase.Scope withScope) {
     final ImmutableFeatureQuery.Builder queryBuilder =
         ImmutableFeatureQuery.builder()
             .type(
@@ -87,7 +89,8 @@ public class FeaturesQueryImpl implements FeaturesQuery {
             .filter(In.of(ScalarLiteral.of(featureId)))
             .returnsSingleFeature(true)
             .crs(defaultCrs)
-            .eTag(withEtag);
+            .eTag(withEtag)
+            .schemaScope(withScope);
 
     return processParameters(
         queryBuilder, apiData, collectionData, coordinatePrecision, queryParameterSet);

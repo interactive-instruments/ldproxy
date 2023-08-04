@@ -18,6 +18,7 @@ import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.QueryInputFeature;
+import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeature;
 import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
@@ -32,25 +33,25 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ImmutableQueryParameterSet;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.cql.domain.In;
-import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchemaBase;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import de.ii.xtraplatform.web.domain.ETag.Type;
 import io.dropwizard.auth.Auth;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -88,17 +89,20 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
   private final FeaturesCoreProviders providers;
   private final CommandHandlerCrud commandHandler;
   private final CrsInfo crsInfo;
+  private final FeaturesQuery queryParser;
 
   @Inject
   public EndpointCrud(
       ExtensionRegistry extensionRegistry,
       FeaturesCoreProviders providers,
       CommandHandlerCrud commandHandler,
-      CrsInfo crsInfo) {
+      CrsInfo crsInfo,
+      FeaturesQuery queryParser) {
     super(extensionRegistry);
     this.providers = providers;
     this.commandHandler = commandHandler;
     this.crsInfo = crsInfo;
+    this.queryParser = queryParser;
   }
 
   @Override
@@ -369,25 +373,26 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
 
     String featureType = coreConfiguration.getFeatureType().orElse(collectionId);
 
-    // TODO Decide after the open issues for "optimistic locking" have been resolved by the OGC SWG.
-    //      In general, it would be safer to use FeaturesQuery to generate the query, but it seems
-    //      likely that eventually Last-Modified will be used for validation, not ETag.
-    Builder eTagQueryBuilder =
-        ImmutableFeatureQuery.builder()
-            .type(featureType)
-            .filter(In.of(ScalarLiteral.of(featureId)))
-            .returnsSingleFeature(true)
-            .crs(
-                Optional.ofNullable(crs)
-                    .map(s -> s.substring(1, s.length() - 1))
-                    .map(s -> EpsgCrs.fromString(s))
-                    .orElseGet(coreConfiguration::getDefaultEpsgCrs))
-            .schemaScope(FeatureSchemaBase.Scope.MUTATIONS)
-            .eTag(Type.STRONG);
-
-    FeatureQuery eTagQuery =
-        processCoordinatePrecision(eTagQueryBuilder, coreConfiguration.getCoordinatePrecision())
-            .build();
+    List<OgcApiQueryParameter> parameterDefinitions =
+        getQueryParameters(
+            extensionRegistry,
+            api.getData(),
+            "/collections/{collectionId}/items/{featureId}",
+            collectionId);
+    Map<String, String> values =
+        Objects.nonNull(crs)
+            ? ImmutableMap.of("crs", crs.substring(1, crs.length() - 1))
+            : ImmutableMap.of();
+    FeatureQuery query =
+        queryParser.requestToFeatureQuery(
+            api.getData(),
+            collectionData,
+            coreConfiguration.getDefaultEpsgCrs(),
+            coreConfiguration.getCoordinatePrecision(),
+            QueryParameterSet.of(parameterDefinitions, values),
+            featureId,
+            Optional.of(Type.STRONG),
+            FeatureSchemaBase.Scope.MUTATIONS);
 
     QueryInputFeatureReplace queryInput =
         ImmutableQueryInputFeatureReplace.builder()
@@ -395,7 +400,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             .collectionId(collectionId)
             .featureType(featureType)
             .featureId(featureId)
-            .query(eTagQuery)
+            .query(query)
             .featureProvider(featureProvider)
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .requestBody(requestBody)
@@ -438,25 +443,26 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
 
     String featureType = coreConfiguration.getFeatureType().orElse(collectionId);
 
-    // TODO Decide after the open issues for "optimistic locking" have been resolved by the OGC SWG.
-    //      In general, it would be safer to use FeaturesQuery to generate the query, but it seems
-    //      likely that eventually Last-Modified will be used for validation, not ETag.
-    Builder eTagQueryBuilder =
-        ImmutableFeatureQuery.builder()
-            .type(featureType)
-            .filter(In.of(ScalarLiteral.of(featureId)))
-            .returnsSingleFeature(true)
-            .crs(
-                Optional.ofNullable(crs)
-                    .map(s -> s.substring(1, s.length() - 1))
-                    .map(s -> EpsgCrs.fromString(s))
-                    .orElseGet(coreConfiguration::getDefaultEpsgCrs))
-            .schemaScope(FeatureSchemaBase.Scope.MUTATIONS)
-            .eTag(Type.STRONG);
-
-    FeatureQuery eTagQuery =
-        processCoordinatePrecision(eTagQueryBuilder, coreConfiguration.getCoordinatePrecision())
-            .build();
+    List<OgcApiQueryParameter> parameterDefinitions =
+        getQueryParameters(
+            extensionRegistry,
+            api.getData(),
+            "/collections/{collectionId}/items/{featureId}",
+            collectionId);
+    Map<String, String> values =
+        Objects.nonNull(crs)
+            ? ImmutableMap.of("crs", crs.substring(1, crs.length() - 1))
+            : ImmutableMap.of();
+    FeatureQuery query =
+        queryParser.requestToFeatureQuery(
+            api.getData(),
+            collectionData,
+            coreConfiguration.getDefaultEpsgCrs(),
+            coreConfiguration.getCoordinatePrecision(),
+            QueryParameterSet.of(parameterDefinitions, values),
+            featureId,
+            Optional.of(Type.STRONG),
+            FeatureSchemaBase.Scope.MUTATIONS);
 
     QueryInputFeatureReplace queryInput =
         ImmutableQueryInputFeatureReplace.builder()
@@ -464,7 +470,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             .collectionId(collectionId)
             .featureType(featureType)
             .featureId(featureId)
-            .query(eTagQuery)
+            .query(query)
             .featureProvider(featureProvider)
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .requestBody(requestBody)
@@ -502,21 +508,16 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                         != FeaturesCoreConfiguration.ItemType.unknown)
             .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
-    String featureType = coreConfiguration.getFeatureType().orElse(collectionId);
-
-    // FIXME Use FeaturesQuery to generate the query
-    ImmutableFeatureQuery.Builder queryBuilder =
-        ImmutableFeatureQuery.builder()
-            .type(featureType)
-            .filter(In.of(ScalarLiteral.of(featureId)))
-            .returnsSingleFeature(true)
-            .crs(coreConfiguration.getDefaultEpsgCrs())
-            .schemaScope(FeatureSchemaBase.Scope.MUTATIONS)
-            .eTag(Type.STRONG);
-
     FeatureQuery query =
-        processCoordinatePrecision(queryBuilder, coreConfiguration.getCoordinatePrecision())
-            .build();
+        queryParser.requestToFeatureQuery(
+            api.getData(),
+            collectionData,
+            coreConfiguration.getDefaultEpsgCrs(),
+            coreConfiguration.getCoordinatePrecision(),
+            new ImmutableQueryParameterSet.Builder().build(),
+            featureId,
+            Optional.of(Type.STRONG),
+            FeatureSchemaBase.Scope.MUTATIONS);
 
     QueryInputFeature queryInput =
         new ImmutableQueryInputFeature.Builder()
