@@ -78,7 +78,7 @@ const ControlPanel = ({
               <Group
                 parent={entry}
                 style={style}
-                isControlable={isControlable}
+                isControlable={isControlable && !(entry.type === "group" && entry.onlyLegend)}
                 isOpened={isOpened}
                 isSelected={isSelected}
                 onSelect={onSelect}
