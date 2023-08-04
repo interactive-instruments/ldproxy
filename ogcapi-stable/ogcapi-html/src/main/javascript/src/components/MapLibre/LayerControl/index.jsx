@@ -1,78 +1,91 @@
-import React, { useState } from "react";
-import PropTypes from "prop-types";
-import { Button, ButtonGroup } from "reactstrap";
+import React from "react";
+import ReactDOM from "react-dom";
+import PropTypes from "prop-types/prop-types";
 import { useMaplibreUIEffect } from "react-maplibre-ui";
+import Control from "./Control";
 
-const LayerControl = ({ layerGroups }) => {
-  const [selected, setSelected] = useState(Object.keys(layerGroups));
+const LayerControl = ({ opened, onlyLegend, preferStyle, entries }) => {
+  useMaplibreUIEffect(({ map }) => {
+    const container = document.createElement("div");
 
-  const onSelect = (name) => {
-    const index = selected.indexOf(name);
-    if (index < 0) {
-      selected.push(name);
-    } else {
-      selected.splice(index, 1);
-    }
-    setSelected([...selected]);
-  };
+    map.addControl(
+      {
+        onAdd: () => {
+          ReactDOM.render(
+            <React.StrictMode>
+              <Control
+                opened={opened}
+                onlyLegend={onlyLegend}
+                preferStyle={preferStyle}
+                entries={entries}
+                map={map}
+                maxHeight={map.getContainer().offsetHeight * 0.75}
+              />
+            </React.StrictMode>,
+            container
+          );
+          return container;
+        },
+        onRemove: () => container.parentNode.removeChild(container),
+      },
+      "top-left"
+    );
+  }, []);
 
-  useMaplibreUIEffect(
-    ({ map }) => {
-      Object.keys(layerGroups).forEach((name) => {
-        layerGroups[name].forEach((layerId) => {
-          if (map.getLayer(layerId)) {
-            const visible =
-              map.getLayoutProperty(layerId, "visibility") !== "none";
-
-            if (visible && !selected.includes(name)) {
-              map.setLayoutProperty(layerId, "visibility", "none");
-            } else if (!visible && selected.includes(name)) {
-              map.setLayoutProperty(layerId, "visibility", "visible");
-            }
-          }
-        });
-      });
-    },
-    [selected]
-  );
-
-  return (
-    <div
-      id="layer-control"
-      style={{ position: "absolute", zIndex: 1, top: "10px", right: "50px" }}
-    >
-      <ButtonGroup
-        vertical
-        style={{
-          backgroundColor: "white",
-          borderRadius: "0.25rem",
-        }}
-      >
-        {Object.keys(layerGroups).map((name) => (
-          <Button
-            color="secondary"
-            outline
-            onClick={(e) => {
-              e.target.blur();
-              onSelect(name);
-            }}
-            active={selected.includes(name)}
-          >
-            {name}
-          </Button>
-        ))}
-      </ButtonGroup>
-    </div>
-  );
+  return null;
 };
-LayerControl.displayName = "LayerControl";
+
+const LayerObject = PropTypes.shape({
+  id: PropTypes.string.isRequired,
+  label: PropTypes.string,
+  zoom: PropTypes.number,
+  properties: PropTypes.objectOf(PropTypes.any),
+});
+
+const Layer = PropTypes.oneOfType([LayerObject, PropTypes.string]);
+
+const RadioGroup = PropTypes.shape({
+  id: PropTypes.string.isRequired,
+  label: PropTypes.string,
+  type: PropTypes.oneOf(["radio-group"]).isRequired,
+  entries: PropTypes.arrayOf(Layer),
+});
+
+const MergeGroup = PropTypes.shape({
+  id: PropTypes.string.isRequired,
+  label: PropTypes.string,
+  type: PropTypes.oneOf(["merge-group"]).isRequired,
+  sourceLayer: PropTypes.string,
+  entries: PropTypes.arrayOf(Layer),
+});
+
+const groupBase = {
+  id: PropTypes.string.isRequired,
+  label: PropTypes.string,
+  type: PropTypes.oneOf(["group"]).isRequired,
+  onlyLegend: PropTypes.bool,
+};
+
+groupBase.entries = PropTypes.arrayOf(
+  PropTypes.oneOfType([Layer, MergeGroup, PropTypes.shape(groupBase)])
+);
+
+const Group = PropTypes.shape(groupBase);
 
 LayerControl.propTypes = {
-  layerGroups: PropTypes.objectOf(PropTypes.array),
+  opened: PropTypes.bool,
+  onlyLegend: PropTypes.bool,
+  preferStyle: PropTypes.bool,
+  entries: PropTypes.arrayOf(PropTypes.oneOfType([Layer, MergeGroup, RadioGroup, Group])),
 };
 
 LayerControl.defaultProps = {
-  layerGroups: {},
+  opened: false,
+  onlyLegend: false,
+  preferStyle: true,
+  entries: [],
 };
+
+LayerControl.displayName = "LayerControl";
 
 export default LayerControl;

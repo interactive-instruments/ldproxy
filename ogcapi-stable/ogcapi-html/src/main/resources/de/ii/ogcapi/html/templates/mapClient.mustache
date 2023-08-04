@@ -69,15 +69,19 @@
     {{#popup}}
       popup: '{{.}}',
     {{/popup}}
-      layerGroupControl: {
+      layerGroupControl: [
     {{#layerGroupControl}}
-        '{{key}}': [
+        {
+        id : '{{key}}',
+        type: 'merge-group',
+        'entries': [
         {{#value}}
           '{{.}}',
         {{/value}}
         ],
+        },
     {{/layerGroupControl}}
-      },
+      ],
       tileMatrixSets: [
       {{#tileCollections}}
         {
