@@ -7,21 +7,17 @@
  */
 package de.ii.ogcapi.crud.app;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.Query;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.QueryInputFeature;
-import de.ii.ogcapi.features.core.domain.ProfileTransformations;
-import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -33,8 +29,8 @@ import de.ii.xtraplatform.features.domain.FeatureTokenSource;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureChange;
 import de.ii.xtraplatform.features.domain.Tuple;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import de.ii.xtraplatform.features.json.domain.FeatureTokenDecoderGeoJson;
+import de.ii.xtraplatform.streams.domain.Reactive.Source;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
@@ -45,6 +41,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -64,17 +62,13 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
   private final FeaturesCoreQueriesHandler queriesHandler;
   private final ExtensionRegistry extensionRegistry;
-  private final FeaturesCoreProviders providers;
   private List<? extends FormatExtension> formats;
 
   @Inject
   public CommandHandlerCrudImpl(
-      FeaturesCoreQueriesHandler queriesHandler,
-      ExtensionRegistry extensionRegistry,
-      FeaturesCoreProviders providers) {
+      FeaturesCoreQueriesHandler queriesHandler, ExtensionRegistry extensionRegistry) {
     this.queriesHandler = queriesHandler;
     this.extensionRegistry = extensionRegistry;
-    this.providers = providers;
   }
 
   @Override
@@ -84,7 +78,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     EpsgCrs crs = queryInput.getCrs().orElseGet(queryInput::getDefaultCrs);
 
     FeatureTokenSource featureTokenSource =
-        GeoJsonHelper.getFeatureSource(
+        getFeatureSource(
             requestContext.getMediaType(), queryInput.getRequestBody(), Optional.empty());
 
     FeatureTransactions.MutationResult result =
@@ -115,7 +109,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
         Optional.empty(),
         result.getSpatialExtent(),
         Optional.empty(),
-        convertTemporalExtent(result.getTemporalExtent()),
+        convertTemporalExtentMillisecond(result.getTemporalExtent()),
         Action.CREATE);
 
     return Response.created(firstFeature).build();
@@ -127,17 +121,16 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
     EpsgCrs crs = queryInput.getQuery().getCrs().orElseGet(queryInput::getDefaultCrs);
 
-    Response feature = getFeatureAndEvaluatePreconditions(queryInput, requestContext, crs);
+    Response feature = getCurrentFeature(queryInput, requestContext, crs);
     EntityTag eTag = feature.getEntityTag();
     Date lastModified = feature.getLastModified();
-    JsonNode content = GeoJsonHelper.parseFeatureResponse(feature);
 
     Response.ResponseBuilder response =
         queriesHandler.evaluatePreconditions(requestContext, lastModified, eTag);
     if (Objects.nonNull(response)) return response.build();
 
     FeatureTokenSource featureTokenSource =
-        GeoJsonHelper.getFeatureSource(
+        getFeatureSource(
             requestContext.getMediaType(), queryInput.getRequestBody(), Optional.empty());
 
     FeatureTransactions.MutationResult result =
@@ -153,14 +146,17 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
     result.getError().ifPresent(FeatureStream::processStreamError);
 
+    Optional<BoundingBox> currentBbox = parseBboxHeader(feature);
+    Optional<Tuple<Long, Long>> currentTime = parseTimeHeader(feature);
+
     handleChange(
         queryInput.getFeatureProvider(),
         queryInput.getCollectionId(),
         result.getIds(),
-        GeoJsonHelper.getSpatialExtent(content, crs),
+        currentBbox,
         result.getSpatialExtent(),
-        getTemporalExtent(content, requestContext.getApi().getData(), queryInput.getCollectionId()),
-        convertTemporalExtent(result.getTemporalExtent()),
+        convertTemporalExtentSecond(currentTime),
+        convertTemporalExtentMillisecond(result.getTemporalExtent()),
         Action.UPDATE);
 
     return Response.noContent().build();
@@ -172,10 +168,9 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
     EpsgCrs crs = queryInput.getQuery().getCrs().orElseGet(queryInput::getDefaultCrs);
 
-    Response feature = getFeatureAndEvaluatePreconditions(queryInput, requestContext, crs);
+    Response feature = getCurrentFeature(queryInput, requestContext, crs);
     EntityTag eTag = feature.getEntityTag();
     Date lastModified = feature.getLastModified();
-    JsonNode content = GeoJsonHelper.parseFeatureResponse(feature);
 
     Response.ResponseBuilder response =
         queriesHandler.evaluatePreconditions(requestContext, lastModified, eTag);
@@ -186,7 +181,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
         new SequenceInputStream(new ByteArrayInputStream(prev), queryInput.getRequestBody());
 
     FeatureTokenSource mergedSource =
-        GeoJsonHelper.getFeatureSource(
+        getFeatureSource(
             requestContext.getMediaType(),
             merged,
             Optional.of(FeatureTransactions.PATCH_NULL_VALUE));
@@ -200,14 +195,17 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
     result.getError().ifPresent(FeatureStream::processStreamError);
 
+    Optional<BoundingBox> currentBbox = parseBboxHeader(feature);
+    Optional<Tuple<Long, Long>> currentTime = parseTimeHeader(feature);
+
     handleChange(
         queryInput.getFeatureProvider(),
         queryInput.getCollectionId(),
         result.getIds(),
-        GeoJsonHelper.getSpatialExtent(content, crs),
+        currentBbox,
         result.getSpatialExtent(),
-        getTemporalExtent(content, requestContext.getApi().getData(), queryInput.getCollectionId()),
-        convertTemporalExtent(result.getTemporalExtent()),
+        convertTemporalExtentSecond(currentTime),
+        convertTemporalExtentMillisecond(result.getTemporalExtent()),
         Action.UPDATE);
 
     return Response.noContent().build();
@@ -217,11 +215,10 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
   public Response deleteItemResponse(
       QueryInputFeature queryInput, ApiRequestContext requestContext) {
 
-    Response feature = getFeatureAndEvaluatePreconditions(queryInput, requestContext, OgcCrs.CRS84);
+    Response feature = getCurrentFeature(queryInput, requestContext, OgcCrs.CRS84);
 
     EntityTag eTag = feature.getEntityTag();
     Date lastModified = feature.getLastModified();
-    JsonNode content = GeoJsonHelper.parseFeatureResponse(feature);
 
     Response.ResponseBuilder response =
         queriesHandler.evaluatePreconditions(requestContext, lastModified, eTag);
@@ -237,20 +234,23 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
     result.getError().ifPresent(FeatureStream::processStreamError);
 
+    Optional<BoundingBox> currentBbox = parseBboxHeader(feature);
+    Optional<Tuple<Long, Long>> currentTime = parseTimeHeader(feature);
+
     handleChange(
         queryInput.getFeatureProvider(),
         queryInput.getCollectionId(),
         result.getIds(),
-        GeoJsonHelper.getSpatialExtent(content, queryInput.getDefaultCrs()),
+        currentBbox,
         result.getSpatialExtent(),
-        getTemporalExtent(content, requestContext.getApi().getData(), queryInput.getCollectionId()),
-        convertTemporalExtent(result.getTemporalExtent()),
+        convertTemporalExtentSecond(currentTime),
+        convertTemporalExtentMillisecond(result.getTemporalExtent()),
         Action.DELETE);
 
     return Response.noContent().build();
   }
 
-  private @NotNull Response getFeatureAndEvaluatePreconditions(
+  private @NotNull Response getCurrentFeature(
       QueryInputFeature queryInput, ApiRequestContext requestContext, EpsgCrs crs) {
     try {
       if (formats == null) {
@@ -320,28 +320,58 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     featureProvider.getChangeHandler().handle(change);
   }
 
-  private Optional<Interval> getTemporalExtent(
-      JsonNode feature, OgcApiDataV2 apiData, String collectionId) {
-    Optional<String> flattened =
-        apiData
-            .getExtension(GeoJsonConfiguration.class, collectionId)
-            .map(PropertyTransformations::getTransformations)
-            .map(t -> t.get(ProfileTransformations.WILDCARD))
-            .flatMap(
-                t ->
-                    t.stream()
-                        .map(PropertyTransformation::getFlatten)
-                        .flatMap(Optional::stream)
-                        .findFirst());
-    return GeoJsonHelper.getTemporalExtent(
-        feature,
-        apiData
-            .getCollectionData(collectionId)
-            .flatMap(cd -> providers.getFeatureSchema(apiData, cd)),
-        flattened);
+  private static Optional<BoundingBox> parseBboxHeader(Response response) {
+    // TODO this should use a structured fields parser (RFC 8941), but there are only experimental
+    // Java implementations
+    String crsHeader = response.getHeaderString("Content-Crs");
+    String bboxHeader = response.getHeaderString(FeaturesCoreQueriesHandler.BOUNDING_BOX_HEADER);
+    return Objects.nonNull(crsHeader) && Objects.nonNull(bboxHeader)
+        ? Optional.of(
+            BoundingBox.of(
+                bboxHeader, EpsgCrs.fromString(crsHeader.substring(1, crsHeader.length() - 1))))
+        : Optional.empty();
   }
 
-  private Optional<Interval> convertTemporalExtent(Optional<Tuple<Long, Long>> interval) {
+  private static Optional<Tuple<Long, Long>> parseTimeHeader(Response response) {
+    // TODO this should use a structured fields parser (RFC 8941), but there are only experimental
+    // Java implementations
+    String timeHeader = response.getHeaderString(FeaturesCoreQueriesHandler.TEMPORAL_EXTENT_HEADER);
+    Optional<Tuple<Long, Long>> currentTime = Optional.empty();
+    if (Objects.nonNull(timeHeader)) {
+      Matcher startMatcher = Pattern.compile("^.*start\\s*=\\s*(\\d+).*$").matcher(timeHeader);
+      boolean startIsSet = startMatcher.find();
+      Matcher endMatcher = Pattern.compile("^.*end\\s*=\\s*(\\d+).*$").matcher(timeHeader);
+      boolean endIsSet = endMatcher.find();
+      if (startIsSet && endIsSet) {
+        currentTime =
+            Optional.of(
+                Tuple.of(
+                    Long.parseLong(startMatcher.group(1)), Long.parseLong(endMatcher.group(1))));
+      } else if (startIsSet) {
+        currentTime = Optional.of(Tuple.of(Long.parseLong(startMatcher.group(1)), null));
+      } else if (endIsSet) {
+        currentTime = Optional.of(Tuple.of(null, Long.parseLong(endMatcher.group(1))));
+      }
+    }
+    return currentTime;
+  }
+
+  private Optional<Interval> convertTemporalExtentSecond(Optional<Tuple<Long, Long>> interval) {
+    if (interval.isEmpty()) {
+      return Optional.empty();
+    }
+
+    Long begin = interval.get().first();
+    Long end = interval.get().second();
+
+    Instant beginInstant = Objects.nonNull(begin) ? Instant.ofEpochSecond(begin) : Instant.MIN;
+    Instant endInstant = Objects.nonNull(end) ? Instant.ofEpochSecond(end) : Instant.MAX;
+
+    return Optional.of(Interval.of(beginInstant, endInstant));
+  }
+
+  private Optional<Interval> convertTemporalExtentMillisecond(
+      Optional<Tuple<Long, Long>> interval) {
     if (interval.isEmpty()) {
       return Optional.empty();
     }
@@ -353,5 +383,15 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     Instant endInstant = Objects.nonNull(end) ? Instant.ofEpochMilli(end) : Instant.MAX;
 
     return Optional.of(Interval.of(beginInstant, endInstant));
+  }
+
+  // TODO: to InputFormat extension matching the mediaType
+  static FeatureTokenSource getFeatureSource(
+      ApiMediaType mediaType, InputStream requestBody, Optional<String> nullValue) {
+
+    FeatureTokenDecoderGeoJson featureTokenDecoderGeoJson =
+        new FeatureTokenDecoderGeoJson(nullValue);
+
+    return Source.inputStream(requestBody).via(featureTokenDecoderGeoJson);
   }
 }

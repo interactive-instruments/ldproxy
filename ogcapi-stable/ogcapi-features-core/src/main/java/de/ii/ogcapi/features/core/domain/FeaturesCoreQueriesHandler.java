@@ -21,6 +21,9 @@ import org.immutables.value.Value;
 public interface FeaturesCoreQueriesHandler
     extends QueriesHandler<FeaturesCoreQueriesHandler.Query> {
 
+  String BOUNDING_BOX_HEADER = "Content-Bounding-Box";
+  String TEMPORAL_EXTENT_HEADER = "Content-Temporal-Extent";
+
   @Override
   Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();
 

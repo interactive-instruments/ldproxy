@@ -31,6 +31,7 @@ import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
@@ -43,6 +44,7 @@ import de.ii.xtraplatform.features.domain.FeatureStream.ResultBase;
 import de.ii.xtraplatform.features.domain.FeatureStream.ResultReduced;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.features.domain.Tuple;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
@@ -51,9 +53,13 @@ import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.MessageFormat;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -349,6 +355,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
 
     Date lastModified = getLastModified(queryInput);
     EntityTag etag = null;
+    String spatialExtentHeader = null;
+    String temporalExtentHeader = null;
     byte[] bytes = null;
     StreamingOutput streamingOutput = null;
 
@@ -371,6 +379,40 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         lastModified = Date.from(result.getLastModified().get());
         LOGGER.debug("Last-Modified {}", lastModified);
       }
+
+      if (result.getSpatialExtent().isPresent()) {
+        // Structured Fields does only support 3 decimal places for some reason, so we round the min
+        // value down and the max value up
+        BoundingBox bbox = result.getSpatialExtent().get();
+        spatialExtentHeader =
+            String.format(
+                Locale.US,
+                "%f, %f, %f, %f",
+                bbox.getXmin(),
+                bbox.getYmin(),
+                bbox.getXmax(),
+                bbox.getYmax());
+        // spatialExtentHeader = String.format("%s, %s, %s, %s", roundTo3Places(bbox.getXmin(),
+        // RoundingMode.DOWN), roundTo3Places(bbox.getYmin(), RoundingMode.DOWN),
+        // roundTo3Places(bbox.getXmax(), RoundingMode.UP), roundTo3Places(bbox.getYmax(),
+        // RoundingMode.UP));
+      }
+
+      if (result.getTemporalExtent().isPresent()) {
+        // Structured Fields does not support timestamps, so the typical approach is to use seconds
+        // since epoch
+        Tuple<Instant, Instant> interval = result.getTemporalExtent().get();
+        if (Objects.nonNull(interval.first()) && Objects.nonNull(interval.second())) {
+          temporalExtentHeader =
+              String.format(
+                  "start=%d, end=%d",
+                  interval.first().getEpochSecond(), interval.second().getEpochSecond());
+        } else if (Objects.nonNull(interval.first())) {
+          temporalExtentHeader = String.format("start=%d", interval.first().getEpochSecond());
+        } else if (Objects.nonNull(interval.second())) {
+          temporalExtentHeader = String.format("end=%d", interval.second().getEpochSecond());
+        }
+      }
     }
 
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
@@ -383,7 +425,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     // TODO For now remove the "next" links from the headers since at this point we don't know,
     // whether there will be a next page
 
-    return prepareSuccessResponse(
+    response =
+        prepareSuccessResponse(
             requestContext,
             includeLinkHeader
                 ? links.stream()
@@ -400,9 +443,21 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             Objects.isNull(featureId) && !sendResponseAsStream
                 ? HeaderItems.of(
                     outputFormat.getNumberMatched(bytes), outputFormat.getNumberReturned(bytes))
-                : HeaderItems.of())
-        .entity(Objects.nonNull(bytes) ? bytes : streamingOutput)
-        .build();
+                : HeaderItems.of());
+
+    if (Objects.nonNull(spatialExtentHeader)) {
+      response.header(BOUNDING_BOX_HEADER, spatialExtentHeader);
+    }
+
+    if (Objects.nonNull(temporalExtentHeader)) {
+      response.header(TEMPORAL_EXTENT_HEADER, temporalExtentHeader);
+    }
+
+    return response.entity(Objects.nonNull(bytes) ? bytes : streamingOutput).build();
+  }
+
+  private static String roundTo3Places(double value, RoundingMode mode) {
+    return BigDecimal.valueOf(value).setScale(3, mode).toPlainString();
   }
 
   private StreamingOutput stream(
