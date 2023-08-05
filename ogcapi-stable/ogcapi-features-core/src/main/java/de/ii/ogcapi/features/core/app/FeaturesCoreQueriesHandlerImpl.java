@@ -364,12 +364,12 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
 
       if (result.getETag().isPresent()) {
         etag = result.getETag().get();
-        LOGGER.debug("ETAG {}", etag);
+        LOGGER.debug("ETag {}", etag);
       }
 
-      if (result.getLastModified().isPresent()) {
+      if (result.getLastModified().isPresent() && Objects.isNull(lastModified)) {
         lastModified = Date.from(result.getLastModified().get());
-        LOGGER.debug("LastModified {}", lastModified);
+        LOGGER.debug("Last-Modified {}", lastModified);
       }
     }
 
