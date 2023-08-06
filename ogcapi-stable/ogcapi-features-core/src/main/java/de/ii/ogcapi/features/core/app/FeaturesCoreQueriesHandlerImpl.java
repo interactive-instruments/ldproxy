@@ -53,8 +53,6 @@ import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Date;
@@ -381,8 +379,10 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       }
 
       if (result.getSpatialExtent().isPresent()) {
-        // Structured Fields does only support 3 decimal places for some reason, so we round the min
-        // value down and the max value up
+        // Structured Fields does only support 3 decimal places for some reason. We still provide
+        // all decimal places, but other parsers will likely round the values to 3 places. The
+        // min values need to be rounded down, the max values need to be rounded up to ensure that
+        // the coordinates are in the bbox.
         BoundingBox bbox = result.getSpatialExtent().get();
         spatialExtentHeader =
             String.format(
@@ -392,10 +392,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                 bbox.getYmin(),
                 bbox.getXmax(),
                 bbox.getYmax());
-        // spatialExtentHeader = String.format("%s, %s, %s, %s", roundTo3Places(bbox.getXmin(),
-        // RoundingMode.DOWN), roundTo3Places(bbox.getYmin(), RoundingMode.DOWN),
-        // roundTo3Places(bbox.getXmax(), RoundingMode.UP), roundTo3Places(bbox.getYmax(),
-        // RoundingMode.UP));
       }
 
       if (result.getTemporalExtent().isPresent()) {
@@ -421,9 +417,9 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     }
 
     // TODO determine numberMatched, numberReturned and optionally return them as OGC-numberMatched
-    // and OGC-numberReturned headers also when streaming the response
+    //      and OGC-numberReturned headers also when streaming the response
     // TODO For now remove the "next" links from the headers since at this point we don't know,
-    // whether there will be a next page
+    //      whether there will be a next page
 
     response =
         prepareSuccessResponse(
@@ -454,10 +450,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     }
 
     return response.entity(Objects.nonNull(bytes) ? bytes : streamingOutput).build();
-  }
-
-  private static String roundTo3Places(double value, RoundingMode mode) {
-    return BigDecimal.valueOf(value).setScale(3, mode).toPlainString();
   }
 
   private StreamingOutput stream(

@@ -386,7 +386,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
   }
 
   // TODO: to InputFormat extension matching the mediaType
-  static FeatureTokenSource getFeatureSource(
+  private static FeatureTokenSource getFeatureSource(
       ApiMediaType mediaType, InputStream requestBody, Optional<String> nullValue) {
 
     FeatureTokenDecoderGeoJson featureTokenDecoderGeoJson =
