@@ -25,7 +25,7 @@ import javax.inject.Singleton;
  * @scopeEn Clients can discover, access, use, and update styles in the following stylesheet
  *     encodings:
  *     <p><code>
- * - Mapbox/MapLbire Style
+ * - Mapbox/MapLibre Style
  * - OGC SLD 1.0
  * - OGC SLD 1.1
  * - QGIS QML

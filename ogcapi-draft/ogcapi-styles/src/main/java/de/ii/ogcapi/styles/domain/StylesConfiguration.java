@@ -60,7 +60,7 @@ import org.immutables.value.Value;
  *     sein (d.h. `templated` ist `true`) und als Parameter `{serviceUrl}` enthalten.
  *     </code>
  * @langEn ### Layer Control
- *     <p>The layer control dialog in the webmap is activated via the 'webmapWithLayerControl'
+ *     <p>The layer control dialog in the webmap is activated via the `webmapWithLayerControl`
  *     option (see 'Options' below).
  *     <p>The dialog can be configured in the MapLibre style metadata (member
  *     `ldproxy:layerControl`). On the top level there are the following JSON members:
