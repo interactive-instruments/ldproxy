@@ -24,20 +24,78 @@ import org.immutables.value.Value;
 
 /**
  * @langEn Access control for all API operations (combination of endpoint and HTTP method).
- *     <p>The control mechanism is based on scopes, currently only two exist:
+ *     <p>The control mechanism is based on permissions, scopes and roles. A scope is a predefined
+ *     group of permissions, these scopes are available:
  *     <p><code>
- * - `write`: every operation with HTTP method `POST`, `PUT`, `PATCH` or `DELETE`
- * - `read`: any other operation
+ * - `discover`: access API landing pages and OpenAPI definitions
+ * - `metadata`: access any other metadata
+ * - `data:read`: access features
+ * - `data:write`: mutate features
+ * - `data`: includes `data:read` and `data:write`
+ * - `tiles`: access tiles
+ * - `styles:read`: access styles
+ * - `styles:write`: mutate styles
+ * - `styles`: includes `styles:read` and `styles:write`
+ * - `queries:read`: access stored queries
+ * - `queries:write`: mutate stored queries
+ * - `queries`: includes `queries:read` and `queries:write`
+ * - `routes:read`: access stored routes
+ * - `routes:write`: mutate stored routes
+ * - `routes`: includes `routes:read` and `routes:write`
+ * - `read`: includes `discover`, `metadata`, `data:read`, `tiles`, `styles:read`, `queries:read` and `routes:write`
+ * - `write`: includes `data:write`, `styles:write`, `queries:write` and `routes:write`
  * </code>
+ *     <p>Permissions are a combination of a scope prefix and an OpenAPI operation id (without any
+ *     prefix), for example `data:getItems` or `tiles:getTile`. These can be used for a more
+ *     fine-grained control.
+ *     <p>Roles are custom groups of scopes and/or permissions that are defined in `roles`.
+ *     <p>**Data-specific permissions**
+ *     <p>The scopes and permissions described above will permit access to any API and collection.
+ *     To restrict the access to specific APIs or collections, a suffix can be added to scopes and
+ *     permissions, for example `read::daraa` or `data:getItems::daraa:AeronauticSrf`.
+ *     <p>**Role `public`**
+ *     <p>The special role `public` defines the list of scopes and/or permissions that every user
+ *     possesses, if authenticated or not.
+ *     <p>**Authenticated users**
  *     <p>To support authenticated users, a bearer token has to be included in the `Authorization`
  *     header in requests to the API. Validation and evaluation of these tokens has to be configured
  *     in the [global configuration](../application/70-reference.md).
  * @langDe Absicherung für alle API Operationen (Kombination aus Endpunkt und HTTP-Methode).
- *     <p>Die Absicherung basiert auf Scopes, aktuell existieren nur zwei:
+ *     <p>Die Absicherung basiert auf Berechtigungen, Scopes und Rollen. Ein Scope ist eine
+ *     vordefinierte Gruppe von Berechtigungen, diese Scopes sind verfügbar:
  *     <p><code>
- * - `write`: alle Operationen mit HTTP-Methode `POST`, `PUT`, `PATCH` oder `DELETE`
- * - `read`: alle anderen Operationen
+ * - `discover`: Lesen von API Landing Pages und OpenAPI Definitionen
+ * - `metadata`: Lesen vopn anderen Metadaten
+ * - `data:read`: Lesen von Features
+ * - `data:write`: Ändern von Features
+ * - `data`: enthält `data:read` und `data:write`
+ * - `tiles`: Lesen von Tiles
+ * - `styles:read`: Lesen von Styles
+ * - `styles:write`: Ändern von Styles
+ * - `styles`: enthält `styles:read` und `styles:write`
+ * - `queries:read`: Lesen von Stored Queries
+ * - `queries:write`: Ändern von Stored Queries
+ * - `queries`: enthält `queries:read` und `queries:write`
+ * - `routes:read`: Lesen von Stored Routes
+ * - `routes:write`: Ändern von Stored Routes
+ * - `routes`: enthält `routes:read` und `routes:write`
+ * - `read`: enthält `discover`, `metadata`, `data:read`, `tiles`, `styles:read`, `queries:read` und `routes:write`
+ * - `write`: enthält `data:write`, `styles:write`, `queries:write` und `routes:write`
  * </code>
+ *     <p>Berechtigungen sind eine Kombination aus Scope-Prefix und einer OpenAPI Operation-Id (ohne
+ *     jeglichen Prefix), z.B. `data:getItems` oder `tiles:getTile`. Diese können für eine
+ *     fein-granularere Absicherung verwendet werden.
+ *     <p>Rollen sind benutzerdefinierte Gruppen von Scopes und/oder Berechtigungen, die in `roles`
+ *     definiert werden.
+ *     <p>**Daten-spezifische Berechtigungen**
+ *     <p>Die oben beschiebenen Scopes und Berechtigungen gewähren Zugriff zu jeder API und
+ *     Collection. Um den Zugriff auf bestimmte APIs oder Collections einzuschränken, kann ein
+ *     Suffix zu Scopes und Berechtigungen hinzugefügt werden, z.B. `read::daraa` oder
+ *     `data:getItems::daraa:AeronauticSrf`.
+ *     <p>**Rolle `public`**
+ *     <p>Die spezielle Rolle `public` definiert die Liste der Scopes und/oder Berechtigungen, die
+ *     jeder Benutzer besitzt, ob angemeldet oder nicht. authenticated or not.
+ *     <p>**Authentifizierte Benutzer**
  *     <p>Um authentifizierte Benutzer zu unterstützen, muss ein Bearer-Token im
  *     `Authorization`-Header in Anfragen an die API inkludiert werden. Die Validierung und
  *     Auswertung dieser Tokens muss in der [globalen Konfiguration](../application/70-reference.md)
@@ -118,9 +176,9 @@ public interface ApiSecurity {
   Set<String> getPublicScopes();
 
   /**
-   * @langEn Definition of roles, the key is the role name, the value a list of permissions. The
-   *     role `public` defines the list of permissions that every user possesses, if authenticated
-   *     or not.
+   * @langEn Definition of roles, the key is the role name, the value a list of scopes and/or
+   *     permissions. The role `public` defines the list of permissions that every user possesses,
+   *     if authenticated or not.
    * @langDe Definition von Rollen, der Key ist der Name der Rolle, der Werte eine Liste von
    *     Berechtigungen. Die Rolle `public` definiert die Liste der Berechtigungen, die jeder
    *     Benutzer besitzt, ob angemeldet oder nicht.
