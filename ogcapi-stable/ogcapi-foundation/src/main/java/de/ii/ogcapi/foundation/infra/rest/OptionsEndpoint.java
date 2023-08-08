@@ -120,7 +120,10 @@ public class OptionsEndpoint implements EndpointExtension {
                 "Content-Crs",
                 "Authorization",
                 "Prefer",
-                "If-Match"));
+                "If-Match",
+                "If-None-Match",
+                "If-Modified-Since",
+                "If-Unmodified-Since"));
     return Response.ok(methods)
         .allow(supportedMethods)
         // add variants
