@@ -1,5 +1,15 @@
 # Changelog
 
+## v3.4.2 (08/08/2023)
+
+#### Fixed bugs
+
+-  fix feature mutation operations [#1027](https://github.com/interactive-instruments/ldproxy/issues/1027)
+-  Collections without a tileset in the tile provider (part 1) [#1011](https://github.com/interactive-instruments/ldproxy/issues/1011)
+-  JSON-FG not updated for the Search module [#1009](https://github.com/interactive-instruments/ldproxy/issues/1009)
+-  Incorrect conversion of CQL2 to SQL  [#1007](https://github.com/interactive-instruments/ldproxy/issues/1007)
+
+---
 ## v3.4.1 (21/06/2023)
 
 #### Improvements
