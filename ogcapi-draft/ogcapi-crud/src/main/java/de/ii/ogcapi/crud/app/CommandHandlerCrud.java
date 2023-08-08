@@ -24,7 +24,7 @@ public interface CommandHandlerCrud {
 
   Response patchItemResponse(QueryInputFeatureReplace queryInput, ApiRequestContext requestContext);
 
-  Response deleteItemResponse(QueryInputFeatureDelete queryInput, ApiRequestContext requestContext);
+  Response deleteItemResponse(QueryInputFeature queryInput, ApiRequestContext requestContext);
 
   @Value.Immutable
   interface QueryInputFeatureCreate {
@@ -48,15 +48,5 @@ public interface CommandHandlerCrud {
     String getFeatureType();
 
     InputStream getRequestBody();
-  }
-
-  @Value.Immutable
-  interface QueryInputFeatureDelete {
-
-    String getCollectionId();
-
-    String getFeatureId();
-
-    FeatureProvider2 getFeatureProvider();
   }
 }

@@ -290,11 +290,11 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
           api.updateItemCount(collectionId, (long) change.getFeatureIds().size());
         case UPDATE:
           change
-              .getBoundingBox()
+              .getNewBoundingBox()
               .flatMap(this::transformToCrs84)
               .ifPresent(bbox -> api.updateSpatialExtent(collectionId, bbox));
           change
-              .getInterval()
+              .getNewInterval()
               .ifPresent(
                   interval -> api.updateTemporalExtent(collectionId, TemporalExtent.of(interval)));
           break;

@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.Query;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.QueryInputFeature;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -19,6 +20,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureChange;
 import de.ii.xtraplatform.features.domain.FeatureChange.Action;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -34,14 +36,17 @@ import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -101,8 +106,10 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
         queryInput.getFeatureProvider(),
         queryInput.getCollectionId(),
         ids,
+        Optional.empty(),
         result.getSpatialExtent(),
-        convertTemporalExtent(result.getTemporalExtent()),
+        Optional.empty(),
+        convertTemporalExtentMillisecond(result.getTemporalExtent()),
         Action.CREATE);
 
     return Response.created(firstFeature).build();
@@ -114,11 +121,12 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
     EpsgCrs crs = queryInput.getQuery().getCrs().orElseGet(queryInput::getDefaultCrs);
 
-    Response feature = getFeatureWithETag(queryInput, requestContext, crs);
+    Response feature = getCurrentFeature(queryInput, requestContext, crs);
     EntityTag eTag = feature.getEntityTag();
+    Date lastModified = feature.getLastModified();
 
     Response.ResponseBuilder response =
-        queriesHandler.evaluatePreconditions(requestContext, null, eTag);
+        queriesHandler.evaluatePreconditions(requestContext, lastModified, eTag);
     if (Objects.nonNull(response)) return response.build();
 
     FeatureTokenSource featureTokenSource =
@@ -138,12 +146,17 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
     result.getError().ifPresent(FeatureStream::processStreamError);
 
+    Optional<BoundingBox> currentBbox = parseBboxHeader(feature);
+    Optional<Tuple<Long, Long>> currentTime = parseTimeHeader(feature);
+
     handleChange(
         queryInput.getFeatureProvider(),
         queryInput.getCollectionId(),
         result.getIds(),
+        currentBbox,
         result.getSpatialExtent(),
-        convertTemporalExtent(result.getTemporalExtent()),
+        convertTemporalExtentSecond(currentTime),
+        convertTemporalExtentMillisecond(result.getTemporalExtent()),
         Action.UPDATE);
 
     return Response.noContent().build();
@@ -155,17 +168,17 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
     EpsgCrs crs = queryInput.getQuery().getCrs().orElseGet(queryInput::getDefaultCrs);
 
-    Response feature = getFeatureWithETag(queryInput, requestContext, crs);
+    Response feature = getCurrentFeature(queryInput, requestContext, crs);
     EntityTag eTag = feature.getEntityTag();
+    Date lastModified = feature.getLastModified();
 
     Response.ResponseBuilder response =
-        queriesHandler.evaluatePreconditions(requestContext, null, eTag);
+        queriesHandler.evaluatePreconditions(requestContext, lastModified, eTag);
     if (Objects.nonNull(response)) return response.build();
 
     byte[] prev = (byte[]) feature.getEntity();
     InputStream merged =
         new SequenceInputStream(new ByteArrayInputStream(prev), queryInput.getRequestBody());
-    LOGGER.debug("PREV {}", new String(prev, StandardCharsets.UTF_8));
 
     FeatureTokenSource mergedSource =
         getFeatureSource(
@@ -182,19 +195,63 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
     result.getError().ifPresent(FeatureStream::processStreamError);
 
+    Optional<BoundingBox> currentBbox = parseBboxHeader(feature);
+    Optional<Tuple<Long, Long>> currentTime = parseTimeHeader(feature);
+
     handleChange(
         queryInput.getFeatureProvider(),
         queryInput.getCollectionId(),
         result.getIds(),
+        currentBbox,
         result.getSpatialExtent(),
-        convertTemporalExtent(result.getTemporalExtent()),
+        convertTemporalExtentSecond(currentTime),
+        convertTemporalExtentMillisecond(result.getTemporalExtent()),
         Action.UPDATE);
 
     return Response.noContent().build();
   }
 
-  private Response getFeatureWithETag(
-      QueryInputFeatureReplace queryInput, ApiRequestContext requestContext, EpsgCrs crs) {
+  @Override
+  public Response deleteItemResponse(
+      QueryInputFeature queryInput, ApiRequestContext requestContext) {
+
+    Response feature = getCurrentFeature(queryInput, requestContext, OgcCrs.CRS84);
+
+    EntityTag eTag = feature.getEntityTag();
+    Date lastModified = feature.getLastModified();
+
+    Response.ResponseBuilder response =
+        queriesHandler.evaluatePreconditions(requestContext, lastModified, eTag);
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
+
+    FeatureTransactions.MutationResult result =
+        queryInput
+            .getFeatureProvider()
+            .transactions()
+            .deleteFeature(queryInput.getCollectionId(), queryInput.getFeatureId());
+
+    result.getError().ifPresent(FeatureStream::processStreamError);
+
+    Optional<BoundingBox> currentBbox = parseBboxHeader(feature);
+    Optional<Tuple<Long, Long>> currentTime = parseTimeHeader(feature);
+
+    handleChange(
+        queryInput.getFeatureProvider(),
+        queryInput.getCollectionId(),
+        result.getIds(),
+        currentBbox,
+        result.getSpatialExtent(),
+        convertTemporalExtentSecond(currentTime),
+        convertTemporalExtentMillisecond(result.getTemporalExtent()),
+        Action.DELETE);
+
+    return Response.noContent().build();
+  }
+
+  private @NotNull Response getCurrentFeature(
+      QueryInputFeature queryInput, ApiRequestContext requestContext, EpsgCrs crs) {
     try {
       if (formats == null) {
         formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class);
@@ -203,6 +260,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
       ApiRequestContext requestContextGeoJson =
           new Builder()
               .from(requestContext)
+              .request(Optional.empty())
               .requestUri(
                   requestContext
                       .getUriCustomizer()
@@ -229,52 +287,91 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
       return queriesHandler.handle(Query.FEATURE, queryInput, requestContextGeoJson);
     } catch (URISyntaxException e) {
-      return null;
+      throw new IllegalStateException(
+          String.format(
+              "Could not retrieve current GeoJSON feature for evaluating preconditions. Reason: %s",
+              e.getMessage()),
+          e);
     }
-  }
-
-  @Override
-  public Response deleteItemResponse(
-      QueryInputFeatureDelete queryInput, ApiRequestContext requestContext) {
-
-    FeatureTransactions.MutationResult result =
-        queryInput
-            .getFeatureProvider()
-            .transactions()
-            .deleteFeature(queryInput.getCollectionId(), queryInput.getFeatureId());
-
-    result.getError().ifPresent(FeatureStream::processStreamError);
-
-    handleChange(
-        queryInput.getFeatureProvider(),
-        queryInput.getCollectionId(),
-        result.getIds(),
-        result.getSpatialExtent(),
-        convertTemporalExtent(result.getTemporalExtent()),
-        Action.DELETE);
-
-    return Response.noContent().build();
   }
 
   private void handleChange(
       FeatureProvider2 featureProvider,
       String collectionId,
       List<String> ids,
-      Optional<BoundingBox> bbox,
-      Optional<Interval> interval,
+      Optional<BoundingBox> oldBbox,
+      Optional<BoundingBox> newBbox,
+      Optional<Interval> oldInterval,
+      Optional<Interval> newInterval,
       Action action) {
     FeatureChange change =
         ImmutableFeatureChange.builder()
             .action(action)
             .featureType(collectionId)
             .featureIds(ids)
-            .boundingBox(bbox)
-            .interval(interval)
+            .oldBoundingBox(oldBbox)
+            .newBoundingBox(newBbox)
+            .oldInterval(oldInterval)
+            .newInterval(newInterval)
             .build();
+    if (LOGGER.isTraceEnabled()) {
+      LOGGER.trace("Feature Change: {}", change);
+    }
     featureProvider.getChangeHandler().handle(change);
   }
 
-  private Optional<Interval> convertTemporalExtent(Optional<Tuple<Long, Long>> interval) {
+  private static Optional<BoundingBox> parseBboxHeader(Response response) {
+    // TODO this should use a structured fields parser (RFC 8941), but there are only experimental
+    // Java implementations
+    String crsHeader = response.getHeaderString("Content-Crs");
+    String bboxHeader = response.getHeaderString(FeaturesCoreQueriesHandler.BOUNDING_BOX_HEADER);
+    return Objects.nonNull(crsHeader) && Objects.nonNull(bboxHeader)
+        ? Optional.of(
+            BoundingBox.of(
+                bboxHeader, EpsgCrs.fromString(crsHeader.substring(1, crsHeader.length() - 1))))
+        : Optional.empty();
+  }
+
+  private static Optional<Tuple<Long, Long>> parseTimeHeader(Response response) {
+    // TODO this should use a structured fields parser (RFC 8941), but there are only experimental
+    // Java implementations
+    String timeHeader = response.getHeaderString(FeaturesCoreQueriesHandler.TEMPORAL_EXTENT_HEADER);
+    Optional<Tuple<Long, Long>> currentTime = Optional.empty();
+    if (Objects.nonNull(timeHeader)) {
+      Matcher startMatcher = Pattern.compile("^.*start\\s*=\\s*(\\d+).*$").matcher(timeHeader);
+      boolean startIsSet = startMatcher.find();
+      Matcher endMatcher = Pattern.compile("^.*end\\s*=\\s*(\\d+).*$").matcher(timeHeader);
+      boolean endIsSet = endMatcher.find();
+      if (startIsSet && endIsSet) {
+        currentTime =
+            Optional.of(
+                Tuple.of(
+                    Long.parseLong(startMatcher.group(1)), Long.parseLong(endMatcher.group(1))));
+      } else if (startIsSet) {
+        currentTime = Optional.of(Tuple.of(Long.parseLong(startMatcher.group(1)), null));
+      } else if (endIsSet) {
+        currentTime = Optional.of(Tuple.of(null, Long.parseLong(endMatcher.group(1))));
+      }
+    }
+    return currentTime;
+  }
+
+  private Optional<Interval> convertTemporalExtentSecond(Optional<Tuple<Long, Long>> interval) {
+    if (interval.isEmpty()) {
+      return Optional.empty();
+    }
+
+    Long begin = interval.get().first();
+    Long end = interval.get().second();
+
+    Instant beginInstant = Objects.nonNull(begin) ? Instant.ofEpochSecond(begin) : Instant.MIN;
+    Instant endInstant = Objects.nonNull(end) ? Instant.ofEpochSecond(end) : Instant.MAX;
+
+    return Optional.of(Interval.of(beginInstant, endInstant));
+  }
+
+  private Optional<Interval> convertTemporalExtentMillisecond(
+      Optional<Tuple<Long, Long>> interval) {
     if (interval.isEmpty()) {
       return Optional.empty();
     }

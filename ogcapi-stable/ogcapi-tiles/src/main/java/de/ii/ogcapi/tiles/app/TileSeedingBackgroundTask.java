@@ -20,6 +20,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.features.domain.DatasetChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.services.domain.TaskContext;
@@ -304,34 +305,55 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
     return change -> {
       String collectionId =
           FeaturesCoreConfiguration.getCollectionId(api.getData(), change.getFeatureType());
+      boolean tilesDeleted = false;
       switch (change.getAction()) {
-        case CREATE:
         case UPDATE:
+          // if old and new bbox intersect, merge them, otherwise delete tiles separately
           change
-              .getBoundingBox()
-              .ifPresent(
-                  bbox -> {
-                    try {
-                      tilesProviders.deleteTiles(
-                          api, Optional.of(collectionId), Optional.empty(), Optional.of(bbox));
-                    } catch (Exception e) {
-                      if (LOGGER.isErrorEnabled()) {
-                        LOGGER.error(
-                            "Error while deleting tiles from the tile cache after a feature change.",
-                            e);
-                      }
-                    }
-
-                    if (Objects.nonNull(trigger)) {
-                      trigger.accept(api);
-                    }
+              .getOldBoundingBox()
+              .flatMap(
+                  oldBbox ->
+                      change
+                          .getNewBoundingBox()
+                          .filter(newBbox -> BoundingBox.intersects(oldBbox, newBbox))
+                          .map(newBbox -> BoundingBox.merge(oldBbox, newBbox)))
+              .ifPresentOrElse(
+                  bbox -> deleteTiles(api, collectionId, bbox),
+                  () -> {
+                    change
+                        .getOldBoundingBox()
+                        .ifPresent(bbox -> deleteTiles(api, collectionId, bbox));
+                    change
+                        .getNewBoundingBox()
+                        .ifPresent(bbox -> deleteTiles(api, collectionId, bbox));
                   });
+          tilesDeleted =
+              change.getOldBoundingBox().isPresent() || change.getNewBoundingBox().isPresent();
+          break;
+        case CREATE:
+          change.getNewBoundingBox().ifPresent(bbox -> deleteTiles(api, collectionId, bbox));
+          tilesDeleted = change.getNewBoundingBox().isPresent();
           break;
         case DELETE:
-          // NOTE: we would need the extent of the deleted feature to update the cache
+          change.getOldBoundingBox().ifPresent(bbox -> deleteTiles(api, collectionId, bbox));
+          tilesDeleted = change.getOldBoundingBox().isPresent();
           break;
       }
+      if (tilesDeleted && Objects.nonNull(trigger)) {
+        trigger.accept(api);
+      }
     };
+  }
+
+  private void deleteTiles(OgcApi api, String collectionId, BoundingBox bbox) {
+    try {
+      tilesProviders.deleteTiles(
+          api, Optional.of(collectionId), Optional.empty(), Optional.of(bbox));
+    } catch (Exception e) {
+      if (LOGGER.isErrorEnabled()) {
+        LOGGER.error("Error while deleting tiles from the tile cache after a feature change.", e);
+      }
+    }
   }
 
   private Optional<TilesConfiguration> getTilesConfiguration(

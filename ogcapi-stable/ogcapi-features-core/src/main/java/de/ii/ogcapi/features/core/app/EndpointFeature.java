@@ -26,6 +26,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.FeatureSchemaBase.Scope;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.web.domain.ETag.Type;
@@ -140,7 +141,8 @@ public class EndpointFeature extends EndpointFeaturesDefinition {
             coreConfiguration.getCoordinatePrecision(),
             queryParameterSet,
             featureId,
-            Optional.of(Type.STRONG));
+            Optional.of(Type.STRONG),
+            Scope.QUERIES);
 
     Builder queryInputBuilder =
         new Builder()
