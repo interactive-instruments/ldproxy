@@ -57,7 +57,7 @@ const setStyleGeoJson = (map, styleUrl, removeZoomLevelConstraints) => {
           .join(" | ");
       }
 
-      map.setStyle(dataStyle);
+      map.setStyle(dataStyle, { diff: false });
     });
 };
 
@@ -125,7 +125,7 @@ const setStyleVector = (
         };
       }
 
-      map.setStyle(dataStyle);
+      map.setStyle(dataStyle, { diff:false });
 
       if (popup === "CLICK_PROPERTIES") {
         addPopupProps(

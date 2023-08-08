@@ -25,7 +25,7 @@ import javax.inject.Singleton;
  * @scopeEn Clients can discover, access, use, and update styles in the following stylesheet
  *     encodings:
  *     <p><code>
- * - Mapbox Style
+ * - Mapbox/MapLibre Style
  * - OGC SLD 1.0
  * - OGC SLD 1.1
  * - QGIS QML
@@ -33,15 +33,15 @@ import javax.inject.Singleton;
  * - ArcGIS Pro (lyrx)
  * - 3D Tiles Styling
  *     </code>
- *     <p>Styles available as Mapbox Style can be used by ldproxy to render features and vector
- *     tiles where MapLibre is used as the map client. Styles available as 3D Tiles Styling can be
- *     used by ldproxy to render features and vector tiles where Cesium is used as the map client.
- *     See `defaultStyle` in [HTML](html.md), and `style` in [Features HTML](features_-_html.md) and
- *     [Tiles](tiles.md).
+ *     <p>Styles available as Mapbox/MapLibre Style can be used by ldproxy to render features and
+ *     vector tiles where MapLibre is used as the map client. Styles available as 3D Tiles Styling
+ *     can be used by ldproxy to render features and vector tiles where Cesium is used as the map
+ *     client. See `defaultStyle` in [HTML](html.md), and `style` in [Features
+ *     HTML](features_-_html.md) and [Tiles](tiles.md).
  * @scopeDe Clients können Styles in den folgenden Style-Formaten entdecken, darauf zugreifen, sie
  *     verwenden und aktualisieren:
  *     <p><code>
- * - Mapbox Style
+ * - Mapbox/MapLibre Style
  * - OGC SLD 1.0
  * - OGC SLD 1.1
  * - QGIS QML
@@ -49,11 +49,12 @@ import javax.inject.Singleton;
  * - ArcGIS Pro (lyrx)
  * - 3D Tiles Styling
  *     </code>
- *     <p>Styles, die als Mapbox Style verfügbar sind, können von ldproxy verwendet werden, um
- *     Features und Vektorkacheln zu rendern, wenn MapLibre als Kartenclient verwendet wird. Styles,
- *     die als 3D Tiles Styling verfügbar sind, können von ldproxy verwendet werden, um Features und
- *     3D Tiles zu rendern, wenn Cesium als Kartenclient verwendet wird. Siehe `defaultStyle` in
- *     [HTML](html.md), und `style` in [Features HTML](features_-_html.md) und [Tiles](tiles.md).
+ *     <p>Styles, die als Mapbox/MapLibre Style verfügbar sind, können von ldproxy verwendet werden,
+ *     um Features und Vektorkacheln zu rendern, wenn MapLibre als Kartenclient verwendet wird.
+ *     Styles, die als 3D Tiles Styling verfügbar sind, können von ldproxy verwendet werden, um
+ *     Features und 3D Tiles zu rendern, wenn Cesium als Kartenclient verwendet wird. Siehe
+ *     `defaultStyle` in [HTML](html.md), und `style` in [Features HTML](features_-_html.md) und
+ *     [Tiles](tiles.md).
  * @conformanceEn This module implements requirements of the conformance classes *Core*, *Manage
  *     Styles*, *Validation of styles*, *Resources*, *Manage resources*, *Mapbox Style*, *OGC SLD
  *     1.0*, *OGC SLD 1.1*, *HTML* and *Style information* from the draft specification [OGC API -
@@ -67,7 +68,7 @@ import javax.inject.Singleton;
  *     derivation of a stylesheet in another stylesheet encoding is not supported.
  *     <p>The following limitations apply for the stylesheet encodings:
  *     <p><code>
- * - Mapbox Style: The stylesheets are parsed into an internal Java object. Not all structures are
+ * - Mapbox/MapLibre Style: The stylesheets are parsed into an internal Java object. Not all structures are
  *     supported or validated:
  *   - Only a single sprite is supported.
  *   - Terrain is not supported.
@@ -85,7 +86,7 @@ import javax.inject.Singleton;
  *     automatische Ableitung eines Stylesheets in einem anderen Format wird nicht unterstützt.
  *     <p>Die folgenden Einschränkungen gelten für die Style-Formate:
  *     <p><code>
- * - Mapbox Style: Die Stylesheets werden in ein internes Java-Objekt geparst. Nicht alle Strukturen werden unterstützt oder validiert:
+ * - Mapbox/MapLibre Style: Die Stylesheets werden in ein internes Java-Objekt geparst. Nicht alle Strukturen werden unterstützt oder validiert:
  *   - Nur ein einzelnes Sprite wird unterstützt.
  *   - Terrain wird nicht unterstützt.
  *   - Textstrings (z.B. Farbwerte) werden nicht validiert.
