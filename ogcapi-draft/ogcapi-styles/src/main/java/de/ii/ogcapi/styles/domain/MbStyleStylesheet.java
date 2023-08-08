@@ -77,6 +77,8 @@ public abstract class MbStyleStylesheet {
 
   public abstract List<MbStyleLayer> getLayers();
 
+  public abstract Optional<MbStyleTerrain> getTerrain();
+
   // TODO: replace with SchemaDeriverStyleLayer
   @JsonIgnore
   public List<StyleLayer> getLayerMetadata(

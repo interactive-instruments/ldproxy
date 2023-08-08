@@ -26,6 +26,8 @@ public interface FeaturesCoreQueriesHandler
   String SCOPE_DATA = "data";
   Tuple<Scope, String> SCOPE_DATA_READ = Tuple.of(Scope.READ, SCOPE_DATA);
   Tuple<Scope, String> SCOPE_DATA_WRITE = Tuple.of(Scope.WRITE, SCOPE_DATA);
+  String BOUNDING_BOX_HEADER = "Content-Bounding-Box";
+  String TEMPORAL_EXTENT_HEADER = "Content-Temporal-Extent";
 
   @Override
   Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();

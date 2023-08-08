@@ -76,8 +76,8 @@ const MapLibre = ({
         popup={popup}
         custom={custom}
       />
-      {layerGroupControl && Object.keys(layerGroupControl).length > 0 && (
-        <LayerControl layerGroups={layerGroupControl} />
+      {layerGroupControl && layerGroupControl.length > 0 && (
+        <LayerControl entries={layerGroupControl} />
       )}
       {children}
     </Map>
@@ -102,7 +102,7 @@ MapLibre.propTypes = {
   defaultStyle: PropTypes.object,
   // eslint-disable-next-line react/forbid-prop-types
   fitBoundsOptions: PropTypes.object,
-  layerGroupControl: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string)),
+  layerGroupControl: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.object, PropTypes.string])),
   ...Configuration.propTypes,
 };
 
@@ -110,8 +110,7 @@ MapLibre.defaultProps = {
   styleUrl: null,
   removeZoomLevelConstraints: false,
   backgroundUrl: "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-  attribution:
-    '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+  attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
   center: [0, 0],
   zoom: 0,
   bounds: null,
