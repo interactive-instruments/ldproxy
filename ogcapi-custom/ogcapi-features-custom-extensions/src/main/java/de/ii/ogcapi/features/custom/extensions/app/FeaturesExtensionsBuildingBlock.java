@@ -27,8 +27,8 @@ import javax.inject.Singleton;
  * -  When using POST, query parameters are transmitted in encrypted form when using HTTPS and are not logged in request
  *     logs. This may be desirable for security or privacy reasons.
  *     </code>
- *     <p>Note that this capability has been deprecated. Instead, use an Ad-hoc Query from
- *     [Features - Search](#features_-_search.html).
+ *     <p>Note that this capability has been deprecated. Instead, use an Ad-hoc Query from [Features
+ *     - Search](#features_-_search.html).
  *     <p>The module further adds support for the following query parameter:
  *     <p><code>
  * - `intersects`: if the parameter is specified, the features are
