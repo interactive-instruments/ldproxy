@@ -71,6 +71,9 @@ module.exports = {
         title: `FOO`,
       },
       publicPath: "",
+      targets: {
+        browsers: ['defaults'],
+      },
     }),
     mocha(),
     copy({
