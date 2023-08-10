@@ -31,7 +31,6 @@ import org.immutables.value.Value;
  * </code>
  */
 @Value.Immutable
-@Value.Style(builder = "new")
 @JsonDeserialize(builder = ImmutablePubSubConfiguration.Builder.class)
 public interface PubSubConfiguration extends ExtensionConfiguration {
 
@@ -49,6 +48,6 @@ public interface PubSubConfiguration extends ExtensionConfiguration {
 
   @Override
   default Builder getBuilder() {
-    return new ImmutablePubSubConfiguration.Builder();
+    return ImmutablePubSubConfiguration.builder();
   }
 }

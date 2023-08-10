@@ -7,14 +7,11 @@
  */
 package de.ii.ogcapi.pubsub.app;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3BlockingClient;
-import de.ii.ogcapi.pubsub.domain.ImmutablePublicationContext.Builder;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@JsonDeserialize(builder = Builder.class)
 public interface PublicationContext {
 
   Mqtt3BlockingClient getClient();

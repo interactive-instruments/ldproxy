@@ -64,17 +64,14 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
-    return new ImmutablePubSubConfiguration.Builder().enabled(false).build();
+    return ImmutablePubSubConfiguration.builder().enabled(false).build();
   }
 
   @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     providers
         .getFeatureProvider(api.getData())
-        .ifPresent(
-            provider -> {
-              provider.getChangeHandler().addListener(onFeatureChange(api));
-            });
+        .ifPresent(provider -> provider.getChangeHandler().addListener(onFeatureChange(api)));
 
     Map<String, Broker> brokers =
         api.getData()

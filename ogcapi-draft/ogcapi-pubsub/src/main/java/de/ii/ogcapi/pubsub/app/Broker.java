@@ -8,23 +8,12 @@
 package de.ii.ogcapi.pubsub.app;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.hash.Funnel;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableBroker.Builder.class)
 public interface Broker {
-
-  @SuppressWarnings("UnstableApiUsage")
-  Funnel<Broker> FUNNEL =
-      (from, into) -> {
-        into.putString(from.getHost(), StandardCharsets.UTF_8);
-        into.putInt(from.getPort());
-        from.getUsername().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
-        from.getPassword().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
-      };
 
   String getHost();
 
