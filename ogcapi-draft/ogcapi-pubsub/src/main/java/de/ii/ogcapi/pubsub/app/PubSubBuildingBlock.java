@@ -21,11 +21,6 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApi;
-import de.ii.ogcapi.pubsub.domain.Broker;
-import de.ii.ogcapi.pubsub.domain.ImmutablePubSubConfiguration;
-import de.ii.ogcapi.pubsub.domain.ImmutablePublicationContext;
-import de.ii.ogcapi.pubsub.domain.PubSubConfiguration;
-import de.ii.ogcapi.pubsub.domain.PublicationContext;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -47,8 +42,8 @@ import org.slf4j.LoggerFactory;
  * @langDe TODO.
  * @conformanceEn TODO.
  * @conformanceDe TODO.
- * @ref:cfg {@link de.ii.ogcapi.pubsub.domain.PubSubConfiguration}
- * @ref:cfgProperties {@link de.ii.ogcapi.pubsub.domain.ImmutablePubSubConfiguration}
+ * @ref:cfg {@link de.ii.ogcapi.pubsub.app.PubSubConfiguration}
+ * @ref:cfgProperties {@link de.ii.ogcapi.pubsub.app.ImmutablePubSubConfiguration}
  */
 @Singleton
 @AutoBind

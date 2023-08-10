@@ -5,21 +5,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.pubsub.domain;
+package de.ii.ogcapi.pubsub.app;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3BlockingClient;
+import de.ii.ogcapi.pubsub.domain.ImmutablePublicationContext.Builder;
 import org.immutables.value.Value;
-import org.jetbrains.annotations.NotNull;
 
 @Value.Immutable
-@JsonDeserialize(builder = ImmutablePublicationContext.Builder.class)
+@JsonDeserialize(builder = Builder.class)
 public interface PublicationContext {
 
-  @NotNull
   Mqtt3BlockingClient getClient();
 
-  @NotNull
   MqttQos getQos();
 }
