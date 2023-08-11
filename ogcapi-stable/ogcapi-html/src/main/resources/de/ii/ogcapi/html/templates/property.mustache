@@ -1,6 +1,6 @@
 {{#hasValues}}
 <div class="row my-1">
-<div class="col-md-{{#isMapRight}}6{{/isMapRight}}{{^isMapRight}}4{{/isMapRight}} {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}{{#isLevel4}}pl-5x {{/isLevel4}}{{#isLevel5}}pl-5xx {{/isLevel5}}font-weight-bold text-truncate">{{#propertyTooltips}}{{#description}}<i class="icon-info" data-toggle="tooltip" data-placement="top" title="{{.}}"></i>{{/description}}{{/propertyTooltips}}<span style="vertical-align: middle;">{{name}}</span></div>
+<div class="col-md-{{#isMapRight}}6{{/isMapRight}}{{^isMapRight}}4{{/isMapRight}} {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}{{#isLevel4}}pl-5x {{/isLevel4}}{{#isLevel5}}pl-5xx {{/isLevel5}}font-weight-bold text-truncate" data-property="{{originalName}}">{{#propertyTooltips}}{{#description}}<i class="icon-info" data-toggle="tooltip" data-placement="top" title="{{.}}"></i>{{/description}}{{/propertyTooltips}}<span style="vertical-align: middle;">{{name}}</span></div>
 <div class="col-md-{{#isMapRight}}6{{/isMapRight}}{{^isMapRight}}8{{/isMapRight}}">
 <ul class="list-unstyled">
 {{#values}}
@@ -16,7 +16,7 @@
 {{#isObject}}
 {{^isInArray}}
 <div class="row my-1">
-<div class="col-md-12 {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}{{#isLevel4}}pl-5x {{/isLevel4}}{{#isLevel5}}pl-5xx {{/isLevel5}}font-weight-bold text-truncate">{{#propertyTooltips}}{{#description}}<i class="icon-info" data-toggle="tooltip" data-placement="top" title="{{.}}"></i>{{/description}}{{/propertyTooltips}}<span style="vertical-align: middle;">{{name}}</span></div>
+<div class="col-md-12 {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}{{#isLevel4}}pl-5x {{/isLevel4}}{{#isLevel5}}pl-5xx {{/isLevel5}}font-weight-bold text-truncate" data-property="{{originalName}}">{{#propertyTooltips}}{{#description}}<i class="icon-info" data-toggle="tooltip" data-placement="top" title="{{.}}"></i>{{/description}}{{/propertyTooltips}}<span style="vertical-align: middle;">{{name}}</span></div>
 </div>
 {{/isInArray}}
 {{#nestedProperties}}
@@ -25,7 +25,7 @@
 {{/isObject}}
 {{#isArray}}
 <div class="row my-1">
-<div class="col-md-12 {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}{{#isLevel4}}pl-5x {{/isLevel4}}{{#isLevel5}}pl-5xx {{/isLevel5}}font-weight-bold text-truncate">{{#propertyTooltips}}{{#description}}<i class="icon-info" data-toggle="tooltip" data-placement="top" title="{{.}}"></i>{{/description}}{{/propertyTooltips}}<span style="vertical-align: middle;">{{name}}</span></div>
+<div class="col-md-12 {{#isLevel2}}pl-4x {{/isLevel2}}{{#isLevel3}}pl-5 {{/isLevel3}}{{#isLevel4}}pl-5x {{/isLevel4}}{{#isLevel5}}pl-5xx {{/isLevel5}}font-weight-bold text-truncate" data-property="{{originalName}}">{{#propertyTooltips}}{{#description}}<i class="icon-info" data-toggle="tooltip" data-placement="top" title="{{.}}"></i>{{/description}}{{/propertyTooltips}}<span style="vertical-align: middle;">{{name}}</span></div>
 </div>
 {{#objects}}
 {{^isFirstObject}}

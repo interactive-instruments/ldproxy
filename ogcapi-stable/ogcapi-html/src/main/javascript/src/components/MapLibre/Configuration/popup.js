@@ -38,12 +38,10 @@ const showPopup = (map, popup) => (e) => {
   }
 };
 
-const showPopupProps = (map, popup) => (e) => {
-  const lngLat = firstCoordinate(e.features[0].geometry);
-  const title =
-    e.features[0].sourceLayer ||
-    e.features[0].properties.featureType ||
-    "feature";
+const getPopupContent = (e) => {
+  const title = e.features[0].sourceLayer ||
+          e.features[0].properties.featureType ||
+          "feature";
   let description = `<h5>${title}</h5><hr/><table>`;
 
   Object.keys(e.features[0].properties)
@@ -54,6 +52,12 @@ const showPopupProps = (map, popup) => (e) => {
 
   description += "</table>";
 
+  return Promise.resolve(description);
+};
+
+const showPopupProps = (map, popup) => (e) => {
+  const lngLat = firstCoordinate(e.features[0].geometry);
+
   // Ensure that if the map is zoomed out such that multiple
   // copies of the feature are visible, the popup appears
   // over the copy being pointed to.
@@ -61,8 +65,11 @@ const showPopupProps = (map, popup) => (e) => {
     lngLat[0] += e.lngLat.lng > lngLat[0] ? 360 : -360;
   }
 
+  // eslint-disable-next-line no-undef
+  const description = globalThis.getPopupContent ? globalThis.getPopupContent(e, map) : getPopupContent(e);
+
   if (lngLat && description) {
-    popup.setLngLat(lngLat).setHTML(description).addTo(map);
+    description.then(d => popup.setLngLat(lngLat).setHTML(d).addTo(map));
   }
 };
 
