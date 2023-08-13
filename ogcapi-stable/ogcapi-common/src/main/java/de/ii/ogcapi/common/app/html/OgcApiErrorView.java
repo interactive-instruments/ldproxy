@@ -9,7 +9,7 @@ package de.ii.ogcapi.common.app.html;
 
 import com.google.common.base.Charsets;
 import de.ii.ogcapi.foundation.domain.ApiErrorMessage;
-import io.dropwizard.views.View;
+import io.dropwizard.views.common.View;
 
 public class OgcApiErrorView extends View {
 
