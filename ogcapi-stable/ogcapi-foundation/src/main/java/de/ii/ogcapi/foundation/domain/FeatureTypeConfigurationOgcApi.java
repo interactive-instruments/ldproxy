@@ -28,6 +28,17 @@ public interface FeatureTypeConfigurationOgcApi
         ExtendableConfiguration,
         Buildable<FeatureTypeConfigurationOgcApi> {
 
+  static FeatureTypeConfigurationOgcApi replaceOrAddExtensions(
+      FeatureTypeConfigurationOgcApi collectionOld, ExtensionConfiguration... extensions) {
+    List<ExtensionConfiguration> extensionsNew =
+        ExtensionConfiguration.replaceOrAddExtensions(collectionOld.getExtensions(), extensions);
+
+    return new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+        .from(collectionOld)
+        .extensions(extensionsNew)
+        .build();
+  }
+
   abstract class Builder implements BuildableBuilder<FeatureTypeConfigurationOgcApi> {
 
     // jackson should append to instead of replacing extensions

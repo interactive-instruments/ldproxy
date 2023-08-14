@@ -9,13 +9,10 @@ package de.ii.ogcapi.tiles.domain;
 
 import static de.ii.xtraplatform.tiles.domain.TilesetFeatures.COMBINE_ALL;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration.TileCacheType;
@@ -60,12 +57,12 @@ public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2
 
   @Override
   public String getSubject() {
-    return "api[buildingBlock=TILES]";
+    return "building block TILES";
   }
 
   @Override
   public String getDescription() {
-    return "the TILES building block will be migrated to a separate tile provider entity";
+    return "is deprecated and will be migrated to a separate tile provider entity";
   }
 
   @Override
@@ -86,7 +83,10 @@ public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2
 
     // TODO: might be in any group
     return !getContext()
-        .exists(Identifier.from(TilesProviders.toTilesId(apiData.getId()), "providers"));
+        .exists(
+            identifier ->
+                Objects.equals(identifier.id(), TilesProviders.toTilesId(apiData.getId()))
+                    && identifier.path().get(identifier.path().size() - 1).equals("providers"));
   }
 
   @Override
@@ -117,22 +117,7 @@ public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2
             .minimumSizeInPixel(null)
             .build();
 
-    return new ImmutableOgcApiDataV2.Builder()
-        .from(entityData)
-        .extensions(
-            new ImmutableList.Builder<ExtensionConfiguration>()
-                // do not touch any other extensions
-                .addAll(
-                    entityData.getExtensions().stream()
-                        .filter(
-                            ext ->
-                                !ext.getBuildingBlock()
-                                    .equals(tilesConfiguration.getBuildingBlock()))
-                        .collect(Collectors.toUnmodifiableList()))
-                // add the Tiles and TileMatrixSets configuration
-                .add(tilesConfiguration)
-                .build())
-        .build();
+    return OgcApiDataV2.replaceOrAddExtensions(entityData, tilesConfiguration);
   }
 
   @Override

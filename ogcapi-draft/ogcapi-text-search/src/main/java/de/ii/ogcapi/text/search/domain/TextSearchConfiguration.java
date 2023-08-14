@@ -42,6 +42,7 @@ public interface TextSearchConfiguration extends ExtensionConfiguration {
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
+  @Override
   default Builder getBuilder() {
     return new ImmutableTextSearchConfiguration.Builder();
   }

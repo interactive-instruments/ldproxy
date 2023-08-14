@@ -17,8 +17,15 @@ import de.ii.xtraplatform.docs.JsonTypeInfoAlias;
 import de.ii.xtraplatform.store.domain.entities.Mergeable;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.Buildable;
 import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableBuilder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -74,5 +81,32 @@ public interface ExtensionConfiguration
   @Override
   default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
     return source.getBuilder().from(source).from(this).build();
+  }
+
+  static List<ExtensionConfiguration> replaceOrAddExtensions(
+      List<ExtensionConfiguration> extensions, ExtensionConfiguration... add) {
+    Map<String, ExtensionConfiguration> extensionsAdd =
+        Arrays.stream(add)
+            .collect(
+                Collectors.toMap(
+                    ExtensionConfiguration::getBuildingBlock,
+                    Function.identity(),
+                    (a, b) -> b,
+                    LinkedHashMap::new));
+
+    List<ExtensionConfiguration> extensionsNew =
+        extensions.stream()
+            .map(
+                ext -> {
+                  if (extensionsAdd.containsKey(ext.getBuildingBlock())) {
+                    return extensionsAdd.remove(ext.getBuildingBlock());
+                  }
+                  return ext;
+                })
+            .collect(Collectors.toCollection(ArrayList::new));
+
+    extensionsNew.addAll(extensionsAdd.values());
+
+    return extensionsNew;
   }
 }

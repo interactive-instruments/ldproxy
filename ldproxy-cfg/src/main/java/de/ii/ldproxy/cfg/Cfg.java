@@ -14,6 +14,8 @@ import java.nio.file.Path;
 
 public interface Cfg {
 
+  Path getEntitiesPath();
+
   Builders builder();
 
   Migrations migrations();

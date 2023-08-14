@@ -149,6 +149,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
             "Service with id '{}' is in auto mode, generating configuration ...", hydrated.getId());
       }
 
+      // hydration by dedicated hydrator extensions
       List<OgcApiDataHydratorExtension> extensions =
           extensionRegistry.getExtensionsForType(OgcApiDataHydratorExtension.class);
       extensions.sort(Comparator.comparing(OgcApiDataHydratorExtension::getSortPriority));
@@ -158,6 +159,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
         }
       }
 
+      // simple hydration by building blocks
       List<ExtensionConfiguration> configs = new ArrayList<>();
       Map<Class<?>, ApiBuildingBlock> buildingBlocks =
           extensionRegistry.getExtensionsForType(ApiBuildingBlock.class).stream()

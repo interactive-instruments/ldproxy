@@ -562,10 +562,26 @@
           "type": "object",
           "$ref": "#/$defs/TilesetFeaturesDefaults"
         },
+        "layerDefaults": {
+          "title": "layerDefaults",
+          "description": "*Deprecated* See `tilesetDefaults`.",
+          "type": "object",
+          "deprecated": true,
+          "$ref": "#/$defs/TilesetFeaturesDefaults"
+        },
         "tilesets": {
           "title": "tilesets",
           "description": "Definition of tilesets, see [Tileset](#tileset).",
           "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/TilesetFeatures"
+          }
+        },
+        "layers": {
+          "title": "layers",
+          "description": "*Deprecated* See `tilesets`.",
+          "type": "object",
+          "deprecated": true,
           "additionalProperties": {
             "$ref": "#/$defs/TilesetFeatures"
           }
@@ -644,10 +660,26 @@
           "type": "object",
           "$ref": "#/$defs/TilesetMbTilesDefaults"
         },
+        "layerDefaults": {
+          "title": "layerDefaults",
+          "description": "*Deprecated* See `tilesetDefaults`.",
+          "type": "object",
+          "deprecated": true,
+          "$ref": "#/$defs/TilesetMbTilesDefaults"
+        },
         "tilesets": {
           "title": "tilesets",
           "description": "Definition of tilesets.",
           "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/TilesetMbTiles"
+          }
+        },
+        "layers": {
+          "title": "layers",
+          "description": "*Deprecated* See `tilesets`.",
+          "type": "object",
+          "deprecated": true,
           "additionalProperties": {
             "$ref": "#/$defs/TilesetMbTiles"
           }
@@ -696,10 +728,26 @@
           "type": "object",
           "$ref": "#/$defs/TilesetHttpDefaults"
         },
+        "layerDefaults": {
+          "title": "layerDefaults",
+          "description": "*Deprecated* See `tilesetDefaults`.",
+          "type": "object",
+          "deprecated": true,
+          "$ref": "#/$defs/TilesetHttpDefaults"
+        },
         "tilesets": {
           "title": "tilesets",
           "description": "Definition of tilesets, see [Tileset](#tileset).",
           "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/TilesetHttp"
+          }
+        },
+        "layers": {
+          "title": "layers",
+          "description": "*Deprecated* See `tilesets`.",
+          "type": "object",
+          "deprecated": true,
           "additionalProperties": {
             "$ref": "#/$defs/TilesetHttp"
           }
@@ -1325,7 +1373,12 @@
         },
         "isSortable": {
           "title": "isSortable",
-          "description": "Only the direct properties of a feature type that are of type STRING, FLOAT, INTEGER,     DATE, or TIMESTAMP are eligible as sortables. This setting can be used to declare a     property as ineligible, for example, if the property is not optimized for use in queries.     If an eligible property can actually be used as sortable is decided by the provider     implementation, that might not be feasible due to technical reasons.",
+          "description": "Only the direct properties of a feature type that are of type STRING, FLOAT, INTEGER,     DATE, or DATETIME are eligible as sortables. This setting can be used to declare a property     as ineligible, for example, if the property is not optimized for use in queries. If an     eligible property can actually be used as sortable is decided by the provider     implementation, that might not be feasible due to technical reasons.",
+          "type": "boolean"
+        },
+        "isLastModified": {
+          "title": "isLastModified",
+          "description": "Identifies a DATETIME property as a property that contains the timestamp when the     feature was last modified. This information is used in optimistic locking to evaluate the     pre-conditions, if a mutation request includes a `Last-Modified` header.",
           "type": "boolean"
         },
         "properties": {

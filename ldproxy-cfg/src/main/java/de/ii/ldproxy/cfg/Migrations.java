@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.cfg;
 
+import de.ii.ogcapi.text.search.app.QueryablesMigrationV4;
 import de.ii.ogcapi.tiles.domain.TilesMigrationV4;
 import de.ii.xtraplatform.store.domain.entities.EntityDataStore;
 import de.ii.xtraplatform.store.domain.entities.EntityMigration;
@@ -18,12 +19,7 @@ public interface Migrations {
   static Migrations create(EntityDataStore<?> entityDataStore) {
     EntityMigrationContext context = entityDataStore::has;
 
-    return new Migrations() {
-      @Override
-      public List<EntityMigration<?, ?>> entity() {
-        return List.of(new TilesMigrationV4(context));
-      }
-    };
+    return () -> List.of(new TilesMigrationV4(context), new QueryablesMigrationV4(context));
   }
 
   List<EntityMigration<?, ?>> entity();

@@ -278,6 +278,11 @@ public interface ApiBuildingBlock extends ApiExtension {
     return true;
   }
 
+  @Override
+  default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return getDefaultConfiguration().getClass();
+  }
+
   ExtensionConfiguration getDefaultConfiguration();
 
   default <T extends ExtensionConfiguration> T hydrateConfiguration(T cfg) {

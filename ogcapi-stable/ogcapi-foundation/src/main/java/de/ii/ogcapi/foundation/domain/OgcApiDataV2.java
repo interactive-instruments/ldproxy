@@ -286,6 +286,14 @@ public interface OgcApiDataV2 extends ServiceData, ExtendableConfiguration {
 
   String SERVICE_TYPE = "OGC_API";
 
+  static OgcApiDataV2 replaceOrAddExtensions(
+      OgcApiDataV2 apiDataOld, ExtensionConfiguration... extensions) {
+    List<ExtensionConfiguration> extensionsNew =
+        ExtensionConfiguration.replaceOrAddExtensions(apiDataOld.getExtensions(), extensions);
+
+    return new ImmutableOgcApiDataV2.Builder().from(apiDataOld).extensions(extensionsNew).build();
+  }
+
   abstract class Builder implements EntityDataBuilder<OgcApiDataV2> {
 
     // jackson should append to instead of replacing extensions

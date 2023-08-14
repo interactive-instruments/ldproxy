@@ -19,13 +19,11 @@ import com.networknt.schema.ValidationMessage;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
-import de.ii.xtraplatform.base.domain.ImmutableStoreSourceDefault;
-import de.ii.xtraplatform.base.domain.ImmutableStoreSourceDefaultV3;
 import de.ii.xtraplatform.base.domain.Jackson;
 import de.ii.xtraplatform.base.domain.JacksonProvider;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
 import de.ii.xtraplatform.base.domain.StoreSource;
-import de.ii.xtraplatform.base.domain.StoreSourceDefaultV3;
+import de.ii.xtraplatform.base.domain.StoreSourceFsV3;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.codelists.domain.CodelistData;
 import de.ii.xtraplatform.features.domain.ProviderData;
@@ -146,43 +144,29 @@ public class LdproxyCfg implements Cfg {
         new EntityDataDefaultsStoreImpl(appContext, eventStore, jackson, () -> factories);
     this.entityDataStore =
         new EntityDataStoreImpl(
-            appContext, eventStore, jackson, () -> factories, entityDataDefaultsStore, noDefaults);
+            appContext,
+            eventStore,
+            jackson,
+            () -> factories,
+            entityDataDefaultsStore,
+            new MockBlobStore(),
+            noDefaults);
     this.entitySchemas = new HashMap<>();
     this.migrations = Migrations.create(entityDataStore);
   }
 
   private Optional<StoreConfiguration> detectStore(Path dataDirectory) {
-    StoreConfiguration v3 =
-        new ImmutableStoreConfiguration.Builder()
-            .addSources(new ImmutableStoreSourceDefaultV3.Builder().build())
-            .build();
-    StoreConfiguration v4 =
-        new ImmutableStoreConfiguration.Builder()
-            .addSources(new ImmutableStoreSourceDefault.Builder().build())
-            .build();
-
-    if (dataDirectory.resolve("store/entities").toFile().isDirectory()) {
-      System.out.println("V3");
-      return Optional.of(v3);
-    } else if (dataDirectory.resolve("entities/instances").toFile().isDirectory()) {
-      System.out.println("V4");
-      return Optional.of(v4);
-    } else if (dataDirectory.resolve("api-resources").toFile().isDirectory()) {
-      System.out.println("V3");
-      return Optional.of(v3);
-    } else if (dataDirectory.resolve("resources").toFile().isDirectory()) {
-      System.out.println("V4");
-      return Optional.of(v4);
-    }
-    // TODO: parse cfg.yml
-
-    return Optional.empty();
+    return LayoutImpl.detectSource(dataDirectory)
+        .map(
+            storeSourceFs ->
+                new ImmutableStoreConfiguration.Builder().addSources(storeSourceFs).build());
   }
 
+  @Override
   public Path getEntitiesPath() {
-    StoreSource storeSource = storeConfiguration.getSources().get(0);
+    StoreSource storeSource = storeConfiguration.getSources(dataDirectory).get(0);
 
-    return storeSource instanceof StoreSourceDefaultV3
+    return storeSource instanceof StoreSourceFsV3
         ? dataDirectory.resolve("store/entities")
         : dataDirectory.resolve("entities/instances");
   }

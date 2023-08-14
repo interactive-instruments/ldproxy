@@ -3,19 +3,29 @@
   "type": "object",
   "properties": {
     "serviceType": {
-      "enum": ["OGC_API"]
+      "enum": [
+        "OGC_API"
+      ]
     }
   },
-  "required": ["serviceType"],
+  "required": [
+    "serviceType"
+  ],
   "allOf": [
     {
       "if": {
         "properties": {
-          "serviceType": {"const": "OGC_API"}
+          "serviceType": {
+            "const": "OGC_API"
+          }
         },
-        "required": ["serviceType"]
+        "required": [
+          "serviceType"
+        ]
       },
-      "then": {"$ref": "#/$defs/OgcApiDataV2"}
+      "then": {
+        "$ref": "#/$defs/OgcApiDataV2"
+      }
     }
   ],
   "$defs": {
@@ -125,14 +135,22 @@
           "description": "Tags for this API. Every tag is a string without white space. Tags are shown in the     *API Catalog* and can be used to filter the catalog response with the query parameter     `tags`, e.g. `tags\u003dINSPIRE`.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -141,14 +159,22 @@
           "description": "[API Building Blocks](#building-blocks) configuration.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"$ref": "#/$defs/ExtensionConfiguration"}
+                "items": {
+                  "$ref": "#/$defs/ExtensionConfiguration"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"$ref": "#/$defs/ExtensionConfiguration"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "$ref": "#/$defs/ExtensionConfiguration"
+              }
             }
           ]
         },
@@ -156,7 +182,9 @@
           "title": "collections",
           "description": "Collection configurations, the key is the collection id, for the value see     [Collection](#collection) below.",
           "type": "object",
-          "additionalProperties": {"$ref": "#/$defs/FeatureTypeConfigurationOgcApi"}
+          "additionalProperties": {
+            "$ref": "#/$defs/FeatureTypeConfigurationOgcApi"
+          }
         }
       },
       "additionalProperties": false
@@ -231,14 +259,22 @@
           "description": "Keywords describing this API.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -437,14 +473,22 @@
           "description": "List of permissions that every user possesses, if authenticated or not.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         }
@@ -538,14 +582,22 @@
           "description": "Add additional links to the *Collections* resource. The value is an array of link     objects. Required properties of a link are a URI (`href`), a label (`label`) and a relation     (`rel`).",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"$ref": "#/$defs/Link"}
+                "items": {
+                  "$ref": "#/$defs/Link"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"$ref": "#/$defs/Link"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "$ref": "#/$defs/Link"
+              }
             }
           ]
         },
@@ -596,14 +648,22 @@
           "description": "The list of properties that can be used in CQL2 filter expressions and/or for which     filtering query parameters are provided for a collection. Properties that are not of type     `OBJECT` or `OBJECT_ARRAY` are eligible as queryables unless `isQueryable` is set to     `false` for the property. The special value `*` includes all eligible properties as     queryables. By default, no property is queryable (this is for backwards compatibility, in     v4.0 the default behaviour will change to all eligible properties).",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -612,14 +672,22 @@
           "description": "The list of properties that would be queryables based on `included`, but which should     not be queryables.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -675,14 +743,22 @@
           "description": "Add additional links to the *Landing Page* resource. The value is an array of link     objects. Required properties of a link are a URI (`href`), a label (`label`) and a relation     (`rel`).",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"$ref": "#/$defs/Link"}
+                "items": {
+                  "$ref": "#/$defs/Link"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"$ref": "#/$defs/Link"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "$ref": "#/$defs/Link"
+              }
             }
           ]
         }
@@ -717,14 +793,22 @@
           "description": "Lists additional coordinate reference systems to be supported in the API or for a     feature collection. The native coordinate reference system of the data and the default     coordinate reference system of the API are automatically enabled. Coordinate reference     systems are identified by their EPSG code (`code`). Additionally, the order of the     coordinate axes must be specified in `forceAxisOrder` (`NONE`: as in the coordinate     reference system, `LON_LAT` or `LAT_LON`: the order in the coordinate reference system is     ignored and the specified order is used).",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"$ref": "#/$defs/EpsgCrs"}
+                "items": {
+                  "$ref": "#/$defs/EpsgCrs"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"$ref": "#/$defs/EpsgCrs"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "$ref": "#/$defs/EpsgCrs"
+              }
             }
           ]
         },
@@ -781,14 +865,22 @@
           "description": "Maps all values matching the list of regular expressions to `null`. Not applicable for     properties containing objects.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -836,14 +928,22 @@
           "additionalProperties": {
             "allOf": [
               {
-                "if": {"type": "array"},
+                "if": {
+                  "type": "array"
+                },
                 "then": {
-                  "items": {"$ref": "#/$defs/PropertyTransformation"}
+                  "items": {
+                    "$ref": "#/$defs/PropertyTransformation"
+                  }
                 }
               },
               {
-                "if": {"type": "object"},
-                "then": {"$ref": "#/$defs/PropertyTransformation"}
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "$ref": "#/$defs/PropertyTransformation"
+                }
               }
             ]
           }
@@ -872,14 +972,22 @@
           "deprecated": true,
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -889,14 +997,22 @@
           "deprecated": true,
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -906,14 +1022,22 @@
           "deprecated": true,
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -923,14 +1047,22 @@
           "deprecated": true,
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         }
@@ -962,14 +1094,22 @@
           "additionalProperties": {
             "allOf": [
               {
-                "if": {"type": "array"},
+                "if": {
+                  "type": "array"
+                },
                 "then": {
-                  "items": {"$ref": "#/$defs/PropertyTransformation"}
+                  "items": {
+                    "$ref": "#/$defs/PropertyTransformation"
+                  }
                 }
               },
               {
-                "if": {"type": "object"},
-                "then": {"$ref": "#/$defs/PropertyTransformation"}
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "$ref": "#/$defs/PropertyTransformation"
+                }
               }
             ]
           }
@@ -1000,14 +1140,22 @@
           "description": "",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -1036,14 +1184,22 @@
           "description": "Controls which links should be specified for each feature in the Features resource, if     these exist. The values are the link relation types to be included. By default, links such     as `self` or `alternate` are omitted from features in a FeatureCollection, this option can     be used to add them if needed.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -1074,7 +1230,9 @@
           "title": "coordinatePrecision",
           "description": "Controls whether coordinates are limited to a certain number of places depending on the     coordinate reference system used. The unit of measurement and the corresponding number of     decimal places must be specified. Example: `{ \"metre\" : 2, \"degree\" : 7 }`. Valid units of     measurement are \"metre\" and \"degree\".",
           "type": "object",
-          "additionalProperties": {"type": "number"}
+          "additionalProperties": {
+            "type": "number"
+          }
         }
       },
       "additionalProperties": false
@@ -1104,14 +1262,22 @@
           "additionalProperties": {
             "allOf": [
               {
-                "if": {"type": "array"},
+                "if": {
+                  "type": "array"
+                },
                 "then": {
-                  "items": {"$ref": "#/$defs/PropertyTransformation"}
+                  "items": {
+                    "$ref": "#/$defs/PropertyTransformation"
+                  }
                 }
               },
               {
-                "if": {"type": "object"},
-                "then": {"$ref": "#/$defs/PropertyTransformation"}
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "$ref": "#/$defs/PropertyTransformation"
+                }
               }
             ]
           }
@@ -1162,7 +1328,9 @@
           "title": "mapping",
           "description": "",
           "type": "object",
-          "additionalProperties": {"type": "string"}
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       },
       "additionalProperties": false
@@ -1197,14 +1365,22 @@
           "additionalProperties": {
             "allOf": [
               {
-                "if": {"type": "array"},
+                "if": {
+                  "type": "array"
+                },
                 "then": {
-                  "items": {"$ref": "#/$defs/PropertyTransformation"}
+                  "items": {
+                    "$ref": "#/$defs/PropertyTransformation"
+                  }
                 }
               },
               {
-                "if": {"type": "object"},
-                "then": {"$ref": "#/$defs/PropertyTransformation"}
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "$ref": "#/$defs/PropertyTransformation"
+                }
               }
             ]
           }
@@ -1228,7 +1404,9 @@
           "title": "applicationNamespaces",
           "description": "Every XML element will have and XML attribute can have an XML namespace. To improve     readability of the XML documents, a namespace prefix is declared for every namespace.       Common namespaces and prefixes are pre-defined, these are: `gml` (GML 3.2), `xlink`     (XLink), `xml` (XML), `sf` (OGC API Features Core 1.0, Core-SF), `wfs` (WFS 2.0), and `xsi`     (XML Schema Information).       Additional namespaces that are used in the data (declared in GML application schemas and     imported schemas), the namespaces are configured with their prefixes. Since feature data     will always use elements in application-schema-specific namespaces, this confirguration     parameter will always need to be specified.",
           "type": "object",
-          "additionalProperties": {"type": "string"}
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "defaultNamespace": {
           "title": "defaultNamespace",
@@ -1239,19 +1417,25 @@
           "title": "schemaLocations",
           "description": "If any application namespace should be included in the `xsi:schemaLocation` attribute     of the root element, the document URIs have to be provided.       In addition, the schema location of the namespace of the root element will be added, if     known. For the pre-defined namespaces (`gml`, `sf` and `wfs`), the canonical schema     location in the OGC schema repository will be used unless another schema location for the     namespace is configured.       Note that to meet XML Schema validation requirements, the namespace of the root element     must be declared in the `xsi:schemaLocation` attribute, even if the namespace is imported     by another schema.",
           "type": "object",
-          "additionalProperties": {"type": "string"}
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "objectTypeNamespaces": {
           "title": "objectTypeNamespaces",
           "description": "All object/data type instances are represented through a GML object element.       In the provider schema, a name must be provided for each OBJECT in the `objectType`     property, including for the feature type itself. By default, this name will be used for the     unqualified name of the GML object element.       If the GML object element is not in the default namespace, this configuration parameter     assigns a namespace prefix to an object type.",
           "type": "object",
-          "additionalProperties": {"type": "string"}
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "variableObjectElementNames": {
           "title": "variableObjectElementNames",
           "description": "There may also be cases, in particular when inheritance is used in the underlying     application schema, where multiple object types are represented in the same table with an     attribute that specifies the name of the feature/object type. This configuration parameter     provides the capability to identify these properties and map the values to qualified names     for the GML object element. In the example, `_type` is the feature property with three     different values mapped to the qualified element name.",
           "type": "object",
-          "additionalProperties": {"$ref": "#/$defs/VariableName"}
+          "additionalProperties": {
+            "$ref": "#/$defs/VariableName"
+          }
         },
         "featureCollectionElementName": {
           "title": "featureCollectionElementName",
@@ -1273,14 +1457,22 @@
           "description": "Properties are by default represented as the XML child element (GML property element)     of the XML element representing the object (GML object element). Alternatively, the     property can be represented as an XML attribute of the parent GML object element. This is     only possible for properties of type STRING, FLOAT, INTEGER, or BOOLEAN.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -1344,14 +1536,22 @@
           "additionalProperties": {
             "allOf": [
               {
-                "if": {"type": "array"},
+                "if": {
+                  "type": "array"
+                },
                 "then": {
-                  "items": {"$ref": "#/$defs/PropertyTransformation"}
+                  "items": {
+                    "$ref": "#/$defs/PropertyTransformation"
+                  }
                 }
               },
               {
-                "if": {"type": "object"},
-                "then": {"$ref": "#/$defs/PropertyTransformation"}
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "$ref": "#/$defs/PropertyTransformation"
+                }
               }
             ]
           }
@@ -1376,14 +1576,22 @@
           "description": "This option works only for CesiumJS as map client. By default, the geometry identified     in the provider as PRIMARY_GEOMETRY is used for representation on the map. This option     allows multiple geometry properties to be specified in a list. The first geometry property     set for a feature will be used.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -1476,14 +1684,22 @@
           "description": "",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"$ref": "#/$defs/Link"}
+                "items": {
+                  "$ref": "#/$defs/Link"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"$ref": "#/$defs/Link"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "$ref": "#/$defs/Link"
+              }
             }
           ]
         },
@@ -1502,14 +1718,22 @@
           "description": "",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -1522,7 +1746,9 @@
           "title": "extensions",
           "description": "",
           "type": "object",
-          "additionalProperties": {"type": "object"}
+          "additionalProperties": {
+            "type": "object"
+          }
         }
       },
       "additionalProperties": false
@@ -1650,14 +1876,22 @@
           "description": "",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"$ref": "#/$defs/ApiCatalogEntry"}
+                "items": {
+                  "$ref": "#/$defs/ApiCatalogEntry"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"$ref": "#/$defs/ApiCatalogEntry"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "$ref": "#/$defs/ApiCatalogEntry"
+              }
             }
           ]
         }
@@ -1750,14 +1984,22 @@
           "description": "The list of pre-defined tile matrix sets that are included in the API. All tile matrix     sets used by a tile provider of the API are automatically added to the list.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         }
@@ -1863,14 +2105,22 @@
           "description": "",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -1879,14 +2129,22 @@
           "description": "",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         }
@@ -1910,14 +2168,22 @@
           "deprecated": true,
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -1926,14 +2192,18 @@
           "description": "Controls the zoom levels available for each active tiling scheme as well as which zoom     level to use as default.",
           "type": "object",
           "deprecated": true,
-          "additionalProperties": {"$ref": "#/$defs/MinMax"}
+          "additionalProperties": {
+            "$ref": "#/$defs/MinMax"
+          }
         },
         "zoomLevelsCache": {
           "title": "zoomLevelsCache",
           "description": "Zoom levels for which tiles are cached.",
           "type": "object",
           "deprecated": true,
-          "additionalProperties": {"$ref": "#/$defs/MinMax"}
+          "additionalProperties": {
+            "$ref": "#/$defs/MinMax"
+          }
         },
         "seedingOptions": {
           "title": "seedingOptions",
@@ -1947,7 +2217,9 @@
           "description": "Zoom levels per enabled tile encoding for which the tile cache should be seeded on     startup.",
           "type": "object",
           "deprecated": true,
-          "additionalProperties": {"$ref": "#/$defs/MinMax"}
+          "additionalProperties": {
+            "$ref": "#/$defs/MinMax"
+          }
         },
         "filters": {
           "title": "filters",
@@ -1957,14 +2229,22 @@
           "additionalProperties": {
             "allOf": [
               {
-                "if": {"type": "array"},
+                "if": {
+                  "type": "array"
+                },
                 "then": {
-                  "items": {"$ref": "#/$defs/LevelFilter"}
+                  "items": {
+                    "$ref": "#/$defs/LevelFilter"
+                  }
                 }
               },
               {
-                "if": {"type": "object"},
-                "then": {"$ref": "#/$defs/LevelFilter"}
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "$ref": "#/$defs/LevelFilter"
+                }
               }
             ]
           }
@@ -1977,14 +2257,22 @@
           "additionalProperties": {
             "allOf": [
               {
-                "if": {"type": "array"},
+                "if": {
+                  "type": "array"
+                },
                 "then": {
-                  "items": {"$ref": "#/$defs/LevelTransformation"}
+                  "items": {
+                    "$ref": "#/$defs/LevelTransformation"
+                  }
                 }
               },
               {
-                "if": {"type": "object"},
-                "then": {"$ref": "#/$defs/LevelTransformation"}
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "$ref": "#/$defs/LevelTransformation"
+                }
               }
             ]
           }
@@ -1995,14 +2283,22 @@
           "deprecated": true,
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "number"}
+                "items": {
+                  "type": "number"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "number"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "number"
+              }
             }
           ]
         },
@@ -2094,14 +2390,22 @@
           "deprecated": true,
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         }
@@ -2119,34 +2423,54 @@
           ]
         }
       },
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "allOf": [
         {
           "if": {
             "properties": {
-              "type": {"const": "FEATURES"}
+              "type": {
+                "const": "FEATURES"
+              }
             },
-            "required": ["type"]
+            "required": [
+              "type"
+            ]
           },
-          "then": {"$ref": "#/$defs/TileProviderFeatures"}
+          "then": {
+            "$ref": "#/$defs/TileProviderFeatures"
+          }
         },
         {
           "if": {
             "properties": {
-              "type": {"const": "MBTILES"}
+              "type": {
+                "const": "MBTILES"
+              }
             },
-            "required": ["type"]
+            "required": [
+              "type"
+            ]
           },
-          "then": {"$ref": "#/$defs/TileProviderMbtiles"}
+          "then": {
+            "$ref": "#/$defs/TileProviderMbtiles"
+          }
         },
         {
           "if": {
             "properties": {
-              "type": {"const": "TILESERVER"}
+              "type": {
+                "const": "TILESERVER"
+              }
             },
-            "required": ["type"]
+            "required": [
+              "type"
+            ]
           },
-          "then": {"$ref": "#/$defs/TileProviderTileServer"}
+          "then": {
+            "$ref": "#/$defs/TileProviderTileServer"
+          }
         }
       ]
     },
@@ -2180,14 +2504,22 @@
           "additionalProperties": {
             "allOf": [
               {
-                "if": {"type": "array"},
+                "if": {
+                  "type": "array"
+                },
                 "then": {
-                  "items": {"$ref": "#/$defs/PropertyTransformation"}
+                  "items": {
+                    "$ref": "#/$defs/PropertyTransformation"
+                  }
                 }
               },
               {
-                "if": {"type": "object"},
-                "then": {"$ref": "#/$defs/PropertyTransformation"}
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "$ref": "#/$defs/PropertyTransformation"
+                }
               }
             ]
           }
@@ -2232,14 +2564,22 @@
           "description": "Controls which formats are supported for the tileset resources. Available are [OGC     TileSetMetadata](https://docs.ogc.org/DRAFTS/17-083r3.html#tsmd-json-encoding) (\"JSON\") and     [TileJSON](https://github.com/mapbox/tilejson-spec) (\"TileJSON\").",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -2270,14 +2610,22 @@
           "deprecated": true,
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -2287,14 +2635,22 @@
           "deprecated": true,
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "number"}
+                "items": {
+                  "type": "number"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "number"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "number"
+              }
             }
           ]
         },
@@ -2303,7 +2659,9 @@
           "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)* Controls the zoom levels available for     each active tiling scheme as well as which zoom level to use as default.",
           "type": "object",
           "deprecated": true,
-          "additionalProperties": {"$ref": "#/$defs/MinMax"}
+          "additionalProperties": {
+            "$ref": "#/$defs/MinMax"
+          }
         },
         "collectionTiles": {
           "title": "collectionTiles",
@@ -2332,14 +2690,18 @@
           "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)*",
           "type": "object",
           "deprecated": true,
-          "additionalProperties": {"$ref": "#/$defs/MinMax"}
+          "additionalProperties": {
+            "$ref": "#/$defs/MinMax"
+          }
         },
         "seeding": {
           "title": "seeding",
           "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)*",
           "type": "object",
           "deprecated": true,
-          "additionalProperties": {"$ref": "#/$defs/MinMax"}
+          "additionalProperties": {
+            "$ref": "#/$defs/MinMax"
+          }
         },
         "seedingOptions": {
           "title": "seedingOptions",
@@ -2368,14 +2730,22 @@
           "additionalProperties": {
             "allOf": [
               {
-                "if": {"type": "array"},
+                "if": {
+                  "type": "array"
+                },
                 "then": {
-                  "items": {"$ref": "#/$defs/LevelFilter"}
+                  "items": {
+                    "$ref": "#/$defs/LevelFilter"
+                  }
                 }
               },
               {
-                "if": {"type": "object"},
-                "then": {"$ref": "#/$defs/LevelFilter"}
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "$ref": "#/$defs/LevelFilter"
+                }
               }
             ]
           }
@@ -2388,14 +2758,22 @@
           "additionalProperties": {
             "allOf": [
               {
-                "if": {"type": "array"},
+                "if": {
+                  "type": "array"
+                },
                 "then": {
-                  "items": {"$ref": "#/$defs/LevelTransformation"}
+                  "items": {
+                    "$ref": "#/$defs/LevelTransformation"
+                  }
                 }
               },
               {
-                "if": {"type": "object"},
-                "then": {"$ref": "#/$defs/LevelTransformation"}
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "$ref": "#/$defs/LevelTransformation"
+                }
               }
             ]
           }
@@ -2469,14 +2847,22 @@
           "description": "List of enabled JSON Schema versions. Supported are 2020-12 (`V202012`), 2019-09     (`V201909`) and 07 (`V7`).",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         }
@@ -2573,14 +2959,22 @@
           "additionalProperties": {
             "allOf": [
               {
-                "if": {"type": "array"},
+                "if": {
+                  "type": "array"
+                },
                 "then": {
-                  "items": {"$ref": "#/$defs/PropertyTransformation"}
+                  "items": {
+                    "$ref": "#/$defs/PropertyTransformation"
+                  }
                 }
               },
               {
-                "if": {"type": "object"},
-                "then": {"$ref": "#/$defs/PropertyTransformation"}
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "$ref": "#/$defs/PropertyTransformation"
+                }
               }
             ]
           }
@@ -2609,7 +3003,9 @@
           "title": "properties",
           "description": "Use this option to specify which feature attributes are included in the glTF model.     `type` is one of `SCALAR`, `STRING` or `ENUM`. For a scalar, specify the `componentType`     (see [3D Metadata     Specification](https://github.com/CesiumGS/3d-tiles/tree/main/specification/Metadata#component-type)),     default is `UNIT16`. For a string, specify the `stringOffsetType` as `UNIT8`, `UNIT16`, or     `UNIT32` depending on the expected length of the string buffer, default is `UNIT32`. For an     enum, the feature property must either have an `enum` constraint in the provider schema or     a `codelist` constraint where the codelist uses an integer code; specify the     `componentType` according to the range of code values, default is `UINT32`. In addition, a     sentinel value can be specified using `noData` (see [3D Metadata     Specification](https://github.com/CesiumGS/3d-tiles/tree/main/specification/Metadata) for     details).",
           "type": "object",
-          "additionalProperties": {"$ref": "#/$defs/GltfPropertyDefinition"}
+          "additionalProperties": {
+            "$ref": "#/$defs/GltfPropertyDefinition"
+          }
         },
         "withSurfaceType": {
           "title": "withSurfaceType",
@@ -2654,14 +3050,22 @@
           "additionalProperties": {
             "allOf": [
               {
-                "if": {"type": "array"},
+                "if": {
+                  "type": "array"
+                },
                 "then": {
-                  "items": {"$ref": "#/$defs/PropertyTransformation"}
+                  "items": {
+                    "$ref": "#/$defs/PropertyTransformation"
+                  }
                 }
               },
               {
-                "if": {"type": "object"},
-                "then": {"$ref": "#/$defs/PropertyTransformation"}
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "$ref": "#/$defs/PropertyTransformation"
+                }
               }
             ]
           }
@@ -2696,14 +3100,22 @@
           "description": "Features are often categorized by type. Typically, all features of the same type have     the same schema and the same properties.       Many GIS clients depend on knowledge about the feature type when processing feature     data. For example, when associating a style to a feature in order to render that feature on     a map.       This option adds a \"featureType\" member with the specified values. If a single value is     specified, then a string is added, otherwise an array of strings.       A value can include a template `{{type}}`, which will be replaced with the value of the     feature property with `role: TYPE` in the provider schema of the feature type of the     collection. The property must be of type `STRING`.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -2712,14 +3124,22 @@
           "description": "Adds the specified links to the `links` array of features. All values of the array must     be a valid link object with `href` and `rel`.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"$ref": "#/$defs/Link"}
+                "items": {
+                  "$ref": "#/$defs/Link"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"$ref": "#/$defs/Link"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "$ref": "#/$defs/Link"
+              }
             }
           ]
         },
@@ -2728,14 +3148,22 @@
           "description": "The option allows selected JSON-FG extensions to be included in the GeoJSON encoding as     well. Allowed values are: `describedby`, `featureType`, `time`, `place`, `coordRefSys`,     `links`.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         }
@@ -2905,14 +3333,22 @@
           "description": "",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "number"}
+                "items": {
+                  "type": "number"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "number"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "number"
+              }
             }
           ]
         },
@@ -2921,14 +3357,22 @@
           "description": "",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "number"}
+                "items": {
+                  "type": "number"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "number"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "number"
+              }
             }
           ]
         },
@@ -2937,14 +3381,22 @@
           "description": "",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "number"}
+                "items": {
+                  "type": "number"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "number"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "number"
+              }
             }
           ]
         },
@@ -3053,7 +3505,9 @@
           "title": "additionalFlags",
           "description": "The routing provider supports passing additional flags (key-value-pairs) that can be     taken into account in the routing process.",
           "type": "object",
-          "additionalProperties": {"$ref": "#/$defs/RoutingFlag"}
+          "additionalProperties": {
+            "$ref": "#/$defs/RoutingFlag"
+          }
         },
         "defaultCrs": {
           "title": "defaultCrs",
@@ -3064,7 +3518,9 @@
           "title": "coordinatePrecision",
           "description": "Controls whether coordinates are limited to a certain number of places depending on the     coordinate reference system used. The unit of measurement and the corresponding number of     decimal places must be specified. Example: `{ \"metre\" : 2, \"degree\" : 7 }`. Valid units of     measurement are \"metre\" and \"degree\".",
           "type": "object",
-          "additionalProperties": {"type": "number"}
+          "additionalProperties": {
+            "type": "number"
+          }
         },
         "elevationProfileSimplificationTolerance": {
           "title": "elevationProfileSimplificationTolerance",
@@ -3109,14 +3565,22 @@
           "deprecated": true,
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -3125,14 +3589,22 @@
           "description": "Controls which of the attributes in queries can be used for sorting data. Only direct     attributes of the data types `STRING`, `DATE`, `DATETIME`, `INTEGER` and `FLOAT` are     eligible as sortables (that is, no attributes from arrays or embedded objects) unless     `isSortable` is set to `false` for the property. The special value `*` includes all     eligible properties as sortables. By default, no property is sortable (this is for     backwards compatibility, in v4.0 the default behaviour will change to all eligible     properties).",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -3141,14 +3613,22 @@
           "description": "The list of properties that would be sortables based on `included`, but which should     not be sortables.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -3162,7 +3642,7 @@
     },
     "StylesConfiguration": {
       "title": "StylesConfiguration",
-      "description": "### Storage       The stylesheets, style metadata and style information all reside as files in the data     directory:        - Stylesheets reside under the relative path `styles/{apiId}/{styleId}.{ext}`. The URIs (Sprites,     Glyphs, Source.url, Source.tiles) used in Mapbox styles links might contain `{serviceUrl}`.     The file extension `{ext}` must have the following value depending on the style encoding:   - Mapbox Style: `mbs`   - OGC SLD 1.0: `sld10`   - OGC SLD 1.1: `sld11`   - QGIS QML: `qml`   - ArcGIS Desktop: `lyr`   - ArcGIS Pro: `lyrx`   - 3D Tiles Styling: `3dtiles` - Style metadata reside under the relative path `styles/{apiId}/{styleId}.metadata`. Links     might be templates (by setting `templated` to `true`) containing `{serviceUrl}`. - Style information reside under the relative path `style-infos/{apiId}/{collectionId}.json`. Links     might be templates (by setting `templated` to `true`) containing `{serviceUrl}` and     `{collectionId}`.",
+      "description": "### Storage       The stylesheets, style metadata and style information all reside as files in the data     directory:        - Stylesheets reside under the relative path `styles/{apiId}/{styleId}.{ext}`. The URIs (Sprites,     Glyphs, Source.url, Source.tiles) used in Mapbox styles links might contain `{serviceUrl}`.     The file extension `{ext}` must have the following value depending on the style encoding:   - Mapbox Style: `mbs`   - OGC SLD 1.0: `sld10`   - OGC SLD 1.1: `sld11`   - QGIS QML: `qml`   - ArcGIS Desktop: `lyr`   - ArcGIS Pro: `lyrx`   - 3D Tiles Styling: `3dtiles` - Style metadata reside under the relative path `styles/{apiId}/{styleId}.metadata`. Links     might be templates (by setting `templated` to `true`) containing `{serviceUrl}`. - Style information reside under the relative path `style-infos/{apiId}/{collectionId}.json`. Links     might be templates (by setting `templated` to `true`) containing `{serviceUrl}` and     `{collectionId}`.       ### Layer Control       The layer control dialog in the webmap is activated via the `webmapWithLayerControl`     option (see \u0027Options\u0027 below).       The dialog can be configured in the MapLibre style metadata (member     `ldproxy:layerControl`). On the top level there are the following JSON members:        - `onlyLegend` (Boolean, default: false): With `true` only the groups and layers with the symbols are displayed without the possibility to deactivate layers. - `opened` (Boolean, default: false): If `true` is set, the layer selection dialog will be displayed open when the map is loaded. - `entries` (default: one merge group per source layer in the vector tiles): The configuration of the groups and layers as described below.            In `entries` the following items allowed:        - The `id` of a MapLibre layer in the style (string). The layer is displayed in the dialog with the `id` as name. The symbol of the layer is created without specifying attributes or a particular zoom layer. - A layer object. `id` is the `id` of the MapLibre layer in the style (string, mandatory). `label` is the name of the layer in the dialog (string, default: `id`). `zoom` is the zoom level to use when creating symbols (number, default: none). `properties` are attributes (object, default `{}`) to be used during symbol generation. - A group object. `type` is always \"group\". `id` is an `id` of the group (string, mandatory). `label` is the name of the group in the dialog (string, default: `id`). With `onlyLegend` the possibility to disable layers can be disabled for the group (Boolean, default: `false`). `entries` can contain layers (objects or string), groups or merge groups (array, default: `[]`). - A radio group object. It may only occur on the top level of entries. Only exactly one entry can be selected from the group, e.g. for the selection of a basemap. `type` is always \"radio-group\". `id`, `label` have the same effect as for normal groups. `entries` can only contain layers (objects or string) (array, default: `[]`). - A merge group object. `type` is always \"merge-group\". A merge group is a group where `entries` may only contain layers (objects or string) (array, default: `[]`); these entries are not displayed as subentries in the dialog, but a symbol is created from all layers together. Instead of specifying `entries`, `source-layer` (string, default: none) can be specified alternatively; in this case, all layers with this source layer become entries.            For an example, see below.",
       "type": "object",
       "properties": {
         "buildingBlock": {
@@ -3191,17 +3671,25 @@
         },
         "styleEncodings": {
           "title": "styleEncodings",
-          "description": "List of enabled stylesheet encodings. Supported are Mapbox Style (`Mapbox`), OGC SLD     1.0 (`SLD10`), OGC SLD 1.1 (`SLD11`), QGIS QML (\"QML\"), ArcGIS Layer (\"lyr\" und \"lyrx\"), 3D     Tiles (\"3D Tiles\") and HTML (`HTML`). HTML is an output only encoding for web maps that     requires a *Mapbox Style* stylesheet. For details see conformance classes *Mapbox Style*,     *OGC SLD 1.0*, *OGC SLD 1.1* und *HTML*.",
+          "description": "List of enabled stylesheet encodings. Supported are Mapbox/MapLibre Style (`Mapbox`),     OGC SLD 1.0 (`SLD10`), OGC SLD 1.1 (`SLD11`), QGIS QML (\"QML\"), ArcGIS Layer (\"lyr\" und     \"lyrx\"), 3D Tiles (\"3D Tiles\") and HTML (`HTML`). HTML is an output only encoding for web     maps that requires a *Mapbox/MapLibre Style* stylesheet. For details see conformance     classes *Mapbox Style*, *OGC SLD 1.0*, *OGC SLD 1.1* und *HTML*.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -3289,14 +3777,22 @@
           "description": "Controls which of the queryable attributes are used for text search.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         }
@@ -3341,14 +3837,22 @@
           "description": "A CQL2 text filter expression for each level between the `firstLevelWithContent` and     the `maxLevel` to select the buildings to include in the tile on that level. Since the     [refinement strategy](https://docs.ogc.org/cs/22-025r4/22-025r4.html#toc19) is always     `ADD`, specify disjoint filter expressions, so that each building will be included on     exactly one level.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -3357,14 +3861,22 @@
           "description": "A CQL2 text filter expression for each level between the `firstLevelWithContent` and     the `maxLevel` to select the buildings to include in the tile on that level or in any of     the child tiles. This filter expression is the same as all the `contentFilters` on this or     higher levels combined with an `OR`. This is also the default value. However, depending on     the filter expressions, this may lead to inefficient tile filters and to improve     performance the tile filters can also be specified explicitly.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -3447,14 +3959,22 @@
           "additionalProperties": {
             "allOf": [
               {
-                "if": {"type": "array"},
+                "if": {
+                  "type": "array"
+                },
                 "then": {
-                  "items": {"$ref": "#/$defs/PropertyTransformation"}
+                  "items": {
+                    "$ref": "#/$defs/PropertyTransformation"
+                  }
                 }
               },
               {
-                "if": {"type": "object"},
-                "then": {"$ref": "#/$defs/PropertyTransformation"}
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "$ref": "#/$defs/PropertyTransformation"
+                }
               }
             ]
           }
@@ -3533,14 +4053,22 @@
           "additionalProperties": {
             "allOf": [
               {
-                "if": {"type": "array"},
+                "if": {
+                  "type": "array"
+                },
                 "then": {
-                  "items": {"$ref": "#/$defs/PropertyTransformation"}
+                  "items": {
+                    "$ref": "#/$defs/PropertyTransformation"
+                  }
                 }
               },
               {
-                "if": {"type": "object"},
-                "then": {"$ref": "#/$defs/PropertyTransformation"}
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "$ref": "#/$defs/PropertyTransformation"
+                }
               }
             ]
           }
@@ -3591,14 +4119,22 @@
           "description": "Value of `@type` that is added to every feature.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"type": "string"}
+                "items": {
+                  "type": "string"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"type": "string"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": "string"
+              }
             }
           ]
         },
@@ -3651,728 +4187,1150 @@
       "type": "object",
       "properties": {},
       "required": [],
+      "anyOf": [
+        {
+          "required": [
+            "buildingBlock"
+          ],
+          "properties": {
+            "buildingBlock": {
+              "enum": [
+                "COLLECTIONS",
+                "QUERYABLES",
+                "COMMON",
+                "CRS",
+                "CITY_JSON",
+                "FEATURES_CORE",
+                "GEO_JSON",
+                "GML",
+                "FEATURES_HTML",
+                "FOUNDATION",
+                "HTML",
+                "JSON",
+                "OAS30",
+                "TILE_MATRIX_SETS",
+                "TILES",
+                "XML",
+                "SCHEMA",
+                "CRUD",
+                "TRANSACTIONS",
+                "GLTF",
+                "JSON_FG",
+                "SEARCH",
+                "FILTER",
+                "GEOMETRY_SIMPLIFICATION",
+                "PROJECTIONS",
+                "ROUTING",
+                "SORTING",
+                "STYLES",
+                "TEXT_SEARCH",
+                "TILES3D",
+                "CSV",
+                "FEATURES_EXTENSIONS",
+                "FLATGEOBUF",
+                "GEO_JSON_LD",
+                "RESOURCES"
+              ]
+            }
+          }
+        },
+        {
+          "required": [
+            "extensionType"
+          ],
+          "properties": {
+            "extensionType": {
+              "enum": [
+                "COLLECTIONS",
+                "QUERYABLES",
+                "COMMON",
+                "CRS",
+                "CITY_JSON",
+                "FEATURES_CORE",
+                "GEO_JSON",
+                "GML",
+                "FEATURES_HTML",
+                "FOUNDATION",
+                "HTML",
+                "JSON",
+                "OAS30",
+                "TILE_MATRIX_SETS",
+                "TILES",
+                "XML",
+                "SCHEMA",
+                "CRUD",
+                "TRANSACTIONS",
+                "GLTF",
+                "JSON_FG",
+                "SEARCH",
+                "FILTER",
+                "GEOMETRY_SIMPLIFICATION",
+                "PROJECTIONS",
+                "ROUTING",
+                "SORTING",
+                "STYLES",
+                "TEXT_SEARCH",
+                "TILES3D",
+                "CSV",
+                "FEATURES_EXTENSIONS",
+                "FLATGEOBUF",
+                "GEO_JSON_LD",
+                "RESOURCES"
+              ]
+            }
+          }
+        }
+      ],
       "allOf": [
         {
           "if": {
-            "required": ["extensionType"]
-          },
-          "then": {
-            "properties": {
-              "extensionType": {
-                "enum": [
-                  "COLLECTIONS",
-                  "QUERYABLES",
-                  "COMMON",
-                  "CRS",
-                  "CITY_JSON",
-                  "FEATURES_CORE",
-                  "GEO_JSON",
-                  "GML",
-                  "FEATURES_HTML",
-                  "FOUNDATION",
-                  "HTML",
-                  "JSON",
-                  "OAS30",
-                  "TILE_MATRIX_SETS",
-                  "TILES",
-                  "XML",
-                  "SCHEMA",
-                  "CRUD",
-                  "TRANSACTIONS",
-                  "GLTF",
-                  "JSON_FG",
-                  "SEARCH",
-                  "FILTER",
-                  "GEOMETRY_SIMPLIFICATION",
-                  "PROJECTIONS",
-                  "ROUTING",
-                  "SORTING",
-                  "STYLES",
-                  "TEXT_SEARCH",
-                  "TILES3D",
-                  "CSV",
-                  "FEATURES_EXTENSIONS",
-                  "FLATGEOBUF",
-                  "GEO_JSON_LD",
-                  "RESOURCES"
-                ]
-              }
-            }
-          },
-          "else": {
-            "required": ["buildingBlock"],
             "properties": {
               "buildingBlock": {
-                "enum": [
-                  "COLLECTIONS",
-                  "QUERYABLES",
-                  "COMMON",
-                  "CRS",
-                  "CITY_JSON",
-                  "FEATURES_CORE",
-                  "GEO_JSON",
-                  "GML",
-                  "FEATURES_HTML",
-                  "FOUNDATION",
-                  "HTML",
-                  "JSON",
-                  "OAS30",
-                  "TILE_MATRIX_SETS",
-                  "TILES",
-                  "XML",
-                  "SCHEMA",
-                  "CRUD",
-                  "TRANSACTIONS",
-                  "GLTF",
-                  "JSON_FG",
-                  "SEARCH",
-                  "FILTER",
-                  "GEOMETRY_SIMPLIFICATION",
-                  "PROJECTIONS",
-                  "ROUTING",
-                  "SORTING",
-                  "STYLES",
-                  "TEXT_SEARCH",
-                  "TILES3D",
-                  "CSV",
-                  "FEATURES_EXTENSIONS",
-                  "FLATGEOBUF",
-                  "GEO_JSON_LD",
-                  "RESOURCES"
-                ]
+                "const": "COLLECTIONS"
               }
-            }
+            },
+            "required": [
+              "buildingBlock"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/CollectionsConfiguration"
           }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "COLLECTIONS"}
+              "extensionType": {
+                "const": "COLLECTIONS"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/CollectionsConfiguration"}
+          "then": {
+            "$ref": "#/$defs/CollectionsConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "COLLECTIONS"}
+              "buildingBlock": {
+                "const": "QUERYABLES"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/CollectionsConfiguration"}
+          "then": {
+            "$ref": "#/$defs/QueryablesConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "QUERYABLES"}
+              "extensionType": {
+                "const": "QUERYABLES"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/QueryablesConfiguration"}
+          "then": {
+            "$ref": "#/$defs/QueryablesConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "QUERYABLES"}
+              "buildingBlock": {
+                "const": "COMMON"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/QueryablesConfiguration"}
+          "then": {
+            "$ref": "#/$defs/CommonConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "COMMON"}
+              "extensionType": {
+                "const": "COMMON"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/CommonConfiguration"}
+          "then": {
+            "$ref": "#/$defs/CommonConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "COMMON"}
+              "buildingBlock": {
+                "const": "CRS"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/CommonConfiguration"}
+          "then": {
+            "$ref": "#/$defs/CrsConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "CRS"}
+              "extensionType": {
+                "const": "CRS"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/CrsConfiguration"}
+          "then": {
+            "$ref": "#/$defs/CrsConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "CRS"}
+              "buildingBlock": {
+                "const": "CITY_JSON"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/CrsConfiguration"}
+          "then": {
+            "$ref": "#/$defs/CityJsonConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "CITY_JSON"}
+              "extensionType": {
+                "const": "CITY_JSON"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/CityJsonConfiguration"}
+          "then": {
+            "$ref": "#/$defs/CityJsonConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "CITY_JSON"}
+              "buildingBlock": {
+                "const": "FEATURES_CORE"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/CityJsonConfiguration"}
+          "then": {
+            "$ref": "#/$defs/FeaturesCoreConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "FEATURES_CORE"}
+              "extensionType": {
+                "const": "FEATURES_CORE"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/FeaturesCoreConfiguration"}
+          "then": {
+            "$ref": "#/$defs/FeaturesCoreConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "FEATURES_CORE"}
+              "buildingBlock": {
+                "const": "GEO_JSON"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/FeaturesCoreConfiguration"}
+          "then": {
+            "$ref": "#/$defs/GeoJsonConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "GEO_JSON"}
+              "extensionType": {
+                "const": "GEO_JSON"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/GeoJsonConfiguration"}
+          "then": {
+            "$ref": "#/$defs/GeoJsonConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "GEO_JSON"}
+              "buildingBlock": {
+                "const": "GML"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/GeoJsonConfiguration"}
+          "then": {
+            "$ref": "#/$defs/GmlConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "GML"}
+              "extensionType": {
+                "const": "GML"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/GmlConfiguration"}
+          "then": {
+            "$ref": "#/$defs/GmlConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "GML"}
+              "buildingBlock": {
+                "const": "FEATURES_HTML"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/GmlConfiguration"}
+          "then": {
+            "$ref": "#/$defs/FeaturesHtmlConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "FEATURES_HTML"}
+              "extensionType": {
+                "const": "FEATURES_HTML"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/FeaturesHtmlConfiguration"}
+          "then": {
+            "$ref": "#/$defs/FeaturesHtmlConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "FEATURES_HTML"}
+              "buildingBlock": {
+                "const": "FOUNDATION"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/FeaturesHtmlConfiguration"}
+          "then": {
+            "$ref": "#/$defs/FoundationConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "FOUNDATION"}
+              "extensionType": {
+                "const": "FOUNDATION"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/FoundationConfiguration"}
+          "then": {
+            "$ref": "#/$defs/FoundationConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "FOUNDATION"}
+              "buildingBlock": {
+                "const": "HTML"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/FoundationConfiguration"}
+          "then": {
+            "$ref": "#/$defs/HtmlConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "HTML"}
+              "extensionType": {
+                "const": "HTML"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/HtmlConfiguration"}
+          "then": {
+            "$ref": "#/$defs/HtmlConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "HTML"}
+              "buildingBlock": {
+                "const": "JSON"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/HtmlConfiguration"}
+          "then": {
+            "$ref": "#/$defs/JsonConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "JSON"}
+              "extensionType": {
+                "const": "JSON"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/JsonConfiguration"}
+          "then": {
+            "$ref": "#/$defs/JsonConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "JSON"}
+              "buildingBlock": {
+                "const": "OAS30"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/JsonConfiguration"}
+          "then": {
+            "$ref": "#/$defs/Oas30Configuration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "OAS30"}
+              "extensionType": {
+                "const": "OAS30"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/Oas30Configuration"}
+          "then": {
+            "$ref": "#/$defs/Oas30Configuration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "OAS30"}
+              "buildingBlock": {
+                "const": "TILE_MATRIX_SETS"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/Oas30Configuration"}
+          "then": {
+            "$ref": "#/$defs/TileMatrixSetsConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "TILE_MATRIX_SETS"}
+              "extensionType": {
+                "const": "TILE_MATRIX_SETS"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/TileMatrixSetsConfiguration"}
+          "then": {
+            "$ref": "#/$defs/TileMatrixSetsConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "TILE_MATRIX_SETS"}
+              "buildingBlock": {
+                "const": "TILES"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/TileMatrixSetsConfiguration"}
+          "then": {
+            "$ref": "#/$defs/TilesConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "TILES"}
+              "extensionType": {
+                "const": "TILES"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/TilesConfiguration"}
+          "then": {
+            "$ref": "#/$defs/TilesConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "TILES"}
+              "buildingBlock": {
+                "const": "XML"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/TilesConfiguration"}
+          "then": {
+            "$ref": "#/$defs/XmlConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "XML"}
+              "extensionType": {
+                "const": "XML"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/XmlConfiguration"}
+          "then": {
+            "$ref": "#/$defs/XmlConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "XML"}
+              "buildingBlock": {
+                "const": "SCHEMA"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/XmlConfiguration"}
+          "then": {
+            "$ref": "#/$defs/SchemaConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "SCHEMA"}
+              "extensionType": {
+                "const": "SCHEMA"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/SchemaConfiguration"}
+          "then": {
+            "$ref": "#/$defs/SchemaConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "SCHEMA"}
+              "buildingBlock": {
+                "const": "CRUD"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/SchemaConfiguration"}
+          "then": {
+            "$ref": "#/$defs/CrudConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "CRUD"}
+              "extensionType": {
+                "const": "CRUD"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/CrudConfiguration"}
+          "then": {
+            "$ref": "#/$defs/CrudConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "CRUD"}
+              "buildingBlock": {
+                "const": "TRANSACTIONS"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/CrudConfiguration"}
+          "then": {
+            "$ref": "#/$defs/CrudConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "TRANSACTIONS"}
+              "extensionType": {
+                "const": "TRANSACTIONS"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/CrudConfiguration"}
+          "then": {
+            "$ref": "#/$defs/CrudConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "TRANSACTIONS"}
+              "buildingBlock": {
+                "const": "GLTF"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/CrudConfiguration"}
+          "then": {
+            "$ref": "#/$defs/GltfConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "GLTF"}
+              "extensionType": {
+                "const": "GLTF"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/GltfConfiguration"}
+          "then": {
+            "$ref": "#/$defs/GltfConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "GLTF"}
+              "buildingBlock": {
+                "const": "JSON_FG"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/GltfConfiguration"}
+          "then": {
+            "$ref": "#/$defs/JsonFgConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "JSON_FG"}
+              "extensionType": {
+                "const": "JSON_FG"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/JsonFgConfiguration"}
+          "then": {
+            "$ref": "#/$defs/JsonFgConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "JSON_FG"}
+              "buildingBlock": {
+                "const": "SEARCH"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/JsonFgConfiguration"}
+          "then": {
+            "$ref": "#/$defs/SearchConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "SEARCH"}
+              "extensionType": {
+                "const": "SEARCH"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/SearchConfiguration"}
+          "then": {
+            "$ref": "#/$defs/SearchConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "SEARCH"}
+              "buildingBlock": {
+                "const": "FILTER"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/SearchConfiguration"}
+          "then": {
+            "$ref": "#/$defs/FilterConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "FILTER"}
+              "extensionType": {
+                "const": "FILTER"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/FilterConfiguration"}
+          "then": {
+            "$ref": "#/$defs/FilterConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "FILTER"}
+              "buildingBlock": {
+                "const": "GEOMETRY_SIMPLIFICATION"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/FilterConfiguration"}
+          "then": {
+            "$ref": "#/$defs/GeometrySimplificationConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "GEOMETRY_SIMPLIFICATION"}
+              "extensionType": {
+                "const": "GEOMETRY_SIMPLIFICATION"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/GeometrySimplificationConfiguration"}
+          "then": {
+            "$ref": "#/$defs/GeometrySimplificationConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "GEOMETRY_SIMPLIFICATION"}
+              "buildingBlock": {
+                "const": "PROJECTIONS"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/GeometrySimplificationConfiguration"}
+          "then": {
+            "$ref": "#/$defs/ProjectionsConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "PROJECTIONS"}
+              "extensionType": {
+                "const": "PROJECTIONS"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/ProjectionsConfiguration"}
+          "then": {
+            "$ref": "#/$defs/ProjectionsConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "PROJECTIONS"}
+              "buildingBlock": {
+                "const": "ROUTING"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/ProjectionsConfiguration"}
+          "then": {
+            "$ref": "#/$defs/RoutingConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "ROUTING"}
+              "extensionType": {
+                "const": "ROUTING"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/RoutingConfiguration"}
+          "then": {
+            "$ref": "#/$defs/RoutingConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "ROUTING"}
+              "buildingBlock": {
+                "const": "SORTING"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/RoutingConfiguration"}
+          "then": {
+            "$ref": "#/$defs/SortingConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "SORTING"}
+              "extensionType": {
+                "const": "SORTING"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/SortingConfiguration"}
+          "then": {
+            "$ref": "#/$defs/SortingConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "SORTING"}
+              "buildingBlock": {
+                "const": "STYLES"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/SortingConfiguration"}
+          "then": {
+            "$ref": "#/$defs/StylesConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "STYLES"}
+              "extensionType": {
+                "const": "STYLES"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/StylesConfiguration"}
+          "then": {
+            "$ref": "#/$defs/StylesConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "STYLES"}
+              "buildingBlock": {
+                "const": "TEXT_SEARCH"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/StylesConfiguration"}
+          "then": {
+            "$ref": "#/$defs/TextSearchConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "TEXT_SEARCH"}
+              "extensionType": {
+                "const": "TEXT_SEARCH"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/TextSearchConfiguration"}
+          "then": {
+            "$ref": "#/$defs/TextSearchConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "TEXT_SEARCH"}
+              "buildingBlock": {
+                "const": "TILES3D"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/TextSearchConfiguration"}
+          "then": {
+            "$ref": "#/$defs/Tiles3dConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "TILES3D"}
+              "extensionType": {
+                "const": "TILES3D"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/Tiles3dConfiguration"}
+          "then": {
+            "$ref": "#/$defs/Tiles3dConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "TILES3D"}
+              "buildingBlock": {
+                "const": "CSV"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/Tiles3dConfiguration"}
+          "then": {
+            "$ref": "#/$defs/CsvConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "CSV"}
+              "extensionType": {
+                "const": "CSV"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/CsvConfiguration"}
+          "then": {
+            "$ref": "#/$defs/CsvConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "CSV"}
+              "buildingBlock": {
+                "const": "FEATURES_EXTENSIONS"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/CsvConfiguration"}
+          "then": {
+            "$ref": "#/$defs/FeaturesExtensionsConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "FEATURES_EXTENSIONS"}
+              "extensionType": {
+                "const": "FEATURES_EXTENSIONS"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/FeaturesExtensionsConfiguration"}
+          "then": {
+            "$ref": "#/$defs/FeaturesExtensionsConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "FEATURES_EXTENSIONS"}
+              "buildingBlock": {
+                "const": "FLATGEOBUF"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/FeaturesExtensionsConfiguration"}
+          "then": {
+            "$ref": "#/$defs/FlatgeobufConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "FLATGEOBUF"}
+              "extensionType": {
+                "const": "FLATGEOBUF"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/FlatgeobufConfiguration"}
+          "then": {
+            "$ref": "#/$defs/FlatgeobufConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "FLATGEOBUF"}
+              "buildingBlock": {
+                "const": "GEO_JSON_LD"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/FlatgeobufConfiguration"}
+          "then": {
+            "$ref": "#/$defs/GeoJsonLdConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "GEO_JSON_LD"}
+              "extensionType": {
+                "const": "GEO_JSON_LD"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/GeoJsonLdConfiguration"}
+          "then": {
+            "$ref": "#/$defs/GeoJsonLdConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "extensionType": {"const": "GEO_JSON_LD"}
+              "buildingBlock": {
+                "const": "RESOURCES"
+              }
             },
-            "required": ["extensionType"]
+            "required": [
+              "buildingBlock"
+            ]
           },
-          "then": {"$ref": "#/$defs/GeoJsonLdConfiguration"}
+          "then": {
+            "$ref": "#/$defs/ResourcesConfiguration"
+          }
         },
         {
           "if": {
             "properties": {
-              "buildingBlock": {"const": "RESOURCES"}
+              "extensionType": {
+                "const": "RESOURCES"
+              }
             },
-            "required": ["buildingBlock"]
+            "required": [
+              "extensionType"
+            ]
           },
-          "then": {"$ref": "#/$defs/ResourcesConfiguration"}
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {"const": "RESOURCES"}
-            },
-            "required": ["extensionType"]
-          },
-          "then": {"$ref": "#/$defs/ResourcesConfiguration"}
+          "then": {
+            "$ref": "#/$defs/ResourcesConfiguration"
+          }
         }
       ]
     },
@@ -4417,14 +5375,22 @@
           "description": "Array of additional link objects, required keys are `href` (the URI), `label` and `rel`     (the relation).",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"$ref": "#/$defs/Link"}
+                "items": {
+                  "$ref": "#/$defs/Link"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"$ref": "#/$defs/Link"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "$ref": "#/$defs/Link"
+              }
             }
           ]
         },
@@ -4433,14 +5399,22 @@
           "description": "[Building Blocks](#building-blocks) configuration.",
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"$ref": "#/$defs/ExtensionConfiguration"}
+                "items": {
+                  "$ref": "#/$defs/ExtensionConfiguration"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"$ref": "#/$defs/ExtensionConfiguration"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "$ref": "#/$defs/ExtensionConfiguration"
+              }
             }
           ]
         },
@@ -4450,14 +5424,22 @@
           "deprecated": true,
           "allOf": [
             {
-              "if": {"type": "array"},
+              "if": {
+                "type": "array"
+              },
               "then": {
-                "items": {"$ref": "#/$defs/ExtensionConfiguration"}
+                "items": {
+                  "$ref": "#/$defs/ExtensionConfiguration"
+                }
               }
             },
             {
-              "if": {"type": "object"},
-              "then": {"$ref": "#/$defs/ExtensionConfiguration"}
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "$ref": "#/$defs/ExtensionConfiguration"
+              }
             }
           ]
         }
