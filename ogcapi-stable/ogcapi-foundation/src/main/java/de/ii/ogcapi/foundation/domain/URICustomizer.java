@@ -14,8 +14,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URIBuilder;
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.net.URIBuilder;
 
 /**
  * @author zahnen

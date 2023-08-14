@@ -21,7 +21,7 @@ import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
 import de.ii.xtraplatform.web.domain.MustacheRenderer;
-import io.dropwizard.views.View;
+import io.dropwizard.views.common.View;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.List;
