@@ -40,7 +40,7 @@ ext {
             'javax/servlet',
             'javax/ws/rs',
             'org/apache/commons',
-            'org/apache/http',
+            'org/apache/hc',
             'org/eclipse/jetty',
             'org/yaml/snakeyaml',
             'org/commonmark',

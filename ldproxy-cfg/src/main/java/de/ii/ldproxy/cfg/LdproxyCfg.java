@@ -23,7 +23,7 @@ import de.ii.xtraplatform.base.domain.Jackson;
 import de.ii.xtraplatform.base.domain.JacksonProvider;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
 import de.ii.xtraplatform.base.domain.StoreSource;
-import de.ii.xtraplatform.base.domain.StoreSourceFsV3;
+import de.ii.xtraplatform.base.domain.StoreSourceDefault;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.codelists.domain.CodelistData;
 import de.ii.xtraplatform.features.domain.ProviderData;
@@ -166,9 +166,9 @@ public class LdproxyCfg implements Cfg {
   public Path getEntitiesPath() {
     StoreSource storeSource = storeConfiguration.getSources(dataDirectory).get(0);
 
-    return storeSource instanceof StoreSourceFsV3
-        ? dataDirectory.resolve("store/entities")
-        : dataDirectory.resolve("entities/instances");
+    return storeSource instanceof StoreSourceDefault
+        ? dataDirectory.resolve("entities/instances")
+        : dataDirectory.resolve("store/entities");
   }
 
   @Override

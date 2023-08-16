@@ -23,8 +23,9 @@ import javax.xml.bind.annotation.XmlType;
 import org.immutables.value.Value;
 
 @Value.Immutable
+@Value.Style(builder = "new")
+@JsonDeserialize(builder = ImmutableLink.Builder.class)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
-@JsonDeserialize(as = ImmutableLink.class)
 @XmlType(propOrder = {"rel", "type", "title", "href", "hreflang", "length", "templated"})
 public abstract class Link {
 
@@ -89,6 +90,7 @@ public abstract class Link {
 
   @JsonIgnore
   @XmlTransient
+  @Value.Lazy
   public javax.ws.rs.core.Link getLink() {
     javax.ws.rs.core.Link.Builder link = javax.ws.rs.core.Link.fromUri(getHref());
 

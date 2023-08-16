@@ -7,11 +7,10 @@
  */
 package de.ii.ldproxy.cfg;
 
-import de.ii.xtraplatform.base.domain.ImmutableStoreSourceFs;
+import de.ii.xtraplatform.base.domain.ImmutableStoreSourceDefault;
 import de.ii.xtraplatform.base.domain.ImmutableStoreSourceFsV3;
 import de.ii.xtraplatform.base.domain.StoreSource;
 import de.ii.xtraplatform.base.domain.StoreSource.Content;
-import de.ii.xtraplatform.base.domain.StoreSource.Type;
 import de.ii.xtraplatform.base.domain.StoreSourceFs;
 import de.ii.xtraplatform.base.domain.StoreSourceFsV3;
 import de.ii.xtraplatform.base.domain.StoreSourceHttpV3;
@@ -34,10 +33,7 @@ class LayoutImpl implements Layout {
   static Optional<StoreSourceFs> detectSource(Path dataDirectory) {
     StoreSourceFs v3 = new ImmutableStoreSourceFsV3.Builder().src(dataDirectory.toString()).build();
     StoreSourceFs v4 =
-        new ImmutableStoreSourceFs.Builder()
-            .src(dataDirectory.toString())
-            .typeString(Type.FS.name())
-            .build();
+        new ImmutableStoreSourceDefault.Builder().src(dataDirectory.toString()).build();
 
     if (dataDirectory.resolve("store/entities").toFile().isDirectory()) {
       return Optional.of(v3);
