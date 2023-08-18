@@ -103,3 +103,7 @@ td:first-child {
     background-size: 0.7rem 0.7rem;
     background-position: center;
 }
+
+.popover {
+  max-width: none !important;
+}
