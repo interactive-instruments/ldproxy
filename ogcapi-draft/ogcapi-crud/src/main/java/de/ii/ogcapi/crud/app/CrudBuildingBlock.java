@@ -47,6 +47,10 @@ public class CrudBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
-    return new Builder().enabled(false).build();
+    return new Builder()
+        .enabled(false)
+        .optimisticLockingETag(false)
+        .optimisticLockingLastModified(false)
+        .build();
   }
 }
