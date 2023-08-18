@@ -87,6 +87,7 @@ public interface ExtensionConfiguration
       List<ExtensionConfiguration> extensions, ExtensionConfiguration... add) {
     Map<String, ExtensionConfiguration> extensionsAdd =
         Arrays.stream(add)
+            .filter(Objects::nonNull)
             .collect(
                 Collectors.toMap(
                     ExtensionConfiguration::getBuildingBlock,

@@ -62,7 +62,7 @@ public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2
 
   @Override
   public String getDescription() {
-    return "is deprecated and will be migrated to a separate tile provider entity";
+    return "is deprecated and will be upgraded to a separate tile provider entity";
   }
 
   @Override

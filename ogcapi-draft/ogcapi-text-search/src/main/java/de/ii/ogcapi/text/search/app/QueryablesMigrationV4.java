@@ -37,7 +37,7 @@ public class QueryablesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiD
 
   @Override
   public String getDescription() {
-    return "is deprecated and will be migrated to the QUERYABLES and TEXT_SEARCH building blocks";
+    return "is deprecated and will be upgraded to the QUERYABLES and TEXT_SEARCH building blocks";
   }
 
   @Override
@@ -96,13 +96,15 @@ public class QueryablesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiD
                           .build();
 
                   TextSearchConfiguration textSearchConfiguration =
-                      (textSearchConfigurationOld.isPresent()
-                              ? new ImmutableTextSearchConfiguration.Builder()
-                                  .from(textSearchConfigurationOld.get())
-                              : new ImmutableTextSearchConfiguration.Builder().enabled(true))
-                          .properties(
-                              featuresCoreConfigurationOld.get().getQueryables().get().getQ())
-                          .build();
+                      featuresCoreConfigurationOld.get().getQueryables().get().getQ().isEmpty()
+                          ? null
+                          : (textSearchConfigurationOld.isPresent()
+                                  ? new ImmutableTextSearchConfiguration.Builder()
+                                      .from(textSearchConfigurationOld.get())
+                                  : new ImmutableTextSearchConfiguration.Builder().enabled(true))
+                              .properties(
+                                  featuresCoreConfigurationOld.get().getQueryables().get().getQ())
+                              .build();
 
                   FeatureTypeConfigurationOgcApi collection =
                       FeatureTypeConfigurationOgcApi.replaceOrAddExtensions(
