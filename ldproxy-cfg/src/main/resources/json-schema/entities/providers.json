@@ -248,7 +248,7 @@
         },
         "extensions": {
           "title": "extensions",
-          "description": "",
+          "description": "Definition of extensions, see [Extensions](extensions/README.md).",
           "allOf": [
             {
               "if": {
@@ -408,7 +408,7 @@
         },
         "extensions": {
           "title": "extensions",
-          "description": "",
+          "description": "Definition of extensions, see [Extensions](extensions/README.md).",
           "allOf": [
             {
               "if": {
@@ -789,6 +789,12 @@
       "description": "```yaml  - type: FEATURE_CHANGES_PG   enabled: true   listenForTypes: # optional, default is to listen for all types   - governmentalservice   pollingInterval: 30s # optional, default is 60s  ```",
       "type": "object",
       "properties": {
+        "type": {
+          "title": "type",
+          "description": "Always `FEATURE_CHANGES_PG`.",
+          "type": "string",
+          "const": "FEATURE_CHANGES_PG"
+        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the extension?",
@@ -854,6 +860,12 @@
       "description": "```yaml  extensions:   - type: ROUTES     enabled: true     warmup: true     fromToQuery:       driving: \u0027SELECT id as oid, ST_Distance(${point},the_geom) AS distance FROM v_ways_vertices_pgr WHERE connected and ST_DWithin(${point},the_geom, 0.25) ORDER BY distance ASC LIMIT 1\u0027     edgesQuery:       driving: \u0027SELECT gid as id, source, target, x1, y1, x2, y2, ${cost_column} AS cost, ${reverse_cost_column} AS reverse_cost, maxheight, maxweight FROM v_ways WHERE tag_id NOT IN (113, 114, 115, 116, 117, 118, 119, 120, 122, 201, 202, 203, 204, 301, 302, 303, 304, 305)\u0027     routeQuery: \u0027SELECT * from pgr_aStar(${edgesQuery}, ${from_vid}, ${to_vid}, ${height}, ${weight}, \u0027\u0027SELECT gid FROM v_ways WHERE ST_Intersects(the_geom, ${obstacles})\u0027\u0027, false, 5, (1+8+16))\u0027     nativeCrs:       code: 4326       forceAxisOrder: LON_LAT     preferences:       fastest:         label: Fastest         costColumn: cost_s         reverseCostColumn: reverse_cost_s       shortest:         label: Shortest         costColumn: cost         reverseCostColumn: reverse_cost     modes:       driving: Driving types:   route:     type: OBJECT     sourcePath: /_route_     properties:       id:         sourcePath: id         type: INTEGER         role: ID       edge:         sourcePath: edge         type: INTEGER       node:         sourcePath: node         type: INTEGER       cost:         sourcePath: cost         type: FLOAT       agg_cost:         sourcePath: agg_cost         type: FLOAT       data:         type: OBJECT         sourcePath: \u0027[edge\u003dgid]v_ways{sortKey\u003dgid}\u0027         properties:           geometry:             sourcePath: the_geom             type: GEOMETRY             geometryType: LINE_STRING             role: PRIMARY_GEOMETRY             forcePolygonCCW: false           source:             sourcePath: source             type: INTEGER           target:             sourcePath: target             type: INTEGER           type:             sourcePath: tag_id             type: STRING             transformations:               codelist: wayTag           #osm_id:           #  sourcePath: osm_id           #  type: INTEGER           length_m:             sourcePath: length_m             type: FLOAT           duration_forward_s:             sourcePath: cost_s             type: FLOAT           duration_backward_s:             sourcePath: reverse_cost_s             type: FLOAT           roadName:             sourcePath: name             type: STRING           oneway:             sourcePath: oneway             type: STRING           maxspeed_forward:             sourcePath: maxspeed_forward             type: FLOAT           maxspeed_backward:             sourcePath: maxspeed_backward             type: FLOAT           maxHeight_m:             sourcePath: maxheight             type: FLOAT           maxWeight_t:             sourcePath: maxweight             type: FLOAT  ```",
       "type": "object",
       "properties": {
+        "type": {
+          "title": "type",
+          "description": "Always `ROUTES`.",
+          "type": "string",
+          "const": "ROUTES"
+        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the extension?",
@@ -938,6 +950,12 @@
       "description": "```yaml  - type: JSON_SCHEMA   enabled: true   objectTypeRefs:     \u0027#/$defs/Link\u0027: Link  ```",
       "type": "object",
       "properties": {
+        "type": {
+          "title": "type",
+          "description": "Always `JSON_SCHEMA`.",
+          "type": "string",
+          "const": "JSON_SCHEMA"
+        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the extension?",
@@ -1680,11 +1698,6 @@
         "connectionUri": {
           "title": "connectionUri",
           "description": "",
-          "type": "string"
-        },
-        "connectorType": {
-          "title": "connectorType",
-          "description": "Always `SLICK`.",
           "type": "string"
         },
         "dialect": {

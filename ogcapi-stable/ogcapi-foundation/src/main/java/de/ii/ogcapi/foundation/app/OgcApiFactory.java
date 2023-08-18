@@ -197,6 +197,11 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
     return Optional.ofNullable(reverseAliases.get(parentPath));
   }
 
+  @Override
+  public Map<String, String> getListEntryKeys() {
+    return Map.of("api", "buildingBlock");
+  }
+
   private ApiMetadata getMetadata() {
     return new ImmutableApiMetadata.Builder().build();
   }
