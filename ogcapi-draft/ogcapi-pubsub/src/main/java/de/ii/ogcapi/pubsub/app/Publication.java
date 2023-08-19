@@ -23,4 +23,9 @@ public interface Publication {
   default MqttQos getMqttQos() {
     return MqttQos.AT_MOST_ONCE;
   }
+
+  @Value.Default
+  default int getTimeout() {
+    return 60;
+  }
 }

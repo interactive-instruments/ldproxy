@@ -11,16 +11,14 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.hivemq.client.mqtt.MqttClient;
-import com.hivemq.client.mqtt.mqtt3.Mqtt3BlockingClient;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3ClientBuilder;
-import com.hivemq.client.mqtt.mqtt3.message.auth.Mqtt3SimpleAuth;
-import com.hivemq.client.mqtt.mqtt3.message.connect.connack.Mqtt3ConnAck;
-import com.hivemq.client.mqtt.mqtt3.message.publish.Mqtt3Publish;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.xtraplatform.base.domain.LogContext.MARKER;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
@@ -29,10 +27,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,6 +67,7 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+
     providers
         .getFeatureProvider(api.getData())
         .ifPresent(provider -> provider.getChangeHandler().addListener(onFeatureChange(api)));
@@ -95,37 +94,53 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
             .orElse(ImmutableList.of())
             .stream()
             .map(
-                // TODO check config validity
                 pub -> {
                   Mqtt3ClientBuilder builder =
                       MqttClient.builder()
                           .useMqttVersion3()
                           .identifier(publisher)
                           .automaticReconnectWithDefaultConfig()
+                          .addConnectedListener(
+                              context -> {
+                                if (LOGGER.isDebugEnabled()) {
+                                  LOGGER.debug(
+                                      "PubSub: Connected to broker '{}'.", pub.getBroker());
+                                }
+                              })
+                          .addDisconnectedListener(
+                              context -> {
+                                if (LOGGER.isDebugEnabled()) {
+                                  LOGGER.debug(
+                                      "PubSub: Disconnected from broker '{}'.", pub.getBroker());
+                                }
+                              })
                           .serverHost(brokers.get(pub.getBroker()).getHost())
                           .serverPort(brokers.get(pub.getBroker()).getPort());
-                  //noinspection ResultOfMethodCallIgnored
+                  if (brokers.get(pub.getBroker()).getSsl()) {
+                    //noinspection ResultOfMethodCallIgnored
+                    builder.sslWithDefaultConfig();
+                  }
                   brokers
                       .get(pub.getBroker())
                       .getUsername()
                       .ifPresent(
                           username ->
-                              builder.simpleAuth(
-                                  Mqtt3SimpleAuth.builder()
-                                      .username(username)
-                                      .password(
-                                          brokers
-                                              .get(pub.getBroker())
-                                              .getPassword()
-                                              .orElse("")
-                                              .getBytes(StandardCharsets.UTF_8))
-                                      .build()));
-                  Mqtt3BlockingClient client = builder.buildBlocking();
-                  @NotNull Mqtt3ConnAck connAck = client.connectWith().cleanSession(true).send();
-                  assert connAck.isSessionPresent(); // TODO
+                              builder
+                                  .simpleAuth()
+                                  .username(username)
+                                  .password(
+                                      brokers
+                                          .get(pub.getBroker())
+                                          .getPassword()
+                                          .orElse("")
+                                          .getBytes(StandardCharsets.UTF_8))
+                                  .applySimpleAuth());
+                  Mqtt3AsyncClient client = builder.buildAsync();
                   return ImmutablePublicationContext.builder()
                       .client(client)
+                      .connAck(client.connectWith().cleanSession(true).send())
                       .qos(pub.getMqttQos())
+                      .timeout(pub.getTimeout())
                       .build();
                 })
             .collect(Collectors.toUnmodifiableList()));
@@ -138,32 +153,51 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
       String collectionId =
           FeaturesCoreConfiguration.getCollectionId(api.getData(), change.getFeatureType());
       if (isEnabledForApi(api.getData(), collectionId)) {
-        if (LOGGER.isTraceEnabled()) {
-          LOGGER.trace("Feature Change (PubSub): {}", change);
-        }
         switch (change.getAction()) {
           case CREATE:
           case UPDATE:
           case DELETE:
-            // TODO
-            // send message to brokers
             pubContextMap
                 .get(api.getId())
                 .forEach(
-                    context ->
-                        context
-                            .getClient()
-                            .publish(
-                                Mqtt3Publish.builder()
-                                    .topic(
-                                        String.format(
-                                            "ogcapi/%s/%s/collections/%s/items",
-                                            publisherMap.get(api.getId()),
-                                            api.getId(),
-                                            collectionId))
-                                    .qos(context.getQos())
-                                    .payload(change.toString().getBytes()) // TODO
-                                    .build()));
+                    context -> {
+                      context
+                          .getConnAck()
+                          .thenCompose(
+                              connAck ->
+                                  context
+                                      .getClient()
+                                      .publishWith()
+                                      .topic(
+                                          String.format(
+                                              "ogcapi/%s/%s/collections/%s/items",
+                                              publisherMap.get(api.getId()),
+                                              api.getId(),
+                                              collectionId))
+                                      .qos(context.getQos())
+                                      .payload(change.toString().getBytes()) // TODO
+                                      .send())
+                          .orTimeout(context.getTimeout(), TimeUnit.SECONDS)
+                          .thenAccept(
+                              publish -> {
+                                if (LOGGER.isTraceEnabled()) {
+                                  LOGGER.trace("PubSub: Message sent.");
+                                }
+                              })
+                          .whenComplete(
+                              (ignore, e) -> {
+                                if (e != null) {
+                                  if (LOGGER.isWarnEnabled()) {
+                                    LOGGER.warn(
+                                        "PubSub: Error during message publication. Reason: {}",
+                                        e.getMessage());
+                                  }
+                                  if (LOGGER.isDebugEnabled(MARKER.STACKTRACE)) {
+                                    LOGGER.debug("Stacktrace: ", e);
+                                  }
+                                }
+                              });
+                    });
             break;
         }
       }

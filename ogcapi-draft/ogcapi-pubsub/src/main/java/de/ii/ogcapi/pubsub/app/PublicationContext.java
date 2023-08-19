@@ -8,13 +8,22 @@
 package de.ii.ogcapi.pubsub.app;
 
 import com.hivemq.client.mqtt.datatypes.MqttQos;
-import com.hivemq.client.mqtt.mqtt3.Mqtt3BlockingClient;
+import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient;
+import com.hivemq.client.mqtt.mqtt3.message.connect.connack.Mqtt3ConnAck;
+import java.util.concurrent.CompletableFuture;
 import org.immutables.value.Value;
 
 @Value.Immutable
 public interface PublicationContext {
 
-  Mqtt3BlockingClient getClient();
+  Mqtt3AsyncClient getClient();
+
+  CompletableFuture<Mqtt3ConnAck> getConnAck();
 
   MqttQos getQos();
+
+  @Value.Default
+  default int getTimeout() {
+    return 60;
+  }
 }
