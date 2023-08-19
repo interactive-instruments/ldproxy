@@ -22,6 +22,11 @@ public interface Broker {
     return 1883;
   }
 
+  @Value.Default
+  default boolean getSsl() {
+    return getPort() == 8883;
+  }
+
   Optional<String> getUsername();
 
   Optional<String> getPassword();
