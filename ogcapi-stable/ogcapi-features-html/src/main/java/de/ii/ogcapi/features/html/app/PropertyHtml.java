@@ -56,6 +56,11 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
   }
 
   @Value.Lazy
+  default String getOriginalName() {
+    return PropertyBase.super.getName();
+  }
+
+  @Value.Lazy
   default boolean hasValues() {
     return isValue()
         || (isArray() && getNestedProperties().stream().anyMatch(PropertyBase::isValue));
