@@ -30,9 +30,6 @@
       ]
     },
     {
-      "required": [
-        "featureProviderType"
-      ],
       "properties": {
         "featureProviderType": {
           "enum": [
@@ -40,7 +37,10 @@
             "SQL"
           ]
         }
-      }
+      },
+      "required": [
+        "featureProviderType"
+      ]
     }
   ],
   "allOf": [
@@ -187,37 +187,90 @@
         "id": {
           "title": "id",
           "description": "Unique identifier of the entity, has to match the filename. Allowed characters are     (A-Z, a-z), numbers (0-9), underscore and hyphen.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "createdAt": {
           "title": "createdAt",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "lastModified": {
           "title": "lastModified",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "entityStorageVersion": {
           "title": "entityStorageVersion",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "providerType": {
           "title": "providerType",
           "description": "Always `FEATURE`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "providerSubType": {
           "title": "providerSubType",
           "description": "`SQL` for SQL DBMS as data source, `WFS` for *OGC Web Feature Service* as data source.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "featureProviderType": {
           "title": "featureProviderType",
           "description": "*Deprecated* See `providerSubType`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "nativeCrs": {
@@ -229,22 +282,42 @@
         "nativeTimeZone": {
           "title": "nativeTimeZone",
           "description": "A timezone ID, such as `Europe/Berlin`. Is applied to temporal values without timezone     in the dataset.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "defaultLanguage": {
           "title": "defaultLanguage",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "typeValidation": {
           "title": "typeValidation",
           "description": "Optional type definition validation with regard to the data source (only for SQL).     `NONE` means no validation. With `LAX` the validation will fail and the provider will not     start, when issues are detected that would definitely lead to runtime errors. Issues that     might lead to runtime errors depending on the data will be logged as warning. With `STRICT`     the validation will fail for any detected issue. That means the provider will only start if     runtime errors with regard to the data source can be ruled out.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "labelTemplate": {
           "title": "labelTemplate",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "extensions": {
           "title": "extensions",
@@ -291,12 +364,34 @@
         "auto": {
           "title": "auto",
           "description": "Option to generate missing definitions automatically from the data source.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "autoPersist": {
           "title": "autoPersist",
           "description": "Option to persist definitions generated with `auto` to the configuration file. The     [Store](/application/40-store.md) must not be `READ_ONLY` for this to take effect.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "autoTypes": {
           "title": "autoTypes",
@@ -347,37 +442,90 @@
         "id": {
           "title": "id",
           "description": "Unique identifier of the entity, has to match the filename. Allowed characters are     (A-Z, a-z), numbers (0-9), underscore and hyphen.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "createdAt": {
           "title": "createdAt",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "lastModified": {
           "title": "lastModified",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "entityStorageVersion": {
           "title": "entityStorageVersion",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "providerType": {
           "title": "providerType",
           "description": "Always `FEATURE`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "providerSubType": {
           "title": "providerSubType",
           "description": "`SQL` for SQL DBMS as data source, `WFS` for *OGC Web Feature Service* as data source.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "featureProviderType": {
           "title": "featureProviderType",
           "description": "*Deprecated* See `providerSubType`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "nativeCrs": {
@@ -389,22 +537,42 @@
         "nativeTimeZone": {
           "title": "nativeTimeZone",
           "description": "A timezone ID, such as `Europe/Berlin`. Is applied to temporal values without timezone     in the dataset.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "defaultLanguage": {
           "title": "defaultLanguage",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "typeValidation": {
           "title": "typeValidation",
           "description": "Optional type definition validation with regard to the data source (only for SQL).     `NONE` means no validation. With `LAX` the validation will fail and the provider will not     start, when issues are detected that would definitely lead to runtime errors. Issues that     might lead to runtime errors depending on the data will be logged as warning. With `STRICT`     the validation will fail for any detected issue. That means the provider will only start if     runtime errors with regard to the data source can be ruled out.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "labelTemplate": {
           "title": "labelTemplate",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "extensions": {
           "title": "extensions",
@@ -443,12 +611,34 @@
         "auto": {
           "title": "auto",
           "description": "Option to generate missing definitions automatically from the data source.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "autoPersist": {
           "title": "autoPersist",
           "description": "Option to persist definitions generated with `auto` to the configuration file. The     [Store](/application/40-store.md) must not be `READ_ONLY` for this to take effect.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "autoTypes": {
           "title": "autoTypes",
@@ -519,42 +709,112 @@
         "id": {
           "title": "id",
           "description": "Unique identifier of the entity, has to match the filename. Allowed characters are     (A-Z, a-z), numbers (0-9), underscore and hyphen.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "createdAt": {
           "title": "createdAt",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "lastModified": {
           "title": "lastModified",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "entityStorageVersion": {
           "title": "entityStorageVersion",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "providerType": {
           "title": "providerType",
           "description": "Always `TILE`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "providerSubType": {
           "title": "providerSubType",
           "description": "Always `FEATURES`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "auto": {
           "title": "auto",
           "description": "Option to generate missing definitions automatically from the data source.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "autoPersist": {
           "title": "autoPersist",
           "description": "Option to persist definitions generated with `auto` to the configuration file. The     [Store](/application/40-store.md) must not be `READ_ONLY` for this to take effect.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "tilesetDefaults": {
           "title": "tilesetDefaults",
@@ -627,32 +887,80 @@
         "id": {
           "title": "id",
           "description": "Unique identifier of the entity, has to match the filename. Allowed characters are     (A-Z, a-z), numbers (0-9), underscore and hyphen.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "createdAt": {
           "title": "createdAt",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "lastModified": {
           "title": "lastModified",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "entityStorageVersion": {
           "title": "entityStorageVersion",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "providerType": {
           "title": "providerType",
           "description": "Always `TILE`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "providerSubType": {
           "title": "providerSubType",
           "description": "Always `MBTILES`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "tilesetDefaults": {
           "title": "tilesetDefaults",
@@ -695,32 +1003,80 @@
         "id": {
           "title": "id",
           "description": "Unique identifier of the entity, has to match the filename. Allowed characters are     (A-Z, a-z), numbers (0-9), underscore and hyphen.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "createdAt": {
           "title": "createdAt",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "lastModified": {
           "title": "lastModified",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "entityStorageVersion": {
           "title": "entityStorageVersion",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "providerType": {
           "title": "providerType",
           "description": "Always `TILE`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "providerSubType": {
           "title": "providerSubType",
           "description": "Always `HTTP`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "tilesetDefaults": {
           "title": "tilesetDefaults",
@@ -763,23 +1119,61 @@
         "code": {
           "title": "code",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "verticalCode": {
           "title": "verticalCode",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "forceLongitudeFirst": {
           "title": "forceLongitudeFirst",
           "description": "",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "forceAxisOrder": {
           "title": "forceAxisOrder",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -792,13 +1186,29 @@
         "type": {
           "title": "type",
           "description": "Always `FEATURE_CHANGES_PG`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "FEATURE_CHANGES_PG"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the extension?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "listenForTypes": {
           "title": "listenForTypes",
@@ -827,7 +1237,12 @@
         "pollingInterval": {
           "title": "pollingInterval",
           "description": "Since the JDBC driver for PostgreSQL does not support real reactivity, it has to be     polled for changes with the given interval.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -840,17 +1255,32 @@
         "label": {
           "title": "label",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "costColumn": {
           "title": "costColumn",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "reverseCostColumn": {
           "title": "reverseCostColumn",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -863,13 +1293,29 @@
         "type": {
           "title": "type",
           "description": "Always `ROUTES`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "ROUTES"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the extension?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "fromToQuery": {
           "title": "fromToQuery",
@@ -890,7 +1336,12 @@
         "routeQuery": {
           "title": "routeQuery",
           "description": "*Required* The SQL query to compute the route. Use `${edgesQuery}` as placeholder for     the `edgesQuery`, `${from_vid}` and `${to_vid}` as placeholders for the start/end vertex.     If supported, use `${height}`, `${weight}`, and `${obstacles}` as placeholders for the     height, weight and area constraints. `${flag_mask}`, if provided, is replaced by the sum of     all additional flags set for the routing request.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "flags": {
           "title": "flags",
@@ -925,22 +1376,48 @@
         "weightDefault": {
           "title": "weightDefault",
           "description": "Sets a default value for the weight of a vehicle in tons. `0` means no weight.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "heightDefault": {
           "title": "heightDefault",
           "description": "Sets a default value for the height of a vehicle in meters. `0` means no height.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "obstaclesDefault": {
           "title": "obstaclesDefault",
           "description": "Sets a default value for an area to avoid.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "warmup": {
           "title": "warmup",
           "description": "Enables a route calculation with the default values at provider startup. This can be     useful, if the routing algorithm caches certain information.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -953,13 +1430,29 @@
         "type": {
           "title": "type",
           "description": "Always `JSON_SCHEMA`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "JSON_SCHEMA"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the extension?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "objectTypeRefs": {
           "title": "objectTypeRefs",
@@ -1066,37 +1559,72 @@
         "rename": {
           "title": "rename",
           "description": "Rename a property.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "remove": {
           "title": "remove",
           "description": "`IN_COLLECTION` (until version 3.0: `OVERVIEW`) skips the property only for the     *Features* resource, `ALWAYS` always skips it, `NEVER` never skips it.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "flatten": {
           "title": "flatten",
           "description": "Flattens object or array properties using the given separator. For arrays the property     name is formed by the original property name followed by pairs of separator and array     position. For objects the property name is formed by concatenating the original property     separated by the given separator. Can only be applied on the feature level in the provider     or using the wildcard property name `*` otherwise.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "reduceStringFormat": {
           "title": "reduceStringFormat",
           "description": "Reduces an object to a string using the same syntax as `stringFormat` but with     additional replacements for objects property names.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "stringFormat": {
           "title": "stringFormat",
           "description": "Format a value, where `{{value}}` is replaced with the actual value and     `{{serviceUrl}}` is replaced with the API landing page URI. Additonal operations can be     applied to `{{value}}` by chaining them with `|`, see the examples below.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "dateFormat": {
           "title": "dateFormat",
           "description": "Format date(-time) values with the given     [pattern](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/format/DateTimeFormatter.html#patterns),     e.g. `dd.MM.yyyy` for German notation.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "codelist": {
           "title": "codelist",
           "description": "Maps the value according to the given [codelist](../../auxiliaries/codelists.md). If     the value is not found in the codelist or the codelist does not exist, the original value     is passed through. Falls der Wert nicht in der Codelist enthalten ist oder die Codelist     nicht gefunden wird, bleibt der Wert unverändert. Not applicable for properties containing     objects.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "nullify": {
           "title": "nullify",
@@ -1125,13 +1653,23 @@
         "null": {
           "title": "null",
           "description": "*Deprecated* See `nullify`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "asLink": {
           "title": "asLink",
           "description": "TODO",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -1144,7 +1682,12 @@
         "codelist": {
           "title": "codelist",
           "description": "TODO",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "enum": {
           "title": "enum",
@@ -1173,42 +1716,124 @@
         "regex": {
           "title": "regex",
           "description": "TODO",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "required": {
           "title": "required",
           "description": "TODO",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "min": {
           "title": "min",
           "description": "TODO",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "max": {
           "title": "max",
           "description": "TODO",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "minOccurrence": {
           "title": "minOccurrence",
           "description": "TODO",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "maxOccurrence": {
           "title": "maxOccurrence",
           "description": "TODO",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "composite": {
           "title": "composite",
           "description": "Flag to indicate that all geometry components are connected. Only relevant for     properties with MultiLineString and MultiPolygon geometries.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "closed": {
           "title": "closed",
           "description": "Flag to indicate that all geometry values are closed. Only relevant for geometry     properties.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -1221,12 +1846,22 @@
         "sourcePath": {
           "title": "sourcePath",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "schema": {
           "title": "schema",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "properties": {
           "title": "properties",
@@ -1247,22 +1882,42 @@
         "refType": {
           "title": "refType",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "refUriTemplate": {
           "title": "refUriTemplate",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "sourcePath": {
           "title": "sourcePath",
           "description": "The relative path for this schema object. The syntax depends on the provider types, see     [SQL](sql.md#path-syntax) or [WFS](wfs.md#path-syntax).",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "path": {
           "title": "path",
           "description": "*Deprecated* See `sourcePath`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "sourcePaths": {
@@ -1292,62 +1947,128 @@
         "type": {
           "title": "type",
           "description": "Data type of the schema object. Default is `OBJECT` when `properties` is set, otherwise     it is `STRING`. Possible values:        - `FLOAT`, `INTEGER`, `STRING`, `BOOLEAN`, `DATETIME`, `DATE` for simple values. - `GEOMETRY` for geometries. - `OBJECT` for objects. - `OBJECT_ARRAY` a list of objects. - `VALUE_ARRAY` a list of simple values.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "role": {
           "title": "role",
           "description": "`ID` has to be set for the property that should be used as the unique feature id. As a     rule that should be the first property ion the `properties` object. Property names cannot     contain spaces (\" \") or slashes (\"/\"). Set `TYPE` for a property that specifies the type     name of the object.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "valueType": {
           "title": "valueType",
           "description": "Only needed when `type` is `VALUE_ARRAY`. Possible values: `FLOAT`, `INTEGER`,     `STRING`, `BOOLEAN`, `DATETIME`, `DATE`",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "geometryType": {
           "title": "geometryType",
           "description": "The specific geometry type for properties with `type: GEOMETRY`. Possible values are     simple feature geometry types: `POINT`, `MULTI_POINT`, `LINE_STRING`, `MULTI_LINE_STRING`,     `POLYGON`, `MULTI_POLYGON`, `GEOMETRY_COLLECTION` and `ANY`",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "objectType": {
           "title": "objectType",
           "description": "Optional name for an object type, used for example in JSON Schema. For properties that     should be mapped as links according to *RFC 8288*, use `Link`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "label": {
           "title": "label",
           "description": "Label for the schema object, used for example in HTML representations.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "description": {
           "title": "description",
           "description": "Description for the schema object, used for example in HTML representations or JSON     Schema.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "unit": {
           "title": "unit",
           "description": "The unit of measurement of the value, only relevant for numeric properties.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "constantValue": {
           "title": "constantValue",
           "description": "Might be used instead of `sourcePath` to define a property with a constant value.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "scope": {
           "title": "scope",
           "description": "Optional scope for properties that should only be used when either reading (`QUERIES`)     or writing (`MUTATIONS`) features.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "schema": {
           "title": "schema",
           "description": "Reference to an external schema definition. The default resolver will resolve     references to entries in `fragments` e.g. `#/fragments/example`. For additional resolvers     see [Extensions](extensions).",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "ignore": {
           "title": "ignore",
           "description": "Option to completely ignore this schema object. Main purpose is to ignore parts of     schemas referenced with `schema`.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "transformations": {
           "title": "transformations",
@@ -1382,22 +2103,66 @@
         "forcePolygonCCW": {
           "title": "forcePolygonCCW",
           "description": "Option to disable enforcement of counter-clockwise orientation for exterior rings and a     clockwise orientation for interior rings (only for SQL).",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "isQueryable": {
           "title": "isQueryable",
           "description": "Properties that are not of type OBJECT or OBJECT_ARRAY are by default eligible as     queryables. This setting can be used to declare a property as ineligible, for example, if     the property is not optimized for use in queries. If an eligible property can actually be     queried is decided by the provider implementation, that might not be feasible due to     technical reasons.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "isSortable": {
           "title": "isSortable",
           "description": "Only the direct properties of a feature type that are of type STRING, FLOAT, INTEGER,     DATE, or DATETIME are eligible as sortables. This setting can be used to declare a property     as ineligible, for example, if the property is not optimized for use in queries. If an     eligible property can actually be used as sortable is decided by the provider     implementation, that might not be feasible due to technical reasons.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "isLastModified": {
           "title": "isLastModified",
           "description": "Identifies a DATETIME property as a property that contains the timestamp when the     feature was last modified. This information is used in optimistic locking to evaluate the     pre-conditions, if a mutation request includes a `Last-Modified` header.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "properties": {
           "title": "properties",
@@ -1523,17 +2288,32 @@
         "connectionUri": {
           "title": "connectionUri",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "version": {
           "title": "version",
           "description": "The WFS version to use.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "gmlVersion": {
           "title": "gmlVersion",
           "description": "The GML version to use.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "namespaces": {
           "title": "namespaces",
@@ -1546,27 +2326,52 @@
         "connectorType": {
           "title": "connectorType",
           "description": "Always `HTTP`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "uri": {
           "title": "uri",
           "description": "The URI of the GetCapabilities operation for the WFS.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "method": {
           "title": "method",
           "description": "The HTTP method to use, `GET` or `POST`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "user": {
           "title": "user",
           "description": "The user name for HTTP Basic Auth.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "password": {
           "title": "password",
           "description": "The base64 encoded password for HTTP Basic Auth.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "otherUrls": {
           "title": "otherUrls",
@@ -1587,33 +2392,87 @@
         "maxConnections": {
           "title": "maxConnections",
           "description": "Maximum number of connections to the database. The default value is computed     depending on the number of processor cores and the maximum number of joins per feature     type in the [Types Configuration](README.md#schema-definitions). The default value is     recommended for optimal performance under load. The smallest possible value also depends     on the maximum number of joins per feature type, smaller values are rejected.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "minConnections": {
           "title": "minConnections",
           "description": "Minimum number of connections to the database that are maintained.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "initFailFast": {
           "title": "initFailFast",
           "description": "If disabled the provider will wait longer for the first database connection to be     established. Has no effect if `minConnections` is `0`. Should normally be disabled only     on development systems.",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "initFailTimeout": {
           "title": "initFailTimeout",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "idleTimeout": {
           "title": "idleTimeout",
           "description": "The maximum amount of time that a connection is allowed to sit idle in the pool. Only     applies to connections beyond the `minConnections` limit. A value of 0 means that idle     connections are never removed from the pool.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "shared": {
           "title": "shared",
           "description": "If enabled for multiple providers with matching `host`, `database` and `user`, a     single connection pool will be shared between these providers. If any of the other     `connectionInfo` options do not match, the provider startup will fail.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -1658,34 +2517,64 @@
         "primaryKey": {
           "title": "primaryKey",
           "description": "The default column that is used for join analysis if no differing primary key is set in     the [sourcePath](#path-syntax).",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "defaultPrimaryKey": {
           "title": "defaultPrimaryKey",
           "description": "*Deprecated* See `primaryKey`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "sortKey": {
           "title": "sortKey",
           "description": "The default column that is used to sort rows if no differing sort key is set in the     [sourcePath](#path-syntax).",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "defaultSortKey": {
           "title": "defaultSortKey",
           "description": "*Deprecated* See `sortKey`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "schema": {
           "title": "schema",
           "description": "The default schema that is applied to tables without prefix in     [sourcePaths](#path-syntax).",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "junctionTablePattern": {
           "title": "junctionTablePattern",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -1698,32 +2587,62 @@
         "connectionUri": {
           "title": "connectionUri",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "dialect": {
           "title": "dialect",
           "description": "`PGIS` for PostgreSQL/PostGIS, `GPKG` for GeoPackage or SQLite/SpatiaLite.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "database": {
           "title": "database",
           "description": "The name of the database. For `GPKG` the file path, either absolute or relative to the     [data folder](../../application/30-data-folder.md).",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "host": {
           "title": "host",
           "description": "The database host. To use a non-default port, add it to the host separated by `:`, e.g.     `db:30305`. Not relevant for `GPKG`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "user": {
           "title": "user",
           "description": "The user name. Not relevant for `GPKG`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "password": {
           "title": "password",
           "description": "The base64 encoded password of the user. Not relevant for `GPKG`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "schemas": {
           "title": "schemas",
@@ -1772,31 +2691,86 @@
         "maxConnections": {
           "title": "maxConnections",
           "description": "*Deprecated* See `pool.maxConnections`.",
-          "type": "number",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "maxThreads": {
           "title": "maxThreads",
           "description": "*Deprecated* See `maxConnections`.",
-          "type": "number",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "minConnections": {
           "title": "minConnections",
           "description": "*Deprecated* See `pool.minConnections`.",
-          "type": "number",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "initFailFast": {
           "title": "initFailFast",
           "description": "*Deprecated* See `pool.initFailFast`.",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "computeNumberMatched": {
           "title": "computeNumberMatched",
           "description": "*Deprecated* See [Query Generation](#query-generation) below.",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "pathSyntax": {
@@ -1817,17 +2791,44 @@
         "chunkSize": {
           "title": "chunkSize",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "computeNumberMatched": {
           "title": "computeNumberMatched",
           "description": "Option to disable computation of the number of selected features for performance     reasons that are returned in `numberMatched`. As a general rule this should be disabled     for big datasets.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "accentiCollation": {
           "title": "accentiCollation",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -1840,12 +2841,34 @@
         "lon": {
           "title": "lon",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "lat": {
           "title": "lat",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -1858,17 +2881,50 @@
         "min": {
           "title": "min",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "max": {
           "title": "max",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "merge": {
           "title": "merge",
           "description": "",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "groupBy": {
           "title": "groupBy",
@@ -1929,17 +2985,50 @@
         "min": {
           "title": "min",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "max": {
           "title": "max",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "default": {
           "title": "default",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -1958,17 +3047,50 @@
         "featureLimit": {
           "title": "featureLimit",
           "description": "Maximum number of features contained in a single tile per query.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "minimumSizeInPixel": {
           "title": "minimumSizeInPixel",
           "description": "Features with line geometries shorter that the given value are excluded from tiles.     Features with surface geometries smaller than the square of the given value are excluded     from the tiles. The value `0.5` corresponds to half a \"pixel\" in the used coordinate     reference system.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "ignoreInvalidGeometries": {
           "title": "ignoreInvalidGeometries",
           "description": "Ignore features with invalid geometries. Before ignoring a feature, an attempt is made     to transform the geometry to a valid geometry. The topology of geometries might be invalid     in the data source or in some cases the quantization of coordinates to integers might     render it invalid.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "transformations": {
           "title": "transformations",
@@ -2000,7 +3122,12 @@
         "featureProvider": {
           "title": "featureProvider",
           "description": "The id of the feature provider. By default the tile provider id without `-tiles` is     used.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "levels": {
           "title": "levels",
@@ -2021,17 +3148,44 @@
         "min": {
           "title": "min",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "max": {
           "title": "max",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "filter": {
           "title": "filter",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -2044,7 +3198,12 @@
         "id": {
           "title": "id",
           "description": "The tileset id.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "levels": {
           "title": "levels",
@@ -2063,22 +3222,60 @@
         "featureProvider": {
           "title": "featureProvider",
           "description": "The id of the feature provider. By default the tile provider id without `-tiles` is     used.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "featureLimit": {
           "title": "featureLimit",
           "description": "Maximum number of features contained in a single tile per query.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "minimumSizeInPixel": {
           "title": "minimumSizeInPixel",
           "description": "Features with line geometries shorter that the given value are excluded from tiles.     Features with surface geometries smaller than the square of the given value are excluded     from the tiles. The value `0.5` corresponds to half a \"pixel\" in the used coordinate     reference system.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "ignoreInvalidGeometries": {
           "title": "ignoreInvalidGeometries",
           "description": "Ignore features with invalid geometries. Before ignoring a feature, an attempt is made     to transform the geometry to a valid geometry. The topology of geometries might be invalid     in the data source or in some cases the quantization of coordinates to integers might     render it invalid.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "transformations": {
           "title": "transformations",
@@ -2110,7 +3307,12 @@
         "featureType": {
           "title": "featureType",
           "description": "The name of the feature type. By default the tileset id is used.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "combine": {
           "title": "combine",
@@ -2174,17 +3376,38 @@
         "type": {
           "title": "type",
           "description": "Either `IMMUTABLE` or `DYNAMIC`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "storage": {
           "title": "storage",
           "description": "Either `PLAIN` or `MBTILES`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "seeded": {
           "title": "seeded",
           "description": "Should this cache be included by the [Seeding](#seeding)?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "levels": {
           "title": "levels",
@@ -2215,22 +3438,60 @@
         "runOnStartup": {
           "title": "runOnStartup",
           "description": "If disabled the seeding will not be run when the API starts.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "runPeriodic": {
           "title": "runPeriodic",
           "description": "A crontab pattern to run the seeding periodically. There will only ever be one seeding     in progress, so if the next run is scheduled before the last one finished, it will be     skipped.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "purge": {
           "title": "purge",
           "description": "If enabled the tile cache will be purged before the seeding starts.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "maxThreads": {
           "title": "maxThreads",
           "description": "The maximum number of threads the seeding is allowed to use. The actual number of     threads used depends on the number of available background task threads when the seeding is     about to start. If you want to allow more than thread, first check if sufficient background     task threads are configured. Take into account that the seeding for multiple APIs will     compete for the available background task threads.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -2265,7 +3526,12 @@
         "id": {
           "title": "id",
           "description": "The tileset id.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "levels": {
           "title": "levels",
@@ -2284,7 +3550,12 @@
         "source": {
           "title": "source",
           "description": "Filename of the MBTiles file in the `api-resources/tiles` directory.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -2327,7 +3598,12 @@
         "id": {
           "title": "id",
           "description": "The tileset id.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "levels": {
           "title": "levels",
@@ -2354,7 +3630,12 @@
         "urlTemplate": {
           "title": "urlTemplate",
           "description": "URL template for accessing tiles. Parameters to use are `{{tileMatrix}}`,     `{{tileRow}}`, `{{tileCol}}` and `{{fileExtension}}`. Single curly braces are also allowed.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false

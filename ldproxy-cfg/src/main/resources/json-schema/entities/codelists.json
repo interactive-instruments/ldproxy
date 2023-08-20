@@ -10,27 +10,70 @@
         "id": {
           "title": "id",
           "description": "Unique identifier of the entity, has to match the filename. Allowed characters are     (A-Z, a-z), numbers (0-9), underscore and hyphen.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "createdAt": {
           "title": "createdAt",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "lastModified": {
           "title": "lastModified",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "entityStorageVersion": {
           "title": "entityStorageVersion",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "label": {
           "title": "label",
           "description": "Human readable label.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "entries": {
           "title": "entries",
@@ -43,17 +86,32 @@
         "sourceType": {
           "title": "sourceType",
           "description": "Always `TEMPLATES`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "sourceUrl": {
           "title": "sourceUrl",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "fallback": {
           "title": "fallback",
           "description": "Optional default value.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false

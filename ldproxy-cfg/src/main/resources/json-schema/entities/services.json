@@ -37,63 +37,171 @@
         "id": {
           "title": "id",
           "description": "Unique identifier of the entity, has to match the filename. Allowed characters are     (A-Z, a-z), numbers (0-9), underscore and hyphen.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "createdAt": {
           "title": "createdAt",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "lastModified": {
           "title": "lastModified",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "entityStorageVersion": {
           "title": "entityStorageVersion",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "label": {
           "title": "label",
           "description": "Human readable label.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "description": {
           "title": "description",
           "description": "Human readable description.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "enabled": {
           "title": "enabled",
           "description": "Option to disable the service, which means its REST API will not be available and     background tasks will not be running.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "shouldStart": {
           "title": "shouldStart",
           "description": "*Deprecated* See `enabled`.",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "apiVersion": {
           "title": "apiVersion",
           "description": "Adds a version to the URL path, instead of `/{id}` it will be `/{id}/v{apiVersion}`.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "auto": {
           "title": "auto",
           "description": "Option to generate missing definitions automatically from the data source.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "autoPersist": {
           "title": "autoPersist",
           "description": "Option to persist definitions generated with `auto` to the configuration file. The     [Store](/application/40-store.md) must not be `READ_ONLY` for this to take effect.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "serviceType": {
           "title": "serviceType",
           "description": "Always `OGC_API`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "metadata": {
           "title": "metadata",
@@ -128,7 +236,12 @@
         "apiValidation": {
           "title": "apiValidation",
           "description": "During startup of an API, the configuration can be validated. The supported values are     `NONE`, `LAX`, and `STRICT`. `STRICT` will block the start of an API with warnings, while     an API with warnings, but no errors will start with `LAX`. If the value is set to `NONE`,     no validation will occur. Warnings are issued for problems in the configuration that can     affect the use of the API while errors are issued for cases where the API cannot be used.     Typically, API validation during startup will only be used in development and testing     environments since the API validating results in a slower startup time and should not be     necessary in production environments.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "tags": {
           "title": "tags",
@@ -197,62 +310,122 @@
         "contactName": {
           "title": "contactName",
           "description": "Optional name of a contact person or organization for the API.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "contactUrl": {
           "title": "contactUrl",
           "description": "Optional URL of a contact webpage for the API.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "contactEmail": {
           "title": "contactEmail",
           "description": "Optional email address for information about the API.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "contactPhone": {
           "title": "contactPhone",
           "description": "Optional phone number for information about the API.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "creatorName": {
           "title": "creatorName",
           "description": "Optional name of a creator of data shared via the API.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "creatorUrl": {
           "title": "creatorUrl",
           "description": "Optional URL of a website of the creator of data shared via the API.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "creatorLogoUrl": {
           "title": "creatorLogoUrl",
           "description": "Optional URL of a logo bitmap image of the creator of data shared via the API.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "publisherName": {
           "title": "publisherName",
           "description": "Optional name of the publisher of this API.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "publisherUrl": {
           "title": "publisherUrl",
           "description": "Optional URL of a website of the publisher of this API.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "publisherLogoUrl": {
           "title": "publisherLogoUrl",
           "description": "Optional URL of a logo bitmap image of the publisher of this API.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "licenseName": {
           "title": "licenseName",
           "description": "Name of the license of the data shared via this API.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "licenseUrl": {
           "title": "licenseUrl",
           "description": "URL of the license of the data shared via this API.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "keywords": {
           "title": "keywords",
@@ -281,12 +454,22 @@
         "version": {
           "title": "version",
           "description": "Version for this API in the OpenAPI definition.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "attribution": {
           "title": "attribution",
           "description": "Attribution text for data shared via this API, e.g., for display in maps.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -299,12 +482,22 @@
         "description": {
           "title": "description",
           "description": "Description of the content of the document or website.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "url": {
           "title": "url",
           "description": "URL of the document or website.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -317,23 +510,61 @@
         "code": {
           "title": "code",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "verticalCode": {
           "title": "verticalCode",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "forceLongitudeFirst": {
           "title": "forceLongitudeFirst",
           "description": "",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "forceAxisOrder": {
           "title": "forceAxisOrder",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -346,32 +577,98 @@
         "xmin": {
           "title": "xmin",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "ymin": {
           "title": "ymin",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "zmin": {
           "title": "zmin",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "xmax": {
           "title": "xmax",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "ymax": {
           "title": "ymax",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "zmax": {
           "title": "zmax",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "epsgCrs": {
           "title": "epsgCrs",
@@ -390,12 +687,34 @@
         "start": {
           "title": "start",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "end": {
           "title": "end",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -414,7 +733,18 @@
         "spatialComputed": {
           "title": "spatialComputed",
           "description": "The spatial extent of each collection is automatically dervied from the data during the     startup of the API. If the collection has no temporal properties, the collection will not     have a temporal extent.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "temporal": {
           "title": "temporal",
@@ -425,7 +755,18 @@
         "temporalComputed": {
           "title": "temporalComputed",
           "description": "The temporal extent of each collection is automatically dervied from the data during     the startup of the API. If the collection has no temporal properties, the collection will     not have a temporal extent.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -438,22 +779,42 @@
         "lastModified": {
           "title": "lastModified",
           "description": "For the resources in the building block, the `Last-Modified` header is set to the     configured value. The value overrides any modification time determined from the resource.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "expires": {
           "title": "expires",
           "description": "For the resources in the building block, the `Expires` header is set to the configured     value.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "cacheControl": {
           "title": "cacheControl",
           "description": "For the resources in the building block, the `Cache-Control` header is set to the     configured value. Exception are the *Features* and *Feature* resources, where     `cacheControlItems` is to be used.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "cacheControlItems": {
           "title": "cacheControlItems",
           "description": "For the *Features* und *Feature* resources in the building block, the `Cache-Control`     header is set to the configured value.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -466,7 +827,18 @@
         "enabled": {
           "title": "enabled",
           "description": "Option to disable access control.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "publicScopes": {
           "title": "publicScopes",
@@ -503,47 +875,104 @@
         "rel": {
           "title": "rel",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "type": {
           "title": "type",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "anchor": {
           "title": "anchor",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "title": {
           "title": "title",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "href": {
           "title": "href",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "hreflang": {
           "title": "hreflang",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "length": {
           "title": "length",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "templated": {
           "title": "templated",
           "description": "",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "var-base": {
           "title": "var-base",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -556,13 +985,23 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `COLLECTIONS`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "COLLECTIONS"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "COLLECTIONS"
         },
@@ -575,7 +1014,18 @@
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "additionalLinks": {
           "title": "additionalLinks",
@@ -604,12 +1054,34 @@
         "collectionIdAsParameter": {
           "title": "collectionIdAsParameter",
           "description": "Controls whether each feature collection and subresource is listed as a single resource     in the API definition (`false`), or whether a path parameter `collectionId` is used and     each resource is specified only once in the definition (`true`). With `true` the API     definition becomes simpler and shorter, but the schema is no longer collection-specific and     collection-specific query parameters can no longer be specified in the API definition.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "collectionDefinitionsAreIdentical": {
           "title": "collectionDefinitionsAreIdentical",
           "description": "If in the case of `collectionIdAsParameter: true` all collections have a structurally     identical schema and the same queryables, the value `true` can be used to control that in     the API definition schema and queryables are determined from any collection.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -622,20 +1094,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `QUERYABLES`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "QUERYABLES"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "QUERYABLES"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "caching": {
           "title": "caching",
@@ -694,17 +1187,44 @@
         "pathSeparator": {
           "title": "pathSeparator",
           "description": "The character that is used as the path separator in case of object-valued properties.     Either `DOT` or `UNDERSCORE`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "enableEndpoint": {
           "title": "enableEndpoint",
           "description": "If `true`, the Queryables endpoint will be enabled.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "asQueryParameters": {
           "title": "asQueryParameters",
           "description": "If `true`, all queryables with a simple value (string, number or boolean) will be     provided query parameters to filter features.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -717,20 +1237,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `COMMON`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "COMMON"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "COMMON"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "caching": {
           "title": "caching",
@@ -773,20 +1314,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `CRS`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "CRS"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "CRS"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "additionalCrs": {
           "title": "additionalCrs",
@@ -815,7 +1377,18 @@
         "suppressGlobalCrsList": {
           "title": "suppressGlobalCrsList",
           "description": "If `true`, the coordinate reference systems will be included in every Collection     resource that is embedded in the Collections resource. The global `crs` array will not be     used or referenced. Use this option, if the API is intended to be used with a client that     does not support the global `crs` array.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -828,37 +1401,72 @@
         "rename": {
           "title": "rename",
           "description": "Rename a property.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "remove": {
           "title": "remove",
           "description": "`IN_COLLECTION` (until version 3.0: `OVERVIEW`) skips the property only for the     *Features* resource, `ALWAYS` always skips it, `NEVER` never skips it.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "flatten": {
           "title": "flatten",
           "description": "Flattens object or array properties using the given separator. For arrays the property     name is formed by the original property name followed by pairs of separator and array     position. For objects the property name is formed by concatenating the original property     separated by the given separator. Can only be applied on the feature level in the provider     or using the wildcard property name `*` otherwise.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "reduceStringFormat": {
           "title": "reduceStringFormat",
           "description": "Reduces an object to a string using the same syntax as `stringFormat` but with     additional replacements for objects property names.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "stringFormat": {
           "title": "stringFormat",
           "description": "Format a value, where `{{value}}` is replaced with the actual value and     `{{serviceUrl}}` is replaced with the API landing page URI. Additonal operations can be     applied to `{{value}}` by chaining them with `|`, see the examples below.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "dateFormat": {
           "title": "dateFormat",
           "description": "Format date(-time) values with the given     [pattern](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/time/format/DateTimeFormatter.html#patterns),     e.g. `dd.MM.yyyy` for German notation.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "codelist": {
           "title": "codelist",
           "description": "Maps the value according to the given [codelist](../../auxiliaries/codelists.md). If     the value is not found in the codelist or the codelist does not exist, the original value     is passed through. Falls der Wert nicht in der Codelist enthalten ist oder die Codelist     nicht gefunden wird, bleibt der Wert unverändert. Not applicable for properties containing     objects.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "nullify": {
           "title": "nullify",
@@ -887,13 +1495,23 @@
         "null": {
           "title": "null",
           "description": "*Deprecated* See `nullify`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "asLink": {
           "title": "asLink",
           "description": "TODO",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -906,20 +1524,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `CITY_JSON`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "CITY_JSON"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "CITY_JSON"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "transformations": {
           "title": "transformations",
@@ -951,12 +1590,28 @@
         "textSequences": {
           "title": "textSequences",
           "description": "Enables support for CityJSON text sequences (media type `application/city+json-seq`).     Requires version 1.1 or later.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "version": {
           "title": "version",
           "description": "Select the CityJSON version that should be returned. Supported versions are `V10`     (CityJSON 1.0) and `V11` (CityJSON 1.1).",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -1077,13 +1732,23 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `FEATURES_CORE`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "FEATURES_CORE"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "FEATURES_CORE"
         },
@@ -1123,17 +1788,38 @@
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "featureProvider": {
           "title": "featureProvider",
           "description": "Id of the feature provider to use. Normally the feature provider and API ids are the     same.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "featureType": {
           "title": "featureType",
           "description": "Id of the feature type to use as defined in the given feature provider. Normally the     feature type and collection ids are the same.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "": {
           "title": "",
@@ -1162,22 +1848,60 @@
         "defaultCrs": {
           "title": "defaultCrs",
           "description": "Default coordinate reference system, either `CRS84` for datasets with 2D geometries or     `CRS84h` for datasets with 3D geometries.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "minimumPageSize": {
           "title": "minimumPageSize",
           "description": "Minimum value for parameter `limit`.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "defaultPageSize": {
           "title": "defaultPageSize",
           "description": "Default value for parameter `limit`.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "maximumPageSize": {
           "title": "maximumPageSize",
           "description": "Maximum value for parameter `limit`.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "embeddedFeatureLinkRels": {
           "title": "embeddedFeatureLinkRels",
@@ -1206,18 +1930,45 @@
         "showsFeatureSelfLink": {
           "title": "showsFeatureSelfLink",
           "description": "Always add `self` link to features, even in the *Features* resource.",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "validateCoordinatesInQueries": {
           "title": "validateCoordinatesInQueries",
           "description": "Validate the coordinates of the bbox or filter parameters against the domain of validity of the  coordinate reference system",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "itemType": {
           "title": "itemType",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "queryables": {
           "title": "queryables",
@@ -1245,13 +1996,23 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `GEO_JSON`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "GEO_JSON"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "GEO_JSON"
         },
@@ -1285,30 +2046,67 @@
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "nestedObjectStrategy": {
           "title": "nestedObjectStrategy",
           "description": "*Deprecated* Use the [`flatten`     transformation](../../providers/details/transformations.md) instead.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "multiplicityStrategy": {
           "title": "multiplicityStrategy",
           "description": "*Deprecated* Use the [`flatten`     transformation](../../providers/details/transformations.md) instead.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "useFormattedJsonOutput": {
           "title": "useFormattedJsonOutput",
           "description": "",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "separator": {
           "title": "separator",
           "description": "*Deprecated* Use the [`flatten`     transformation](../../providers/details/transformations.md) instead.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         }
       },
@@ -1322,7 +2120,12 @@
         "property": {
           "title": "property",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "mapping": {
           "title": "mapping",
@@ -1343,20 +2146,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `GML`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "GML"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "GML"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "transformations": {
           "title": "transformations",
@@ -1388,17 +2212,38 @@
         "gmlVersion": {
           "title": "gmlVersion",
           "description": "Selects the GML version to use: `GML32` for GML 3.2, `GML31` for GML 3.1 and `GML21`     for GML 2.1.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "gmlSfLevel": {
           "title": "gmlSfLevel",
           "description": "The default `null` declares that the GML support does not meet all requirements of the     *Geography Markup Language (GML), Simple Features Profile, Level 0* or the *Geography     Markup Language (GML), Simple Features Profile, Level 2* conformance classes from [OGC API     - Features - Part 1: Core 1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_gmlsf0).       If the value is set to `0`, `1` or `2`, the conformance will be declared in the     *Conformance Declaration* resource.       If for a collection from a SQL feature provider a root element different to     `sf:FeatureCollection` is configured in `featureCollectionElementName`, the value will be     ignored and no conformance to a GML conformance class will be declared.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "conformance": {
           "title": "conformance",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "applicationNamespaces": {
           "title": "applicationNamespaces",
@@ -1411,7 +2256,12 @@
         "defaultNamespace": {
           "title": "defaultNamespace",
           "description": "A default namespace that is used for XML elements, if no other namespace is specified,     can be specified with this configuration parameter. The value will be the namespace prefix.     It must be either a pre-defined prefix or a prefix declared in `applicationNamespaces`.     This namespace will be declared as the default namespace of the XML document.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "schemaLocations": {
           "title": "schemaLocations",
@@ -1440,17 +2290,38 @@
         "featureCollectionElementName": {
           "title": "featureCollectionElementName",
           "description": "Various feature collection elements are in use and sometimes additional ones are     specified in GML application schemas. The default is `sf:FeatureCollection` as specified by     OGC API Features. This configuration parameter provides a capability to use a different     feature collection element.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "featureMemberElementName": {
           "title": "featureMemberElementName",
           "description": "The feature collection element referenced in `featureCollectionElementName` has a child     property element that contains each feature. The default is `sf:featureMember` as specified     by OGC API Features. This configuration parameter provides a capability to declare the     element name for the feature collection element.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "supportsStandardResponseParameters": {
           "title": "supportsStandardResponseParameters",
           "description": "The feature collection element referenced in `featureCollectionElementName` may support     the WFS 2.0 standard response parameters (`timeStamp`, `numberMatched`, `numberReturned`).     This configuration parameter controls whether the attributes are included in the feature     collection element as XML attributes.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "xmlAttributes": {
           "title": "xmlAttributes",
@@ -1479,7 +2350,12 @@
         "gmlIdPrefix": {
           "title": "gmlIdPrefix",
           "description": "The feature property with role `ID` in the provider schema is mapped to the `gml:id`     attribute of the feature. These properties must be a direct property of the feature type.       If the values violate the rule for XML IDs, e.g., if they can start with a digit, this     configuration parameter can be used to add a consistent prefix to map all values to valid     XML IDs.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -1492,41 +2368,82 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `FEATURES_HTML`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "FEATURES_HTML"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "FEATURES_HTML"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "layout": {
           "title": "layout",
           "description": "*Deprecated* Superseded by `mapPosition` and the [`flattern`     transformation](../../providers/details/transformations.md).",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "mapPosition": {
           "title": "mapPosition",
           "description": "Can be `TOP`, `RIGHT` or `AUTO`. `AUTO` is the default, it chooses `TOP` when any     nested objects are found and `RIGHT` otherwise.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "featureTitleTemplate": {
           "title": "featureTitleTemplate",
           "description": "Define how the feature label for HTML is formed. Default is the feature id. Property     names in double curly braces will be replaced with the corresponding value.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "itemLabelFormat": {
           "title": "itemLabelFormat",
           "description": "*Deprecated* See `featureTitleTemplate`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "transformations": {
@@ -1559,17 +2476,38 @@
         "mapClientType": {
           "title": "mapClientType",
           "description": "The map client library to use to display features in the HTML representation. The     default is MapLibre GL (`MAP_LIBRE`). Cesium (`CESIUM`) can be used for displaying 3D     features on a globe, if [Features - glTF](features_-_gltf.md) is enabled.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "style": {
           "title": "style",
           "description": "An optional style in the style repository to use for the map in the HTML representation     of a feature or feature collection. The style should render all data. If set to `DEFAULT`,     the `defaultStyle` configured in the [HTML configuration](html.md) is used. If the map     client is MapLibre, the style must be available in the Mapbox format. If the style is set     to `NONE`, a simple wireframe style will be used with OpenStreetMap as a basemap. If the     map client is Cesium, the style must be available in the 3D Tiles format. If the style is     set to `NONE`, the standard 3D Tiles styling is used.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "removeZoomLevelConstraints": {
           "title": "removeZoomLevelConstraints",
           "description": "If `true`, any `minzoom` or `maxzoom` members are removed from the GeoJSON layers. The     value is ignored, if the map client is not MapLibre or `style` is `NONE`.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "geometryProperties": {
           "title": "geometryProperties",
@@ -1598,17 +2536,50 @@
         "maximumPageSize": {
           "title": "maximumPageSize",
           "description": "This option can be used to set a custom maximum value for the `limit` parameter for the     HTML output. If no value is specified, the value from the Features Core module applies.     When using CesiumJS as a map client, a value of 100 is recommended.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "propertyTooltips": {
           "title": "propertyTooltips",
           "description": "If `true`, on the single item page any property that has a description in the provider     schema will get an info icon with the description as a tooltip.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "propertyTooltipsOnItems": {
           "title": "propertyTooltipsOnItems",
           "description": "If `true`, on the items page any property that has a description in the provider schema     will get an info icon with the description in a tooltip.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -1621,45 +2592,103 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `FOUNDATION`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "FOUNDATION"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "FOUNDATION"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "useLangParameter": {
           "title": "useLangParameter",
           "description": "Support query parameter `lang` to set the desired response language.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "includeLinkHeader": {
           "title": "includeLinkHeader",
           "description": "Return links contained in API responses also as [HTTP     header](https://docs.ogc.org/is/17-069r4/17-069r4.html#_link_headers).",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "apiCatalogLabel": {
           "title": "apiCatalogLabel",
           "description": "Title for resource *API Catalog*.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "apiCatalogDescription": {
           "title": "apiCatalogDescription",
           "description": "Description for resource *API Catalog*. May contain HTML elements.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "googleSiteVerification": {
           "title": "googleSiteVerification",
           "description": "If set, the value is embedded in the HTML page of the API catalog resource in a     \"googleSiteVerification\" meta tag (`\u003cmeta name\u003d\"`google-site-verification`\" content\u003d\"{value}\" \u003e).",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -1672,12 +2701,22 @@
         "title": {
           "title": "title",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "description": {
           "title": "description",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "links": {
           "title": "links",
@@ -1706,12 +2745,22 @@
         "id": {
           "title": "id",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "landingPageUri": {
           "title": "landingPageUri",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "tags": {
           "title": "tags",
@@ -1740,7 +2789,18 @@
         "isDataset": {
           "title": "isDataset",
           "description": "",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "extensions": {
           "title": "extensions",
@@ -1761,115 +2821,262 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `HTML`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "HTML"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "HTML"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "noIndexEnabled": {
           "title": "noIndexEnabled",
           "description": "Set `noIndex` for all sites to prevent search engines from indexing.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "schemaOrgEnabled": {
           "title": "schemaOrgEnabled",
           "description": "Enable [schema.org](https://schema.org) annotations for all sites, which are used e.g.     by search engines. The annotations are embedded as JSON-LD.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "microdataEnabled": {
           "title": "microdataEnabled",
           "description": "*Deprecated* See `schemaOrgEnabled`.",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "collectionDescriptionsInOverview": {
           "title": "collectionDescriptionsInOverview",
           "description": "Show collection descriptions in the HTML representation of the *Feature Collections*     resource.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "suppressEmptyCollectionsInOverview": {
           "title": "suppressEmptyCollectionsInOverview",
           "description": "Suppress collections without items in the HTML representation of the *Feature     Collections* resource.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "sendEtags": {
           "title": "sendEtags",
           "description": "",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "legalName": {
           "title": "legalName",
           "description": "Label for optional legal notice link on every site.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "legalUrl": {
           "title": "legalUrl",
           "description": "URL for optional legal notice link on every site.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "privacyName": {
           "title": "privacyName",
           "description": "Label for optional privacy notice link on every site.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "privacyUrl": {
           "title": "privacyUrl",
           "description": "URL for optional privacy notice link on every site.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "defaultStyle": {
           "title": "defaultStyle",
           "description": "A default style in the style repository that is used in maps in the HTML representation     of the feature and tile resources. If `NONE`, a simple wireframe style will be used with     OpenStreetMap as a basemap, if the map client is MapLibre; for Cesium, the default 3D Tiles     styling will be used with the basemap. If the value is not `NONE` and the map client is     MapLibre, the API landing page (or the collection page) will also contain a link to a web     map with the style for the dataset (or the collection).",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "basemapUrl": {
           "title": "basemapUrl",
           "description": "URL template for background map tiles.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "basemapAttribution": {
           "title": "basemapAttribution",
           "description": "Source attribution for background map.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "leafletUrl": {
           "title": "leafletUrl",
           "description": "*Deprecated* See `basemapUrl`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "leafletAttribution": {
           "title": "leafletAttribution",
           "description": "*Deprecated* See `basemapAttribution`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "openLayersUrl": {
           "title": "openLayersUrl",
           "description": "*Deprecated* See `basemapUrl`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "openLayersAttribution": {
           "title": "openLayersAttribution",
           "description": "*Deprecated* See `basemapAttribution`",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "footerText": {
           "title": "footerText",
           "description": "Additional text shown in footer of every site.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "additionalApis": {
           "title": "additionalApis",
@@ -1906,20 +3113,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `JSON`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "JSON"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "JSON"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -1932,20 +3160,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `OAS30`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "OAS30"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "OAS30"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -1958,13 +3207,23 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `TILE_MATRIX_SETS`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "TILE_MATRIX_SETS"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "TILE_MATRIX_SETS"
         },
@@ -1977,7 +3236,18 @@
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "includePredefined": {
           "title": "includePredefined",
@@ -2014,17 +3284,50 @@
         "min": {
           "title": "min",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "max": {
           "title": "max",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "default": {
           "title": "default",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -2037,22 +3340,60 @@
         "runOnStartup": {
           "title": "runOnStartup",
           "description": "If disabled the seeding will not be run when the API starts.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "runPeriodic": {
           "title": "runPeriodic",
           "description": "A crontab pattern to run the seeding periodically. There will only ever be one seeding     in progress, so if the next run is scheduled before the last one finished, it will be     skipped.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "purge": {
           "title": "purge",
           "description": "If enabled the tile cache will be purged before the seeding starts.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "maxThreads": {
           "title": "maxThreads",
           "description": "The maximum number of threads the seeding is allowed to use. The actual number of     threads used depends on the number of available background task threads when the seeding is     about to start. If you want to allow more than thread, first check if sufficient background     task threads are configured. Take into account that the seeding for multiple APIs will     compete for the available background task threads.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -2065,17 +3406,44 @@
         "min": {
           "title": "min",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "max": {
           "title": "max",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "filter": {
           "title": "filter",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -2088,17 +3456,50 @@
         "min": {
           "title": "min",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "max": {
           "title": "max",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "merge": {
           "title": "merge",
           "description": "",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "groupBy": {
           "title": "groupBy",
@@ -2159,7 +3560,12 @@
         "type": {
           "title": "type",
           "description": "Fixed value, identifies the tile provider type.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "FEATURES"
         },
         "tileEncodings": {
@@ -2305,31 +3711,86 @@
         "limit": {
           "title": "limit",
           "description": "Maximum number of features contained in a single tile per query.",
-          "type": "number",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "singleCollectionEnabled": {
           "title": "singleCollectionEnabled",
           "description": "Enable vector tiles for each *Feature Collection*. Every tile contains a layer with the     feature from the collection.",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "multiCollectionEnabled": {
           "title": "multiCollectionEnabled",
           "description": "Enable vector tiles for the whole dataset. Every tile contains one layer per collection     with the features of that collection.",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "ignoreInvalidGeometries": {
           "title": "ignoreInvalidGeometries",
           "description": "Ignore features with invalid geometries. Before ignoring a feature, an attempt is made     to transform the geometry to a valid geometry. The topology of geometries might be invalid     in the data source or in some cases the quantization of coordinates to integers might     render it invalid.",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "minimumSizeInPixel": {
           "title": "minimumSizeInPixel",
           "description": "Features with line geometries shorter that the given value are excluded from tiles.     Features with surface geometries smaller than the square of the given value are excluded     from the tiles. The value `0.5` corresponds to half a \"pixel\" in the used coordinate     reference system.",
-          "type": "number",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         }
       },
@@ -2343,19 +3804,34 @@
         "type": {
           "title": "type",
           "description": "Fixed value, identifies the tile provider type.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "MBTILES"
         },
         "filename": {
           "title": "filename",
           "description": "Filename of the MBTiles file in the `api-resources/tiles/{apiId}` directory.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "tileMatrixSetId": {
           "title": "tileMatrixSetId",
           "description": "Tiling scheme used in the MBTiles file.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         }
       },
@@ -2369,19 +3845,34 @@
         "type": {
           "title": "type",
           "description": "Fixed value, identifies the tile provider type.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "TILESERVER"
         },
         "urlTemplate": {
           "title": "urlTemplate",
           "description": "URL template for accessing tiles. Parameters to use are `{tileMatrix}`, `{tileRow}`,     `{tileCol}` and `{fileExtension}`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "urlTemplateSingleCollection": {
           "title": "urlTemplateSingleCollection",
           "description": "URL template for accessing tiles for a collection.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "tileEncodings": {
@@ -2482,20 +3973,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `TILES`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "TILES"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "TILES"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "transformations": {
           "title": "transformations",
@@ -2527,7 +4039,18 @@
         "maxMultiplicity": {
           "title": "maxMultiplicity",
           "description": "If the feature schema includes array properties, `maxMultiplicity` properties will be     created for each array property. If an instance has more values in an array, only the first     values are included in the data.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "caching": {
           "title": "caching",
@@ -2545,18 +4068,33 @@
         "tileProviderId": {
           "title": "tileProviderId",
           "description": "*Deprecated (will be renamed to `tileProvider` in v4.0)* Specifies the data source for     the tiles, see [Tile Providers](../../providers/tile/README.md).",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "tileProviderTileset": {
           "title": "tileProviderTileset",
           "description": "Specifies the tileset from the tile provider that should be used. The default is     `__all__` for dataset tiles and `{collectionId}` for collection tiles.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "tileLayer": {
           "title": "tileLayer",
           "description": "*Deprecated* See `tileProviderTileset`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "tileSetEncodings": {
@@ -2586,23 +4124,49 @@
         "cache": {
           "title": "cache",
           "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities) `FILES` stores each tile as a file in     the file system. `MBTILES` stores the tiles in an MBTiles file (one MBTiles file per     tileset).",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "mapClientType": {
           "title": "mapClientType",
           "description": "Selection of the map client to be used in the HTML output. The default is MapLibre GL     JS, only the \"WebMercatorQuad\" tiling scheme is supported. Alternatively \u0027OPEN_LAYERS\u0027 is     supported as well (OpenLayers). The support of Open Layers only makes sense if other of the     predefined tiling schemes should be supported in the HTML output. With `OPEN_LAYERS` no     styles are supported.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "style": {
           "title": "style",
           "description": "A style in the style repository to be used in maps with tiles by default. With     `DEFAULT` the `defaultStyle` from [module HTML](html.md) is used. If the map client is     MapLibre, the style must be available in the Mapbox format. If the style is set to `NONE`,     a simple wireframe style will be used with OpenStreetMap as a basemap. If the map client is     Open Layers, the setting is ignored.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "removeZoomLevelConstraints": {
           "title": "removeZoomLevelConstraints",
           "description": "If `true` is selected, the `minzoom` and `maxzoom` specifications for the layer objects     are removed from the style specified in `style` so that the features are displayed at all     zoom levels. This option should not be used if the style provides different presentations     depending on the zoom level, otherwise all layers will be displayed at all zoom levels at     the same time.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "tileEncodings": {
           "title": "tileEncodings",
@@ -2666,23 +4230,67 @@
         "collectionTiles": {
           "title": "collectionTiles",
           "description": "Enable vector tiles for each *Feature Collection*. Every tile contains a layer with the     feature from the collection.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "singleCollectionEnabled": {
           "title": "singleCollectionEnabled",
           "description": "*Deprecated* See `collectionTiles`.",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "datasetTiles": {
           "title": "datasetTiles",
           "description": "Enable vector tiles for the whole dataset. Every tile contains one layer per collection     with the features of that collection.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "multiCollectionEnabled": {
           "title": "multiCollectionEnabled",
           "description": "*Deprecated* See `datasetTiles`.",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "zoomLevelsCache": {
@@ -2713,13 +4321,35 @@
         "limit": {
           "title": "limit",
           "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)*",
-          "type": "number",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "ignoreInvalidGeometries": {
           "title": "ignoreInvalidGeometries",
           "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)*",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "filters": {
@@ -2781,7 +4411,18 @@
         "minimumSizeInPixel": {
           "title": "minimumSizeInPixel",
           "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)*",
-          "type": "number",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         }
       },
@@ -2795,20 +4436,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `XML`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "XML"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "XML"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -2821,20 +4483,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `SCHEMA`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "SCHEMA"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "SCHEMA"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "caching": {
           "title": "caching",
@@ -2877,7 +4560,12 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `CRUD` or (*deprecated*) `TRANSACTIONAL`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "enum": [
             "CRUD",
             "TRANSACTIONS"
@@ -2886,7 +4574,12 @@
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "enum": [
             "CRUD",
@@ -2896,7 +4589,18 @@
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -2909,22 +4613,42 @@
         "type": {
           "title": "type",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "componentType": {
           "title": "componentType",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "stringOffsetType": {
           "title": "stringOffsetType",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "noData": {
           "title": "noData",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -2937,20 +4661,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `GLTF`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "GLTF"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "GLTF"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "transformations": {
           "title": "transformations",
@@ -2982,22 +4727,66 @@
         "meshQuantization": {
           "title": "meshQuantization",
           "description": "Enables support for the glTF 2.0 extension     [KHR_mesh_quantization](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_mesh_quantization).",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "withNormals": {
           "title": "withNormals",
           "description": "If `true`, the normals are computed for every vertex.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "withOutline": {
           "title": "withOutline",
           "description": "If `true`, the polygon edges are outlined in Cesium.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "polygonOrientationNotGuaranteed": {
           "title": "polygonOrientationNotGuaranteed",
           "description": "If `true`, materials are defined as     [double-sided](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#double-sided).",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "properties": {
           "title": "properties",
@@ -3010,12 +4799,34 @@
         "withSurfaceType": {
           "title": "withSurfaceType",
           "description": "If `true`, for buildings in Level-of-Detail 2 with information about the semantics of     each surface (wall, roof, etc.), a property \"surfaceType\" is added and available for each     vertex.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "maxMultiplicity": {
           "title": "maxMultiplicity",
           "description": "If the data is flattened and the feature schema includes arrays, `maxMultiplicity`     properties will be created for each array property. If an instance has more values in an     array, only the first values are included in the data.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -3028,20 +4839,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `JSON_FG`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "JSON_FG"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "JSON_FG"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "transformations": {
           "title": "transformations",
@@ -3073,27 +4905,70 @@
         "describedby": {
           "title": "describedby",
           "description": "*Partially Deprecated* For schemas specific to the feature type, use `schemaCollection`     and `schemaFeature`. Enables that links to the generic JSON-FG and GeoJSON JSON Schema     documents tare added to the JSON-FG response document. The links have the link relation     type \"describedby\". The schemas can be used to validate the JSON document.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "schemaCollection": {
           "title": "schemaCollection",
           "description": "The URI of a JSON Schema document describing a feature collection with the features of     the collection/dataset. The schema will be referenced from JSON-FG feature collection     responses by a link with the link relation type \"describedby\". The schemas can be used to     validate the JSON document.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "schemaFeature": {
           "title": "schemaFeature",
           "description": "The URI of a JSON Schema document describing a feature of the collection/dataset. The     schema will be referenced from JSON-FG feature responses by a link with the link relation     type \"describedby\". The schemas can be used to validate the JSON document.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "coordRefSys": {
           "title": "coordRefSys",
           "description": "Activates the output of the coordinate reference system in a JSON member \"coordRefSys\"     for features and feature collections. The coordinate reference system is identified by its     OGC URI, for example, `http://www.opengis.net/def/crs/EPSG/0/25832` for ETRS89 / UTM 32N.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "geojsonCompatibility": {
           "title": "geojsonCompatibility",
           "description": "Activates support for the \"compatibility\u003dgeojson\" media type parameter. If the     parameter is provided, JSON-FG features with a \"place\" member that is not `null` will also     include a GeoJSON geometry in the \"geometry\" member in WGS 84. If the parameter is missing,     the \"geometry\" member of a JSON-FG feature will be `null`, if the \"place\" member is not     `null`.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "featureType": {
           "title": "featureType",
@@ -3178,20 +5053,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `SEARCH`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "SEARCH"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "SEARCH"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "caching": {
           "title": "caching",
@@ -3202,17 +5098,50 @@
         "managerEnabled": {
           "title": "managerEnabled",
           "description": "Option to manage stored queries using PUT and DELETE.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "validationEnabled": {
           "title": "validationEnabled",
           "description": "Option to validate stored queries when using PUT by setting a `Prefer` header with     `handling\u003dstrict`.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "allLinksAreLocal": {
           "title": "allLinksAreLocal",
           "description": "Signals feature encoders whether all link targets are within the same document.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -3225,20 +5154,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `FILTER`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "FILTER"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "FILTER"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -3251,20 +5201,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `GEOMETRY_SIMPLIFICATION`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "GEOMETRY_SIMPLIFICATION"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "GEOMETRY_SIMPLIFICATION"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -3277,20 +5248,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `PROJECTIONS`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "PROJECTIONS"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "PROJECTIONS"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -3303,17 +5295,38 @@
         "label": {
           "title": "label",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "default": {
           "title": "default",
           "description": "",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "providerFlag": {
           "title": "providerFlag",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -3326,7 +5339,12 @@
         "name": {
           "title": "name",
           "description": "",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "start": {
           "title": "start",
@@ -3403,7 +5421,18 @@
         "centerLevel": {
           "title": "centerLevel",
           "description": "",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -3416,7 +5445,18 @@
         "enabled": {
           "title": "enabled",
           "description": "",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "defaults": {
           "title": "defaults",
@@ -3435,20 +5475,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `ROUTING`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "ROUTING"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "ROUTING"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "caching": {
           "title": "caching",
@@ -3459,47 +5520,122 @@
         "featureType": {
           "title": "featureType",
           "description": "*Required* Name of the feature type in the [feature provider with the routing     extension](../../providers/feature/extensions/routing.html) that provides the route feature     as a series of route segments. See [Routing Provider](#routing-provider) for configuring     the",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "manageRoutes": {
           "title": "manageRoutes",
           "description": "Enables support for conformance class *Manage Routes*. If enabled, routes along with     their request payload are stored in the API and can be retrieved. Routes that are no longer     needed can be deleted.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "intermediateWaypoints": {
           "title": "intermediateWaypoints",
           "description": "Enables support for conformance class *Intermediate Waypoints*. If enabled, routing     requests can provide more than two waypoints along the route.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "weightRestrictions": {
           "title": "weightRestrictions",
           "description": "Enables support for conformance class *Weight Restrictions*. If enabled, routing     requests can include the weight of the vehicle and route segments will only be selected, if     they support the weight.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "heightRestrictions": {
           "title": "heightRestrictions",
           "description": "Enables support for conformance class *Height Restrictions*. If enabled, routing     requests can include the height of the vehicle and route segments will only be selected, if     they support the weight.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "obstacles": {
           "title": "obstacles",
           "description": "Enables support for conformance class *Obstacles*. If enabled, routing requests can     include a multi-polygon of areas that the route must avoid.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "speedLimitUnit": {
           "title": "speedLimitUnit",
           "description": "Sets the unit used in speed limit attributes of segments. Either \"kmph\" or \"mph\".",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "defaultPreference": {
           "title": "defaultPreference",
           "description": "Sets the default value for the \"preference\" (cost function) in the routing request.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "defaultMode": {
           "title": "defaultMode",
           "description": "Sets the default value for the \"mode\" (mode of transport) in the routing request.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "additionalFlags": {
           "title": "additionalFlags",
@@ -3512,7 +5648,12 @@
         "defaultCrs": {
           "title": "defaultCrs",
           "description": "Default coordinate reference system, either `CRS84` for routing providers with 2D     coordinates, `CRS84h` for 3D coordinates.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "coordinatePrecision": {
           "title": "coordinatePrecision",
@@ -3525,7 +5666,18 @@
         "elevationProfileSimplificationTolerance": {
           "title": "elevationProfileSimplificationTolerance",
           "description": "If set, route segment geometries with 3D coordinates will be smoothened using the     Douglas-Peucker algorithm with the specified tolerance.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "html": {
           "title": "html",
@@ -3544,20 +5696,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `SORTING`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "SORTING"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "SORTING"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "sortables": {
           "title": "sortables",
@@ -3635,7 +5808,12 @@
         "pathSeparator": {
           "title": "pathSeparator",
           "description": "The character that is used as the path separator in case of object-valued properties.     Either `DOT` or `UNDERSCORE`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -3648,20 +5826,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `STYLES`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "STYLES"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "STYLES"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "caching": {
           "title": "caching",
@@ -3696,55 +5895,159 @@
         "managerEnabled": {
           "title": "managerEnabled",
           "description": "Option to manage styles using POST, PUT and DELETE. If `styleInfosOnCollection` is     enabled, style information may be created and updated using PATCH. Siehe die     Konformitätsklasse \"Manage styles\".",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "validationEnabled": {
           "title": "validationEnabled",
           "description": "Option to validate styles when using POST and PUT by setting the query parameter     `validate`. For details see conformance class *Validation of styles*.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "useIdFromStylesheet": {
           "title": "useIdFromStylesheet",
           "description": "",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "resourcesEnabled": {
           "title": "resourcesEnabled",
           "description": "*Deprecated* See `enabled` in [Modul Resources](resources.md).",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "resourceManagerEnabled": {
           "title": "resourceManagerEnabled",
           "description": "*Deprecated* See `managerEnabled` in [Modul Resources](resources.md).",
-          "type": "boolean",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ],
           "deprecated": true
         },
         "defaultStyle": {
           "title": "defaultStyle",
           "description": "*Deprecated* See `defaultStyle` in [Modul HTML](html.md).",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true
         },
         "deriveCollectionStyles": {
           "title": "deriveCollectionStyles",
           "description": "Only applies to styles in Mapbox Style format. Controls whether the styles at the     collection level should be derived from the styles in the parent style collection. The     prerequisite is that the name of the `source` in the stylesheet corresponds to `{apiId}`     and the name of the `source-layer` corresponds to `{collectionId}`. If a style is to be     used for displaying features in the FEATURES_HTML module, the option should be enabled.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "webmapWithPopup": {
           "title": "webmapWithPopup",
           "description": "Option to support popups in web maps for *Mapbox Style* styles that show attributes for     the top-most object.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "webmapWithLayerControl": {
           "title": "webmapWithLayerControl",
           "description": "Option to support layer controls in web maps for *Mapbox Style* styles. Allows to     collectively enable and disable all layers for a certain feature collection.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "layerControlAllLayers": {
           "title": "layerControlAllLayers",
           "description": "Option to support layer controls for additional layers like background maps. Requires     `webmapWithLayerControl: true`.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -3757,20 +6060,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `TEXT_SEARCH`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "TEXT_SEARCH"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "TEXT_SEARCH"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "properties": {
           "title": "properties",
@@ -3807,30 +6131,73 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `TILES3D`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "TILES3D"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "TILES3D"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "firstLevelWithContent": {
           "title": "firstLevelWithContent",
           "description": "The first level of the tileset which will contain buildings. The value will depend on     the spatial extent of the dataset, i.e., at what level of the implicit tiling scheme large     buildings can be displayed.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "maxLevel": {
           "title": "maxLevel",
           "description": "The last level of the tileset which will contain buildings. The value will depend on     the spatial extent of the dataset, i.e., at what level of the implicit tiling scheme small     buildings can be displayed in detail.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "contentFilters": {
           "title": "contentFilters",
@@ -3883,12 +6250,34 @@
         "geometricErrorRoot": {
           "title": "geometricErrorRoot",
           "description": "The error, in meters, introduced if a tile at level 0 (root) is rendered and its     children at level 1 are not. At runtime, the geometric error is used to compute screen     space error (SSE), i.e., the error measured in pixels.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "subtreeLevels": {
           "title": "subtreeLevels",
           "description": "The number of levels in each Subtree.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "seeding": {
           "title": "seeding",
@@ -3899,32 +6288,74 @@
         "clampToEllipsoid": {
           "title": "clampToEllipsoid",
           "description": "If set to `true`, each building will be translated vertically so that the bottom of the     building is on the WGS 84 ellipsoid. Use this option, if the data is intended to be     rendered without a terrain model.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "ionAccessToken": {
           "title": "ionAccessToken",
           "description": "If the 3D Tiles should be rendered in the integrated Cesium client using the terrain     model from Cesium Ion, specify the access token to use in requests.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "maptilerApiKey": {
           "title": "maptilerApiKey",
           "description": "If the 3D Tiles should be rendered in the integrated Cesium client using the terrain     model from MapTiler, specify the api key to use in requests.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "customTerrainProviderUri": {
           "title": "customTerrainProviderUri",
           "description": "If the 3D Tiles should be rendered in the integrated Cesium client using an external     Terrain Provider, specify the URI of the provider.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "terrainHeightDifference": {
           "title": "terrainHeightDifference",
           "description": "If the terrain does not match the height values in the data, this option can be used to     translate the buildings vertically in the integrated Cesium client.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "style": {
           "title": "style",
           "description": "A style in the style repository of the collection to be used in maps with 3D Tiles.     With `DEFAULT` the `defaultStyle` from [module HTML](html.md) is used. With `NONE` the     default 3D Tiles style is used. The style must be available in the 3D Tiles Styling format.     If no style is found, \u0027NONE\u0027 is used.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -3937,20 +6368,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `CSV`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "CSV"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "CSV"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "transformations": {
           "title": "transformations",
@@ -3982,7 +6434,18 @@
         "maxMultiplicity": {
           "title": "maxMultiplicity",
           "description": "If the feature schema includes array properties, `maxMultiplicity` properties will be     created for each array property. If an instance has more values in an array, only the first     values are included in the data.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -3995,30 +6458,73 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `FEATURES_EXTENSIONS`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "FEATURES_EXTENSIONS"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "FEATURES_EXTENSIONS"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "postOnItems": {
           "title": "postOnItems",
           "description": "Enables support for the POST HTTP method on the \"Features\" resource.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "intersectsParameter": {
           "title": "intersectsParameter",
           "description": "Enables support for the `intersects` query parameter on the \"Features\" resource",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -4031,20 +6537,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `FLATGEOBUF`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "FLATGEOBUF"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "FLATGEOBUF"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "transformations": {
           "title": "transformations",
@@ -4076,7 +6603,18 @@
         "maxMultiplicity": {
           "title": "maxMultiplicity",
           "description": "If the feature schema includes array properties, `maxMultiplicity` properties will be     created for each array property. If an instance has more values in an array, only the first     values are included in the data.",
-          "type": "number"
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -4089,30 +6627,61 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `GEO_JSON_LD`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "GEO_JSON_LD"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "GEO_JSON_LD"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "contextFileName": {
           "title": "contextFileName",
           "description": "File name of the JSON-LD context document in the folder     `api-resources/json-ld-contexts/{apiId}`.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "context": {
           "title": "context",
           "description": "URI of the JSON-LD context document. The value should either be an external URI or     `{{serviceUrl}}/collections/{{collectionId}}/context` for contexts provided by the API (see     below for details). The template may contain `{{serviceUrl}}` (substituted with the API     landing page URI) and `{{collectionId}}` (substituted with the collection id).",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "types": {
           "title": "types",
@@ -4141,7 +6710,12 @@
         "idTemplate": {
           "title": "idTemplate",
           "description": "Value of `@id` that is added to every feature. The template may contain     `{{serviceUrl}}` (substituted with the API landing page URI), `{{collectionId}}`     (substituted with the collection id) and `{{featureId}}` (substituted with the feature id).",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -4154,20 +6728,41 @@
         "buildingBlock": {
           "title": "buildingBlock",
           "description": "Always `RESOURCES`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "const": "RESOURCES"
         },
         "extensionType": {
           "title": "extensionType",
           "description": "*Deprecated* See `buildingBlock`.",
-          "type": "string",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
           "deprecated": true,
           "const": "RESOURCES"
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "caching": {
           "title": "caching",
@@ -4178,7 +6773,18 @@
         "managerEnabled": {
           "title": "managerEnabled",
           "description": "Controls whether the resources should be able to be created and deleted via PUT and     DELETE through the API.",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -4189,9 +6795,6 @@
       "required": [],
       "anyOf": [
         {
-          "required": [
-            "buildingBlock"
-          ],
           "properties": {
             "buildingBlock": {
               "enum": [
@@ -4232,12 +6835,12 @@
                 "RESOURCES"
               ]
             }
-          }
+          },
+          "required": [
+            "buildingBlock"
+          ]
         },
         {
-          "required": [
-            "extensionType"
-          ],
           "properties": {
             "extensionType": {
               "enum": [
@@ -4278,7 +6881,10 @@
                 "RESOURCES"
               ]
             }
-          }
+          },
+          "required": [
+            "extensionType"
+          ]
         }
       ],
       "allOf": [
@@ -5342,27 +7948,58 @@
         "id": {
           "title": "id",
           "description": "Unique identifier, allowed characters are (A-Z, a-z), numbers (0-9), underscore and     hyphen.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "label": {
           "title": "label",
           "description": "Human readable label.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "description": {
           "title": "description",
           "description": "Human readable description.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "enabled": {
           "title": "enabled",
           "description": "Enable the collection?",
-          "type": "boolean"
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "persistentUriTemplate": {
           "title": "persistentUriTemplate",
           "description": "The *Feature* resource defines a unique URI for every feature, but this URI is only     stable as long as the API URI stays the same. For use cases where external persistent     feature URIs, which redirect to the current API URI, are used, this option allows to use     such URIs as canonical URI of every feature. To enable this option, provide an URI template     where `{{value}}` is replaced with the feature id.",
-          "type": "string"
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "extent": {
           "title": "extent",
