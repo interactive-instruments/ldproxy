@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.gltf.domain;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import com.google.common.hash.Funnel;
@@ -27,7 +29,7 @@ public interface GltfPropertyDefinition {
       (from, into) -> {
         into.putString(from.getType().name(), StandardCharsets.UTF_8);
         from.getComponentType().ifPresent(v -> into.putString(v.name(), StandardCharsets.UTF_8));
-        into.putString(from.getStringOffsetType().name(), StandardCharsets.UTF_8);
+        from.getStringOffsetType().ifPresent(v -> into.putString(v.name(), StandardCharsets.UTF_8));
         into.putString(from.getNoData(), StandardCharsets.UTF_8);
       };
 
@@ -35,24 +37,35 @@ public interface GltfPropertyDefinition {
 
   Optional<ComponentType> getComponentType();
 
-  @Value.Default
-  default ComponentType getStringOffsetType() {
-    return ComponentType.UINT32;
-  }
+  Optional<ComponentType> getStringOffsetType();
 
+  @JsonInclude(Include.NON_NULL)
   @Value.Default
   default String getNoData() {
     return getType() == Type.STRING ? "" : "0";
   }
 
   @Value.Check
+  default GltfPropertyDefinition defaultStringOffsetType() {
+    if (getType() == Type.STRING && getStringOffsetType().isEmpty()) {
+      return new ImmutableGltfPropertyDefinition.Builder()
+          .from(this)
+          .stringOffsetType(ComponentType.UINT32)
+          .build();
+    }
+    return this;
+  }
+
+  @Value.Check
   default void check() {
     Preconditions.checkState(
-        getStringOffsetType() == ComponentType.UINT8
-            || getStringOffsetType() == ComponentType.UINT16
-            || getStringOffsetType() == ComponentType.UINT32,
+        getType() != Type.STRING
+            || (getStringOffsetType().isPresent()
+                && (getStringOffsetType().get() == ComponentType.UINT8
+                    || getStringOffsetType().get() == ComponentType.UINT16
+                    || getStringOffsetType().get() == ComponentType.UINT32)),
         "The String Offset Type must be an 8-bit, 16-bit or 32-bit unsigned integer. Found: %s.",
-        getStringOffsetType().name());
+        getStringOffsetType().map(Enum::name).orElse("null"));
     Preconditions.checkState(
         getType() != Type.SCALAR || getComponentType().isPresent(),
         "The Component Type must be specified for a SCALAR property.");
