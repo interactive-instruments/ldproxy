@@ -27,6 +27,8 @@ import javax.inject.Singleton;
  * -  When using POST, query parameters are transmitted in encrypted form when using HTTPS and are not logged in request
  *     logs. This may be desirable for security or privacy reasons.
  *     </code>
+ *     <p>Note that this capability has been deprecated. Instead, use an Ad-hoc Query from [Features
+ *     - Search](#features_-_search.html).
  *     <p>The module further adds support for the following query parameter:
  *     <p><code>
  * - `intersects`: if the parameter is specified, the features are
@@ -46,6 +48,8 @@ import javax.inject.Singleton;
  *     von HTTPS verschlüsselt übertragen und werden nicht in Request-Logs protokolliert. Dies kann
  *     aus Sicherheits- oder Datenschutzgründen erwünscht sein.
  *     </code>
+ *     <p>Bitte beachten Sie, dass diese Funktionalität veraltet ist. Benutzen Sie stattdessen eine
+ *     Ad-hoc-Query aus [Features - Search](#features_-_search.html).
  *     <p>Das Modul ergänzt weiterhin die Unterstützung für den folgenden Query-Parameter:
  *     <p><code>
  * - `intersects`: Ist der Parameter angegeben, werden die Features
