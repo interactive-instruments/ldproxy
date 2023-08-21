@@ -183,6 +183,8 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
    *     <p>A value can include a template `{{type}}`, which will be replaced with the value of the
    *     feature property with `role: TYPE` in the provider schema of the feature type of the
    *     collection. The property must be of type `STRING`.
+   *     <p>If the feature type in the provider schema includes an `objectType` value, the value
+   *     will be used as the default. Otherwise, the default is an empty array.
    * @langDe Features werden oft nach der Objektart kategorisiert. In der Regel haben alle Features
    *     derselben Art dasselbe Schema und dieselben Eigenschaften.
    *     <p>Viele GIS-Clients sind bei der Verarbeitung von Features auf das Wissen über den
@@ -194,7 +196,9 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
    *     <p>Ein Wert kann ein Template `{{type}}` enthalten, das durch den Wert der
    *     Objekteigenschaft mit `role: TYPE` im Provider-Schema der Objektart der Collection ersetzt
    *     wird. Die Eigenschaft muss vom Typ `STRING` sein.
-   * @default []
+   *     <p>Wenn der Objekttyp im Provider-Schema einen Wert für `objectType` hat, dann ist dieser
+   *     Wert der Default. Ansonsten ist der Default ein leeres Array.
+   * @default see description
    * @examplesAll [ 'Building' ]
    * @since v3.1
    */
