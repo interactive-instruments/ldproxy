@@ -11,7 +11,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import io.dropwizard.views.View;
+import io.dropwizard.views.common.View;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;

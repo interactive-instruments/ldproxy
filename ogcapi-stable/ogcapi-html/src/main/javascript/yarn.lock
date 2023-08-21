@@ -3358,6 +3358,7 @@ __metadata:
     "@turf/combine": ^6.5.0
     "@xtraplatform/neutrino": ^2.0.0
     bootstrap: ^4.6.0
+    core-js: ^3.32.0
     d3-scale: 3.2.3
     date-fns: 2.16.1
     eslint: ^7
@@ -6617,17 +6618,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"caniuse-lite@npm:^1.0.30001109, caniuse-lite@npm:^1.0.30001125, caniuse-lite@npm:^1.0.30001259":
-  version: 1.0.30001259
-  resolution: "caniuse-lite@npm:1.0.30001259"
-  checksum: 4b0423693616a62d3a9beaa35ab5a414a9e4398df7361915ca2b6f24142f1f55909e014d5f0c14c034c0fd5084524116ab46bcdfae5c3b8620f11f2822a1c4ba
-  languageName: node
-  linkType: hard
-
-"caniuse-lite@npm:^1.0.30001280":
-  version: 1.0.30001283
-  resolution: "caniuse-lite@npm:1.0.30001283"
-  checksum: a13916f1b5ea0d75fe34d1ac8b8b841f88da69f98b1fd5178fd350291fdc1794daebcaaf57c3d3bc60f33aa27ecdf8e0909dc1a013475754c5416515f9bc32c2
+"caniuse-lite@npm:^1.0.30001109, caniuse-lite@npm:^1.0.30001125, caniuse-lite@npm:^1.0.30001259, caniuse-lite@npm:^1.0.30001280":
+  version: 1.0.30001519
+  resolution: "caniuse-lite@npm:1.0.30001519"
+  checksum: 66085133ede05d947e30b62fed2cbae18e5767afda8b0de38840883e1cfe5846bf1568ddbafd31647544e59112355abedaf9c867ac34541bfc20d69e7a19d94c
   languageName: node
   linkType: hard
 
@@ -7255,6 +7249,13 @@ __metadata:
   version: 3.18.0
   resolution: "core-js@npm:3.18.0"
   checksum: 192c345eb0c8b9d582ebed798cf124e00cd8241303c3c801987563f8ebb8cb991e2ff91494c258752014c29d5515070d2c0a862687401c7d7e1e2f96f8980d42
+  languageName: node
+  linkType: hard
+
+"core-js@npm:^3.32.0":
+  version: 3.32.0
+  resolution: "core-js@npm:3.32.0"
+  checksum: 52921395028550e4c9d21d47b9836439bb5b6b9eefc34d45a3948a68d81fdd093acc0fadf69f9cf632b82f01f95f22f484408a93dd9e940b19119ac204cd2925
   languageName: node
   linkType: hard
 

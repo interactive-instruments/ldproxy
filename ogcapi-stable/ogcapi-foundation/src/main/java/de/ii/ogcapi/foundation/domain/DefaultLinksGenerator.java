@@ -13,7 +13,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.apache.http.client.utils.URIBuilder;
+import org.apache.hc.core5.net.URIBuilder;
 
 public class DefaultLinksGenerator {
 

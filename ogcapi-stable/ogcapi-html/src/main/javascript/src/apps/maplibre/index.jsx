@@ -1,6 +1,7 @@
 /* eslint-disable no-undef, no-underscore-dangle */
 import React from "react";
 import ReactDOM from "react-dom";
+import "core-js";
 import MapLibre from "../../components/MapLibre";
 
 if (globalThis._map && globalThis._map.container) {
