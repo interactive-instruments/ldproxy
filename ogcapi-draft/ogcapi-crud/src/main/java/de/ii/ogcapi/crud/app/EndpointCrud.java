@@ -57,6 +57,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.HeaderParam;
@@ -578,11 +579,11 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
       Optional<CrudConfiguration> crudConfiguration, String ifMatch, String ifUnmodifiedSince) {
     if (crudConfiguration.map(CrudConfiguration::supportsEtag).orElse(false)
         && Objects.isNull(ifMatch)) {
-      throw new IllegalArgumentException(
+      throw new BadRequestException(
           "Requests to change a feature for this collection must include an 'If-Match' header.");
     } else if (crudConfiguration.map(CrudConfiguration::supportsLastModified).orElse(false)
         && Objects.isNull(ifUnmodifiedSince)) {
-      throw new IllegalArgumentException(
+      throw new BadRequestException(
           "Requests to change a feature for this collection must include an 'If-Unmodified-Since' header.");
     }
   }
