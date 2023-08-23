@@ -27,25 +27,28 @@ import org.immutables.value.Value;
  *     <p>The control mechanism is based on permissions, scopes and roles. A scope is a predefined
  *     group of permissions, these scopes are available:
  *     <p><code>
- * - `discover`: access API landing pages and OpenAPI definitions
- * - `collections:read`: access collection metadata
+ * - `discover`: access API landing pages, conformance declarations and OpenAPI definitions
+ * - `collections:read`: access feature collection metadata
  * - `collections`: includes `collections:read`
- * - `data:read`: access features
+ * - `data:read`: access and query features
  * - `data:write`: mutate features
  * - `data`: includes `data:read` and `data:write`
  * - `tiles:read`: access tiles
  * - `tiles`: includes `tiles:read`
- * - `styles:read`: access styles
- * - `styles:write`: mutate styles
+ * - `styles:read`: access styles and their metadata
+ * - `styles:write`: mutate styles and update their metadata
  * - `styles`: includes `styles:read` and `styles:write`
- * - `search:read`: access stored queries
+ * - `resources:read`: access file resources
+ * - `resources:write`: mutate file resources
+ * - `resources`: includes `resources:read` and `resources:write`
+ * - `search:read`: access stored queries and their parameters
  * - `search:write`: mutate stored queries
  * - `search`: includes `search:read` and `search:write`
- * - `routes:read`: access stored routes
- * - `routes:write`: compute and store routes
+ * - `routes:read`: access stored routes and their definition
+ * - `routes:write`: compute and store routes, delete stored routes
  * - `routes`: includes `routes:read` and `routes:write`
- * - `read`: includes `discover`, `collections:read`, `data:read`, `tiles:read`, `styles:read`, `search:read` and `routes:write`
- * - `write`: includes `data:write`, `styles:write`, `search:write` and `routes:write`
+ * - `read`: includes `discover`, `collections:read`, `data:read`, `tiles:read`, `styles:read`, `resources:read`, `search:read` and `routes:read`
+ * - `write`: includes `data:write`, `styles:write`, `resources:write`, `search:write` and `routes:write`
  * </code>
  *     <p>Permissions are a combination of a scope prefix and an OpenAPI operation id (without any
  *     prefix), for example `data:getItems` or `tiles:getTile`. These can be used for a more
@@ -66,25 +69,28 @@ import org.immutables.value.Value;
  *     <p>Die Absicherung basiert auf Berechtigungen, Scopes und Rollen. Ein Scope ist eine
  *     vordefinierte Gruppe von Berechtigungen, diese Scopes sind verfügbar:
  *     <p><code>
- * - `discover`: Lesen von API Landing Pages und OpenAPI Definitionen
- * - `collections:read`: Lesen von anderen Metadaten
+ * - `discover`: Lesen von API Landing Pages, Conformance Declarations und OpenAPI Definitionen
+ * - `collections:read`: Lesen von Metadaten zu Feature Collections
  * - `collections`: enthält `collections:read`
- * - `data:read`: Lesen von Features
+ * - `data:read`: Lesen und Abfragen von Features
  * - `data:write`: Ändern von Features
  * - `data`: enthält `data:read` und `data:write`
  * - `tiles:read`: Lesen von Tiles
  * - `tiles`: enthält `tiles:read`
- * - `styles:read`: Lesen von Styles
- * - `styles:write`: Ändern von Styles
+ * - `styles:read`: Lesen von Styles und deren Metadaten
+ * - `styles:write`: Ändern von Styles und deren Metadaten
  * - `styles`: enthält `styles:read` und `styles:write`
- * - `search:read`: Lesen von Stored Queries
+ * - `resources:read`: Lesen von Dateiressourcen
+ * - `resources:write`: Ändern von Dateiressourcen
+ * - `resources`: enthält `resources:read` und `resources:write`
+ * - `search:read`: Lesen von Stored Queries und deren Parameter
  * - `search:write`: Ändern von Stored Queries
  * - `search`: enthält `search:read` und `search:write`
- * - `routes:read`: Lesen von Stored Routes
- * - `routes:write`: Berechnen und Speichern von Routes
+ * - `routes:read`: Lesen von gespeicherten Routen und deren Definition
+ * - `routes:write`: Berechnen und Speichern von Routen, Löschen gespeicherter Routen
  * - `routes`: enthält `routes:read` und `routes:write`
- * - `read`: enthält `discover`, `collections:read`, `data:read`, `tiles:read`, `styles:read`, `search:read` und `routes:write`
- * - `write`: enthält `data:write`, `styles:write`, `search:write` und `routes:write`
+ * - `read`: enthält `discover`, `collections:read`, `data:read`, `tiles:read`, `styles:read`, `resources:read`, `search:read` und `routes:read`
+ * - `write`: enthält `data:write`, `styles:write`, `resources:write`, `search:write` und `routes:write`
  * </code>
  *     <p>Berechtigungen sind eine Kombination aus Scope-Prefix und einer OpenAPI Operation-Id (ohne
  *     jeglichen Prefix), z.B. `data:getItems` oder `tiles:getTile`. Diese können für eine
