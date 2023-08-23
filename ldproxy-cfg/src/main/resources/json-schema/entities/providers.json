@@ -30,6 +30,9 @@
       ]
     },
     {
+      "required": [
+        "featureProviderType"
+      ],
       "properties": {
         "featureProviderType": {
           "enum": [
@@ -37,10 +40,7 @@
             "SQL"
           ]
         }
-      },
-      "required": [
-        "featureProviderType"
-      ]
+      }
     }
   ],
   "allOf": [

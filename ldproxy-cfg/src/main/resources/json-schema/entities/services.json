@@ -7235,6 +7235,9 @@
       "required": [],
       "anyOf": [
         {
+          "required": [
+            "buildingBlock"
+          ],
           "properties": {
             "buildingBlock": {
               "enum": [
@@ -7275,12 +7278,12 @@
                 "RESOURCES"
               ]
             }
-          },
-          "required": [
-            "buildingBlock"
-          ]
+          }
         },
         {
+          "required": [
+            "extensionType"
+          ],
           "properties": {
             "extensionType": {
               "enum": [
@@ -7321,10 +7324,7 @@
                 "RESOURCES"
               ]
             }
-          },
-          "required": [
-            "extensionType"
-          ]
+          }
         }
       ],
       "allOf": [
