@@ -15,7 +15,6 @@ import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.ApiSecurity;
 import de.ii.ogcapi.foundation.domain.EndpointExtension;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
@@ -26,7 +25,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiResource;
 import de.ii.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.ogcapi.foundation.domain.RequestInjectableContext;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.auth.domain.User.PolicyDecision;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.services.domain.ServiceEndpoint;
 import de.ii.xtraplatform.services.domain.ServicesContext;
@@ -45,13 +43,11 @@ import javax.inject.Singleton;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotAllowedException;
-import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import org.glassfish.jersey.server.internal.routing.UriRoutingContext;
 
@@ -118,7 +114,9 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     // Check request
     checkParameterNames(
         requestContext, service.getData(), ogcApiEndpoint, entrypoint, subPath, method);
-    validateRequest(requestContext, service.getData(), ogcApiEndpoint, entrypoint, subPath, method);
+    ApiOperation apiOperation =
+        validateRequest(
+            requestContext, service.getData(), ogcApiEndpoint, entrypoint, subPath, method);
 
     // Content negotiation
     ImmutableSet<ApiMediaType> supportedMediaTypes =
@@ -127,8 +125,8 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     Locale selectedLanguage =
         contentNegotiationLanguage.negotiateLanguage(requestContext).orElse(Locale.ENGLISH);
 
-    checkAuthorization(
-        service.getData(), entrypoint, subPath, method, selectedMediaType, optionalUser);
+    ApiRequestAuthorizer.checkAuthorization(
+        service.getData(), entrypoint, subPath, apiOperation, optionalUser);
 
     ApiRequestContext apiRequestContext =
         new Builder()
@@ -145,39 +143,6 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     ogcApiInjectableContext.inject(requestContext, apiRequestContext);
 
     return ogcApiEndpoint;
-  }
-
-  @SuppressWarnings("PMD.CyclomaticComplexity")
-  private void checkAuthorization(
-      OgcApiDataV2 data,
-      String entrypoint,
-      String path,
-      String method,
-      ApiMediaType mediaType,
-      Optional<User> optionalUser) {
-    if (Objects.equals(entrypoint, "api")) {
-      return;
-    }
-    if (mediaType.matches(MediaType.TEXT_HTML_TYPE)
-        && (path.endsWith("/crud") || path.endsWith("/login") || path.endsWith("/callback"))) {
-      return;
-    }
-
-    String requiredScope =
-        List.of("POST", "PUT", "PATCH", "DELETE").contains(method)
-            ? ApiSecurity.SCOPE_WRITE
-            : ApiSecurity.SCOPE_READ;
-
-    boolean isScopeRestricted =
-        data.getAccessControl().filter(s -> s.isSecured(requiredScope)).isPresent();
-    boolean userHasScope =
-        optionalUser.filter(u -> u.getScopes().contains(requiredScope)).isPresent();
-    boolean isPolicyDenial =
-        optionalUser.filter(u -> u.getPolicyDecision() == PolicyDecision.DENY).isPresent();
-
-    if (isScopeRestricted && (!userHasScope || isPolicyDenial)) {
-      throw new NotAuthorizedException("Bearer realm=\"ldproxy\"");
-    }
   }
 
   private void checkParameterNames(
@@ -214,7 +179,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     }
   }
 
-  private void validateRequest(
+  private ApiOperation validateRequest(
       ContainerRequestContext requestContext,
       OgcApiDataV2 apiData,
       EndpointExtension ogcApiEndpoint,
@@ -254,7 +219,10 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
                               throw new BadRequestException(result.get());
                             }
                           }));
+      return operation;
     }
+
+    return null;
   }
 
   private RuntimeException notAllowedOrNotFound(Set<String> methods) {

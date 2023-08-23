@@ -7,9 +7,11 @@
  */
 package de.ii.ogcapi.routes.domain;
 
+import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.xtraplatform.base.domain.util.Tuple;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
@@ -17,6 +19,10 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 public interface QueryHandlerRoutes extends QueriesHandler<QueryHandlerRoutes.Query> {
+
+  String SCOPE_ROUTES = "routes";
+  Tuple<Scope, String> SCOPE_ROUTES_READ = Tuple.of(Scope.READ, SCOPE_ROUTES);
+  Tuple<Scope, String> SCOPE_ROUTES_WRITE = Tuple.of(Scope.WRITE, SCOPE_ROUTES);
 
   enum Query implements QueryIdentifier {
     COMPUTE_ROUTE,
