@@ -41,7 +41,7 @@ public class QueryablesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiD
   }
 
   @Override
-  public boolean isApplicable(EntityData entityData) {
+  public boolean isApplicable(EntityData entityData, Optional<EntityData> defaults) {
     if (!(entityData instanceof OgcApiDataV2)) {
       return false;
     }
@@ -62,7 +62,7 @@ public class QueryablesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiD
   }
 
   @Override
-  public OgcApiDataV2 migrate(OgcApiDataV2 entityData) {
+  public OgcApiDataV2 migrate(OgcApiDataV2 entityData, Optional<OgcApiDataV2> defaults) {
     Map<String, FeatureTypeConfigurationOgcApi> collections =
         entityData.getCollections().entrySet().stream()
             .map(
