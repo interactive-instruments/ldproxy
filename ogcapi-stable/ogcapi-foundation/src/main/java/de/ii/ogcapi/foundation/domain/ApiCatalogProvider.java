@@ -25,7 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.ws.rs.core.Response;
-import org.apache.http.NameValuePair;
+import org.apache.hc.core5.http.NameValuePair;
 
 public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiExtension {
 

@@ -5,7 +5,7 @@ import PropTypes from "prop-types";
 import { useMaplibreUIEffect } from "react-maplibre-ui";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import combine from "@turf/combine";
-import { geoJsonLayers, hoverLayers, vectorLayers } from "../styles";
+import { geoJsonLayers, hoverLayers, vectorLayers, isDataLayer } from "../styles";
 import { getBounds, getFeaturesWithIdAsProperty, idProperty } from "../geojson";
 import { addPopup, addPopupProps } from "./popup";
 
@@ -29,7 +29,7 @@ const setStyleGeoJson = (map, styleUrl, removeZoomLevelConstraints) => {
           ...baseStyle.sources,
         },
         layers: style.layers.map((layer) => {
-          if (layer.type !== "raster") {
+          if (isDataLayer(layer)) {
             const newLayer = {
               ...layer,
               source: "data",
@@ -49,13 +49,14 @@ const setStyleGeoJson = (map, styleUrl, removeZoomLevelConstraints) => {
       if (dataStyle.sources.data) {
         dataStyle.sources.data.attribution = style.layers
           .filter(
-            (layer) =>
-              layer.type !== "raster" && style.sources[layer.source].attribution
+            (layer) => isDataLayer(layer) && style.sources[layer.source].attribution
           )
           .map((layer) => style.sources[layer.source].attribution)
           .filter((v, i, a) => a.indexOf(v) === i)
           .join(" | ");
       }
+
+      delete dataStyle.terrain;
 
       map.setStyle(dataStyle, { diff: false });
     });
@@ -104,7 +105,7 @@ const setStyleVector = (
           layers: style.layers
             .filter(
               (layer) =>
-                layer.type === "raster" ||
+                !isDataLayer(layer) ||
                 (layer["source-layer"] &&
                   (sourceLayers.length === 0 ||
                     sourceLayers.includes(layer["source-layer"])))
@@ -132,7 +133,7 @@ const setStyleVector = (
           map,
           maplibre,
           dataStyle.layers
-            .filter((layer) => layer.type !== "raster")
+            .filter((layer) => isDataLayer(layer) === true)
             .map((layer) => layer.id)
         );
       }
