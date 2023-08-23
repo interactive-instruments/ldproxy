@@ -28,22 +28,24 @@ import org.immutables.value.Value;
  *     group of permissions, these scopes are available:
  *     <p><code>
  * - `discover`: access API landing pages and OpenAPI definitions
- * - `metadata`: access any other metadata
+ * - `collections:read`: access collection metadata
+ * - `collections`: includes `collections:read`
  * - `data:read`: access features
  * - `data:write`: mutate features
  * - `data`: includes `data:read` and `data:write`
- * - `tiles`: access tiles
+ * - `tiles:read`: access tiles
+ * - `tiles`: includes `tiles:read`
  * - `styles:read`: access styles
  * - `styles:write`: mutate styles
  * - `styles`: includes `styles:read` and `styles:write`
- * - `queries:read`: access stored queries
- * - `queries:write`: mutate stored queries
- * - `queries`: includes `queries:read` and `queries:write`
+ * - `search:read`: access stored queries
+ * - `search:write`: mutate stored queries
+ * - `search`: includes `search:read` and `search:write`
  * - `routes:read`: access stored routes
- * - `routes:write`: mutate stored routes
+ * - `routes:write`: compute and store routes
  * - `routes`: includes `routes:read` and `routes:write`
- * - `read`: includes `discover`, `metadata`, `data:read`, `tiles`, `styles:read`, `queries:read` and `routes:write`
- * - `write`: includes `data:write`, `styles:write`, `queries:write` and `routes:write`
+ * - `read`: includes `discover`, `collections:read`, `data:read`, `tiles:read`, `styles:read`, `search:read` and `routes:write`
+ * - `write`: includes `data:write`, `styles:write`, `search:write` and `routes:write`
  * </code>
  *     <p>Permissions are a combination of a scope prefix and an OpenAPI operation id (without any
  *     prefix), for example `data:getItems` or `tiles:getTile`. These can be used for a more
@@ -65,22 +67,24 @@ import org.immutables.value.Value;
  *     vordefinierte Gruppe von Berechtigungen, diese Scopes sind verfügbar:
  *     <p><code>
  * - `discover`: Lesen von API Landing Pages und OpenAPI Definitionen
- * - `metadata`: Lesen vopn anderen Metadaten
+ * - `collections:read`: Lesen von anderen Metadaten
+ * - `collections`: enthält `collections:read`
  * - `data:read`: Lesen von Features
  * - `data:write`: Ändern von Features
  * - `data`: enthält `data:read` und `data:write`
- * - `tiles`: Lesen von Tiles
+ * - `tiles:read`: Lesen von Tiles
+ * - `tiles`: enthält `tiles:read`
  * - `styles:read`: Lesen von Styles
  * - `styles:write`: Ändern von Styles
  * - `styles`: enthält `styles:read` und `styles:write`
- * - `queries:read`: Lesen von Stored Queries
- * - `queries:write`: Ändern von Stored Queries
- * - `queries`: enthält `queries:read` und `queries:write`
+ * - `search:read`: Lesen von Stored Queries
+ * - `search:write`: Ändern von Stored Queries
+ * - `search`: enthält `search:read` und `search:write`
  * - `routes:read`: Lesen von Stored Routes
- * - `routes:write`: Ändern von Stored Routes
+ * - `routes:write`: Berechnen und Speichern von Routes
  * - `routes`: enthält `routes:read` und `routes:write`
- * - `read`: enthält `discover`, `metadata`, `data:read`, `tiles`, `styles:read`, `queries:read` und `routes:write`
- * - `write`: enthält `data:write`, `styles:write`, `queries:write` und `routes:write`
+ * - `read`: enthält `discover`, `collections:read`, `data:read`, `tiles:read`, `styles:read`, `search:read` und `routes:write`
+ * - `write`: enthält `data:write`, `styles:write`, `search:write` und `routes:write`
  * </code>
  *     <p>Berechtigungen sind eine Kombination aus Scope-Prefix und einer OpenAPI Operation-Id (ohne
  *     jeglichen Prefix), z.B. `data:getItems` oder `tiles:getTile`. Diese können für eine
@@ -88,13 +92,13 @@ import org.immutables.value.Value;
  *     <p>Rollen sind benutzerdefinierte Gruppen von Scopes und/oder Berechtigungen, die in `roles`
  *     definiert werden.
  *     <p>**Daten-spezifische Berechtigungen**
- *     <p>Die oben beschiebenen Scopes und Berechtigungen gewähren Zugriff zu jeder API und
+ *     <p>Die oben beschriebenen Scopes und Berechtigungen gewähren Zugriff zu jeder API und
  *     Collection. Um den Zugriff auf bestimmte APIs oder Collections einzuschränken, kann ein
  *     Suffix zu Scopes und Berechtigungen hinzugefügt werden, z.B. `read::daraa` oder
  *     `data:getItems::daraa:AeronauticSrf`.
  *     <p>**Rolle `public`**
  *     <p>Die spezielle Rolle `public` definiert die Liste der Scopes und/oder Berechtigungen, die
- *     jeder Benutzer besitzt, ob angemeldet oder nicht. authenticated or not.
+ *     jeder Benutzer besitzt, ob angemeldet oder nicht.
  *     <p>**Authentifizierte Benutzer**
  *     <p>Um authentifizierte Benutzer zu unterstützen, muss ein Bearer-Token im
  *     `Authorization`-Header in Anfragen an die API inkludiert werden. Die Validierung und

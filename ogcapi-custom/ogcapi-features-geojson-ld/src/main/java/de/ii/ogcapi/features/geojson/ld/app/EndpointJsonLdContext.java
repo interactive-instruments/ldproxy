@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.features.geojson.ld.app;
 
-import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.SCOPE_METADATA_READ;
+import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.SCOPE_COLLECTIONS_READ;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -177,7 +177,7 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
                 operationDescription,
                 Optional.empty(),
                 getOperationId("getJsonLdContext", collectionId),
-                SCOPE_METADATA_READ,
+                SCOPE_COLLECTIONS_READ,
                 TAGS)
             .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());

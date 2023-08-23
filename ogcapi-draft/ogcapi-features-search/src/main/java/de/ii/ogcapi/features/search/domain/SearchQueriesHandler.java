@@ -21,9 +21,9 @@ import org.immutables.value.Value;
 
 public interface SearchQueriesHandler extends QueriesHandler<SearchQueriesHandler.Query> {
 
-  String SCOPE_QUERIES = "queries";
-  Tuple<Scope, String> SCOPE_QUERIES_READ = Tuple.of(Scope.READ, SCOPE_QUERIES);
-  Tuple<Scope, String> SCOPE_QUERIES_WRITE = Tuple.of(Scope.WRITE, SCOPE_QUERIES);
+  String SCOPE_SEARCH = "search";
+  Tuple<Scope, String> SCOPE_SEARCH_READ = Tuple.of(Scope.READ, SCOPE_SEARCH);
+  Tuple<Scope, String> SCOPE_SEARCH_WRITE = Tuple.of(Scope.WRITE, SCOPE_SEARCH);
 
   @Override
   Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();

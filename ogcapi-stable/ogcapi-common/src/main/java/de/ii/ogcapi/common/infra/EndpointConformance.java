@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.common.infra;
 
-import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.SCOPE_METADATA_READ;
+import static de.ii.ogcapi.foundation.domain.ApiSecurity.SCOPE_DISCOVER_READ;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -111,7 +111,7 @@ public class EndpointConformance extends Endpoint {
             operationDescription,
             Optional.empty(),
             getOperationId("getConformanceDeclaration"),
-            SCOPE_METADATA_READ,
+            SCOPE_DISCOVER_READ,
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder.build());

@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.collections.queryables.app;
 
-import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.SCOPE_METADATA_READ;
+import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.SCOPE_COLLECTIONS_READ;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -176,7 +176,7 @@ public class EndpointQueryables extends EndpointSubCollection implements Conform
                 operationDescription,
                 Optional.empty(),
                 getOperationId("getQueryables", collectionId),
-                SCOPE_METADATA_READ,
+                SCOPE_COLLECTIONS_READ,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
