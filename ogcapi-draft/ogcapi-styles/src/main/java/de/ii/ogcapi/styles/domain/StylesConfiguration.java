@@ -1463,13 +1463,17 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
    *     OGC SLD 1.0 (`SLD10`), OGC SLD 1.1 (`SLD11`), QGIS QML ("QML"), ArcGIS Layer ("lyr" und
    *     "lyrx"), 3D Tiles ("3D Tiles") and HTML (`HTML`). HTML is an output only encoding for web
    *     maps that requires a *Mapbox/MapLibre Style* stylesheet. For details see conformance
-   *     classes *Mapbox Style*, *OGC SLD 1.0*, *OGC SLD 1.1* und *HTML*.
+   *     classes *Mapbox Style*, *OGC SLD 1.0*, *OGC SLD 1.1* und *HTML*. **Upcoming change**
+   *     Currently there is no way to disable the defaults `Mapbox` and `HTML`. That will be changed
+   *     in v4, you will then have to repeat the defaults if you want to add additional encodings.
    * @langDe Steuert, welche Formate für Stylesheets unterstützt werden sollen. Zur Verfügung stehen
    *     Mapbox/MapLibre Style ("Mapbox"), OGC SLD 1.0 ("SLD10"), OGC SLD 1.1 ("SLD11"), QGIS QML
    *     ("QML"), ArcGIS Layer ("lyr" und "lyrx"), 3D Tiles ("3D Tiles") und HTML ("HTML"). HTML ist
    *     ein reines Ausgabeformat im Sinne einer Webmap und wird nur für Styles unterstützt, für die
    *     ein Stylesheet im Format Mapbox/MapLibre Style verfügbar ist. Siehe die Konformitätsklassen
-   *     "Mapbox Style", "OGC SLD 1.0", "OGC SLD 1.1" und "HTML".
+   *     "Mapbox Style", "OGC SLD 1.0", "OGC SLD 1.1" und "HTML". **Kommende Änderung** Aktuell gibt
+   *     es keinen Weg die Defaults `Mapbox` und `HTML` zu deaktivieren. Das wird sich in v4 ändern,
+   *     die Defaults müssen dann wiederholt werden, wenn man zusätzliche Encodings angeben will.
    * @default [ "Mapbox", "HTML" ]
    */
   List<String> getStyleEncodings();
