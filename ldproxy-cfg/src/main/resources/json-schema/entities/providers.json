@@ -30,6 +30,9 @@
       ]
     },
     {
+      "required": [
+        "featureProviderType"
+      ],
       "properties": {
         "featureProviderType": {
           "enum": [
@@ -37,10 +40,7 @@
             "SQL"
           ]
         }
-      },
-      "required": [
-        "featureProviderType"
-      ]
+      }
     }
   ],
   "allOf": [
@@ -403,7 +403,12 @@
               },
               "then": {
                 "items": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
                 }
               }
             },
@@ -412,7 +417,12 @@
                 "type": "object"
               },
               "then": {
-                "type": "string"
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
               }
             }
           ]
@@ -650,7 +660,12 @@
               },
               "then": {
                 "items": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
                 }
               }
             },
@@ -659,7 +674,12 @@
                 "type": "object"
               },
               "then": {
-                "type": "string"
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
               }
             }
           ]
@@ -1220,7 +1240,12 @@
               },
               "then": {
                 "items": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
                 }
               }
             },
@@ -1229,7 +1254,12 @@
                 "type": "object"
               },
               "then": {
-                "type": "string"
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
               }
             }
           ]
@@ -1636,7 +1666,12 @@
               },
               "then": {
                 "items": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
                 }
               }
             },
@@ -1645,7 +1680,12 @@
                 "type": "object"
               },
               "then": {
-                "type": "string"
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
               }
             }
           ]
@@ -1699,7 +1739,12 @@
               },
               "then": {
                 "items": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
                 }
               }
             },
@@ -1708,7 +1753,12 @@
                 "type": "object"
               },
               "then": {
-                "type": "string"
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
               }
             }
           ]
@@ -1930,7 +1980,12 @@
               },
               "then": {
                 "items": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
                 }
               }
             },
@@ -1939,7 +1994,12 @@
                 "type": "object"
               },
               "then": {
-                "type": "string"
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
               }
             }
           ]
@@ -2492,7 +2552,12 @@
               },
               "then": {
                 "items": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
                 }
               }
             },
@@ -2501,7 +2566,12 @@
                 "type": "object"
               },
               "then": {
-                "type": "string"
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
               }
             }
           ]
@@ -2654,7 +2724,12 @@
               },
               "then": {
                 "items": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
                 }
               }
             },
@@ -2663,7 +2738,12 @@
                 "type": "object"
               },
               "then": {
-                "type": "string"
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
               }
             }
           ]
@@ -2936,7 +3016,12 @@
               },
               "then": {
                 "items": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
                 }
               }
             },
@@ -2945,7 +3030,12 @@
                 "type": "object"
               },
               "then": {
-                "type": "string"
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
               }
             }
           ]
@@ -2960,7 +3050,12 @@
               },
               "then": {
                 "items": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
                 }
               }
             },
@@ -2969,7 +3064,12 @@
                 "type": "object"
               },
               "then": {
-                "type": "string"
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
               }
             }
           ]
@@ -3324,7 +3424,12 @@
               },
               "then": {
                 "items": {
-                  "type": "string"
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
                 }
               }
             },
@@ -3333,7 +3438,12 @@
                 "type": "object"
               },
               "then": {
-                "type": "string"
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
               }
             }
           ]
