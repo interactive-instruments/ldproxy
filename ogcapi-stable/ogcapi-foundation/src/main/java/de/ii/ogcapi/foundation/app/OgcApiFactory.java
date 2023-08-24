@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.foundation.app;
 
-import static de.ii.ogcapi.foundation.domain.ApiSecurity.SCOPE_READ;
+import static de.ii.ogcapi.foundation.domain.ApiSecurity.ROLE_PUBLIC;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -16,7 +16,7 @@ import dagger.assisted.AssistedFactory;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ApiSecurity;
-import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeElements;
+import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMetadata;
@@ -209,8 +209,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
   private ApiSecurity getSecurity() {
     return new ImmutableApiSecurity.Builder()
         .enabled(true)
-        .scopeElements(Set.of(ScopeElements.READ_WRITE, ScopeElements.TAG))
-        .publicScopes(List.of(SCOPE_READ))
+        .roles(Map.of(ROLE_PUBLIC, Set.of(Scope.READ.toString())))
         .build();
   }
 

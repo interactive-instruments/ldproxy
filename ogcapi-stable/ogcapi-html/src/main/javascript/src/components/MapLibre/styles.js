@@ -41,6 +41,17 @@ export const baseStyle = (url, attribution, defaultUrl, defaultAttribution) => {
 
 export const hoverLayers = ["points", "lines", "polygons"];
 
+export const isDataLayer = (layer) => {
+  switch (layer.type) {
+    case "raster":
+    case "hillshade":
+    case "background":
+      return false;
+    default:
+      return true;
+  }
+};
+
 const circleLayers = (color, opacity, circleRadius, minZoom, maxZoom) => [
   {
     id: "points",

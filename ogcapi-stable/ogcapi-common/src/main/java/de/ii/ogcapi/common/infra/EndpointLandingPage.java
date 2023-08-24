@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.common.infra;
 
+import static de.ii.ogcapi.foundation.domain.ApiSecurity.SCOPE_DISCOVER_READ;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.common.app.ImmutableQueryInputLandingPage.Builder;
@@ -132,6 +134,7 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
             operationDescription,
             Optional.empty(),
             getOperationId("getLandingPage"),
+            SCOPE_DISCOVER_READ,
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder.build());

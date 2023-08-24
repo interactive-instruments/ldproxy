@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.search.app;
 
+import static de.ii.ogcapi.features.search.domain.SearchQueriesHandler.SCOPE_SEARCH_WRITE;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -157,6 +159,7 @@ public class EndpointStoredQueriesManager extends EndpointRequiresFeatures
               operationDescription,
               Optional.empty(),
               getOperationId("createOrUpdateStoredQuery"),
+              SCOPE_SEARCH_WRITE,
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
 
@@ -174,6 +177,7 @@ public class EndpointStoredQueriesManager extends EndpointRequiresFeatures
               operationDescription,
               Optional.empty(),
               getOperationId("deleteStoredQuery"),
+              SCOPE_SEARCH_WRITE,
               TAGS)
           .ifPresent(
               operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));

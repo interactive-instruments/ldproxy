@@ -34,7 +34,7 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
 
   Map<String, List<String>> collectionMap;
   boolean isEnabled;
-  boolean homogeneuous;
+  boolean homogenous;
   List<String> writeAtEnd;
 
   @Inject
@@ -56,14 +56,14 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
       throws IOException {
     collectionMap = getCollectionMap(context.encoding());
     isEnabled = collectionMap.values().stream().anyMatch(types -> !types.isEmpty());
-    homogeneuous =
+    homogenous =
         collectionMap.values().stream()
                 .noneMatch(types -> types.stream().anyMatch(type -> type.contains(OPEN_TEMPLATE)))
             && context.encoding().isFeatureCollection()
             && collectionMap.size() == 1;
     writeAtEnd = ImmutableList.of();
 
-    if (isEnabled && homogeneuous) {
+    if (isEnabled && homogenous) {
       writeTypes(context.encoding(), collectionMap.values().iterator().next());
     }
 
@@ -75,7 +75,7 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
   public void onFeatureStart(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
-    if (isEnabled && !homogeneuous) {
+    if (isEnabled && !homogenous) {
       List<String> types = collectionMap.get(context.type());
       if (Objects.nonNull(types) && !types.isEmpty()) {
         if (types.stream().anyMatch(type -> type.contains(OPEN_TEMPLATE))) {
@@ -135,20 +135,29 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
                     .getExtension(JsonFgConfiguration.class, collectionId)
                     .ifPresentOrElse(
                         cfg -> {
-                          boolean enabled =
-                              cfg.isEnabled()
-                                  && Objects.nonNull(cfg.getFeatureType())
-                                  && !cfg.getFeatureType().isEmpty()
-                                  && (cfg.getIncludeInGeoJson()
-                                          .contains(JsonFgConfiguration.OPTION.featureType)
-                                      || transformationContext
-                                          .getMediaType()
-                                          .equals(FeaturesFormatJsonFg.MEDIA_TYPE)
-                                      || transformationContext
-                                          .getMediaType()
-                                          .equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE));
-                          builder.put(
-                              collectionId, enabled ? cfg.getFeatureType() : ImmutableList.of());
+                          if (cfg.isEnabled()
+                              && (cfg.getIncludeInGeoJson()
+                                      .contains(JsonFgConfiguration.OPTION.featureType)
+                                  || transformationContext
+                                      .getMediaType()
+                                      .equals(FeaturesFormatJsonFg.MEDIA_TYPE)
+                                  || transformationContext
+                                      .getMediaType()
+                                      .equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE))) {
+                            List<String> value = cfg.getFeatureType();
+                            if (Objects.isNull(value) || value.isEmpty()) {
+                              value =
+                                  transformationContext
+                                      .getFeatureSchemas()
+                                      .get(collectionId)
+                                      .flatMap(FeatureSchema::getObjectType)
+                                      .map(ImmutableList::of)
+                                      .orElse(ImmutableList.of());
+                            }
+                            builder.put(collectionId, value);
+                          } else {
+                            builder.put(collectionId, ImmutableList.of());
+                          }
                         },
                         () -> builder.put(collectionId, ImmutableList.of())));
     return builder.build();

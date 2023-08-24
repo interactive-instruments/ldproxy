@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.core.app;
 
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.SCOPE_DATA_READ;
+
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
@@ -229,6 +231,7 @@ public abstract class EndpointFeaturesDefinition extends EndpointSubCollection {
             Optional.empty(),
             getOperationId(
                 subSubPath.contains("{featureId}") ? "getItem" : "getItems", collectionId),
+            SCOPE_DATA_READ,
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
 

@@ -247,8 +247,7 @@ public abstract class Endpoint implements EndpointExtension {
     }
   }
 
-  protected Optional<String> getOperationId(String name, String... prefixes) {
-    return Optional.of(
-        prefixes.length > 0 ? String.format("%s.%s", String.join(".", prefixes), name) : name);
+  protected String getOperationId(String name, String... prefixes) {
+    return prefixes.length > 0 ? String.format("%s.%s", String.join(".", prefixes), name) : name;
   }
 }

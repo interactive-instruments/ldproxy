@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.crud.app;
 
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.SCOPE_DATA_WRITE;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -57,6 +59,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.HeaderParam;
@@ -130,11 +133,34 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
 
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-    return ImmutableList.of(
-        "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/create-replace-delete",
-        "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/update",
-        "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/optimistic-locking",
-        "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/features");
+    ImmutableList.Builder<String> builder =
+        new ImmutableList.Builder<String>()
+            .add(
+                "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/create-replace-delete",
+                "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/update",
+                "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/features");
+
+    if (apiData.getCollections().values().stream()
+        .anyMatch(
+            cd ->
+                cd.getExtension(CrudConfiguration.class)
+                    .map(CrudConfiguration::supportsLastModified)
+                    .orElse(false))) {
+      builder.add(
+          "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/optimistic-locking-timestamps");
+    }
+
+    if (apiData.getCollections().values().stream()
+        .anyMatch(
+            cd ->
+                cd.getExtension(CrudConfiguration.class)
+                    .map(CrudConfiguration::supportsEtag)
+                    .orElse(false))) {
+      builder.add(
+          "http://www.opengis.net/spec/ogcapi-features-4/0.0/conf/optimistic-locking-etags");
+    }
+
+    return builder.build();
   }
 
   @Override
@@ -194,6 +220,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationDescription,
                 Optional.empty(),
                 getOperationId("createItem", collectionId),
+                SCOPE_DATA_WRITE,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.POST.name(), operation));
@@ -241,6 +268,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationDescription,
                 Optional.empty(),
                 getOperationId("replaceItem", collectionId),
+                SCOPE_DATA_WRITE,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
@@ -263,6 +291,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationDescription,
                 Optional.empty(),
                 getOperationId("updateItem", collectionId),
+                SCOPE_DATA_WRITE,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PATCH.name(), operation));
@@ -282,6 +311,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationDescription,
                 Optional.empty(),
                 getOperationId("deleteItem", collectionId),
+                SCOPE_DATA_WRITE,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));
@@ -348,6 +378,8 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
       @PathParam("collectionId") String collectionId,
       @PathParam("featureId") final String featureId,
       @HeaderParam("Content-Crs") String crs,
+      @HeaderParam("If-Match") String ifMatch,
+      @HeaderParam("If-Unmodified-Since") String ifUnmodifiedSince,
       @Context OgcApi api,
       @Context ApiRequestContext apiRequestContext,
       @Context HttpServletRequest request,
@@ -355,6 +387,10 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
 
     FeatureTypeConfigurationOgcApi collectionData =
         api.getData().getCollections().get(collectionId);
+
+    Optional<CrudConfiguration> crudConfiguration =
+        collectionData.getExtension(CrudConfiguration.class);
+    checkHeader(crudConfiguration, ifMatch, ifUnmodifiedSince);
 
     FeatureProvider2 featureProvider =
         providers.getFeatureProviderOrThrow(api.getData(), collectionData);
@@ -391,7 +427,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             coreConfiguration.getCoordinatePrecision(),
             QueryParameterSet.of(parameterDefinitions, values),
             featureId,
-            Optional.of(Type.STRONG),
+            crudConfiguration.filter(CrudConfiguration::supportsEtag).map(ignore -> Type.STRONG),
             FeatureSchemaBase.Scope.MUTATIONS);
 
     QueryInputFeatureReplace queryInput =
@@ -418,6 +454,8 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
       @PathParam("collectionId") String collectionId,
       @PathParam("featureId") final String featureId,
       @HeaderParam("Content-Crs") String crs,
+      @HeaderParam("If-Match") String ifMatch,
+      @HeaderParam("If-Unmodified-Since") String ifUnmodifiedSince,
       @Context OgcApi api,
       @Context ApiRequestContext apiRequestContext,
       @Context HttpServletRequest request,
@@ -425,6 +463,10 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
 
     FeatureTypeConfigurationOgcApi collectionData =
         api.getData().getCollections().get(collectionId);
+
+    Optional<CrudConfiguration> crudConfiguration =
+        collectionData.getExtension(CrudConfiguration.class);
+    checkHeader(crudConfiguration, ifMatch, ifUnmodifiedSince);
 
     FeatureProvider2 featureProvider =
         providers.getFeatureProviderOrThrow(api.getData(), collectionData);
@@ -461,7 +503,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             coreConfiguration.getCoordinatePrecision(),
             QueryParameterSet.of(parameterDefinitions, values),
             featureId,
-            Optional.of(Type.STRONG),
+            crudConfiguration.filter(CrudConfiguration::supportsEtag).map(ignore -> Type.STRONG),
             FeatureSchemaBase.Scope.MUTATIONS);
 
     QueryInputFeatureReplace queryInput =
@@ -487,16 +529,22 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
       @Context OgcApi api,
       @Context ApiRequestContext apiRequestContext,
       @PathParam("collectionId") String collectionId,
-      @PathParam("featureId") final String featureId) {
+      @PathParam("featureId") final String featureId,
+      @HeaderParam("If-Match") String ifMatch,
+      @HeaderParam("If-Unmodified-Since") String ifUnmodifiedSince) {
+
+    FeatureTypeConfigurationOgcApi collectionData =
+        api.getData().getCollections().get(collectionId);
+
+    Optional<CrudConfiguration> crudConfiguration =
+        collectionData.getExtension(CrudConfiguration.class);
+    checkHeader(crudConfiguration, ifMatch, ifUnmodifiedSince);
 
     FeatureProvider2 featureProvider =
         providers.getFeatureProviderOrThrow(
             api.getData(), api.getData().getCollections().get(collectionId));
 
     checkTransactional(featureProvider);
-
-    FeatureTypeConfigurationOgcApi collectionData =
-        api.getData().getCollections().get(collectionId);
 
     FeaturesCoreConfiguration coreConfiguration =
         collectionData
@@ -516,7 +564,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             coreConfiguration.getCoordinatePrecision(),
             new ImmutableQueryParameterSet.Builder().build(),
             featureId,
-            Optional.of(Type.STRONG),
+            crudConfiguration.filter(CrudConfiguration::supportsEtag).map(ignore -> Type.STRONG),
             FeatureSchemaBase.Scope.MUTATIONS);
 
     QueryInputFeature queryInput =
@@ -533,7 +581,20 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     return commandHandler.deleteItemResponse(queryInput, apiRequestContext);
   }
 
-  private void checkTransactional(FeatureProvider2 featureProvider) {
+  private static void checkHeader(
+      Optional<CrudConfiguration> crudConfiguration, String ifMatch, String ifUnmodifiedSince) {
+    if (crudConfiguration.map(CrudConfiguration::supportsEtag).orElse(false)
+        && Objects.isNull(ifMatch)) {
+      throw new BadRequestException(
+          "Requests to change a feature for this collection must include an 'If-Match' header.");
+    } else if (crudConfiguration.map(CrudConfiguration::supportsLastModified).orElse(false)
+        && Objects.isNull(ifUnmodifiedSince)) {
+      throw new BadRequestException(
+          "Requests to change a feature for this collection must include an 'If-Unmodified-Since' header.");
+    }
+  }
+
+  private static void checkTransactional(FeatureProvider2 featureProvider) {
     if (!featureProvider.supportsTransactions()) {
       throw new NotAllowedException("GET");
     }

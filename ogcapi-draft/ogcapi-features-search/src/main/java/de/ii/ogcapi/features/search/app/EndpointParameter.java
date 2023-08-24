@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.search.app;
 
+import static de.ii.ogcapi.features.search.domain.SearchQueriesHandler.SCOPE_SEARCH_READ;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.EndpointRequiresFeatures;
@@ -118,6 +120,7 @@ public class EndpointParameter extends EndpointRequiresFeatures {
               Optional.empty(),
               Optional.empty(),
               getOperationId("getStoredQueryParameter"),
+              SCOPE_SEARCH_READ,
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
       definitionBuilder.putResources(path, resourceBuilder.build());

@@ -7,10 +7,12 @@
  */
 package de.ii.ogcapi.tilematrixsets.domain;
 
+import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.xtraplatform.base.domain.util.Tuple;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,9 @@ import org.immutables.value.Value;
 
 public interface TileMatrixSetsQueriesHandler
     extends QueriesHandler<TileMatrixSetsQueriesHandler.Query> {
+
+  String SCOPE_TILES = "tiles";
+  Tuple<Scope, String> SCOPE_TILES_READ = Tuple.of(Scope.READ, SCOPE_TILES);
 
   @Override
   Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();

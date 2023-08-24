@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.features.custom.extensions.infra;
 
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.SCOPE_DATA_READ;
 import static de.ii.ogcapi.foundation.domain.ApiEndpointDefinition.SORT_PRIORITY_FEATURES;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
@@ -185,6 +186,7 @@ public class EndpointPostOnItems extends EndpointSubCollection {
                         get.getDescription(),
                         Optional.empty(),
                         getOperationId("queryItems", collectionId),
+                        SCOPE_DATA_READ,
                         TAGS)
                     .ifPresent(operation -> builder.putOperations("POST", operation));
                 definitionBuilder.putResources(entry.getKey(), builder.build());
