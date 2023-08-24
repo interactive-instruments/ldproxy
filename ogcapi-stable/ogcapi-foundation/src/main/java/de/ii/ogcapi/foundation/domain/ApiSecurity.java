@@ -127,6 +127,10 @@ public interface ApiSecurity {
       return join(group, operation);
     }
 
+    public Set<String> setOf() {
+      return ImmutableSet.of(this.toString());
+    }
+
     public Set<String> setOf(String group, String operation) {
       return ImmutableSet.of(this.toString(), group, with(group), with(group, operation));
     }

@@ -362,7 +362,7 @@ public interface ApiOperation {
         && apiData
             .getAccessControl()
             .get()
-            .isSecured(isMutation ? ApiSecurity.SCOPE_WRITE : ApiSecurity.SCOPE_READ)) {
+            .isRestricted(isMutation ? Scope.WRITE.setOf() : Scope.READ.setOf())) {
       op.addSecurityItem(new SecurityRequirement().addList("JWT"));
     }
   }
