@@ -14,6 +14,7 @@ import com.google.common.collect.Range;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
@@ -136,7 +137,27 @@ public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2
             .minimumSizeInPixel(null)
             .build();
 
-    return OgcApiDataV2.replaceOrAddExtensions(entityData, tilesConfiguration);
+    return new ImmutableOgcApiDataV2.Builder()
+        .from(OgcApiDataV2.replaceOrAddExtensions(entityData, tilesConfiguration))
+        .collections(
+            entityData.getCollections().entrySet().stream()
+                .map(
+                    entry -> {
+                      if (entry.getValue().getExtension(TilesConfiguration.class).isPresent()) {
+                        return Map.entry(
+                            entry.getKey(),
+                            new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                                .from(entry.getValue())
+                                .extensions(
+                                    entry.getValue().getExtensions().stream()
+                                        .filter(e -> !(e instanceof TilesConfiguration))
+                                        .collect(Collectors.toList()))
+                                .build());
+                      }
+                      return entry;
+                    })
+                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
+        .build();
   }
 
   @Override
