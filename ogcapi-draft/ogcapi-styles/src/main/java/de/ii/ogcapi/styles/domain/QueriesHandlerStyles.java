@@ -12,15 +12,16 @@ import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeBase;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
-import de.ii.xtraplatform.base.domain.util.Tuple;
 import java.util.Optional;
 import org.immutables.value.Value;
 
 public interface QueriesHandlerStyles extends QueriesHandler<QueriesHandlerStyles.Query> {
 
   String SCOPE_STYLES = "styles";
-  Scope SCOPE_STYLES_READ = Scope.of(ScopeBase.READ, SCOPE_STYLES, "access styles and their metadata");
-  Scope SCOPE_STYLES_WRITE = Scope.of(ScopeBase.WRITE, SCOPE_STYLES, "mutate styles and update their metadata");
+  Scope SCOPE_STYLES_READ =
+      Scope.of(ScopeBase.READ, SCOPE_STYLES, "access styles and their metadata");
+  Scope SCOPE_STYLES_WRITE =
+      Scope.of(ScopeBase.WRITE, SCOPE_STYLES, "mutate styles and update their metadata");
 
   enum Query implements QueryIdentifier {
     STYLES,

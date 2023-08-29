@@ -128,7 +128,9 @@ class ApiRequestAuthorizer {
     Set<String> validPermissions =
         Sets.union(
             requiredPermissions,
-            data.getAccessControl().map(s -> s.getRolesWith(requiredPermissions)).orElse(Set.of()));
+            data.getAccessControl()
+                .map(s -> s.getGroupsWith(requiredPermissions))
+                .orElse(Set.of()));
 
     boolean hasUserPermission =
         optionalUser

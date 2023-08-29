@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.foundation.app;
 
-import static de.ii.ogcapi.foundation.domain.ApiSecurity.ROLE_PUBLIC;
+import static de.ii.ogcapi.foundation.domain.ApiSecurity.GROUP_PUBLIC;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -47,7 +47,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -209,7 +208,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
   private ApiSecurity getSecurity() {
     return new ImmutableApiSecurity.Builder()
         .enabled(true)
-        .roles(Map.of(ROLE_PUBLIC, Set.of(ScopeBase.READ.toString())))
+        .groups(Map.of(GROUP_PUBLIC, ScopeBase.READ.setOf()))
         .build();
   }
 

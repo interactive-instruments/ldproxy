@@ -157,8 +157,13 @@ import org.immutables.value.Value;
  * @langAll ### Caching
  *     <p>{@docVar:caching}
  *     <p>{@docTable:cachingProperties}
- * @langAll ### Access Control
+ * @langEn ### Access Control
  *     <p>{@docVar:security}
+ *     <p>#### Configuration
+ *     <p>{@docTable:securityProperties}
+ * @langDe ### Access Control
+ *     <p>{@docVar:security}
+ *     <p>#### Konfiguration
  *     <p>{@docTable:securityProperties}
  * @langEn ### Examples
  *     <p>See the [API
