@@ -4,4 +4,5 @@ maturity = 'MATURE'
 dependencies {
     provided project(":ogcapi-foundation")
     provided project(":ogcapi-common")
+    provided project(":ogcapi-html")
 }

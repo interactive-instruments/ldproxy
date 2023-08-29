@@ -9,7 +9,6 @@ package de.ii.ogcapi.common.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.common.domain.ApiDefinitionAuxiliaryFormatExtension;
 import de.ii.ogcapi.common.domain.ApiDefinitionFormatExtension;
 import de.ii.ogcapi.common.domain.ConformanceDeclaration;
 import de.ii.ogcapi.common.domain.ConformanceDeclarationExtension;
@@ -59,8 +58,7 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
   public enum Query implements QueryIdentifier {
     LANDING_PAGE,
     CONFORMANCE_DECLARATION,
-    API_DEFINITION,
-    API_DEFINITION_FILE
+    API_DEFINITION
   }
 
   @Value.Immutable
@@ -95,9 +93,7 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
             Query.CONFORMANCE_DECLARATION,
             QueryHandler.with(QueryInputConformance.class, this::getConformanceResponse),
             Query.API_DEFINITION,
-            QueryHandler.with(QueryInput.class, this::getApiDefinitionResponse),
-            Query.API_DEFINITION_FILE,
-            QueryHandler.with(QueryInputFile.class, this::getApiDefinitionFileResponse));
+            QueryHandler.with(QueryInput.class, this::getApiDefinitionResponse));
   }
 
   @Override
@@ -303,35 +299,6 @@ public class QueriesHandlerCommonImpl implements QueriesHandlerCommon {
 
     // TODO support headers
     return outputFormatExtension.getResponse(requestContext.getApi().getData(), requestContext);
-  }
-
-  private Response getApiDefinitionFileResponse(
-      QueryInputFile queryInput, ApiRequestContext requestContext) {
-
-    String subPath = queryInput.getSubPath().orElse("");
-    ApiDefinitionAuxiliaryFormatExtension outputFormatExtension =
-        requestContext
-            .getApi()
-            .getOutputFormat(
-                ApiDefinitionAuxiliaryFormatExtension.class,
-                requestContext.getMediaType(),
-                Optional.empty())
-            .orElseThrow(
-                () ->
-                    new NotAcceptableException(
-                        MessageFormat.format(
-                            "The requested media type ''{0}'' is not supported for this resource.",
-                            requestContext.getMediaType())));
-
-    Date lastModified = getLastModified(queryInput);
-    // TODO support ETag
-    EntityTag etag = null;
-    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) return response.build();
-
-    // TODO support headers
-    return outputFormatExtension.getFile(
-        requestContext.getApi().getData(), requestContext, subPath);
   }
 
   private List<LandingPageExtension> getDatasetExtenders() {
