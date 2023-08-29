@@ -131,6 +131,10 @@ public interface ApiSecurity {
       return ImmutableSet.of(this.toString());
     }
 
+    public Set<String> setOf(String group) {
+      return ImmutableSet.of(this.toString(), group, with(group));
+    }
+
     public Set<String> setOf(String group, String operation) {
       return ImmutableSet.of(this.toString(), group, with(group), with(group, operation));
     }
@@ -200,6 +204,16 @@ public interface ApiSecurity {
    * @since v3.5
    */
   Map<String, Set<String>> getRoles();
+
+  /**
+   * @langEn If non-empty, only tokens that contain at least one of the given values in the audience
+   *     claim are accepted.
+   * @langDe Wenn nicht leer, werden nur Tokens akzeptiert, die mindestens einen der gegebenen Werte
+   *     im Audience-Claim enthalten.
+   * @default []
+   * @since v3.5
+   */
+  Set<String> getAudience();
 
   @JsonIgnore
   @Value.Derived

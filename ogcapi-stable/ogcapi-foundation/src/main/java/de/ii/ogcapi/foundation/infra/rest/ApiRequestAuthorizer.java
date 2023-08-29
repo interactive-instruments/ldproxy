@@ -8,18 +8,24 @@
 package de.ii.ogcapi.foundation.infra.rest;
 
 import com.google.common.collect.Sets;
+import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
+import de.ii.ogcapi.foundation.domain.ApiSecurity;
 import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.auth.domain.User.PolicyDecision;
 import de.ii.xtraplatform.base.domain.util.Tuple;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +37,8 @@ class ApiRequestAuthorizer {
       OgcApiDataV2 data,
       String entrypoint,
       String subPath,
+      ApiMediaType mediaType,
+      URI loginUri,
       @Nullable ApiOperation apiOperation,
       Optional<User> optionalUser) {
     if (Objects.isNull(apiOperation)) {
@@ -43,7 +51,7 @@ class ApiRequestAuthorizer {
     Set<String> requiredPermissions =
         getRequiredPermissions(scope, operationId, data.getId(), collectionId);
 
-    if (isNotAuthorized(data, optionalUser, requiredPermissions)) {
+    if (isNotAuthorized(data, optionalUser, requiredPermissions, mediaType, loginUri)) {
       throw new NotAuthorizedException("Bearer realm=\"ldproxy\"");
     }
   }
@@ -61,10 +69,28 @@ class ApiRequestAuthorizer {
   }
 
   private static boolean isNotAuthorized(
-      OgcApiDataV2 data, Optional<User> optionalUser, Set<String> requiredPermissions) {
-    return isPolicyDenial(optionalUser)
-        || (isAccessRestricted(data, requiredPermissions)
-            && !hasUserPermission(data, optionalUser, requiredPermissions));
+      OgcApiDataV2 data,
+      Optional<User> optionalUser,
+      Set<String> requiredPermissions,
+      ApiMediaType mediaType,
+      URI loginUri) {
+    if (isPolicyDenial(optionalUser)) {
+      return true;
+    }
+    if (isAccessRestricted(data, requiredPermissions)) {
+      if (optionalUser.isEmpty() && mediaType.matches(MediaType.TEXT_HTML_TYPE)) {
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("Not logged in, redirecting");
+        }
+        throw new WebApplicationException(Response.seeOther(loginUri).build());
+      }
+      if (isAudienceMismatch(data, optionalUser)
+          || !hasUserPermission(data, optionalUser, requiredPermissions)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private static boolean isAccessRestricted(OgcApiDataV2 data, Set<String> requiredPermissions) {
@@ -82,6 +108,25 @@ class ApiRequestAuthorizer {
     return denial;
   }
 
+  private static boolean isAudienceMismatch(OgcApiDataV2 data, Optional<User> optionalUser) {
+    boolean isMismatch =
+        data.getAccessControl()
+            .filter(
+                s ->
+                    !s.getAudience().isEmpty()
+                        && !intersects(
+                            s.getAudience(), optionalUser.map(User::getAudience).orElse(Set.of())))
+            .isPresent();
+
+    if (isMismatch && LOGGER.isDebugEnabled()) {
+      LOGGER.debug(
+          "Not authorized: token does not have any of these audiences {}",
+          data.getAccessControl().map(ApiSecurity::getAudience).orElse(Set.of()));
+    }
+
+    return isMismatch;
+  }
+
   private static boolean hasUserPermission(
       OgcApiDataV2 data, Optional<User> optionalUser, Set<String> requiredPermissions) {
     Set<String> validPermissions =
@@ -91,8 +136,7 @@ class ApiRequestAuthorizer {
 
     boolean hasUserPermission =
         optionalUser
-            .filter(
-                u -> !Sets.intersection(validPermissions, new HashSet<>(u.getScopes())).isEmpty())
+            .filter(u -> intersects(validPermissions, new HashSet<>(u.getScopes())))
             .isPresent();
 
     if (!hasUserPermission && LOGGER.isDebugEnabled()) {
@@ -109,5 +153,9 @@ class ApiRequestAuthorizer {
     }
     int secondSlash = path.indexOf('/', 1);
     return Optional.of(path.substring(1, secondSlash > 1 ? secondSlash : path.length()));
+  }
+
+  private static <T> boolean intersects(Set<T> first, Set<T> second) {
+    return !Sets.intersection(first, second).isEmpty();
   }
 }

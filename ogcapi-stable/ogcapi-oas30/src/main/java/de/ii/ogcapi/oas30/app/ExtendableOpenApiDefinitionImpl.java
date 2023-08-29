@@ -12,12 +12,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ApiSecurity;
-import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
+import de.ii.ogcapi.foundation.domain.EndpointExtension;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.oas30.domain.OpenApiExtension;
+import de.ii.xtraplatform.auth.domain.Oidc;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.AuthConfiguration;
 import io.swagger.v3.core.util.Json;
@@ -25,10 +26,15 @@ import io.swagger.v3.core.util.Yaml;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.OAuthFlow;
+import io.swagger.v3.oas.models.security.OAuthFlows;
+import io.swagger.v3.oas.models.security.Scopes;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.security.SecurityScheme.Type;
 import io.swagger.v3.oas.models.servers.Server;
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
@@ -44,16 +50,14 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
 
   private final AuthConfiguration authConfig;
   private final ExtensionRegistry extensionRegistry;
-  private final ClassSchemaCache classSchemaCache;
+  private final Oidc oidc;
 
   @Inject
   public ExtendableOpenApiDefinitionImpl(
-      AppContext appContext,
-      ExtensionRegistry extensionRegistry,
-      ClassSchemaCache classSchemaCache) {
+      AppContext appContext, ExtensionRegistry extensionRegistry, Oidc oidc) {
     this.authConfig = appContext.getConfiguration().getAuth();
     this.extensionRegistry = extensionRegistry;
-    this.classSchemaCache = classSchemaCache;
+    this.oidc = oidc;
   }
 
   @Override
@@ -72,16 +76,49 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
                               ExtendableOpenApiDefinitionImpl.class, "/openapi.json"))
                       .openBufferedStream());
 
-      if (apiData.getAccessControl().filter(ApiSecurity::isEnabled).isPresent()
-          && authConfig.isActive()) {
-        openAPI
-            .getComponents()
-            .addSecuritySchemes(
-                "JWT",
-                new SecurityScheme()
-                    .type(SecurityScheme.Type.HTTP)
-                    .scheme("bearer")
-                    .bearerFormat("JWT"));
+      if (apiData.getAccessControl().filter(ApiSecurity::isEnabled).isPresent()) {
+        if (oidc.isEnabled()) {
+          // TODO: replace Tuples with class
+          // TODO: scopes vs roles
+          Scopes scopes = new Scopes();
+          Map<String, String> descriptions = Map.of();
+
+          extensionRegistry.getExtensionsForType(EndpointExtension.class).stream()
+              .filter(endpoint -> endpoint.isEnabledForApi(apiData))
+              .flatMap(
+                  endpointExtension ->
+                      endpointExtension.getDefinition(apiData).getResources().values().stream())
+              .flatMap(ogcApiResource -> ogcApiResource.getOperations().values().stream())
+              .map(
+                  apiOperation ->
+                      apiOperation.getScope().first().with(apiOperation.getScope().second()))
+              .forEachOrdered(
+                  scope ->
+                      scopes.addString(scope, descriptions.getOrDefault(scope, scope + "---")));
+
+          openAPI
+              .getComponents()
+              .addSecuritySchemes(
+                  "Default",
+                  new SecurityScheme()
+                      .type(Type.OAUTH2)
+                      .flows(
+                          new OAuthFlows()
+                              .authorizationCode(
+                                  new OAuthFlow()
+                                      .authorizationUrl(oidc.getLoginUri().toString())
+                                      .tokenUrl(oidc.getTokenUri().toString())
+                                      .scopes(scopes))));
+        } else {
+          openAPI
+              .getComponents()
+              .addSecuritySchemes(
+                  "Default",
+                  new SecurityScheme()
+                      .type(SecurityScheme.Type.HTTP)
+                      .scheme("bearer")
+                      .bearerFormat("JWT"));
+        }
       }
 
       openAPI.servers(

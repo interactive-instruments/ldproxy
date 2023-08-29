@@ -362,8 +362,12 @@ public interface ApiOperation {
         && apiData
             .getAccessControl()
             .get()
-            .isRestricted(isMutation ? Scope.WRITE.setOf() : Scope.READ.setOf())) {
-      op.addSecurityItem(new SecurityRequirement().addList("JWT"));
+            .isRestricted(getScope().first().setOf(getScope().second()))) {
+      getScope()
+          .first()
+          .setOf(getScope().second())
+          .forEach(
+              scope -> op.addSecurityItem(new SecurityRequirement().addList("Default", scope)));
     }
   }
 

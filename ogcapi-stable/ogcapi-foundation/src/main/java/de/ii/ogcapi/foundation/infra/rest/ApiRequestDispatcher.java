@@ -24,6 +24,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiResource;
 import de.ii.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.ogcapi.foundation.domain.RequestInjectableContext;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.services.domain.ServiceEndpoint;
@@ -125,8 +126,21 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     Locale selectedLanguage =
         contentNegotiationLanguage.negotiateLanguage(requestContext).orElse(Locale.ENGLISH);
 
+    URI loginUri =
+        URI.create(
+            new URICustomizer(servicesUri)
+                .appendPath("_login")
+                .addParameter(
+                    "redirect_uri", requestContext.getUriInfo().getRequestUri().toString())
+                .toString());
     ApiRequestAuthorizer.checkAuthorization(
-        service.getData(), entrypoint, subPath, apiOperation, optionalUser);
+        service.getData(),
+        entrypoint,
+        subPath,
+        selectedMediaType,
+        loginUri,
+        apiOperation,
+        optionalUser);
 
     ApiRequestContext apiRequestContext =
         new Builder()
