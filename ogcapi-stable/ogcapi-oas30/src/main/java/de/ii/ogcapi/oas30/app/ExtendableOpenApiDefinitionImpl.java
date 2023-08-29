@@ -142,14 +142,14 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
           .forEachOrdered(openApiExtension -> openApiExtension.process(openAPI, apiData));
 
       if (StringUtils.isNotBlank(type) && type.trim().equalsIgnoreCase("yaml")) {
-        return Response.status(Response.Status.OK)
+        return Response.ok()
             .entity(pretty ? Yaml.pretty(openAPI) : Yaml.mapper().writeValueAsString(openAPI))
-            .type("application/vnd.oai.openapi;version=3.0")
+            .type(OpenApiYaml.MEDIA_TYPE.type())
             .build();
       } else {
-        return Response.status(Response.Status.OK)
+        return Response.ok()
             .entity(pretty ? Json.pretty(openAPI) : Json.mapper().writeValueAsString(openAPI))
-            .type("application/vnd.oai.openapi+json;version=3.0")
+            .type(OpenApiJson.MEDIA_TYPE.type())
             .build();
       }
     } catch (IOException e) {

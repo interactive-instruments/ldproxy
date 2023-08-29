@@ -32,9 +32,9 @@ import javax.ws.rs.core.Response;
 @AutoBind
 public class OpenApiYaml implements ApiDefinitionFormatExtension {
 
-  private static final ApiMediaType MEDIA_TYPE =
+  static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "vnd.oai.openapi", ImmutableMap.of("version", "3.0")))
+          .type(new MediaType("application", "openapi+yaml", ImmutableMap.of("version", "3.0")))
           .parameter("yaml")
           .label("YAML")
           .build();
