@@ -34,7 +34,6 @@ import io.swagger.v3.oas.models.security.SecurityScheme.Type;
 import io.swagger.v3.oas.models.servers.Server;
 import java.io.IOException;
 import java.util.Comparator;
-import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
@@ -78,10 +77,8 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
 
       if (apiData.getAccessControl().filter(ApiSecurity::isEnabled).isPresent()) {
         if (oidc.isEnabled()) {
-          // TODO: replace Tuples with class
           // TODO: scopes vs roles
           Scopes scopes = new Scopes();
-          Map<String, String> descriptions = Map.of();
 
           extensionRegistry.getExtensionsForType(EndpointExtension.class).stream()
               .filter(endpoint -> endpoint.isEnabledForApi(apiData))
@@ -89,12 +86,14 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
                   endpointExtension ->
                       endpointExtension.getDefinition(apiData).getResources().values().stream())
               .flatMap(ogcApiResource -> ogcApiResource.getOperations().values().stream())
-              .map(
-                  apiOperation ->
-                      apiOperation.getScope().first().with(apiOperation.getScope().second()))
-              .forEachOrdered(
+              .map(apiOperation -> apiOperation.getScope())
+              .filter(
                   scope ->
-                      scopes.addString(scope, descriptions.getOrDefault(scope, scope + "---")));
+                      apiData
+                          .getAccessControl()
+                          .filter(apiSecurity -> apiSecurity.isRestricted(scope.setOf()))
+                          .isPresent())
+              .forEachOrdered(scope -> scopes.addString(scope.name(), scope.description()));
 
           openAPI
               .getComponents()

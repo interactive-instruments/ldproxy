@@ -9,11 +9,12 @@ package de.ii.ogcapi.common.domain;
 
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl;
 import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
+import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeBase;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
-import de.ii.xtraplatform.base.domain.util.Tuple;
 
 public interface QueriesHandlerCommon extends QueriesHandler<QueriesHandlerCommonImpl.Query> {
 
   String SCOPE_COLLECTIONS = "collections";
-  Tuple<Scope, String> SCOPE_COLLECTIONS_READ = Tuple.of(Scope.READ, SCOPE_COLLECTIONS);
+  Scope SCOPE_COLLECTIONS_READ =
+      Scope.of(ScopeBase.READ, SCOPE_COLLECTIONS, "access feature collection metadata");
 }

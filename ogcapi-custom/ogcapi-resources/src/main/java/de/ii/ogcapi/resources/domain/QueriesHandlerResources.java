@@ -8,17 +8,17 @@
 package de.ii.ogcapi.resources.domain;
 
 import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
+import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeBase;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
-import de.ii.xtraplatform.base.domain.util.Tuple;
 import org.immutables.value.Value;
 
 public interface QueriesHandlerResources extends QueriesHandler<QueriesHandlerResources.Query> {
 
   String SCOPE_RESOURCES = "resources";
-  Tuple<Scope, String> SCOPE_RESOURCES_READ = Tuple.of(Scope.READ, SCOPE_RESOURCES);
-  Tuple<Scope, String> SCOPE_RESOURCES_WRITE = Tuple.of(Scope.WRITE, SCOPE_RESOURCES);
+  Scope SCOPE_RESOURCES_READ = Scope.of(ScopeBase.READ, SCOPE_RESOURCES, "access file resources");
+  Scope SCOPE_RESOURCES_WRITE = Scope.of(ScopeBase.WRITE, SCOPE_RESOURCES, "mutate file resources");
 
   enum Query implements QueryIdentifier {
     RESOURCES,

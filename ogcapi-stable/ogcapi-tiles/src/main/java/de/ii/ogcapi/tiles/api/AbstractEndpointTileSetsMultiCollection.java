@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.tiles.api;
 
-import static de.ii.ogcapi.tiles.domain.TilesQueriesHandler.SCOPE_TILES_READ;
+import static de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler.SCOPE_TILES_READ;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;

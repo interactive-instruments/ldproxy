@@ -15,7 +15,6 @@ import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.auth.domain.User.PolicyDecision;
-import de.ii.xtraplatform.base.domain.util.Tuple;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Objects;
@@ -45,7 +44,7 @@ class ApiRequestAuthorizer {
       return;
     }
 
-    Tuple<Scope, String> scope = apiOperation.getScope();
+    Scope scope = apiOperation.getScope();
     String operationId = apiOperation.getOperationIdWithoutPrefix();
     Optional<String> collectionId = getCollectionId(entrypoint, subPath);
     Set<String> requiredPermissions =
@@ -57,15 +56,12 @@ class ApiRequestAuthorizer {
   }
 
   private static Set<String> getRequiredPermissions(
-      Tuple<Scope, String> scope, String operationId, String apiId, Optional<String> collectionId) {
-    Scope type = scope.first();
-    String group = scope.second();
-
+      Scope scope, String operationId, String apiId, Optional<String> collectionId) {
     if (collectionId.isPresent()) {
-      return type.setOf(group, operationId, apiId, collectionId.get());
+      return scope.setOf(operationId, apiId, collectionId.get());
     }
 
-    return type.setOf(group, operationId, apiId);
+    return scope.setOf(operationId, apiId);
   }
 
   private static boolean isNotAuthorized(
@@ -136,7 +132,7 @@ class ApiRequestAuthorizer {
 
     boolean hasUserPermission =
         optionalUser
-            .filter(u -> intersects(validPermissions, new HashSet<>(u.getScopes())))
+            .filter(u -> intersects(validPermissions, new HashSet<>(u.getPermissions())))
             .isPresent();
 
     if (!hasUserPermission && LOGGER.isDebugEnabled()) {

@@ -7,13 +7,11 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
-import de.ii.xtraplatform.base.domain.util.Tuple;
 import de.ii.xtraplatform.tiles.domain.TileCoordinates;
 import java.util.List;
 import java.util.Map;
@@ -21,9 +19,6 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.Query> {
-
-  String SCOPE_TILES = "tiles";
-  Tuple<Scope, String> SCOPE_TILES_READ = Tuple.of(Scope.READ, SCOPE_TILES);
 
   @Override
   Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();

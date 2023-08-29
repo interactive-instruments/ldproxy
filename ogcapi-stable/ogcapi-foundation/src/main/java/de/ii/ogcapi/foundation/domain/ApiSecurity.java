@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import de.ii.xtraplatform.base.domain.util.Tuple;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -115,7 +114,46 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableApiSecurity.Builder.class)
 public interface ApiSecurity {
 
-  enum Scope {
+  @Value.Immutable
+  interface Scope {
+
+    static Scope of(ScopeBase base, String group, String description) {
+      return ImmutableScope.of(base, group, description);
+    }
+
+    @Value.Parameter
+    ScopeBase base();
+
+    @Value.Parameter
+    String group();
+
+    @Value.Parameter
+    String description();
+
+    @Value.Derived
+    default String name() {
+      return base().with(group());
+    }
+
+    @Value.Derived
+    default Set<String> setOf() {
+      return base().setOf(group());
+    }
+
+    default Set<String> setOf(String operation) {
+      return base().setOf(group(), operation);
+    }
+
+    default Set<String> setOf(String operation, String api) {
+      return base().setOf(group(), operation, api);
+    }
+
+    default Set<String> setOf(String operation, String api, String collection) {
+      return base().setOf(group(), operation, api, collection);
+    }
+  }
+
+  enum ScopeBase {
     READ,
     WRITE;
 
@@ -170,7 +208,11 @@ public interface ApiSecurity {
   }
 
   String SCOPE_DISCOVER = "discover";
-  Tuple<Scope, String> SCOPE_DISCOVER_READ = Tuple.of(Scope.READ, SCOPE_DISCOVER);
+  Scope SCOPE_DISCOVER_READ =
+      Scope.of(
+          ScopeBase.READ,
+          SCOPE_DISCOVER,
+          "access API landing pages, conformance declarations and OpenAPI definitions");
   String ROLE_PUBLIC = "public";
 
   /**

@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
-import de.ii.xtraplatform.base.domain.util.Tuple;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -67,7 +66,7 @@ public interface ApiOperation {
 
   String getOperationId();
 
-  Tuple<Scope, String> getScope();
+  Scope getScope();
 
   List<OgcApiQueryParameter> getQueryParameters();
 
@@ -107,7 +106,7 @@ public interface ApiOperation {
       Optional<String> operationDescription,
       Optional<ExternalDocumentation> externalDocs,
       String operationId,
-      Tuple<Scope, String> scope,
+      Scope scope,
       List<String> tags) {
     if (responseContent.isEmpty()) {
       if (LOGGER.isErrorEnabled()) {
@@ -201,7 +200,7 @@ public interface ApiOperation {
       Optional<String> operationDescription,
       Optional<ExternalDocumentation> externalDocs,
       String operationId,
-      Tuple<Scope, String> scope,
+      Scope scope,
       List<String> tags) {
     if ((method == HttpMethods.POST || method == HttpMethods.PUT || method == HttpMethods.PATCH)
         && requestContent.isEmpty()) {
@@ -259,7 +258,7 @@ public interface ApiOperation {
       Optional<String> operationDescription,
       Optional<ExternalDocumentation> externalDocs,
       String operationId,
-      Tuple<Scope, String> scope,
+      Scope scope,
       List<String> tags) {
     ImmutableApiResponse.Builder responseBuilder =
         new ImmutableApiResponse.Builder()
@@ -359,13 +358,9 @@ public interface ApiOperation {
     addErrorResponses(op, errorCodes);
 
     if (apiData.getAccessControl().isPresent()
-        && apiData
-            .getAccessControl()
-            .get()
-            .isRestricted(getScope().first().setOf(getScope().second()))) {
+        && apiData.getAccessControl().get().isRestricted(getScope().setOf())) {
       getScope()
-          .first()
-          .setOf(getScope().second())
+          .setOf()
           .forEach(
               scope -> op.addSecurityItem(new SecurityRequirement().addList("Default", scope)));
     }
