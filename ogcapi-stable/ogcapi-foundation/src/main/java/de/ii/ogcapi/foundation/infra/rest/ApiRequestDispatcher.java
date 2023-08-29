@@ -24,7 +24,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiResource;
 import de.ii.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.ogcapi.foundation.domain.RequestInjectableContext;
-import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.services.domain.ServiceEndpoint;
@@ -66,6 +65,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
   private final URI servicesUri;
   private final ContentNegotiationMediaType contentNegotiationMediaType;
   private final ContentNegotiationLanguage contentNegotiationLanguage;
+  private final ApiRequestAuthorizer apiRequestAuthorizer;
   private final int maxResponseLinkHeaderSize;
 
   @Inject
@@ -75,12 +75,14 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
       RequestInjectableContext ogcApiInjectableContext,
       ServicesContext servicesContext,
       ContentNegotiationMediaType contentNegotiationMediaType,
-      ContentNegotiationLanguage contentNegotiationLanguage) {
+      ContentNegotiationLanguage contentNegotiationLanguage,
+      ApiRequestAuthorizer apiRequestAuthorizer) {
     this.extensionRegistry = extensionRegistry;
     this.ogcApiInjectableContext = ogcApiInjectableContext;
     this.servicesUri = servicesContext.getUri();
     this.contentNegotiationMediaType = contentNegotiationMediaType;
     this.contentNegotiationLanguage = contentNegotiationLanguage;
+    this.apiRequestAuthorizer = apiRequestAuthorizer;
     this.maxResponseLinkHeaderSize = getMaxResponseHeaderSize(appContext) / 4;
   }
 
@@ -126,33 +128,19 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     Locale selectedLanguage =
         contentNegotiationLanguage.negotiateLanguage(requestContext).orElse(Locale.ENGLISH);
 
-    URI loginUri =
-        URI.create(
-            new URICustomizer(servicesUri)
-                .appendPath("_login")
-                .addParameter(
-                    "redirect_uri", requestContext.getUriInfo().getRequestUri().toString())
-                .toString());
-    ApiRequestAuthorizer.checkAuthorization(
-        service.getData(),
-        entrypoint,
-        subPath,
-        selectedMediaType,
-        loginUri,
-        apiOperation,
-        optionalUser);
-
     ApiRequestContext apiRequestContext =
         new Builder()
             .requestUri(requestContext.getUriInfo().getRequestUri())
             .request(request)
-            .externalUri(getExternalUri())
+            .externalUri(servicesUri)
             .mediaType(selectedMediaType)
             .alternateMediaTypes(getAlternateMediaTypes(selectedMediaType, supportedMediaTypes))
             .language(selectedLanguage)
             .api(service)
             .maxResponseLinkHeaderSize(maxResponseLinkHeaderSize)
             .build();
+
+    apiRequestAuthorizer.checkAuthorization(apiRequestContext, apiOperation, optionalUser);
 
     ogcApiInjectableContext.inject(requestContext, apiRequestContext);
 
@@ -343,10 +331,6 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
 
   private List<EndpointExtension> getEndpoints() {
     return extensionRegistry.getExtensionsForType(EndpointExtension.class);
-  }
-
-  private Optional<URI> getExternalUri() {
-    return Optional.of(servicesUri);
   }
 
   private static int getMaxResponseHeaderSize(AppContext appContext) {

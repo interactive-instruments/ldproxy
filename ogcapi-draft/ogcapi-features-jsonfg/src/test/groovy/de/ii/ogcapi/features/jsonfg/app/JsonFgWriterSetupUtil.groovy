@@ -52,6 +52,11 @@ class JsonFgWriterSetupUtil {
                 .isFeatureCollection(isCollection)
                 .ogcApiRequest(new ApiRequestContext() {
                     @Override
+                    URI getExternalUri() {
+                        return null
+                    }
+
+                    @Override
                     ApiMediaType getMediaType() {
                         return FeaturesFormatJsonFg.MEDIA_TYPE
 

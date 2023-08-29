@@ -61,6 +61,11 @@ class GeoJsonWriterSetupUtil {
                 .isFeatureCollection(isCollection)
                 .ogcApiRequest(new ApiRequestContext() {
                     @Override
+                    URI getExternalUri() {
+                        return null
+                    }
+
+                    @Override
                     ApiMediaType getMediaType() {
                         return FeaturesFormatGeoJson.MEDIA_TYPE
 
