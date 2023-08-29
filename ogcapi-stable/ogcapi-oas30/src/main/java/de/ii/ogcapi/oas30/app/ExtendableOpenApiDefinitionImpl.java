@@ -86,7 +86,7 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
                   endpointExtension ->
                       endpointExtension.getDefinition(apiData).getResources().values().stream())
               .flatMap(ogcApiResource -> ogcApiResource.getOperations().values().stream())
-              .map(apiOperation -> apiOperation.getScope())
+              .map(apiOperation -> apiOperation.getPermissionGroup())
               .filter(
                   scope ->
                       apiData

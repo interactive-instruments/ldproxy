@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.tilematrixsets.infra;
 
-import static de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler.SCOPE_TILES_READ;
+import static de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler.GROUP_TILES_READ;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -123,7 +123,7 @@ public class EndpointTileMatrixSet extends Endpoint {
               operationDescription,
               Optional.empty(),
               getOperationId("getTileMatrixSet"),
-              SCOPE_TILES_READ,
+              GROUP_TILES_READ,
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
       definitionBuilder.putResources(path, resourceBuilder.build());

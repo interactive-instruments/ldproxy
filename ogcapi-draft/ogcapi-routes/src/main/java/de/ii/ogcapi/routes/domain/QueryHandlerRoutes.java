@@ -7,8 +7,8 @@
  */
 package de.ii.ogcapi.routes.domain;
 
-import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
-import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeBase;
+import de.ii.ogcapi.foundation.domain.PermissionGroup;
+import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
@@ -20,11 +20,12 @@ import org.immutables.value.Value;
 
 public interface QueryHandlerRoutes extends QueriesHandler<QueryHandlerRoutes.Query> {
 
-  String SCOPE_ROUTES = "routes";
-  Scope SCOPE_ROUTES_READ =
-      Scope.of(ScopeBase.READ, SCOPE_ROUTES, "access stored routes and their definition");
-  Scope SCOPE_ROUTES_WRITE =
-      Scope.of(ScopeBase.WRITE, SCOPE_ROUTES, "compute and store routes, delete stored routes");
+  String GROUP_ROUTES = "routes";
+  PermissionGroup GROUP_ROUTES_READ =
+      PermissionGroup.of(Base.READ, GROUP_ROUTES, "access stored routes and their definition");
+  PermissionGroup GROUP_ROUTES_WRITE =
+      PermissionGroup.of(
+          Base.WRITE, GROUP_ROUTES, "compute and store routes, delete stored routes");
 
   enum Query implements QueryIdentifier {
     COMPUTE_ROUTE,

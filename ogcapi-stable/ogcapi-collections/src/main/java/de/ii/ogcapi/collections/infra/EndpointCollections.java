@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.collections.infra;
 
-import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.SCOPE_COLLECTIONS_READ;
+import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.GROUP_COLLECTIONS_READ;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -153,7 +153,7 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
             operationDescription,
             Optional.empty(),
             getOperationId("getCollections"),
-            SCOPE_COLLECTIONS_READ,
+            GROUP_COLLECTIONS_READ,
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder.build());

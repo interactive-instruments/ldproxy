@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.collections.schema.infra;
 
-import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.SCOPE_COLLECTIONS_READ;
+import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.GROUP_COLLECTIONS_READ;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -128,7 +128,7 @@ public class EndpointSchema extends EndpointSubCollection {
                 operationDescription,
                 Optional.empty(),
                 getOperationId("getSchema", collectionId),
-                SCOPE_COLLECTIONS_READ,
+                GROUP_COLLECTIONS_READ,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));

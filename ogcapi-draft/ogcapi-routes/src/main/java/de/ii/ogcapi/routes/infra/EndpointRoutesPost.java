@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.routes.infra;
 
-import static de.ii.ogcapi.routes.domain.QueryHandlerRoutes.SCOPE_ROUTES_WRITE;
+import static de.ii.ogcapi.routes.domain.QueryHandlerRoutes.GROUP_ROUTES_WRITE;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -312,7 +312,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
             operationDescription,
             Optional.empty(),
             getOperationId("computeRoute"),
-            SCOPE_ROUTES_WRITE,
+            GROUP_ROUTES_WRITE,
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(method.toString(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());

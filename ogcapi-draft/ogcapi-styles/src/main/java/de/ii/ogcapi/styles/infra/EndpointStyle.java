@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.styles.infra;
 
-import static de.ii.ogcapi.styles.domain.QueriesHandlerStyles.SCOPE_STYLES_READ;
+import static de.ii.ogcapi.styles.domain.QueriesHandlerStyles.GROUP_STYLES_READ;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -149,7 +149,7 @@ public class EndpointStyle extends Endpoint {
               operationDescription,
               Optional.empty(),
               getOperationId("getStyle"),
-              SCOPE_STYLES_READ,
+              GROUP_STYLES_READ,
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
       definitionBuilder.putResources(path, resourceBuilder.build());

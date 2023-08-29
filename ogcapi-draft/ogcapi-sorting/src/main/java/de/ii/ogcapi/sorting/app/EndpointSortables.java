@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.sorting.app;
 
-import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.SCOPE_COLLECTIONS_READ;
+import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.GROUP_COLLECTIONS_READ;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -163,7 +163,7 @@ public class EndpointSortables extends EndpointSubCollection /* implements Confo
                 operationDescription,
                 Optional.empty(),
                 getOperationId("getSortables", collectionId),
-                SCOPE_COLLECTIONS_READ,
+                GROUP_COLLECTIONS_READ,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));

@@ -9,15 +9,14 @@ package de.ii.ogcapi.foundation.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -142,99 +141,6 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableApiSecurity.Builder.class)
 public interface ApiSecurity {
 
-  @Value.Immutable
-  interface Scope {
-
-    static Scope of(ScopeBase base, String group, String description) {
-      return ImmutableScope.of(base, group, description);
-    }
-
-    @Value.Parameter
-    ScopeBase base();
-
-    @Value.Parameter
-    String group();
-
-    @Value.Parameter
-    String description();
-
-    @Value.Derived
-    default String name() {
-      return base().with(group());
-    }
-
-    @Value.Derived
-    default Set<String> setOf() {
-      return base().setOf(group());
-    }
-
-    default Set<String> setOf(String operation) {
-      return base().setOf(group(), operation);
-    }
-
-    default Set<String> setOf(String operation, String api) {
-      return base().setOf(group(), operation, api);
-    }
-
-    default Set<String> setOf(String operation, String api, String collection) {
-      return base().setOf(group(), operation, api, collection);
-    }
-  }
-
-  enum ScopeBase {
-    READ,
-    WRITE;
-
-    public String with(String group) {
-      return join(group, toString());
-    }
-
-    public String with(String group, String operation) {
-      return join(group, operation);
-    }
-
-    public Set<String> setOf() {
-      return ImmutableSet.of(this.toString());
-    }
-
-    public Set<String> setOf(String group) {
-      return ImmutableSet.of(this.toString(), group, with(group));
-    }
-
-    public Set<String> setOf(String group, String operation) {
-      return ImmutableSet.of(this.toString(), group, with(group), with(group, operation));
-    }
-
-    public Set<String> setOf(String group, String operation, String api) {
-      return setOf(group, operation).stream()
-          .flatMap(permission -> Stream.of(permission, join(permission, api, true)))
-          .collect(ImmutableSet.toImmutableSet());
-    }
-
-    public Set<String> setOf(String group, String operation, String api, String collection) {
-      return setOf(group, operation, api).stream()
-          .flatMap(
-              permission ->
-                  permission.endsWith(join("", api, true))
-                      ? Stream.of(permission, join(permission, collection))
-                      : Stream.of(permission))
-          .collect(ImmutableSet.toImmutableSet());
-    }
-
-    private static String join(String first, String second) {
-      return join(first, second, false);
-    }
-
-    private static String join(String first, String second, boolean separator) {
-      return first + (separator ? "::" : ":") + second;
-    }
-
-    @Override
-    public String toString() {
-      return name().toLowerCase();
-    }
-  }
-
   enum ScopeGranularity {
     NONE,
     BASE,
@@ -243,11 +149,11 @@ public interface ApiSecurity {
     CUSTOM
   }
 
-  String SCOPE_DISCOVER = "discover";
-  Scope SCOPE_DISCOVER_READ =
-      Scope.of(
-          ScopeBase.READ,
-          SCOPE_DISCOVER,
+  String GROUP_DISCOVER = "discover";
+  PermissionGroup GROUP_DISCOVER_READ =
+      PermissionGroup.of(
+          Base.READ,
+          GROUP_DISCOVER,
           "access API landing pages, conformance declarations and OpenAPI definitions");
   String GROUP_PUBLIC = "public";
 

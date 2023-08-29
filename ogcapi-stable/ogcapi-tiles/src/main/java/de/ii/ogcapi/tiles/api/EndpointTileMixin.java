@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.tiles.api;
 
-import static de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler.SCOPE_TILES_READ;
+import static de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler.GROUP_TILES_READ;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableList;
@@ -114,7 +114,7 @@ public interface EndpointTileMixin {
                 operationDescription,
                 Optional.empty(),
                 operationId,
-                SCOPE_TILES_READ,
+                GROUP_TILES_READ,
                 tags)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
@@ -164,7 +164,7 @@ public interface EndpointTileMixin {
             operationDescription,
             Optional.empty(),
             operationId,
-            SCOPE_TILES_READ,
+            GROUP_TILES_READ,
             tags)
         .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());

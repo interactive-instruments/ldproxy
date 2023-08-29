@@ -7,8 +7,8 @@
  */
 package de.ii.ogcapi.tilematrixsets.domain;
 
-import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
-import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeBase;
+import de.ii.ogcapi.foundation.domain.PermissionGroup;
+import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
@@ -21,8 +21,8 @@ import org.immutables.value.Value;
 public interface TileMatrixSetsQueriesHandler
     extends QueriesHandler<TileMatrixSetsQueriesHandler.Query> {
 
-  String SCOPE_TILES = "tiles";
-  Scope SCOPE_TILES_READ = Scope.of(ScopeBase.READ, SCOPE_TILES, "access tiles");
+  String GROUP_TILES = "tiles";
+  PermissionGroup GROUP_TILES_READ = PermissionGroup.of(Base.READ, GROUP_TILES, "access tiles");
 
   @Override
   Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();

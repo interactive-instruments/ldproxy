@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.features.gltf.infra;
 
-import static de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler.SCOPE_TILES_READ;
+import static de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler.GROUP_TILES_READ;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -137,7 +137,7 @@ public class EndpointGltfSchema extends EndpointSubCollection {
                 operationDescription,
                 Optional.empty(),
                 getOperationId("getGltfSchema", collectionId),
-                SCOPE_TILES_READ,
+                GROUP_TILES_READ,
                 TAGS)
             .ifPresent(
                 operation ->

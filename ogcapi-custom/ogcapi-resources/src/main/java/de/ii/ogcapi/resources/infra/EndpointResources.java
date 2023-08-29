@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.resources.infra;
 
-import static de.ii.ogcapi.resources.domain.QueriesHandlerResources.SCOPE_RESOURCES_READ;
+import static de.ii.ogcapi.resources.domain.QueriesHandlerResources.GROUP_RESOURCES_READ;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -118,7 +118,7 @@ public class EndpointResources extends Endpoint {
             operationDescription,
             Optional.empty(),
             getOperationId("getResources"),
-            SCOPE_RESOURCES_READ,
+            GROUP_RESOURCES_READ,
             TAGS)
         .ifPresent(operation -> resourceBuilderSet.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilderSet.build());

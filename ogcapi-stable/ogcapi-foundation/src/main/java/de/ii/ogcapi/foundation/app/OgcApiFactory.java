@@ -16,7 +16,6 @@ import dagger.assisted.AssistedFactory;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ApiSecurity;
-import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeBase;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMetadata;
@@ -25,6 +24,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableCollectionExtent;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiDataHydratorExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.services.domain.ImmutableServiceDataCommon;
@@ -208,7 +208,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
   private ApiSecurity getSecurity() {
     return new ImmutableApiSecurity.Builder()
         .enabled(true)
-        .groups(Map.of(GROUP_PUBLIC, ScopeBase.READ.setOf()))
+        .groups(Map.of(GROUP_PUBLIC, Base.READ.setOf()))
         .build();
   }
 

@@ -10,7 +10,6 @@ package de.ii.ogcapi.foundation.domain;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -66,7 +65,7 @@ public interface ApiOperation {
 
   String getOperationId();
 
-  Scope getScope();
+  PermissionGroup getPermissionGroup();
 
   List<OgcApiQueryParameter> getQueryParameters();
 
@@ -106,7 +105,7 @@ public interface ApiOperation {
       Optional<String> operationDescription,
       Optional<ExternalDocumentation> externalDocs,
       String operationId,
-      Scope scope,
+      PermissionGroup permissionGroup,
       List<String> tags) {
     if (responseContent.isEmpty()) {
       if (LOGGER.isErrorEnabled()) {
@@ -168,7 +167,7 @@ public interface ApiOperation {
             .description(operationDescription)
             .externalDocs(externalDocs)
             .operationId(operationId)
-            .scope(scope)
+            .permissionGroup(permissionGroup)
             .tags(tags)
             .queryParameters(postUrlEncoded ? ImmutableList.of() : queryParameters)
             .headers(
@@ -200,7 +199,7 @@ public interface ApiOperation {
       Optional<String> operationDescription,
       Optional<ExternalDocumentation> externalDocs,
       String operationId,
-      Scope scope,
+      PermissionGroup permissionGroup,
       List<String> tags) {
     if ((method == HttpMethods.POST || method == HttpMethods.PUT || method == HttpMethods.PATCH)
         && requestContent.isEmpty()) {
@@ -219,7 +218,7 @@ public interface ApiOperation {
             .description(operationDescription)
             .externalDocs(externalDocs)
             .operationId(operationId)
-            .scope(scope)
+            .permissionGroup(permissionGroup)
             .tags(tags)
             .queryParameters(queryParameters)
             .headers(
@@ -258,7 +257,7 @@ public interface ApiOperation {
       Optional<String> operationDescription,
       Optional<ExternalDocumentation> externalDocs,
       String operationId,
-      Scope scope,
+      PermissionGroup permissionGroup,
       List<String> tags) {
     ImmutableApiResponse.Builder responseBuilder =
         new ImmutableApiResponse.Builder()
@@ -277,7 +276,7 @@ public interface ApiOperation {
             .description(operationDescription)
             .externalDocs(externalDocs)
             .operationId(operationId)
-            .scope(scope)
+            .permissionGroup(permissionGroup)
             .tags(tags)
             .queryParameters(queryParameters)
             .headers(
@@ -358,8 +357,8 @@ public interface ApiOperation {
     addErrorResponses(op, errorCodes);
 
     if (apiData.getAccessControl().isPresent()
-        && apiData.getAccessControl().get().isRestricted(getScope().setOf())) {
-      getScope()
+        && apiData.getAccessControl().get().isRestricted(getPermissionGroup().setOf())) {
+      getPermissionGroup()
           .setOf()
           .forEach(
               scope -> op.addSecurityItem(new SecurityRequirement().addList("Default", scope)));

@@ -11,8 +11,8 @@ import com.google.common.collect.Sets;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiSecurity;
-import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.PermissionGroup;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.auth.domain.User.PolicyDecision;
 import java.net.URI;
@@ -44,7 +44,7 @@ class ApiRequestAuthorizer {
       return;
     }
 
-    Scope scope = apiOperation.getScope();
+    PermissionGroup scope = apiOperation.getPermissionGroup();
     String operationId = apiOperation.getOperationIdWithoutPrefix();
     Optional<String> collectionId = getCollectionId(entrypoint, subPath);
     Set<String> requiredPermissions =
@@ -56,7 +56,7 @@ class ApiRequestAuthorizer {
   }
 
   private static Set<String> getRequiredPermissions(
-      Scope scope, String operationId, String apiId, Optional<String> collectionId) {
+      PermissionGroup scope, String operationId, String apiId, Optional<String> collectionId) {
     if (collectionId.isPresent()) {
       return scope.setOf(operationId, apiId, collectionId.get());
     }
