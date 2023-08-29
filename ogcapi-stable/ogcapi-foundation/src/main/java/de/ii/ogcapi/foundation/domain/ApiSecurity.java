@@ -142,10 +142,9 @@ import org.immutables.value.Value;
 public interface ApiSecurity {
 
   enum ScopeGranularity {
-    NONE,
     BASE,
     PARENT,
-    GROUP,
+    MAIN,
     CUSTOM
   }
 
@@ -193,12 +192,12 @@ public interface ApiSecurity {
   /**
    * @langEn If non-empty, *OAuth2 Scopes* are added to the OpenAPI definition. Then only tokens
    *     that contain at least one scope that covers the requested operation are accepted. Values
-   *     can be any combination of `BASE` (e.g. `read`), `PARENT` (e.g. `data`), `GROUP` (e.g.
+   *     can be any combination of `BASE` (e.g. `read`), `PARENT` (e.g. `data`), `MAIN` (e.g.
    *     `data:read`) and `CUSTOM` (everything defined in `groups` besides `public`).
    * @langDe Wenn nicht leer, werden *OAuth2 Scopes* zur OpenAPI Definition hinzugefügt. Dann werden
    *     nur Tokens akzeptiert, die mindestens einen Scope enthalten, der die angeforderte Operation
    *     abdeckt. Werte können jede Kombination von `BASE` (z.B. `read`), `PARENT` (z.B. `data`),
-   *     `GROUP` (z.B. `data:read`) und `CUSTOM` (alles in `groups` definierte außer `public`) sein.
+   *     `MAIN` (z.B. `data:read`) und `CUSTOM` (alles in `groups` definierte außer `public`) sein.
    * @default []
    * @since v3.5
    */

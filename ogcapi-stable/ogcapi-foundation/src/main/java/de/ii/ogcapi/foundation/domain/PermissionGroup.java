@@ -8,6 +8,8 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.google.common.collect.ImmutableSet;
+import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeGranularity;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 import org.immutables.value.Value;
@@ -36,6 +38,22 @@ public interface PermissionGroup {
   @Value.Derived
   default Set<String> setOf() {
     return base().setOf(group());
+  }
+
+  default Set<String> setOf(Set<ScopeGranularity> scopeGranularities) {
+    Set<String> scopes = new HashSet<>();
+
+    if (scopeGranularities.contains(ScopeGranularity.BASE)) {
+      scopes.add(base().toString());
+    }
+    if (scopeGranularities.contains(ScopeGranularity.PARENT)) {
+      scopes.add(group());
+    }
+    if (scopeGranularities.contains(ScopeGranularity.MAIN)) {
+      scopes.add(base().with(group()));
+    }
+
+    return scopes;
   }
 
   default Set<String> setOf(String operation) {

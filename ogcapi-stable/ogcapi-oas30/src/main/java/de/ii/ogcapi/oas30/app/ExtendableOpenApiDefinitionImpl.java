@@ -7,15 +7,19 @@
  */
 package de.ii.ogcapi.oas30.app;
 
+import static de.ii.ogcapi.foundation.domain.ApiSecurity.GROUP_PUBLIC;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ApiSecurity;
+import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeGranularity;
 import de.ii.ogcapi.foundation.domain.EndpointExtension;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.PermissionGroup;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.oas30.domain.OpenApiExtension;
 import de.ii.xtraplatform.auth.domain.Oidc;
@@ -34,6 +38,11 @@ import io.swagger.v3.oas.models.security.SecurityScheme.Type;
 import io.swagger.v3.oas.models.servers.Server;
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
@@ -77,23 +86,98 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
 
       if (apiData.getAccessControl().filter(ApiSecurity::isEnabled).isPresent()) {
         if (oidc.isEnabled()) {
-          // TODO: scopes vs roles
           Scopes scopes = new Scopes();
 
-          extensionRegistry.getExtensionsForType(EndpointExtension.class).stream()
-              .filter(endpoint -> endpoint.isEnabledForApi(apiData))
-              .flatMap(
-                  endpointExtension ->
-                      endpointExtension.getDefinition(apiData).getResources().values().stream())
-              .flatMap(ogcApiResource -> ogcApiResource.getOperations().values().stream())
-              .map(apiOperation -> apiOperation.getPermissionGroup())
-              .filter(
-                  scope ->
-                      apiData
-                          .getAccessControl()
-                          .filter(apiSecurity -> apiSecurity.isRestricted(scope.setOf()))
-                          .isPresent())
-              .forEachOrdered(scope -> scopes.addString(scope.name(), scope.description()));
+          if (!apiData.getAccessControl().get().getScopes().isEmpty()) {
+            List<PermissionGroup> groups =
+                extensionRegistry.getExtensionsForType(EndpointExtension.class).stream()
+                    .filter(endpoint -> endpoint.isEnabledForApi(apiData))
+                    .flatMap(
+                        endpointExtension ->
+                            endpointExtension
+                                .getDefinition(apiData)
+                                .getResources()
+                                .values()
+                                .stream())
+                    .flatMap(ogcApiResource -> ogcApiResource.getOperations().values().stream())
+                    .map(apiOperation -> apiOperation.getPermissionGroup())
+                    .filter(
+                        group ->
+                            apiData
+                                .getAccessControl()
+                                .filter(apiSecurity -> apiSecurity.isRestricted(group.setOf()))
+                                .isPresent())
+                    .collect(Collectors.toList());
+
+            Map<String, String> scopeGroups = new LinkedHashMap<>();
+
+            for (ScopeGranularity scopeGranularity : apiData.getAccessControl().get().getScopes()) {
+              switch (scopeGranularity) {
+                case BASE:
+                  groups.forEach(
+                      group ->
+                          scopeGroups.computeIfAbsent(
+                              group.base().toString(),
+                              name ->
+                                  String.format(
+                                      "includes %s",
+                                      groups.stream()
+                                          .filter(
+                                              group1 -> Objects.equals(group.base(), group1.base()))
+                                          .map(group1 -> group1.name())
+                                          .distinct()
+                                          .collect(Collectors.joining(", ")))));
+                  break;
+                case PARENT:
+                  groups.forEach(
+                      group ->
+                          scopeGroups.computeIfAbsent(
+                              group.group(),
+                              name ->
+                                  String.format(
+                                      "includes %s",
+                                      groups.stream()
+                                          .filter(
+                                              group1 ->
+                                                  Objects.equals(group.group(), group1.group()))
+                                          .map(group1 -> group1.name())
+                                          .distinct()
+                                          .collect(Collectors.joining(", ")))));
+                  break;
+                case MAIN:
+                  groups.forEach(group -> scopeGroups.put(group.name(), group.description()));
+                  break;
+                case CUSTOM:
+                  groups.stream()
+                      .flatMap(
+                          group ->
+                              apiData.getAccessControl().get().getGroupsWith(group.setOf()).stream()
+                                  .filter(group1 -> !Objects.equals(group1, GROUP_PUBLIC)))
+                      .distinct()
+                      .forEach(
+                          group ->
+                              scopeGroups.computeIfAbsent(
+                                  group,
+                                  name ->
+                                      String.format(
+                                          "includes %s",
+                                          groups.stream()
+                                              .filter(
+                                                  group1 ->
+                                                      apiData
+                                                          .getAccessControl()
+                                                          .get()
+                                                          .getGroupsWith(group1.setOf())
+                                                          .contains(group))
+                                              .map(group1 -> group1.name())
+                                              .distinct()
+                                              .collect(Collectors.joining(", ")))));
+                  break;
+              }
+            }
+
+            scopeGroups.forEach(scopes::addString);
+          }
 
           openAPI
               .getComponents()

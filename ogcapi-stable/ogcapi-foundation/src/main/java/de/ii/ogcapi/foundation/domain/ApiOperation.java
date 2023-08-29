@@ -7,9 +7,12 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import static de.ii.ogcapi.foundation.domain.ApiSecurity.GROUP_PUBLIC;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeGranularity;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -356,12 +359,28 @@ public interface ApiOperation {
 
     addErrorResponses(op, errorCodes);
 
-    if (apiData.getAccessControl().isPresent()
-        && apiData.getAccessControl().get().isRestricted(getPermissionGroup().setOf())) {
-      getPermissionGroup()
-          .setOf()
-          .forEach(
+    if (apiData.getAccessControl().isPresent()) {
+      Set<String> groups = getPermissionGroup().setOf();
+
+      if (apiData.getAccessControl().get().isRestricted(groups)) {
+        Set<String> scopes =
+            getPermissionGroup().setOf(apiData.getAccessControl().get().getScopes());
+
+        if (scopes.isEmpty()) {
+          op.addSecurityItem(new SecurityRequirement().addList("Default"));
+        } else {
+          scopes.forEach(
               scope -> op.addSecurityItem(new SecurityRequirement().addList("Default", scope)));
+          if (apiData.getAccessControl().get().getScopes().contains(ScopeGranularity.CUSTOM)) {
+            apiData.getAccessControl().get().getGroupsWith(groups).stream()
+                .filter(group1 -> !Objects.equals(group1, GROUP_PUBLIC))
+                .distinct()
+                .forEach(
+                    group ->
+                        op.addSecurityItem(new SecurityRequirement().addList("Default", group)));
+          }
+        }
+      }
     }
   }
 
