@@ -9,10 +9,14 @@ package de.ii.ogcapi.pubsub.app;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import java.util.List;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @buildingBlock PUB_SUB
@@ -42,12 +46,30 @@ public interface PubSubConfiguration extends ExtensionConfiguration {
   String getPublisher();
 
   /** TODO */
-  List<Publication> getPublications();
+  Map<String, Publication> getPublications();
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   @Override
   default Builder getBuilder() {
     return ImmutablePubSubConfiguration.builder();
+  }
+
+  @NotNull
+  static Set<String> getBrokersInUse(OgcApiDataV2 apiData) {
+    return apiData.getCollections().values().stream()
+        .map(
+            collectionData ->
+                collectionData
+                    .getExtension(PubSubConfiguration.class)
+                    .filter(ExtensionConfiguration::isEnabled)
+                    .map(
+                        cfg ->
+                            cfg.getPublications().values().stream()
+                                .map(Publication::getBroker)
+                                .collect(Collectors.toUnmodifiableSet())))
+        .flatMap(Optional::stream)
+        .flatMap(Set::stream)
+        .collect(Collectors.toUnmodifiableSet());
   }
 }

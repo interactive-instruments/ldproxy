@@ -22,6 +22,8 @@ public interface PublicationContext {
 
   MqttQos getQos();
 
+  String getSubPath();
+
   @Value.Default
   default int getTimeout() {
     return 60;
