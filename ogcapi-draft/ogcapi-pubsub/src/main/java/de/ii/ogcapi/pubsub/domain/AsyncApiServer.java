@@ -29,11 +29,6 @@ public interface AsyncApiServer {
 
   Optional<String> getDescription();
 
-  @Value.Default
-  default String getDefaultContentType() {
-    return "application/geo+json";
-  }
-
   List<Map<String, List<String>>> getSecurity();
 
   Optional<AsyncApiServerBindingsMqtt> getBindings();

@@ -22,7 +22,10 @@ public interface AsyncApiMessage {
 
   Optional<String> getDescription();
 
-  Optional<String> getContentType();
+  @Value.Default
+  default String getContentType() {
+    return "application/geo+json";
+  }
 
   Optional<JsonSchema> getPayload();
 

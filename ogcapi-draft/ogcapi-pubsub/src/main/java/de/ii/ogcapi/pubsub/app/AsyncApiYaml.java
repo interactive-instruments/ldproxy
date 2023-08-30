@@ -22,7 +22,6 @@ import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.pubsub.domain.AsyncApi;
 import de.ii.ogcapi.pubsub.domain.AsyncApiDefinitionFormatExtension;
 import io.swagger.v3.oas.models.media.ObjectSchema;
@@ -72,8 +71,7 @@ public class AsyncApiYaml implements AsyncApiDefinitionFormatExtension {
   }
 
   @Override
-  public Response getResponse(
-      AsyncApi asyncApi, OgcApiDataV2 apiData, ApiRequestContext apiRequestContext) {
+  public Response getResponse(AsyncApi asyncApi, ApiRequestContext apiRequestContext) {
     try {
       ObjectMapper mapper =
           new ObjectMapper(

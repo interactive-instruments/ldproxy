@@ -10,15 +10,13 @@ package de.ii.ogcapi.pubsub.domain;
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import java.util.Optional;
 import javax.ws.rs.core.Response;
 
 @AutoMultiBind
 public interface AsyncApiDefinitionFormatExtension extends FormatExtension {
 
-  Response getResponse(
-      AsyncApi asyncApi, OgcApiDataV2 apiData, ApiRequestContext apiRequestContext);
+  Response getResponse(AsyncApi asyncApi, ApiRequestContext apiRequestContext);
 
   default Optional<String> getRel() {
     return Optional.empty();
