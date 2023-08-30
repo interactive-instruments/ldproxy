@@ -105,9 +105,10 @@ public class CollectionPropertiesFormatHtml implements CollectionPropertiesForma
         .urlPrefix(requestContext.getStaticUrlPrefix())
         .htmlConfig(htmlConfig)
         .noIndex(isNoIndexEnabledForApi(api.getData()))
-        .uriCustomizer(requestContext.getUriCustomizer())
+        .uriCustomizer(requestContext.getUriCustomizer().copy())
         .i18n(i18n)
         .language(requestContext.getLanguage())
+        .user(requestContext.getUser())
         .build();
   }
 }

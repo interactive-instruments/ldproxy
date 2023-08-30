@@ -21,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.ApiRequestContext
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2
 import de.ii.ogcapi.foundation.domain.OgcApi
 import de.ii.ogcapi.foundation.domain.URICustomizer
+import de.ii.xtraplatform.auth.domain.User
 import de.ii.xtraplatform.crs.domain.CrsTransformer
 import de.ii.xtraplatform.crs.domain.OgcCrs
 
@@ -103,6 +104,11 @@ class GeoJsonWriterSetupUtil {
 
                     @Override
                     Optional<Request> getRequest() {
+                        return null
+                    }
+
+                    @Override
+                    Optional<User> getUser() {
                         return null
                     }
                 })

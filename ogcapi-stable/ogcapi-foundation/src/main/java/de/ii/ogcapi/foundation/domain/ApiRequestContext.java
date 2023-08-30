@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import de.ii.xtraplatform.auth.domain.User;
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
@@ -35,6 +36,8 @@ public interface ApiRequestContext {
   Map<String, String> getParameters();
 
   Optional<Request> getRequest();
+
+  Optional<User> getUser();
 
   @Value.Default
   default int getMaxResponseLinkHeaderSize() {

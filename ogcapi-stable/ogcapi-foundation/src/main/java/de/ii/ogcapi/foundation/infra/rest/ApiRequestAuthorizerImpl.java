@@ -7,23 +7,35 @@
  */
 package de.ii.ogcapi.foundation.infra.rest;
 
+import static de.ii.ogcapi.foundation.domain.ApiSecurity.GROUP_PUBLIC;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.Sets;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ApiSecurity;
+import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeGranularity;
+import de.ii.ogcapi.foundation.domain.ApiSecurityInfo;
+import de.ii.ogcapi.foundation.domain.EndpointExtension;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.PermissionGroup;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
+import de.ii.xtraplatform.auth.domain.SplitCookie;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.auth.domain.User.PolicyDecision;
 import de.ii.xtraplatform.web.domain.LoginHandler;
+import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import java.net.URI;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -31,18 +43,23 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
-public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer {
+public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer, ApiSecurityInfo {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ApiRequestAuthorizerImpl.class);
 
+  private final ExtensionRegistry extensionRegistry;
+
   @Inject
-  ApiRequestAuthorizerImpl() {}
+  ApiRequestAuthorizerImpl(ExtensionRegistry extensionRegistry) {
+    this.extensionRegistry = extensionRegistry;
+  }
 
   @Override
   public void checkAuthorization(
@@ -65,8 +82,9 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer {
     Set<String> requiredPermissions =
         getRequiredPermissions(permissionGroup, operationId, data.getId(), collectionId);
     Set<String> requiredScopes = getRequiredScopes(permissionGroup, data.getAccessControl().get());
+    Set<String> activeScopes = getActiveScopes(data).keySet();
     ApiMediaType mediaType = requestContext.getMediaType();
-    URI loginUri = getLoginUri(requestContext, requiredScopes);
+    URI loginUri = getLoginUri(requestContext, activeScopes);
 
     if (isNotAuthorized(
         requestContext,
@@ -90,16 +108,19 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer {
     return scope.setOf(operationId, apiId);
   }
 
-  private static URI getLoginUri(ApiRequestContext requestContext, Set<String> requiredScopes) {
+  private static URI getLoginUri(ApiRequestContext requestContext, Set<String> activeScopes) {
     URIBuilder uriBuilder =
         new URICustomizer(requestContext.getExternalUri())
             .appendPath(LoginHandler.PATH_LOGIN)
             .addParameter(
                 LoginHandler.PARAM_LOGIN_REDIRECT_URI,
-                requestContext.getUriCustomizer().toString());
+                requestContext
+                    .getUriCustomizer()
+                    .removeParameter(OAuthCredentialAuthFilter.OAUTH_ACCESS_TOKEN_PARAM)
+                    .toString());
 
-    if (!requiredScopes.isEmpty()) {
-      uriBuilder.addParameter(LoginHandler.PARAM_LOGIN_SCOPES, String.join(" ", requiredScopes));
+    if (!activeScopes.isEmpty()) {
+      uriBuilder.addParameter(LoginHandler.PARAM_LOGIN_SCOPES, String.join(" ", activeScopes));
     }
 
     return URI.create(uriBuilder.toString());
@@ -166,7 +187,13 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer {
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug("Not logged in, redirecting");
         }
-        throw new WebApplicationException(Response.seeOther(loginUri).build());
+        List<String> authCookies =
+            SplitCookie.deleteToken(loginUri.getHost(), Objects.equals(loginUri, "https"));
+
+        ResponseBuilder response = Response.seeOther(loginUri);
+        authCookies.forEach(cookie -> response.header("Set-Cookie", cookie));
+
+        throw new WebApplicationException(response.build());
       }
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug("Not authorized: no valid token");
@@ -224,5 +251,94 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer {
 
   private static <T> boolean intersects(Set<T> first, Set<T> second) {
     return !Sets.intersection(first, second).isEmpty();
+  }
+
+  @Override
+  public List<PermissionGroup> getActiveGroups(OgcApiDataV2 apiData) {
+    return extensionRegistry.getExtensionsForType(EndpointExtension.class).stream()
+        .filter(endpoint -> endpoint.isEnabledForApi(apiData))
+        .flatMap(
+            endpointExtension ->
+                endpointExtension.getDefinition(apiData).getResources().values().stream())
+        .flatMap(ogcApiResource -> ogcApiResource.getOperations().values().stream())
+        .map(ApiOperation::getPermissionGroup)
+        .filter(
+            group ->
+                apiData
+                    .getAccessControl()
+                    .filter(apiSecurity -> apiSecurity.isRestricted(group.setOf()))
+                    .isPresent())
+        .collect(Collectors.toList());
+  }
+
+  @Override
+  public Map<String, String> getActiveScopes(OgcApiDataV2 apiData) {
+    List<PermissionGroup> groups = getActiveGroups(apiData);
+
+    Map<String, String> scopes = new LinkedHashMap<>();
+
+    for (ScopeGranularity scopeGranularity : apiData.getAccessControl().get().getScopes()) {
+      switch (scopeGranularity) {
+        case BASE:
+          groups.forEach(
+              group ->
+                  scopes.computeIfAbsent(
+                      group.base().toString(),
+                      name ->
+                          String.format(
+                              "includes %s",
+                              groups.stream()
+                                  .filter(group1 -> Objects.equals(group.base(), group1.base()))
+                                  .map(group1 -> group1.name())
+                                  .distinct()
+                                  .collect(Collectors.joining(", ")))));
+          break;
+        case PARENT:
+          groups.forEach(
+              group ->
+                  scopes.computeIfAbsent(
+                      group.group(),
+                      name ->
+                          String.format(
+                              "includes %s",
+                              groups.stream()
+                                  .filter(group1 -> Objects.equals(group.group(), group1.group()))
+                                  .map(group1 -> group1.name())
+                                  .distinct()
+                                  .collect(Collectors.joining(", ")))));
+          break;
+        case MAIN:
+          groups.forEach(group -> scopes.put(group.name(), group.description()));
+          break;
+        case CUSTOM:
+          groups.stream()
+              .flatMap(
+                  group ->
+                      apiData.getAccessControl().get().getGroupsWith(group.setOf()).stream()
+                          .filter(group1 -> !Objects.equals(group1, GROUP_PUBLIC)))
+              .distinct()
+              .forEach(
+                  group ->
+                      scopes.computeIfAbsent(
+                          group,
+                          name ->
+                              String.format(
+                                  "includes %s",
+                                  groups.stream()
+                                      .filter(
+                                          group1 ->
+                                              apiData
+                                                  .getAccessControl()
+                                                  .get()
+                                                  .getGroupsWith(group1.setOf())
+                                                  .contains(group))
+                                      .map(group1 -> group1.name())
+                                      .distinct()
+                                      .collect(Collectors.joining(", ")))));
+          break;
+      }
+    }
+
+    return scopes;
   }
 }

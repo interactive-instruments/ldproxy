@@ -124,6 +124,8 @@ public class CollectionsFormatHtml implements CollectionsFormatExtension, Confor
         .showCollectionDescriptions(showCollectionDescriptionsInOverview(api.getData()))
         .crs(collections.getCrs())
         .dataSourceUrl(Optional.empty())
+        .uriCustomizer(requestContext.getUriCustomizer().copy())
+        .user(requestContext.getUser())
         .build();
   }
 }

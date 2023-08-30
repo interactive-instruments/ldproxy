@@ -23,6 +23,7 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractRequestContext implements ApiRequestContext {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRequestContext.class);
+  public static final String STATIC_PATH = "___static___";
 
   abstract URI getRequestUri();
 
@@ -58,7 +59,7 @@ public abstract class AbstractRequestContext implements ApiRequestContext {
         new URICustomizer(getRequestUri())
             .cutPathAfterSegments("rest", "services")
             .replaceInPath("/rest/services", getExternalUri().getPath())
-            .ensureLastPathSegment("___static___")
+            .ensureLastPathSegment(STATIC_PATH)
             .ensureNoTrailingSlash()
             .getPath();
 

@@ -138,6 +138,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
             .language(selectedLanguage)
             .api(service)
             .maxResponseLinkHeaderSize(maxResponseLinkHeaderSize)
+            .user(optionalUser)
             .build();
 
     apiRequestAuthorizer.checkAuthorization(apiRequestContext, apiOperation, optionalUser);

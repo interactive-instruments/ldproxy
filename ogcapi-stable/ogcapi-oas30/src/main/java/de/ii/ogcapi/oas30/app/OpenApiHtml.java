@@ -111,6 +111,7 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
             .urlPrefix(apiRequestContext.getStaticUrlPrefix())
             .uriCustomizer(apiRequestContext.getUriCustomizer().copy())
             .oidc(oidc)
+            .user(apiRequestContext.getUser())
             .build();
 
     return Response.ok(view).build();
