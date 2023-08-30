@@ -31,6 +31,7 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,10 +66,10 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer {
         getRequiredPermissions(permissionGroup, operationId, data.getId(), collectionId);
     Set<String> requiredScopes = getRequiredScopes(permissionGroup, data.getAccessControl().get());
     ApiMediaType mediaType = requestContext.getMediaType();
-    URI loginUri = getLoginUri(requestContext);
+    URI loginUri = getLoginUri(requestContext, requiredScopes);
 
     if (isNotAuthorized(
-        data,
+        requestContext,
         data.getAccessControl().get(),
         optionalUser,
         requiredPermissions,
@@ -89,13 +90,19 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer {
     return scope.setOf(operationId, apiId);
   }
 
-  private static URI getLoginUri(ApiRequestContext requestContext) {
-    return URI.create(
+  private static URI getLoginUri(ApiRequestContext requestContext, Set<String> requiredScopes) {
+    URIBuilder uriBuilder =
         new URICustomizer(requestContext.getExternalUri())
             .appendPath(LoginHandler.PATH_LOGIN)
             .addParameter(
-                LoginHandler.PARAM_LOGIN_REDIRECT_URI, requestContext.getUriCustomizer().toString())
-            .toString());
+                LoginHandler.PARAM_LOGIN_REDIRECT_URI,
+                requestContext.getUriCustomizer().toString());
+
+    if (!requiredScopes.isEmpty()) {
+      uriBuilder.addParameter(LoginHandler.PARAM_LOGIN_SCOPES, String.join(" ", requiredScopes));
+    }
+
+    return URI.create(uriBuilder.toString());
   }
 
   private static Set<String> getRequiredScopes(
@@ -108,7 +115,7 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer {
   }
 
   private boolean isNotAuthorized(
-      OgcApiDataV2 data,
+      ApiRequestContext requestContext,
       ApiSecurity apiSecurity,
       Optional<User> optionalUser,
       Set<String> requiredPermissions,
@@ -117,7 +124,7 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer {
       URI loginUri,
       ApiOperation apiOperation) {
     // TODO: move to bottom?
-    if (isPolicyDenial(data, apiSecurity, optionalUser, apiOperation)) {
+    if (isPolicyDenial(requestContext, apiSecurity, optionalUser, apiOperation)) {
       return true;
     }
     if (isAccessRestricted(apiSecurity, requiredPermissions)) {
@@ -138,7 +145,7 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer {
   }
 
   private boolean isPolicyDenial(
-      OgcApiDataV2 data,
+      ApiRequestContext requestContext,
       ApiSecurity apiSecurity,
       Optional<User> optionalUser,
       ApiOperation apiOperation) {
