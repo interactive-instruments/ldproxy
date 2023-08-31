@@ -40,6 +40,7 @@ import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.base.domain.LogContext.MARKER;
 import de.ii.xtraplatform.cql.domain.In;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
+import de.ii.xtraplatform.features.domain.FeatureChange.Action;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
@@ -254,98 +255,103 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
                       .getFeatureIds()
                       .forEach(
                           featureId -> {
-                            context
-                                .getConnAck()
-                                .thenCompose(
-                                    connAck -> {
-                                      ObjectNode geojson;
-                                      ObjectNode properties;
-                                      switch (change.getAction()) {
-                                        case CREATE:
-                                        case UPDATE:
-                                          geojson =
-                                              getCurrentFeature(
-                                                  api,
-                                                  providers.getFeatureProviderOrThrow(
-                                                      api.getData()),
-                                                  collectionId,
-                                                  featureId);
-                                          if (Objects.isNull(geojson)) {
+                            if (change.getAction() != Action.DELETE
+                                || context.getProperty().isEmpty()) {
+                              context
+                                  .getConnAck()
+                                  .thenCompose(
+                                      connAck -> {
+                                        ObjectNode geojson;
+                                        ObjectNode properties;
+                                        switch (change.getAction()) {
+                                          case CREATE:
+                                          case UPDATE:
+                                            geojson =
+                                                getCurrentFeature(
+                                                    api,
+                                                    providers.getFeatureProviderOrThrow(
+                                                        api.getData()),
+                                                    collectionId,
+                                                    featureId);
+                                            if (Objects.isNull(geojson)) {
+                                              geojson = initFeature(featureId);
+                                            } else if (Objects.isNull(geojson.get("properties"))) {
+                                              geojson.putObject("properties");
+                                            }
+                                            break;
+                                          default:
+                                          case DELETE:
                                             geojson = initFeature(featureId);
-                                          } else if (Objects.isNull(geojson.get("properties"))) {
-                                            geojson.putObject("properties");
-                                          }
-                                          break;
-                                        default:
-                                        case DELETE:
-                                          geojson = initFeature(featureId);
-                                          break;
-                                      }
-                                      // add PubSub values
-                                      properties = (ObjectNode) geojson.get("properties");
-                                      properties.put("$id", UUID.randomUUID().toString());
-                                      properties.put(
-                                          "$pubtime",
-                                          Instant.now().truncatedTo(ChronoUnit.MILLIS).toString());
-                                      properties.put(
-                                          "$operation",
-                                          change.getAction().toString().toLowerCase());
-                                      try {
-                                        String topic =
-                                            String.format(
-                                                "ogcapi/%s/%s/collections/%s/%s",
-                                                publisherMap.get(api.getId()),
-                                                api.getId(),
-                                                collectionId,
-                                                replaceParameters(
-                                                    context.getSubPath(),
-                                                    context.getParameters(),
-                                                    properties));
+                                            break;
+                                        }
+                                        // add PubSub values
+                                        properties = (ObjectNode) geojson.get("properties");
+                                        properties.put("$id", UUID.randomUUID().toString());
+                                        properties.put(
+                                            "$pubtime",
+                                            Instant.now()
+                                                .truncatedTo(ChronoUnit.MILLIS)
+                                                .toString());
+                                        properties.put(
+                                            "$operation",
+                                            change.getAction().toString().toLowerCase());
+                                        try {
+                                          String topic =
+                                              String.format(
+                                                  "ogcapi/%s/%s/collections/%s/%s",
+                                                  publisherMap.get(api.getId()),
+                                                  api.getId(),
+                                                  collectionId,
+                                                  replaceParameters(
+                                                      context.getSubPath(),
+                                                      context.getParameters(),
+                                                      properties));
 
-                                        return context
-                                            .getClient()
-                                            .publishWith()
-                                            .topic(topic)
-                                            .qos(context.getQos())
-                                            .payload(
-                                                mapper.writeValueAsBytes(
-                                                    context
-                                                        .getProperty()
-                                                        .map(properties::get)
-                                                        .orElse(geojson)))
-                                            .retain(context.getRetain())
-                                            .send();
-                                      } catch (JsonProcessingException e) {
-                                        throw new IllegalStateException(e);
-                                      }
-                                    })
-                                .orTimeout(context.getTimeout(), TimeUnit.SECONDS)
-                                .thenAccept(
-                                    publish -> {
-                                      if (LOGGER.isTraceEnabled()) {
-                                        LOGGER.trace(
-                                            "PubSub action '{}', collection '{}', feature '{}': Message sent.",
-                                            change.getAction(),
-                                            collectionId,
-                                            featureId);
-                                      }
-                                    })
-                                .whenComplete(
-                                    (ignore, e) -> {
-                                      if (e != null) {
-                                        if (LOGGER.isWarnEnabled()) {
-                                          LOGGER.warn(
-                                              "PubSub action '{}', collection '{}', feature '{}': Error during message publication. Reason: {}",
+                                          return context
+                                              .getClient()
+                                              .publishWith()
+                                              .topic(topic)
+                                              .qos(context.getQos())
+                                              .payload(
+                                                  mapper.writeValueAsBytes(
+                                                      context
+                                                          .getProperty()
+                                                          .map(properties::get)
+                                                          .orElse(geojson)))
+                                              .retain(context.getRetain())
+                                              .send();
+                                        } catch (JsonProcessingException e) {
+                                          throw new IllegalStateException(e);
+                                        }
+                                      })
+                                  .orTimeout(context.getTimeout(), TimeUnit.SECONDS)
+                                  .thenAccept(
+                                      publish -> {
+                                        if (LOGGER.isTraceEnabled()) {
+                                          LOGGER.trace(
+                                              "PubSub action '{}', collection '{}', feature '{}': Message sent.",
                                               change.getAction(),
                                               collectionId,
-                                              featureId,
-                                              e.getMessage());
+                                              featureId);
                                         }
-                                        if (LOGGER.isDebugEnabled(MARKER.STACKTRACE)) {
-                                          LOGGER.debug("Stacktrace: ", e);
+                                      })
+                                  .whenComplete(
+                                      (ignore, e) -> {
+                                        if (e != null) {
+                                          if (LOGGER.isWarnEnabled()) {
+                                            LOGGER.warn(
+                                                "PubSub action '{}', collection '{}', feature '{}': Error during message publication. Reason: {}",
+                                                change.getAction(),
+                                                collectionId,
+                                                featureId,
+                                                e.getMessage());
+                                          }
+                                          if (LOGGER.isDebugEnabled(MARKER.STACKTRACE)) {
+                                            LOGGER.debug("Stacktrace: ", e);
+                                          }
                                         }
-                                      }
-                                    });
+                                      });
+                            }
                           });
                 });
       }
