@@ -10,6 +10,7 @@ package de.ii.ogcapi.pubsub.app;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import java.util.Map;
+import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -21,6 +22,8 @@ public interface Publication {
   String getBroker();
 
   Map<String, String> getParameters();
+
+  Optional<String> getProperty();
 
   @Value.Default
   default MqttQos getMqttQos() {

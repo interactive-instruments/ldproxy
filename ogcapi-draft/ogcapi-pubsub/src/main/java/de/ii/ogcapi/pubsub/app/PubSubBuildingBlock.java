@@ -176,6 +176,7 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
                                   .qos(pub.getMqttQos())
                                   .subPath(pubId)
                                   .parameters(pub.getParameters())
+                                  .property(pub.getProperty())
                                   .timeout(pub.getTimeout())
                                   .retain(pub.getRetain())
                                   .build();
@@ -306,7 +307,12 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
                                             .publishWith()
                                             .topic(topic)
                                             .qos(context.getQos())
-                                            .payload(mapper.writeValueAsBytes(geojson))
+                                            .payload(
+                                                mapper.writeValueAsBytes(
+                                                    context
+                                                        .getProperty()
+                                                        .map(properties::get)
+                                                        .orElse(geojson)))
                                             .retain(context.getRetain())
                                             .send();
                                       } catch (JsonProcessingException e) {

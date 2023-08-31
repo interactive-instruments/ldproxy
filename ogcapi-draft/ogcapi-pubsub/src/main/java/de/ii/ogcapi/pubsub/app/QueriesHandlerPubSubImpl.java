@@ -10,6 +10,7 @@ package de.ii.ogcapi.pubsub.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaNumber;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaString;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
@@ -21,6 +22,7 @@ import de.ii.ogcapi.foundation.domain.QueryInputGeneric;
 import de.ii.ogcapi.pubsub.domain.AsyncApi;
 import de.ii.ogcapi.pubsub.domain.AsyncApiChannel;
 import de.ii.ogcapi.pubsub.domain.AsyncApiDefinitionFormatExtension;
+import de.ii.ogcapi.pubsub.domain.AsyncApiReference;
 import de.ii.ogcapi.pubsub.domain.AsyncApiServer;
 import de.ii.ogcapi.pubsub.domain.ImmutableAsyncApi;
 import de.ii.ogcapi.pubsub.domain.ImmutableAsyncApiChannel;
@@ -186,48 +188,76 @@ public class QueriesHandlerPubSubImpl implements QueriesHandlerPubSub {
                   collectionCfg
                       .getPublications()
                       .forEach(
-                          (pubId, pub) ->
-                              channels.put(
-                                  String.format(
-                                      "ogcapi/%s/%s/collections/%s/%s",
-                                      cfg.getPublisher(), apiData.getId(), collectionId, pubId),
-                                  ImmutableAsyncApiChannel.builder()
-                                      .subscribe(
-                                          ImmutableAsyncApiOperation.builder()
-                                              .operationId(
+                          (pubId, pub) -> {
+                            AsyncApiReference message =
+                                pub.getProperty()
+                                    .map(
+                                        propertyName -> {
+                                          components.putMessages(
+                                              String.format(
+                                                  "valueChange_%s_%s", collectionId, propertyName),
+                                              ImmutableAsyncApiMessage.builder()
+                                                  .name("valueChangeMessage")
+                                                  .title("Value Change")
+                                                  .summary(
+                                                      "Information about a new or updated feature property.")
+                                                  // .description("TODO")
+                                                  .contentType("plain/text")
+                                                  .payload(
+                                                      // TODO
+                                                      new ImmutableJsonSchemaNumber.Builder()
+                                                          .build())
+                                                  .build());
+                                          return ImmutableAsyncApiReference.builder()
+                                              .ref(
                                                   String.format(
-                                                      "featureChange_%s_%s",
-                                                      collectionId,
-                                                      pubId
-                                                          .replace("{", "")
-                                                          .replace("}", "")
-                                                          .replace("/", "_")))
-                                              // .summary("TODO")
-                                              .parameters(
-                                                  // TODO map to proper schema of the property
-                                                  pub.getParameters().entrySet().stream()
-                                                      .collect(
-                                                          Collectors.toUnmodifiableMap(
-                                                              Entry::getKey,
-                                                              e ->
-                                                                  new ImmutableJsonSchemaString
-                                                                          .Builder()
-                                                                      .build())))
-                                              .bindings(
-                                                  ImmutableAsyncApiOperationBindingsMqtt.builder()
-                                                      .qos(pub.getMqttQos().getCode())
-                                                      .retain(pub.getRetain())
-                                                      .build())
-                                              .message(
-                                                  ImmutableAsyncApiReference.builder()
-                                                      .ref(
-                                                          String.format(
-                                                              "#/components/messages/featureChange_%s",
-                                                              collectionId))
-                                                      .build())
-                                              .build())
-                                      .servers(ImmutableList.of(pub.getBroker()))
-                                      .build()));
+                                                      "#/components/messages/valueChange_%s_%s",
+                                                      collectionId, propertyName))
+                                              .build();
+                                        })
+                                    .orElse(
+                                        ImmutableAsyncApiReference.builder()
+                                            .ref(
+                                                String.format(
+                                                    "#/components/messages/featureChange_%s",
+                                                    collectionId))
+                                            .build());
+                            channels.put(
+                                String.format(
+                                    "ogcapi/%s/%s/collections/%s/%s",
+                                    cfg.getPublisher(), apiData.getId(), collectionId, pubId),
+                                ImmutableAsyncApiChannel.builder()
+                                    .subscribe(
+                                        ImmutableAsyncApiOperation.builder()
+                                            .operationId(
+                                                String.format(
+                                                    "featureChange_%s_%s",
+                                                    collectionId,
+                                                    pubId
+                                                        .replace("{", "")
+                                                        .replace("}", "")
+                                                        .replace("/", "_")))
+                                            // .summary("TODO")
+                                            .parameters(
+                                                // TODO map to proper schema of the property
+                                                pub.getParameters().entrySet().stream()
+                                                    .collect(
+                                                        Collectors.toUnmodifiableMap(
+                                                            Entry::getKey,
+                                                            e ->
+                                                                new ImmutableJsonSchemaString
+                                                                        .Builder()
+                                                                    .build())))
+                                            .bindings(
+                                                ImmutableAsyncApiOperationBindingsMqtt.builder()
+                                                    .qos(pub.getMqttQos().getCode())
+                                                    .retain(pub.getRetain())
+                                                    .build())
+                                            .message(message)
+                                            .build())
+                                    .servers(ImmutableList.of(pub.getBroker()))
+                                    .build());
+                          });
                 }
               });
 
