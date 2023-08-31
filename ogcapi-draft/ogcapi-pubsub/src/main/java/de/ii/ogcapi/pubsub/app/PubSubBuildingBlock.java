@@ -412,6 +412,7 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
               .requestUri(
                   new URICustomizer(api.getUri())
                       .ensureLastPathSegments("collections", collectionId, "items", featureId)
+                      .addParameter("profile", "rel-as-key")
                       .build())
               .mediaType(
                   new ImmutableApiMediaType.Builder()
