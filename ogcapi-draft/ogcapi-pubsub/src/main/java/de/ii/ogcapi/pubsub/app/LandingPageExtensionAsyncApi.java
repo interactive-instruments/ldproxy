@@ -75,8 +75,8 @@ public class LandingPageExtensionAsyncApi implements LandingPageExtension {
                         .title(
                             i18n.get(
                                 f.getRel().get().equals("service-desc")
-                                    ? "serviceDescLink"
-                                    : "serviceDocLink",
+                                    ? "serviceDescLinkPubSub"
+                                    : "serviceDocLinkPubSub",
                                 language))
                         .build()));
 

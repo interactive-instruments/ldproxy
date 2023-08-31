@@ -213,16 +213,17 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
     return rawLinks().stream().filter(link -> Objects.equals(link.getRel(), "ldp-map")).findFirst();
   }
 
-  public Optional<Link> getApiDefinition() {
+  public List<Link> getApiDefinition() {
     return rawLinks().stream()
         .filter(link -> Objects.equals(link.getRel(), "service-desc"))
-        .findFirst();
+        .filter(link -> link.getHref().endsWith("f=json"))
+        .collect(Collectors.toUnmodifiableList());
   }
 
-  public Optional<Link> getApiDocumentation() {
+  public List<Link> getApiDocumentation() {
     return rawLinks().stream()
         .filter(link -> Objects.equals(link.getRel(), "service-doc"))
-        .findFirst();
+        .collect(Collectors.toUnmodifiableList());
   }
 
   public Optional<ExternalDocumentation> getExternalDocs() {
