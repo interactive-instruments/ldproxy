@@ -10,6 +10,7 @@ package de.ii.ogcapi.pubsub.app;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient;
 import com.hivemq.client.mqtt.mqtt3.message.connect.connack.Mqtt3ConnAck;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import org.immutables.value.Value;
 
@@ -24,8 +25,15 @@ public interface PublicationContext {
 
   String getSubPath();
 
+  Map<String, String> getParameters();
+
   @Value.Default
   default int getTimeout() {
     return 60;
+  }
+
+  @Value.Default
+  default boolean getRetain() {
+    return false;
   }
 }

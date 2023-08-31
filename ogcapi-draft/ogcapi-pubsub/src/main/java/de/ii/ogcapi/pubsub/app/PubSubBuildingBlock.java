@@ -8,11 +8,13 @@
 package de.ii.ogcapi.pubsub.app;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import com.hivemq.client.mqtt.MqttClient;
+import com.hivemq.client.mqtt.exceptions.ConnectionClosedException;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3AsyncClient;
 import com.hivemq.client.mqtt.mqtt3.Mqtt3ClientBuilder;
 import com.hivemq.client.mqtt.mqtt3.message.connect.connack.Mqtt3ConnAck;
@@ -59,6 +61,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -171,7 +175,9 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
                                   .connAck(clientMap.get(pub.getBroker()).getRight())
                                   .qos(pub.getMqttQos())
                                   .subPath(pubId)
+                                  .parameters(pub.getParameters())
                                   .timeout(pub.getTimeout())
+                                  .retain(pub.getRetain())
                                   .build();
                             })
                         .collect(Collectors.toUnmodifiableList())));
@@ -190,13 +196,20 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
             .addConnectedListener(
                 context -> {
                   if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("PubSub: Connected to broker '{}'.", brokerId);
+                    LOGGER.debug("PubSub: Connected to broker '{}'", brokerId);
                   }
                 })
             .addDisconnectedListener(
                 context -> {
                   if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("PubSub: Disconnected from broker '{}'.", brokerId);
+                    if (context instanceof ConnectionClosedException) {
+                      LOGGER.debug(
+                          "PubSub: Disconnected from broker '{}': {}",
+                          brokerId,
+                          ((ConnectionClosedException) context).getMessage());
+                    } else {
+                      LOGGER.debug("PubSub: Disconnected from broker '{}'", brokerId);
+                    }
                   }
                 })
             .serverHost(broker.getHost())
@@ -277,18 +290,24 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
                                           "$operation",
                                           change.getAction().toString().toLowerCase());
                                       try {
+                                        String topic =
+                                            String.format(
+                                                "ogcapi/%s/%s/collections/%s/%s",
+                                                publisherMap.get(api.getId()),
+                                                api.getId(),
+                                                collectionId,
+                                                replaceParameters(
+                                                    context.getSubPath(),
+                                                    context.getParameters(),
+                                                    properties));
+
                                         return context
                                             .getClient()
                                             .publishWith()
-                                            .topic(
-                                                String.format(
-                                                    "ogcapi/%s/%s/collections/%s/%s",
-                                                    publisherMap.get(api.getId()),
-                                                    api.getId(),
-                                                    collectionId,
-                                                    context.getSubPath()))
+                                            .topic(topic)
                                             .qos(context.getQos())
                                             .payload(mapper.writeValueAsBytes(geojson))
+                                            .retain(context.getRetain())
                                             .send();
                                       } catch (JsonProcessingException e) {
                                         throw new IllegalStateException(e);
@@ -325,6 +344,35 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
                 });
       }
     };
+  }
+
+  public static String replaceParameters(
+      String input, Map<String, String> parameters, ObjectNode properties) {
+    Pattern pattern = Pattern.compile("\\{(\\w+)}");
+    Matcher matcher = pattern.matcher(input);
+    StringBuilder result = new StringBuilder();
+
+    while (matcher.find()) {
+      String property = parameters.get(matcher.group(1));
+      if (Objects.nonNull(property)) {
+        JsonNode value = properties.get(property);
+        if (Objects.nonNull(value)) {
+          matcher.appendReplacement(result, value.asText());
+        } else {
+          matcher.appendReplacement(result, "null");
+        }
+      } else {
+        matcher.appendReplacement(result, "unknown");
+        if (LOGGER.isErrorEnabled()) {
+          // TODO add to validation at startup
+          LOGGER.error(
+              "PubSub: Invalid configuration, unknown feature property {}", matcher.group(1));
+        }
+      }
+    }
+
+    matcher.appendTail(result);
+    return result.toString();
   }
 
   @NotNull

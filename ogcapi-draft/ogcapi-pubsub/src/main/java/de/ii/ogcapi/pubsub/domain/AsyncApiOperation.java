@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.pubsub.domain;
 
+import de.ii.ogcapi.features.core.domain.JsonSchema;
+import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
 
@@ -20,6 +22,8 @@ public interface AsyncApiOperation {
   Optional<String> getDescription();
 
   Optional<AsyncApiOperationBindingsMqtt> getBindings();
+
+  Map<String, JsonSchema> getParameters();
 
   AsyncApiReference getMessage();
 }

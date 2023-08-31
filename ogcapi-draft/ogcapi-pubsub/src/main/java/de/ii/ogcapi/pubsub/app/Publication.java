@@ -9,6 +9,7 @@ package de.ii.ogcapi.pubsub.app;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.hivemq.client.mqtt.datatypes.MqttQos;
+import java.util.Map;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -19,6 +20,8 @@ public interface Publication {
 
   String getBroker();
 
+  Map<String, String> getParameters();
+
   @Value.Default
   default MqttQos getMqttQos() {
     return MqttQos.AT_MOST_ONCE;
@@ -27,5 +30,10 @@ public interface Publication {
   @Value.Default
   default int getTimeout() {
     return 60;
+  }
+
+  @Value.Default
+  default boolean getRetain() {
+    return false;
   }
 }

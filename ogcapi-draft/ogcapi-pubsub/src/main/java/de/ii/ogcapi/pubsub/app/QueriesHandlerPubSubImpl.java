@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaString;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -40,9 +41,11 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
@@ -192,12 +195,28 @@ public class QueriesHandlerPubSubImpl implements QueriesHandlerPubSub {
                                       .subscribe(
                                           ImmutableAsyncApiOperation.builder()
                                               .operationId(
-                                                  String.format("featureChange_%s", collectionId))
+                                                  String.format(
+                                                      "featureChange_%s_%s",
+                                                      collectionId,
+                                                      pubId
+                                                          .replace("{", "")
+                                                          .replace("}", "")
+                                                          .replace("/", "_")))
                                               // .summary("TODO")
+                                              .parameters(
+                                                  // TODO map to proper schema of the property
+                                                  pub.getParameters().entrySet().stream()
+                                                      .collect(
+                                                          Collectors.toUnmodifiableMap(
+                                                              Entry::getKey,
+                                                              e ->
+                                                                  new ImmutableJsonSchemaString
+                                                                          .Builder()
+                                                                      .build())))
                                               .bindings(
                                                   ImmutableAsyncApiOperationBindingsMqtt.builder()
                                                       .qos(pub.getMqttQos().getCode())
-                                                      .retain(false)
+                                                      .retain(pub.getRetain())
                                                       .build())
                                               .message(
                                                   ImmutableAsyncApiReference.builder()
