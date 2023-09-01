@@ -61,7 +61,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -203,7 +202,6 @@ public class EndpointPostOnItems extends EndpointSubCollection {
       @Auth Optional<User> optionalUser,
       @Context OgcApi api,
       @Context ApiRequestContext requestContext,
-      @Context UriInfo uriInfo,
       @PathParam("collectionId") String collectionId,
       @RequestBody MultivaluedMap<String, String> parameters) {
     checkCollectionExists(api.getData(), collectionId);
@@ -268,7 +266,7 @@ public class EndpointPostOnItems extends EndpointSubCollection {
                     }));
 
     QueryParameterSet queryParameterSet =
-        QueryParameterSet.of(knownParameters, toFlatMap(uriInfo.getQueryParameters()))
+        QueryParameterSet.of(knownParameters, requestContext.getParameters())
             .evaluate(api, Optional.of(collectionData));
 
     FeatureQuery query =

@@ -38,7 +38,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * @title Dataset Tiles
@@ -124,7 +123,6 @@ public class EndpointTileMultiCollection extends Endpoint
       @PathParam("tileMatrix") String tileMatrix,
       @PathParam("tileRow") String tileRow,
       @PathParam("tileCol") String tileCol,
-      @Context UriInfo uriInfo,
       @Context ApiRequestContext requestContext)
       throws CrsTransformationException, IOException, NotFoundException {
     QueryInput queryInput =
@@ -136,7 +134,6 @@ public class EndpointTileMultiCollection extends Endpoint
             api,
             tilesProviders,
             requestContext,
-            uriInfo,
             "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
             Optional.empty(),
             tileMatrixSetId,

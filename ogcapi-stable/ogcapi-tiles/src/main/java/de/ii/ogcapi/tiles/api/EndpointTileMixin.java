@@ -44,7 +44,6 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -180,7 +179,6 @@ public interface EndpointTileMixin {
       OgcApi api,
       TilesProviders tilesProviders,
       ApiRequestContext requestContext,
-      UriInfo uriInfo,
       String definitionPath,
       Optional<String> collectionId,
       String tileMatrixSetId,
@@ -191,7 +189,7 @@ public interface EndpointTileMixin {
     OgcApiDataV2 apiData = api.getData();
     Optional<FeatureTypeConfigurationOgcApi> collectionData =
         collectionId.map(id -> apiData.getCollections().get(id));
-    Map<String, String> parameterValues = endpoint.toFlatMap(uriInfo.getQueryParameters());
+    Map<String, String> parameterValues = requestContext.getParameters();
     final List<OgcApiQueryParameter> parameterDefinitions =
         collectionId.isPresent()
             ? ((EndpointSubCollection) endpoint)

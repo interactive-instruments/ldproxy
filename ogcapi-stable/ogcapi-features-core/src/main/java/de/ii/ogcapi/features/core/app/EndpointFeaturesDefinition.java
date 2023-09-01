@@ -44,6 +44,8 @@ public abstract class EndpointFeaturesDefinition extends EndpointSubCollection {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointFeaturesDefinition.class);
   private static final List<String> TAGS = ImmutableList.of("Access data");
+  static final String OP_ID_GET_ITEM = "getItem";
+  static final String OP_ID_GET_ITEMS = "getItems";
 
   protected final FeaturesCoreProviders providers;
 
@@ -230,7 +232,8 @@ public abstract class EndpointFeaturesDefinition extends EndpointSubCollection {
             operationDescription,
             Optional.empty(),
             getOperationId(
-                subSubPath.contains("{featureId}") ? "getItem" : "getItems", collectionId),
+                subSubPath.contains("{featureId}") ? OP_ID_GET_ITEM : OP_ID_GET_ITEMS,
+                collectionId),
             GROUP_DATA_READ,
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));

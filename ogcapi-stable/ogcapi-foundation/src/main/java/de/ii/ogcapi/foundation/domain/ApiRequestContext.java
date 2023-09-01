@@ -9,6 +9,7 @@ package de.ii.ogcapi.foundation.domain;
 
 import de.ii.xtraplatform.auth.domain.User;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -54,6 +55,28 @@ public interface ApiRequestContext {
   }
 
   @Value.Derived
+  default String getPath() {
+    String apiPath =
+        getUriCustomizer()
+            .copy()
+            .cutPathAfterSegments(getApi().getData().getSubPath().toArray(new String[0]))
+            .getPath();
+
+    return Objects.requireNonNullElse(
+        getUriCustomizer().copy().replaceInPath(apiPath, "").getPath(), "");
+  }
+
+  @Value.Derived
+  default String getFullPath() {
+    return Path.of("/", getApi().getData().getSubPath().toArray(new String[0]))
+        .resolve(
+            Objects.isNull(getPath()) || getPath().isEmpty()
+                ? Path.of("")
+                : Path.of("/").relativize(Path.of(getPath())))
+        .toString();
+  }
+
+  @Value.Derived
   default Optional<String> getCollectionId() {
     String apiPath =
         getUriCustomizer()
@@ -68,5 +91,10 @@ public interface ApiRequestContext {
     }
 
     return Optional.empty();
+  }
+
+  @Value.Derived
+  default String getMethod() {
+    return getRequest().isPresent() ? getRequest().get().getMethod() : "INTERNAL";
   }
 }

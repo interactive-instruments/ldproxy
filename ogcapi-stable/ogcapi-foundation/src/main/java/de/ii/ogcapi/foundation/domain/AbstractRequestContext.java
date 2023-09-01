@@ -66,7 +66,7 @@ public abstract class AbstractRequestContext implements ApiRequestContext {
     return staticUrlPrefix;
   }
 
-  @Value.Derived
+  @Value.Default
   @Override
   public Map<String, String> getParameters() {
     return getUriCustomizer().getQueryParams().stream()

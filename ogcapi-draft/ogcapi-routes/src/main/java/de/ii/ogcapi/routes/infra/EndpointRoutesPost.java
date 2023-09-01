@@ -81,7 +81,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -331,7 +330,6 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
       @Auth Optional<User> optionalUser,
       @Context OgcApi api,
       @Context ApiRequestContext requestContext,
-      @Context UriInfo uriInfo,
       @Context HttpServletRequest request,
       byte[] requestBody) {
 
@@ -372,7 +370,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
     List<OgcApiQueryParameter> parameterDefinitions =
         getQueryParameters(extensionRegistry, api.getData(), "/routes", HttpMethods.POST);
     QueryParameterSet queryParameterSet =
-        QueryParameterSet.of(parameterDefinitions, toFlatMap(uriInfo.getQueryParameters()))
+        QueryParameterSet.of(parameterDefinitions, requestContext.getParameters())
             .evaluate(api, Optional.empty());
 
     FeatureQuery query =
