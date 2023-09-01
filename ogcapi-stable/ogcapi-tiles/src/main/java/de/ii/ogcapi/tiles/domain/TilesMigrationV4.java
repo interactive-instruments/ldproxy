@@ -9,12 +9,12 @@ package de.ii.ogcapi.tiles.domain;
 
 import static de.ii.xtraplatform.tiles.domain.TilesetFeatures.COMBINE_ALL;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
@@ -52,37 +52,67 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class TilesMigrationV4 implements EntityMigration<OgcApiDataV2, OgcApiDataV2> {
+public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2> {
+
+  public TilesMigrationV4(EntityMigrationContext context) {
+    super(context);
+  }
+
+  @Override
+  public String getSubject() {
+    return "building block TILES";
+  }
 
   @Override
   public String getDescription() {
-    return "The current TILES configuration is deprecated and will stop working in v4.";
+    return "is deprecated and will be upgraded to a separate tile provider entity";
   }
 
-  @Override
-  public Optional<String> getDescriptionDetails() {
-    return Optional.of("This will migrate the TILES configuration to a separate tile provider.");
-  }
-
-  @Override
-  public boolean isApplicable(
-      EntityMigrationContext<OgcApiDataV2> context, OgcApiDataV2 entityData) {
+  private static Optional<TilesConfiguration> getTilesConfiguration(
+      OgcApiDataV2 entityData, Optional<OgcApiDataV2> defaults) {
     Optional<TilesConfiguration> tilesConfiguration =
         entityData.getExtension(TilesConfiguration.class);
+    Optional<TilesConfiguration> tilesConfigurationDefaults =
+        defaults.flatMap(d -> d.getExtension(TilesConfiguration.class));
+
+    return tilesConfiguration
+        .map(
+            tc ->
+                tilesConfigurationDefaults
+                    .map(tcd -> (TilesConfiguration) tc.mergeInto((ExtensionConfiguration) tcd))
+                    .orElse(tc))
+        .or(() -> tilesConfigurationDefaults)
+        .filter(ExtensionConfiguration::isEnabled);
+  }
+
+  @Override
+  public boolean isApplicable(EntityData entityData, Optional<EntityData> defaults) {
+    if (!(entityData instanceof OgcApiDataV2)
+        || (defaults.isPresent() && !(defaults.get() instanceof OgcApiDataV2))) {
+      return false;
+    }
+
+    OgcApiDataV2 apiData = (OgcApiDataV2) entityData;
+    Optional<OgcApiDataV2> apiDefaults = defaults.map(d -> (OgcApiDataV2) d);
+
+    Optional<TilesConfiguration> tilesConfiguration = getTilesConfiguration(apiData, apiDefaults);
 
     if (tilesConfiguration.isEmpty()
         || Objects.nonNull(tilesConfiguration.get().getTileProviderId())) {
       return false;
     }
 
-    return !context.exists(
-        Identifier.from(TilesProviders.toTilesId(entityData.getId()), "providers"));
+    return !getContext()
+        .exists(
+            identifier ->
+                Objects.equals(identifier.id(), TilesProviders.toTilesId(apiData.getId()))
+                    && identifier.path().get(identifier.path().size() - 1).equals("providers"));
   }
 
   @Override
-  public OgcApiDataV2 migrate(OgcApiDataV2 entityData) {
+  public OgcApiDataV2 migrate(OgcApiDataV2 entityData, Optional<OgcApiDataV2> defaults) {
     Optional<TilesConfiguration> tilesConfigurationOld =
-        entityData.getExtension(TilesConfiguration.class);
+        getTilesConfiguration(entityData, defaults);
 
     if (tilesConfigurationOld.isEmpty()) {
       return entityData;
@@ -108,27 +138,38 @@ public class TilesMigrationV4 implements EntityMigration<OgcApiDataV2, OgcApiDat
             .build();
 
     return new ImmutableOgcApiDataV2.Builder()
-        .from(entityData)
-        .extensions(
-            new ImmutableList.Builder<ExtensionConfiguration>()
-                // do not touch any other extensions
-                .addAll(
-                    entityData.getExtensions().stream()
-                        .filter(
-                            ext ->
-                                !ext.getBuildingBlock()
-                                    .equals(tilesConfiguration.getBuildingBlock()))
-                        .collect(Collectors.toUnmodifiableList()))
-                // add the Tiles and TileMatrixSets configuration
-                .add(tilesConfiguration)
-                .build())
+        .from(OgcApiDataV2.replaceOrAddExtensions(entityData, tilesConfiguration))
+        .collections(
+            entityData.getCollections().entrySet().stream()
+                .map(
+                    entry -> {
+                      if (entry.getValue().getExtension(TilesConfiguration.class).isPresent()) {
+                        return Map.entry(
+                            entry.getKey(),
+                            new ImmutableFeatureTypeConfigurationOgcApi.Builder()
+                                .from(entry.getValue())
+                                .extensions(
+                                    entry.getValue().getExtensions().stream()
+                                        .filter(e -> !(e instanceof TilesConfiguration))
+                                        .collect(Collectors.toList()))
+                                .build());
+                      }
+                      return entry;
+                    })
+                .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
         .build();
   }
 
   @Override
-  public Map<Identifier, ? extends EntityData> getAdditionalEntities(OgcApiDataV2 entityData) {
+  public Map<Identifier, ? extends EntityData> getAdditionalEntities(
+      EntityData entityData, Optional<EntityData> defaults) {
+    OgcApiDataV2 apiData =
+        defaults.isEmpty()
+            ? (OgcApiDataV2) entityData
+            : new ImmutableOgcApiDataV2.Builder().from(defaults.get()).from(entityData).build();
+
     Optional<Tuple<Class<? extends TileProviderData>, ? extends TileProviderData>>
-        tileProviderData = getTileProviderData(entityData);
+        tileProviderData = getTileProviderData(apiData);
 
     if (tileProviderData.isPresent()) {
       return Map.of(
@@ -141,8 +182,7 @@ public class TilesMigrationV4 implements EntityMigration<OgcApiDataV2, OgcApiDat
 
   public Optional<Tuple<Class<? extends TileProviderData>, ? extends TileProviderData>>
       getTileProviderData(OgcApiDataV2 apiData) {
-    Optional<TilesConfiguration> tiles =
-        apiData.getExtension(TilesConfiguration.class).filter(ExtensionConfiguration::isEnabled);
+    Optional<TilesConfiguration> tiles = getTilesConfiguration(apiData, Optional.empty());
 
     if (tiles.isEmpty()) {
       return Optional.empty();

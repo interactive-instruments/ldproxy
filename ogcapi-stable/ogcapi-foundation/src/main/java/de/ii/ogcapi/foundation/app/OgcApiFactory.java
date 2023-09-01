@@ -31,12 +31,16 @@ import de.ii.xtraplatform.services.domain.ImmutableServiceDataCommon;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.KeyPathAlias;
+import de.ii.xtraplatform.store.domain.KeyPathAliasUnwrap;
 import de.ii.xtraplatform.store.domain.entities.AbstractEntityFactory;
 import de.ii.xtraplatform.store.domain.entities.EntityData;
 import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityFactory;
 import de.ii.xtraplatform.store.domain.entities.PersistentEntity;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -58,6 +62,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
   private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiFactory.class);
 
   private final ExtensionRegistry extensionRegistry;
+  private final boolean skipHydration;
 
   @SuppressWarnings(
       "PMD.UnusedFormalParameter") // crsTransformerFactory is needed here because dagger-auto does
@@ -70,6 +75,14 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
       OgcApiFactoryAssisted ogcApiFactoryAssisted) {
     super(ogcApiFactoryAssisted);
     this.extensionRegistry = extensionRegistry;
+    this.skipHydration = false;
+  }
+
+  // for ldproxy-cfg
+  public OgcApiFactory(ExtensionRegistry extensionRegistry) {
+    super(null);
+    this.extensionRegistry = extensionRegistry;
+    this.skipHydration = true;
   }
 
   @Override
@@ -91,7 +104,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
   public EntityDataBuilder<OgcApiDataV2> dataBuilder() {
     return new ImmutableOgcApiDataV2.Builder()
         .enabled(true)
-        .secured(true)
+        .apiValidation(MODE.NONE)
         .metadata(getMetadata())
         .defaultExtent(
             new ImmutableCollectionExtent.Builder()
@@ -104,7 +117,17 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
 
   @Override
   public EntityDataBuilder<? extends EntityData> superDataBuilder() {
-    return new ImmutableServiceDataCommon.Builder().enabled(true).secured(true);
+    return new ImmutableServiceDataCommon.Builder().enabled(true);
+  }
+
+  @Override
+  public EntityDataBuilder<OgcApiDataV2> emptyDataBuilder() {
+    return new ImmutableOgcApiDataV2.Builder();
+  }
+
+  @Override
+  public EntityDataBuilder<? extends EntityData> emptySuperDataBuilder() {
+    return new ImmutableServiceDataCommon.Builder();
   }
 
   @Override
@@ -117,11 +140,16 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
     try {
       OgcApiDataV2 hydrated = (OgcApiDataV2) entityData;
 
+      if (skipHydration) {
+        return hydrated;
+      }
+
       if (hydrated.isAuto() && LOGGER.isInfoEnabled()) {
         LOGGER.info(
             "Service with id '{}' is in auto mode, generating configuration ...", hydrated.getId());
       }
 
+      // hydration by dedicated hydrator extensions
       List<OgcApiDataHydratorExtension> extensions =
           extensionRegistry.getExtensionsForType(OgcApiDataHydratorExtension.class);
       extensions.sort(Comparator.comparing(OgcApiDataHydratorExtension::getSortPriority));
@@ -130,6 +158,21 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
           hydrated = hydrator.getHydratedData(hydrated);
         }
       }
+
+      // simple hydration by building blocks
+      List<ExtensionConfiguration> configs = new ArrayList<>();
+      Map<Class<?>, ApiBuildingBlock> buildingBlocks =
+          extensionRegistry.getExtensionsForType(ApiBuildingBlock.class).stream()
+              .map(bb -> new SimpleEntry<>(bb.getBuildingBlockConfigurationType(), bb))
+              .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+      for (ExtensionConfiguration cfg : hydrated.getExtensions()) {
+        if (buildingBlocks.containsKey(cfg.getClass())) {
+          configs.add(buildingBlocks.get(cfg.getClass()).hydrateConfiguration(cfg));
+        } else {
+          LOGGER.error("Building block not found: {}", cfg.getBuildingBlock());
+        }
+      }
+      hydrated = new ImmutableOgcApiDataV2.Builder().from(hydrated).extensions(configs).build();
 
       return hydrated;
     } catch (Throwable e) {
@@ -147,6 +190,16 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
         .filter(entry -> Objects.equals(keyPath, entry.getKey()))
         .map(Map.Entry::getValue)
         .findFirst();
+  }
+
+  @Override
+  public Optional<KeyPathAliasUnwrap> getKeyPathAliasReverse(String parentPath) {
+    return Optional.ofNullable(reverseAliases.get(parentPath));
+  }
+
+  @Override
+  public Map<String, String> getListEntryKeys() {
+    return Map.of("api", "buildingBlock");
   }
 
   private ApiMetadata getMetadata() {
@@ -182,8 +235,24 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
                                     .put("buildingBlock", buildingBlock)
                                     .putAll(value)
                                     .build()))))
-        .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Map.Entry::getKey, Map.Entry::getValue, (first, second) -> second));
   }
+
+  private static Map<String, KeyPathAliasUnwrap> reverseAliases =
+      ImmutableMap.of(
+          "api",
+          value ->
+              ((List<Map<String, Object>>) value)
+                  .stream()
+                      .map(
+                          buildingBlock ->
+                              new AbstractMap.SimpleImmutableEntry<String, Object>(
+                                  ((String) buildingBlock.get("buildingBlock")).toLowerCase(),
+                                  buildingBlock))
+                      .collect(
+                          ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)));
 
   @AssistedFactory
   public interface OgcApiFactoryAssisted extends FactoryAssisted<OgcApiDataV2, OgcApiEntity> {

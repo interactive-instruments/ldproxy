@@ -8,9 +8,14 @@
 package de.ii.ogcapi.features.csv.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.features.csv.domain.CsvConfiguration;
 import de.ii.ogcapi.features.csv.domain.ImmutableCsvConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -44,5 +49,26 @@ public class FeaturesCsvBuildingBlock implements ApiBuildingBlock {
         .enabled(false)
         .maxMultiplicity(DEFAULT_MULTIPLICITY)
         .build();
+  }
+
+  @Override
+  public <T extends ExtensionConfiguration> T hydrateConfiguration(T cfg) {
+    if (cfg instanceof CsvConfiguration) {
+      CsvConfiguration config = (CsvConfiguration) cfg;
+      Map<String, List<PropertyTransformation>> transformations =
+          config.extendWithFlattenIfMissing();
+
+      if (Objects.equals(transformations, config.getTransformations())) {
+        return (T) config;
+      }
+
+      return (T)
+          new ImmutableCsvConfiguration.Builder()
+              .from(config)
+              .transformations(transformations)
+              .build();
+    }
+
+    return cfg;
   }
 }

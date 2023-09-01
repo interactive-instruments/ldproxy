@@ -10,6 +10,7 @@ package de.ii.ogcapi.geometry.simplification.app;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.geometry.simplification.app.ImmutableGeometrySimplificationConfiguration.Builder;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import org.immutables.value.Value;
 
 /**
@@ -23,6 +24,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new")
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "GEOMETRY_SIMPLIFICATION")
 @JsonDeserialize(builder = Builder.class)
 public interface GeometrySimplificationConfiguration extends ExtensionConfiguration {
 

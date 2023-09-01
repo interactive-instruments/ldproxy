@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.gltf.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -54,6 +55,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "GLTF")
 @JsonDeserialize(builder = ImmutableGltfConfiguration.Builder.class)
 public interface GltfConfiguration extends ExtensionConfiguration, PropertyTransformations {
 

@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -50,6 +51,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new")
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "COLLECTIONS")
 @JsonDeserialize(builder = ImmutableCollectionsConfiguration.Builder.class)
 public interface CollectionsConfiguration extends ExtensionConfiguration, CachingConfiguration {
 

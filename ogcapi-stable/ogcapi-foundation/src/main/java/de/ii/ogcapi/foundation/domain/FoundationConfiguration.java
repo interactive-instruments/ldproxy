@@ -8,6 +8,7 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -96,6 +97,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new")
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "FOUNDATION")
 @JsonDeserialize(builder = ImmutableFoundationConfiguration.Builder.class)
 public interface FoundationConfiguration extends ExtensionConfiguration {
 

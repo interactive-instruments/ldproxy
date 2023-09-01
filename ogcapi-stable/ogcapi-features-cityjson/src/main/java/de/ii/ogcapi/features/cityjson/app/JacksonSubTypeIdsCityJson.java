@@ -22,7 +22,7 @@ import javax.inject.Singleton;
 public class JacksonSubTypeIdsCityJson implements JacksonSubTypeIds {
 
   @Inject
-  JacksonSubTypeIdsCityJson() {}
+  public JacksonSubTypeIdsCityJson() {}
 
   @Override
   public List<JacksonSubType> getSubTypes() {

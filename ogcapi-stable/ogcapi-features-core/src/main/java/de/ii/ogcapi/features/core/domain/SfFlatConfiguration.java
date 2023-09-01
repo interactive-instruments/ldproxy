@@ -8,7 +8,6 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
@@ -43,6 +42,6 @@ public interface SfFlatConfiguration extends ExtensionConfiguration, PropertyTra
           new ImmutablePropertyTransformation.Builder().flatten(".").build());
     }
 
-    return ImmutableMap.of();
+    return getTransformations();
   }
 }

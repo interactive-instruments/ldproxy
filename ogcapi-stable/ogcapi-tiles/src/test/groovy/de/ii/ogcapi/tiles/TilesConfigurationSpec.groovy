@@ -68,10 +68,6 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
         return new ImmutableTilesConfiguration.Builder()
                 .from(getFull())
                 .from(getSimple())
-                .transformations(ImmutableMap.of(
-                        "foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()],
-                        "*", [new ImmutablePropertyTransformation.Builder().flatten(".").build()]
-                ))
                 .build()
     }
 

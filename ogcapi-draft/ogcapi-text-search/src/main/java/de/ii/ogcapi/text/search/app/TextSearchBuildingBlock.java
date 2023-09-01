@@ -7,9 +7,9 @@
  */
 package de.ii.ogcapi.text.search.app;
 
-import de.ii.ogcapi.collections.domain.ImmutableCollectionsConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.text.search.domain.ImmutableTextSearchConfiguration;
 import javax.inject.Inject;
 
 /**
@@ -32,6 +32,6 @@ public class TextSearchBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
-    return new ImmutableCollectionsConfiguration.Builder().enabled(false).build();
+    return new ImmutableTextSearchConfiguration.Builder().enabled(false).build();
   }
 }

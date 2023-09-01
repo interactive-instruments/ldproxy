@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.geojson.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -172,6 +173,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "GEO_JSON")
 @JsonDeserialize(builder = ImmutableGeoJsonConfiguration.Builder.class)
 public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTransformations {
 

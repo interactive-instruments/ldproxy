@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -60,6 +61,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "TILE_MATRIX_SETS")
 @JsonDeserialize(builder = ImmutableTileMatrixSetsConfiguration.Builder.class)
 public interface TileMatrixSetsConfiguration extends ExtensionConfiguration, CachingConfiguration {
 

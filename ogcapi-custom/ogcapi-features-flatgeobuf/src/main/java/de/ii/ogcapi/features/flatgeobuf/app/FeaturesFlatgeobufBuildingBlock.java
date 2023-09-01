@@ -8,9 +8,14 @@
 package de.ii.ogcapi.features.flatgeobuf.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.features.flatgeobuf.domain.FlatgeobufConfiguration;
 import de.ii.ogcapi.features.flatgeobuf.domain.ImmutableFlatgeobufConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -41,5 +46,26 @@ public class FeaturesFlatgeobufBuildingBlock implements ApiBuildingBlock {
         .enabled(false)
         .maxMultiplicity(DEFAULT_MULTIPLICITY)
         .build();
+  }
+
+  @Override
+  public <T extends ExtensionConfiguration> T hydrateConfiguration(T cfg) {
+    if (cfg instanceof FlatgeobufConfiguration) {
+      FlatgeobufConfiguration config = (FlatgeobufConfiguration) cfg;
+      Map<String, List<PropertyTransformation>> transformations =
+          config.extendWithFlattenIfMissing();
+
+      if (Objects.equals(transformations, config.getTransformations())) {
+        return (T) config;
+      }
+
+      return (T)
+          new ImmutableFlatgeobufConfiguration.Builder()
+              .from(config)
+              .transformations(transformations)
+              .build();
+    }
+
+    return cfg;
   }
 }

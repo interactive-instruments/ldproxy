@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
@@ -27,6 +28,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new")
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "RESOURCES")
 @JsonDeserialize(builder = ImmutableResourcesConfiguration.Builder.class)
 public interface ResourcesConfiguration extends ExtensionConfiguration, CachingConfiguration {
 
