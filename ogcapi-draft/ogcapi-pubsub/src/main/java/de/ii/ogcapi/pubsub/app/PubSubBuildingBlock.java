@@ -436,6 +436,7 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
               .type(coreConfiguration.getFeatureType().orElse(collectionId))
               .filter(In.of(ScalarLiteral.of(featureId)))
               .returnsSingleFeature(true)
+              .crs(coreConfiguration.getDefaultEpsgCrs())
               .build();
 
       QueryInputFeature queryInput =
