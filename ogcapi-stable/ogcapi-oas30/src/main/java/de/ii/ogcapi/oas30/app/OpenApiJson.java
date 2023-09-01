@@ -34,7 +34,9 @@ public class OpenApiJson implements ApiDefinitionFormatExtension {
 
   static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
-          .type(new MediaType("application", "openapi+json", ImmutableMap.of("version", "3.0")))
+          .type(
+              new MediaType(
+                  "application", "vnd.oai.openapi+json", ImmutableMap.of("version", "3.0")))
           .label("JSON")
           .parameter("json")
           .build();
