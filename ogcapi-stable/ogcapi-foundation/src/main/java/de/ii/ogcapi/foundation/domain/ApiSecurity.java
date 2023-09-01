@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -141,6 +142,55 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableApiSecurity.Builder.class)
 public interface ApiSecurity {
 
+  @Value.Immutable
+  @JsonDeserialize(builder = ImmutablePolicies.Builder.class)
+  interface Policies {
+
+    /**
+     * @langEn Enable an additional authorization layer using a *Policy Decision Point* defined in
+     *     the [global configuration](../application/70-reference.md).
+     * @langDe Aktiviert einen zusätzlichen Autorisierungs-Layer mittels eines *Policy Decision
+     *     Point*, der in der [globalen Konfiguration](../application/70-reference.md) definiert
+     *     wird.
+     * @default false
+     * @since v3.5
+     */
+    @Nullable
+    Boolean getEnabled();
+
+    /**
+     * @langEn Add the given attributes to the request sent to the *Policy Decision Point*. Keys are
+     *     attribute ids, values are single key objects using either `constant` for a fixed string
+     *     or `property` for a property path. Attributes using `property` are only relevant for
+     *     operations involving features. May be defined per collection.
+     * @langDe Fügt die gegebenen Attribute dem Request an den *Policy Decision Point* hinzu. Keys
+     *     sind Attribut-Ids, Werte sind Objekte mit einem Key, entweder `constant` für feste
+     *     Strings oder `property` für Property-Pfade. Attribute mit `property` sind nur für
+     *     Operationen relevant die Features involvieren. Kann pro Collection definiert werden.
+     * @default {}
+     * @since v3.5
+     */
+    Map<String, PolicyAttribute> getAttributes();
+
+    Map<String, PolicyAttribute> getObligations();
+
+    @JsonIgnore
+    @Value.Derived
+    default boolean isEnabled() {
+      return !Objects.equals(getEnabled(), false);
+    }
+  }
+
+  @Value.Immutable
+  @JsonDeserialize(builder = ImmutablePolicyAttribute.Builder.class)
+  interface PolicyAttribute {
+    Optional<Object> getConstant();
+
+    Optional<String> getProperty();
+
+    Optional<String> getParameter();
+  }
+
   enum ScopeGranularity {
     BASE,
     PARENT,
@@ -212,6 +262,16 @@ public interface ApiSecurity {
    * @since v3.5
    */
   Set<String> getAudience();
+
+  /**
+   * @langEn Optional additional authorization layer using a *Policy Decision Point* defined in the
+   *     [global configuration](../application/70-reference.md).
+   * @langDe Optionaler zusätzlicher Autorisierungs-Layer mittels eines *Policy Decision Point*, der
+   *     in der [globalen Konfiguration](../application/70-reference.md) definiert wird.
+   * @default null
+   * @since v3.5
+   */
+  Optional<Policies> getPolicies();
 
   @JsonIgnore
   @Value.Derived

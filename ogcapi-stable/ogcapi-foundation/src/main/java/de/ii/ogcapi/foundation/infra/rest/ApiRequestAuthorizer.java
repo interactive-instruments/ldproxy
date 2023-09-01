@@ -15,8 +15,9 @@ import javax.annotation.Nullable;
 
 public interface ApiRequestAuthorizer {
 
-  void checkAuthorization(
+  ApiRequestContext checkAuthorization(
       ApiRequestContext apiRequestContext,
       @Nullable ApiOperation apiOperation,
-      Optional<User> optionalUser);
+      Optional<User> optionalUser,
+      Optional<byte[]> body);
 }

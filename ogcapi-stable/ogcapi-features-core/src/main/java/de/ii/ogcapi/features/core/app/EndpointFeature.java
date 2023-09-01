@@ -42,7 +42,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * @title Feature
@@ -55,7 +54,8 @@ import javax.ws.rs.core.UriInfo;
  */
 @Singleton
 @AutoBind
-public class EndpointFeature extends EndpointFeaturesDefinition {
+public class EndpointFeature extends EndpointFeaturesDefinition
+    implements PolicyAttributeFeatureGetter {
 
   private final FeaturesQuery ogcApiFeaturesQuery;
   private final FeaturesCoreQueriesHandler queryHandler;
@@ -99,11 +99,16 @@ public class EndpointFeature extends EndpointFeaturesDefinition {
   @Path("/{collectionId}/items/{featureId}")
   public Response getItem(
       @Auth Optional<User> optionalUser,
-      @Context OgcApi api,
       @Context ApiRequestContext requestContext,
-      @Context UriInfo uriInfo,
       @PathParam("collectionId") String collectionId,
       @PathParam("featureId") String featureId) {
+    return getItem(requestContext, collectionId, featureId);
+  }
+
+  @Override
+  public Response getItem(ApiRequestContext requestContext, String collectionId, String featureId) {
+    OgcApi api = requestContext.getApi();
+
     checkCollectionExists(api.getData(), collectionId);
 
     FeatureTypeConfigurationOgcApi collectionData =
@@ -126,7 +131,7 @@ public class EndpointFeature extends EndpointFeaturesDefinition {
             "/collections/{collectionId}/items/{featureId}",
             collectionId);
     QueryParameterSet queryParameterSet =
-        QueryParameterSet.of(parameterDefinitions, toFlatMap(uriInfo.getQueryParameters()))
+        QueryParameterSet.of(parameterDefinitions, requestContext.getParameters())
             .evaluate(api, Optional.of(collectionData));
     Optional<Profile> profile =
         Optional.ofNullable(

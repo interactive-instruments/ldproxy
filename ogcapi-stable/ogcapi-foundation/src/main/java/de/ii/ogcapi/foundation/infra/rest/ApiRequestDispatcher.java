@@ -30,6 +30,8 @@ import de.ii.xtraplatform.services.domain.ServiceEndpoint;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jetty.HttpConnectorFactory;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.List;
@@ -141,7 +143,25 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
             .user(optionalUser)
             .build();
 
-    apiRequestAuthorizer.checkAuthorization(apiRequestContext, apiOperation, optionalUser);
+    // read body for authorization
+    Optional<byte[]> body = Optional.empty();
+    if (requestContext.hasEntity()) {
+      try {
+        body = Optional.of(requestContext.getEntityStream().readAllBytes());
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    // might return a new ApiRequestContext with policy obligations applied
+    apiRequestContext =
+        apiRequestAuthorizer.checkAuthorization(
+            apiRequestContext, apiOperation, optionalUser, body);
+
+    // reset body for downstream endpoints
+    if (body.isPresent()) {
+      requestContext.setEntityStream(new ByteArrayInputStream(body.get()));
+    }
 
     ogcApiInjectableContext.inject(requestContext, apiRequestContext);
 

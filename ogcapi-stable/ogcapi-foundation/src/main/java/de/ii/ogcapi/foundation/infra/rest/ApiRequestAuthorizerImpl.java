@@ -11,23 +11,33 @@ import static de.ii.ogcapi.foundation.domain.ApiSecurity.GROUP_PUBLIC;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.Sets;
+import dagger.Lazy;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ApiSecurity;
+import de.ii.ogcapi.foundation.domain.ApiSecurity.Policies;
+import de.ii.ogcapi.foundation.domain.ApiSecurity.PolicyAttribute;
 import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeGranularity;
 import de.ii.ogcapi.foundation.domain.ApiSecurityInfo;
 import de.ii.ogcapi.foundation.domain.EndpointExtension;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.PermissionGroup;
+import de.ii.ogcapi.foundation.domain.PolicyAttributeResolver;
+import de.ii.ogcapi.foundation.domain.PolicyAttributeResolver.Category;
+import de.ii.ogcapi.foundation.domain.PolicyObligationFulfiller;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
+import de.ii.xtraplatform.auth.domain.PolicyDecider;
+import de.ii.xtraplatform.auth.domain.PolicyDecision;
 import de.ii.xtraplatform.auth.domain.SplitCookie;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.auth.domain.User.PolicyDecision;
+import de.ii.xtraplatform.base.domain.util.Tuple;
 import de.ii.xtraplatform.web.domain.LoginHandler;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -55,25 +65,36 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer, ApiSecuri
   private static final Logger LOGGER = LoggerFactory.getLogger(ApiRequestAuthorizerImpl.class);
 
   private final ExtensionRegistry extensionRegistry;
+  private final PolicyDecider policyDecider;
+  private final Lazy<Set<PolicyAttributeResolver>> attributeResolvers;
+  private final Lazy<Set<PolicyObligationFulfiller>> obligationFulfillers;
 
   @Inject
-  ApiRequestAuthorizerImpl(ExtensionRegistry extensionRegistry) {
+  ApiRequestAuthorizerImpl(
+      ExtensionRegistry extensionRegistry,
+      PolicyDecider policyDecider,
+      Lazy<Set<PolicyAttributeResolver>> attributeResolvers,
+      Lazy<Set<PolicyObligationFulfiller>> obligationFulfillers) {
     this.extensionRegistry = extensionRegistry;
+    this.policyDecider = policyDecider;
+    this.attributeResolvers = attributeResolvers;
+    this.obligationFulfillers = obligationFulfillers;
   }
 
   @Override
-  public void checkAuthorization(
+  public ApiRequestContext checkAuthorization(
       ApiRequestContext requestContext,
       @Nullable ApiOperation apiOperation,
-      Optional<User> optionalUser) {
+      Optional<User> optionalUser,
+      Optional<byte[]> body) {
     if (Objects.isNull(apiOperation)) {
-      return;
+      return requestContext;
     }
 
     OgcApiDataV2 data = requestContext.getApi().getData();
 
     if (data.getAccessControl().filter(ApiSecurity::isEnabled).isEmpty()) {
-      return;
+      return requestContext;
     }
 
     PermissionGroup permissionGroup = apiOperation.getPermissionGroup();
@@ -83,8 +104,8 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer, ApiSecuri
         getRequiredPermissions(permissionGroup, operationId, data.getId(), collectionId);
     Set<String> requiredScopes = getRequiredScopes(permissionGroup, data.getAccessControl().get());
     Set<String> activeScopes = getActiveScopes(data).keySet();
-    ApiMediaType mediaType = requestContext.getMediaType();
     URI loginUri = getLoginUri(requestContext, activeScopes);
+    List<ApiRequestContext> changedRequestContext = new ArrayList<>();
 
     if (isNotAuthorized(
         requestContext,
@@ -92,11 +113,14 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer, ApiSecuri
         optionalUser,
         requiredPermissions,
         requiredScopes,
-        mediaType,
         loginUri,
-        apiOperation)) {
+        apiOperation,
+        body,
+        changedRequestContext)) {
       throw new NotAuthorizedException("Bearer realm=\"ldproxy\"");
     }
+
+    return changedRequestContext.isEmpty() ? requestContext : changedRequestContext.get(0);
   }
 
   private static Set<String> getRequiredPermissions(
@@ -141,20 +165,21 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer, ApiSecuri
       Optional<User> optionalUser,
       Set<String> requiredPermissions,
       Set<String> requiredScopes,
-      ApiMediaType mediaType,
       URI loginUri,
-      ApiOperation apiOperation) {
-    // TODO: move to bottom?
-    if (isPolicyDenial(requestContext, apiSecurity, optionalUser, apiOperation)) {
-      return true;
-    }
+      ApiOperation apiOperation,
+      Optional<byte[]> body,
+      List<ApiRequestContext> changedRequestContext) {
     if (isAccessRestricted(apiSecurity, requiredPermissions)) {
-      if (isNoUser(optionalUser, mediaType, loginUri)
+      if (isNoUser(optionalUser, requestContext.getMediaType(), loginUri)
           || isAudienceMismatch(apiSecurity, optionalUser)
           || isScopeMismatch(optionalUser, requiredScopes)
           || !hasUserPermission(apiSecurity, optionalUser, requiredPermissions)) {
         return true;
       }
+    }
+    if (isPolicyDenial(
+        requestContext, apiSecurity, optionalUser, apiOperation, body, changedRequestContext)) {
+      return true;
     }
 
     return false;
@@ -169,15 +194,58 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer, ApiSecuri
       ApiRequestContext requestContext,
       ApiSecurity apiSecurity,
       Optional<User> optionalUser,
-      ApiOperation apiOperation) {
-    boolean denial =
-        optionalUser.filter(u -> u.getPolicyDecision() == PolicyDecision.DENY).isPresent();
+      ApiOperation apiOperation,
+      Optional<byte[]> body,
+      List<ApiRequestContext> changedRequestContext) {
+    if (apiSecurity.getPolicies().isPresent() && apiSecurity.getPolicies().get().isEnabled()) {
+      Policies policies = apiSecurity.getPolicies().get();
 
-    if (denial && LOGGER.isDebugEnabled()) {
-      LOGGER.debug("Not authorized: policy denial");
+      PolicyDecision policyDecision =
+          getPolicyDecision(requestContext, optionalUser, apiOperation, body, policies);
+
+      if (policyDecision.getDecision() == User.PolicyDecision.DENY) {
+        if (LOGGER.isDebugEnabled()) {
+          LOGGER.debug("Not authorized: policy denial");
+        }
+        return true;
+      }
+
+      if (!policyDecision.getObligations().isEmpty()) {
+        List<String> missing =
+            policyDecision.getObligations().keySet().stream()
+                .filter(attribute -> !policies.getObligations().containsKey(attribute))
+                .collect(Collectors.toList());
+
+        if (!missing.isEmpty()) {
+          if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "Not authorized: could not fulfill policy obligations, unknown attributes "
+                    + missing);
+          }
+          return true;
+        }
+
+        List<String> unFulfilled =
+            fulfillObligations(
+                requestContext,
+                optionalUser,
+                apiOperation,
+                policies.getObligations(),
+                policyDecision.getObligations(),
+                changedRequestContext);
+
+        if (!unFulfilled.isEmpty()) {
+          if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(
+                "Not authorized: could not fulfill policy obligations, no handler registered for attributes "
+                    + unFulfilled);
+          }
+          return true;
+        }
+      }
     }
 
-    return denial;
+    return false;
   }
 
   private static boolean isNoUser(
@@ -247,6 +315,84 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer, ApiSecuri
     }
 
     return hasUserPermission;
+  }
+
+  private PolicyDecision getPolicyDecision(
+      ApiRequestContext requestContext,
+      Optional<User> optionalUser,
+      ApiOperation apiOperation,
+      Optional<byte[]> body,
+      Policies policies) {
+    Map<Category, Map<String, Object>> attributes =
+        Map.of(
+            Category.SUBJECT,
+            new LinkedHashMap<>(),
+            Category.RESOURCE,
+            new LinkedHashMap<>(),
+            Category.ACTION,
+            new LinkedHashMap<>());
+
+    // TODO: move to xtraplatform? use operationId, extensions of PolicyAttribute ->
+    // PolicyAttributeApi
+    attributeResolvers
+        .get()
+        .forEach(
+            policyAttributeResolver -> {
+              if (policyAttributeResolver.canResolve(policies.getAttributes(), apiOperation)) {
+                attributes
+                    .get(policyAttributeResolver.getCategory())
+                    .putAll(
+                        policyAttributeResolver.resolve(
+                            policies.getAttributes(), apiOperation, requestContext));
+              }
+            });
+
+    // TODO: body
+    if (body.isPresent()) {
+      LOGGER.debug("BODYYYY {}", new String(body.get(), StandardCharsets.UTF_8));
+    }
+
+    attributes.get(Category.ACTION).put("ldproxy:request:api", requestContext.getApi().getId());
+    requestContext
+        .getCollectionId()
+        .ifPresent(
+            collection ->
+                attributes.get(Category.ACTION).put("ldproxy:request:collection", collection));
+    attributes.get(Category.ACTION).put("ldproxy:request:method", requestContext.getMethod());
+    attributes
+        .get(Category.ACTION)
+        .put("ldproxy:request:mediaType", requestContext.getMediaType().type().toString());
+
+    return policyDecider.request(
+        requestContext.getFullPath(),
+        attributes.get(Category.RESOURCE),
+        requestContext.getApi().getId() + "." + apiOperation.getOperationId(),
+        attributes.get(Category.ACTION),
+        optionalUser);
+  }
+
+  private List<String> fulfillObligations(
+      ApiRequestContext requestContext,
+      Optional<User> optionalUser,
+      ApiOperation apiOperation,
+      Map<String, PolicyAttribute> obligations,
+      Map<String, String> values,
+      List<ApiRequestContext> changedRequestContext) {
+    List<String> unFulfilled = new ArrayList<>(values.keySet());
+    ApiRequestContext newrc = requestContext;
+
+    for (PolicyObligationFulfiller obligationFulfiller : obligationFulfillers.get()) {
+      if (obligationFulfiller.canFulfill(obligations, apiOperation)) {
+        Tuple<ApiRequestContext, Set<String>> fulfillment =
+            obligationFulfiller.fulfill(obligations, apiOperation, requestContext, values);
+        newrc = fulfillment.first();
+        unFulfilled.removeAll(fulfillment.second());
+      }
+    }
+
+    changedRequestContext.add(0, newrc);
+
+    return unFulfilled;
   }
 
   private static <T> boolean intersects(Set<T> first, Set<T> second) {
