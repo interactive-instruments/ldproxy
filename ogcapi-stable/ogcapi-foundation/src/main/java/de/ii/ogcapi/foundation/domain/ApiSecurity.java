@@ -11,6 +11,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
 import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
+import de.ii.xtraplatform.docs.DocDefs;
+import de.ii.xtraplatform.docs.DocStep;
+import de.ii.xtraplatform.docs.DocStep.Step;
+import de.ii.xtraplatform.docs.DocTable;
+import de.ii.xtraplatform.docs.DocTable.ColumnSet;
+import de.ii.xtraplatform.docs.DocVar;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -24,44 +30,53 @@ import org.immutables.value.Value;
 /**
  * @langEn Access control for all API operations (combination of endpoint and HTTP method).
  *     <p>#### Permissions
- *     <p>Access control is based on permissions, predefined permission groups and custom permission
- *     groups. These **predefined permission groups** are available:
+ *     <p>Access control is based on permissions and permission groups.
+ *     <p>Permissions are a combination of a group prefix (see below) and an OpenAPI operation id
+ *     (without any prefix), for example `data:getItems` or `tiles:getTile`. These can be used if a
+ *     more fine-grained control is needed in comparison to permission groups.
+ *     <p>#### Permission groups
+ *     <p>These are the **predefined main permission groups**, every operation/permission is
+ *     contained in exactly one main group:
  *     <p><code>
  * - `discover`: access API landing pages, conformance declarations and OpenAPI definitions
  * - `collections:read`: access feature collection metadata
- * - `collections`: includes `collections:read`
  * - `data:read`: access and query features
  * - `data:write`: mutate features
- * - `data`: includes `data:read` and `data:write`
  * - `tiles:read`: access tiles
- * - `tiles`: includes `tiles:read`
  * - `styles:read`: access styles and their metadata
  * - `styles:write`: mutate styles and update their metadata
- * - `styles`: includes `styles:read` and `styles:write`
  * - `resources:read`: access file resources
  * - `resources:write`: mutate file resources
- * - `resources`: includes `resources:read` and `resources:write`
  * - `search:read`: access stored queries and their parameters
  * - `search:write`: mutate stored queries
- * - `search`: includes `search:read` and `search:write`
  * - `routes:read`: access stored routes and their definition
  * - `routes:write`: compute and store routes, delete stored routes
+ * </code>
+ *     <p>These are the **predefined parent permission groups** (convenient unions of main groups):
+ *     <p><code>
+ * - `collections`: includes `collections:read`
+ * - `data`: includes `data:read` and `data:write`
+ * - `tiles`: includes `tiles:read`
+ * - `styles`: includes `styles:read` and `styles:write`
+ * - `resources`: includes `resources:read` and `resources:write`
+ * - `search`: includes `search:read` and `search:write`
  * - `routes`: includes `routes:read` and `routes:write`
+ * </code>
+ *     <p>These are the **predefined base permission groups** (convenient unions of main groups):
+ *     <p><code>
  * - `read`: includes `discover`, `collections:read`, `data:read`, `tiles:read`, `styles:read`, `resources:read`, `search:read` and `routes:read`
  * - `write`: includes `data:write`, `styles:write`, `resources:write`, `search:write` and `routes:write`
  * </code>
- *     <p>**Permissions** are a combination of a group prefix and an OpenAPI operation id (without
- *     any prefix), for example `data:getItems` or `tiles:getTile`. These can be used for a more
- *     fine-grained control.
  *     <p>**Custom permission groups** are defined in `groups`, they may contain permissions and/or
  *     predefined permission groups.
- *     <p>**Data-specific permissions**
- *     <p>The permissions described above will permit access to any API and collection. To restrict
- *     the access to specific APIs or collections, a suffix can be added to permission groups and
- *     permissions, for example `read::daraa` or `data:getItems::daraa:AeronauticSrf`.
- *     <p>**Permission group `public`**
+ *     <p>**Permission group** `public`
  *     <p>The special permission group `public` defines the list of permissions and/or predefined
  *     permission groups that every user possesses, if authenticated or not.
+ *     <p>#### Data-specific permissions
+ *     <p>The permissions groups and permissions described above will permit access to any API and
+ *     collection. To restrict the access to specific APIs or collections, a suffix can be added to
+ *     permission groups and permissions, for example `read::daraa` or
+ *     `data:getItems::daraa:AeronauticSrf`.
  *     <p>#### Authentication and authorization
  *     <p>To support authenticated users, a bearer token has to be included in the `Authorization`
  *     header in requests to the API. Validation and evaluation of these tokens has to be configured
@@ -69,56 +84,69 @@ import org.immutables.value.Value;
  *     <p>To determine if a user is authorized to perform the requested operation, the following
  *     steps are executed:
  *     <p><code>
- * 1. If the operation is covered by the `public` group, authorization is granted, even if no token or an invalid token were provided.
+ * 1. If the operation is covered by the `public` group, authorization is granted, even if no token or an invalid token were provided. (Then jump to 6.)
  * 2. If no token or an invalid token (wrong signature or expired) are provided, authorization is rejected.
- * 3. If 'audience' is non-empty and does not intersect the audience claim of the provided token, authorization is rejected.
- * 4. If 'scopes' is non-empty and the scope claim of the provided token does not contain at least one permission group that covers
+ * 3. If `audience` is non-empty and does not intersect the audience claim of the provided token, authorization is rejected.
+ * 4. If `scopes` is non-empty and the scope claim of the provided token does not contain at least one permission group that covers
  *    the requested operation, authorization is rejected.
  * 5. If the permissions claim of the provided token does not contain at least one permission, predefined permission group or custom
  *    permission group that covers the requested operation, authorization is rejected.
+ * 6. If `policies` is enabled and the PDP returns `Deny`, authorization is rejected.
  * </code>
+ *     <p>{@docVar:policies}
+ *     <p>{@docTable:policies}
  * @langDe Absicherung für alle API Operationen (Kombination aus Endpunkt und HTTP-Methode).
  *     <p>#### Berechtigungen
- *     <p>Die Absicherung basiert auf Berechtigungen, vordefinierten Berechtigungsgruppen und
- *     benutzerdefinierten Berechtigungsgruppen. Diese **vordefinierten Berechtigungsgruppen** sind
- *     verfügbar:
+ *     <p>Die Absicherung basiert auf Berechtigungen und Berechtigungsgruppen.
+ *     <p>Berechtigungen sind eine Kombination aus Gruppen-Prefix (siehe unten) und einer OpenAPI
+ *     Operation-Id (ohne jeglichen Prefix), z.B. `data:getItems` oder `tiles:getTile`. Diese können
+ *     verwendet werden, wenn eine fein-granularere Absicherung benötigt wird, als sie mit
+ *     Berechtigungsgruppen möglich ist.
+ *     <p>#### Permission groups
+ *     <p>Das sind die **vordefinierten Main-Berechtigungsgruppen**, jede Operation/Berechtigung ist
+ *     in genau einer Main-Gruppe enthalten:
  *     <p><code>
  * - `discover`: Lesen von API Landing Pages, Conformance Declarations und OpenAPI Definitionen
  * - `collections:read`: Lesen von Metadaten zu Feature Collections
- * - `collections`: enthält `collections:read`
  * - `data:read`: Lesen und Abfragen von Features
  * - `data:write`: Ändern von Features
- * - `data`: enthält `data:read` und `data:write`
  * - `tiles:read`: Lesen von Tiles
- * - `tiles`: enthält `tiles:read`
  * - `styles:read`: Lesen von Styles und deren Metadaten
  * - `styles:write`: Ändern von Styles und deren Metadaten
- * - `styles`: enthält `styles:read` und `styles:write`
  * - `resources:read`: Lesen von Dateiressourcen
  * - `resources:write`: Ändern von Dateiressourcen
- * - `resources`: enthält `resources:read` und `resources:write`
  * - `search:read`: Lesen von Stored Queries und deren Parameter
  * - `search:write`: Ändern von Stored Queries
- * - `search`: enthält `search:read` und `search:write`
  * - `routes:read`: Lesen von gespeicherten Routen und deren Definition
  * - `routes:write`: Berechnen und Speichern von Routen, Löschen gespeicherter Routen
+ * </code>
+ *     <p>Das sind die **vordefinierten Parent-Berechtigungsgruppen** (komfortable Vereinigungen von
+ *     Main-Gruppen):
+ *     <p><code>
+ * - `collections`: enthält `collections:read`
+ * - `data`: enthält `data:read` und `data:write`
+ * - `tiles`: enthält `tiles:read`
+ * - `styles`: enthält `styles:read` und `styles:write`
+ * - `resources`: enthält `resources:read` und `resources:write`
+ * - `search`: enthält `search:read` und `search:write`
  * - `routes`: enthält `routes:read` und `routes:write`
+ * </code>
+ *     <p>Das sind die **vordefinierten Base-Berechtigungsgruppen** (komfortable Vereinigungen von
+ *     Main-Gruppen):
+ *     <p><code>
  * - `read`: enthält `discover`, `collections:read`, `data:read`, `tiles:read`, `styles:read`, `resources:read`, `search:read` und `routes:read`
  * - `write`: enthält `data:write`, `styles:write`, `resources:write`, `search:write` und `routes:write`
  * </code>
- *     <p>**Berechtigungen** sind eine Kombination aus Gruppen-Prefix und einer OpenAPI Operation-Id
- *     (ohne jeglichen Prefix), z.B. `data:getItems` oder `tiles:getTile`. Diese können für eine
- *     fein-granularere Absicherung verwendet werden.
  *     <p>**Benutzerdefinierte Berechtigungsgruppen** werden in `groups` definiert, sie können
  *     Berechtigungen und/oder vordefinierte Berechtigungsgruppen enthalten.
- *     <p>**Daten-spezifische Berechtigungen**
+ *     <p>**Berechtigungsgruppe** `public`
+ *     <p>Die spezielle Berechtigungsgruppe `public` definiert die Liste der Berechtigungen und/oder
+ *     vordefinierten Berechtigungsgruppen, die jeder Benutzer besitzt, ob angemeldet oder nicht.
+ *     <p>#### Daten-spezifische Berechtigungen
  *     <p>Die oben beschriebenen Berechtigungen gewähren Zugriff zu jeder API und Collection. Um den
  *     Zugriff auf bestimmte APIs oder Collections einzuschränken, kann ein Suffix zu
  *     Berechtigungsgruppen und Berechtigungen hinzugefügt werden, z.B. `read::daraa` oder
  *     `data:getItems::daraa:AeronauticSrf`.
- *     <p>**Berechtigungsgruppe `public`**
- *     <p>Die spezielle Berechtigungsgruppe `public` definiert die Liste der Berechtigungen und/oder
- *     vordefinierten Berechtigungsgruppen, die jeder Benutzer besitzt, ob angemeldet oder nicht.
  *     <p>#### Authentifizierung and Autorisierung
  *     <p>Um authentifizierte Benutzer zu unterstützen, muss ein Bearer-Token im
  *     `Authorization`-Header in Anfragen an die API inkludiert werden. Die Validierung und
@@ -128,7 +156,7 @@ import org.immutables.value.Value;
  *     werden die folgenden Schritte durchgeführt:
  *     <p><code>
  * 1. Wenn die Operation von der `public`-Gruppe abgedeckt ist, wird die Autorisierung gewährt, auch wenn kein Token oder ein invalides
- *    Token bereitgestellt wurden.
+ *    Token bereitgestellt wurden. (Dann Sprung zu 6.)
  * 2. Wenn kein Token oder ein invalides Token (falsche Signatur oder abgelaufen) bereitgestellt wurden, wird die Autorisierung verweigert.
  * 3. Wenn 'audience' nicht leer ist und sich nicht mit dem Audience-Claim des gegebenen Tokens überschneidet, wird die Autorisierung verweigert.
  * 4. Wenn 'scopes' nicht leer ist und der Scope-Claim des gegebenen Tokens nicht mindestens eine Berechtigungsgruppe enthält, die die Operation
@@ -136,12 +164,39 @@ import org.immutables.value.Value;
  * 5. Wenn der Permissions-Claim des gegebenen Tokens nicht mindestens eine Berechtigung, vordefinierte
  *    Berechtigungsgruppe oder benutzerdefinierte Berechtigungsgruppe enthält, die die Operation
  *    abdeckt, wird die Autorisierung verweigert.
+ * 6. Wenn `policies` aktiviert ist und der PDP `Deny` zurück gibt, wird die Autorisierung verweigert.
  * </code>
+ *     <p>{@docVar:policies}
+ *     <p>{@docTable:policies}
+ * @ref:policies {@link de.ii.ogcapi.foundation.domain.ApiSecurity.Policies}
+ * @ref:policiesTable {@link de.ii.ogcapi.foundation.domain.ImmutablePolicies}
  */
+@DocDefs(
+    tables = {
+      @DocTable(
+          name = "policies",
+          rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:policiesTable}"),
+            @DocStep(type = Step.JSON_PROPERTIES)
+          },
+          columnSet = ColumnSet.JSON_PROPERTIES),
+    },
+    vars = {
+      @DocVar(
+          name = "policies",
+          value = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:policies}"),
+            @DocStep(type = Step.TAG, params = "{@bodyBlock}")
+          }),
+    })
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableApiSecurity.Builder.class)
 public interface ApiSecurity {
 
+  /**
+   * @langEn ## Policies
+   * @langDe ## Policies
+   */
   @Value.Immutable
   @JsonDeserialize(builder = ImmutablePolicies.Builder.class)
   interface Policies {
@@ -160,18 +215,34 @@ public interface ApiSecurity {
 
     /**
      * @langEn Add the given attributes to the request sent to the *Policy Decision Point*. Keys are
-     *     attribute ids, values are single key objects using either `constant` for a fixed string
-     *     or `property` for a property path. Attributes using `property` are only relevant for
-     *     operations involving features. May be defined per collection.
+     *     attribute ids, values are single key objects using either `constant` for a fixed string ,
+     *     `property` for a property path or `parameter` for a query parameter. Attributes using
+     *     `property` are only relevant for operations involving features. May be defined per
+     *     collection.
      * @langDe Fügt die gegebenen Attribute dem Request an den *Policy Decision Point* hinzu. Keys
-     *     sind Attribut-Ids, Werte sind Objekte mit einem Key, entweder `constant` für feste
-     *     Strings oder `property` für Property-Pfade. Attribute mit `property` sind nur für
-     *     Operationen relevant die Features involvieren. Kann pro Collection definiert werden.
+     *     sind Attribut-Ids, Werte sind Objekte mit einem einzelnen Key, entweder `constant` für
+     *     feste Strings, `property` für Property-Pfade oder `parameter` für Query-Parameter.
+     *     Attribute mit `property` sind nur für Operationen relevant die Features involvieren. Kann
+     *     pro Collection definiert werden.
      * @default {}
      * @since v3.5
      */
     Map<String, PolicyAttribute> getAttributes();
 
+    /**
+     * @langEn Applies the given attributes of obligations returned by the *Policy Decision Point*.
+     *     Keys are attribute ids, values are single key objects using `parameter` for a query
+     *     parameter. Parameters defined in an obligation will overwrite parameters in the request
+     *     with the exception if `filter`, which is merged using `AND`, May be defined per
+     *     collection.
+     * @langDe Wendet die angegebenen Attribute aus Obligations an, die der *Policy Decision Point*
+     *     zurückgibt. Keys sind Attribut-Ids, Werte sind Objekte mit einem einzelnen Key
+     *     `parameter` für Query-Parameter. Parameter die in einer Obligation definiert sind
+     *     überschreiben Parameter im Request, mit der Ausnahme von `filter`, das mit `AND`
+     *     zusammengeführt wird. Kann pro Collection definiert werden.
+     * @default {}
+     * @since v3.5
+     */
     Map<String, PolicyAttribute> getObligations();
 
     @JsonIgnore
@@ -241,13 +312,16 @@ public interface ApiSecurity {
 
   /**
    * @langEn If non-empty, *OAuth2 Scopes* are added to the OpenAPI definition. Then only tokens
-   *     that contain at least one scope that covers the requested operation are accepted. Values
-   *     can be any combination of `BASE` (e.g. `read`), `PARENT` (e.g. `data`), `MAIN` (e.g.
-   *     `data:read`) and `CUSTOM` (everything defined in `groups` besides `public`).
+   *     that contain at least one scope that covers the requested operation are accepted. Scopes
+   *     reuse permissions groups, values are the types of permission groups that should be used:
+   *     `BASE` (e.g. `read`), `PARENT` (e.g. `data`), `MAIN` (e.g. `data:read`) and `CUSTOM`
+   *     (everything defined in `groups` besides `public`).
    * @langDe Wenn nicht leer, werden *OAuth2 Scopes* zur OpenAPI Definition hinzugefügt. Dann werden
    *     nur Tokens akzeptiert, die mindestens einen Scope enthalten, der die angeforderte Operation
-   *     abdeckt. Werte können jede Kombination von `BASE` (z.B. `read`), `PARENT` (z.B. `data`),
-   *     `MAIN` (z.B. `data:read`) und `CUSTOM` (alles in `groups` definierte außer `public`) sein.
+   *     abdeckt. Scopes verwenden Berechtigungsgruppen, Werte sind die Arten von
+   *     Berechtigungsgruppen, die verwendet werden sollen: `BASE` (z.B. `read`), `PARENT` (z.B.
+   *     `data`), `MAIN` (z.B. `data:read`) und `CUSTOM` (alles in `groups` definierte außer
+   *     `public`) sein.
    * @default []
    * @since v3.5
    */
@@ -265,9 +339,10 @@ public interface ApiSecurity {
 
   /**
    * @langEn Optional additional authorization layer using a *Policy Decision Point* defined in the
-   *     [global configuration](../application/70-reference.md).
+   *     [global configuration](../application/65-auth.md), see [Policies](#policies).
    * @langDe Optionaler zusätzlicher Autorisierungs-Layer mittels eines *Policy Decision Point*, der
-   *     in der [globalen Konfiguration](../application/70-reference.md) definiert wird.
+   *     in der [globalen Konfiguration](../application/65-auth.md) definiert wird, siehe
+   *     [Policies](#policies).
    * @default null
    * @since v3.5
    */
