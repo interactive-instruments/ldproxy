@@ -11,6 +11,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.features.core.domain.EndpointFeaturesDefinition;
+import de.ii.ogcapi.features.core.domain.PolicyAttributeKeys;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ApiSecurity.PolicyAttribute;
@@ -36,7 +38,6 @@ import javax.ws.rs.core.StreamingOutput;
 public class PolicyAttributeResolverProperties implements PolicyAttributeResolver {
 
   private static final TypeReference<List<Map<String, Object>>> TYPE_REF = new TypeReference<>() {};
-  private static final String PREFIX = "ldproxy:features:property:";
 
   private final PolicyAttributeFeatureGetter featureGetter;
   private final PolicyAttributeFeaturesGetter featuresGetter;
@@ -65,7 +66,8 @@ public class PolicyAttributeResolverProperties implements PolicyAttributeResolve
   public Map<String, Set<Object>> resolve(
       Map<String, PolicyAttribute> attributes,
       ApiOperation apiOperation,
-      ApiRequestContext requestContext) {
+      ApiRequestContext requestContext,
+      Optional<byte[]> body) {
     try {
       List<Map<String, Object>> features = getFeatures(apiOperation, requestContext);
 
@@ -83,8 +85,9 @@ public class PolicyAttributeResolverProperties implements PolicyAttributeResolve
     attributes.forEach(
         (key, attribute) -> {
           if (attribute.getProperty().isPresent()) {
-            properties.put(attribute.getProperty().get(), PREFIX + key);
-            resolved.put(PREFIX + key, new HashSet<>());
+            String fullKey = PolicyAttributeKeys.getFullKey(key);
+            properties.put(attribute.getProperty().get(), fullKey);
+            resolved.put(fullKey, new HashSet<>());
           }
         });
 
@@ -162,7 +165,16 @@ public class PolicyAttributeResolverProperties implements PolicyAttributeResolve
 
   private boolean isItem(ApiOperation apiOperation) {
     return Objects.equals(
-        apiOperation.getOperationIdWithoutPrefix(), EndpointFeaturesDefinition.OP_ID_GET_ITEM);
+            apiOperation.getOperationIdWithoutPrefix(), EndpointFeaturesDefinition.OP_ID_GET_ITEM)
+        || Objects.equals(
+            apiOperation.getOperationIdWithoutPrefix(),
+            EndpointFeaturesDefinition.OP_ID_REPLACE_ITEM)
+        || Objects.equals(
+            apiOperation.getOperationIdWithoutPrefix(),
+            EndpointFeaturesDefinition.OP_ID_UPDATE_ITEM)
+        || Objects.equals(
+            apiOperation.getOperationIdWithoutPrefix(),
+            EndpointFeaturesDefinition.OP_ID_DELETE_ITEM);
   }
 
   private boolean isItems(ApiOperation apiOperation) {

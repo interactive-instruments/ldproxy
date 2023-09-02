@@ -14,6 +14,7 @@ import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ApiSecurity.PolicyAttribute;
 import de.ii.ogcapi.foundation.domain.PolicyAttributeResolver;
 import java.util.Map;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -40,7 +41,8 @@ public class PolicyAttributeResolverConstants implements PolicyAttributeResolver
   public Map<String, ?> resolve(
       Map<String, PolicyAttribute> attributes,
       ApiOperation apiOperation,
-      ApiRequestContext requestContext) {
+      ApiRequestContext requestContext,
+      Optional<byte[]> body) {
     return attributes.entrySet().stream()
         .filter(entry -> entry.getValue().getConstant().isPresent())
         .map(entry -> Map.entry(PREFIX + entry.getKey(), entry.getValue().getConstant().get()))

@@ -16,6 +16,7 @@ import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputFeatureCreate;
 import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputFeatureReplace;
+import de.ii.ogcapi.features.core.domain.EndpointFeaturesDefinition;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -219,7 +220,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
-                getOperationId("createItem", collectionId),
+                getOperationId(EndpointFeaturesDefinition.OP_ID_CREATE_ITEM, collectionId),
                 GROUP_DATA_WRITE,
                 TAGS)
             .ifPresent(
@@ -267,7 +268,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
-                getOperationId("replaceItem", collectionId),
+                getOperationId(EndpointFeaturesDefinition.OP_ID_REPLACE_ITEM, collectionId),
                 GROUP_DATA_WRITE,
                 TAGS)
             .ifPresent(
@@ -290,7 +291,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
-                getOperationId("updateItem", collectionId),
+                getOperationId(EndpointFeaturesDefinition.OP_ID_UPDATE_ITEM, collectionId),
                 GROUP_DATA_WRITE,
                 TAGS)
             .ifPresent(
@@ -310,7 +311,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
-                getOperationId("deleteItem", collectionId),
+                getOperationId(EndpointFeaturesDefinition.OP_ID_DELETE_ITEM, collectionId),
                 GROUP_DATA_WRITE,
                 TAGS)
             .ifPresent(

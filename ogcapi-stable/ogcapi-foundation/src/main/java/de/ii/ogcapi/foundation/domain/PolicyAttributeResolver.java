@@ -10,6 +10,7 @@ package de.ii.ogcapi.foundation.domain;
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.foundation.domain.ApiSecurity.PolicyAttribute;
 import java.util.Map;
+import java.util.Optional;
 
 @AutoMultiBind
 public interface PolicyAttributeResolver {
@@ -27,5 +28,6 @@ public interface PolicyAttributeResolver {
   Map<String, ?> resolve(
       Map<String, PolicyAttribute> attributes,
       ApiOperation apiOperation,
-      ApiRequestContext requestContext);
+      ApiRequestContext requestContext,
+      Optional<byte[]> body);
 }

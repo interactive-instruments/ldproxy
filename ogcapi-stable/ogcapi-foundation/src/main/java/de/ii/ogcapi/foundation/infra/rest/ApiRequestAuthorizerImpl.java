@@ -36,7 +36,6 @@ import de.ii.xtraplatform.base.domain.util.Tuple;
 import de.ii.xtraplatform.web.domain.LoginHandler;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -332,8 +331,20 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer, ApiSecuri
             Category.ACTION,
             new LinkedHashMap<>());
 
-    // TODO: move to xtraplatform? use operationId, extensions of PolicyAttribute ->
-    // PolicyAttributeApi
+    attributes.get(Category.RESOURCE).put("ldproxy:api:id", requestContext.getApi().getId());
+    requestContext
+        .getCollectionId()
+        .ifPresent(
+            collection ->
+                attributes.get(Category.RESOURCE).put("ldproxy:collection:id", collection));
+    attributes
+        .get(Category.ACTION)
+        .put("ldproxy:request:host", requestContext.getExternalUri().getHost());
+    attributes.get(Category.ACTION).put("ldproxy:request:method", requestContext.getMethod());
+    attributes
+        .get(Category.ACTION)
+        .put("ldproxy:request:mediaType", requestContext.getMediaType().type().toString());
+
     attributeResolvers
         .get()
         .forEach(
@@ -343,25 +354,9 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer, ApiSecuri
                     .get(policyAttributeResolver.getCategory())
                     .putAll(
                         policyAttributeResolver.resolve(
-                            policies.getAttributes(), apiOperation, requestContext));
+                            policies.getAttributes(), apiOperation, requestContext, body));
               }
             });
-
-    // TODO: body
-    if (body.isPresent()) {
-      LOGGER.debug("BODYYYY {}", new String(body.get(), StandardCharsets.UTF_8));
-    }
-
-    attributes.get(Category.ACTION).put("ldproxy:request:api", requestContext.getApi().getId());
-    requestContext
-        .getCollectionId()
-        .ifPresent(
-            collection ->
-                attributes.get(Category.ACTION).put("ldproxy:request:collection", collection));
-    attributes.get(Category.ACTION).put("ldproxy:request:method", requestContext.getMethod());
-    attributes
-        .get(Category.ACTION)
-        .put("ldproxy:request:mediaType", requestContext.getMediaType().type().toString());
 
     return policyDecider.request(
         requestContext.getFullPath(),
