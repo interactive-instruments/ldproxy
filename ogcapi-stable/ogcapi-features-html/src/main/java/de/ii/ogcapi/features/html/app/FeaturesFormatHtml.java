@@ -45,6 +45,7 @@ import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.ogcapi.html.domain.NavigationDTO;
+import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
@@ -347,6 +348,7 @@ public class FeaturesFormatHtml
     OgcApiDataV2 apiData = transformationContext.getApiData();
     String staticUrlPrefix = transformationContext.getOgcApiRequest().getStaticUrlPrefix();
     URICustomizer uriCustomizer = transformationContext.getOgcApiRequest().getUriCustomizer();
+    Optional<User> user = transformationContext.getOgcApiRequest().getUser();
     ModifiableFeatureCollectionView featureTypeDataset;
 
     boolean hideMap =
@@ -377,7 +379,8 @@ public class FeaturesFormatHtml
               hideMap,
               transformationContext.getQueryTitle().orElse("Search"),
               getPropertyTooltips(apiData, true),
-              transformationContext.getLinks());
+              transformationContext.getLinks(),
+              user);
     } else {
       // Features - Core
       String collectionName = transformationContext.getCollectionId();
@@ -443,7 +446,8 @@ public class FeaturesFormatHtml
                 getPropertyTooltips(apiData, collectionName, true),
                 apiData.getLabel(),
                 transformationContext.getLinks(),
-                apiData.getSubPath());
+                apiData.getSubPath(),
+                user);
       } else {
         featureTypeDataset =
             createFeatureDetailsView(
@@ -460,7 +464,8 @@ public class FeaturesFormatHtml
                 getMapPosition(apiData, collectionName),
                 hideMap,
                 getGeometryProperties(apiData, collectionName),
-                getPropertyTooltips(apiData, collectionName, true));
+                getPropertyTooltips(apiData, collectionName, true),
+                user);
       }
     }
 
@@ -493,7 +498,8 @@ public class FeaturesFormatHtml
       boolean propertyTooltips,
       String apiLabel,
       List<Link> links,
-      List<String> subPathToLandingPage) {
+      List<String> subPathToLandingPage,
+      Optional<User> user) {
     OgcApiDataV2 apiData = api.getData();
     URI requestUri = null;
     try {
@@ -597,7 +603,8 @@ public class FeaturesFormatHtml
                 .sorted(Comparator.comparing(link -> link.getTypeLabel().toUpperCase()))
                 .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
                 .collect(Collectors.toList()))
-        .setRawTemporalExtent(api.getTemporalExtent(featureType.getId()));
+        .setRawTemporalExtent(api.getTemporalExtent(featureType.getId()))
+        .setUser(user);
   }
 
   private ModifiableFeatureCollectionView createFeatureDetailsView(
@@ -614,7 +621,8 @@ public class FeaturesFormatHtml
       POSITION mapPosition,
       boolean hideMap,
       List<String> geometryProperties,
-      boolean propertyTooltips) {
+      boolean propertyTooltips,
+      Optional<User> user) {
     OgcApiDataV2 apiData = api.getData();
     String rootTitle = i18n.get("root", language);
     String collectionsTitle = i18n.get("collectionsTitle", language);
@@ -724,7 +732,8 @@ public class FeaturesFormatHtml
                         uriBuilder.copy().removeLastPathSegments(1).toString()))
                 .add(new NavigationDTO(itemsTitle, uriBuilder.toString()))
                 .add(new NavigationDTO(featureId))
-                .build());
+                .build())
+        .setUser(user);
   }
 
   private ModifiableFeatureCollectionView createQueryExpressionView(
@@ -740,7 +749,8 @@ public class FeaturesFormatHtml
       boolean hideMap,
       String queryLabel,
       boolean propertyTooltips,
-      List<Link> links) {
+      List<Link> links,
+      Optional<User> user) {
     OgcApiDataV2 apiData = api.getData();
     URI requestUri = null;
     try {
@@ -837,7 +847,8 @@ public class FeaturesFormatHtml
                 .sorted(Comparator.comparing(link -> link.getTypeLabel().toUpperCase()))
                 .map(link -> new NavigationDTO(link.getTypeLabel(), link.getHref()))
                 .collect(Collectors.toList()))
-        .setRawTemporalExtent(api.getTemporalExtent());
+        .setRawTemporalExtent(api.getTemporalExtent())
+        .setUser(user);
   }
 
   private boolean isNoIndexEnabledForApi(OgcApiDataV2 apiData) {

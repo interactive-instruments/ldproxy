@@ -8,6 +8,13 @@
 package de.ii.ogcapi.common.domain;
 
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl;
+import de.ii.ogcapi.foundation.domain.PermissionGroup;
+import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 
-public interface QueriesHandlerCommon extends QueriesHandler<QueriesHandlerCommonImpl.Query> {}
+public interface QueriesHandlerCommon extends QueriesHandler<QueriesHandlerCommonImpl.Query> {
+
+  String GROUP_COLLECTIONS = "collections";
+  PermissionGroup GROUP_COLLECTIONS_READ =
+      PermissionGroup.of(Base.READ, GROUP_COLLECTIONS, "access feature collection metadata");
+}

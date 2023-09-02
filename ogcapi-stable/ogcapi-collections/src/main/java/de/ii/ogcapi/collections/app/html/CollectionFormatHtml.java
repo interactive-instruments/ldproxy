@@ -107,12 +107,13 @@ public class CollectionFormatHtml implements CollectionFormatExtension {
             .rawLinks(ogcApiCollection.getLinks())
             .title(ogcApiCollection.getTitle().orElse(ogcApiCollection.getId()))
             .description(ogcApiCollection.getDescription().orElse(null))
-            .uriCustomizer(requestContext.getUriCustomizer())
+            .uriCustomizer(requestContext.getUriCustomizer().copy())
             .extent(ogcApiCollection.getExtent())
             .language(requestContext.getLanguage())
             .collection(ogcApiCollection)
             .i18n(i18n)
             .hasGeometry(api.getSpatialExtent(ogcApiCollection.getId()).isPresent())
+            .user(requestContext.getUser())
             .build();
 
     return collectionView;

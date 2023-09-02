@@ -158,11 +158,12 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
         .removeZoomLevelConstraints(removeZoomLevelConstraints)
         .htmlConfig(htmlConfig.orElseThrow())
         .noIndex(isNoIndexEnabledForApi(api.getData()))
-        .uriCustomizer(requestContext.getUriCustomizer())
+        .uriCustomizer(requestContext.getUriCustomizer().copy())
         .i18n(i18n)
         .description(tiles.getDescription().orElse(null))
         .title(tiles.getTitle().orElse(null))
         .language(requestContext.getLanguage())
+        .user(requestContext.getUser())
         .build();
   }
 }

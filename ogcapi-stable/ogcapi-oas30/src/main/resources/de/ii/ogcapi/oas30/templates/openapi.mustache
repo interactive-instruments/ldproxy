@@ -1,0 +1,52 @@
+{{> header}}
+
+<style>
+  .wrapper, .block {
+    padding: 0px !important;
+  }
+
+  .info {
+    margin-top: 0px !important;
+  }
+
+  .scheme-container {
+    border-bottom: 1px solid rgba(59,65,81,.3) !important;
+    box-shadow: none !important;
+  }
+
+  @media (min-width: 576px) {
+    .container, .wrapper {
+        max-width:540px
+    }
+  }
+
+  @media (min-width: 768px) {
+    .container, .wrapper {
+        max-width:720px
+    }
+  }
+
+  @media (min-width: 992px) {
+    .container, .wrapper {
+        max-width:960px
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .container, .wrapper {
+        max-width:1140px
+    }
+  }
+
+  @media (min-width: 1540px) {
+    .container, .wrapper {
+        max-width:1460px
+    }
+  }
+</style>
+
+<div id="swagger-ui"></div>
+
+{{> swaggerUi}}
+
+{{> footer}}

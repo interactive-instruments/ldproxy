@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -123,6 +124,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new", attributeBuilderDetection = true)
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "FEATURES_HTML")
 @JsonDeserialize(builder = ImmutableFeaturesHtmlConfiguration.Builder.class)
 public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, PropertyTransformations {
 

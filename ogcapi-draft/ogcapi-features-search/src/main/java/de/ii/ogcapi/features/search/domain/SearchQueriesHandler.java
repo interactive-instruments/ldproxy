@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.search.domain;
 
+import de.ii.ogcapi.foundation.domain.PermissionGroup;
+import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
@@ -18,6 +20,12 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 public interface SearchQueriesHandler extends QueriesHandler<SearchQueriesHandler.Query> {
+
+  String GROUP_SEARCH = "search";
+  PermissionGroup GROUP_SEARCH_READ =
+      PermissionGroup.of(Base.READ, GROUP_SEARCH, "access stored queries and their parameters");
+  PermissionGroup GROUP_SEARCH_WRITE =
+      PermissionGroup.of(Base.WRITE, GROUP_SEARCH, "mutate stored queries");
 
   @Override
   Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();

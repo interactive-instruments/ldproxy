@@ -22,7 +22,7 @@ import javax.inject.Singleton;
 public class JacksonSubTypeIdsRouting implements JacksonSubTypeIds {
 
   @Inject
-  JacksonSubTypeIdsRouting() {}
+  public JacksonSubTypeIdsRouting() {}
 
   @Override
   public List<JacksonSubType> getSubTypes() {

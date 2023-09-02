@@ -11,6 +11,7 @@ import static de.ii.ogcapi.features.gml.domain.GmlConfiguration.GmlVersion.GML32
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "GML")
 @JsonDeserialize(builder = ImmutableGmlConfiguration.Builder.class)
 public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransformations {
 

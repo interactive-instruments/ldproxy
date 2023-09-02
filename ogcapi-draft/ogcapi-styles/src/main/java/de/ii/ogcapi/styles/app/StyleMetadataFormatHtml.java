@@ -123,11 +123,12 @@ public class StyleMetadataFormatHtml implements StyleMetadataFormatExtension {
         .urlPrefix(requestContext.getStaticUrlPrefix())
         .htmlConfig(htmlConfig)
         .noIndex(isNoIndexEnabledForApi(apiData))
-        .uriCustomizer(requestContext.getUriCustomizer())
+        .uriCustomizer(requestContext.getUriCustomizer().copy())
         .i18n(i18n)
         .language(requestContext.getLanguage())
         .title(i18n.get("styleMetadataTitle", requestContext.getLanguage()))
         .description(null)
+        .user(requestContext.getUser())
         .build();
   }
 

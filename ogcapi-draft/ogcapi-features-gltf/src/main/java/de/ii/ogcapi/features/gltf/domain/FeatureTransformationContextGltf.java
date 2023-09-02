@@ -46,7 +46,7 @@ public abstract class FeatureTransformationContextGltf implements FeatureTransfo
   public Map<String, ComponentType> getStringOffsetTypes() {
     return getGltfConfiguration().getProperties().entrySet().stream()
         .filter(p -> p.getValue().getType() == Type.STRING)
-        .map(p -> new SimpleEntry<>(p.getKey(), p.getValue().getStringOffsetType()))
+        .map(p -> new SimpleEntry<>(p.getKey(), p.getValue().getStringOffsetType().get()))
         .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 }

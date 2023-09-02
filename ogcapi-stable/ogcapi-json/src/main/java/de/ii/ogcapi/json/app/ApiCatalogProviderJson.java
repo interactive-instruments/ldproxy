@@ -18,6 +18,7 @@ import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.Principal;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -54,7 +55,8 @@ public class ApiCatalogProviderJson extends ApiCatalogProvider {
 
   // TODO: add locale parameter in ServiceListing.getServiceListing() in xtraplatform
   @Override
-  public Response getServiceListing(List<ServiceData> apis, URI uri, Optional<Locale> language)
+  public Response getServiceListing(
+      List<ServiceData> apis, URI uri, Optional<Principal> user, Optional<Locale> language)
       throws URISyntaxException {
     ApiCatalog apiCatalog = getCatalog(apis, uri, language);
 

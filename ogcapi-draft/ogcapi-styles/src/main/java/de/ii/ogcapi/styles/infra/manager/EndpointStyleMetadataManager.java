@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.styles.infra.manager;
 
+import static de.ii.ogcapi.styles.domain.QueriesHandlerStyles.GROUP_STYLES_WRITE;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
@@ -129,6 +131,7 @@ public class EndpointStyleMetadataManager extends Endpoint {
             operationDescription,
             Optional.empty(),
             getOperationId("replaceStyleMetadata"),
+            GROUP_STYLES_WRITE,
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(methodReplace.name(), operation));
     HttpMethods methodUpdate = HttpMethods.PATCH;
@@ -221,6 +224,7 @@ public class EndpointStyleMetadataManager extends Endpoint {
             operationDescription,
             Optional.empty(),
             getOperationId("updateStyleMetadata"),
+            GROUP_STYLES_WRITE,
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(methodUpdate.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());

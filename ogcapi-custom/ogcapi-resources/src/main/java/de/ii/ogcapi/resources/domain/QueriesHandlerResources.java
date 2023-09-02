@@ -7,12 +7,20 @@
  */
 package de.ii.ogcapi.resources.domain;
 
+import de.ii.ogcapi.foundation.domain.PermissionGroup;
+import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import org.immutables.value.Value;
 
 public interface QueriesHandlerResources extends QueriesHandler<QueriesHandlerResources.Query> {
+
+  String GROUP_RESOURCES = "resources";
+  PermissionGroup GROUP_RESOURCES_READ =
+      PermissionGroup.of(Base.READ, GROUP_RESOURCES, "access file resources");
+  PermissionGroup GROUP_RESOURCES_WRITE =
+      PermissionGroup.of(Base.WRITE, GROUP_RESOURCES, "mutate file resources");
 
   enum Query implements QueryIdentifier {
     RESOURCES,

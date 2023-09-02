@@ -2,9 +2,10 @@
 maturity = 'MATURE'
 
 dependencies {
-    embedded (group: 'com.networknt', name: 'json-schema-validator', version: '1.0.73') {
+    embeddedExport (group: 'com.networknt', name: 'json-schema-validator', version: '1.0.86') {
         exclude module: 'jackson-core'
         exclude module: 'jackson-databind'
+        exclude module: 'jackson-dataformat-yaml'
         exclude module: 'commons-lang3'
         exclude module: 'slf4j-api'
     }

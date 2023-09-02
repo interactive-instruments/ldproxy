@@ -7,14 +7,21 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import de.ii.xtraplatform.auth.domain.User;
+import java.net.URI;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.ws.rs.core.Request;
 import org.immutables.value.Value;
 
 public interface ApiRequestContext {
+
+  URI getExternalUri();
+
   ApiMediaType getMediaType();
 
   List<ApiMediaType> getAlternateMediaTypes();
@@ -31,16 +38,63 @@ public interface ApiRequestContext {
 
   Optional<Request> getRequest();
 
+  Optional<User> getUser();
+
   @Value.Default
   default int getMaxResponseLinkHeaderSize() {
     return 2048;
   }
 
+  @Value.Derived
   default String getApiUri() {
     return getUriCustomizer()
         .copy()
         .cutPathAfterSegments(getApi().getData().getSubPath().toArray(new String[0]))
         .clearParameters()
         .toString();
+  }
+
+  @Value.Derived
+  default String getPath() {
+    String apiPath =
+        getUriCustomizer()
+            .copy()
+            .cutPathAfterSegments(getApi().getData().getSubPath().toArray(new String[0]))
+            .getPath();
+
+    return Objects.requireNonNullElse(
+        getUriCustomizer().copy().replaceInPath(apiPath, "").getPath(), "");
+  }
+
+  @Value.Derived
+  default String getFullPath() {
+    return Path.of("/", getApi().getData().getSubPath().toArray(new String[0]))
+        .resolve(
+            Objects.isNull(getPath()) || getPath().isEmpty()
+                ? Path.of("")
+                : Path.of("/").relativize(Path.of(getPath())))
+        .toString();
+  }
+
+  @Value.Derived
+  default Optional<String> getCollectionId() {
+    String apiPath =
+        getUriCustomizer()
+            .copy()
+            .cutPathAfterSegments(getApi().getData().getSubPath().toArray(new String[0]))
+            .getPath();
+    List<String> pathSegments =
+        getUriCustomizer().copy().replaceInPath(apiPath, "").getPathSegments();
+
+    if (pathSegments.size() > 1 && Objects.equals(pathSegments.get(0), "collections")) {
+      return Optional.ofNullable(pathSegments.get(1));
+    }
+
+    return Optional.empty();
+  }
+
+  @Value.Derived
+  default String getMethod() {
+    return getRequest().isPresent() ? getRequest().get().getMethod() : "INTERNAL";
   }
 }

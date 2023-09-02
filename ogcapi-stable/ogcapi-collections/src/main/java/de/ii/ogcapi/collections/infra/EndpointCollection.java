@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.collections.infra;
 
+import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.GROUP_COLLECTIONS_READ;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -260,6 +262,7 @@ public class EndpointCollection extends EndpointSubCollection {
                 operationDescription,
                 Optional.empty(),
                 getOperationId("getCollection", collectionId),
+                GROUP_COLLECTIONS_READ,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));

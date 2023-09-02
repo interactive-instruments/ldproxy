@@ -23,7 +23,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.html.domain.MapClient;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.tiles.domain.ImmutableMinMax;
 import de.ii.xtraplatform.tiles.domain.LevelFilter;
@@ -321,6 +321,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "TILES")
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
 public interface TilesConfiguration extends SfFlatConfiguration, CachingConfiguration {
 
@@ -881,20 +882,6 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
     }
 
     return responseBuilder.build();
-  }
-
-  @Value.Check
-  default TilesConfiguration alwaysFlatten() {
-    Map<String, List<PropertyTransformation>> transformations = extendWithFlattenIfMissing();
-    if (transformations.isEmpty()) {
-      // a flatten transformation is already set
-      return this;
-    }
-
-    return new ImmutableTilesConfiguration.Builder()
-        .from(this)
-        .transformations(transformations)
-        .build();
   }
 
   static Optional<FeatureTypeConfigurationOgcApi> getCollectionData(

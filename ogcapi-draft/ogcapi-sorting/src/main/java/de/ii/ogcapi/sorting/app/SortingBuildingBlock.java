@@ -9,6 +9,7 @@ package de.ii.ogcapi.sorting.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration.PathSeparator;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
@@ -64,7 +65,10 @@ public class SortingBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
-    return new ImmutableSortingConfiguration.Builder().enabled(false).build();
+    return new ImmutableSortingConfiguration.Builder()
+        .enabled(false)
+        .pathSeparator(PathSeparator.DOT)
+        .build();
   }
 
   @Override

@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.routes.infra;
 
+import static de.ii.ogcapi.routes.domain.QueryHandlerRoutes.GROUP_ROUTES_WRITE;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
@@ -79,7 +81,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -310,6 +311,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
             operationDescription,
             Optional.empty(),
             getOperationId("computeRoute"),
+            GROUP_ROUTES_WRITE,
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(method.toString(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
@@ -328,7 +330,6 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
       @Auth Optional<User> optionalUser,
       @Context OgcApi api,
       @Context ApiRequestContext requestContext,
-      @Context UriInfo uriInfo,
       @Context HttpServletRequest request,
       byte[] requestBody) {
 
@@ -369,7 +370,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
     List<OgcApiQueryParameter> parameterDefinitions =
         getQueryParameters(extensionRegistry, api.getData(), "/routes", HttpMethods.POST);
     QueryParameterSet queryParameterSet =
-        QueryParameterSet.of(parameterDefinitions, toFlatMap(uriInfo.getQueryParameters()))
+        QueryParameterSet.of(parameterDefinitions, requestContext.getParameters())
             .evaluate(api, Optional.empty());
 
     FeatureQuery query =

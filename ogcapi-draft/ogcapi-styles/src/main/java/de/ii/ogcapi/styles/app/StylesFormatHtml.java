@@ -115,11 +115,12 @@ public class StylesFormatHtml implements StylesFormatExtension {
         .breadCrumbs(breadCrumbs)
         .htmlConfig(htmlConfig)
         .noIndex(isNoIndexEnabledForApi(apiData))
-        .uriCustomizer(requestContext.getUriCustomizer())
+        .uriCustomizer(requestContext.getUriCustomizer().copy())
         .i18n(i18n)
         .description(i18n.get("stylesDescription", requestContext.getLanguage()))
         .title(i18n.get("stylesTitle", requestContext.getLanguage()))
         .language(requestContext.getLanguage())
+        .user(requestContext.getUser())
         .build();
   }
 }

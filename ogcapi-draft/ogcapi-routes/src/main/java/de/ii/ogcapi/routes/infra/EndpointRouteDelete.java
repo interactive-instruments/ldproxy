@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.routes.infra;
 
+import static de.ii.ogcapi.routes.domain.QueryHandlerRoutes.GROUP_ROUTES_WRITE;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -117,6 +119,7 @@ public class EndpointRouteDelete extends Endpoint {
               operationDescription,
               Optional.empty(),
               getOperationId("deleteRoute"),
+              GROUP_ROUTES_WRITE,
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
       definitionBuilder.putResources(path, resourceBuilder.build());

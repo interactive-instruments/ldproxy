@@ -91,13 +91,14 @@ public class LandingPageFormatHtml implements LandingPageFormatExtension, Confor
             .urlPrefix(requestContext.getStaticUrlPrefix())
             .rawLinks(apiLandingPage.getLinks())
             .htmlConfig(htmlConfig)
-            .uriCustomizer(requestContext.getUriCustomizer())
+            .uriCustomizer(requestContext.getUriCustomizer().copy())
             .noIndex(isNoIndexEnabledForApi(api.getData()))
             .i18n(i18n)
             .title(apiLandingPage.getTitle().orElse(api.getData().getId()))
             .description(apiLandingPage.getDescription().orElse(null))
             .extent(apiLandingPage.getExtent())
             .language(requestContext.getLanguage())
+            .user(requestContext.getUser())
             .build();
 
     return landingPageView;

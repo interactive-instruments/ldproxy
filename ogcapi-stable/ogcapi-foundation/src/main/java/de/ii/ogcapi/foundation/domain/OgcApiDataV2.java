@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
@@ -156,9 +157,18 @@ import org.immutables.value.Value;
  * @langAll ### Caching
  *     <p>{@docVar:caching}
  *     <p>{@docTable:cachingProperties}
- * @langAll ### Access Control
+ * @langEn ### Access Control
  *     <p>{@docVar:security}
+ *     <p>#### Configuration
  *     <p>{@docTable:securityProperties}
+ *     <p>{@docVar:policies}
+ *     <p>{@docTable:policies}
+ * @langDe ### Access Control
+ *     <p>{@docVar:security}
+ *     <p>#### Konfiguration
+ *     <p>{@docTable:securityProperties}
+ *     <p>{@docVar:policies}
+ *     <p>{@docTable:policies}
  * @langEn ### Examples
  *     <p>See the [API
  *     configuration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)
@@ -187,6 +197,8 @@ import org.immutables.value.Value;
  * @ref:cachingProperties {@link de.ii.ogcapi.foundation.domain.ImmutableCaching}
  * @ref:security {@link de.ii.ogcapi.foundation.domain.ApiSecurity}
  * @ref:securityProperties {@link de.ii.ogcapi.foundation.domain.ImmutableApiSecurity}
+ * @ref:policies {@link de.ii.ogcapi.foundation.domain.ApiSecurity.Policies}
+ * @ref:policiesTable {@link de.ii.ogcapi.foundation.domain.ImmutablePolicies}
  */
 @DocFile(
     path = "services",
@@ -246,6 +258,13 @@ import org.immutables.value.Value;
             @DocStep(type = Step.UNMARKED)
           },
           columnSet = ColumnSet.JSON_PROPERTIES),
+      @DocTable(
+          name = "policies",
+          rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:policiesTable}"),
+            @DocStep(type = Step.JSON_PROPERTIES)
+          },
+          columnSet = ColumnSet.JSON_PROPERTIES),
     },
     vars = {
       @DocVar(
@@ -278,12 +297,26 @@ import org.immutables.value.Value;
             @DocStep(type = Step.TAG_REFS, params = "{@ref:security}"),
             @DocStep(type = Step.TAG, params = "{@bodyBlock}")
           }),
+      @DocVar(
+          name = "policies",
+          value = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:policies}"),
+            @DocStep(type = Step.TAG, params = "{@bodyBlock}")
+          }),
     })
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableOgcApiDataV2.Builder.class)
 public interface OgcApiDataV2 extends ServiceData, ExtendableConfiguration {
 
   String SERVICE_TYPE = "OGC_API";
+
+  static OgcApiDataV2 replaceOrAddExtensions(
+      OgcApiDataV2 apiDataOld, ExtensionConfiguration... extensions) {
+    List<ExtensionConfiguration> extensionsNew =
+        ExtensionConfiguration.replaceOrAddExtensions(apiDataOld.getExtensions(), extensions);
+
+    return new ImmutableOgcApiDataV2.Builder().from(apiDataOld).extensions(extensionsNew).build();
+  }
 
   abstract class Builder implements EntityDataBuilder<OgcApiDataV2> {
 
@@ -390,10 +423,8 @@ public interface OgcApiDataV2 extends ServiceData, ExtendableConfiguration {
    * @default NONE
    * @since v2.1
    */
-  @Value.Default
-  default MODE getApiValidation() {
-    return MODE.NONE;
-  }
+  @Nullable
+  MODE getApiValidation();
 
   /**
    * @langEn Tags for this API. Every tag is a string without white space. Tags are shown in the

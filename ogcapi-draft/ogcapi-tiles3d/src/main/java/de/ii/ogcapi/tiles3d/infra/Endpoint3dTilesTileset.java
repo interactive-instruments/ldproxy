@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.tiles3d.infra;
 
+import static de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler.GROUP_TILES_READ;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
@@ -131,6 +133,7 @@ public class Endpoint3dTilesTileset extends EndpointSubCollection implements Con
                 operationDescription,
                 Optional.empty(),
                 getOperationId("get3dTileset", collectionId),
+                GROUP_TILES_READ,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
