@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.pubsub.app;
 
+import static de.ii.ogcapi.foundation.domain.ApiSecurity.GROUP_DISCOVER_READ;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
@@ -88,6 +90,7 @@ public class EndpointAsyncApi extends Endpoint {
             Optional.empty(),
             Optional.empty(),
             getOperationId("getAsyncApiDefinition"),
+            GROUP_DISCOVER_READ,
             ImmutableList.of())
         .ifPresent(operation -> resourceBuilder1.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder1.build());
