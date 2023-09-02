@@ -280,6 +280,8 @@ public class StyleFormatHtml implements StyleFormatExtension {
                 + "}")
         .mapClient(mapClient)
         .title("Style " + styleId)
+        .uriCustomizer(requestContext.getUriCustomizer().copy())
+        .user(requestContext.getUser())
         .build();
   }
 }

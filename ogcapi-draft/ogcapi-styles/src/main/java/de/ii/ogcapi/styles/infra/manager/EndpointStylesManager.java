@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.styles.infra.manager;
 
-import static de.ii.ogcapi.styles.domain.QueriesHandlerStyles.SCOPE_STYLES_WRITE;
+import static de.ii.ogcapi.styles.domain.QueriesHandlerStyles.GROUP_STYLES_WRITE;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -159,7 +159,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
             operationDescription,
             Optional.empty(),
             getOperationId("createStyle"),
-            SCOPE_STYLES_WRITE,
+            GROUP_STYLES_WRITE,
             TAGS)
         .ifPresent(
             operation -> resourceBuilderCreate.putOperations(HttpMethods.POST.name(), operation));
@@ -194,7 +194,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
             operationDescription,
             Optional.empty(),
             getOperationId("replaceStyle"),
-            SCOPE_STYLES_WRITE,
+            GROUP_STYLES_WRITE,
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
     queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
@@ -214,7 +214,7 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
             operationDescription,
             Optional.empty(),
             getOperationId("deleteStyle"),
-            SCOPE_STYLES_WRITE,
+            GROUP_STYLES_WRITE,
             TAGS)
         .ifPresent(
             operation -> resourceBuilderCreate.putOperations(HttpMethods.DELETE.name(), operation));

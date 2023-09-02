@@ -7,12 +7,12 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
-import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
+import de.ii.ogcapi.foundation.domain.PermissionGroup;
+import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
-import de.ii.xtraplatform.base.domain.util.Tuple;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
@@ -23,9 +23,10 @@ import org.immutables.value.Value;
 public interface FeaturesCoreQueriesHandler
     extends QueriesHandler<FeaturesCoreQueriesHandler.Query> {
 
-  String SCOPE_DATA = "data";
-  Tuple<Scope, String> SCOPE_DATA_READ = Tuple.of(Scope.READ, SCOPE_DATA);
-  Tuple<Scope, String> SCOPE_DATA_WRITE = Tuple.of(Scope.WRITE, SCOPE_DATA);
+  String GROUP_DATA = "data";
+  PermissionGroup GROUP_DATA_READ =
+      PermissionGroup.of(Base.READ, GROUP_DATA, "access and query features");
+  PermissionGroup GROUP_DATA_WRITE = PermissionGroup.of(Base.WRITE, GROUP_DATA, "mutate features");
   String BOUNDING_BOX_HEADER = "Content-Bounding-Box";
   String TEMPORAL_EXTENT_HEADER = "Content-Temporal-Extent";
 

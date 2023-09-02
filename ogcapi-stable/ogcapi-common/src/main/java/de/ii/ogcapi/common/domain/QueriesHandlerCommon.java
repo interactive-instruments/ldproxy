@@ -8,12 +8,13 @@
 package de.ii.ogcapi.common.domain;
 
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl;
-import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
+import de.ii.ogcapi.foundation.domain.PermissionGroup;
+import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
-import de.ii.xtraplatform.base.domain.util.Tuple;
 
 public interface QueriesHandlerCommon extends QueriesHandler<QueriesHandlerCommonImpl.Query> {
 
-  String SCOPE_COLLECTIONS = "collections";
-  Tuple<Scope, String> SCOPE_COLLECTIONS_READ = Tuple.of(Scope.READ, SCOPE_COLLECTIONS);
+  String GROUP_COLLECTIONS = "collections";
+  PermissionGroup GROUP_COLLECTIONS_READ =
+      PermissionGroup.of(Base.READ, GROUP_COLLECTIONS, "access feature collection metadata");
 }

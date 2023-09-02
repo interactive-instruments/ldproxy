@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.crud.app;
 
-import static de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.SCOPE_DATA_WRITE;
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.GROUP_DATA_WRITE;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -16,6 +16,7 @@ import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputFeatureCreate;
 import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputFeatureReplace;
+import de.ii.ogcapi.features.core.domain.EndpointFeaturesDefinition;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -219,8 +220,8 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
-                getOperationId("createItem", collectionId),
-                SCOPE_DATA_WRITE,
+                getOperationId(EndpointFeaturesDefinition.OP_ID_CREATE_ITEM, collectionId),
+                GROUP_DATA_WRITE,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.POST.name(), operation));
@@ -267,8 +268,8 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
-                getOperationId("replaceItem", collectionId),
-                SCOPE_DATA_WRITE,
+                getOperationId(EndpointFeaturesDefinition.OP_ID_REPLACE_ITEM, collectionId),
+                GROUP_DATA_WRITE,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
@@ -290,8 +291,8 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
-                getOperationId("updateItem", collectionId),
-                SCOPE_DATA_WRITE,
+                getOperationId(EndpointFeaturesDefinition.OP_ID_UPDATE_ITEM, collectionId),
+                GROUP_DATA_WRITE,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PATCH.name(), operation));
@@ -310,8 +311,8 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 operationSummary,
                 operationDescription,
                 Optional.empty(),
-                getOperationId("deleteItem", collectionId),
-                SCOPE_DATA_WRITE,
+                getOperationId(EndpointFeaturesDefinition.OP_ID_DELETE_ITEM, collectionId),
+                GROUP_DATA_WRITE,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));

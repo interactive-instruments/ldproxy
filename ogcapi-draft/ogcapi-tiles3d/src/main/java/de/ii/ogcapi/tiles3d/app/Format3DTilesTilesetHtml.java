@@ -140,6 +140,8 @@ public class Format3DTilesTilesetHtml implements Format3dTilesTileset {
         .style(style)
         .htmlConfig(htmlConfig)
         .rawLinks(links)
+        .uriCustomizer(requestContext.getUriCustomizer().copy())
+        .user(requestContext.getUser())
         .build();
   }
 }

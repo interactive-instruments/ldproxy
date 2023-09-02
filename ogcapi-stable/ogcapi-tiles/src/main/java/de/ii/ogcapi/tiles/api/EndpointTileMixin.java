@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.tiles.api;
 
-import static de.ii.ogcapi.tiles.domain.TilesQueriesHandler.SCOPE_TILES_READ;
+import static de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler.GROUP_TILES_READ;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableList;
@@ -44,7 +44,6 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,7 +113,7 @@ public interface EndpointTileMixin {
                 operationDescription,
                 Optional.empty(),
                 operationId,
-                SCOPE_TILES_READ,
+                GROUP_TILES_READ,
                 tags)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
@@ -164,7 +163,7 @@ public interface EndpointTileMixin {
             operationDescription,
             Optional.empty(),
             operationId,
-            SCOPE_TILES_READ,
+            GROUP_TILES_READ,
             tags)
         .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
@@ -180,7 +179,6 @@ public interface EndpointTileMixin {
       OgcApi api,
       TilesProviders tilesProviders,
       ApiRequestContext requestContext,
-      UriInfo uriInfo,
       String definitionPath,
       Optional<String> collectionId,
       String tileMatrixSetId,
@@ -191,7 +189,7 @@ public interface EndpointTileMixin {
     OgcApiDataV2 apiData = api.getData();
     Optional<FeatureTypeConfigurationOgcApi> collectionData =
         collectionId.map(id -> apiData.getCollections().get(id));
-    Map<String, String> parameterValues = endpoint.toFlatMap(uriInfo.getQueryParameters());
+    Map<String, String> parameterValues = requestContext.getParameters();
     final List<OgcApiQueryParameter> parameterDefinitions =
         collectionId.isPresent()
             ? ((EndpointSubCollection) endpoint)

@@ -17,6 +17,7 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.ImmutableHtmlConfiguration;
 import de.ii.ogcapi.html.domain.NavigationDTO;
@@ -28,6 +29,7 @@ import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.Principal;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -88,7 +90,8 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
 
   // TODO: add locale parameter in ServiceListing.getServiceListing() in xtraplatform
   @Override
-  public Response getServiceListing(List<ServiceData> apis, URI uri, Optional<Locale> language)
+  public Response getServiceListing(
+      List<ServiceData> apis, URI uri, Optional<Principal> user, Optional<Locale> language)
       throws URISyntaxException {
     ApiCatalog apiCatalog = getCatalog(apis, uri, language);
 
@@ -97,6 +100,7 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
         .entity(
             new ImmutableServiceOverviewView.Builder()
                 .uri(uri)
+                .uriCustomizer(new URICustomizer(uri))
                 .apiCatalog(apiCatalog)
                 .htmlConfig(getHtmlConfigurationDefaults())
                 .i18n(i18n)
@@ -117,6 +121,7 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
                     apiCatalog
                         .getDescription()
                         .orElse(i18n.get("rootDescription", Optional.of(language.get()))))
+                .user(user)
                 .build())
         .build();
   }

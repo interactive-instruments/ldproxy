@@ -22,6 +22,7 @@ import de.ii.ogcapi.foundation.domain.ApiRequestContext
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2
 import de.ii.ogcapi.foundation.domain.OgcApi
 import de.ii.ogcapi.foundation.domain.URICustomizer
+import de.ii.xtraplatform.auth.domain.User
 import de.ii.xtraplatform.crs.domain.CrsTransformer
 import de.ii.xtraplatform.crs.domain.OgcCrs
 
@@ -51,6 +52,11 @@ class JsonFgWriterSetupUtil {
                 .links(ImmutableList.of())
                 .isFeatureCollection(isCollection)
                 .ogcApiRequest(new ApiRequestContext() {
+                    @Override
+                    URI getExternalUri() {
+                        return null
+                    }
+
                     @Override
                     ApiMediaType getMediaType() {
                         return FeaturesFormatJsonFg.MEDIA_TYPE
@@ -89,6 +95,11 @@ class JsonFgWriterSetupUtil {
 
                     @Override
                     Optional<Request> getRequest() {
+                        return null
+                    }
+
+                    @Override
+                    Optional<User> getUser() {
                         return null
                     }
                 })

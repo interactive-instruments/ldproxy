@@ -30,6 +30,8 @@ import de.ii.xtraplatform.services.domain.ServiceEndpoint;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jetty.HttpConnectorFactory;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.List;
@@ -65,6 +67,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
   private final URI servicesUri;
   private final ContentNegotiationMediaType contentNegotiationMediaType;
   private final ContentNegotiationLanguage contentNegotiationLanguage;
+  private final ApiRequestAuthorizer apiRequestAuthorizer;
   private final int maxResponseLinkHeaderSize;
 
   @Inject
@@ -74,12 +77,14 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
       RequestInjectableContext ogcApiInjectableContext,
       ServicesContext servicesContext,
       ContentNegotiationMediaType contentNegotiationMediaType,
-      ContentNegotiationLanguage contentNegotiationLanguage) {
+      ContentNegotiationLanguage contentNegotiationLanguage,
+      ApiRequestAuthorizer apiRequestAuthorizer) {
     this.extensionRegistry = extensionRegistry;
     this.ogcApiInjectableContext = ogcApiInjectableContext;
     this.servicesUri = servicesContext.getUri();
     this.contentNegotiationMediaType = contentNegotiationMediaType;
     this.contentNegotiationLanguage = contentNegotiationLanguage;
+    this.apiRequestAuthorizer = apiRequestAuthorizer;
     this.maxResponseLinkHeaderSize = getMaxResponseHeaderSize(appContext) / 4;
   }
 
@@ -125,20 +130,38 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     Locale selectedLanguage =
         contentNegotiationLanguage.negotiateLanguage(requestContext).orElse(Locale.ENGLISH);
 
-    ApiRequestAuthorizer.checkAuthorization(
-        service.getData(), entrypoint, subPath, apiOperation, optionalUser);
-
     ApiRequestContext apiRequestContext =
         new Builder()
             .requestUri(requestContext.getUriInfo().getRequestUri())
             .request(request)
-            .externalUri(getExternalUri())
+            .externalUri(servicesUri)
             .mediaType(selectedMediaType)
             .alternateMediaTypes(getAlternateMediaTypes(selectedMediaType, supportedMediaTypes))
             .language(selectedLanguage)
             .api(service)
             .maxResponseLinkHeaderSize(maxResponseLinkHeaderSize)
+            .user(optionalUser)
             .build();
+
+    // read body for authorization
+    Optional<byte[]> body = Optional.empty();
+    if (requestContext.hasEntity()) {
+      try {
+        body = Optional.of(requestContext.getEntityStream().readAllBytes());
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+
+    // might return a new ApiRequestContext with policy obligations applied
+    apiRequestContext =
+        apiRequestAuthorizer.checkAuthorization(
+            apiRequestContext, apiOperation, optionalUser, body);
+
+    // reset body for downstream endpoints
+    if (body.isPresent()) {
+      requestContext.setEntityStream(new ByteArrayInputStream(body.get()));
+    }
 
     ogcApiInjectableContext.inject(requestContext, apiRequestContext);
 
@@ -329,10 +352,6 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
 
   private List<EndpointExtension> getEndpoints() {
     return extensionRegistry.getExtensionsForType(EndpointExtension.class);
-  }
-
-  private Optional<URI> getExternalUri() {
-    return Optional.of(servicesUri);
   }
 
   private static int getMaxResponseHeaderSize(AppContext appContext) {

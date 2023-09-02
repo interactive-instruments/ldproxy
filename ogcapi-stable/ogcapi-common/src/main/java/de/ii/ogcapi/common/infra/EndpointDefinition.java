@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.common.infra;
 
-import static de.ii.ogcapi.foundation.domain.ApiSecurity.SCOPE_DISCOVER_READ;
+import static de.ii.ogcapi.foundation.domain.ApiSecurity.GROUP_DISCOVER_READ;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -92,7 +92,7 @@ public class EndpointDefinition extends Endpoint {
             Optional.empty(),
             Optional.empty(),
             getOperationId("getApiDefinition"),
-            SCOPE_DISCOVER_READ,
+            GROUP_DISCOVER_READ,
             ImmutableList.of())
         .ifPresent(operation -> resourceBuilder1.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder1.build());

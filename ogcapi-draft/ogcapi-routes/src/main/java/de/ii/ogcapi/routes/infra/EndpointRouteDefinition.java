@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.routes.infra;
 
-import static de.ii.ogcapi.routes.domain.QueryHandlerRoutes.SCOPE_ROUTES_READ;
+import static de.ii.ogcapi.routes.domain.QueryHandlerRoutes.GROUP_ROUTES_READ;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -120,7 +120,7 @@ public class EndpointRouteDefinition extends Endpoint {
               operationDescription,
               Optional.empty(),
               getOperationId("getRouteDefinition"),
-              SCOPE_ROUTES_READ,
+              GROUP_ROUTES_READ,
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
       definitionBuilder.putResources(path, resourceBuilder.build());

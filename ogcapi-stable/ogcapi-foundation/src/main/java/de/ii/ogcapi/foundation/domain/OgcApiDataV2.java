@@ -157,9 +157,18 @@ import org.immutables.value.Value;
  * @langAll ### Caching
  *     <p>{@docVar:caching}
  *     <p>{@docTable:cachingProperties}
- * @langAll ### Access Control
+ * @langEn ### Access Control
  *     <p>{@docVar:security}
+ *     <p>#### Configuration
  *     <p>{@docTable:securityProperties}
+ *     <p>{@docVar:policies}
+ *     <p>{@docTable:policies}
+ * @langDe ### Access Control
+ *     <p>{@docVar:security}
+ *     <p>#### Konfiguration
+ *     <p>{@docTable:securityProperties}
+ *     <p>{@docVar:policies}
+ *     <p>{@docTable:policies}
  * @langEn ### Examples
  *     <p>See the [API
  *     configuration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)
@@ -188,6 +197,8 @@ import org.immutables.value.Value;
  * @ref:cachingProperties {@link de.ii.ogcapi.foundation.domain.ImmutableCaching}
  * @ref:security {@link de.ii.ogcapi.foundation.domain.ApiSecurity}
  * @ref:securityProperties {@link de.ii.ogcapi.foundation.domain.ImmutableApiSecurity}
+ * @ref:policies {@link de.ii.ogcapi.foundation.domain.ApiSecurity.Policies}
+ * @ref:policiesTable {@link de.ii.ogcapi.foundation.domain.ImmutablePolicies}
  */
 @DocFile(
     path = "services",
@@ -247,6 +258,13 @@ import org.immutables.value.Value;
             @DocStep(type = Step.UNMARKED)
           },
           columnSet = ColumnSet.JSON_PROPERTIES),
+      @DocTable(
+          name = "policies",
+          rows = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:policiesTable}"),
+            @DocStep(type = Step.JSON_PROPERTIES)
+          },
+          columnSet = ColumnSet.JSON_PROPERTIES),
     },
     vars = {
       @DocVar(
@@ -277,6 +295,12 @@ import org.immutables.value.Value;
           name = "security",
           value = {
             @DocStep(type = Step.TAG_REFS, params = "{@ref:security}"),
+            @DocStep(type = Step.TAG, params = "{@bodyBlock}")
+          }),
+      @DocVar(
+          name = "policies",
+          value = {
+            @DocStep(type = Step.TAG_REFS, params = "{@ref:policies}"),
             @DocStep(type = Step.TAG, params = "{@bodyBlock}")
           }),
     })

@@ -5,16 +5,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.features.core.app;
+package de.ii.ogcapi.features.core.domain;
 
-import static de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.SCOPE_DATA_READ;
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.GROUP_DATA_READ;
 
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
-import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
@@ -44,6 +41,12 @@ public abstract class EndpointFeaturesDefinition extends EndpointSubCollection {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointFeaturesDefinition.class);
   private static final List<String> TAGS = ImmutableList.of("Access data");
+  public static final String OP_ID_GET_ITEM = "getItem";
+  public static final String OP_ID_GET_ITEMS = "getItems";
+  public static final String OP_ID_CREATE_ITEM = "createItem";
+  public static final String OP_ID_REPLACE_ITEM = "replaceItem";
+  public static final String OP_ID_UPDATE_ITEM = "updateItem";
+  public static final String OP_ID_DELETE_ITEM = "deleteItem";
 
   protected final FeaturesCoreProviders providers;
 
@@ -83,7 +86,7 @@ public abstract class EndpointFeaturesDefinition extends EndpointSubCollection {
         .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
   }
 
-  void generateDefinition(
+  public void generateDefinition(
       OgcApiDataV2 apiData,
       ImmutableApiEndpointDefinition.Builder definitionBuilder,
       String subSubPath,
@@ -230,8 +233,9 @@ public abstract class EndpointFeaturesDefinition extends EndpointSubCollection {
             operationDescription,
             Optional.empty(),
             getOperationId(
-                subSubPath.contains("{featureId}") ? "getItem" : "getItems", collectionId),
-            SCOPE_DATA_READ,
+                subSubPath.contains("{featureId}") ? OP_ID_GET_ITEM : OP_ID_GET_ITEMS,
+                collectionId),
+            GROUP_DATA_READ,
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
 

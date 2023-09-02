@@ -7,11 +7,12 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import static de.ii.ogcapi.foundation.domain.ApiSecurity.GROUP_PUBLIC;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
-import de.ii.xtraplatform.base.domain.util.Tuple;
+import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeGranularity;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
@@ -67,7 +68,7 @@ public interface ApiOperation {
 
   String getOperationId();
 
-  Tuple<Scope, String> getScope();
+  PermissionGroup getPermissionGroup();
 
   List<OgcApiQueryParameter> getQueryParameters();
 
@@ -107,7 +108,7 @@ public interface ApiOperation {
       Optional<String> operationDescription,
       Optional<ExternalDocumentation> externalDocs,
       String operationId,
-      Tuple<Scope, String> scope,
+      PermissionGroup permissionGroup,
       List<String> tags) {
     if (responseContent.isEmpty()) {
       if (LOGGER.isErrorEnabled()) {
@@ -169,7 +170,7 @@ public interface ApiOperation {
             .description(operationDescription)
             .externalDocs(externalDocs)
             .operationId(operationId)
-            .scope(scope)
+            .permissionGroup(permissionGroup)
             .tags(tags)
             .queryParameters(postUrlEncoded ? ImmutableList.of() : queryParameters)
             .headers(
@@ -201,7 +202,7 @@ public interface ApiOperation {
       Optional<String> operationDescription,
       Optional<ExternalDocumentation> externalDocs,
       String operationId,
-      Tuple<Scope, String> scope,
+      PermissionGroup permissionGroup,
       List<String> tags) {
     if ((method == HttpMethods.POST || method == HttpMethods.PUT || method == HttpMethods.PATCH)
         && requestContent.isEmpty()) {
@@ -220,7 +221,7 @@ public interface ApiOperation {
             .description(operationDescription)
             .externalDocs(externalDocs)
             .operationId(operationId)
-            .scope(scope)
+            .permissionGroup(permissionGroup)
             .tags(tags)
             .queryParameters(queryParameters)
             .headers(
@@ -259,7 +260,7 @@ public interface ApiOperation {
       Optional<String> operationDescription,
       Optional<ExternalDocumentation> externalDocs,
       String operationId,
-      Tuple<Scope, String> scope,
+      PermissionGroup permissionGroup,
       List<String> tags) {
     ImmutableApiResponse.Builder responseBuilder =
         new ImmutableApiResponse.Builder()
@@ -278,7 +279,7 @@ public interface ApiOperation {
             .description(operationDescription)
             .externalDocs(externalDocs)
             .operationId(operationId)
-            .scope(scope)
+            .permissionGroup(permissionGroup)
             .tags(tags)
             .queryParameters(queryParameters)
             .headers(
@@ -358,12 +359,28 @@ public interface ApiOperation {
 
     addErrorResponses(op, errorCodes);
 
-    if (apiData.getAccessControl().isPresent()
-        && apiData
-            .getAccessControl()
-            .get()
-            .isRestricted(isMutation ? Scope.WRITE.setOf() : Scope.READ.setOf())) {
-      op.addSecurityItem(new SecurityRequirement().addList("JWT"));
+    if (apiData.getAccessControl().isPresent()) {
+      Set<String> groups = getPermissionGroup().setOf();
+
+      if (apiData.getAccessControl().get().isRestricted(groups)) {
+        Set<String> scopes =
+            getPermissionGroup().setOf(apiData.getAccessControl().get().getScopes());
+
+        if (scopes.isEmpty()) {
+          op.addSecurityItem(new SecurityRequirement().addList("Default"));
+        } else {
+          scopes.forEach(
+              scope -> op.addSecurityItem(new SecurityRequirement().addList("Default", scope)));
+          if (apiData.getAccessControl().get().getScopes().contains(ScopeGranularity.CUSTOM)) {
+            apiData.getAccessControl().get().getGroupsWith(groups).stream()
+                .filter(group1 -> !Objects.equals(group1, GROUP_PUBLIC))
+                .distinct()
+                .forEach(
+                    group ->
+                        op.addSecurityItem(new SecurityRequirement().addList("Default", group)));
+          }
+        }
+      }
     }
   }
 

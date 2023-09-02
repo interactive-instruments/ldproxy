@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.foundation.app;
 
-import static de.ii.ogcapi.foundation.domain.ApiSecurity.ROLE_PUBLIC;
+import static de.ii.ogcapi.foundation.domain.ApiSecurity.GROUP_PUBLIC;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -16,7 +16,6 @@ import dagger.assisted.AssistedFactory;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ApiSecurity;
-import de.ii.ogcapi.foundation.domain.ApiSecurity.Scope;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMetadata;
@@ -25,6 +24,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableCollectionExtent;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiDataHydratorExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.services.domain.ImmutableServiceDataCommon;
@@ -47,7 +47,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -209,7 +208,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
   private ApiSecurity getSecurity() {
     return new ImmutableApiSecurity.Builder()
         .enabled(true)
-        .roles(Map.of(ROLE_PUBLIC, Set.of(Scope.READ.toString())))
+        .groups(Map.of(GROUP_PUBLIC, Base.READ.setOf()))
         .build();
   }
 

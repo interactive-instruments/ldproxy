@@ -275,6 +275,7 @@ class OgcApiCoreSpecCollections extends Specification {
                         .build()))
                 .api(api)
                 .requestUri(new URI(uri))
+                .externalUri(new URI('http://example.com'))
                 .language(Locale.GERMAN)
                 .build()
     }

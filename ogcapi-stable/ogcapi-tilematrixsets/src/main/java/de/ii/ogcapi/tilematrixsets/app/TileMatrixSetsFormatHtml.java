@@ -88,12 +88,13 @@ public class TileMatrixSetsFormatHtml implements TileMatrixSetsFormatExtension {
         .breadCrumbs(breadCrumbs)
         .htmlConfig(htmlConfig)
         .noIndex(isNoIndexEnabledForApi(api.getData()))
-        .uriCustomizer(requestContext.getUriCustomizer())
+        .uriCustomizer(requestContext.getUriCustomizer().copy())
         .i18n(i18n)
         .language(requestContext.getLanguage().orElse(null))
         .description(i18n.get("tileMatrixSetsDescription", requestContext.getLanguage()))
         .title(i18n.get("tileMatrixSetsTitle", requestContext.getLanguage()))
         .rawLinks(tileMatrixSets.getLinks())
+        .user(requestContext.getUser())
         .build();
   }
 }

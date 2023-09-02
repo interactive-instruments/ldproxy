@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.core.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ogcapi.features.core.domain.EndpointFeaturesDefinition;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -55,7 +56,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 
 /**
  * @title Features
@@ -70,7 +70,8 @@ import javax.ws.rs.core.UriInfo;
  */
 @Singleton
 @AutoBind
-public class EndpointFeatures extends EndpointFeaturesDefinition {
+public class EndpointFeatures extends EndpointFeaturesDefinition
+    implements PolicyAttributeFeaturesGetter {
 
   private final EntityRegistry entityRegistry;
   private final FeaturesQuery ogcApiFeaturesQuery;
@@ -238,10 +239,15 @@ public class EndpointFeatures extends EndpointFeaturesDefinition {
   @Path("/{collectionId}/items")
   public Response getItems(
       @Auth Optional<User> optionalUser,
-      @Context OgcApi api,
       @Context ApiRequestContext requestContext,
-      @Context UriInfo uriInfo,
       @PathParam("collectionId") String collectionId) {
+    return getItems(requestContext, collectionId);
+  }
+
+  @Override
+  public Response getItems(ApiRequestContext requestContext, String collectionId) {
+    OgcApi api = requestContext.getApi();
+
     checkCollectionExists(api.getData(), collectionId);
 
     FeatureTypeConfigurationOgcApi collectionData =
@@ -269,7 +275,7 @@ public class EndpointFeatures extends EndpointFeaturesDefinition {
         getQueryParameters(
             extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
     QueryParameterSet queryParameterSet =
-        QueryParameterSet.of(parameterDefinitions, toFlatMap(uriInfo.getQueryParameters()))
+        QueryParameterSet.of(parameterDefinitions, requestContext.getParameters())
             .evaluate(api, Optional.of(collectionData));
     Optional<Profile> profile =
         Optional.ofNullable(
