@@ -11,12 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
 import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
-import de.ii.xtraplatform.docs.DocDefs;
-import de.ii.xtraplatform.docs.DocStep;
-import de.ii.xtraplatform.docs.DocStep.Step;
-import de.ii.xtraplatform.docs.DocTable;
-import de.ii.xtraplatform.docs.DocTable.ColumnSet;
-import de.ii.xtraplatform.docs.DocVar;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -69,9 +63,8 @@ import org.immutables.value.Value;
  * </code>
  *     <p>**Custom permission groups** are defined in `groups`, they may contain permissions and/or
  *     predefined permission groups.
- *     <p>**Permission group** `public`
- *     <p>The special permission group `public` defines the list of permissions and/or predefined
- *     permission groups that every user possesses, if authenticated or not.
+ *     <p>The special **permission group `public`** defines the list of permissions and/or
+ *     predefined permission groups that every user possesses, if authenticated or not.
  *     <p>#### Data-specific permissions
  *     <p>The permissions groups and permissions described above will permit access to any API and
  *     collection. To restrict the access to specific APIs or collections, a suffix can be added to
@@ -93,8 +86,6 @@ import org.immutables.value.Value;
  *    permission group that covers the requested operation, authorization is rejected.
  * 6. If `policies` is enabled and the PDP returns `Deny`, authorization is rejected.
  * </code>
- *     <p>{@docVar:policies}
- *     <p>{@docTable:policies}
  * @langDe Absicherung für alle API Operationen (Kombination aus Endpunkt und HTTP-Methode).
  *     <p>#### Berechtigungen
  *     <p>Die Absicherung basiert auf Berechtigungen und Berechtigungsgruppen.
@@ -102,7 +93,7 @@ import org.immutables.value.Value;
  *     Operation-Id (ohne jeglichen Prefix), z.B. `data:getItems` oder `tiles:getTile`. Diese können
  *     verwendet werden, wenn eine fein-granularere Absicherung benötigt wird, als sie mit
  *     Berechtigungsgruppen möglich ist.
- *     <p>#### Permission groups
+ *     <p>#### Berechtigungsgruppen
  *     <p>Das sind die **vordefinierten Main-Berechtigungsgruppen**, jede Operation/Berechtigung ist
  *     in genau einer Main-Gruppe enthalten:
  *     <p><code>
@@ -139,9 +130,9 @@ import org.immutables.value.Value;
  * </code>
  *     <p>**Benutzerdefinierte Berechtigungsgruppen** werden in `groups` definiert, sie können
  *     Berechtigungen und/oder vordefinierte Berechtigungsgruppen enthalten.
- *     <p>**Berechtigungsgruppe** `public`
- *     <p>Die spezielle Berechtigungsgruppe `public` definiert die Liste der Berechtigungen und/oder
- *     vordefinierten Berechtigungsgruppen, die jeder Benutzer besitzt, ob angemeldet oder nicht.
+ *     <p>Die spezielle **Berechtigungsgruppe `public`** definiert die Liste der Berechtigungen
+ *     und/oder vordefinierten Berechtigungsgruppen, die jeder Benutzer besitzt, ob angemeldet oder
+ *     nicht.
  *     <p>#### Daten-spezifische Berechtigungen
  *     <p>Die oben beschriebenen Berechtigungen gewähren Zugriff zu jeder API und Collection. Um den
  *     Zugriff auf bestimmte APIs oder Collections einzuschränken, kann ein Suffix zu
@@ -158,44 +149,22 @@ import org.immutables.value.Value;
  * 1. Wenn die Operation von der `public`-Gruppe abgedeckt ist, wird die Autorisierung gewährt, auch wenn kein Token oder ein invalides
  *    Token bereitgestellt wurden. (Dann Sprung zu 6.)
  * 2. Wenn kein Token oder ein invalides Token (falsche Signatur oder abgelaufen) bereitgestellt wurden, wird die Autorisierung verweigert.
- * 3. Wenn 'audience' nicht leer ist und sich nicht mit dem Audience-Claim des gegebenen Tokens überschneidet, wird die Autorisierung verweigert.
- * 4. Wenn 'scopes' nicht leer ist und der Scope-Claim des gegebenen Tokens nicht mindestens eine Berechtigungsgruppe enthält, die die Operation
+ * 3. Wenn `audience` nicht leer ist und sich nicht mit dem Audience-Claim des gegebenen Tokens überschneidet, wird die Autorisierung verweigert.
+ * 4. Wenn `scopes` nicht leer ist und der Scope-Claim des gegebenen Tokens nicht mindestens eine Berechtigungsgruppe enthält, die die Operation
  *    abdeckt, wird die Autorisierung verweigert.
  * 5. Wenn der Permissions-Claim des gegebenen Tokens nicht mindestens eine Berechtigung, vordefinierte
  *    Berechtigungsgruppe oder benutzerdefinierte Berechtigungsgruppe enthält, die die Operation
  *    abdeckt, wird die Autorisierung verweigert.
  * 6. Wenn `policies` aktiviert ist und der PDP `Deny` zurück gibt, wird die Autorisierung verweigert.
  * </code>
- *     <p>{@docVar:policies}
- *     <p>{@docTable:policies}
- * @ref:policies {@link de.ii.ogcapi.foundation.domain.ApiSecurity.Policies}
- * @ref:policiesTable {@link de.ii.ogcapi.foundation.domain.ImmutablePolicies}
  */
-@DocDefs(
-    tables = {
-      @DocTable(
-          name = "policies",
-          rows = {
-            @DocStep(type = Step.TAG_REFS, params = "{@ref:policiesTable}"),
-            @DocStep(type = Step.JSON_PROPERTIES)
-          },
-          columnSet = ColumnSet.JSON_PROPERTIES),
-    },
-    vars = {
-      @DocVar(
-          name = "policies",
-          value = {
-            @DocStep(type = Step.TAG_REFS, params = "{@ref:policies}"),
-            @DocStep(type = Step.TAG, params = "{@bodyBlock}")
-          }),
-    })
 @Value.Immutable
 @JsonDeserialize(builder = ImmutableApiSecurity.Builder.class)
 public interface ApiSecurity {
 
   /**
-   * @langEn ## Policies
-   * @langDe ## Policies
+   * @langEn ##### Policies
+   * @langDe ##### Policies
    */
   @Value.Immutable
   @JsonDeserialize(builder = ImmutablePolicies.Builder.class)
