@@ -48,6 +48,7 @@ import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult;
 import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -405,15 +406,17 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
         formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class);
       }
 
+      URI uri =
+          new URICustomizer(api.getUri())
+              .ensureLastPathSegments("collections", collectionId, "items", featureId)
+              .addParameter("profile", "rel-as-key")
+              .build();
       ApiRequestContext requestContextGeoJson =
           new ImmutableRequestContext.Builder()
               .api(api)
               .request(Optional.empty())
-              .requestUri(
-                  new URICustomizer(api.getUri())
-                      .ensureLastPathSegments("collections", collectionId, "items", featureId)
-                      .addParameter("profile", "rel-as-key")
-                      .build())
+              .externalUri(uri)
+              .requestUri(uri)
               .mediaType(
                   new ImmutableApiMediaType.Builder()
                       .type(new MediaType("application", "geo+json"))
