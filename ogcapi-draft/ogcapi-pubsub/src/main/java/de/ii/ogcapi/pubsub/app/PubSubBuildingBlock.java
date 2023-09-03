@@ -426,6 +426,7 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
               .alternateMediaTypes(
                   formats.stream()
                       .filter(f -> f.isEnabledForApi(api.getData(), collectionId))
+                      .filter(f -> Objects.nonNull(f.getContent()))
                       .map(FormatExtension::getMediaType)
                       .filter(
                           mediaType -> !"geo+json".equalsIgnoreCase(mediaType.type().getSubtype()))
