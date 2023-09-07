@@ -47,4 +47,13 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
         });
     builder.additionalProperties(ImmutableJsonSchemaFalse.builder().build());
   }
+
+  @Override
+  protected JsonSchema deriveValueSchema(FeatureSchema schema) {
+    JsonSchema schema2 = super.deriveValueSchema(schema);
+    if (!(schema2 instanceof JsonSchemaArray) && schema.getName().contains("[].")) {
+      schema2 = withArrayWrapper(schema2);
+    }
+    return schema2;
+  }
 }
