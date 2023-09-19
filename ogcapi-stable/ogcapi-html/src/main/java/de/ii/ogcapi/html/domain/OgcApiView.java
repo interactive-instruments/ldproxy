@@ -72,13 +72,21 @@ public abstract class OgcApiView extends View {
             ((URICustomizer) uriCustomizer().copy().setPath(urlPrefix()))
                 .replaceInPath("/" + STATIC_PATH, LoginHandler.PATH_LOGOUT)
                 .clearParameters()
+                .addParameter(
+                    LoginHandler.PARAM_LOGOUT_REDIRECT_URI,
+                    uriCustomizer()
+                        .copy()
+                        .cutPathAfterSegments(apiData().getSubPath().toArray(new String[0]))
+                        .clearParameters()
+                        .toString())
                 .toString())
         : Optional.empty();
   }
 
   @Value.Derived
   public Optional<String> loginUri() {
-    // TODO: needs ApiSecurityInfo.getActiveScopes if not apiSecurity.getScopes().isEmpty()
+    // TODO: to show the login when scopes are enabled, ApiSecurityInfo.getActiveScopes would be
+    // needed here
     return Optional.ofNullable(apiData())
                 .flatMap(OgcApiDataV2::getAccessControl)
                 .filter(ApiSecurity::isEnabled)
