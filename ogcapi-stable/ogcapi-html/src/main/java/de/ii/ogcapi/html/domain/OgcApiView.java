@@ -67,6 +67,9 @@ public abstract class OgcApiView extends View {
                 .flatMap(OgcApiDataV2::getAccessControl)
                 .filter(ApiSecurity::isEnabled)
                 .isPresent()
+            && Optional.ofNullable(htmlConfig())
+                .filter(htmlConfiguration -> Objects.nonNull(htmlConfiguration.getLoginProvider()))
+                .isPresent()
             && user().isPresent()
         ? Optional.of(
             ((URICustomizer) uriCustomizer().copy().setPath(urlPrefix()))
@@ -91,6 +94,9 @@ public abstract class OgcApiView extends View {
                 .flatMap(OgcApiDataV2::getAccessControl)
                 .filter(ApiSecurity::isEnabled)
                 .filter(apiSecurity -> apiSecurity.getScopes().isEmpty())
+                .isPresent()
+            && Optional.ofNullable(htmlConfig())
+                .filter(htmlConfiguration -> Objects.nonNull(htmlConfiguration.getLoginProvider()))
                 .isPresent()
             && user().isEmpty()
         ? Optional.of(

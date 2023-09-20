@@ -12,7 +12,6 @@ import static de.ii.ogcapi.foundation.domain.ApiSecurity.GROUP_PUBLIC;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.Sets;
 import dagger.Lazy;
-import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ApiSecurity;
@@ -22,20 +21,16 @@ import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeGranularity;
 import de.ii.ogcapi.foundation.domain.ApiSecurityInfo;
 import de.ii.ogcapi.foundation.domain.EndpointExtension;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.LoginRedirectHandler;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.PermissionGroup;
 import de.ii.ogcapi.foundation.domain.PolicyAttributeResolver;
 import de.ii.ogcapi.foundation.domain.PolicyAttributeResolver.Category;
 import de.ii.ogcapi.foundation.domain.PolicyObligationFulfiller;
-import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.xtraplatform.auth.domain.PolicyDecider;
 import de.ii.xtraplatform.auth.domain.PolicyDecision;
-import de.ii.xtraplatform.auth.domain.SplitCookie;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.base.domain.util.Tuple;
-import de.ii.xtraplatform.web.domain.LoginHandler;
-import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -50,10 +45,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import org.apache.hc.core5.net.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,8 +95,11 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer, ApiSecuri
         getRequiredPermissions(permissionGroup, operationId, data.getId(), collectionId);
     Set<String> requiredScopes = getRequiredScopes(permissionGroup, data.getAccessControl().get());
     Set<String> activeScopes = getActiveScopes(data).keySet();
-    URI loginUri = getLoginUri(requestContext, activeScopes);
     List<ApiRequestContext> changedRequestContext = new ArrayList<>();
+    Optional<LoginRedirectHandler> optionalRedirectHandler =
+        extensionRegistry.getExtensionsForType(LoginRedirectHandler.class).stream()
+            .filter(r -> r.isEnabledFor(data, requestContext.getMediaType()))
+            .findFirst();
 
     if (isNotAuthorized(
         requestContext,
@@ -112,7 +107,8 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer, ApiSecuri
         optionalUser,
         requiredPermissions,
         requiredScopes,
-        loginUri,
+        optionalRedirectHandler,
+        activeScopes,
         apiOperation,
         body,
         changedRequestContext)) {
@@ -131,24 +127,6 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer, ApiSecuri
     return scope.setOf(operationId, apiId);
   }
 
-  private static URI getLoginUri(ApiRequestContext requestContext, Set<String> activeScopes) {
-    URIBuilder uriBuilder =
-        new URICustomizer(requestContext.getExternalUri())
-            .appendPath(LoginHandler.PATH_LOGIN)
-            .addParameter(
-                LoginHandler.PARAM_LOGIN_REDIRECT_URI,
-                requestContext
-                    .getUriCustomizer()
-                    .removeParameter(OAuthCredentialAuthFilter.OAUTH_ACCESS_TOKEN_PARAM)
-                    .toString());
-
-    if (!activeScopes.isEmpty()) {
-      uriBuilder.addParameter(LoginHandler.PARAM_LOGIN_SCOPES, String.join(" ", activeScopes));
-    }
-
-    return URI.create(uriBuilder.toString());
-  }
-
   private static Set<String> getRequiredScopes(
       PermissionGroup permissionGroup, ApiSecurity apiSecurity) {
     if (apiSecurity.getScopes().isEmpty()) {
@@ -164,12 +142,13 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer, ApiSecuri
       Optional<User> optionalUser,
       Set<String> requiredPermissions,
       Set<String> requiredScopes,
-      URI loginUri,
+      Optional<LoginRedirectHandler> redirectHandler,
+      Set<String> activeScopes,
       ApiOperation apiOperation,
       Optional<byte[]> body,
       List<ApiRequestContext> changedRequestContext) {
     if (isAccessRestricted(apiSecurity, requiredPermissions)) {
-      if (isNoUser(optionalUser, requestContext.getMediaType(), loginUri)
+      if (isNoUser(optionalUser, redirectHandler, requestContext, activeScopes)
           || isAudienceMismatch(apiSecurity, optionalUser)
           || isScopeMismatch(optionalUser, requiredScopes)
           || !hasUserPermission(apiSecurity, optionalUser, requiredPermissions)) {
@@ -248,19 +227,21 @@ public class ApiRequestAuthorizerImpl implements ApiRequestAuthorizer, ApiSecuri
   }
 
   private static boolean isNoUser(
-      Optional<User> optionalUser, ApiMediaType mediaType, URI loginUri) {
+      Optional<User> optionalUser,
+      Optional<LoginRedirectHandler> redirectHandler,
+      ApiRequestContext requestContext,
+      Set<String> activeScopes) {
     if (optionalUser.isEmpty()) {
-      if (mediaType.matches(MediaType.TEXT_HTML_TYPE)) {
+      if (redirectHandler.isPresent()) {
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug("Not logged in, redirecting");
         }
-        List<String> authCookies =
-            SplitCookie.deleteToken(loginUri.getHost(), Objects.equals(loginUri, "https"));
 
-        ResponseBuilder response = Response.seeOther(loginUri);
-        authCookies.forEach(cookie -> response.header("Set-Cookie", cookie));
-
-        throw new WebApplicationException(response.build());
+        Optional<Response> redirect =
+            redirectHandler.flatMap(handler -> handler.redirect(requestContext, activeScopes));
+        if (redirect.isPresent()) {
+          throw new WebApplicationException(redirect.get());
+        }
       }
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug("Not authorized: no valid token");

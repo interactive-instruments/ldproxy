@@ -278,6 +278,18 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
   @Nullable
   String getFooterText();
 
+  /**
+   * @langEn Option to enable automatic redirects to the login form of an identity provider. The
+   *     value is the id of a provider with login capabilities in the [global
+   *     configuration](../../application/65-auth.md).
+   * @langDe Option um automatische Redirects zum Login-Formular eines Identity-Providers zu
+   *     aktivieren. Der Wert ist die Id eines Provider mit Login-Fähigkeiten in der [globalen
+   *     Konfiguration](../../application/65-auth.md).
+   * @default null
+   */
+  @Nullable
+  String getLoginProvider();
+
   List<ApiCatalogEntry> getAdditionalApis();
 
   @Override
