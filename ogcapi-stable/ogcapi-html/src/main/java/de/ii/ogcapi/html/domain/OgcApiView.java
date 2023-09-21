@@ -62,15 +62,27 @@ public abstract class OgcApiView extends View {
   public abstract Optional<? extends Principal> user();
 
   @Value.Derived
-  public Optional<String> logoutUri() {
+  public boolean hasLoginProvider() {
     return Optional.ofNullable(apiData())
-                .flatMap(OgcApiDataV2::getAccessControl)
-                .filter(ApiSecurity::isEnabled)
-                .isPresent()
-            && Optional.ofNullable(htmlConfig())
-                .filter(htmlConfiguration -> Objects.nonNull(htmlConfiguration.getLoginProvider()))
-                .isPresent()
-            && user().isPresent()
+            .flatMap(OgcApiDataV2::getAccessControl)
+            .filter(ApiSecurity::isEnabled)
+            .isPresent()
+        && Optional.ofNullable(htmlConfig())
+            .filter(htmlConfiguration -> Objects.nonNull(htmlConfiguration.getLoginProvider()))
+            .isPresent();
+  }
+
+  @Value.Derived
+  public boolean hasEmptyScopes() {
+    return Optional.ofNullable(apiData())
+        .flatMap(OgcApiDataV2::getAccessControl)
+        .filter(apiSecurity -> apiSecurity.getScopes().isEmpty())
+        .isPresent();
+  }
+
+  @Value.Derived
+  public Optional<String> logoutUri() {
+    return hasLoginProvider() && user().isPresent()
         ? Optional.of(
             ((URICustomizer) uriCustomizer().copy().setPath(urlPrefix()))
                 .replaceInPath("/" + STATIC_PATH, LoginHandler.PATH_LOGOUT)
@@ -90,15 +102,7 @@ public abstract class OgcApiView extends View {
   public Optional<String> loginUri() {
     // TODO: to show the login when scopes are enabled, ApiSecurityInfo.getActiveScopes would be
     // needed here
-    return Optional.ofNullable(apiData())
-                .flatMap(OgcApiDataV2::getAccessControl)
-                .filter(ApiSecurity::isEnabled)
-                .filter(apiSecurity -> apiSecurity.getScopes().isEmpty())
-                .isPresent()
-            && Optional.ofNullable(htmlConfig())
-                .filter(htmlConfiguration -> Objects.nonNull(htmlConfiguration.getLoginProvider()))
-                .isPresent()
-            && user().isEmpty()
+    return hasLoginProvider() && user().isEmpty() && hasEmptyScopes()
         ? Optional.of(
             ((URICustomizer) uriCustomizer().copy().setPath(urlPrefix()))
                 .replaceInPath("/" + STATIC_PATH, LoginHandler.PATH_LOGIN)
