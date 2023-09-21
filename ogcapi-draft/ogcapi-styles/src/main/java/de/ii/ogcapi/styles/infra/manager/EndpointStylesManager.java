@@ -29,7 +29,6 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.styles.app.StylesBuildingBlock;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
@@ -200,8 +199,8 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
             getOperationId("replaceStyle"),
             GROUP_STYLES_WRITE,
             TAGS,
-            Optional.of(SpecificationMaturity.DRAFT_OGC),
-            Optional.empty())
+            StylesBuildingBlock.MATURITY,
+            StylesBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
     queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
     headers = getHeaders(extensionRegistry, apiData, path, HttpMethods.DELETE);
@@ -222,8 +221,8 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
             getOperationId("deleteStyle"),
             GROUP_STYLES_WRITE,
             TAGS,
-            Optional.of(SpecificationMaturity.DRAFT_OGC),
-            Optional.empty())
+            StylesBuildingBlock.MATURITY,
+            StylesBuildingBlock.SPEC)
         .ifPresent(
             operation -> resourceBuilderCreate.putOperations(HttpMethods.DELETE.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());

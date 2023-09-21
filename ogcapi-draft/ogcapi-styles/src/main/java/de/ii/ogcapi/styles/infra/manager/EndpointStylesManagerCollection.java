@@ -29,7 +29,6 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.styles.app.StylesBuildingBlock;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
@@ -243,8 +242,8 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
                 getOperationId("replaceStyle", collectionId),
                 GROUP_STYLES_WRITE,
                 TAGS,
-                Optional.of(SpecificationMaturity.DRAFT_OGC),
-                Optional.empty())
+                StylesBuildingBlock.MATURITY,
+                StylesBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
 
@@ -268,8 +267,8 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
                 getOperationId("deleteStyle", collectionId),
                 GROUP_STYLES_WRITE,
                 TAGS,
-                Optional.of(SpecificationMaturity.DRAFT_OGC),
-                Optional.empty())
+                StylesBuildingBlock.MATURITY,
+                StylesBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());

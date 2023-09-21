@@ -140,7 +140,7 @@ public class EndpointGltfSchema extends EndpointSubCollection {
                 getOperationId("getGltfSchema", collectionId),
                 GROUP_TILES_READ,
                 TAGS,
-                Optional.of(SpecificationMaturity.DRAFT_OGC),
+                Optional.of(SpecificationMaturity.DRAFT_LDPROXY),
                 Optional.empty())
             .ifPresent(
                 operation ->

@@ -13,6 +13,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ogcapi.collections.schema.app.SchemaBuildingBlock;
 import de.ii.ogcapi.collections.schema.domain.ImmutableQueryInputSchema;
 import de.ii.ogcapi.collections.schema.domain.QueriesHandlerSchema;
 import de.ii.ogcapi.collections.schema.domain.QueriesHandlerSchema.QueryInputSchema;
@@ -31,7 +32,6 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import java.util.List;
@@ -131,8 +131,8 @@ public class EndpointSchema extends EndpointSubCollection {
                 getOperationId("getSchema", collectionId),
                 GROUP_COLLECTIONS_READ,
                 TAGS,
-                Optional.of(SpecificationMaturity.DRAFT_OGC),
-                Optional.empty())
+                SchemaBuildingBlock.MATURITY,
+                SchemaBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());

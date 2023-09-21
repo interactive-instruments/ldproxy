@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import java.util.Objects;
@@ -178,7 +179,9 @@ public interface FoundationConfiguration extends ExtensionConfiguration {
   @Nullable
   Boolean getIncludeSpecificationInformation();
 
+  @JsonIgnore
   @Value.Derived
+  @Value.Auxiliary
   default boolean includesSpecificationInformation() {
     return Objects.equals(Boolean.TRUE, getIncludeSpecificationInformation());
   }

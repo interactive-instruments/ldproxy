@@ -27,7 +27,6 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.styles.app.StylesBuildingBlock;
 import de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
@@ -273,8 +272,8 @@ public class EndpointStyleMetadataManagerCollection extends EndpointSubCollectio
                 getOperationId("updateStyleMetadata", collectionId),
                 GROUP_STYLES_WRITE,
                 TAGS,
-                Optional.of(SpecificationMaturity.DRAFT_OGC),
-                Optional.empty())
+                StylesBuildingBlock.MATURITY,
+                StylesBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PATCH.name(), operation));
 
