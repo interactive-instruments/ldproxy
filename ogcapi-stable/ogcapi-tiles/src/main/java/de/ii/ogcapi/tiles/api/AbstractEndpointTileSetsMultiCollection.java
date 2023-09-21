@@ -21,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSets.Builder;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
@@ -94,7 +95,9 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
             Optional.empty(),
             getOperationId("getTileSetsList", "dataset", dataType),
             GROUP_TILES_READ,
-            tags)
+            tags,
+            TilesBuildingBlock.MATURITY,
+            TilesBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilderSet.putOperations(method.name(), operation));
     definitionBuilder.putResources(path, resourceBuilderSet.build());
 

@@ -9,12 +9,15 @@ package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
 import de.ii.xtraplatform.base.domain.LogContext;
 import io.swagger.v3.core.util.Json;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.parameters.Parameter;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,5 +148,29 @@ public interface ParameterExtension extends ApiExtension {
             || ("array".equals(schema.getType()) && value.trim().startsWith("["))
         ? value
         : "\"" + value + "\"";
+  }
+
+  default void setDescription(OgcApiDataV2 apiData, Parameter param) {
+    if (apiData
+        .getExtension(FoundationConfiguration.class)
+        .map(FoundationConfiguration::includesSpecificationInformation)
+        .orElse(true)) {
+      param.setDescription(
+          getSpecificationMaturity()
+              .map(
+                  maturity ->
+                      String.format(
+                          "%s\n\n_%s_",
+                          getDescription(), String.format(maturity.toString(), "parameter")))
+              .orElse(getDescription()));
+      getSpecificationMaturity()
+          .ifPresent(
+              maturity -> param.setExtensions(ImmutableMap.of("x-maturity", maturity.name())));
+      getSpecificationMaturity()
+          .filter(m -> Objects.equals(m, SpecificationMaturity.DEPRECATED))
+          .ifPresent(ignore -> param.setDeprecated(true));
+    } else {
+      param.setDescription(getDescription());
+    }
   }
 }

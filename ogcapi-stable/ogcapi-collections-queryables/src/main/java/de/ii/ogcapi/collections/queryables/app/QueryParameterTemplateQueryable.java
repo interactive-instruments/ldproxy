@@ -12,12 +12,14 @@ import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.xtraplatform.cql.domain.AEquals;
 import de.ii.xtraplatform.cql.domain.ArrayLiteral;
@@ -155,6 +157,19 @@ public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache
       default:
         return BooleanValue2.of(false);
     }
+  }
+
+  @Override
+  @Value.Default
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return Optional.of(SpecificationMaturity.STABLE_OGC);
+  }
+
+  @Override
+  public Optional<ExternalDocumentation> getSpecificationRef() {
+    return Optional.of(
+        ExternalDocumentation.of(
+            "https://docs.ogc.org/is/17-069r4/17-069r4.html", "OGC API - Features - Part 1: Core"));
   }
 
   private ScalarLiteral getScalarLiteral(String value, SchemaBase.Type valueType) {

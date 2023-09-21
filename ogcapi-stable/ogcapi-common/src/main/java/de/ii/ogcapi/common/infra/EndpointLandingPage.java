@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.common.app.ImmutableQueryInputLandingPage.Builder;
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl.QueryInputLandingPage;
+import de.ii.ogcapi.common.domain.CommonBuildingBlock;
 import de.ii.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ogcapi.common.domain.LandingPageFormatExtension;
 import de.ii.ogcapi.common.domain.QueriesHandlerCommon;
@@ -135,7 +136,9 @@ public class EndpointLandingPage extends Endpoint implements ConformanceClass {
             Optional.empty(),
             getOperationId("getLandingPage"),
             GROUP_DISCOVER_READ,
-            TAGS)
+            TAGS,
+            CommonBuildingBlock.MATURITY,
+            CommonBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
     return definitionBuilder.build();

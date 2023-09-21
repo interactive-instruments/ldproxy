@@ -15,6 +15,7 @@ import de.ii.ogcapi.foundation.domain.ApiSecurity;
 import de.ii.ogcapi.foundation.domain.ApiSecurityInfo;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
+import de.ii.ogcapi.foundation.domain.FoundationConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.oas30.domain.OpenApiExtension;
@@ -121,10 +122,22 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
 
       if (apiData != null) {
 
-        openAPI
-            .getInfo()
-            .title(apiData.getLabel())
-            .description(apiData.getDescription().orElse(""));
+        openAPI.getInfo().title(apiData.getLabel());
+        if (apiData
+            .getExtension(FoundationConfiguration.class)
+            .map(FoundationConfiguration::includesSpecificationInformation)
+            .orElse(true)) {
+          String note =
+              "Note: This is API is based on API building blocks (e.g., operations, query parameters, or headers) specified in OGC API Standards or drafts of those standards. For more information about OGC API Standards, see [https://ogcapi.ogc.org](https://ogcapi.ogc.org/). Some building blocks of this API can be preliminary and may change in future versions of this API, because they are not yet based on a stable specification. The maturity is stated for each building block.";
+          openAPI.getInfo().description(apiData.getDescription().orElse(""));
+          apiData
+              .getDescription()
+              .ifPresentOrElse(
+                  desc -> openAPI.getInfo().description(String.format("%s\n\n_%s_", desc, note)),
+                  () -> openAPI.getInfo().description(note));
+        } else {
+          apiData.getDescription().ifPresent(desc -> openAPI.getInfo().description(desc));
+        }
 
         if (apiData.getMetadata().isPresent()) {
           ApiMetadata md = apiData.getMetadata().get();

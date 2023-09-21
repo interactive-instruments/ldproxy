@@ -13,8 +13,11 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.routes.domain.ImmutableHtmlForm;
 import de.ii.ogcapi.routes.domain.ImmutableRoutingConfiguration;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -58,6 +61,13 @@ import javax.inject.Singleton;
 @AutoBind
 public class RoutingBuildingBlock implements ApiBuildingBlock {
 
+  public static final Optional<SpecificationMaturity> MATURITY =
+      Optional.of(SpecificationMaturity.DRAFT_OGC);
+  public static final Optional<ExternalDocumentation> SPEC =
+      Optional.of(
+          ExternalDocumentation.of(
+              "https://docs.ogc.org/DRAFTS/21-000.html",
+              "OGC API - Routes - Part 1: Core (DRAFT)"));
   public static final String STORE_RESOURCE_TYPE = "routes";
   public static String CORE = "http://www.opengis.net/spec/ogcapi-routes-1/1.0.0-draft.1/conf/core";
   public static String MODE = "http://www.opengis.net/spec/ogcapi-routes-1/1.0.0-draft.1/conf/mode";

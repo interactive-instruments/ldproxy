@@ -9,8 +9,12 @@ package de.ii.ogcapi.collections.schema.domain;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
+import de.ii.ogcapi.collections.schema.app.SchemaBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -42,5 +46,15 @@ public class PathParameterCollectionIdSchema extends AbstractPathParameterCollec
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return SchemaConfiguration.class;
+  }
+
+  @Override
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return SchemaBuildingBlock.MATURITY;
+  }
+
+  @Override
+  public Optional<ExternalDocumentation> getSpecificationRef() {
+    return SchemaBuildingBlock.SPEC;
   }
 }

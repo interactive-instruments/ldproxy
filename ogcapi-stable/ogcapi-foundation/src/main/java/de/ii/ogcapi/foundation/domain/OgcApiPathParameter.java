@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.parameters.PathParameter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -53,10 +54,12 @@ public interface OgcApiPathParameter extends ParameterExtension {
   }
 
   private Parameter newPathParameter(OgcApiDataV2 apiData, Optional<String> collectionId) {
-    return new io.swagger.v3.oas.models.parameters.PathParameter()
-        .name(getName())
-        .description(getDescription())
-        .required(getRequired(apiData, collectionId))
-        .schema(getSchema(apiData, collectionId));
+    Parameter param =
+        new PathParameter()
+            .name(getName())
+            .required(getRequired(apiData, collectionId))
+            .schema(getSchema(apiData, collectionId));
+    setDescription(apiData, param);
+    return param;
   }
 }

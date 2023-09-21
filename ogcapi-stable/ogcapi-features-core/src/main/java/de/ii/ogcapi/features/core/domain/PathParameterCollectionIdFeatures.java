@@ -10,7 +10,10 @@ package de.ii.ogcapi.features.core.domain;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -43,5 +46,17 @@ public class PathParameterCollectionIdFeatures extends AbstractPathParameterColl
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return FeaturesCoreConfiguration.class;
+  }
+
+  @Override
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return Optional.of(SpecificationMaturity.STABLE_OGC);
+  }
+
+  @Override
+  public Optional<ExternalDocumentation> getSpecificationRef() {
+    return Optional.of(
+        ExternalDocumentation.of(
+            "https://docs.ogc.org/is/17-069r4/17-069r4.html", "OGC API - Features - Part 1: Core"));
   }
 }

@@ -31,6 +31,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import java.util.List;
@@ -129,7 +130,9 @@ public class EndpointSchema extends EndpointSubCollection {
                 Optional.empty(),
                 getOperationId("getSchema", collectionId),
                 GROUP_COLLECTIONS_READ,
-                TAGS)
+                TAGS,
+                Optional.of(SpecificationMaturity.DRAFT_OGC),
+                Optional.empty())
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());

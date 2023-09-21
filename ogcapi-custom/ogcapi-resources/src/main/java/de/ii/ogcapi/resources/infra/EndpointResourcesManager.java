@@ -27,6 +27,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.resources.app.ResourcesBuildingBlock;
 import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
@@ -146,7 +147,9 @@ public class EndpointResourcesManager extends Endpoint {
             Optional.empty(),
             getOperationId("createOrReplaceResource"),
             GROUP_RESOURCES_WRITE,
-            TAGS)
+            TAGS,
+            ResourcesBuildingBlock.MATURITY,
+            ResourcesBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations(methodReplace.name(), operation));
     HttpMethods methodDelete = HttpMethods.DELETE;
     queryParameters = getQueryParameters(extensionRegistry, apiData, path, methodDelete);
@@ -166,7 +169,9 @@ public class EndpointResourcesManager extends Endpoint {
             Optional.empty(),
             getOperationId("deleteResource"),
             GROUP_RESOURCES_WRITE,
-            TAGS)
+            TAGS,
+            Optional.of(SpecificationMaturity.DRAFT_LDPROXY),
+            Optional.empty())
         .ifPresent(operation -> resourceBuilder.putOperations(methodDelete.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
 

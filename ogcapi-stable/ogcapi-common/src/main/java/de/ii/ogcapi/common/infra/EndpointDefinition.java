@@ -13,6 +13,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
 import de.ii.ogcapi.common.domain.ApiDefinitionFormatExtension;
+import de.ii.ogcapi.common.domain.CommonBuildingBlock;
 import de.ii.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ogcapi.common.domain.QueriesHandlerCommon;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
@@ -93,7 +94,9 @@ public class EndpointDefinition extends Endpoint {
             Optional.empty(),
             getOperationId("getApiDefinition"),
             GROUP_DISCOVER_READ,
-            ImmutableList.of())
+            ImmutableList.of(),
+            CommonBuildingBlock.MATURITY,
+            CommonBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder1.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder1.build());
 

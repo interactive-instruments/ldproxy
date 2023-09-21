@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.headers.Header;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.ws.rs.core.MediaType;
 import org.immutables.value.Value;
@@ -115,7 +117,37 @@ public interface ApiResponse {
   }
 
   private Header newHeader(OgcApiDataV2 apiData, ApiHeader header) {
-    return new Header().description(header.getDescription()).schema(header.getSchema(apiData));
+    Header h = new Header().schema(header.getSchema(apiData));
+    setHeaderDescription(apiData, header, h);
+    return h;
+  }
+
+  private void setHeaderDescription(OgcApiDataV2 apiData, ApiHeader header, Header h) {
+    if (apiData
+        .getExtension(FoundationConfiguration.class)
+        .map(FoundationConfiguration::includesSpecificationInformation)
+        .orElse(true)) {
+      h.setDescription(
+          header
+              .getSpecificationMaturity()
+              .map(
+                  maturity ->
+                      String.format(
+                          "%s\n\n_%s_",
+                          header.getDescription(), String.format(maturity.toString(), "header")))
+              .orElse(header.getDescription()));
+      header
+          .getSpecificationMaturity()
+          .ifPresent(
+              maturity -> {
+                h.setExtensions(ImmutableMap.of("x-maturity", maturity.name()));
+                if (Objects.equals(maturity, SpecificationMaturity.DEPRECATED)) {
+                  h.setDeprecated(true);
+                }
+              });
+    } else {
+      h.setDescription(header.getDescription());
+    }
   }
 
   private io.swagger.v3.oas.models.media.MediaType newMediaType(

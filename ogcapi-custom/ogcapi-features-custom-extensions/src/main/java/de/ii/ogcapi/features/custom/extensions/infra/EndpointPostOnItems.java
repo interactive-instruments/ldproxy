@@ -21,6 +21,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
+import de.ii.ogcapi.features.custom.extensions.app.FeaturesExtensionsBuildingBlock;
 import de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -186,7 +187,9 @@ public class EndpointPostOnItems extends EndpointSubCollection {
                         Optional.empty(),
                         getOperationId("queryItems", collectionId),
                         GROUP_DATA_READ,
-                        TAGS)
+                        TAGS,
+                        FeaturesExtensionsBuildingBlock.MATURITY,
+                        FeaturesExtensionsBuildingBlock.SPEC)
                     .ifPresent(operation -> builder.putOperations("POST", operation));
                 definitionBuilder.putResources(entry.getKey(), builder.build());
               }

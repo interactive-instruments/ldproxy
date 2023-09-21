@@ -29,6 +29,8 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
+import de.ii.ogcapi.styles.app.StylesBuildingBlock;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.styles.domain.manager.ImmutableQueryInputStyleCreateReplace;
@@ -160,7 +162,9 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
             Optional.empty(),
             getOperationId("createStyle"),
             GROUP_STYLES_WRITE,
-            TAGS)
+            TAGS,
+            StylesBuildingBlock.MATURITY,
+            StylesBuildingBlock.SPEC)
         .ifPresent(
             operation -> resourceBuilderCreate.putOperations(HttpMethods.POST.name(), operation));
     definitionBuilder.putResources(path, resourceBuilderCreate.build());
@@ -195,7 +199,9 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
             Optional.empty(),
             getOperationId("replaceStyle"),
             GROUP_STYLES_WRITE,
-            TAGS)
+            TAGS,
+            Optional.of(SpecificationMaturity.DRAFT_OGC),
+            Optional.empty())
         .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
     queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
     headers = getHeaders(extensionRegistry, apiData, path, HttpMethods.DELETE);
@@ -215,7 +221,9 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
             Optional.empty(),
             getOperationId("deleteStyle"),
             GROUP_STYLES_WRITE,
-            TAGS)
+            TAGS,
+            Optional.of(SpecificationMaturity.DRAFT_OGC),
+            Optional.empty())
         .ifPresent(
             operation -> resourceBuilderCreate.putOperations(HttpMethods.DELETE.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());

@@ -231,7 +231,9 @@ public class EndpointAdHocQuery extends EndpointRequiresFeatures implements Conf
             Optional.empty(),
             getOperationId("getAdhocQuery"),
             GROUP_DATA_READ,
-            TAGS)
+            TAGS,
+            SearchBuildingBlock.MATURITY,
+            SearchBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations(method.toString(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
 
