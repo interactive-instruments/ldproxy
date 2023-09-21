@@ -121,7 +121,7 @@ public class ApiCatalogProviderHtml extends ApiCatalogProvider {
                     apiCatalog
                         .getDescription()
                         .orElse(i18n.get("rootDescription", Optional.of(language.get()))))
-                .user(user)
+                .user(Optional.empty())
                 .build())
         .build();
   }

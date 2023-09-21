@@ -26,8 +26,6 @@ import io.swagger.v3.core.util.Yaml;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.License;
-import io.swagger.v3.oas.models.security.OAuthFlow;
-import io.swagger.v3.oas.models.security.OAuthFlows;
 import io.swagger.v3.oas.models.security.Scopes;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.security.SecurityScheme.Type;
@@ -96,14 +94,8 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
               .addSecuritySchemes(
                   "Default",
                   new SecurityScheme()
-                      .type(Type.OAUTH2)
-                      .flows(
-                          new OAuthFlows()
-                              .authorizationCode(
-                                  new OAuthFlow()
-                                      .authorizationUrl(oidc.getLoginUri().toString())
-                                      .tokenUrl(oidc.getTokenUri().toString())
-                                      .scopes(scopes))));
+                      .type(Type.OPENIDCONNECT)
+                      .openIdConnectUrl(oidc.getConfigurationUri()));
         } else {
           openAPI
               .getComponents()
