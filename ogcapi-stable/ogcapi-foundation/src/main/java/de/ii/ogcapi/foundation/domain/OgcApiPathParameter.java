@@ -59,7 +59,7 @@ public interface OgcApiPathParameter extends ParameterExtension {
             .name(getName())
             .required(getRequired(apiData, collectionId))
             .schema(getSchema(apiData, collectionId));
-    setDescription(apiData, param);
+    setOpenApiDescription(apiData, param);
     return param;
   }
 }

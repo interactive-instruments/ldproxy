@@ -322,7 +322,7 @@ public interface ApiOperation {
       Set<Integer> errorCodes) {
     Operation op = new Operation();
     op.summary(getSummary());
-    setDescriptionAndExternalDoc(apiData, op);
+    setOpenApiDescriptionAndExternalDoc(apiData, op);
 
     getTags().forEach(op::addTagsItem);
     op.operationId(getOperationId());
@@ -356,13 +356,15 @@ public interface ApiOperation {
 
     getHeaders()
         .forEach(
-            header ->
-                op.addParametersItem(
-                    new Parameter()
-                        .in("header")
-                        .name(header.getId())
-                        .description(header.getDescription())
-                        .schema(header.getSchema(apiData))));
+            header -> {
+              Parameter param =
+                  new Parameter()
+                      .in("header")
+                      .name(header.getId())
+                      .schema(header.getSchema(apiData));
+              header.setOpenApiDescription(apiData, param);
+              op.addParametersItem(param);
+            });
 
     getSuccess().ifPresent(success -> success.updateOpenApiDefinition(apiData, openAPI, op));
 
@@ -393,11 +395,11 @@ public interface ApiOperation {
     }
   }
 
-  private void setDescriptionAndExternalDoc(OgcApiDataV2 apiData, Operation op) {
+  private void setOpenApiDescriptionAndExternalDoc(OgcApiDataV2 apiData, Operation op) {
     if (apiData
         .getExtension(FoundationConfiguration.class)
         .map(FoundationConfiguration::includesSpecificationInformation)
-        .orElse(true)) {
+        .orElse(false)) {
       getSpecificationMaturity()
           .ifPresentOrElse(
               maturity -> {

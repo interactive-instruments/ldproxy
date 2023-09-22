@@ -47,7 +47,7 @@ public interface OgcApiQueryParameter extends ParameterExtension {
             .schema(getSchema(apiData, collectionId))
             .style(Parameter.StyleEnum.valueOf(getStyle().toUpperCase(Locale.ROOT)))
             .explode(getExplode());
-    setDescription(apiData, param);
+    setOpenApiDescription(apiData, param);
     return param;
   }
 }

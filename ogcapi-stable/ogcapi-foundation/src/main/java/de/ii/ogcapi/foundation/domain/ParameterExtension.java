@@ -150,11 +150,11 @@ public interface ParameterExtension extends ApiExtension {
         : "\"" + value + "\"";
   }
 
-  default void setDescription(OgcApiDataV2 apiData, Parameter param) {
+  default void setOpenApiDescription(OgcApiDataV2 apiData, Parameter param) {
     if (apiData
         .getExtension(FoundationConfiguration.class)
         .map(FoundationConfiguration::includesSpecificationInformation)
-        .orElse(true)) {
+        .orElse(false)) {
       param.setDescription(
           getSpecificationMaturity()
               .map(
