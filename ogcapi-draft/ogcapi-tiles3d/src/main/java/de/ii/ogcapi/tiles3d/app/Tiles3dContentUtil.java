@@ -103,6 +103,7 @@ public final class Tiles3dContentUtil {
                 .addParameter("filter", contentFilterString)
                 .addParameter("clampToEllipsoid", String.valueOf(cfg.shouldClampToEllipsoid()))
                 .build())
+        .externalUri(uriCustomizer.copy().removeLastPathSegments(4).clearParameters().build())
         .mediaType(Format3dTilesContentGltfBinary.MEDIA_TYPE)
         .alternateMediaTypes(ImmutableList.of())
         .build();
