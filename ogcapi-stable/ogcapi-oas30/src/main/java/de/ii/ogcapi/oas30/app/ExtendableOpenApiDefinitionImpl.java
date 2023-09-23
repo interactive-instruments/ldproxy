@@ -11,12 +11,14 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
-import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
+import de.ii.ogcapi.foundation.domain.ApiSecurity;
+import de.ii.ogcapi.foundation.domain.ApiSecurityInfo;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.oas30.domain.OpenApiExtension;
+import de.ii.xtraplatform.auth.domain.Oidc;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.AuthConfiguration;
 import io.swagger.v3.core.util.Json;
@@ -24,10 +26,13 @@ import io.swagger.v3.core.util.Yaml;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.License;
+import io.swagger.v3.oas.models.security.Scopes;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.security.SecurityScheme.Type;
 import io.swagger.v3.oas.models.servers.Server;
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
@@ -43,16 +48,19 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
 
   private final AuthConfiguration authConfig;
   private final ExtensionRegistry extensionRegistry;
-  private final ClassSchemaCache classSchemaCache;
+  private final Oidc oidc;
+  private final ApiSecurityInfo apiSecurityInfo;
 
   @Inject
   public ExtendableOpenApiDefinitionImpl(
       AppContext appContext,
       ExtensionRegistry extensionRegistry,
-      ClassSchemaCache classSchemaCache) {
+      Oidc oidc,
+      ApiSecurityInfo apiSecurityInfo) {
     this.authConfig = appContext.getConfiguration().getAuth();
     this.extensionRegistry = extensionRegistry;
-    this.classSchemaCache = classSchemaCache;
+    this.oidc = oidc;
+    this.apiSecurityInfo = apiSecurityInfo;
   }
 
   @Override
@@ -71,15 +79,33 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
                               ExtendableOpenApiDefinitionImpl.class, "/openapi.json"))
                       .openBufferedStream());
 
-      if (apiData.getSecured() && authConfig.isActive()) {
-        openAPI
-            .getComponents()
-            .addSecuritySchemes(
-                "JWT",
-                new SecurityScheme()
-                    .type(SecurityScheme.Type.HTTP)
-                    .scheme("bearer")
-                    .bearerFormat("JWT"));
+      if (apiData.getAccessControl().filter(ApiSecurity::isEnabled).isPresent()) {
+        if (oidc.isEnabled()) {
+          Scopes scopes = new Scopes();
+
+          if (!apiData.getAccessControl().get().getScopes().isEmpty()) {
+            Map<String, String> activeScopes = apiSecurityInfo.getActiveScopes(apiData);
+
+            activeScopes.forEach(scopes::addString);
+          }
+
+          openAPI
+              .getComponents()
+              .addSecuritySchemes(
+                  "Default",
+                  new SecurityScheme()
+                      .type(Type.OPENIDCONNECT)
+                      .openIdConnectUrl(oidc.getConfigurationUri()));
+        } else {
+          openAPI
+              .getComponents()
+              .addSecuritySchemes(
+                  "Default",
+                  new SecurityScheme()
+                      .type(SecurityScheme.Type.HTTP)
+                      .scheme("bearer")
+                      .bearerFormat("JWT"));
+        }
       }
 
       openAPI.servers(
@@ -140,14 +166,14 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
           .forEachOrdered(openApiExtension -> openApiExtension.process(openAPI, apiData));
 
       if (StringUtils.isNotBlank(type) && type.trim().equalsIgnoreCase("yaml")) {
-        return Response.status(Response.Status.OK)
+        return Response.ok()
             .entity(pretty ? Yaml.pretty(openAPI) : Yaml.mapper().writeValueAsString(openAPI))
-            .type("application/vnd.oai.openapi;version=3.0")
+            .type(OpenApiYaml.MEDIA_TYPE.type())
             .build();
       } else {
-        return Response.status(Response.Status.OK)
+        return Response.ok()
             .entity(pretty ? Json.pretty(openAPI) : Json.mapper().writeValueAsString(openAPI))
-            .type("application/vnd.oai.openapi+json;version=3.0")
+            .type(OpenApiJson.MEDIA_TYPE.type())
             .build();
       }
     } catch (IOException e) {

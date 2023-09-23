@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.styles.domain;
 
+import de.ii.ogcapi.foundation.domain.PermissionGroup;
+import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
@@ -14,6 +16,12 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 public interface QueriesHandlerStyles extends QueriesHandler<QueriesHandlerStyles.Query> {
+
+  String GROUP_STYLES = "styles";
+  PermissionGroup GROUP_STYLES_READ =
+      PermissionGroup.of(Base.READ, GROUP_STYLES, "access styles and their metadata");
+  PermissionGroup GROUP_STYLES_WRITE =
+      PermissionGroup.of(Base.WRITE, GROUP_STYLES, "mutate styles and update their metadata");
 
   enum Query implements QueryIdentifier {
     STYLES,

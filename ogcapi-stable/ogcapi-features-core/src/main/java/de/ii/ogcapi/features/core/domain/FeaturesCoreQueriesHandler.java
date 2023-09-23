@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
+import de.ii.ogcapi.foundation.domain.PermissionGroup;
+import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
@@ -21,6 +23,10 @@ import org.immutables.value.Value;
 public interface FeaturesCoreQueriesHandler
     extends QueriesHandler<FeaturesCoreQueriesHandler.Query> {
 
+  String GROUP_DATA = "data";
+  PermissionGroup GROUP_DATA_READ =
+      PermissionGroup.of(Base.READ, GROUP_DATA, "access and query features");
+  PermissionGroup GROUP_DATA_WRITE = PermissionGroup.of(Base.WRITE, GROUP_DATA, "mutate features");
   String BOUNDING_BOX_HEADER = "Content-Bounding-Box";
   String TEMPORAL_EXTENT_HEADER = "Content-Temporal-Extent";
 

@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.search.app;
 
+import static de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.GROUP_DATA_READ;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -228,6 +230,7 @@ public class EndpointAdHocQuery extends EndpointRequiresFeatures implements Conf
             operationDescription,
             Optional.empty(),
             getOperationId("getAdhocQuery"),
+            GROUP_DATA_READ,
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(method.toString(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());

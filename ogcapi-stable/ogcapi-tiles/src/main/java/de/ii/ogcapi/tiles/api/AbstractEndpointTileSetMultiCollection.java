@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.tiles.api;
 
+import static de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler.GROUP_TILES_READ;
+
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
@@ -86,6 +88,7 @@ public abstract class AbstractEndpointTileSetMultiCollection extends Endpoint {
             operationDescription,
             Optional.empty(),
             getOperationId("getTileSet", "dataset", dataType),
+            GROUP_TILES_READ,
             tags)
         .ifPresent(operation -> resourceBuilderSet.putOperations(method.name(), operation));
     definitionBuilder.putResources(path, resourceBuilderSet.build());

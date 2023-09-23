@@ -133,6 +133,8 @@ public class RoutesFormatHtml implements RoutesFormatExtension {
                     i18n.get("routesDescription", requestContext.getLanguage()),
                     i18n.get("routesDescriptionObstacles", requestContext.getLanguage()))
                 : i18n.get("routesDescription", requestContext.getLanguage()))
+        .uriCustomizer(requestContext.getUriCustomizer().copy())
+        .user(requestContext.getUser())
         .build();
   }
 

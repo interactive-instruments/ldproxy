@@ -89,6 +89,8 @@ public class ResourcesFormatHtml implements ResourcesFormatExtension {
         .description(i18n.get("resourcesDescription", requestContext.getLanguage()))
         .none(i18n.get("none", requestContext.getLanguage()))
         .resources(resources.getResources())
+        .uriCustomizer(requestContext.getUriCustomizer().copy())
+        .user(requestContext.getUser())
         .build();
   }
 }

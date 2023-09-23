@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import java.util.Set;
 import org.immutables.value.Value;
 
@@ -25,6 +26,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new")
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "SCHEMA")
 @JsonDeserialize(builder = ImmutableSchemaConfiguration.Builder.class)
 public interface SchemaConfiguration extends ExtensionConfiguration, CachingConfiguration {
 

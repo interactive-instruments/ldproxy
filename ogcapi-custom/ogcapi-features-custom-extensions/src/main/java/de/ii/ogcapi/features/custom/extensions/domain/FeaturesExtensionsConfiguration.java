@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.custom.extensions.domain;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import java.util.Objects;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
@@ -27,18 +28,24 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new")
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "FEATURES_EXTENSIONS")
 @JsonDeserialize(builder = ImmutableFeaturesExtensionsConfiguration.Builder.class)
 public interface FeaturesExtensionsConfiguration extends ExtensionConfiguration {
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   /**
-   * @langEn Enables support for the POST HTTP method on the "Features" resource.
-   * @langDe Aktiviert die Unterstützung für die HTTP-Methode POST auf der Ressource "Features"
+   * @langEn **Deprecated** Instead, use an Ad-hoc Query from [Features -
+   *     Search](#features_-_search.html). Enables support for the POST HTTP method on the
+   *     "Features" resource.
+   * @langDe **Deprecated** Benutzen Sie stattdessen eine Ad-hoc-Query aus [Features -
+   *     Search](#features_-_search.html). Aktiviert die Unterstützung für die HTTP-Methode POST auf
+   *     der Ressource "Features"
    * @default false
    * @since v3.1
    */
   @Nullable
+  @Deprecated(since = "3.5.0")
   Boolean getPostOnItems();
 
   @JsonIgnore

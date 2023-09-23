@@ -45,7 +45,7 @@ import javax.inject.Singleton;
 public class CityJsonBuildingBlock implements ApiBuildingBlock {
 
   @Inject
-  CityJsonBuildingBlock() {}
+  public CityJsonBuildingBlock() {}
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {

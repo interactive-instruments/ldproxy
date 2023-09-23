@@ -112,6 +112,8 @@ public class StoredQueriesFormatHtml implements StoredQueriesFormat {
         .htmlConfig(htmlConfig)
         .noIndex(isNoIndexEnabledForApi(apiData))
         .urlPrefix(requestContext.getStaticUrlPrefix())
+        .uriCustomizer(requestContext.getUriCustomizer().copy())
+        .user(requestContext.getUser())
         .build();
   }
 }

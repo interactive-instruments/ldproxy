@@ -32,7 +32,7 @@ import javax.ws.rs.core.Response;
 @AutoBind
 public class OpenApiJson implements ApiDefinitionFormatExtension {
 
-  private static final ApiMediaType MEDIA_TYPE =
+  static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
           .type(
               new MediaType(

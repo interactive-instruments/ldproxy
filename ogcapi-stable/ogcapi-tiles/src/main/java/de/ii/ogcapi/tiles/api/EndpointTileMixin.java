@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.tiles.api;
 
+import static de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler.GROUP_TILES_READ;
+
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
@@ -42,7 +44,6 @@ import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +63,7 @@ public interface EndpointTileMixin {
       int sortPriority,
       String basePath,
       String subSubPath,
-      Optional<String> operationIdWithPlaceholders,
+      String operationIdWithPlaceholders,
       List<String> tags) {
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
@@ -99,7 +100,7 @@ public interface EndpointTileMixin {
                 .path(resourcePath)
                 .pathParameters(pathParameters);
         Map<MediaType, ApiMediaTypeContent> responseContent = endpoint.getResponseContent(apiData);
-        Optional<String> operationId =
+        String operationId =
             getOperationId(operationIdWithPlaceholders, collectionId, apiData, tilesProviders);
         ApiOperation.getResource(
                 apiData,
@@ -112,6 +113,7 @@ public interface EndpointTileMixin {
                 operationDescription,
                 Optional.empty(),
                 operationId,
+                GROUP_TILES_READ,
                 tags)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
@@ -130,7 +132,7 @@ public interface EndpointTileMixin {
       String apiEntrypoint,
       int sortPriority,
       String path,
-      Optional<String> operationIdWithPlaceholders,
+      String operationIdWithPlaceholders,
       List<String> tags) {
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
@@ -149,8 +151,7 @@ public interface EndpointTileMixin {
                 + "The tile has one layer per collection with all selected features in the bounding box of the tile with the requested properties.");
     ImmutableOgcApiResourceData.Builder resourceBuilder =
         new ImmutableOgcApiResourceData.Builder().path(path).pathParameters(pathParameters);
-    Optional<String> operationId =
-        getOperationId(operationIdWithPlaceholders, "", apiData, tilesProviders);
+    String operationId = getOperationId(operationIdWithPlaceholders, "", apiData, tilesProviders);
     ApiOperation.getResource(
             apiData,
             path,
@@ -162,6 +163,7 @@ public interface EndpointTileMixin {
             operationDescription,
             Optional.empty(),
             operationId,
+            GROUP_TILES_READ,
             tags)
         .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
@@ -177,7 +179,6 @@ public interface EndpointTileMixin {
       OgcApi api,
       TilesProviders tilesProviders,
       ApiRequestContext requestContext,
-      UriInfo uriInfo,
       String definitionPath,
       Optional<String> collectionId,
       String tileMatrixSetId,
@@ -188,7 +189,7 @@ public interface EndpointTileMixin {
     OgcApiDataV2 apiData = api.getData();
     Optional<FeatureTypeConfigurationOgcApi> collectionData =
         collectionId.map(id -> apiData.getCollections().get(id));
-    Map<String, String> parameterValues = endpoint.toFlatMap(uriInfo.getQueryParameters());
+    Map<String, String> parameterValues = requestContext.getParameters();
     final List<OgcApiQueryParameter> parameterDefinitions =
         collectionId.isPresent()
             ? ((EndpointSubCollection) endpoint)
@@ -279,28 +280,20 @@ public interface EndpointTileMixin {
         .build();
   }
 
-  static Optional<String> getOperationId(
-      Optional<String> operationIdWithPlaceholders,
-      String collectionId,
-      OgcApiDataV2 apiData,
-      TilesProviders tilesProviders) {
-    return operationIdWithPlaceholders.map(
-        id ->
-            collectionId.startsWith("{")
-                ? id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER + ".", "")
-                    .replace(
-                        EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
-                        tilesProviders.getTilesetMetadataOrThrow(apiData).isVector()
-                            ? "vector"
-                            : "map")
-                : id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER, collectionId)
-                    .replace(
-                        EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
-                        tilesProviders
-                                .getTilesetMetadataOrThrow(
-                                    apiData, apiData.getCollectionData(collectionId))
-                                .isVector()
-                            ? "vector"
-                            : "map"));
+  static String getOperationId(
+      String id, String collectionId, OgcApiDataV2 apiData, TilesProviders tilesProviders) {
+    return collectionId.startsWith("{")
+        ? id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER + ".", "")
+            .replace(
+                EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
+                tilesProviders.getTilesetMetadataOrThrow(apiData).isVector() ? "vector" : "map")
+        : id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER, collectionId)
+            .replace(
+                EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
+                tilesProviders
+                        .getTilesetMetadataOrThrow(apiData, apiData.getCollectionData(collectionId))
+                        .isVector()
+                    ? "vector"
+                    : "map");
   }
 }

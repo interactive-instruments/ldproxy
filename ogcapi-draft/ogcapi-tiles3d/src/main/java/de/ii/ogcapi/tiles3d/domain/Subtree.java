@@ -503,6 +503,7 @@ public interface Subtree {
                             "/",
                             ImmutableList.of(
                                 "collections", queryInput.getCollectionId(), "items"))))
+            .externalUri(queryInput.getServicesUri())
             .build();
 
     return getNumberReturned(queriesHandler, queryInputHits, requestContext) == 1L;

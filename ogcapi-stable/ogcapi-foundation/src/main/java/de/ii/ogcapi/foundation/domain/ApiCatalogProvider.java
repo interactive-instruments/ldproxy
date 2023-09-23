@@ -18,6 +18,7 @@ import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
 import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.Principal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -25,7 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.ws.rs.core.Response;
-import org.apache.http.NameValuePair;
+import org.apache.hc.core5.http.NameValuePair;
 
 public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiExtension {
 
@@ -46,16 +47,17 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
   }
 
   @Override
-  public Response getServiceListing(List<ServiceData> apis, URI uri) {
+  public Response getServiceListing(List<ServiceData> apis, URI uri, Optional<Principal> user) {
     try {
-      return getServiceListing(apis, uri, Optional.of(Locale.ENGLISH));
+      return getServiceListing(apis, uri, user, Optional.of(Locale.ENGLISH));
     } catch (URISyntaxException e) {
       throw new IllegalStateException("Could not generate service overview.", e);
     }
   }
 
   public abstract Response getServiceListing(
-      List<ServiceData> services, URI uri, Optional<Locale> language) throws URISyntaxException;
+      List<ServiceData> services, URI uri, Optional<Principal> user, Optional<Locale> language)
+      throws URISyntaxException;
 
   public abstract ApiMediaType getApiMediaType();
 

@@ -73,7 +73,7 @@ public class RoutingBuildingBlock implements ApiBuildingBlock {
       "http://www.opengis.net/spec/ogcapi-routes-1/1.0.0-draft.1/conf/manage-routes";
 
   @Inject
-  RoutingBuildingBlock() {}
+  public RoutingBuildingBlock() {}
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {

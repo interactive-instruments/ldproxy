@@ -9,6 +9,7 @@ package de.ii.ogcapi.oas30.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -23,6 +24,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new")
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "OAS30")
 @JsonDeserialize(builder = ImmutableOas30Configuration.Builder.class)
 public interface Oas30Configuration extends ExtensionConfiguration {
 

@@ -15,6 +15,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
@@ -41,6 +43,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new")
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "SORTING")
 @JsonDeserialize(builder = ImmutableSortingConfiguration.Builder.class)
 public interface SortingConfiguration extends ExtensionConfiguration {
 
@@ -98,10 +101,8 @@ public interface SortingConfiguration extends ExtensionConfiguration {
    * @default DOT
    * @since v3.4
    */
-  @Value.Default
-  default PathSeparator getPathSeparator() {
-    return PathSeparator.DOT;
-  }
+  @Nullable
+  PathSeparator getPathSeparator();
 
   default Map<String, FeatureSchema> getSortables(
       OgcApiDataV2 apiData,

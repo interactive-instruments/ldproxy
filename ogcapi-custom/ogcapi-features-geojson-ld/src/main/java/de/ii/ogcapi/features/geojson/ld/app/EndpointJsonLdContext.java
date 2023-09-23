@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.geojson.ld.app;
 
+import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.GROUP_COLLECTIONS_READ;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
@@ -175,6 +177,7 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
                 operationDescription,
                 Optional.empty(),
                 getOperationId("getJsonLdContext", collectionId),
+                GROUP_COLLECTIONS_READ,
                 TAGS)
             .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());

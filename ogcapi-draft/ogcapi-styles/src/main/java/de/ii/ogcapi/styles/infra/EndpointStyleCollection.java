@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.styles.infra;
 
+import static de.ii.ogcapi.styles.domain.QueriesHandlerStyles.GROUP_STYLES_READ;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
@@ -156,6 +158,7 @@ public class EndpointStyleCollection extends EndpointSubCollection {
                 operationDescription,
                 Optional.empty(),
                 getOperationId("getStyle", collectionId),
+                GROUP_STYLES_READ,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));

@@ -23,10 +23,9 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractRequestContext implements ApiRequestContext {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRequestContext.class);
+  public static final String STATIC_PATH = "___static___";
 
   abstract URI getRequestUri();
-
-  abstract Optional<URI> getExternalUri();
 
   @Override
   public abstract ApiMediaType getMediaType();
@@ -45,10 +44,8 @@ public abstract class AbstractRequestContext implements ApiRequestContext {
   public URICustomizer getUriCustomizer() {
     URICustomizer uriCustomizer = new URICustomizer(getRequestUri());
 
-    if (getExternalUri().isPresent()) {
-      uriCustomizer.setScheme(getExternalUri().get().getScheme());
-      uriCustomizer.replaceInPath("/rest/services", getExternalUri().get().getPath());
-    }
+    uriCustomizer.setScheme(getExternalUri().getScheme());
+    uriCustomizer.replaceInPath("/rest/services", getExternalUri().getPath());
 
     return uriCustomizer;
   }
@@ -58,20 +55,18 @@ public abstract class AbstractRequestContext implements ApiRequestContext {
   public String getStaticUrlPrefix() {
     String staticUrlPrefix = "";
 
-    if (getExternalUri().isPresent()) {
-      staticUrlPrefix =
-          new URICustomizer(getRequestUri())
-              .cutPathAfterSegments("rest", "services")
-              .replaceInPath("/rest/services", getExternalUri().get().getPath())
-              .ensureLastPathSegment("___static___")
-              .ensureNoTrailingSlash()
-              .getPath();
-    }
+    staticUrlPrefix =
+        new URICustomizer(getRequestUri())
+            .cutPathAfterSegments("rest", "services")
+            .replaceInPath("/rest/services", getExternalUri().getPath())
+            .ensureLastPathSegment(STATIC_PATH)
+            .ensureNoTrailingSlash()
+            .getPath();
 
     return staticUrlPrefix;
   }
 
-  @Value.Derived
+  @Value.Default
   @Override
   public Map<String, String> getParameters() {
     return getUriCustomizer().getQueryParams().stream()

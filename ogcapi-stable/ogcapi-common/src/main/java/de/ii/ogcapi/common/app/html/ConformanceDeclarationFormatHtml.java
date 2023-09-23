@@ -103,6 +103,8 @@ public class ConformanceDeclarationFormatHtml implements ConformanceDeclarationF
                     .orElse(i18n.get("conformanceDeclarationTitle", requestContext.getLanguage())))
             .language(requestContext.getLanguage())
             .breadCrumbs(breadCrumbs)
+            .uriCustomizer(requestContext.getUriCustomizer().copy())
+            .user(requestContext.getUser())
             .build();
 
     return ogcApiConformanceDeclarationView;

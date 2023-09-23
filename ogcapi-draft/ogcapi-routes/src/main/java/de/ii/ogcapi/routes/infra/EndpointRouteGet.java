@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.routes.infra;
 
+import static de.ii.ogcapi.routes.domain.QueryHandlerRoutes.GROUP_ROUTES_READ;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
@@ -123,6 +125,7 @@ public class EndpointRouteGet extends Endpoint implements ConformanceClass {
               operationDescription,
               Optional.empty(),
               getOperationId("getRoute"),
+              GROUP_ROUTES_READ,
               TAGS)
           .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
       definitionBuilder.putResources(path, resourceBuilder.build());

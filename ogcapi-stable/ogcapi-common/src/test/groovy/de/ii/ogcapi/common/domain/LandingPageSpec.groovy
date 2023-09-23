@@ -131,6 +131,7 @@ class LandingPageSpec extends Specification {
 
     static def createRequestContext(String uri = 'http://example.com') {
         new ImmutableRequestContext.Builder()
+                .externalUri(new URI(uri))
                 .mediaType(new ImmutableApiMediaType.Builder()
                         .type(MediaType.APPLICATION_JSON_TYPE)
                         .build())

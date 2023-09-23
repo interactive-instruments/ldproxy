@@ -14,7 +14,11 @@ import java.nio.file.Path;
 
 public interface Cfg {
 
+  Path getEntitiesPath();
+
   Builders builder();
+
+  Migrations migrations();
 
   <T extends EntityData> void writeEntity(T data, Path... patches) throws IOException;
 

@@ -41,8 +41,6 @@ public abstract class OgcApiDatasetView extends OgcApiView {
   static final String INDENT = "  ";
   static final String NEW_LINE = "\n" + INDENT;
 
-  public abstract URICustomizer uriCustomizer();
-
   public abstract Optional<Locale> language();
 
   public abstract Optional<OgcApiExtent> extent();

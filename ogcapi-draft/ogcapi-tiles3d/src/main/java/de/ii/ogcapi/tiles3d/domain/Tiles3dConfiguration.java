@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Preconditions;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.tiles.domain.SeedingOptions;
 import java.util.List;
 import java.util.Objects;
@@ -21,7 +22,7 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
- * @buildingBlock 3D TILES
+ * @buildingBlock TILES3D
  * @langEn ### Prerequisites
  *     <p>The module requires that the feature provider includes a type `building`. The requirements
  *     for the type are the same as in the configuration of the [CityJSON
@@ -61,6 +62,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "TILES3D")
 @JsonDeserialize(builder = ImmutableTiles3dConfiguration.Builder.class)
 public interface Tiles3dConfiguration extends ExtensionConfiguration {
 

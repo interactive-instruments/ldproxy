@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,7 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,26 +113,6 @@ public abstract class Endpoint implements EndpointExtension {
     return getResourceFormats().stream()
         .filter(FormatExtension::canSupportTransactions)
         .collect(Collectors.toUnmodifiableList());
-  }
-
-  public Map<String, String> toFlatMap(MultivaluedMap<String, String> queryParameters) {
-    return toFlatMap(queryParameters, false);
-  }
-
-  protected Map<String, String> toFlatMap(
-      MultivaluedMap<String, String> queryParameters, boolean keysToLowerCase) {
-    return queryParameters.entrySet().stream()
-        .map(
-            entry -> {
-              String key =
-                  keysToLowerCase ? entry.getKey().toLowerCase(Locale.ROOT) : entry.getKey();
-              return new AbstractMap.SimpleImmutableEntry<>(
-                  key,
-                  entry.getValue().isEmpty()
-                      ? ""
-                      : Objects.requireNonNullElse(entry.getValue().get(0), ""));
-            })
-        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
   }
 
   public Map<MediaType, ApiMediaTypeContent> getResponseContent(OgcApiDataV2 apiData) {
@@ -247,8 +225,7 @@ public abstract class Endpoint implements EndpointExtension {
     }
   }
 
-  protected Optional<String> getOperationId(String name, String... prefixes) {
-    return Optional.of(
-        prefixes.length > 0 ? String.format("%s.%s", String.join(".", prefixes), name) : name);
+  protected String getOperationId(String name, String... prefixes) {
+    return prefixes.length > 0 ? String.format("%s.%s", String.join(".", prefixes), name) : name;
   }
 }

@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.resources.infra;
 
+import static de.ii.ogcapi.resources.domain.QueriesHandlerResources.GROUP_RESOURCES_WRITE;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -143,6 +145,7 @@ public class EndpointResourcesManager extends Endpoint {
             operationDescription,
             Optional.empty(),
             getOperationId("createOrReplaceResource"),
+            GROUP_RESOURCES_WRITE,
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(methodReplace.name(), operation));
     HttpMethods methodDelete = HttpMethods.DELETE;
@@ -162,6 +165,7 @@ public class EndpointResourcesManager extends Endpoint {
             operationDescription,
             Optional.empty(),
             getOperationId("deleteResource"),
+            GROUP_RESOURCES_WRITE,
             TAGS)
         .ifPresent(operation -> resourceBuilder.putOperations(methodDelete.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());

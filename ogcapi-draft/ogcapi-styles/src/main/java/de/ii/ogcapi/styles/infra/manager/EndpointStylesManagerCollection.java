@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.styles.infra.manager;
 
+import static de.ii.ogcapi.styles.domain.QueriesHandlerStyles.GROUP_STYLES_WRITE;
+
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -179,6 +181,7 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
                 operationDescription,
                 Optional.empty(),
                 getOperationId("createStyle", collectionId),
+                GROUP_STYLES_WRITE,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.POST.name(), operation));
@@ -234,6 +237,7 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
                 operationDescription,
                 Optional.empty(),
                 getOperationId("replaceStyle", collectionId),
+                GROUP_STYLES_WRITE,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
@@ -256,6 +260,7 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
                 operationDescription,
                 Optional.empty(),
                 getOperationId("deleteStyle", collectionId),
+                GROUP_STYLES_WRITE,
                 TAGS)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));

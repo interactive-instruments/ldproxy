@@ -16,6 +16,7 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.ImmutableEpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.docs.DocIgnore;
+import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -67,6 +68,7 @@ import org.immutables.value.Value;
  */
 @Value.Immutable
 @Value.Style(builder = "new")
+@JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "ROUTING")
 @JsonDeserialize(builder = ImmutableRoutingConfiguration.Builder.class)
 public interface RoutingConfiguration extends ExtensionConfiguration, CachingConfiguration {
 
