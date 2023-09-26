@@ -10,7 +10,19 @@ package de.ii.ogcapi.html.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.ImmutableHtmlConfiguration;
+import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.base.domain.AuthConfiguration.AuthProvider;
+import de.ii.xtraplatform.base.domain.AuthConfiguration.IdentityProvider;
+import de.ii.xtraplatform.base.domain.AuthConfiguration.LoginProvider;
+import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -33,8 +45,12 @@ import javax.inject.Singleton;
 @AutoBind
 public class HtmlBuildingBlock implements ApiBuildingBlock {
 
+  private final Map<String, AuthProvider> providers;
+
   @Inject
-  public HtmlBuildingBlock() {}
+  public HtmlBuildingBlock(AppContext appContext) {
+    this.providers = appContext.getConfiguration().getAuth().getProviders();
+  }
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
@@ -55,5 +71,47 @@ public class HtmlBuildingBlock implements ApiBuildingBlock {
         .defaultStyle("NONE")
         .footerText("")
         .build();
+  }
+
+  @Override
+  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+    Optional<HtmlConfiguration> htmlConfiguration =
+        api.getData()
+            .getExtension(HtmlConfiguration.class)
+            .filter(ExtensionConfiguration::isEnabled);
+
+    if (htmlConfiguration.isPresent()
+        && Objects.nonNull(htmlConfiguration.get().getLoginProvider())) {
+      String loginProvider = htmlConfiguration.get().getLoginProvider();
+      if (!providers.containsKey(loginProvider)) {
+        return ImmutableValidationResult.builder()
+            .mode(apiValidation)
+            .addErrors(String.format("Could not find login provider: %s", loginProvider))
+            .build();
+      }
+      if (!(providers.get(loginProvider) instanceof LoginProvider)) {
+        return ImmutableValidationResult.builder()
+            .mode(apiValidation)
+            .addErrors(
+                String.format("Given provider does not have login capabilities: %s", loginProvider))
+            .build();
+      }
+      if (!Objects.equals(
+          providers.get(loginProvider),
+          providers.values().stream()
+              .filter(p -> p instanceof IdentityProvider)
+              .findFirst()
+              .get())) {
+        return ImmutableValidationResult.builder()
+            .mode(apiValidation)
+            .addErrors(
+                String.format(
+                    "Given login provider is not the first defined identity provider: %s",
+                    loginProvider))
+            .build();
+      }
+    }
+
+    return ValidationResult.of();
   }
 }

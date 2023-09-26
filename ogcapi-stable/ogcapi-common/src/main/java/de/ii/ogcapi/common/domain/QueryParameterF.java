@@ -100,6 +100,7 @@ public abstract class QueryParameterF extends ApiExtensionCache
       List<String> fEnum = new ArrayList<>();
       extensionRegistry.getExtensionsForType(getFormatClass()).stream()
           .filter(f -> f.isEnabledForApi(apiData))
+          .filter(f -> Objects.nonNull(f.getContent()))
           .filter(f -> !f.getMediaType().parameter().equals("*"))
           .map(f -> f.getMediaType().parameter())
           .distinct()
@@ -118,6 +119,7 @@ public abstract class QueryParameterF extends ApiExtensionCache
       List<String> fEnum = new ArrayList<>();
       extensionRegistry.getExtensionsForType(getFormatClass()).stream()
           .filter(f -> f.isEnabledForApi(apiData, collectionId))
+          .filter(f -> Objects.nonNull(f.getContent()))
           .filter(f -> !f.getMediaType().parameter().equals("*"))
           .map(f -> f.getMediaType().parameter())
           .distinct()

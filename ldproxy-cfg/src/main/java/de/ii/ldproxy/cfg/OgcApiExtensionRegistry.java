@@ -73,7 +73,7 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
             .add(new GeometrySimplificationBuildingBlock())
             .add(new GltfBuildingBlock())
             .add(new GmlBuildingBlock())
-            .add(new HtmlBuildingBlock())
+            .add(new HtmlBuildingBlock(null))
             .add(new JsonBuildingBlock())
             .add(new JsonFgBuildingBlock())
             .add(new OpenApiBuildingBlock())

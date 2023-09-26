@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.core.domain;
 
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.LinkedHashMap;
@@ -50,5 +51,14 @@ public class SchemaDeriverOpenApiCollectionProperties extends SchemaDeriverOpenA
         });
 
     return rootSchema;
+  }
+
+  @Override
+  protected Schema<?> deriveValueSchema(FeatureSchema schema) {
+    Schema<?> schema2 = super.deriveValueSchema(schema);
+    if (!(schema2 instanceof ArraySchema) && schema.getName().contains("[].")) {
+      schema2 = withArrayWrapper(schema2);
+    }
+    return schema2;
   }
 }
