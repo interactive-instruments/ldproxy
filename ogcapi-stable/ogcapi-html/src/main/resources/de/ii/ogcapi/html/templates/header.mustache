@@ -2,10 +2,13 @@
 
 <body class="with-footer">
 
+{{> custom-body-start}}
+
 <nav class="navbar navbar-light bg-light navbar-expand-sm">
   <div class="container">
     <div id="navbar"
          class="navbar-collapse collapse d-flex justify-content-between align-items-center">
+      {{> custom-navbar-start}}
       <ol class="breadcrumb bg-light my-0 pl-0">
         {{#breadCrumbs}}
           {{#url}}
@@ -56,6 +59,7 @@
         {{/user}}
         {{/hasLoginProvider}}
       </div>
+      {{> custom-navbar-end}}
     </div>
   </div>
 </nav>
