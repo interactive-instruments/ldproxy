@@ -19,6 +19,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.xtraplatform.features.domain.FeatureSchemaBase.Scope;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
@@ -112,5 +113,10 @@ public class QueryParameterSchemaFeatures extends ApiExtensionCache
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return CrudConfiguration.class;
+  }
+
+  @Override
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return Optional.of(SpecificationMaturity.DRAFT_LDPROXY);
   }
 }

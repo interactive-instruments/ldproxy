@@ -10,7 +10,10 @@ package de.ii.ogcapi.oas30.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.oas30.domain.ImmutableOas30Configuration;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -30,6 +33,14 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class OpenApiBuildingBlock implements ApiBuildingBlock {
+
+  public static final Optional<SpecificationMaturity> MATURITY =
+      Optional.of(SpecificationMaturity.STABLE_OGC);
+  public static final Optional<ExternalDocumentation> SPEC =
+      Optional.of(
+          ExternalDocumentation.of(
+              "https://docs.ogc.org/is/17-069r4/17-069r4.html",
+              "OGC API - Features - Part 1: Core"));
 
   @Inject
   public OpenApiBuildingBlock() {}

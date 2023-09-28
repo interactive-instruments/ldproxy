@@ -10,10 +10,14 @@ package de.ii.ogcapi.tiles.domain;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
+import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -71,5 +75,15 @@ public class PathParameterCollectionIdTiles extends AbstractPathParameterCollect
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return TilesConfiguration.class;
+  }
+
+  @Override
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return TilesBuildingBlock.MATURITY;
+  }
+
+  @Override
+  public Optional<ExternalDocumentation> getSpecificationRef() {
+    return TilesBuildingBlock.SPEC;
   }
 }

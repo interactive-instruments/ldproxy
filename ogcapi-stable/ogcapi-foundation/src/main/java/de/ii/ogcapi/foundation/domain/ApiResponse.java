@@ -115,7 +115,9 @@ public interface ApiResponse {
   }
 
   private Header newHeader(OgcApiDataV2 apiData, ApiHeader header) {
-    return new Header().description(header.getDescription()).schema(header.getSchema(apiData));
+    Header openApiHeader = new Header().schema(header.getSchema(apiData));
+    header.setOpenApiDescription(apiData, openApiHeader);
+    return openApiHeader;
   }
 
   private io.swagger.v3.oas.models.media.MediaType newMediaType(

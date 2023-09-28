@@ -26,6 +26,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.routes.app.RoutingBuildingBlock;
 import de.ii.ogcapi.routes.domain.ImmutableQueryInputRoute;
 import de.ii.ogcapi.routes.domain.QueryHandlerRoutes;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
@@ -120,7 +121,9 @@ public class EndpointRouteDelete extends Endpoint {
               Optional.empty(),
               getOperationId("deleteRoute"),
               GROUP_ROUTES_WRITE,
-              TAGS)
+              TAGS,
+              RoutingBuildingBlock.MATURITY,
+              RoutingBuildingBlock.SPEC)
           .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
       definitionBuilder.putResources(path, resourceBuilder.build());
     }

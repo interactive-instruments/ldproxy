@@ -10,14 +10,17 @@ package de.ii.ogcapi.tilematrixsets.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
@@ -116,5 +119,15 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return TileMatrixSetsConfiguration.class;
+  }
+
+  @Override
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return TileMatrixSetsBuildingBlock.MATURITY;
+  }
+
+  @Override
+  public Optional<ExternalDocumentation> getSpecificationRef() {
+    return TileMatrixSetsBuildingBlock.SPEC;
   }
 }

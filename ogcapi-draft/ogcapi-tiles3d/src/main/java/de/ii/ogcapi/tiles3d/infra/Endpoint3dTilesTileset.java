@@ -27,6 +27,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.tiles3d.app.Tiles3dBuildingBlock;
 import de.ii.ogcapi.tiles3d.domain.Format3dTilesTileset;
 import de.ii.ogcapi.tiles3d.domain.ImmutableQueryInputTileset;
 import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles;
@@ -134,7 +135,9 @@ public class Endpoint3dTilesTileset extends EndpointSubCollection implements Con
                 Optional.empty(),
                 getOperationId("get3dTileset", collectionId),
                 GROUP_TILES_READ,
-                TAGS)
+                TAGS,
+                Tiles3dBuildingBlock.MATURITY,
+                Tiles3dBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());

@@ -11,11 +11,14 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -74,5 +77,15 @@ public class HeaderLocationCrud extends ApiExtensionCache implements ApiHeader {
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return CrudConfiguration.class;
+  }
+
+  @Override
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return CrudBuildingBlock.MATURITY;
+  }
+
+  @Override
+  public Optional<ExternalDocumentation> getSpecificationRef() {
+    return CrudBuildingBlock.SPEC;
   }
 }

@@ -12,6 +12,7 @@ import static de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.GROUP
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ogcapi.features.core.app.FeaturesCoreBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
@@ -236,7 +237,9 @@ public abstract class EndpointFeaturesDefinition extends EndpointSubCollection {
                 subSubPath.contains("{featureId}") ? OP_ID_GET_ITEM : OP_ID_GET_ITEMS,
                 collectionId),
             GROUP_DATA_READ,
-            TAGS)
+            TAGS,
+            FeaturesCoreBuildingBlock.MATURITY,
+            FeaturesCoreBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
 
     definitionBuilder.putResources(resourcePath, resourceBuilder.build());

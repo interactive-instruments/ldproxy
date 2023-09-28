@@ -30,6 +30,7 @@ import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsOgcApi;
+import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTile;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
@@ -114,7 +115,9 @@ public interface EndpointTileMixin {
                 Optional.empty(),
                 operationId,
                 GROUP_TILES_READ,
-                tags)
+                tags,
+                TilesBuildingBlock.MATURITY,
+                TilesBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());
@@ -164,7 +167,9 @@ public interface EndpointTileMixin {
             Optional.empty(),
             operationId,
             GROUP_TILES_READ,
-            tags)
+            tags,
+            TilesBuildingBlock.MATURITY,
+            TilesBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
 

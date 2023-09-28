@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.common.app.ImmutableQueryInputConformance;
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl;
 import de.ii.ogcapi.common.app.QueriesHandlerCommonImpl.Query;
+import de.ii.ogcapi.common.domain.CommonBuildingBlock;
 import de.ii.ogcapi.common.domain.CommonConfiguration;
 import de.ii.ogcapi.common.domain.ConformanceDeclarationFormatExtension;
 import de.ii.ogcapi.common.domain.QueriesHandlerCommon;
@@ -112,7 +113,9 @@ public class EndpointConformance extends Endpoint {
             Optional.empty(),
             getOperationId("getConformanceDeclaration"),
             GROUP_DISCOVER_READ,
-            TAGS)
+            TAGS,
+            CommonBuildingBlock.MATURITY,
+            CommonBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
 

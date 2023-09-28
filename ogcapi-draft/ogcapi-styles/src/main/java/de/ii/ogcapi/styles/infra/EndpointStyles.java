@@ -24,6 +24,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.styles.app.StylesBuildingBlock;
 import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyles;
 import de.ii.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
@@ -112,7 +113,9 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
             Optional.empty(),
             getOperationId("getStyles"),
             GROUP_STYLES_READ,
-            TAGS)
+            TAGS,
+            StylesBuildingBlock.MATURITY,
+            StylesBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilderSet.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilderSet.build());
 

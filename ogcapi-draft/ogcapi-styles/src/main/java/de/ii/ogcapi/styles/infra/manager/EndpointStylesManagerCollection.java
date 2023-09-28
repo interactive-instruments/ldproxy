@@ -29,6 +29,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.styles.app.StylesBuildingBlock;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.styles.domain.manager.ImmutableQueryInputStyleCreateReplace;
@@ -182,7 +183,9 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
                 Optional.empty(),
                 getOperationId("createStyle", collectionId),
                 GROUP_STYLES_WRITE,
-                TAGS)
+                TAGS,
+                StylesBuildingBlock.MATURITY,
+                StylesBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.POST.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());
@@ -238,7 +241,9 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
                 Optional.empty(),
                 getOperationId("replaceStyle", collectionId),
                 GROUP_STYLES_WRITE,
-                TAGS)
+                TAGS,
+                StylesBuildingBlock.MATURITY,
+                StylesBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
 
@@ -261,7 +266,9 @@ public class EndpointStylesManagerCollection extends EndpointSubCollection
                 Optional.empty(),
                 getOperationId("deleteStyle", collectionId),
                 GROUP_STYLES_WRITE,
-                TAGS)
+                TAGS,
+                StylesBuildingBlock.MATURITY,
+                StylesBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());

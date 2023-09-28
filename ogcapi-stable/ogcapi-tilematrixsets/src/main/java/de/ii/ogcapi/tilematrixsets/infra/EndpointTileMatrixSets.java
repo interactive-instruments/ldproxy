@@ -25,6 +25,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.tilematrixsets.app.TileMatrixSetsBuildingBlock;
 import de.ii.ogcapi.tilematrixsets.domain.ImmutableQueryInputTileMatrixSets;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsFormatExtension;
@@ -118,7 +119,9 @@ public class EndpointTileMatrixSets extends Endpoint {
             Optional.empty(),
             getOperationId("getTileMatrixSets"),
             GROUP_TILES_READ,
-            TAGS)
+            TAGS,
+            TileMatrixSetsBuildingBlock.MATURITY,
+            TileMatrixSetsBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilderSet.putOperations(method.name(), operation));
     definitionBuilder.putResources(path, resourceBuilderSet.build());
 

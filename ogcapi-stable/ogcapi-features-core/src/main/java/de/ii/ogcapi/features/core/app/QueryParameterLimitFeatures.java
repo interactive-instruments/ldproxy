@@ -13,6 +13,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtendableConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -20,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import io.swagger.v3.oas.models.media.IntegerSchema;
@@ -248,5 +250,15 @@ public class QueryParameterLimitFeatures extends ApiExtensionCache
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData) {
     parameters.getValue(this).ifPresent(queryBuilder::limit);
+  }
+
+  @Override
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return FeaturesCoreBuildingBlock.MATURITY;
+  }
+
+  @Override
+  public Optional<ExternalDocumentation> getSpecificationRef() {
+    return FeaturesCoreBuildingBlock.SPEC;
   }
 }

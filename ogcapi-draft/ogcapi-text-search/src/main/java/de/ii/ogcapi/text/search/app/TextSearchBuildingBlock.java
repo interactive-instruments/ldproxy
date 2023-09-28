@@ -9,7 +9,10 @@ package de.ii.ogcapi.text.search.app;
 
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.text.search.domain.ImmutableTextSearchConfiguration;
+import java.util.Optional;
 import javax.inject.Inject;
 
 /**
@@ -27,6 +30,15 @@ import javax.inject.Inject;
  * @ref:queryParameters {@link de.ii.ogcapi.text.search.app.QueryParameterQ}
  */
 public class TextSearchBuildingBlock implements ApiBuildingBlock {
+
+  public static final Optional<SpecificationMaturity> MATURITY =
+      Optional.of(SpecificationMaturity.DRAFT_OGC);
+  public static final Optional<ExternalDocumentation> SPEC =
+      Optional.of(
+          ExternalDocumentation.of(
+              "https://docs.ogc.org/DRAFTS/20-004.html",
+              "OGC API - Records - Part 1: Core (DRAFT)"));
+
   @Inject
   public TextSearchBuildingBlock() {}
 

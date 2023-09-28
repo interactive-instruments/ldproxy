@@ -177,7 +177,9 @@ public class EndpointQueryables extends EndpointSubCollection implements Conform
                 Optional.empty(),
                 getOperationId("getQueryables", collectionId),
                 GROUP_COLLECTIONS_READ,
-                TAGS)
+                TAGS,
+                QueryablesBuildingBlock.MATURITY,
+                QueryablesBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());

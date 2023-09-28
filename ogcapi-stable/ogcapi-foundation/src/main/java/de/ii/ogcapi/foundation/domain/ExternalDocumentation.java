@@ -35,6 +35,14 @@ public abstract class ExternalDocumentation {
         into.putString(from.getUrl(), StandardCharsets.UTF_8);
       };
 
+  public static ExternalDocumentation of(String url) {
+    return new ImmutableExternalDocumentation.Builder().url(url).build();
+  }
+
+  public static ExternalDocumentation of(String url, String description) {
+    return new ImmutableExternalDocumentation.Builder().url(url).description(description).build();
+  }
+
   /**
    * @langEn Description of the content of the document or website.
    * @langDe Beschreibung des Inhalts des Dokuments oder der Website.

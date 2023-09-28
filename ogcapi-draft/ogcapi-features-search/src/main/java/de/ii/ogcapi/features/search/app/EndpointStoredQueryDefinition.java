@@ -134,7 +134,9 @@ public class EndpointStoredQueryDefinition extends EndpointRequiresFeatures {
               Optional.empty(),
               getOperationId("getStoredQueryDefinition"),
               GROUP_SEARCH_READ,
-              TAGS)
+              TAGS,
+              SearchBuildingBlock.MATURITY,
+              SearchBuildingBlock.SPEC)
           .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
       definitionBuilder.putResources(path, resourceBuilder.build());
     }

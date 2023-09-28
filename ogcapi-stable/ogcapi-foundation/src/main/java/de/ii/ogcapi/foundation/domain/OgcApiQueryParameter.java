@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.parameters.Parameter;
+import io.swagger.v3.oas.models.parameters.QueryParameter;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -39,12 +40,14 @@ public interface OgcApiQueryParameter extends ParameterExtension {
   }
 
   private Parameter newQueryParameter(OgcApiDataV2 apiData, Optional<String> collectionId) {
-    return new io.swagger.v3.oas.models.parameters.QueryParameter()
-        .name(getName())
-        .description(getDescription())
-        .required(getRequired(apiData, collectionId))
-        .schema(getSchema(apiData, collectionId))
-        .style(Parameter.StyleEnum.valueOf(getStyle().toUpperCase(Locale.ROOT)))
-        .explode(getExplode());
+    Parameter param =
+        new QueryParameter()
+            .name(getName())
+            .required(getRequired(apiData, collectionId))
+            .schema(getSchema(apiData, collectionId))
+            .style(Parameter.StyleEnum.valueOf(getStyle().toUpperCase(Locale.ROOT)))
+            .explode(getExplode());
+    setOpenApiDescription(apiData, param);
+    return param;
   }
 }
