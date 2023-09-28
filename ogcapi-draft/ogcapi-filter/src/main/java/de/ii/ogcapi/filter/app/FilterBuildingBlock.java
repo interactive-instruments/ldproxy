@@ -19,8 +19,18 @@ import javax.inject.Singleton;
 
 /**
  * @title Filter
- * @langEn Filter feature queries with CQL2 expressions.
- * @langDe Feature-Queries mit CQL2-Ausdrücken filtern.
+ * @langEn Filter features with CQL2 expressions.
+ * @langDe Features mit CQL2-Ausdrücken filtern.
+ * @scopeEn This module provides query parameters to filter features using CQL2 (in Text or JSON
+ *     encoding). Depending on the feature provider, some capabilities of CQL2 may not be supported.
+ *     Specifically, in GeoPackage feature providers, queryables in a JSON column that are arrays
+ *     are not supported. In PostgreSQL/PostGIS feature providers, the `A_OVERLAPS` operator is not
+ *     supported for queryables in a JSON column.
+ * @scopeDe Dieses Modul bietet Abfrageparameter zum Filtern von Features mit CQL2 (in Text- oder
+ *     JSON-Kodierung). Je nach Feature-Provider werden einige Funktionen von CQL2 möglicherweise
+ *     nicht unterstützt. Insbesondere werden in GeoPackage Feature-Providern Queryables in einer
+ *     JSON-Spalte, die Arrays sind, nicht unterstützt. In PostgreSQL/PostGIS-Feature-Anbietern wird
+ *     der Operator `A_OVERLAPS` für Queryables in einer JSON-Spalte nicht unterstützt.
  * @conformanceEn This module implements requirements of the conformance classes *Filter* and
  *     *Features Filter* from the draft specification [OGC API - Features - Part 3: Common Query
  *     Language](https://docs.ogc.org/DRAFTS/19-079r1.html) as well as the conformance classes

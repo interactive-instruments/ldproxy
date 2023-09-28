@@ -51,11 +51,18 @@ import javax.inject.Singleton;
  *     Filter-Ausdrücken verwendet werden können.
  * @scopeEn The queryables are represented as a schema where each queryable is a property. The
  *     schema for each queryable is automatically derived from the definition of the property in the
- *     feature provider. Supported encodings are JSON Schema 2019-09 and HTML.
+ *     feature provider. Supported encodings are JSON Schema and HTML.
+ *     <p>Properties that are not objects (or an array of objects) can be declared as a queryable.
+ *     <p>If the queryable property is a value, e.g., a string or integer, that is nested in an
+ *     array, the type of the queryable will be an array of values.
  * @scopeDe Die Queryables werden als Schema kodiert, wobei jede Queryable eine Objekteigenschaft
  *     ist. Das Schema für jede abfragbare Eigenschaft wird automatisch aus der Definition der
- *     Eigenschaft im Feature-Provider abgeleitet. Unterstützte Kodierungen sind JSON Schema 2019-09
- *     und HTML.
+ *     Eigenschaft im Feature-Provider abgeleitet. Unterstützte Kodierungen sind JSON Schema und
+ *     HTML.
+ *     <p>Eigenschaften, die keine Objekte (oder ein Array von Objekten) sind, können als Queryable
+ *     deklariert werden.
+ *     <p>Wenn die abfragbare Eigenschaft ein Wert ist, z.B. ein String oder ein Integer, die in
+ *     einem Array verschachtelt ist, ist der Typ der abfragbaren Eigenschaft ein Array der Werte.
  * @conformanceEn *Feature Collections - Queryables* implements all requirements and recommendations
  *     of chapter 6 ("Queryables") of the [draft OGC API - Features - Part 3:
  *     Filtering](https://docs.ogc.org/DRAFTS/19-079r1.html#queryables).
@@ -119,7 +126,7 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
     if (!provider.supportsQueries()) {
       builder.addErrors(
           MessageFormat.format(
-              "Queryables is enabled, but the feature provider of the API '{0}' does not support queries.",
+              "Queryables is enabled, but the feature provider of the API ''{0}'' does not support queries.",
               provider.getData().getId()));
     }
 
