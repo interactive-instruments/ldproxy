@@ -22,6 +22,7 @@
             <li><a href="{{url}}" target="_blank">{{label}}</a></li>
           {{/formats}}
         </ul>
+        {{#hasLoginProvider}}
         {{#user}}
           <div class="pl-5 d-flex justify-content-between align-items-center">
             <span class="text-muted" style="font-variant: small-caps;">{{name}}</span>
@@ -53,6 +54,7 @@
             </div>
           {{/loginUri}}
         {{/user}}
+        {{/hasLoginProvider}}
       </div>
     </div>
   </div>

@@ -35,6 +35,21 @@ import org.slf4j.LoggerFactory;
  *     path `templates/html/{templateName}.mustache`, where `{templateName}` equals the name of a
  *     default template (see [source code on
  *     GitHub](https://github.com/search?q=repo%3Ainteractive-instruments%2Fldproxy+extension%3Amustache&type=Code)).
+ *     <p>### Login Provider
+ *     <p>For APIs with [restricted access](../README.md#access-control) using an [identity
+ *     provider](../../application/65-auth.md) with login capabilities, the `loginProvider` option
+ *     can be set to enable automatic redirects to the login form of the identity provider for
+ *     restricted HTML pages. The logged-in user will also be shown on all HTML pages along with a
+ *     logout button.
+ *     <p>::: warning This functionality uses cookies to retain the login information when
+ *     navigating between HTML pages. The cookies are neither processed nor passed on to any third
+ *     party.
+ *     <p>In regard to the European GDPR and the German TTDSG we would deem these cookies as
+ *     technically required. That means if you publish an API with this functionality, you would be
+ *     required to mention these cookies in the privacy policy. :::6
+ *     <p>::: info If the identity provider uses `https` (which it should), this feature only works
+ *     if the API is also published using `https`. The only exception is accessing an API on
+ *     `localhost`. :::
  * @langDe ### Benutzerdefinierte Templates
  *     <p>Die HTML-Ausgabe ist mittels [Mustache-Templates](https://mustache.github.io/)
  *     implementiert. Anstelle der Standardtemplates können auch benutzerspezifische Templates
@@ -43,6 +58,21 @@ import org.slf4j.LoggerFactory;
  *     Name des Default-Templates ist. Die Standardtemplates liegen jeweils in den
  *     Resource-Verzeichnissen der Module, die sie verwenden ([Link zur Suche in
  *     GitHub](https://github.com/search?q=repo%3Ainteractive-instruments%2Fldproxy+extension%3Amustache&type=Code)).
+ *     <p>### Login Provider
+ *     <p>Für APIs mit [beschränktem Zugriff](../README.md#access-control) die einen
+ *     [Identity-Provider](../../application/65-auth.md) mit Login-Fähigkeiten verwenden, kann die
+ *     Option `loginProvider` gesetzt werden, um für abgesicherte HTML-Seiten automatische Redirects
+ *     zum Login-Formular des Identity-Providers zu aktivieren. Der eingeloggte User wird auf allen
+ *     HTML-Seiten angezeigt ebenso wie ein Logout-Button.
+ *     <p>::: warning Diese Funktionalität verwendet Cookies um die Login-Information beim
+ *     Navigieren zwischen HTML-Seiten zu bewahren. Diese Cookies werden weder verarbeitet noch an
+ *     Dritte weitergegeben.
+ *     <p>In Hinsicht auf die europäische DSGVO und das deutsche TTDSG würden wir diese Cookies als
+ *     technisch notwendig erachten. Das heißt wenn eine API mit dieser Funktionalität
+ *     veröffentlicht wird, müssen diese Cookies in der Datenschutzerklärung erwähnt werden. :::
+ *     <p>::: info Wenn der Identity-Provider `https` verwendet (was er sollte), funktioniert dieses
+ *     Feature nur, wenn die API ebenfalls mit `https` veröffentlich wird. Die einzige Ausnahme ist
+ *     der Zugriff auf die API mittels `localhost`. :::
  * @examplesEn Example of the specifications in the configuration file (from the API for
  *     [Topographic data in Daraa, Syria](https://demo.ldproxy.net/daraa)):
  *     <p><code>
@@ -277,6 +307,18 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
    */
   @Nullable
   String getFooterText();
+
+  /**
+   * @langEn Option to enable automatic redirects to the login form of an identity provider. The
+   *     value is the id of a provider with login capabilities in the [global
+   *     configuration](../../application/65-auth.md). Also see [Login Provider](#login-provider).
+   * @langDe Option um automatische Redirects zum Login-Formular eines Identity-Providers zu
+   *     aktivieren. Der Wert ist die Id eines Provider mit Login-Fähigkeiten in der [globalen
+   *     Konfiguration](../../application/65-auth.md). Siehe auch [Login Provider](#login-provider).
+   * @default null
+   */
+  @Nullable
+  String getLoginProvider();
 
   List<ApiCatalogEntry> getAdditionalApis();
 

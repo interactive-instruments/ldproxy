@@ -47,6 +47,7 @@ public abstract class Link {
           .put("application/flatgeobuf", "FlatGeobuf")
           .put("application/gml+xml", "GML")
           .put("application/xml", "XML")
+          .put("application/vnd.oai.openapi", "YAML")
           .build();
 
   public static final Comparator<Link> COMPARATOR_LINKS =

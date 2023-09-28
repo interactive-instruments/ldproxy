@@ -70,6 +70,21 @@ import org.immutables.value.Value;
  *     collection. To restrict the access to specific APIs or collections, a suffix can be added to
  *     permission groups and permissions, for example `read::daraa` or
  *     `data:getItems::daraa:AeronauticSrf`.
+ *     <p>#### Scopes
+ *     <p>*OAuth2 Scopes* are an optional additional authorization layer. They are typically used
+ *     when access to an API is granted to a third-party application on behalf of a user. Scopes
+ *     then allow to limit which of the users permissions should be granted to the application. The
+ *     application would request the scopes it needs and the user would be presented a consent form
+ *     where he can choose the scopes he wishes to grant.
+ *     <p>Scopes are disabled by default and can be enabled by setting the `scopes` option. The
+ *     value is a list of the permission group types that should be used as scopes. That allows to
+ *     set the granularity of scopes, since presenting too many scopes in a consent form might be
+ *     overwhelming and all the enabled scopes have to actually exist in the identity provider.
+ *     <p>For example setting `scopes` to `[BASIC]` would enable the scopes `read` and `write`. When
+ *     a user then grants the `write` scope to an application, that does not automatically mean the
+ *     application is allowed to write anything. What the application can write is still defined by
+ *     the users permissions. But not granting the `write` scope is an easy way to prohibit any
+ *     write access, even if the user has such permissions.
  *     <p>#### Authentication and authorization
  *     <p>To support authenticated users, a bearer token has to be included in the `Authorization`
  *     header in requests to the API. Validation and evaluation of these tokens has to be configured
@@ -89,8 +104,8 @@ import org.immutables.value.Value;
  * @langDe Absicherung für alle API Operationen (Kombination aus Endpunkt und HTTP-Methode).
  *     <p>#### Berechtigungen
  *     <p>Die Absicherung basiert auf Berechtigungen und Berechtigungsgruppen.
- *     <p>Berechtigungen sind eine Kombination aus Gruppen-Prefix (siehe unten) und einer OpenAPI
- *     Operation-Id (ohne jeglichen Prefix), z.B. `data:getItems` oder `tiles:getTile`. Diese können
+ *     <p>Berechtigungen sind eine Kombination aus Gruppen-Präfix (siehe unten) und einer OpenAPI
+ *     Operation-Id (ohne jeglichen Präfix), z.B. `data:getItems` oder `tiles:getTile`. Diese können
  *     verwendet werden, wenn eine fein-granularere Absicherung benötigt wird, als sie mit
  *     Berechtigungsgruppen möglich ist.
  *     <p>#### Berechtigungsgruppen
@@ -138,6 +153,24 @@ import org.immutables.value.Value;
  *     Zugriff auf bestimmte APIs oder Collections einzuschränken, kann ein Suffix zu
  *     Berechtigungsgruppen und Berechtigungen hinzugefügt werden, z.B. `read::daraa` oder
  *     `data:getItems::daraa:AeronauticSrf`.
+ *     <p>#### Scopes
+ *     <p>*OAuth2 Scopes* sind ein optionaler zusätzlicher Autorisierungs-Layer. Sie werden
+ *     typischerweise verwendet wenn einer Fremd-Applikation im Namen eines Users Zugriff auf eine
+ *     API gewährt werden soll. Scopes erlauben es dann zu beschränken welche der Berechtigungen des
+ *     Users der Applikation gewährt werden sollen. Die Applikation würde die benötigten Scopes
+ *     anfragen und dem User würde ein Einwilligungs-Formular präsentiert in dem er die Scopes
+ *     auswählen kann, die er gewähren will.
+ *     <p>Scopes sind standardmäßig deaktiviert und können durch Setzen der `scopes` Option
+ *     aktiviert werden. Der Wert ist eine Liste von Berechtigungsgruppen-Typen die als Scopes
+ *     verwendet werden sollen. Das erlaubt die Granularität der Scopes festzulegen, da zu viele
+ *     Scopes in einem Einwilligungs-Formular überwältigen können und alle aktivierten Scopes auch
+ *     im Identity-Provider existieren müssen.
+ *     <p>Zum Beispiel würde das Setzen von `scopes` auf `[BASIC]` die Scopes `read` und `write`
+ *     aktivieren. Wenn ein User einer Applikation dann den Scope `write` gewähren würde, heißt das
+ *     nicht automatisch, dass die Applikation irgendetwas schreiben darf. Was die Applikation
+ *     schreiben darf wird immer noch durch die Berechtigungen des Users beschränkt. Aber den Scope
+ *     `write` nicht zu gewähren ist ein einfacher Weg jeglichen Schreibzugriff zu verbieten, auch
+ *     wenn der User entsprechende Rechte hat.
  *     <p>#### Authentifizierung and Autorisierung
  *     <p>Um authentifizierte Benutzer zu unterstützen, muss ein Bearer-Token im
  *     `Authorization`-Header in Anfragen an die API inkludiert werden. Die Validierung und
