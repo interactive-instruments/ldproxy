@@ -10,10 +10,10 @@ package de.ii.ogcapi.foundation.domain;
 public enum SpecificationMaturity {
   STABLE_OGC("Maturity: `STABLE`"),
   DRAFT_OGC(
-      "Maturity: `PRELIMINARY` (specified in a draft standard; the %s may change in future versions of this API)"),
+      "Maturity: `PRELIMINARY` (specified in a draft standard; the %s may change in this API)"),
   STABLE_LDPROXY("Maturity: `STABLE`"),
-  DRAFT_LDPROXY("Maturity: `PRELIMINARY` (the %s may change in future versions of this API)"),
-  DEPRECATED("Maturity: `DEPRECATED` (the %s may be removed in future versions of this API)");
+  DRAFT_LDPROXY("Maturity: `PRELIMINARY` (the %s may change in this API)"),
+  DEPRECATED("Maturity: `DEPRECATED` (the %s may be removed in this API)");
 
   private final String text;
 
