@@ -1,6 +1,7 @@
         </div>
 
         <footer class="footer bg-light py-4 d-flex flex-column justify-content-around align-items-center">
+            {{> custom-footer-start}}
             {{#htmlConfig}}
             {{#footerText}}
                 <div class="container text-muted text-center">
@@ -19,9 +20,13 @@
                     <span><a class="small" href="{{.}}" target="_blank">{{privacyName}}</a></span>
                 {{/privacyUrl}}
                 {{/htmlConfig}}
+                {{> custom-footer-url}}
                 </span>
 	        </div>
+          {{> custom-footer-end}}
         </footer>
+
+        {{> custom-body-end}}
 
     </body>
 
