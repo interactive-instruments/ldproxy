@@ -24,6 +24,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.resources.app.ResourcesBuildingBlock;
 import de.ii.ogcapi.resources.domain.ImmutableQueryInputResources;
 import de.ii.ogcapi.resources.domain.QueriesHandlerResources;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
@@ -119,7 +120,9 @@ public class EndpointResources extends Endpoint {
             Optional.empty(),
             getOperationId("getResources"),
             GROUP_RESOURCES_READ,
-            TAGS)
+            TAGS,
+            ResourcesBuildingBlock.MATURITY,
+            ResourcesBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilderSet.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilderSet.build());
 

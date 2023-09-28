@@ -10,7 +10,10 @@ package de.ii.ogcapi.resources.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.resources.domain.ImmutableResourcesConfiguration.Builder;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -36,6 +39,9 @@ import javax.inject.Singleton;
 @AutoBind
 public class ResourcesBuildingBlock implements ApiBuildingBlock {
 
+  public static final Optional<SpecificationMaturity> MATURITY =
+      Optional.of(SpecificationMaturity.DRAFT_LDPROXY);
+  public static final Optional<ExternalDocumentation> SPEC = Optional.empty();
   public static final String STORE_RESOURCE_TYPE = "api-resources";
 
   @Inject

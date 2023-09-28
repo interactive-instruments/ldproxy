@@ -178,7 +178,9 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
                 Optional.empty(),
                 getOperationId("getJsonLdContext", collectionId),
                 GROUP_COLLECTIONS_READ,
-                TAGS)
+                TAGS,
+                GeoJsonLdBuildingBlock.MATURITY,
+                GeoJsonLdBuildingBlock.SPEC)
             .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());
       }

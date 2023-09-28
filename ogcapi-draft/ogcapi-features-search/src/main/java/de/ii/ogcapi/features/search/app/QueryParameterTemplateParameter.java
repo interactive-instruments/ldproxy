@@ -10,12 +10,15 @@ package de.ii.ogcapi.features.search.app;
 import de.ii.ogcapi.features.search.domain.SearchConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Objects;
+import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
@@ -86,5 +89,17 @@ public abstract class QueryParameterTemplateParameter extends ApiExtensionCache
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {
     return getSchema();
+  }
+
+  @Override
+  @Value.Default
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return SearchBuildingBlock.MATURITY;
+  }
+
+  @Override
+  @Value.Default
+  public Optional<ExternalDocumentation> getSpecificationRef() {
+    return SearchBuildingBlock.SPEC;
   }
 }

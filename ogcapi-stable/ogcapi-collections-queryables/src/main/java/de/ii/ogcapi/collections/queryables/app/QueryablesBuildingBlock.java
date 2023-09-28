@@ -19,9 +19,11 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
@@ -78,6 +80,14 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryablesBuildingBlock implements ApiBuildingBlock {
+
+  public static final Optional<SpecificationMaturity> MATURITY =
+      Optional.of(SpecificationMaturity.DRAFT_OGC);
+  public static final Optional<ExternalDocumentation> SPEC =
+      Optional.of(
+          ExternalDocumentation.of(
+              "https://docs.ogc.org/DRAFTS/19-079r1.html",
+              "OGC API - Features - Part 3: Filtering (DRAFT)"));
 
   private final SchemaInfo schemaInfo;
   private final FeaturesCoreProviders providers;

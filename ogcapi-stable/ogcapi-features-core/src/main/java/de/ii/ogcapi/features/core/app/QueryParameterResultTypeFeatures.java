@@ -21,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import io.swagger.v3.oas.models.media.Schema;
@@ -117,5 +118,10 @@ public class QueryParameterResultTypeFeatures extends ApiExtensionCache
     parameters
         .getValue(this)
         .ifPresent(value -> queryBuilder.hitsOnly(Objects.equals(ResultType.HITS_ONLY, value)));
+  }
+
+  @Override
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return Optional.of(SpecificationMaturity.DRAFT_LDPROXY);
   }
 }

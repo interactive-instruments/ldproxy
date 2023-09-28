@@ -31,6 +31,7 @@ public class FoundationBuildingBlock implements ApiBuildingBlock {
         .enabled(true)
         .includeLinkHeader(true)
         .useLangParameter(false)
+        .includeSpecificationInformation(false)
         .build();
   }
 }

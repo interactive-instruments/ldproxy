@@ -222,7 +222,9 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 Optional.empty(),
                 getOperationId(EndpointFeaturesDefinition.OP_ID_CREATE_ITEM, collectionId),
                 GROUP_DATA_WRITE,
-                TAGS)
+                TAGS,
+                CrudBuildingBlock.MATURITY,
+                CrudBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.POST.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());
@@ -270,7 +272,9 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 Optional.empty(),
                 getOperationId(EndpointFeaturesDefinition.OP_ID_REPLACE_ITEM, collectionId),
                 GROUP_DATA_WRITE,
-                TAGS)
+                TAGS,
+                CrudBuildingBlock.MATURITY,
+                CrudBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
 
@@ -293,7 +297,9 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 Optional.empty(),
                 getOperationId(EndpointFeaturesDefinition.OP_ID_UPDATE_ITEM, collectionId),
                 GROUP_DATA_WRITE,
-                TAGS)
+                TAGS,
+                CrudBuildingBlock.MATURITY,
+                CrudBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PATCH.name(), operation));
 
@@ -313,7 +319,9 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 Optional.empty(),
                 getOperationId(EndpointFeaturesDefinition.OP_ID_DELETE_ITEM, collectionId),
                 GROUP_DATA_WRITE,
-                TAGS)
+                TAGS,
+                CrudBuildingBlock.MATURITY,
+                CrudBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());

@@ -29,7 +29,7 @@ public class SchemaFormatJsonSchema202012 implements SchemaFormatExtension {
               new MediaType(
                   "application", "schema+json", ImmutableMap.of("schema", VERSION.V202012.url())))
           .label("JSON Schema (2020-12)")
-          .parameter("jsonschema202012")
+          .parameter("jsonschema")
           .fileExtension("schema.json")
           .build();
 

@@ -14,7 +14,9 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -53,6 +55,14 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class CrsBuildingBlock implements ApiBuildingBlock {
+
+  public static final Optional<SpecificationMaturity> MATURITY =
+      Optional.of(SpecificationMaturity.STABLE_OGC);
+  public static final Optional<ExternalDocumentation> SPEC =
+      Optional.of(
+          ExternalDocumentation.of(
+              "https://docs.ogc.org/is/18-058r1/18-058r1.html",
+              "OGC API - Features - Part 2: Coordinate Reference Systems by Reference"));
 
   private final CrsTransformerFactory crsTransformerFactory;
   private final FeaturesCoreProviders featuresCoreProviders;

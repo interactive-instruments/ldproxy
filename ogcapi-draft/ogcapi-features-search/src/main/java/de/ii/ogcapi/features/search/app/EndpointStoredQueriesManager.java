@@ -160,7 +160,9 @@ public class EndpointStoredQueriesManager extends EndpointRequiresFeatures
               Optional.empty(),
               getOperationId("createOrUpdateStoredQuery"),
               GROUP_SEARCH_WRITE,
-              TAGS)
+              TAGS,
+              SearchBuildingBlock.MATURITY,
+              SearchBuildingBlock.SPEC)
           .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
 
       queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
@@ -178,7 +180,9 @@ public class EndpointStoredQueriesManager extends EndpointRequiresFeatures
               Optional.empty(),
               getOperationId("deleteStoredQuery"),
               GROUP_SEARCH_WRITE,
-              TAGS)
+              TAGS,
+              SearchBuildingBlock.MATURITY,
+              SearchBuildingBlock.SPEC)
           .ifPresent(
               operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));
       definitionBuilder.putResources(path, resourceBuilder.build());

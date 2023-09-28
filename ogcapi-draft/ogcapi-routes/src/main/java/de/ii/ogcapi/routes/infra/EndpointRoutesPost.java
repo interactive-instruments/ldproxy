@@ -312,7 +312,9 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
             Optional.empty(),
             getOperationId("computeRoute"),
             GROUP_ROUTES_WRITE,
-            TAGS)
+            TAGS,
+            RoutingBuildingBlock.MATURITY,
+            RoutingBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations(method.toString(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
 

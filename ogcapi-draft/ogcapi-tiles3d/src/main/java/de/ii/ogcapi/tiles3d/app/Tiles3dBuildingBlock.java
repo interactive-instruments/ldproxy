@@ -10,7 +10,10 @@ package de.ii.ogcapi.tiles3d.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.tiles3d.domain.ImmutableTiles3dConfiguration;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -61,6 +64,13 @@ import javax.inject.Singleton;
 @Singleton
 public class Tiles3dBuildingBlock implements ApiBuildingBlock {
 
+  public static final Optional<SpecificationMaturity> MATURITY =
+      Optional.of(SpecificationMaturity.DRAFT_OGC);
+  public static final Optional<ExternalDocumentation> SPEC =
+      Optional.of(
+          ExternalDocumentation.of(
+              "https://opengeospatial.github.io/ogcna-auto-review/22-029.html",
+              "OGC API - 3D GeoVolumes (DRAFT)"));
   public static final String STORE_RESOURCE_TYPE = "tiles3d";
 
   @Inject

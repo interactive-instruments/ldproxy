@@ -10,8 +10,11 @@ package de.ii.ogcapi.tiles3d.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -43,5 +46,15 @@ public class PathParameterCollectionId3dTiles extends AbstractPathParameterColle
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return Tiles3dConfiguration.class;
+  }
+
+  @Override
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return Tiles3dBuildingBlock.MATURITY;
+  }
+
+  @Override
+  public Optional<ExternalDocumentation> getSpecificationRef() {
+    return Tiles3dBuildingBlock.SPEC;
   }
 }

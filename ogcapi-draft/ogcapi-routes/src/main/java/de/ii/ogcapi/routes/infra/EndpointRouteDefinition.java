@@ -24,6 +24,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.routes.app.RoutingBuildingBlock;
 import de.ii.ogcapi.routes.domain.ImmutableQueryInputRoute;
 import de.ii.ogcapi.routes.domain.QueryHandlerRoutes;
 import de.ii.ogcapi.routes.domain.RouteDefinitionFormatExtension;
@@ -121,7 +122,9 @@ public class EndpointRouteDefinition extends Endpoint {
               Optional.empty(),
               getOperationId("getRouteDefinition"),
               GROUP_ROUTES_READ,
-              TAGS)
+              TAGS,
+              RoutingBuildingBlock.MATURITY,
+              RoutingBuildingBlock.SPEC)
           .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
       definitionBuilder.putResources(path, resourceBuilder.build());
     }

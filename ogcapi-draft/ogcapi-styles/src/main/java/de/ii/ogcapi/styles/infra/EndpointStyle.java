@@ -25,6 +25,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.styles.app.StylesBuildingBlock;
 import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyle;
 import de.ii.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
@@ -150,7 +151,9 @@ public class EndpointStyle extends Endpoint {
               Optional.empty(),
               getOperationId("getStyle"),
               GROUP_STYLES_READ,
-              TAGS)
+              TAGS,
+              StylesBuildingBlock.MATURITY,
+              StylesBuildingBlock.SPEC)
           .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
       definitionBuilder.putResources(path, resourceBuilder.build());
     }

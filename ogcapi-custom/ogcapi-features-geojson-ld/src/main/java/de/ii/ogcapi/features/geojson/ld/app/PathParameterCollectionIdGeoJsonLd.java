@@ -11,7 +11,10 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
 import de.ii.ogcapi.features.geojson.ld.domain.GeoJsonLdConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -43,5 +46,15 @@ public class PathParameterCollectionIdGeoJsonLd extends AbstractPathParameterCol
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return GeoJsonLdConfiguration.class;
+  }
+
+  @Override
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return GeoJsonLdBuildingBlock.MATURITY;
+  }
+
+  @Override
+  public Optional<ExternalDocumentation> getSpecificationRef() {
+    return GeoJsonLdBuildingBlock.SPEC;
   }
 }

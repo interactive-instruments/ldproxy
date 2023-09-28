@@ -17,10 +17,12 @@ import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration;
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration.Builder;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
@@ -214,6 +216,12 @@ import org.slf4j.LoggerFactory;
 @AutoBind
 public class TilesBuildingBlock implements ApiBuildingBlock {
 
+  public static final Optional<SpecificationMaturity> MATURITY =
+      Optional.of(SpecificationMaturity.STABLE_OGC);
+  public static final Optional<ExternalDocumentation> SPEC =
+      Optional.of(
+          ExternalDocumentation.of(
+              "https://docs.ogc.org/is/20-057/20-057.html", "OGC API - Tiles - Part 1: Core"));
   private static final Logger LOGGER = LoggerFactory.getLogger(TilesBuildingBlock.class);
   public static final int LIMIT_DEFAULT = 100000;
   public static final double MINIMUM_SIZE_IN_PIXEL = 0.5;

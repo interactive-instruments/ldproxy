@@ -146,7 +146,9 @@ public class EndpointResourcesManager extends Endpoint {
             Optional.empty(),
             getOperationId("createOrReplaceResource"),
             GROUP_RESOURCES_WRITE,
-            TAGS)
+            TAGS,
+            ResourcesBuildingBlock.MATURITY,
+            ResourcesBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations(methodReplace.name(), operation));
     HttpMethods methodDelete = HttpMethods.DELETE;
     queryParameters = getQueryParameters(extensionRegistry, apiData, path, methodDelete);
@@ -166,7 +168,9 @@ public class EndpointResourcesManager extends Endpoint {
             Optional.empty(),
             getOperationId("deleteResource"),
             GROUP_RESOURCES_WRITE,
-            TAGS)
+            TAGS,
+            ResourcesBuildingBlock.MATURITY,
+            ResourcesBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations(methodDelete.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
 

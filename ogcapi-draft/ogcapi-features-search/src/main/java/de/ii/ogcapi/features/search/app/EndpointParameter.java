@@ -121,7 +121,9 @@ public class EndpointParameter extends EndpointRequiresFeatures {
               Optional.empty(),
               getOperationId("getStoredQueryParameter"),
               GROUP_SEARCH_READ,
-              TAGS)
+              TAGS,
+              SearchBuildingBlock.MATURITY,
+              SearchBuildingBlock.SPEC)
           .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
       definitionBuilder.putResources(path, resourceBuilder.build());
     }

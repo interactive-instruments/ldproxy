@@ -11,6 +11,7 @@ import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.GROUP_COLLECTIONS_
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.collections.app.CollectionsBuildingBlock;
 import de.ii.ogcapi.collections.app.ImmutableQueryInputCollections;
 import de.ii.ogcapi.collections.app.QueriesHandlerCollectionsImpl;
 import de.ii.ogcapi.collections.domain.CollectionsConfiguration;
@@ -154,7 +155,9 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
             Optional.empty(),
             getOperationId("getCollections"),
             GROUP_COLLECTIONS_READ,
-            TAGS)
+            TAGS,
+            CollectionsBuildingBlock.MATURITY,
+            CollectionsBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
 

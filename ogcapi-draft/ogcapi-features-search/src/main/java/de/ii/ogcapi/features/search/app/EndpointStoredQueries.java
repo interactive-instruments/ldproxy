@@ -129,7 +129,9 @@ public class EndpointStoredQueries extends EndpointRequiresFeatures implements C
             Optional.empty(),
             getOperationId("getStoredQueries"),
             GROUP_SEARCH_READ,
-            TAGS)
+            TAGS,
+            SearchBuildingBlock.MATURITY,
+            SearchBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilderSet.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilderSet.build());
 
