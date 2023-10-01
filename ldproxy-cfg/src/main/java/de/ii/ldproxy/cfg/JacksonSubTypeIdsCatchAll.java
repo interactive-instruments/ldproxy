@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 
-public class JacksonSubTypeIdsCatchAll implements JacksonSubTypeIds {
+class JacksonSubTypeIdsCatchAll implements JacksonSubTypeIds {
 
   @Override
   public List<JacksonSubType> getSubTypes() {

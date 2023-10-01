@@ -19,7 +19,7 @@ import de.ii.xtraplatform.base.domain.ServerConfiguration;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
 import io.dropwizard.client.HttpClientConfiguration;
 
-public class AppConfigurationCfg extends AppConfiguration {
+class AppConfigurationCfg extends AppConfiguration {
 
   @Override
   public ServerConfiguration getServerFactory() {

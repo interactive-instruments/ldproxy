@@ -13,27 +13,27 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 
 /** Utility to simplify the creation of ldproxy YAML configuration files. */
-public interface CfgWriter {
+public interface LdproxyCfgWriter {
 
   /**
    * Create a new writer for the given FS store.
    *
    * @param store the root directory of an FS store
    * @param layoutV3 set to true to use the deprecated V3 directory layout
-   * @return the new {@link CfgWriter}
+   * @return the new {@link LdproxyCfgWriter}
    */
   @Deprecated(since = "3.5", forRemoval = true)
-  static CfgWriter create(Path store, boolean layoutV3) {
-    return new LdproxyCfg(store, true, layoutV3);
+  static LdproxyCfgWriter create(Path store, boolean layoutV3) {
+    return new LdproxyCfgImpl(store, true, layoutV3);
   }
 
   /**
    * Create a new writer for the given FS store.
    *
    * @param store the root directory of an FS store
-   * @return the new {@link CfgWriter}
+   * @return the new {@link LdproxyCfgWriter}
    */
-  static CfgWriter create(Path store) {
+  static LdproxyCfgWriter create(Path store) {
     return create(store, false);
   }
 
