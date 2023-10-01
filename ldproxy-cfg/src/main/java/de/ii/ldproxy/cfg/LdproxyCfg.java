@@ -7,7 +7,6 @@
  */
 package de.ii.ldproxy.cfg;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
@@ -19,6 +18,9 @@ import com.networknt.schema.ValidationMessage;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
+import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration.Builder;
+import de.ii.xtraplatform.base.domain.ImmutableStoreSourceDefault;
+import de.ii.xtraplatform.base.domain.ImmutableStoreSourceFsV3;
 import de.ii.xtraplatform.base.domain.Jackson;
 import de.ii.xtraplatform.base.domain.JacksonProvider;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
@@ -68,8 +70,13 @@ import java.util.Set;
 import java.util.concurrent.CompletionException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+// TODO: make package private, extract interface for xtracfg
 public class LdproxyCfg implements Cfg {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(LdproxyCfg.class);
 
   private final EntityDataDefaultsStore entityDataDefaultsStore;
   private final EntityDataStore<EntityData> entityDataStore;
@@ -88,22 +95,28 @@ public class LdproxyCfg implements Cfg {
     this(dataDirectory, false);
   }
 
+  public LdproxyCfg(Path dataDirectory, boolean noDefaults, boolean layoutV3) {
+    this(
+        dataDirectory,
+        layoutV3
+            ? new ImmutableStoreConfiguration.Builder()
+                .addSources(
+                    new ImmutableStoreSourceFsV3.Builder().src(dataDirectory.toString()).build())
+                .build()
+            : new ImmutableStoreConfiguration.Builder()
+                .addSources(
+                    new ImmutableStoreSourceDefault.Builder().src(dataDirectory.toString()).build())
+                .build(),
+        noDefaults);
+  }
+
   public LdproxyCfg(Path dataDirectory, boolean noDefaults) {
+    this(dataDirectory, detectStore(dataDirectory), noDefaults);
+  }
+
+  public LdproxyCfg(Path dataDirectory, StoreConfiguration sc, boolean noDefaults) {
     this.dataDirectory = dataDirectory;
-    // Path store = dataDirectory.resolve(StoreConfiguration.DEFAULT_LOCATION);
-    /*try {
-      Files.createDirectories(store);
-    } catch (IOException e) {
-      throw new IllegalStateException("Could not create " + store);
-    }*/
-
-    Optional<StoreConfiguration> sc = detectStore(dataDirectory);
-
-    if (sc.isEmpty()) {
-      throw new IllegalArgumentException("No store detected in " + dataDirectory);
-    }
-
-    this.storeConfiguration = sc.get();
+    this.storeConfiguration = sc;
     this.requiredIncludes = new RequiredIncludes();
     this.builders = new Builders() {};
     Jackson jackson = new JacksonProvider(JacksonSubTypes::ids, false);
@@ -137,7 +150,7 @@ public class LdproxyCfg implements Cfg {
           }
         });
     AppContext appContext = new AppContextCfg();
-    OgcApiExtensionRegistry extensionRegistry = new OgcApiExtensionRegistry();
+    OgcApiExtensionRegistry extensionRegistry = new OgcApiExtensionRegistry(appContext);
     Set<EntityFactory> factories = EntityFactories.factories(extensionRegistry);
     this.entityFactories = new EntityFactoriesImpl(() -> factories);
     this.entityDataDefaultsStore =
@@ -155,11 +168,16 @@ public class LdproxyCfg implements Cfg {
     this.migrations = Migrations.create(entityDataStore);
   }
 
-  private Optional<StoreConfiguration> detectStore(Path dataDirectory) {
-    return LayoutImpl.detectSource(dataDirectory)
-        .map(
-            storeSourceFs ->
-                new ImmutableStoreConfiguration.Builder().addSources(storeSourceFs).build());
+  private static StoreConfiguration detectStore(Path dataDirectory) {
+    Optional<ImmutableStoreConfiguration> sc =
+        LayoutImpl.detectSource(dataDirectory)
+            .map(storeSourceFs -> new Builder().addSources(storeSourceFs).build());
+
+    if (sc.isEmpty()) {
+      throw new IllegalArgumentException("No store detected in " + dataDirectory);
+    }
+
+    return sc.get();
   }
 
   @Override
@@ -253,23 +271,51 @@ public class LdproxyCfg implements Cfg {
 
   @Override
   public <T extends EntityData> void writeEntity(T data, Path... patches) throws IOException {
-    try {
-      entityDataStore.put(data.getId(), data, getType(data)).join();
+    Path path = getPath(data);
+    Identifier identifier = Identifier.from(data.getId(), getType(data));
 
-      for (Path patch : patches) {
-        Map<String, Object> patchMap =
-            objectMapper.readValue(patch.toFile(), new TypeReference<Map<String, Object>>() {});
+    T patched = applyPatch(identifier, data, patches);
+    Map<String, Object> asMap = getEntityDataStore().asMap(identifier, patched);
 
-        entityDataStore.patch(data.getId(), patchMap, true, getType(data)).join();
-      }
-    } catch (CompletionException e) {
-      if (e.getCause() instanceof IOException) {
-        throw (IOException) e.getCause();
-      }
-      throw e;
-    } catch (Throwable e) {
-      e.printStackTrace();
+    Map<String, Object> withoutDefaults =
+        getEntityDataDefaultsStore()
+            .subtractDefaults(identifier, data.getEntitySubType(), asMap, List.of("enabled"));
+
+    path.getParent().toFile().mkdirs();
+    objectMapper.writeValue(path.toFile(), withoutDefaults);
+  }
+
+  @Override
+  public <T extends EntityData> void writeEntity(T data, OutputStream outputStream)
+      throws IOException {
+    writeEntity(data);
+
+    Path path = getPath(data);
+
+    Files.copy(path, outputStream);
+  }
+
+  @Override
+  public void writeZippedStore(OutputStream outputStream) throws IOException {
+    ZipOutputStream zipOut = new ZipOutputStream(outputStream);
+    zipFile(dataDirectory.toFile(), dataDirectory.toFile().getName(), zipOut, true);
+    zipOut.close();
+  }
+
+  private <T extends EntityData> T applyPatch(Identifier identifier, T data, Path... patches)
+      throws IOException {
+    if (patches.length == 0) {
+      return data;
     }
+
+    EntityDataBuilder<EntityData> builder =
+        entityDataStore.getBuilder(identifier, Optional.ofNullable(getSubType(data))).from(data);
+
+    for (Path patch : patches) {
+      objectMapper.readerForUpdating(builder).readValue(patch.toFile());
+    }
+
+    return (T) builder.build();
   }
 
   // TODO: for which entity type, writes application defaults as well
@@ -294,31 +340,6 @@ public class LdproxyCfg implements Cfg {
       }
       throw e;
     }
-  }
-
-  @Override
-  public <T extends EntityData> void addEntity(T data) throws IOException {
-    Path path = getPath(data);
-
-    path.getParent().toFile().mkdirs();
-    objectMapper.writeValue(path.toFile(), data);
-  }
-
-  @Override
-  public <T extends EntityData> void writeEntity(T data, OutputStream outputStream)
-      throws IOException {
-    addEntity(data);
-
-    Path path = getPath(data);
-
-    Files.copy(path, outputStream);
-  }
-
-  @Override
-  public void writeZippedStore(OutputStream outputStream) throws IOException {
-    ZipOutputStream zipOut = new ZipOutputStream(outputStream);
-    zipFile(dataDirectory.toFile(), dataDirectory.toFile().getName(), zipOut, true);
-    zipOut.close();
   }
 
   private <T extends EntityData> Path getPath(T data) {
