@@ -10,6 +10,7 @@ package de.ii.ldproxy.cfg;
 import de.ii.xtraplatform.base.domain.AppConfiguration;
 import de.ii.xtraplatform.base.domain.AuthConfiguration;
 import de.ii.xtraplatform.base.domain.BackgroundTasksConfiguration;
+import de.ii.xtraplatform.base.domain.ImmutableAuthConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
 import de.ii.xtraplatform.base.domain.LoggingConfiguration;
 import de.ii.xtraplatform.base.domain.ManagerConfiguration;
@@ -18,7 +19,7 @@ import de.ii.xtraplatform.base.domain.ServerConfiguration;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
 import io.dropwizard.client.HttpClientConfiguration;
 
-public class AppConfigurationCfg extends AppConfiguration {
+class AppConfigurationCfg extends AppConfiguration {
 
   @Override
   public ServerConfiguration getServerFactory() {
@@ -42,7 +43,7 @@ public class AppConfigurationCfg extends AppConfiguration {
 
   @Override
   public AuthConfiguration getAuth() {
-    return null;
+    return new ImmutableAuthConfiguration.Builder().build();
   }
 
   @Override

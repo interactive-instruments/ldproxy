@@ -9,6 +9,7 @@ package de.ii.ogcapi.foundation.domain;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.google.common.base.CaseFormat;
@@ -35,6 +36,7 @@ import org.immutables.value.Value;
     property = "buildingBlock")
 @JsonTypeInfoAlias("extensionType")
 @JsonTypeIdResolver(JacksonProvider.DynamicTypeIdResolver.class)
+@JsonPropertyOrder({"buildingBlock", "enabled"})
 public interface ExtensionConfiguration
     extends Buildable<ExtensionConfiguration>, Mergeable<ExtensionConfiguration> {
 

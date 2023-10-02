@@ -34,8 +34,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StoreMigrator
-    implements Migrator<StoreMigrationContext, StoreSourceFs, StoreMigration> {
+class StoreMigrator implements Migrator<StoreMigrationContext, StoreSourceFs, StoreMigration> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StoreMigrator.class);
 

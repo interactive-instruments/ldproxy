@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class EventSubscriptionsSync implements EventSubscriptions {
+class EventSubscriptionsSync implements EventSubscriptions {
 
   private final Map<String, List<Event>> eventStreams;
   private final Map<String, List<Identifier>> ignore;
