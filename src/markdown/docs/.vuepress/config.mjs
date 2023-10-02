@@ -31,7 +31,41 @@ const sidebar = lang => {
     }),
     group({en: 'Auxiliaries', de: 'Zubehör'}[lang], prefix + 'auxiliaries', {ignoreReadme: true}),
     {text: {en: 'Advanced', de: 'Fortgeschritten'}[lang]},
-  ]
+  ];
+};
+
+const navbar = lang => { 
+  const versions = {
+    'v3.x': 'https://docs.ldproxy.net', 
+    'next': 'https://next.docs.ldproxy.net'
+  };
+  const active = process.env.DOCS_VERSION;
+
+  if (!Object.hasOwn(versions, active)) {
+    console.error(`[ERROR] DOCS_VERSION is not set or contains an unknown version [${active}]. Valid versions are [${Object.keys(versions)}].`);
+    process.exit(1);
+  }
+
+  return [
+    {
+      text: {en: 'Documentation', de: 'Dokumentation'}[lang],
+      link: '/',
+      activeMatch: '/',
+    },
+    {
+      text: 'Demo',
+      link: 'https://demo.ldproxy.net',
+    },
+    {
+      text: active,
+      children: Object.keys(versions).map(version => ({
+          text: version,
+          link: version === active ? '' : versions[version],
+          activeMatch: version === active ? '/' : undefined,
+        })),
+      group: "start",
+    },
+  ];
 };
 
 export default defineUserConfig({
@@ -84,28 +118,7 @@ export default defineUserConfig({
       '/': {
         selectLanguageText: 'EN',
         selectLanguageName: 'English',
-        navbar: [
-          {
-            text: 'Documentation',
-            link: '/',
-            activeMatch: '/',
-          },
-          {
-            text: 'Demo',
-            link: 'https://demo.ldproxy.net',
-          },
-          {
-            text: `v3.x`,
-            children: [
-              {
-                text: 'v3.x',
-                link: '',
-                activeMatch: '/',
-              },
-            ],
-            group: "start",
-          },
-        ],
+        navbar: navbar('en'),
         sidebar: sidebar('en'),
         themeExtensions: {
           legalNoticeUrl: 'https://www.interactive-instruments.de/en/about/impressum/',
@@ -115,28 +128,7 @@ export default defineUserConfig({
       '/de/': {
         selectLanguageText: 'DE',
         selectLanguageName: 'Deutsch',
-        navbar: [
-          {
-            text: 'Dokumentation',
-            link: '/',
-            activeMatch: '/',
-          },
-          {
-            text: 'Demo',
-            link: 'https://demo.ldproxy.net',
-          },
-          {
-            text: `v3.x`,
-            children: [
-              {
-                text: 'v3.x',
-                link: '',
-                activeMatch: '/',
-              },
-            ],
-            group: "start",
-          },
-        ],
+        navbar: navbar('de'),
         sidebar: sidebar('de'),
         themeExtensions: {
           onThisPageLabel: 'Auf dieser Seite',

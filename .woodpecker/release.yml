@@ -9,11 +9,24 @@ pipeline:
 
   libs:
     image: eclipse-temurin:11
+    environment:
+      - DOCS_VERSION=v3.x
     commands:
-      - ./gradlew publish dockerContext -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
+      - ./gradlew publish dockerContext docsVuepress -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
     when:
       event: tag
+
+  docs:
+    image: williamjackson/netlify-cli
+    environment:
+      - XDG_CONFIG_HOME=/home/node
+    commands:
+      - netlify deploy --prod --auth $NETLIFY_TOKEN --site 09d0be51-d517-4c96-a048-438ec3cf94e2 --message "$CI_COMMIT_MESSAGE" --dir $CI_WORKSPACE/build/markdown/docs/.vuepress/dist/
+    secrets: [ netlify_token]
+    when:
+      event: tag
+      branch: master
 
   dist-arm64:
     image: eclipse-temurin:11
