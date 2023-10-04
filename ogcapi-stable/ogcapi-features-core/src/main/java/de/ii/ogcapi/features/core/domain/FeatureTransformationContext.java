@@ -179,6 +179,16 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
     return ImmutableList.of(0, 0, 0);
   }
 
+  @Value.Default
+  default boolean getDebug() {
+    return false;
+  }
+
+  @Value.Default
+  default boolean getPrettify() {
+    return false;
+  }
+
   abstract class State {
     public abstract Event getEvent();
 

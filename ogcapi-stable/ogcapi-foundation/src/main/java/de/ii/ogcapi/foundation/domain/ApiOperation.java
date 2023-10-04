@@ -132,23 +132,15 @@ public interface ApiOperation {
       Optional<String> collectionId =
           path.startsWith("/collections/") ? Optional.of(path.split("/", 4)[2]) : Optional.empty();
       Schema<Object> formSchema = new ObjectSchema();
-      queryParameters.stream()
-          // Drop support for "f" in URL-encoded POST requests, content negotiation must be used,
-          // but this is not a real issue, since the f parameter is mainly for clickable links,
-          // that is GET/HEAD requests.
-          // The main reason is that the f parameter is evaluated in ApiRequestDispatcher,
-          // that is before the f parameter in the payload of the POST request is (easily)
-          // available.
-          .filter(param -> !"f".equals(param.getName()))
-          .forEach(
-              param -> {
-                Schema<?> paramSchema =
-                    param.getSchema(apiData, collectionId).description(param.getDescription());
-                formSchema.addProperties(param.getName(), paramSchema);
-                if (param.getRequired(apiData, collectionId)) {
-                  formSchema.addRequiredItem(param.getName());
-                }
-              });
+      queryParameters.forEach(
+          param -> {
+            Schema<?> paramSchema =
+                param.getSchema(apiData, collectionId).description(param.getDescription());
+            formSchema.addProperties(param.getName(), paramSchema);
+            if (param.getRequired(apiData, collectionId)) {
+              formSchema.addRequiredItem(param.getName());
+            }
+          });
       body =
           new ImmutableApiRequestBody.Builder()
               .description("The query parameters of the GET request encoded in the request body.")

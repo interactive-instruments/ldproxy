@@ -27,7 +27,6 @@ import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -271,12 +270,7 @@ public class EndpointFeatures extends EndpointFeaturesDefinition
     int defaultPageSize = coreConfiguration.getDefaultPageSize();
     boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
 
-    List<OgcApiQueryParameter> parameterDefinitions =
-        getQueryParameters(
-            extensionRegistry, api.getData(), "/collections/{collectionId}/items", collectionId);
-    QueryParameterSet queryParameterSet =
-        QueryParameterSet.of(parameterDefinitions, requestContext.getParameters())
-            .evaluate(api, Optional.of(collectionData));
+    QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
     Optional<Profile> profile =
         Optional.ofNullable(
             (Profile)

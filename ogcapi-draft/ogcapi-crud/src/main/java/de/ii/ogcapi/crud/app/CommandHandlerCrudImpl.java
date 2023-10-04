@@ -11,7 +11,6 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.Query;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.QueryInputFeature;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -20,7 +19,6 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureChange;
 import de.ii.xtraplatform.features.domain.FeatureChange.Action;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -121,7 +119,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
     EpsgCrs crs = queryInput.getQuery().getCrs().orElseGet(queryInput::getDefaultCrs);
 
-    Response feature = getCurrentFeature(queryInput, requestContext, crs);
+    Response feature = getCurrentFeature(queryInput, requestContext);
     EntityTag eTag = feature.getEntityTag();
     Date lastModified = feature.getLastModified();
 
@@ -168,7 +166,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
     EpsgCrs crs = queryInput.getQuery().getCrs().orElseGet(queryInput::getDefaultCrs);
 
-    Response feature = getCurrentFeature(queryInput, requestContext, crs);
+    Response feature = getCurrentFeature(queryInput, requestContext);
     EntityTag eTag = feature.getEntityTag();
     Date lastModified = feature.getLastModified();
 
@@ -213,9 +211,9 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
   @Override
   public Response deleteItemResponse(
-      QueryInputFeature queryInput, ApiRequestContext requestContext) {
+      QueryInputFeatureDelete queryInput, ApiRequestContext requestContext) {
 
-    Response feature = getCurrentFeature(queryInput, requestContext, OgcCrs.CRS84);
+    Response feature = getCurrentFeature(queryInput, requestContext);
 
     EntityTag eTag = feature.getEntityTag();
     Date lastModified = feature.getLastModified();
@@ -251,7 +249,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
   }
 
   private @NotNull Response getCurrentFeature(
-      QueryInputFeature queryInput, ApiRequestContext requestContext, EpsgCrs crs) {
+      QueryInputFeatureWithQueryParameterSet queryInput, ApiRequestContext requestContext) {
     try {
       if (formats == null) {
         formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class);
@@ -264,9 +262,10 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
               .requestUri(
                   requestContext
                       .getUriCustomizer()
-                      .addParameter("schema", "receivables")
-                      .addParameter("crs", crs.toUriString())
+                      .clearParameters()
+                      // query parameters have been evaluated and are not necessary here
                       .build())
+              .queryParameterSet(queryInput.getQueryParameterSet())
               .mediaType(
                   new ImmutableApiMediaType.Builder()
                       .type(new MediaType("application", "geo+json"))
@@ -322,7 +321,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
   private static Optional<BoundingBox> parseBboxHeader(Response response) {
     // TODO this should use a structured fields parser (RFC 8941), but there are only experimental
-    // Java implementations
+    //      Java implementations
     String crsHeader = response.getHeaderString("Content-Crs");
     String bboxHeader = response.getHeaderString(FeaturesCoreQueriesHandler.BOUNDING_BOX_HEADER);
     return Objects.nonNull(crsHeader) && Objects.nonNull(bboxHeader)
@@ -334,7 +333,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
   private static Optional<Tuple<Long, Long>> parseTimeHeader(Response response) {
     // TODO this should use a structured fields parser (RFC 8941), but there are only experimental
-    // Java implementations
+    //      Java implementations
     String timeHeader = response.getHeaderString(FeaturesCoreQueriesHandler.TEMPORAL_EXTENT_HEADER);
     Optional<Tuple<Long, Long>> currentTime = Optional.empty();
     if (Objects.nonNull(timeHeader)) {

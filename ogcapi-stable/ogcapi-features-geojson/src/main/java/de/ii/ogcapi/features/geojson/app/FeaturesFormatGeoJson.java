@@ -314,10 +314,7 @@ public class FeaturesFormatGeoJson
                     .getExtension(GeoJsonConfiguration.class)
                     .get())
             .prettify(
-                Optional.ofNullable(
-                            transformationContext.getOgcApiRequest().getParameters().get("pretty"))
-                        .filter(value -> Objects.equals(value, "true"))
-                        .isPresent()
+                transformationContext.getPrettify()
                     || (transformationContext
                         .getApiData()
                         .getCollections()
@@ -325,11 +322,6 @@ public class FeaturesFormatGeoJson
                         .getExtension(GeoJsonConfiguration.class)
                         .get()
                         .getUseFormattedJsonOutput()))
-            .debugJson(
-                Optional.ofNullable(
-                        transformationContext.getOgcApiRequest().getParameters().get("debug"))
-                    .filter(value -> Objects.equals(value, "true"))
-                    .isPresent())
             .build();
 
     return Optional.of(new FeatureEncoderGeoJson(transformationContextGeoJson, geoJsonWriters));

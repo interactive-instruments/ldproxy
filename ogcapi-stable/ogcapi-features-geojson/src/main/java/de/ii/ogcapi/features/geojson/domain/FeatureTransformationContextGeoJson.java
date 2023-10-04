@@ -72,7 +72,7 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
     if (getPrettify()) {
       json.useDefaultPrettyPrinter();
     }
-    if (getDebugJson()) {
+    if (getDebug()) {
       // Zum JSON debuggen hier einschalten.
       json = new JsonGeneratorDebug(json);
     }
@@ -81,13 +81,9 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
   }
 
   @Value.Default
-  public boolean getDebugJson() {
-    return false;
-  }
-
-  @Value.Default
+  @Override
   public boolean getPrettify() {
-    return getGeoJsonConfig().getUseFormattedJsonOutput() == true;
+    return Boolean.TRUE.equals(getGeoJsonConfig().getUseFormattedJsonOutput());
   }
 
   // TODO: to state

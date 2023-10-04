@@ -27,7 +27,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryInput;
-import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsOgcApi;
 import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
@@ -279,9 +278,7 @@ public interface EndpointTileMixin {
         .level(level)
         .row(row)
         .col(col)
-        .parameters(
-            QueryParameterSet.of(parameterDefinitions, parameterValues)
-                .evaluate(api, collectionData))
+        .parameters(requestContext.getQueryParameterSet())
         .build();
   }
 

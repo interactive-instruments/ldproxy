@@ -13,10 +13,12 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FoundationConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.HttpRequestOverrideQueryParameter;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import io.swagger.v3.oas.models.media.Schema;
@@ -28,6 +30,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.ws.rs.container.ContainerRequestContext;
 
 /**
  * @title lang
@@ -40,9 +43,9 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterLang extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<Locale> {
-
-  // TODO #846
+    implements OgcApiQueryParameter,
+        TypedQueryParameter<Locale>,
+        HttpRequestOverrideQueryParameter {
 
   private Schema<?> schema = null;
   private final SchemaValidator schemaValidator;
@@ -72,6 +75,14 @@ public class QueryParameterLang extends ApiExtensionCache
         .filter(lang -> Objects.equals(lang.getLanguage(), value))
         .findFirst()
         .orElse(null);
+  }
+
+  @Override
+  public void applyTo(ContainerRequestContext requestContext, QueryParameterSet parameters) {
+    if (parameters.getTypedValues().containsKey(getName())) {
+      Locale value = (Locale) parameters.getTypedValues().get(getName());
+      requestContext.getHeaders().putSingle("Accept-Language", value.toLanguageTag());
+    }
   }
 
   @Override

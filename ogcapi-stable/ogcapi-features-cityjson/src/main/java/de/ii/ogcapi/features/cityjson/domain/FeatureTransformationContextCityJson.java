@@ -70,16 +70,6 @@ public abstract class FeatureTransformationContextCityJson implements FeatureTra
     return json;
   }
 
-  @Value.Default
-  public boolean getDebugJson() {
-    return false;
-  }
-
-  @Value.Default
-  public boolean getPrettify() {
-    return false;
-  }
-
   public JsonGenerator getJson() {
     return getJsonGenerator();
   }

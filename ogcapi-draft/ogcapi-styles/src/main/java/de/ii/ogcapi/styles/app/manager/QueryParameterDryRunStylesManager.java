@@ -8,22 +8,16 @@
 package de.ii.ogcapi.styles.app.manager;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
+import de.ii.ogcapi.common.domain.QueryParameterDryRun;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
-import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
-import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.ogcapi.styles.app.StylesBuildingBlock;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
-import io.swagger.v3.oas.models.media.BooleanSchema;
-import io.swagger.v3.oas.models.media.Schema;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
@@ -35,41 +29,21 @@ import javax.inject.Singleton;
  *     Metadata
  * @langEn If set to 'true', the operation just validates the content without creating a new style
  *     or updating an existing style.
- * @langDe Bei `true` wird der Inhalt lediglich überprüft, ohne dass eine neuer Style erstellt oder
+ * @langDe Bei `true` wird der Inhalt lediglich überprüft, ohne dass ein neuer Style erstellt oder
  *     ein bestehender Style aktualisiert wird.
  */
 @Singleton
 @AutoBind
-public class QueryParameterDryRunStylesManager extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<Boolean> {
-
-  // TODO #846
-
-  private final Schema<?> schema = new BooleanSchema()._default(false);
-  private final SchemaValidator schemaValidator;
+public class QueryParameterDryRunStylesManager extends QueryParameterDryRun {
 
   @Inject
   QueryParameterDryRunStylesManager(SchemaValidator schemaValidator) {
-    this.schemaValidator = schemaValidator;
+    super(schemaValidator);
   }
 
   @Override
   public String getId() {
     return "dryRunStylesManager";
-  }
-
-  @Override
-  public String getName() {
-    return "dry-run";
-  }
-
-  @Override
-  public Boolean parse(
-      String value,
-      Map<String, Object> typedValues,
-      OgcApi api,
-      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
-    return Objects.nonNull(value) && Boolean.parseBoolean(value);
   }
 
   @Override
@@ -90,16 +64,6 @@ public class QueryParameterDryRunStylesManager extends ApiExtensionCache
                         && definitionPath.endsWith("/styles/{styleId}/metadata"))
                     || (method == HttpMethods.PUT && definitionPath.endsWith("/styles/{styleId}"))
                     || (method == HttpMethods.POST && definitionPath.endsWith("/styles"))));
-  }
-
-  @Override
-  public Schema<?> getSchema(OgcApiDataV2 apiData) {
-    return schema;
-  }
-
-  @Override
-  public SchemaValidator getSchemaValidator() {
-    return schemaValidator;
   }
 
   @Override

@@ -10,6 +10,7 @@ package de.ii.ogcapi.styles.domain.manager;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.foundation.domain.WithDryRun;
 import java.util.Optional;
 import javax.ws.rs.core.MediaType;
 import org.immutables.value.Value;
@@ -26,7 +27,7 @@ public interface QueriesHandlerStylesManager
   }
 
   @Value.Immutable
-  interface QueryInputStyleCreateReplace extends QueryInput {
+  interface QueryInputStyleCreateReplace extends QueryInput, WithDryRun {
     Optional<String> getCollectionId();
 
     Optional<String> getStyleId();
@@ -36,8 +37,6 @@ public interface QueriesHandlerStylesManager
     byte[] getRequestBody();
 
     boolean getStrict();
-
-    boolean getDryRun();
   }
 
   @Value.Immutable
@@ -48,7 +47,7 @@ public interface QueriesHandlerStylesManager
   }
 
   @Value.Immutable
-  interface QueryInputStyleMetadata extends QueryInput {
+  interface QueryInputStyleMetadata extends QueryInput, WithDryRun {
     Optional<String> getCollectionId();
 
     String getStyleId();
@@ -58,7 +57,5 @@ public interface QueriesHandlerStylesManager
     byte[] getRequestBody();
 
     boolean getStrict();
-
-    boolean getDryRun();
   }
 }
