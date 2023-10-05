@@ -1,5 +1,48 @@
 # Changelog
 
+## v3.5.0 (05/10/2023)
+
+> [!IMPORTANT]
+> This is likely the last feature release for `v3.x`. The upcoming major release `v4.0` will bring some breaking changes:
+> - All configurations options marked as deprecated will be removed.
+> - The current data directory layout is deprecated and will no longer be supported. It is superseded by the new [store concept](https://docs.ldproxy.net/application/41-store-new.html).
+> - The manager is deprecated and will be removed. There will be a replacement with a focus on the automatic creation of configurations that is currently part of the manager, but other features might be discontinued.
+> 
+> To prepare your configurations for the upcoming changes, check out the [migration documentation](https://docs.ldproxy.net/migration/).
+
+#### Implemented enhancements
+
+-  support queryables/sortables in JSON columns [#1050](https://github.com/interactive-instruments/ldproxy/issues/1050)
+-  introduce GraphQL feature provider [#1037](https://github.com/interactive-instruments/ldproxy/issues/1037)
+-  add support for terrain im MapLibre styles [#1023](https://github.com/interactive-instruments/ldproxy/issues/1023)
+-  improve layer control in webmap [#1015](https://github.com/interactive-instruments/ldproxy/issues/1015)
+-  Schemas: use encoding-agnostic schema instead of describing the GeoJSON representation [#973](https://github.com/interactive-instruments/ldproxy/issues/973)
+-  controlling the encoding of feature relationships [#972](https://github.com/interactive-instruments/ldproxy/issues/972)
+-  Feature Schema: support representations that better match the application schema [#971](https://github.com/interactive-instruments/ldproxy/issues/971)
+-  Feature Schema: data type for references to features [#970](https://github.com/interactive-instruments/ldproxy/issues/970)
+-  add audience claim support [#925](https://github.com/interactive-instruments/ldproxy/issues/925)
+-  add attribute based access control [#722](https://github.com/interactive-instruments/ldproxy/issues/722)
+-  add auth flow integration [#721](https://github.com/interactive-instruments/ldproxy/issues/721)
+-  add fine-grained role based access control [#720](https://github.com/interactive-instruments/ldproxy/issues/720)
+-  enhanced access control [#717](https://github.com/interactive-instruments/ldproxy/issues/717)
+
+#### Improvements
+
+-  update OpenAPI definition to state maturity of API components [#1056](https://github.com/interactive-instruments/ldproxy/issues/1056)
+-  JSON-FG: use the objectType in the provider schema as the default feature type [#1029](https://github.com/interactive-instruments/ldproxy/issues/1029)
+-  improve html customization [#1003](https://github.com/interactive-instruments/ldproxy/issues/1003)
+
+#### Fixed bugs
+
+-  support queryables in nested arrays [#1049](https://github.com/interactive-instruments/ldproxy/issues/1049)
+-  CQL2-JSON: error when parsing geometries [#1041](https://github.com/interactive-instruments/ldproxy/issues/1041)
+
+#### Dependency updates
+
+-  upgrade MapLibre from 2.1 to 3.2 [#980](https://github.com/interactive-instruments/ldproxy/issues/980)
+-  upgrade dropwizard from 2.1.6 to 3.0.1 [#789](https://github.com/interactive-instruments/ldproxy/issues/789)
+
+---
 ## v3.4.2 (08/08/2023)
 
 #### Fixed bugs
