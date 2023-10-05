@@ -1,12 +1,40 @@
 # Bereitstellung
 
-Der empfohlene Weg zur Bereitstellung von ldproxy ist die Verwendung von Docker, einer Open-Source-Containerplattform. Docker-Images für ldproxy sind auf [Docker Hub](https://hub.docker.com/r/iide/ldproxy/) verfügbar.
+ldproxy wird als OCI-Image auf [Docker Hub](https://hub.docker.com/r/iide/ldproxy/) veröffentlicht. Um ldproxy zu deployen, kann theoretisch jede OCI-kompatible Laufzeitumgebung verwendet werden. Empfohlen und regelmäßig getestet werden Docker und Kubernetes mit containerd.
 
-## Vorraussetzungen
+## Data Volume
+
+Das Verzeichnis `/ldproxy/data` im Container ist der Ort, von dem ldproxy standardmäßig Dateien liest und in den er sie schreibt.
+
+Es ist als Volume im Image deklariert, was bedeutet, dass es außerhalb des Container-Dateisystems existiert. Wenn kein Mount für `/ldproxy/data` angegeben ist, wird die Container-Laufzeit normalerweise ein anonymes Volume erstellen.
+
+### Inhalt (alt)
+
+::: info
+Dies beschreibt das Layout des Datenverzeichnisses bis `v3.5`. Es wird ab `v4.0` nicht mehr unterstützt. Siehe unten für das neue Layout.
+:::
+
+Das Datenverzeichnis enthält normalerweise die folgenden Dateien und Verzeichnisse:
+
+* `cfg.yml`: Die [Konfigurationsdatei für globale Einstellungen](30-configuration.md).
+* `api-resources`: Ein Repository von Ressourcen oder Sub-Ressourcen, auf die über die API zugegriffen werden kann und die entweder vom Administrator oder über die API geändert werden können. Beispiele sind Stile, Kartensymbole, JSON-LD Kontexte, etc. Weitere Einzelheiten finden Sie in der Datei [API-Module](../services/building-blocks/README.md). Wenn ein Modul nicht aktiviert ist oder war, dann fehlen auch die entsprechenden Verzeichnisse.
+* `cache`: Der Cache für Ressourcen, die von ldproxy aus Leistungsgründen zwischengespeichert werden. Derzeit sind dies nur die Vector Tiles für das [Modul "Tiles"](../services/building-blocks/tiles.md).
+* `Logs`: Die Log-Dateien gemäß den Einstellungen in `cfg.yml`.
+* `store`: Die [ldproxy-Konfigurationsdateien](40-store.md).
+* `templates`: Mustache-Vorlagen für die HTML-Seiten, die die Standardvorlagen von ldproxy überschreiben.
+* `tmp`: Ein Verzeichnis für temporäre Daten. Der Inhalt kann bei Bedarf gelöscht werden, wenn ldproxy gestoppt wird. Es enthält z.B. den Cache der OSGi-Bundles.
+
+### Inhalt (neu)
+
+Ein minimales Datenverzeichnis enthält nur ein `tmp`-Verzeichnis für temporäre Dateien, die bei Bedarf gelöscht werden können, wenn ldproxy gestoppt wird.
+
+Standardmäßig dient das Datenverzeichnis auch als Haupt-[Store Source](41-store-new.md). In diesem Fall kann es eine `cfg.yml` mit [globalen Konfigurationseinstellungen](30-configuration.md) sowie die Verzeichnisse `entities` und `resources` enthalten.
+
+## Docker
 
 Um ldproxy einzusetzen, benötigen Sie eine Installation von Docker. Docker ist für Linux, Windows und Mac verfügbar. Detaillierte Installationsanleitungen für jede Plattform finden Sie [hier](https://docs.docker.com/).
 
-## Installieren und Starten von ldproxy
+### Installieren und Starten von ldproxy
 
 Um ldproxy zu installieren, führen Sie einfach den folgenden Befehl auf einem Rechner mit installiertem Docker aus:
 
@@ -43,7 +71,7 @@ Prüfen Sie, ob ldproxy läuft, indem Sie die URI http://localhost:7080/ in eine
 
 Falls ldproxy nicht antwortet, konsultieren Sie das Protokoll mit `docker logs ldproxy`.
 
-## Aktualisierung von ldproxy
+### Aktualisierung von ldproxy
 
 Um ldproxy zu aktualisieren, entfernen Sie einfach den Container und erstellen Sie einen neuen mit dem Befehl run wie oben beschrieben. Zum Beispiel:
 
@@ -54,3 +82,7 @@ docker run --name ldproxy -d -p 7080:7080 -v ~/docker/ldproxy_data:/ldproxy/data
 ```
 
 Ihre Daten werden in einem Volume gespeichert, nicht im Container, so dass Ihre Konfigurationen, API-Ressourcen und Caches auch nach der Aktualisierung noch vorhanden sind.
+
+## Kubernetes
+
+Coming soon.
