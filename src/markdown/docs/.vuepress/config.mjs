@@ -30,7 +30,6 @@ const sidebar = lang => {
       ]
     }),
     group({en: 'Auxiliaries', de: 'Zubehör'}[lang], prefix + 'auxiliaries', {ignoreReadme: true}),
-    group({en: 'Auxiliaries', de: 'Zubehör'}[lang], prefix + 'auxiliaries', {ignoreReadme: true}),
     group({en: 'Migration', de: 'Migration'}[lang], prefix + 'migration'),
   ];
 };
