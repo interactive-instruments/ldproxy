@@ -1,12 +1,40 @@
 # Deployment
 
-The recommended way to deploy ldproxy is using Docker, an open source container platform. Docker images for ldproxy are available on [Docker Hub](https://hub.docker.com/r/iide/ldproxy/).
+ldproxy is published as OCI image on [Docker Hub](https://hub.docker.com/r/iide/ldproxy/). To deploy ldproxy you should be able to use any OCI compatible runtime, recommended and regularly tested are Docker and Kubernetes with containerd.
 
-## Prerequisites
+## Data Volume
+
+The directory `/ldproxy/data` in the container is where ldproxy reads and writes deployment-specific files from and to by default. 
+
+It is declared as a volume in the image, which means it is supposed to exist outside if the container file system. If no mount for `/ldproxy/data` is provided, the container runtime normally will create an anonymous volume.
+
+### Content (old)
+
+::: info
+This describes the data directory layout until `v3.5`. It will no longer be supported starting with `v4.0`. See below for the new layout.
+:::
+
+The data directory typically contains the following files and directories:
+
+* `cfg.yml`: The [configuration file for global settings](30-configuration.md).
+* `api-resources`: A repository of resources or sub-resources that can be accessed through the API and modified either by the administrator or through the API. Examples include styles, map symbols, JSON-LD contexts, etc. For more details, see the [API modules](../services/building-blocks/README.md). If a module is or was never activated, then the corresponding directories are also missing.
+* `cache`: The cache for resources that are cached by ldproxy for performance reasons. Currently these are only the Vector Tiles for the [module "Tiles"](../services/building-blocks/tiles.md).
+* `logs`: The log files according to the settings in `cfg.yml`.
+* `store`: The [ldproxy configuration files](40-store.md).
+* `templates`: Mustache templates for the HTML pages that override the default templates of ldproxy.
+* `tmp`: A directory for temporary data. The contents can be deleted if necessary when ldproxy is stopped. It contains, for example, the cache of the OSGi bundles.
+
+### Content (new)
+
+A minimal data directory will only contain a `tmp` directory for temporary files which might be deleted if necessary when ldproxy is stopped.
+
+By default, the data directory also acts as the main [Store Source](41-store-new.md). In that case it may contain a `cfg.yml` with [global configuration settings](30-configuration.md) as well as `entities` and `resources` directories.
+
+## Docker
 
 To deploy ldproxy, you will need an installation of Docker. Docker is available for Linux, Windows and Mac. You will find detailed installation guides for each platform [here](https://docs.docker.com/).
 
-## Installing and starting ldproxy
+### Installing and starting ldproxy
 
 To install ldproxy, just run the following command on a machine with Docker installed:
 
@@ -43,7 +71,7 @@ Check that ldproxy is running by opening the URI http://localhost:7080/ in a web
 
 If ldproxy is not responding, consult the log with `docker logs ldproxy`.
 
-## Updating ldproxy
+### Updating ldproxy
 
 To update ldproxy, just remove the container and create a new one with the run command as above. For example:
 
@@ -54,3 +82,7 @@ docker run --name ldproxy -d -p 7080:7080 -v ~/docker/ldproxy_data:/ldproxy/data
 ```
 
 Your data is saved in a volume, not in the container, so your configurations, API resources and caches will still be there after the update.
+
+## Kubernetes
+
+Coming soon.

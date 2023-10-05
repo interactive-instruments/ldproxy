@@ -60,5 +60,6 @@ task docsVuepressDev(type: YarnTask) {
     execOverrides {
         it.workingDir = project.workingDir
     }
+    environment = ['DOCS_VERSION': 'next']
     args = ['run', 'docs:dev']
 }
