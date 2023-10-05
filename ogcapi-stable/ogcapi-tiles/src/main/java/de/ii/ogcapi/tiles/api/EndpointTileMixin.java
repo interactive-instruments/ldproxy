@@ -193,17 +193,11 @@ public interface EndpointTileMixin {
     OgcApiDataV2 apiData = api.getData();
     Optional<FeatureTypeConfigurationOgcApi> collectionData =
         collectionId.map(id -> apiData.getCollections().get(id));
-    Map<String, String> parameterValues = requestContext.getParameters();
-    final List<OgcApiQueryParameter> parameterDefinitions =
-        collectionId.isPresent()
-            ? ((EndpointSubCollection) endpoint)
-                .getQueryParameters(extensionRegistry, apiData, definitionPath, collectionId.get())
-            : endpoint.getQueryParameters(extensionRegistry, apiData, definitionPath);
 
-    if (collectionId.isPresent()) {
-      endpoint.checkPathParameter(
-          extensionRegistry, apiData, definitionPath, "collectionId", collectionId.get());
-    }
+    collectionId.ifPresent(
+        id ->
+            endpoint.checkPathParameter(
+                extensionRegistry, apiData, definitionPath, "collectionId", id));
     endpoint.checkPathParameter(
         extensionRegistry, apiData, definitionPath, "tileMatrixSetId", tileMatrixSetId);
     endpoint.checkPathParameter(
