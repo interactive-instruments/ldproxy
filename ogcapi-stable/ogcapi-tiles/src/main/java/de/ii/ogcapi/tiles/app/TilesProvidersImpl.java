@@ -20,7 +20,7 @@ import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsOgcApi;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
-import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.tiles.domain.MinMax;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;

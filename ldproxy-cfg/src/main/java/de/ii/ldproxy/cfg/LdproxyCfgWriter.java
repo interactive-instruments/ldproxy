@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.cfg;
 
-import de.ii.xtraplatform.store.domain.entities.EntityData;
+import de.ii.xtraplatform.entities.domain.EntityData;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;

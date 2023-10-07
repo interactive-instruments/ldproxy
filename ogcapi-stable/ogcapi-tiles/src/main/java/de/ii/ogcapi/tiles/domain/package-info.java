@@ -13,6 +13,6 @@
 package de.ii.ogcapi.tiles.domain;
 
 import com.github.azahnen.dagger.annotations.AutoModule;
-import de.ii.xtraplatform.store.domain.entities.maptobuilder.encoding.BuildableMapEncodingEnabled;
+import de.ii.xtraplatform.entities.domain.maptobuilder.encoding.BuildableMapEncodingEnabled;
 import org.glassfish.jersey.internal.inject.Binder;
 import org.immutables.value.Value;

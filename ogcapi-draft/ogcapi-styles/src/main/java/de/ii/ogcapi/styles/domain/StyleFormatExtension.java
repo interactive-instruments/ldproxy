@@ -15,7 +15,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import java.util.List;
 import java.util.Optional;
 

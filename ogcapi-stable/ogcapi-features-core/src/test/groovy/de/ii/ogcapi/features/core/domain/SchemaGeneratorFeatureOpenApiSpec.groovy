@@ -15,8 +15,8 @@ import de.ii.xtraplatform.features.domain.ImmutableSchemaConstraints
 import de.ii.xtraplatform.features.domain.SchemaBase
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry
-import de.ii.xtraplatform.store.app.entities.EntityRegistryImpl
-import de.ii.xtraplatform.store.domain.entities.EntityFactory
+import de.ii.xtraplatform.entities.app.EntityRegistryImpl
+import de.ii.xtraplatform.entities.domain.EntityFactory
 import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.Schema

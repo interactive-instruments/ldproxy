@@ -14,8 +14,8 @@ import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
+import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 

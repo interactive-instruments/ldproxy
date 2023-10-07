@@ -7,13 +7,13 @@
  */
 package de.ii.ldproxy.cfg;
 
-import de.ii.xtraplatform.store.app.EventSubscriptions;
-import de.ii.xtraplatform.store.domain.EventStoreSubscriber;
-import de.ii.xtraplatform.store.domain.Identifier;
-import de.ii.xtraplatform.store.domain.ImmutableStateChangeEvent;
-import de.ii.xtraplatform.store.domain.ReplayEvent;
-import de.ii.xtraplatform.store.domain.StateChangeEvent;
-import de.ii.xtraplatform.store.domain.TypedEvent;
+import de.ii.xtraplatform.entities.app.EventSubscriptions;
+import de.ii.xtraplatform.entities.domain.EventStoreSubscriber;
+import de.ii.xtraplatform.entities.domain.Identifier;
+import de.ii.xtraplatform.entities.domain.ImmutableStateChangeEvent;
+import de.ii.xtraplatform.entities.domain.ReplayEvent;
+import de.ii.xtraplatform.entities.domain.StateChangeEvent;
+import de.ii.xtraplatform.entities.domain.TypedEvent;
 import de.ii.xtraplatform.streams.domain.Event;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
