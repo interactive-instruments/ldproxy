@@ -28,29 +28,29 @@ import de.ii.xtraplatform.base.domain.StoreSource;
 import de.ii.xtraplatform.base.domain.StoreSourceDefault;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.codelists.domain.CodelistData;
+import de.ii.xtraplatform.entities.app.EntityDataDefaultsStoreImpl;
+import de.ii.xtraplatform.entities.app.EntityDataStoreImpl;
+import de.ii.xtraplatform.entities.app.EventStoreDefault;
+import de.ii.xtraplatform.entities.app.ValueEncodingJackson;
+import de.ii.xtraplatform.entities.domain.EntityData;
+import de.ii.xtraplatform.entities.domain.EntityDataBuilder;
+import de.ii.xtraplatform.entities.domain.EntityDataDefaultsStore;
+import de.ii.xtraplatform.entities.domain.EntityDataStore;
+import de.ii.xtraplatform.entities.domain.EntityFactoriesImpl;
+import de.ii.xtraplatform.entities.domain.EntityFactory;
+import de.ii.xtraplatform.entities.domain.EventStore;
+import de.ii.xtraplatform.entities.domain.EventStoreDriver;
+import de.ii.xtraplatform.entities.domain.EventStoreSubscriber;
+import de.ii.xtraplatform.entities.domain.Identifier;
+import de.ii.xtraplatform.entities.domain.ReplayEvent;
+import de.ii.xtraplatform.entities.domain.ValueEncoding.FORMAT;
+import de.ii.xtraplatform.entities.infra.EventStoreDriverFs;
 import de.ii.xtraplatform.features.domain.ProviderData;
 import de.ii.xtraplatform.features.sql.app.FeatureProviderSql;
 import de.ii.xtraplatform.features.sql.domain.FeatureProviderSqlData;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
-import de.ii.xtraplatform.store.app.EventStoreDefault;
 import de.ii.xtraplatform.store.app.StoreImpl;
-import de.ii.xtraplatform.store.app.ValueEncodingJackson;
-import de.ii.xtraplatform.store.app.entities.EntityDataDefaultsStoreImpl;
-import de.ii.xtraplatform.store.app.entities.EntityDataStoreImpl;
-import de.ii.xtraplatform.store.domain.EventStore;
-import de.ii.xtraplatform.store.domain.EventStoreDriver;
-import de.ii.xtraplatform.store.domain.EventStoreSubscriber;
-import de.ii.xtraplatform.store.domain.Identifier;
-import de.ii.xtraplatform.store.domain.ReplayEvent;
-import de.ii.xtraplatform.store.domain.ValueEncoding.FORMAT;
-import de.ii.xtraplatform.store.domain.entities.EntityData;
-import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
-import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
-import de.ii.xtraplatform.store.domain.entities.EntityDataStore;
-import de.ii.xtraplatform.store.domain.entities.EntityFactoriesImpl;
-import de.ii.xtraplatform.store.domain.entities.EntityFactory;
-import de.ii.xtraplatform.store.infra.EventStoreDriverFs;
 import de.ii.xtraplatform.streams.domain.Event;
 import java.io.File;
 import java.io.FileInputStream;
@@ -85,7 +85,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
   private final Migrations migrations;
   private final ObjectMapper objectMapper;
   private final RequiredIncludes requiredIncludes;
-  private final de.ii.xtraplatform.store.domain.entities.EntityFactories entityFactories;
+  private final de.ii.xtraplatform.entities.domain.EntityFactories entityFactories;
   private final Map<String, JsonSchema> entitySchemas;
   private final List<Identifier> entityIdentifiers;
   private final EventSubscriptionsSync eventSubscriptions;
@@ -219,7 +219,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
   }
 
   @Override
-  public de.ii.xtraplatform.store.domain.entities.EntityFactories getEntityFactories() {
+  public de.ii.xtraplatform.entities.domain.EntityFactories getEntityFactories() {
     return entityFactories;
   }
 

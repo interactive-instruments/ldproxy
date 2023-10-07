@@ -11,7 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.tiles3d.domain.TileResourceCache;
 import de.ii.ogcapi.tiles3d.domain.TileResourceDescriptor;
-import de.ii.xtraplatform.store.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.BlobStore;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;

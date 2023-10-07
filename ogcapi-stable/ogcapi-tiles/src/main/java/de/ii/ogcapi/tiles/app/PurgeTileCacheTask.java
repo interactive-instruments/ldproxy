@@ -15,7 +15,7 @@ import de.ii.xtraplatform.base.domain.AppConfiguration;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import de.ii.xtraplatform.web.domain.DropwizardPlugin;
 import io.dropwizard.core.setup.Environment;

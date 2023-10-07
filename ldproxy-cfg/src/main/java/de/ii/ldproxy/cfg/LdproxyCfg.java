@@ -9,11 +9,11 @@ package de.ii.ldproxy.cfg;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.ValidationMessage;
-import de.ii.xtraplatform.store.domain.Identifier;
-import de.ii.xtraplatform.store.domain.entities.EntityData;
-import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
-import de.ii.xtraplatform.store.domain.entities.EntityDataStore;
-import de.ii.xtraplatform.store.domain.entities.EntityFactories;
+import de.ii.xtraplatform.entities.domain.EntityData;
+import de.ii.xtraplatform.entities.domain.EntityDataDefaultsStore;
+import de.ii.xtraplatform.entities.domain.EntityDataStore;
+import de.ii.xtraplatform.entities.domain.EntityFactories;
+import de.ii.xtraplatform.entities.domain.Identifier;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;

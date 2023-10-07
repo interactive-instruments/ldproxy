@@ -15,7 +15,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
-import de.ii.xtraplatform.store.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.BlobStore;
 import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.ByteArrayInputStream;

@@ -32,7 +32,7 @@ import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.store.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.BlobStore;
 import io.dropwizard.auth.Auth;
 import java.io.IOException;
 import java.text.MessageFormat;

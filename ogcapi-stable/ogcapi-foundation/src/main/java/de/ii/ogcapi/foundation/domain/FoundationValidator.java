@@ -7,7 +7,7 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
