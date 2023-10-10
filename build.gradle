@@ -69,10 +69,14 @@ tasks.register('docsExtract', de.interactive_instruments.xtraplatform.docs.Markd
     docsName 'docs'
 }
 
-/* Enable to pass environment variables to docker container
+// To pass additional environment variables into the docker container, put a comma separated list
+// of variable names into parameter -PenvDocker or a gradle.properties file, e.g. -PenvDocker=VAR1,VAR2
 tasks.named('dockerRun') {
-    commandLine = commandLine.plus(commandLine.size()-1, ['-e', 'EXTERNAL_URL', '-e', 'DB_HOST', '-e', 'ENABLE_ZOOMSTACK'])
+    String envDocker = project.properties.getOrDefault("envDocker", "")
+    List<String> vars = ['EXTERNAL_URL', 'DB_HOST'] + envDocker.tokenize(',')
+    List<String> cl = vars.collectMany { ['-e', it] }
+
+    commandLine = commandLine.plus(commandLine.size()-1, cl)
 }
-*/
 
 apply from: 'docs.gradle'

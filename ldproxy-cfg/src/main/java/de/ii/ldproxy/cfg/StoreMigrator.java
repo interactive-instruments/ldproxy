@@ -15,13 +15,13 @@ import de.ii.xtraplatform.base.domain.StoreSource;
 import de.ii.xtraplatform.base.domain.StoreSource.Content;
 import de.ii.xtraplatform.base.domain.StoreSource.Type;
 import de.ii.xtraplatform.base.domain.StoreSourceFs;
-import de.ii.xtraplatform.store.app.BlobStoreImpl;
-import de.ii.xtraplatform.store.domain.BlobStore;
-import de.ii.xtraplatform.store.domain.BlobStoreDriver;
+import de.ii.xtraplatform.blobs.app.BlobStoreImpl;
+import de.ii.xtraplatform.blobs.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.BlobStoreDriver;
+import de.ii.xtraplatform.blobs.domain.StoreMigration;
+import de.ii.xtraplatform.blobs.domain.StoreMigration.StoreMigrationContext;
+import de.ii.xtraplatform.blobs.infra.BlobStoreDriverFs;
 import de.ii.xtraplatform.store.domain.Store;
-import de.ii.xtraplatform.store.domain.StoreMigration;
-import de.ii.xtraplatform.store.domain.StoreMigration.StoreMigrationContext;
-import de.ii.xtraplatform.store.infra.BlobStoreDriverFs;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
@@ -34,8 +34,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class StoreMigrator
-    implements Migrator<StoreMigrationContext, StoreSourceFs, StoreMigration> {
+class StoreMigrator implements Migrator<StoreMigrationContext, StoreSourceFs, StoreMigration> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StoreMigrator.class);
 

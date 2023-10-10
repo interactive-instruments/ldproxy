@@ -10,7 +10,7 @@ package de.ii.ogcapi.routes.domain;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
+import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
