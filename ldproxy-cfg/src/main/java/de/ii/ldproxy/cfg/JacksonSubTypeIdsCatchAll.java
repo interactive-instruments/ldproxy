@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableJacksonSubType;
 import de.ii.xtraplatform.base.domain.JacksonSubTypeIds;
-import de.ii.xtraplatform.store.domain.entities.maptobuilder.BuildableBuilder;
+import de.ii.xtraplatform.entities.domain.maptobuilder.BuildableBuilder;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;

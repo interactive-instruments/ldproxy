@@ -9,13 +9,13 @@ package de.ii.ogcapi.foundation.domain;
 
 import com.google.common.base.Splitter;
 import de.ii.ogcapi.foundation.domain.ImmutableApiCatalog.Builder;
+import de.ii.xtraplatform.entities.domain.EntityDataBuilder;
+import de.ii.xtraplatform.entities.domain.EntityDataDefaultsStore;
+import de.ii.xtraplatform.entities.domain.Identifier;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.services.domain.ServiceListingProvider;
 import de.ii.xtraplatform.services.domain.ServicesContext;
-import de.ii.xtraplatform.store.domain.Identifier;
-import de.ii.xtraplatform.store.domain.entities.EntityDataBuilder;
-import de.ii.xtraplatform.store.domain.entities.EntityDataDefaultsStore;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.Principal;
