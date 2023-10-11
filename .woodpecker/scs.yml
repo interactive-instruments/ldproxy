@@ -3,6 +3,7 @@ clone:
     image: woodpeckerci/plugin-git
     when:
       event: [ push ]
+      branch: [ master, maintenance-* ]
 
 pipeline:
   dtrack:
