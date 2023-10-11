@@ -1,12 +1,8 @@
-
-depends_on:
-  - release
-
 clone: 
   git:
     image: woodpeckerci/plugin-git
     when:
-      event: [ push, tag ]
+      event: [ push ]
 
 pipeline:
   dtrack:
@@ -17,20 +13,4 @@ pipeline:
     when:
       event: [ push ]
       branch: [ master, maintenance-* ]
-
-  dtrack-release:
-    image: eclipse-temurin:11
-    commands:
-      - ./gradlew publishSbom -Prelease=true -PdtrackApiUrl=https://dtrack.ldproxy.net/api/v1/bom -PdtrackApiKey=$DTRACK_API_KEY
-    secrets: [ dtrack_api_key ]
-    when:
-      event: [ tag ]
-
-  github:
-    image: meltwaterfoundation/github-cli:2.29.0
-    commands:
-      - gh release upload $CI_COMMIT_TAG "build/reports/sbom.json#CycloneDX SBOM"
-    secrets: [ github_token ]
-    when:
-      event: [ tag ]
 
