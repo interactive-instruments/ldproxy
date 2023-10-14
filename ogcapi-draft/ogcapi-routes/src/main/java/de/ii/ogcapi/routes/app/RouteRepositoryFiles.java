@@ -176,7 +176,7 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
 
     try {
       return mapper.readValue(
-          routesStore.get(getPathDefinition(apiData, routeId)).get(), RouteDefinition.class);
+          routesStore.content(getPathDefinition(apiData, routeId)).get(), RouteDefinition.class);
     } catch (IOException e) {
       throw new InternalServerErrorException(
           MessageFormat.format(
@@ -222,7 +222,7 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
 
     try {
       return mapper.readValue(
-          routesStore.get(getPathRoute(apiData, routeId, format)).get(), Route.class);
+          routesStore.content(getPathRoute(apiData, routeId, format)).get(), Route.class);
     } catch (IOException e) {
       throw new InternalServerErrorException(
           MessageFormat.format(

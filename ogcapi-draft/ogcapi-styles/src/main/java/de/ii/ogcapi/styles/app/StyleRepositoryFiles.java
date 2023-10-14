@@ -371,7 +371,9 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
           && styleFormat
               .deriveCollectionStyle(
                   new StylesheetContent(
-                      stylesStore.get(pathStyle).get().readAllBytes(), pathStyle.toString(), true),
+                      stylesStore.content(pathStyle).get().readAllBytes(),
+                      pathStyle.toString(),
+                      true),
                   apiData,
                   collectionId.get(),
                   styleId)
@@ -419,7 +421,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     try {
       // TODO parse first?
       return new StylesheetContent(
-          stylesStore.get(pathStyle).get().readAllBytes(), pathStyle.toString(), true);
+          stylesStore.content(pathStyle).get().readAllBytes(), pathStyle.toString(), true);
     } catch (IOException e) {
       if (collectionId.isPresent())
         throw new RuntimeException(
@@ -553,7 +555,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     Path patchFile = getPathMetadata(apiData, collectionId, styleId);
 
     try {
-      Optional<InputStream> patch = stylesStore.get(patchFile);
+      Optional<InputStream> patch = stylesStore.content(patchFile);
       if (patch.isEmpty()) return Optional.empty();
 
       try {
@@ -599,7 +601,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
 
     try {
       JsonMergePatch patch;
-      Optional<InputStream> patchStream = stylesStore.get(patchFile);
+      Optional<InputStream> patchStream = stylesStore.content(patchFile);
 
       if (patchStream.isEmpty()) return additionalPatchContent;
 

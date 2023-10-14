@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.cfg;
 
+import de.ii.xtraplatform.blobs.domain.Blob;
 import de.ii.xtraplatform.blobs.domain.BlobStore;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +40,12 @@ class MockBlobStore implements BlobStore {
   }
 
   @Override
-  public Optional<InputStream> get(Path path) throws IOException {
+  public Optional<InputStream> content(Path path) throws IOException {
+    return Optional.empty();
+  }
+
+  @Override
+  public Optional<Blob> get(Path path) throws IOException {
     return Optional.empty();
   }
 

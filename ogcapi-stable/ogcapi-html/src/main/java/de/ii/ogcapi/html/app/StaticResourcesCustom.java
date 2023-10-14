@@ -48,7 +48,7 @@ public class StaticResourcesCustom implements StaticResources {
             if (assetStore.has(assetPath)) {
               return Optional.of(
                   CachedResource.of(
-                      assetStore.get(assetPath).get().readAllBytes(),
+                      assetStore.content(assetPath).get().readAllBytes(),
                       assetStore.lastModified(assetPath)));
             }
             if (defaultPage.isPresent()) {
@@ -56,7 +56,7 @@ public class StaticResourcesCustom implements StaticResources {
               if (assetStore.has(defaultPath)) {
                 return Optional.of(
                     CachedResource.of(
-                        assetStore.get(defaultPath).get().readAllBytes(),
+                        assetStore.content(defaultPath).get().readAllBytes(),
                         assetStore.lastModified(defaultPath)));
               }
             }

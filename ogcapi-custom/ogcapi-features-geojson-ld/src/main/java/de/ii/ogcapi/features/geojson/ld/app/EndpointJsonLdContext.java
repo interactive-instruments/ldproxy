@@ -106,7 +106,7 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
             contextFileName.orElse(null),
             format.getMediaType().parameter());
 
-    Optional<InputStream> context = contextStore.get(contextPath);
+    Optional<InputStream> context = contextStore.content(contextPath);
 
     if (context.isEmpty()) {
       throw new NotFoundException(

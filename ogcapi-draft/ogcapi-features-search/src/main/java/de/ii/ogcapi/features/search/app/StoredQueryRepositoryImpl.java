@@ -83,7 +83,7 @@ public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLife
         .map(
             path -> {
               try {
-                return QueryExpression.of(queriesStore.get(path).get());
+                return QueryExpression.of(queriesStore.content(path).get());
               } catch (IOException e) {
                 LogContext.error(LOGGER, e, "Could not parse stored query '{}'", path);
               }
@@ -118,7 +118,7 @@ public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLife
     }
 
     try {
-      return QueryExpression.of(queriesStore.get(getPath(apiData, queryId)).get());
+      return QueryExpression.of(queriesStore.content(getPath(apiData, queryId)).get());
     } catch (IOException e) {
       throw new IllegalStateException(
           MessageFormat.format("The stored query ''{0}'' could not be parsed.", queryId), e);
@@ -170,7 +170,7 @@ public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLife
         .forEach(
             path -> {
               try {
-                QueryExpression.of(queriesStore.get(path).get());
+                QueryExpression.of(queriesStore.content(path).get());
               } catch (Exception e) {
                 builder.addErrors(
                     MessageFormat.format(

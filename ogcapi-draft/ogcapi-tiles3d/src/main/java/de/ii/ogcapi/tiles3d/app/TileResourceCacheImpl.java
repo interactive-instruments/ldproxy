@@ -41,7 +41,7 @@ public class TileResourceCacheImpl implements TileResourceCache {
 
   @Override
   public Optional<InputStream> getTileResource(TileResourceDescriptor r) throws IOException {
-    return cacheStore.get(getPath(r));
+    return cacheStore.content(getPath(r));
   }
 
   @Override
