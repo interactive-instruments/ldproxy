@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.features.core.domain.Profile;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.BooleanSchema;
@@ -190,12 +191,11 @@ public interface QueryExpression {
   }
 
   default QueryExpression resolveParameters(
-      Map<String, String> requestParameters, SchemaValidator schemaValidator) {
+      QueryParameterSet queryParameterSet, SchemaValidator schemaValidator) {
     Map<String, JsonNode> params = getParametersAsNodes();
     if (!params.isEmpty()) {
       ImmutableMap.Builder<String, JsonNode> builder = ImmutableMap.builder();
       JsonNode valueAsNode;
-      StringBuilder valueAsString = new StringBuilder();
       for (Map.Entry<String, JsonNode> entry : params.entrySet()) {
 
         // get the JSON Schema of the parameter as a string for validation
@@ -209,16 +209,15 @@ public interface QueryExpression {
               e);
         }
 
-        // get value as string (for validation) and as node (for the result)
-        valueAsString.setLength(0);
-        if (requestParameters.containsKey(entry.getKey())) {
-          valueAsNode = getValue(requestParameters.get(entry.getKey()), valueAsString, entry);
+        // get value as node (for the result)
+        if (queryParameterSet.getTypedValues().containsKey(entry.getKey())) {
+          valueAsNode = (JsonNode) queryParameterSet.getTypedValues().get(entry.getKey());
         } else {
           // no value provided, use default or throw an exception
-          valueAsNode = useDefault(valueAsString, entry);
+          valueAsNode = useDefault(entry);
         }
 
-        validateParameter(schemaValidator, valueAsString, entry, schemaAsString);
+        validateParameter(schemaValidator, valueAsNode, entry, schemaAsString);
         builder.put(entry.getKey(), valueAsNode);
       }
 
@@ -234,7 +233,7 @@ public interface QueryExpression {
     return this;
   }
 
-  @SuppressWarnings({"UnstableApiUsage", "PMD.NullAssignment"})
+  @SuppressWarnings("PMD.NullAssignment")
   private JsonNode getValue(
       String value, StringBuilder valueAsString, Entry<String, JsonNode> entry) {
     JsonNode valueAsNode;
@@ -299,48 +298,48 @@ public interface QueryExpression {
     return valueAsNode;
   }
 
-  private JsonNode useDefault(StringBuilder valueAsString, Entry<String, JsonNode> entry) {
+  private JsonNode useDefault(Entry<String, JsonNode> entry) {
     JsonNode valueAsNode;
     valueAsNode = entry.getValue().get("default");
     if (Objects.isNull(valueAsNode) || valueAsNode.isNull()) {
       throw new BadRequestException(
           String.format("No value provided for parameter '%s'.", entry.getKey()));
     }
-    try {
-      // convert to string for validation
-      valueAsString.append(MAPPER.writeValueAsString(valueAsNode));
-    } catch (JsonProcessingException e) {
-      throw new IllegalStateException(
-          String.format(
-              "The default value provided for parameter '%s' could not be converted to a value for the parameter.",
-              entry.getKey()),
-          e);
-    }
     return valueAsNode;
   }
 
   private void validateParameter(
       SchemaValidator schemaValidator,
-      StringBuilder valueAsString,
+      JsonNode valueAsNode,
       Entry<String, JsonNode> entry,
       String schemaAsString) {
+    final String value;
+    try {
+      // convert to string for validation
+      value = MAPPER.writeValueAsString(valueAsNode);
+    } catch (JsonProcessingException e) {
+      throw new IllegalStateException(
+          String.format(
+              "The JSON value derived for parameter '%s' could not be converted to a string value for validation.",
+              entry.getKey()),
+          e);
+    }
     // validate parameter
     try {
-      String finalValueAsString = valueAsString.toString();
       schemaValidator
-          .validate(schemaAsString, valueAsString.toString())
+          .validate(schemaAsString, value)
           .ifPresent(
               error -> {
                 throw new BadRequestException(
                     String.format(
                         "Parameter '%s' is invalid, the value '%s' does not conform to the schema '%s'. Reason: %s",
-                        entry.getKey(), finalValueAsString, schemaAsString, error));
+                        entry.getKey(), value, schemaAsString, error));
               });
     } catch (IOException e) {
       throw new IllegalStateException(
           String.format(
               "Could not validate value '%s' of parameter '%s' against its schema '%s'",
-              valueAsString, entry.getKey(), schemaAsString),
+              value, entry.getKey(), schemaAsString),
           e);
     }
   }

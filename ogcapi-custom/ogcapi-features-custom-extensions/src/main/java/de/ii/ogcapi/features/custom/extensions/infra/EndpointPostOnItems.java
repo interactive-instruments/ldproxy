@@ -8,7 +8,6 @@
 package de.ii.ogcapi.features.custom.extensions.infra;
 
 import static de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.GROUP_DATA_READ;
-import static de.ii.ogcapi.foundation.domain.ApiEndpointDefinition.SORT_PRIORITY_FEATURES;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -35,9 +34,7 @@ import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiResource;
-import de.ii.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
@@ -48,11 +45,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
@@ -140,15 +135,20 @@ public class EndpointPostOnItems extends EndpointSubCollection {
 
   @Override
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-    ApiEndpointDefinition endpointFeaturesDefintion = getDefinitionGetMethod(apiData).orElse(null);
+    ApiEndpointDefinition endpointFeaturesDefinition =
+        extensionRegistry.getExtensionsForType(EndpointExtension.class).stream()
+            .filter(endpoint -> "EndpointFeatures".equals(endpoint.getClass().getSimpleName()))
+            .map(endpoint -> endpoint.getDefinition(apiData))
+            .findFirst()
+            .orElse(null);
 
-    if (Objects.isNull(endpointFeaturesDefintion)) return null;
+    if (Objects.isNull(endpointFeaturesDefinition)) return null;
 
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
-            .apiEntrypoint(endpointFeaturesDefintion.getApiEntrypoint())
+            .apiEntrypoint(endpointFeaturesDefinition.getApiEntrypoint())
             .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_FEATURES_EXTENSIONS);
-    endpointFeaturesDefintion.getResources().entrySet().stream()
+    endpointFeaturesDefinition.getResources().entrySet().stream()
         .filter(
             entry ->
                 entry.getKey().equals("/collections/{collectionId}/items")
@@ -225,52 +225,7 @@ public class EndpointPostOnItems extends EndpointSubCollection {
     int defaultPageSize = coreConfiguration.getDefaultPageSize();
     boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
 
-    // TODO: generalize and centralize this logic, if we add more URL-encoded POST requests
-    List<OgcApiQueryParameter> knownParameters =
-        getDefinitionGetMethod(api.getData())
-            .flatMap(
-                endpointDefinition ->
-                    endpointDefinition.getOperation(
-                        String.format("/collections/%s/items", collectionId), "GET"))
-            .map(ApiOperation::getQueryParameters)
-            .orElse(ImmutableList.of())
-            .stream()
-            // drop support for "f" in URL-encoded POST requests, content negotiation must be used
-            // TODO: the main reason is that the f parameter has already been evaluated in
-            //       ApiRequestDispatcher, that is before we arrive here
-            .filter(param -> !param.getName().equals("f"))
-            .collect(Collectors.toUnmodifiableList());
-
-    Set<String> unknownParameters =
-        parameters.keySet().stream()
-            .filter(
-                parameter ->
-                    knownParameters.stream()
-                        .noneMatch(param -> param.getName().equalsIgnoreCase(parameter)))
-            .collect(Collectors.toSet());
-    if (!unknownParameters.isEmpty()) {
-      throw new BadRequestException(
-          "The following query parameters are rejected: "
-              + String.join(", ", unknownParameters)
-              + ". Valid parameters for this request are: "
-              + knownParameters.stream()
-                  .map(ParameterExtension::getName)
-                  .collect(Collectors.joining(", ")));
-    }
-    parameters.forEach(
-        (name, values) ->
-            knownParameters.stream()
-                .filter(param -> param.getName().equalsIgnoreCase(name))
-                .forEach(
-                    param -> {
-                      Optional<String> result =
-                          param.validate(api.getData(), Optional.of(collectionId), values);
-                      if (result.isPresent()) throw new BadRequestException(result.get());
-                    }));
-
-    QueryParameterSet queryParameterSet =
-        QueryParameterSet.of(knownParameters, requestContext.getParameters())
-            .evaluate(api, Optional.of(collectionData));
+    QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
 
     FeatureQuery query =
         ogcApiFeaturesQuery.requestToFeatureQuery(
@@ -294,21 +249,5 @@ public class EndpointPostOnItems extends EndpointSubCollection {
 
     return queryHandler.handle(
         FeaturesCoreQueriesHandler.Query.FEATURES, queryInput, requestContext);
-  }
-
-  private Optional<ApiEndpointDefinition> getDefinitionGetMethod(OgcApiDataV2 apiData) {
-    return extensionRegistry.getExtensionsForType(EndpointExtension.class).stream()
-        .filter(
-            endpoint ->
-                endpoint.isEnabledForApi(apiData)
-                    && endpoint
-                        .getBuildingBlockConfigurationType()
-                        .equals(FeaturesCoreConfiguration.class))
-        .map(endpoint -> endpoint.getDefinition(apiData))
-        .filter(
-            definition ->
-                definition.getApiEntrypoint().equals("collections")
-                    && definition.getSortPriority() == SORT_PRIORITY_FEATURES)
-        .findAny();
   }
 }

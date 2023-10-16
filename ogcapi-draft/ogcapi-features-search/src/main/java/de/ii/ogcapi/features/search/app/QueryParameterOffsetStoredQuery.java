@@ -8,6 +8,8 @@
 package de.ii.ogcapi.features.search.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.features.search.domain.ImmutableQueryExpression;
+import de.ii.ogcapi.features.search.domain.QueryExpressionQueryParameter;
 import de.ii.ogcapi.features.search.domain.SearchConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -17,6 +19,7 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
@@ -40,9 +43,7 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterOffsetStoredQuery extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<Integer> {
-
-  // TODO #846
+    implements OgcApiQueryParameter, TypedQueryParameter<Integer>, QueryExpressionQueryParameter {
 
   private Schema<?> schema;
 
@@ -123,5 +124,11 @@ public class QueryParameterOffsetStoredQuery extends ApiExtensionCache
   @Override
   public Optional<ExternalDocumentation> getSpecificationRef() {
     return SearchBuildingBlock.SPEC;
+  }
+
+  @Override
+  public void applyTo(
+      ImmutableQueryExpression.Builder builder, QueryParameterSet queryParameterSet) {
+    builder.offset(queryParameterSet.getValue(this));
   }
 }

@@ -8,10 +8,8 @@
 package de.ii.ogcapi.foundation.infra.rest;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -22,7 +20,6 @@ import javax.inject.Singleton;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
@@ -40,20 +37,7 @@ public class ContentNegotiationMediaTypeImpl implements ContentNegotiationMediaT
 
   private static final Logger LOGGER =
       LoggerFactory.getLogger(ContentNegotiationMediaTypeImpl.class);
-  private static final String CONTENT_TYPE_PARAMETER = "f";
   private static final String ACCEPT_HEADER = "Accept";
-
-  private static final List<String> USER_AGENT_BOTS =
-      ImmutableList.of(
-          "googlebot",
-          "bingbot",
-          "duckduckbot",
-          "yandexbot",
-          "baiduspider",
-          "slurp",
-          "exabot",
-          "facebot",
-          "ia_archiver");
 
   @Inject
   ContentNegotiationMediaTypeImpl() {}
@@ -61,11 +45,6 @@ public class ContentNegotiationMediaTypeImpl implements ContentNegotiationMediaT
   @Override
   public Optional<ApiMediaType> negotiateMediaType(
       ContainerRequestContext requestContext, Set<ApiMediaType> supportedMediaTypes) {
-
-    evaluateFormatParameter(
-        supportedMediaTypes,
-        requestContext.getUriInfo().getQueryParameters(),
-        requestContext.getHeaders());
 
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("accept {}", requestContext.getHeaderString(ACCEPT_HEADER));
@@ -88,9 +67,6 @@ public class ContentNegotiationMediaTypeImpl implements ContentNegotiationMediaT
       UriInfo uriInfo,
       Set<ApiMediaType> supportedMediaTypes) {
 
-    evaluateFormatParameter(
-        supportedMediaTypes, uriInfo.getQueryParameters(), httpHeaders.getRequestHeaders());
-
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("accept {}", httpHeaders.getHeaderString(ACCEPT_HEADER));
     }
@@ -102,36 +78,6 @@ public class ContentNegotiationMediaTypeImpl implements ContentNegotiationMediaT
     }
 
     return ogcApiMediaType;
-  }
-
-  private void evaluateFormatParameter(
-      Set<ApiMediaType> supportedMediaTypes,
-      MultivaluedMap<String, String> queryParameters,
-      MultivaluedMap<String, String> headers) {
-
-    String format = null;
-    if (queryParameters.containsKey(CONTENT_TYPE_PARAMETER)) {
-      format = queryParameters.getFirst(CONTENT_TYPE_PARAMETER);
-    } else {
-      // use crawler user agent headers to trigger an implicit f=html
-      String userAgent = headers.getFirst("user-agent");
-      if (Objects.nonNull(userAgent)) {
-        String finalUserAgent = userAgent.toLowerCase(Locale.ROOT);
-        if (USER_AGENT_BOTS.stream().anyMatch(finalUserAgent::contains)) {
-          format = "html";
-        }
-      }
-    }
-
-    if (Objects.nonNull(format)) {
-      String finalFormat = format;
-      Optional<ApiMediaType> ogcApiMediaType =
-          supportedMediaTypes.stream()
-              .filter(mediaType -> Objects.equals(mediaType.parameter(), finalFormat))
-              .findFirst();
-      ogcApiMediaType.ifPresent(
-          apiMediaType -> headers.putSingle(ACCEPT_HEADER, apiMediaType.type().toString()));
-    }
   }
 
   private Optional<ApiMediaType> negotiateMediaType(

@@ -17,7 +17,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
@@ -39,9 +38,6 @@ public class ContentNegotiationLanguageImpl implements ContentNegotiationLanguag
   @Override
   public Optional<Locale> negotiateLanguage(ContainerRequestContext requestContext) {
 
-    evaluateLanguageParameter(
-        requestContext.getUriInfo().getQueryParameters(), requestContext.getHeaders());
-
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("accept-language {}", requestContext.getHeaderString(ACCEPT_LANGUAGE_HEADER));
     }
@@ -59,8 +55,6 @@ public class ContentNegotiationLanguageImpl implements ContentNegotiationLanguag
   public Optional<Locale> negotiateLanguage(
       Request request, HttpHeaders httpHeaders, UriInfo uriInfo) {
 
-    evaluateLanguageParameter(uriInfo.getQueryParameters(), httpHeaders.getRequestHeaders());
-
     if (LOGGER.isDebugEnabled()) {
       LOGGER.debug("accept-language {}", httpHeaders.getHeaderString(ACCEPT_LANGUAGE_HEADER));
     }
@@ -72,21 +66,6 @@ public class ContentNegotiationLanguageImpl implements ContentNegotiationLanguag
     }
 
     return locale;
-  }
-
-  private void evaluateLanguageParameter(
-      MultivaluedMap<String, String> queryParameters, MultivaluedMap<String, String> headers) {
-
-    if (queryParameters.containsKey(LANGUAGE_PARAMETER)) {
-      String locale = queryParameters.getFirst(LANGUAGE_PARAMETER);
-
-      Optional<Locale> ogcApiLocale =
-          I18n.getLanguages().stream()
-              .filter(language -> Objects.equals(language.getLanguage(), locale))
-              .findFirst();
-      ogcApiLocale.ifPresent(
-          value -> headers.putSingle(ACCEPT_LANGUAGE_HEADER, value.getLanguage()));
-    }
   }
 
   private Optional<Locale> negotiateLanguage(Request request) {

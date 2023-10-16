@@ -369,11 +369,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
             .map(RoutingConfiguration::getElevationProfileSimplificationTolerance)
             .orElse(null);
 
-    List<OgcApiQueryParameter> parameterDefinitions =
-        getQueryParameters(extensionRegistry, api.getData(), "/routes", HttpMethods.POST);
-    QueryParameterSet queryParameterSet =
-        QueryParameterSet.of(parameterDefinitions, requestContext.getParameters())
-            .evaluate(api, Optional.empty());
+    QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
 
     FeatureQuery query =
         ogcApiFeaturesQuery.requestToBareFeatureQuery(

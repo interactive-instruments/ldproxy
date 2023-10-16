@@ -8,7 +8,9 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @AutoMultiBind
@@ -26,4 +28,15 @@ public interface TypedQueryParameter<T> {
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData);
+
+  default T parse(
+      List<String> value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    if (Objects.isNull(value) || value.isEmpty()) {
+      return null;
+    }
+    return parse(value.get(0), typedValues, api, optionalCollectionData);
+  }
 }

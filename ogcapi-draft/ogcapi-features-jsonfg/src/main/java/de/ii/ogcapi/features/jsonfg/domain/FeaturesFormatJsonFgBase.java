@@ -138,17 +138,9 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
             .geoJsonConfig(geoJsonConfig)
             .mediaType(getMediaType())
             .prettify(
-                Optional.ofNullable(
-                            transformationContext.getOgcApiRequest().getParameters().get("pretty"))
-                        .filter(value -> Objects.equals(value, "true"))
-                        .isPresent()
+                transformationContext.getPrettify()
                     || (Objects.requireNonNullElse(
                         geoJsonConfig.getUseFormattedJsonOutput(), false)))
-            .debugJson(
-                Optional.ofNullable(
-                        transformationContext.getOgcApiRequest().getParameters().get("debug"))
-                    .filter(value -> Objects.equals(value, "true"))
-                    .isPresent())
             .suppressPrimaryGeometry(!includePrimaryGeometry(transformationContext))
             .forceDefaultCrs(true);
 

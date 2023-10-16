@@ -44,6 +44,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.codelists.domain.Codelist;
@@ -203,7 +204,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       } else if (query.getParametersWithOpenApiSchema().values().stream()
           .allMatch(p -> Objects.nonNull(p.getDefault()))) {
         // .. or if all parameters have default values
-        QueryExpression resolved = query.resolveParameters(ImmutableMap.of(), schemaValidator);
+        QueryExpression resolved = query.resolveParameters(QueryParameterSet.of(), schemaValidator);
         getCql2Expression(resolved.getFilter(), query.getFilterCrs());
         resolved.getQueries().forEach(q -> getCql2Expression(q.getFilter(), query.getFilterCrs()));
       }

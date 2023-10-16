@@ -28,6 +28,7 @@ import de.ii.ogcapi.features.gltf.domain.PropertyTable;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles.QueryInputSubtree;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
@@ -504,6 +505,7 @@ public interface Subtree {
                             ImmutableList.of(
                                 "collections", queryInput.getCollectionId(), "items"))))
             .externalUri(queryInput.getServicesUri())
+            .queryParameterSet(QueryParameterSet.of())
             .build();
 
     return getNumberReturned(queriesHandler, queryInputHits, requestContext) == 1L;

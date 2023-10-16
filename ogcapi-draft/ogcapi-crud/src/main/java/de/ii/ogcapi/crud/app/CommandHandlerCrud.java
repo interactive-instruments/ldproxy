@@ -9,6 +9,7 @@ package de.ii.ogcapi.crud.app;
 
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.QueryInputFeature;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import java.io.InputStream;
@@ -24,7 +25,7 @@ public interface CommandHandlerCrud {
 
   Response patchItemResponse(QueryInputFeatureReplace queryInput, ApiRequestContext requestContext);
 
-  Response deleteItemResponse(QueryInputFeature queryInput, ApiRequestContext requestContext);
+  Response deleteItemResponse(QueryInputFeatureDelete queryInput, ApiRequestContext requestContext);
 
   @Value.Immutable
   interface QueryInputFeatureCreate {
@@ -42,11 +43,19 @@ public interface CommandHandlerCrud {
     InputStream getRequestBody();
   }
 
+  interface QueryInputFeatureWithQueryParameterSet extends QueryInputFeature {
+
+    QueryParameterSet getQueryParameterSet();
+  }
+
   @Value.Immutable
-  interface QueryInputFeatureReplace extends QueryInputFeature {
+  interface QueryInputFeatureReplace extends QueryInputFeatureWithQueryParameterSet {
 
     String getFeatureType();
 
     InputStream getRequestBody();
   }
+
+  @Value.Immutable
+  interface QueryInputFeatureDelete extends QueryInputFeatureWithQueryParameterSet {}
 }
