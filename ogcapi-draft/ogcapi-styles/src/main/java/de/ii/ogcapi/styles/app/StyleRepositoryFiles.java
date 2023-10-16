@@ -48,10 +48,12 @@ import de.ii.ogcapi.styles.domain.StylesheetMetadata;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
 import de.ii.xtraplatform.base.domain.LogContext;
-import de.ii.xtraplatform.blobs.domain.BlobStore;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.services.domain.ServicesContext;
+import de.ii.xtraplatform.values.domain.KeyValueStore;
+import de.ii.xtraplatform.values.domain.ValueStore;
 import de.ii.xtraplatform.web.domain.LastModified;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -82,7 +84,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
   private static final Logger LOGGER = LoggerFactory.getLogger(StyleRepositoryFiles.class);
 
   private final ExtensionRegistry extensionRegistry;
-  private final BlobStore stylesStore;
+  private final ResourceStore stylesStore;
   private final I18n i18n;
   private final DefaultLinksGenerator defaultLinkGenerator;
   private final ObjectMapper patchMapperLenient;
@@ -90,22 +92,22 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
   private final ObjectMapper metadataMapper;
   private final URI servicesUri;
   private final FeaturesCoreProviders providers;
-  private final EntityRegistry entityRegistry;
+  private final KeyValueStore<Codelist> codelistStore;
 
   @Inject
   public StyleRepositoryFiles(
-      BlobStore blobStore,
+      ResourceStore blobStore,
       ServicesContext servicesContext,
       ExtensionRegistry extensionRegistry,
       I18n i18n,
       FeaturesCoreProviders providers,
-      EntityRegistry entityRegistry) {
+      ValueStore valueStore) {
     this.stylesStore = blobStore.with(StylesBuildingBlock.STORE_RESOURCE_TYPE);
     this.i18n = i18n;
     this.extensionRegistry = extensionRegistry;
     this.servicesUri = servicesContext.getUri();
     this.providers = providers;
-    this.entityRegistry = entityRegistry;
+    this.codelistStore = valueStore.forType(Codelist.class);
     this.defaultLinkGenerator = new DefaultLinksGenerator();
     this.patchMapperLenient = new ObjectMapper();
     patchMapperLenient.registerModule(new Jdk8Module());
@@ -510,7 +512,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
                   getStylesheet(apiData, collectionId, styleId, format.get(), requestContext, true),
                   apiData,
                   providers,
-                  entityRegistry));
+                  codelistStore));
     }
     StyleMetadata metadata = builder.build();
 

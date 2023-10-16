@@ -31,7 +31,7 @@ import de.ii.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutesLinksGenerator;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
 import de.ii.xtraplatform.base.domain.LogContext;
-import de.ii.xtraplatform.blobs.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.web.domain.LastModified;
 import java.io.ByteArrayInputStream;
@@ -59,14 +59,15 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
   private static final Logger LOGGER = LoggerFactory.getLogger(RouteRepositoryFiles.class);
 
   private final ExtensionRegistry extensionRegistry;
-  private final BlobStore routesStore;
+  private final ResourceStore routesStore;
   private final I18n i18n;
   private final DefaultLinksGenerator defaultLinkGenerator;
   private final RoutesLinksGenerator routesLinkGenerator;
   private final ObjectMapper mapper;
 
   @Inject
-  public RouteRepositoryFiles(BlobStore blobStore, ExtensionRegistry extensionRegistry, I18n i18n) {
+  public RouteRepositoryFiles(
+      ResourceStore blobStore, ExtensionRegistry extensionRegistry, I18n i18n) {
     this.routesStore = blobStore.with(RoutingBuildingBlock.STORE_RESOURCE_TYPE);
     this.i18n = i18n;
     this.extensionRegistry = extensionRegistry;

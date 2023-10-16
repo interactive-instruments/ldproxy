@@ -35,8 +35,6 @@ import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
-import de.ii.xtraplatform.entities.domain.PersistentEntity;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -53,6 +51,8 @@ import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
+import de.ii.xtraplatform.values.domain.KeyValueStore;
+import de.ii.xtraplatform.values.domain.ValueStore;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Date;
@@ -63,7 +63,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
@@ -86,14 +85,14 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
   private final I18n i18n;
   private final CrsTransformerFactory crsTransformerFactory;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
-  private final EntityRegistry entityRegistry;
+  private final KeyValueStore<Codelist> codelistStore;
 
   @Inject
   public FeaturesCoreQueriesHandlerImpl(
-      I18n i18n, CrsTransformerFactory crsTransformerFactory, EntityRegistry entityRegistry) {
+      I18n i18n, CrsTransformerFactory crsTransformerFactory, ValueStore valueStore) {
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
-    this.entityRegistry = entityRegistry;
+    this.codelistStore = valueStore.forType(Codelist.class);
 
     this.queryHandlers =
         ImmutableMap.of(
@@ -290,9 +289,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             .featureSchemas(ImmutableMap.of(collectionId, schema))
             .ogcApiRequest(requestContext)
             .crsTransformer(crsTransformer)
-            .codelists(
-                entityRegistry.getEntitiesForType(Codelist.class).stream()
-                    .collect(Collectors.toMap(PersistentEntity::getId, c -> c)))
+            .codelists(codelistStore.asMap())
             .defaultCrs(defaultCrs)
             .sourceCrs(Optional.ofNullable(sourceCrs))
             .links(links)

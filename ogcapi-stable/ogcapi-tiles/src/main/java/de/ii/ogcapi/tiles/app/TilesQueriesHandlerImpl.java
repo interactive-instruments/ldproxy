@@ -53,7 +53,6 @@ import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
@@ -69,6 +68,8 @@ import de.ii.xtraplatform.tiles.domain.TileQuery;
 import de.ii.xtraplatform.tiles.domain.TileResult;
 import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
 import de.ii.xtraplatform.tiles.domain.WithCenter.LonLat;
+import de.ii.xtraplatform.values.domain.KeyValueStore;
+import de.ii.xtraplatform.values.domain.ValueStore;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.MessageFormat;
@@ -99,7 +100,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
   private final I18n i18n;
   private final CrsTransformerFactory crsTransformerFactory;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
-  private final EntityRegistry entityRegistry;
+  private final KeyValueStore<Codelist> codelistStore;
   private final ExtensionRegistry extensionRegistry;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
   private final FeaturesCoreProviders providers;
@@ -110,7 +111,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
   public TilesQueriesHandlerImpl(
       I18n i18n,
       CrsTransformerFactory crsTransformerFactory,
-      EntityRegistry entityRegistry,
+      ValueStore valueStore,
       ExtensionRegistry extensionRegistry,
       TileMatrixSetLimitsGenerator limitsGenerator,
       FeaturesCoreProviders providers,
@@ -118,7 +119,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       TileMatrixSetRepository tileMatrixSetRepository) {
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
-    this.entityRegistry = entityRegistry;
+    this.codelistStore = valueStore.forType(Codelist.class);
     this.extensionRegistry = extensionRegistry;
     this.limitsGenerator = limitsGenerator;
     this.providers = providers;
@@ -539,8 +540,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     }
 
     if (tilesetMetadata.isPresent()) {
-      JsonSchemaCache schemaCache =
-          new SchemaCacheTileSet(() -> entityRegistry.getEntitiesForType(Codelist.class));
+      JsonSchemaCache schemaCache = new SchemaCacheTileSet(codelistStore::asMap);
 
       List<FeatureSchema> vectorSchemas = tilesetMetadata.get().getVectorSchemas();
 

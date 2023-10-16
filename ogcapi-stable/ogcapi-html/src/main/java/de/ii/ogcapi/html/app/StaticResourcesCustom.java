@@ -8,7 +8,7 @@
 package de.ii.ogcapi.html.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.xtraplatform.blobs.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import de.ii.xtraplatform.web.domain.StaticResourceReader;
 import de.ii.xtraplatform.web.domain.StaticResourceReader.CachedResource;
 import de.ii.xtraplatform.web.domain.StaticResources;
@@ -22,10 +22,10 @@ import javax.inject.Singleton;
 @AutoBind
 public class StaticResourcesCustom implements StaticResources {
 
-  private final BlobStore assetStore;
+  private final ResourceStore assetStore;
 
   @Inject
-  StaticResourcesCustom(BlobStore blobStore) {
+  StaticResourcesCustom(ResourceStore blobStore) {
     this.assetStore = blobStore.with("html", "assets");
   }
 

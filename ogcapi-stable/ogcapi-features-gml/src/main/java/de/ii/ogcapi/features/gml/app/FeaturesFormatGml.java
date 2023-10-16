@@ -36,7 +36,6 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
@@ -48,6 +47,8 @@ import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformat
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.gml.domain.ConnectionInfoWfsHttp;
+import de.ii.xtraplatform.values.domain.KeyValueStore;
+import de.ii.xtraplatform.values.domain.ValueStore;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -155,18 +156,18 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
       "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2";
 
   private final FeaturesCoreProviders providers;
-  private final EntityRegistry entityRegistry;
+  private final KeyValueStore<Codelist> codelistStore;
   private final FeaturesCoreValidation featuresCoreValidator;
   private final GmlWriterRegistry gmlWriterRegistry;
 
   @Inject
   public FeaturesFormatGml(
       FeaturesCoreProviders providers,
-      EntityRegistry entityRegistry,
+      ValueStore valueStore,
       FeaturesCoreValidation featuresCoreValidator,
       GmlWriterRegistry gmlWriterRegistry) {
     this.providers = providers;
-    this.entityRegistry = entityRegistry;
+    this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;
     this.gmlWriterRegistry = gmlWriterRegistry;
   }
@@ -337,17 +338,13 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
       }
     }
 
-    Set<String> codelists =
-        entityRegistry.getEntitiesForType(Codelist.class).stream()
-            .map(Codelist::getId)
-            .collect(Collectors.toUnmodifiableSet());
     for (Map.Entry<String, GmlConfiguration> entry : gmlConfigurationMap.entrySet()) {
       String collectionId = entry.getKey();
       for (Map.Entry<String, List<PropertyTransformation>> entry2 :
           entry.getValue().getTransformations().entrySet()) {
         String property = entry2.getKey();
         for (PropertyTransformation transformation : entry2.getValue()) {
-          builder = transformation.validate(builder, collectionId, property, codelists);
+          builder = transformation.validate(builder, collectionId, property, codelistStore.ids());
         }
       }
     }

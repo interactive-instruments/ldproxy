@@ -32,7 +32,7 @@ import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.blobs.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import io.dropwizard.auth.Auth;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -70,10 +70,10 @@ public class EndpointResourcesManager extends Endpoint {
   private static final List<String> TAGS =
       ImmutableList.of("Create, update and delete other resources");
 
-  private final BlobStore resourcesStore;
+  private final ResourceStore resourcesStore;
 
   @Inject
-  public EndpointResourcesManager(BlobStore blobStore, ExtensionRegistry extensionRegistry) {
+  public EndpointResourcesManager(ResourceStore blobStore, ExtensionRegistry extensionRegistry) {
     super(extensionRegistry);
 
     this.resourcesStore = blobStore.with(ResourcesBuildingBlock.STORE_RESOURCE_TYPE);

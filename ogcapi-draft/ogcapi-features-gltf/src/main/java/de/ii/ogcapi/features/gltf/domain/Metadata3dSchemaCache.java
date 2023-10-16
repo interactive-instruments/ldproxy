@@ -10,7 +10,7 @@ package de.ii.ogcapi.features.gltf.domain;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import java.util.List;
+import java.util.Map;
 
 public interface Metadata3dSchemaCache {
 
@@ -18,5 +18,5 @@ public interface Metadata3dSchemaCache {
       FeatureSchema featureSchema,
       OgcApiDataV2 apiData,
       String collectionId,
-      List<Codelist> codelists);
+      Map<String, Codelist> codelists);
 }

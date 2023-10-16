@@ -18,7 +18,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
 import de.ii.xtraplatform.base.domain.LogContext;
-import de.ii.xtraplatform.blobs.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.web.domain.LastModified;
 import java.io.ByteArrayInputStream;
@@ -46,10 +46,10 @@ public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLife
   private static final Logger LOGGER = LoggerFactory.getLogger(StoredQueryRepositoryImpl.class);
 
   private final ExtensionRegistry extensionRegistry;
-  private final BlobStore queriesStore;
+  private final ResourceStore queriesStore;
 
   @Inject
-  public StoredQueryRepositoryImpl(BlobStore blobStore, ExtensionRegistry extensionRegistry) {
+  public StoredQueryRepositoryImpl(ResourceStore blobStore, ExtensionRegistry extensionRegistry) {
     this.extensionRegistry = extensionRegistry;
     this.queriesStore = blobStore.with(SearchBuildingBlock.STORE_RESOURCE_TYPE);
   }

@@ -21,8 +21,8 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.values.domain.ValueStore;
 import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
@@ -40,14 +40,13 @@ public class QueriesHandlerSchemaFeatures implements QueriesHandlerSchema {
 
   @Inject
   public QueriesHandlerSchemaFeatures(
-      I18n i18n, FeaturesCoreProviders providers, EntityRegistry entityRegistry) {
+      I18n i18n, FeaturesCoreProviders providers, ValueStore valueStore) {
     this.i18n = i18n;
     this.providers = providers;
     this.queryHandlers =
         ImmutableMap.of(
             Query.SCHEMA, QueryHandler.with(QueryInputSchema.class, this::getSchemaResponse));
-    this.schemaCache =
-        new SchemaCacheFeatures(() -> entityRegistry.getEntitiesForType(Codelist.class));
+    this.schemaCache = new SchemaCacheFeatures(valueStore.forType(Codelist.class)::asMap);
   }
 
   @Override

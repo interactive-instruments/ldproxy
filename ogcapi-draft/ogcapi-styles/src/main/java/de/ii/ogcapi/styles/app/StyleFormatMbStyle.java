@@ -33,8 +33,9 @@ import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleLayer;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
 import de.ii.xtraplatform.base.domain.LogContext;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.services.domain.ServicesContext;
+import de.ii.xtraplatform.values.domain.KeyValueStore;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
 import java.net.URI;
@@ -211,7 +212,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
       StylesheetContent stylesheetContent,
       OgcApiDataV2 apiData,
       FeaturesCoreProviders providers,
-      EntityRegistry entityRegistry) {
+      KeyValueStore<Codelist> codelistStore) {
     URICustomizer uriCustomizer =
         new URICustomizer(servicesUri)
             .ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
@@ -220,7 +221,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, false, false);
     if (mbStyle.isEmpty()) return ImmutableList.of();
 
-    return mbStyle.get().getLayerMetadata(apiData, providers, entityRegistry);
+    return mbStyle.get().getLayerMetadata(apiData, providers, codelistStore);
   }
 
   @Override

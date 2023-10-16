@@ -28,11 +28,9 @@ import de.ii.xtraplatform.base.domain.StoreConfiguration;
 import de.ii.xtraplatform.base.domain.StoreSource;
 import de.ii.xtraplatform.base.domain.StoreSourceDefault;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.codelists.domain.CodelistData;
 import de.ii.xtraplatform.entities.app.EntityDataDefaultsStoreImpl;
 import de.ii.xtraplatform.entities.app.EntityDataStoreImpl;
 import de.ii.xtraplatform.entities.app.EventStoreDefault;
-import de.ii.xtraplatform.entities.app.ValueEncodingJackson;
 import de.ii.xtraplatform.entities.domain.EntityData;
 import de.ii.xtraplatform.entities.domain.EntityDataBuilder;
 import de.ii.xtraplatform.entities.domain.EntityDataDefaultsStore;
@@ -42,9 +40,7 @@ import de.ii.xtraplatform.entities.domain.EntityFactory;
 import de.ii.xtraplatform.entities.domain.EventStore;
 import de.ii.xtraplatform.entities.domain.EventStoreDriver;
 import de.ii.xtraplatform.entities.domain.EventStoreSubscriber;
-import de.ii.xtraplatform.entities.domain.Identifier;
 import de.ii.xtraplatform.entities.domain.ReplayEvent;
-import de.ii.xtraplatform.entities.domain.ValueEncoding.FORMAT;
 import de.ii.xtraplatform.entities.infra.EventStoreDriverFs;
 import de.ii.xtraplatform.features.domain.ProviderData;
 import de.ii.xtraplatform.features.sql.app.FeatureProviderSql;
@@ -52,6 +48,9 @@ import de.ii.xtraplatform.features.sql.domain.FeatureProviderSqlData;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.streams.domain.Event;
+import de.ii.xtraplatform.values.api.ValueEncodingJackson;
+import de.ii.xtraplatform.values.domain.Identifier;
+import de.ii.xtraplatform.values.domain.ValueEncoding.FORMAT;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -355,9 +354,6 @@ class LdproxyCfgImpl implements LdproxyCfg {
   }
 
   private static <T extends EntityData> String getType(T data) {
-    if (data instanceof CodelistData) {
-      return Codelist.ENTITY_TYPE;
-    }
     if (data instanceof ProviderData) {
       return ProviderData.ENTITY_TYPE;
     }
@@ -368,7 +364,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
   }
 
   private static <T extends EntityData> String getSubType(T data) {
-    if (data instanceof CodelistData) {
+    if (data instanceof Codelist) {
       return null;
     }
     if (data instanceof FeatureProviderSqlData) {

@@ -21,8 +21,8 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.app.SchemaCacheStyleLayer;
 import de.ii.ogcapi.styles.domain.MbStyleLayer.LayerType;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.values.domain.KeyValueStore;
 import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.List;
@@ -82,10 +82,11 @@ public abstract class MbStyleStylesheet {
   // TODO: replace with SchemaDeriverStyleLayer
   @JsonIgnore
   public List<StyleLayer> getLayerMetadata(
-      OgcApiDataV2 apiData, FeaturesCoreProviders providers, EntityRegistry entityRegistry) {
+      OgcApiDataV2 apiData,
+      FeaturesCoreProviders providers,
+      KeyValueStore<Codelist> codelistStore) {
     // prepare a map with the JSON schemas of the feature collections used in the style
-    JsonSchemaCache schemas =
-        new SchemaCacheStyleLayer(() -> entityRegistry.getEntitiesForType(Codelist.class));
+    JsonSchemaCache schemas = new SchemaCacheStyleLayer(codelistStore::asMap);
 
     Map<String, JsonSchemaObject> schemaMap =
         getLayers().stream()

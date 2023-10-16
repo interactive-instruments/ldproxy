@@ -15,7 +15,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
-import de.ii.xtraplatform.blobs.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.ByteArrayInputStream;
@@ -38,10 +38,10 @@ public class ResourceFormatAny implements ResourceFormatExtension {
   public static final String SCHEMA_REF_RESOURCE = "#/components/schemas/Resource";
 
   private final Schema schemaResource;
-  private final BlobStore resourcesStore;
+  private final ResourceStore resourcesStore;
 
   @Inject
-  ResourceFormatAny(BlobStore blobStore) {
+  ResourceFormatAny(ResourceStore blobStore) {
     this.schemaResource = new BinarySchema();
     this.resourcesStore = blobStore.with(ResourcesBuildingBlock.STORE_RESOURCE_TYPE);
   }

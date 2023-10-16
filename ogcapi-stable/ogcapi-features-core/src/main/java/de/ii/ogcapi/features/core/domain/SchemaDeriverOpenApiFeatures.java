@@ -25,7 +25,7 @@ import java.util.Optional;
 public class SchemaDeriverOpenApiFeatures extends SchemaDeriverOpenApi {
 
   public SchemaDeriverOpenApiFeatures(
-      String label, Optional<String> description, List<Codelist> codelists) {
+      String label, Optional<String> description, Map<String, Codelist> codelists) {
     super(label, description, codelists);
   }
 

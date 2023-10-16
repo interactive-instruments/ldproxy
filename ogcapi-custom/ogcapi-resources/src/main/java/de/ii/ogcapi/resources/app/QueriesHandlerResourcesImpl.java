@@ -24,7 +24,7 @@ import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
 import de.ii.xtraplatform.base.domain.ETag;
 import de.ii.xtraplatform.blobs.domain.Blob;
-import de.ii.xtraplatform.blobs.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import de.ii.xtraplatform.web.domain.LastModified;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -52,11 +52,11 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
   private final I18n i18n;
   private final ExtensionRegistry extensionRegistry;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
-  private final BlobStore resourcesStore;
+  private final ResourceStore resourcesStore;
 
   @Inject
   public QueriesHandlerResourcesImpl(
-      ExtensionRegistry extensionRegistry, I18n i18n, BlobStore blobStore) {
+      ExtensionRegistry extensionRegistry, I18n i18n, ResourceStore blobStore) {
     this.extensionRegistry = extensionRegistry;
     this.i18n = i18n;
     this.resourcesStore = blobStore.with(ResourcesBuildingBlock.STORE_RESOURCE_TYPE);

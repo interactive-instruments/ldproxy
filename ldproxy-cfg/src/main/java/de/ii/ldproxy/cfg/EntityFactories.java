@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.foundation.app.OgcApiFactory;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.xtraplatform.auth.app.UserFactory;
-import de.ii.xtraplatform.codelists.app.CodelistFactory;
 import de.ii.xtraplatform.entities.domain.EntityData;
 import de.ii.xtraplatform.entities.domain.EntityFactory;
 import de.ii.xtraplatform.entities.domain.PersistentEntity;
@@ -28,28 +27,6 @@ public interface EntityFactories {
 
   static Set<EntityFactory> factories(ExtensionRegistry extensionRegistry) {
     return ImmutableSet.<EntityFactory>builder()
-        .add(
-            new CodelistFactory(null) {
-              @Override
-              public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
-                return CompletableFuture.completedFuture(null);
-              }
-
-              @Override
-              public CompletableFuture<PersistentEntity> updateInstance(EntityData entityData) {
-                return CompletableFuture.completedFuture(null);
-              }
-
-              @Override
-              public void deleteInstance(String id) {}
-
-              @Override
-              public void addEntityListener(
-                  Consumer<PersistentEntity> listener, boolean existing) {}
-
-              @Override
-              public void addEntityGoneListener(Consumer<PersistentEntity> listener) {}
-            })
         .add(
             new FeatureProviderSqlFactory() {
               @Override

@@ -20,7 +20,7 @@ class SchemaDeriverJsonSpec extends Specification {
 
     def 'Returnables schema derivation, JSON Schema draft #version'() {
         given:
-        def schemaDeriver = new SchemaDeriverFeatures(version, Optional.empty(), "foo", Optional.empty(), ImmutableList.of())
+        def schemaDeriver = new SchemaDeriverFeatures(version, Optional.empty(), "foo", Optional.empty(), ImmutableMap.of())
 
         when:
         JsonSchemaDocument document = SchemaDeriverFixtures.FEATURE_SCHEMA.accept(schemaDeriver) as JsonSchemaDocument
@@ -37,7 +37,7 @@ class SchemaDeriverJsonSpec extends Specification {
 
     def 'Returnables flattened schema derivation, JSON Schema #version'() {
         given:
-        def schemaDeriver = new SchemaDeriverFeatures(version, Optional.empty(), "foo", Optional.empty(), ImmutableList.of())
+        def schemaDeriver = new SchemaDeriverFeatures(version, Optional.empty(), "foo", Optional.empty(), ImmutableMap.of())
         FeatureSchema flatSchema = SchemaDeriverFixtures.FEATURE_SCHEMA.accept(schemaFlattener)
 
         when:
@@ -57,7 +57,7 @@ class SchemaDeriverJsonSpec extends Specification {
 
         given:
         List<String> queryables = ["geometry", "datetime", "objects.date"]
-        SchemaDeriverJsonSchema schemaDeriver = new SchemaDeriverCollectionProperties(version, Optional.empty(), "test-label", Optional.empty(), ImmutableList.of(), queryables)
+        SchemaDeriverJsonSchema schemaDeriver = new SchemaDeriverCollectionProperties(version, Optional.empty(), "test-label", Optional.empty(), ImmutableMap.of(), queryables)
         FeatureSchema flatSchema = SchemaDeriverFixtures.FEATURE_SCHEMA.accept(schemaFlattener)
 
         when:

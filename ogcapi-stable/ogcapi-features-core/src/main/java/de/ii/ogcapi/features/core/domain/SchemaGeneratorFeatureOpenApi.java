@@ -14,13 +14,14 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
+import de.ii.xtraplatform.values.domain.KeyValueStore;
+import de.ii.xtraplatform.values.domain.ValueStore;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Objects;
 import java.util.Optional;
@@ -39,13 +40,12 @@ public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
   private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaCache =
       new ConcurrentHashMap<>();
   private final FeaturesCoreProviders providers;
-  private final EntityRegistry entityRegistry;
+  private final KeyValueStore<Codelist> codelistStore;
 
   @Inject
-  public SchemaGeneratorFeatureOpenApi(
-      FeaturesCoreProviders providers, EntityRegistry entityRegistry) {
+  public SchemaGeneratorFeatureOpenApi(FeaturesCoreProviders providers, ValueStore valueStore) {
     this.providers = providers;
-    this.entityRegistry = entityRegistry;
+    this.codelistStore = valueStore.forType(Codelist.class);
   }
 
   @Override
@@ -95,9 +95,7 @@ public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
       FeatureSchema featureSchema, FeatureTypeConfigurationOgcApi collectionData) {
     SchemaDeriverOpenApi schemaDeriver =
         new SchemaDeriverOpenApiFeatures(
-            collectionData.getLabel(),
-            collectionData.getDescription(),
-            entityRegistry.getEntitiesForType(Codelist.class));
+            collectionData.getLabel(), collectionData.getDescription(), codelistStore.asMap());
 
     return featureSchema.accept(new WithTransformationsApplied()).accept(schemaDeriver);
   }
@@ -126,7 +124,7 @@ public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
         new SchemaDeriverOpenApiCollectionProperties(
             collectionData.getLabel(),
             collectionData.getDescription(),
-            entityRegistry.getEntitiesForType(Codelist.class),
+            codelistStore.asMap(),
             ImmutableList.of(propertyWithSeparator));
 
     Schema<?> schema = featureSchema.accept(schemaFlattener).accept(schemaDeriver);
