@@ -172,7 +172,7 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
           closeObject(context.encoding());
         }
       } else {
-        if (schema.isArray()) {
+        if (schema.isArray() && !context.encoding().getGeoJsonConfig().isFlattened()) {
           writeValue(
               json,
               value,
