@@ -17,6 +17,9 @@ import de.ii.xtraplatform.cql.domain.ImmutableMultiPolygon;
 import de.ii.xtraplatform.cql.domain.ImmutablePoint;
 import de.ii.xtraplatform.cql.domain.ImmutablePolygon;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.values.domain.StoredValue;
+import de.ii.xtraplatform.values.domain.ValueBuilder;
+import de.ii.xtraplatform.values.domain.annotations.FromValueStore;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -25,8 +28,9 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true, builder = "new")
+@FromValueStore(type = "routes/definitions")
 @JsonDeserialize(builder = ImmutableRouteDefinition.Builder.class)
-public interface RouteDefinition {
+public interface RouteDefinition extends StoredValue {
 
   String SCHEMA_REF = "#/components/schemas/RouteDefinition";
 
@@ -140,6 +144,8 @@ public interface RouteDefinition {
       return new Geometry.Coordinate(
           coord.get(0).doubleValue(), coord.get(1).doubleValue(), coord.get(2).doubleValue());
   }
+
+  abstract class Builder implements ValueBuilder<RouteDefinition> {}
 
   @SuppressWarnings("UnstableApiUsage")
   Funnel<RouteDefinition> FUNNEL =
