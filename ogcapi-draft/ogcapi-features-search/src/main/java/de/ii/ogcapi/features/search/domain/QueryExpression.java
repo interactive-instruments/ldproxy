@@ -20,11 +20,13 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.xtraplatform.values.domain.StoredValue;
+import de.ii.xtraplatform.values.domain.ValueBuilder;
+import de.ii.xtraplatform.values.domain.annotations.FromValueStore;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.BooleanSchema;
 import io.swagger.v3.oas.models.media.IntegerSchema;
@@ -50,9 +52,10 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true, builder = "new")
+@FromValueStore(type = "queries")
 @JsonDeserialize(builder = ImmutableQueryExpression.Builder.class)
 @SuppressWarnings("PMD.TooManyMethods")
-public interface QueryExpression {
+public interface QueryExpression extends StoredValue {
 
   String ADHOC_QUERY_ID = "_adhoc_query_";
 
@@ -90,16 +93,14 @@ public interface QueryExpression {
     OR
   }
 
+  abstract class Builder implements ValueBuilder<QueryExpression> {}
+
   static QueryExpression of(byte[] requestBody) throws IOException {
     return MAPPER.readValue(requestBody, QueryExpression.class);
   }
 
   static QueryExpression of(InputStream requestBody) throws IOException {
     return MAPPER.readValue(requestBody, QueryExpression.class);
-  }
-
-  static byte[] asBytes(QueryExpression query) throws IOException {
-    return MAPPER.writeValueAsBytes(query);
   }
 
   @Value.Default
@@ -184,7 +185,7 @@ public interface QueryExpression {
   @Value.Derived
   @Value.Auxiliary
   default Map<String, Schema<?>> getParametersWithOpenApiSchema() {
-    Builder<String, Schema<?>> paramBuilder = ImmutableMap.builder();
+    ImmutableMap.Builder<String, Schema<?>> paramBuilder = ImmutableMap.builder();
     getParametersAsNodes().forEach((key, value) -> paramBuilder.put(key, deriveSchema(value)));
     return paramBuilder.build();
   }
