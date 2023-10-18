@@ -541,11 +541,13 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn **Deprecated** Enable vector tiles for each *Feature Collection*. Every tile contains a
-   *     layer with the feature from the collection. If a Tile Provider is specified, tiles will
-   *     always be enabled for a collection, if the tileset is specified in the Tile Provider,
-   *     independent of the value of this option.
-   * @langDe **Deprecated** Steuert, ob Vector Tiles für jede Feature Collection aktiviert werden
+   * @langEn *Deprecated (from v4.0 on you have to use [Tile
+   *     Provider](../../providers/tile/README.md) entities)* Enable vector tiles for each *Feature
+   *     Collection*. Every tile contains a layer with the feature from the collection. If a Tile
+   *     Provider is specified, tiles will always be enabled for a collection, if the tileset is
+   *     specified in the Tile Provider, independent of the value of this option.
+   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
+   *     verwendet werden)* Steuert, ob Vector Tiles für jede Feature Collection aktiviert werden
    *     sollen. Jede Kachel hat einen Layer mit den Features aus der Collection. Wenn ein
    *     Tile-Provider spezifiziert ist, dann werden - unabhängig von dieser Option - Kacheln für
    *     eine Collection genau dann aktiviert, wenn das Tileset im Tile Provider spezifiziert ist.
@@ -577,11 +579,14 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn **Deprecated** Enable vector tiles for the whole dataset. Every tile contains one layer
-   *     per collection with the features of that collection. If a Tile Provider is specified, tiles
-   *     will always be enabled for the dataset, if the corresponding tileset is specified in the
-   *     Tile Provider, independent of the value of this option.
-   * @langDe **Deprecated** Steuert, ob Vector Tiles auf Ebene des Datensatzes aktiviert werden
+   * @langEn *Deprecated (from v4.0 on you have to use [Tile
+   *     Provider](../../providers/tile/README.md) entities)* Enable vector tiles for the whole
+   *     dataset. Every tile contains one layer per collection with the features of that collection.
+   *     If a Tile Provider is specified, tiles will always be enabled for the dataset, if the
+   *     corresponding tileset is specified in the Tile Provider, independent of the value of this
+   *     option.
+   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
+   *     verwendet werden)* Steuert, ob Vector Tiles auf Ebene des Datensatzes aktiviert werden
    *     sollen. Jede Kachel hat einen Layer pro Collection mit den Features aus der Collection.
    *     Wenn ein Tile-Provider spezifiziert ist, dann werden - unabhängig von dieser Option -
    *     Kacheln für Datensatz genau dann aktiviert, wenn das entsprechende Tileset im Tile Provider
