@@ -129,7 +129,7 @@ public class StylesBuildingBlock implements ApiBuildingBlock {
       Optional.of(
           ExternalDocumentation.of(
               "https://docs.ogc.org/DRAFTS/20-009.html", "OGC API - Styles (DRAFT)"));
-  public static final String STORE_RESOURCE_TYPE = "styles";
+  public static final String STORE_RESOURCE_TYPE = "other-styles";
 
   private final ExtensionRegistry extensionRegistry;
 
