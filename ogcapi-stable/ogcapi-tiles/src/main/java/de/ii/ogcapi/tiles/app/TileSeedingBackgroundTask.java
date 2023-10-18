@@ -225,56 +225,52 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
     Map<String, TileGenerationParameters> tilesets = new LinkedHashMap<>();
 
     for (String collectionId : apiData.getCollections().keySet()) {
-      Optional<TilesConfiguration> tilesConfiguration =
-          getTilesConfiguration(api.getData(), collectionId);
+      getTilesConfiguration(apiData, collectionId)
+          .filter(cfg -> cfg.hasCollectionTiles(tilesProviders, apiData, collectionId))
+          .map(cfg -> Objects.requireNonNullElse(cfg.getTileProviderTileset(), collectionId))
+          .filter(tileset -> !tilesets.containsKey(tileset))
+          .ifPresent(
+              tileset -> {
+                TileGenerationParameters generationParameters =
+                    new ImmutableTileGenerationParameters.Builder()
+                        .clipBoundingBox(api.getSpatialExtent(collectionId))
+                        .propertyTransformations(
+                            api.getData()
+                                .getCollectionData(collectionId)
+                                .flatMap(cd -> cd.getExtension(FeaturesCoreConfiguration.class))
+                                .map(
+                                    pt ->
+                                        pt.withSubstitutions(
+                                            FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
+                                                api.getUri().toString()))))
+                        .build();
 
-      if (tilesConfiguration.isPresent()) {
-        String tileset =
-            tilesConfiguration.map(TilesConfiguration::getTileProviderTileset).orElse(collectionId);
-        if (!tilesets.containsKey(tileset)) {
-
-          TileGenerationParameters generationParameters =
-              new ImmutableTileGenerationParameters.Builder()
-                  .clipBoundingBox(api.getSpatialExtent(collectionId))
-                  .propertyTransformations(
-                      api.getData()
-                          .getCollectionData(collectionId)
-                          .flatMap(cd -> cd.getExtension(FeaturesCoreConfiguration.class))
-                          .map(
-                              pt ->
-                                  pt.withSubstitutions(
-                                      FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
-                                          api.getUri().toString()))))
-                  .build();
-
-          tilesets.put(tileset, generationParameters);
-        }
-      }
+                tilesets.put(tileset, generationParameters);
+              });
     }
 
-    Optional<TilesConfiguration> tilesConfiguration =
-        apiData.getExtension(TilesConfiguration.class).filter(TilesConfiguration::hasDatasetTiles);
+    apiData
+        .getExtension(TilesConfiguration.class)
+        .filter(cfg -> cfg.hasDatasetTiles(tilesProviders, apiData))
+        .map(cfg -> Objects.requireNonNullElse(cfg.getTileProviderTileset(), DATASET_TILES))
+        .filter(tileset -> !tilesets.containsKey(tileset))
+        .ifPresent(
+            tileset -> {
+              TileGenerationParameters generationParameters =
+                  new ImmutableTileGenerationParameters.Builder()
+                      .clipBoundingBox(api.getSpatialExtent())
+                      .propertyTransformations(
+                          api.getData()
+                              .getExtension(FeaturesCoreConfiguration.class)
+                              .map(
+                                  pt ->
+                                      pt.withSubstitutions(
+                                          FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
+                                              api.getUri().toString()))))
+                      .build();
 
-    if (tilesConfiguration.isPresent()) {
-      String tileset =
-          tilesConfiguration.map(TilesConfiguration::getTileProviderTileset).orElse(DATASET_TILES);
-      if (!tilesets.containsKey(tileset)) {
-        TileGenerationParameters generationParameters =
-            new ImmutableTileGenerationParameters.Builder()
-                .clipBoundingBox(api.getSpatialExtent())
-                .propertyTransformations(
-                    api.getData()
-                        .getExtension(FeaturesCoreConfiguration.class)
-                        .map(
-                            pt ->
-                                pt.withSubstitutions(
-                                    FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
-                                        api.getUri().toString()))))
-                .build();
-
-        tilesets.put(tileset, generationParameters);
-      }
-    }
+              tilesets.put(tileset, generationParameters);
+            });
 
     tileProvider.seeding().seed(tilesets, formats, reseed, taskContext);
   }

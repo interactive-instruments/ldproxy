@@ -69,7 +69,7 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
         apiData
             .getExtension(TilesConfiguration.class)
             .filter(TilesConfiguration::isEnabled)
-            .filter(TilesConfiguration::hasDatasetTiles)
+            .filter(cfg -> cfg.hasDatasetTiles(tilesProviders, apiData))
             .flatMap(cfg -> tilesProviders.getTilesetMetadata(apiData))
             .map(TilesetMetadata::getTileMatrixSets)
             .orElse(ImmutableSet.of())

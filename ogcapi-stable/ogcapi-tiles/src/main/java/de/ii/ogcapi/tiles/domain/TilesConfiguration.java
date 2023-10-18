@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
+import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
 import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.LIMIT_DEFAULT;
 import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.MINIMUM_SIZE_IN_PIXEL;
 
@@ -540,41 +541,75 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   /**
-   * @langEn Enable vector tiles for each *Feature Collection*. Every tile contains a layer with the
-   *     feature from the collection.
-   * @langDe Steuert, ob Vector Tiles für jede Feature Collection aktiviert werden sollen. Jede
-   *     Kachel hat einen Layer mit den Features aus der Collection.
+   * @langEn **Deprecated** Enable vector tiles for each *Feature Collection*. Every tile contains a
+   *     layer with the feature from the collection. If a Tile Provider is specified, tiles will
+   *     always be enabled for a collection, if the tileset is specified in the Tile Provider,
+   *     independent of the value of this option.
+   * @langDe **Deprecated** Steuert, ob Vector Tiles für jede Feature Collection aktiviert werden
+   *     sollen. Jede Kachel hat einen Layer mit den Features aus der Collection. Wenn ein
+   *     Tile-Provider spezifiziert ist, dann werden - unabhängig von dieser Option - Kacheln für
+   *     eine Collection genau dann aktiviert, wenn das Tileset im Tile Provider spezifiziert ist.
    * @default true
    * @since v3.3
    */
   @JsonAlias("singleCollectionEnabled")
   @Nullable
+  @Deprecated(since = "3.6")
   Boolean getCollectionTiles();
 
-  @Value.Auxiliary
-  @Value.Derived
-  @JsonIgnore
-  default boolean hasCollectionTiles() {
+  default boolean hasCollectionTiles(
+      TilesProviders providers, OgcApiDataV2 apiData, String collectionId) {
+    if (Objects.nonNull(providers)
+        && providers.hasTileProvider(apiData, apiData.getCollectionData(collectionId))) {
+      return providers
+          .getTileProvider(apiData, apiData.getCollectionData(collectionId))
+          .map(
+              tileProvider ->
+                  tileProvider
+                      .getData()
+                      .getTilesets()
+                      .containsKey(
+                          Objects.requireNonNullElse(getTileProviderTileset(), collectionId)))
+          .orElse(false);
+    }
     return Objects.equals(getCollectionTiles(), true)
         || (Objects.nonNull(getTileProvider()) && getTileProvider().isSingleCollectionEnabled());
   }
 
   /**
-   * @langEn Enable vector tiles for the whole dataset. Every tile contains one layer per collection
-   *     with the features of that collection.
-   * @langDe Steuert, ob Vector Tiles für den Datensatz aktiviert werden sollen. Jede Kachel hat
-   *     einen Layer pro Collection mit den Features aus der Collection.
+   * @langEn **Deprecated** Enable vector tiles for the whole dataset. Every tile contains one layer
+   *     per collection with the features of that collection. If a Tile Provider is specified, tiles
+   *     will always be enabled for the dataset, if the corresponding tileset is specified in the
+   *     Tile Provider, independent of the value of this option.
+   * @langDe **Deprecated** Steuert, ob Vector Tiles auf Ebene des Datensatzes aktiviert werden
+   *     sollen. Jede Kachel hat einen Layer pro Collection mit den Features aus der Collection.
+   *     Wenn ein Tile-Provider spezifiziert ist, dann werden - unabhängig von dieser Option -
+   *     Kacheln für Datensatz genau dann aktiviert, wenn das entsprechende Tileset im Tile Provider
+   *     spezifiziert ist.
    * @default true
    * @since v3.3
    */
   @JsonAlias("multiCollectionEnabled")
   @Nullable
+  @Deprecated(since = "3.6")
   Boolean getDatasetTiles();
 
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
-  default boolean hasDatasetTiles() {
+  default boolean hasDatasetTiles(TilesProviders providers, OgcApiDataV2 apiData) {
+    if (Objects.nonNull(providers) && providers.hasTileProvider(apiData)) {
+      return providers
+          .getTileProvider(apiData)
+          .map(
+              tileProvider ->
+                  tileProvider
+                      .getData()
+                      .getTilesets()
+                      .containsKey(
+                          Objects.requireNonNullElse(getTileProviderTileset(), DATASET_TILES)))
+          .orElse(false);
+    }
     return Objects.equals(getDatasetTiles(), true)
         || (Objects.nonNull(getTileProvider()) && getTileProvider().isMultiCollectionEnabled());
   }

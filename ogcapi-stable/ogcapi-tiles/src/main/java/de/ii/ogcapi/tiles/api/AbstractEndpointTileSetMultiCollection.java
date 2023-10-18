@@ -54,7 +54,7 @@ public abstract class AbstractEndpointTileSetMultiCollection extends Endpoint {
     return apiData
         .getExtension(TilesConfiguration.class)
         .filter(TilesConfiguration::isEnabled)
-        .filter(TilesConfiguration::hasDatasetTiles)
+        .filter(cfg -> cfg.hasDatasetTiles(null, apiData))
         .isPresent();
   }
 
