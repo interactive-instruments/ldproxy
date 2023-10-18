@@ -75,8 +75,8 @@ import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
-import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
@@ -114,7 +114,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
   private final CrsTransformerFactory crsTransformerFactory;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
   private final ExtensionRegistry extensionRegistry;
-  private final KeyValueStore<Codelist> codelistStore;
+  private final Values<Codelist> codelistStore;
   private final CrsInfo crsInfo;
   private final Cql cql;
   private final StoredQueryRepository repository;

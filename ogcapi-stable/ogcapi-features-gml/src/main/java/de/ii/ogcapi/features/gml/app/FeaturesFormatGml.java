@@ -47,8 +47,8 @@ import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformat
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.gml.domain.ConnectionInfoWfsHttp;
-import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -156,7 +156,7 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
       "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2";
 
   private final FeaturesCoreProviders providers;
-  private final KeyValueStore<Codelist> codelistStore;
+  private final Values<Codelist> codelistStore;
   private final FeaturesCoreValidation featuresCoreValidator;
   private final GmlWriterRegistry gmlWriterRegistry;
 

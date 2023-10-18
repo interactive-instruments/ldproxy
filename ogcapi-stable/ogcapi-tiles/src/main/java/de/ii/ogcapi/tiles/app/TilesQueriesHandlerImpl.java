@@ -68,8 +68,8 @@ import de.ii.xtraplatform.tiles.domain.TileQuery;
 import de.ii.xtraplatform.tiles.domain.TileResult;
 import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
 import de.ii.xtraplatform.tiles.domain.WithCenter.LonLat;
-import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.MessageFormat;
@@ -100,7 +100,7 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
   private final I18n i18n;
   private final CrsTransformerFactory crsTransformerFactory;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
-  private final KeyValueStore<Codelist> codelistStore;
+  private final Values<Codelist> codelistStore;
   private final ExtensionRegistry extensionRegistry;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
   private final FeaturesCoreProviders providers;

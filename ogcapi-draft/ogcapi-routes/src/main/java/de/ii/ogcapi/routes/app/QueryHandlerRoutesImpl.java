@@ -57,8 +57,8 @@ import de.ii.xtraplatform.routes.sql.domain.RouteQuery;
 import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive;
-import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -87,7 +87,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
   private final I18n i18n;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
   private final CrsTransformerFactory crsTransformerFactory;
-  private final KeyValueStore<Codelist> codelistStore;
+  private final Values<Codelist> codelistStore;
   private final CrsSupport crsSupport;
   private final CrsInfo crsInfo;
   private final RouteRepository routeRepository;

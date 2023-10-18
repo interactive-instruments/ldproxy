@@ -51,8 +51,8 @@ import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkReduced;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
-import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.util.Date;
@@ -85,7 +85,7 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
   private final I18n i18n;
   private final CrsTransformerFactory crsTransformerFactory;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
-  private final KeyValueStore<Codelist> codelistStore;
+  private final Values<Codelist> codelistStore;
 
   @Inject
   public FeaturesCoreQueriesHandlerImpl(

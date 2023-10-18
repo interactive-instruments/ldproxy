@@ -44,8 +44,8 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
-import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
@@ -82,7 +82,7 @@ public class FeaturesFormatGeoJson
           .build();
 
   private final FeaturesCoreProviders providers;
-  private final KeyValueStore<Codelist> codelistStore;
+  private final Values<Codelist> codelistStore;
   private final FeaturesCoreValidation featuresCoreValidator;
   private final SchemaGeneratorOpenApi schemaGeneratorFeature;
   private final SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection;

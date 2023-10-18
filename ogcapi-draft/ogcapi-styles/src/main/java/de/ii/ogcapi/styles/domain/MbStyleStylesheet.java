@@ -22,10 +22,10 @@ import de.ii.ogcapi.styles.app.SchemaCacheStyleLayer;
 import de.ii.ogcapi.styles.domain.MbStyleLayer.LayerType;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.StoredValue;
 import de.ii.xtraplatform.values.domain.ValueBuilder;
 import de.ii.xtraplatform.values.domain.ValueEncoding.FORMAT;
+import de.ii.xtraplatform.values.domain.Values;
 import de.ii.xtraplatform.values.domain.annotations.FromValueStore;
 import de.ii.xtraplatform.values.domain.annotations.FromValueStore.FormatAlias;
 import java.util.AbstractMap;
@@ -90,9 +90,7 @@ public abstract class MbStyleStylesheet implements StoredValue {
   // TODO: replace with SchemaDeriverStyleLayer
   @JsonIgnore
   public List<StyleLayer> getLayerMetadata(
-      OgcApiDataV2 apiData,
-      FeaturesCoreProviders providers,
-      KeyValueStore<Codelist> codelistStore) {
+      OgcApiDataV2 apiData, FeaturesCoreProviders providers, Values<Codelist> codelistStore) {
     // prepare a map with the JSON schemas of the feature collections used in the style
     JsonSchemaCache schemas = new SchemaCacheStyleLayer(codelistStore::asMap);
 

@@ -48,7 +48,7 @@ public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLife
   @Inject
   public StoredQueryRepositoryImpl(ValueStore valueStore, ExtensionRegistry extensionRegistry) {
     this.extensionRegistry = extensionRegistry;
-    this.queriesStore = valueStore.forType(QueryExpression.class);
+    this.queriesStore = valueStore.forTypeWritable(QueryExpression.class);
   }
 
   @Override

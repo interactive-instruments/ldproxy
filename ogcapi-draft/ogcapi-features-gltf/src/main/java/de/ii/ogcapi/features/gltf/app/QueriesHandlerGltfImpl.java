@@ -33,8 +33,8 @@ import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Map;
@@ -55,7 +55,7 @@ public class QueriesHandlerGltfImpl implements QueriesHandlerGltf {
   private final I18n i18n;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
   private final Metadata3dSchemaCacheImpl schemaCache;
-  private final KeyValueStore<Codelist> codelistStore;
+  private final Values<Codelist> codelistStore;
   private final FeatureSchemaCache featureSchemaCache;
 
   @Inject

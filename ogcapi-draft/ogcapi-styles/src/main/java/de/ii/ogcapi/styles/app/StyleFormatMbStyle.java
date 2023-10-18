@@ -34,7 +34,7 @@ import de.ii.ogcapi.styles.domain.StyleLayer;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.services.domain.ServicesContext;
-import de.ii.xtraplatform.values.domain.KeyValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
 import java.net.URI;
@@ -208,7 +208,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
       StylesheetContent stylesheetContent,
       OgcApiDataV2 apiData,
       FeaturesCoreProviders providers,
-      KeyValueStore<Codelist> codelistStore) {
+      Values<Codelist> codelistStore) {
     URICustomizer uriCustomizer =
         new URICustomizer(servicesUri)
             .ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));

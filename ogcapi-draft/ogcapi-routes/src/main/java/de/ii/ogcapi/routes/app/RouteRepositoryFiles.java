@@ -67,8 +67,8 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
   @Inject
   public RouteRepositoryFiles(
       ValueStore valueStore, ExtensionRegistry extensionRegistry, I18n i18n) {
-    this.routesStore = valueStore.forType(Route.class);
-    this.routeDefinitionsStore = valueStore.forType(RouteDefinition.class);
+    this.routesStore = valueStore.forTypeWritable(Route.class);
+    this.routeDefinitionsStore = valueStore.forTypeWritable(RouteDefinition.class);
     this.i18n = i18n;
     this.extensionRegistry = extensionRegistry;
     this.defaultLinkGenerator = new DefaultLinksGenerator();

@@ -60,8 +60,8 @@ import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
-import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import de.ii.xtraplatform.web.domain.Http;
 import de.ii.xtraplatform.web.domain.HttpClient;
 import de.ii.xtraplatform.web.domain.MustacheRenderer;
@@ -100,7 +100,7 @@ public class FeaturesFormatHtml
               new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
 
   private final ExtensionRegistry extensionRegistry;
-  private final KeyValueStore<Codelist> codelistStore;
+  private final Values<Codelist> codelistStore;
   private final I18n i18n;
   private final FeaturesCoreProviders providers;
   private final FeaturesCoreValidation featuresCoreValidator;

@@ -20,8 +20,8 @@ import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
-import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Objects;
 import java.util.Optional;
@@ -40,7 +40,7 @@ public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
   private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaCache =
       new ConcurrentHashMap<>();
   private final FeaturesCoreProviders providers;
-  private final KeyValueStore<Codelist> codelistStore;
+  private final Values<Codelist> codelistStore;
 
   @Inject
   public SchemaGeneratorFeatureOpenApi(FeaturesCoreProviders providers, ValueStore valueStore) {

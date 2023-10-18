@@ -65,8 +65,8 @@ import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
-import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.NumberSchema;
@@ -89,7 +89,7 @@ public abstract class FeaturesFormatCityJsonBase implements FeatureFormatExtensi
 
   public static final String IGNORE = "ignore";
   protected final FeaturesCoreProviders providers;
-  private final KeyValueStore<Codelist> codelistStore;
+  private final Values<Codelist> codelistStore;
   protected final FeaturesCoreValidation featuresCoreValidator;
   protected final SchemaGeneratorOpenApi schemaGeneratorFeature;
   protected final SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection;

@@ -56,6 +56,7 @@ import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.values.domain.Identifier;
 import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import de.ii.xtraplatform.web.domain.LastModified;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -96,7 +97,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
   private final ObjectMapper metadataMapper;
   private final URI servicesUri;
   private final FeaturesCoreProviders providers;
-  private final KeyValueStore<Codelist> codelistStore;
+  private final Values<Codelist> codelistStore;
 
   @Inject
   public StyleRepositoryFiles(
@@ -107,7 +108,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       FeaturesCoreProviders providers,
       ValueStore valueStore) {
     this.stylesStore = blobStore.with(StylesBuildingBlock.STORE_RESOURCE_TYPE);
-    this.mbStylesStore = valueStore.forType(MbStyleStylesheet.class);
+    this.mbStylesStore = valueStore.forTypeWritable(MbStyleStylesheet.class);
     this.i18n = i18n;
     this.extensionRegistry = extensionRegistry;
     this.servicesUri = servicesContext.getUri();

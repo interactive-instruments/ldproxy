@@ -37,8 +37,8 @@ import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
-import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import io.dropwizard.auth.Auth;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
@@ -72,7 +72,7 @@ import javax.ws.rs.core.Response;
 public class EndpointFeatures extends EndpointFeaturesDefinition
     implements PolicyAttributeFeaturesGetter {
 
-  private final KeyValueStore<Codelist> codelistStore;
+  private final Values<Codelist> codelistStore;
   private final FeaturesQuery ogcApiFeaturesQuery;
   private final FeaturesCoreQueriesHandler queryHandler;
   private final FeaturesCoreValidation featuresCoreValidator;

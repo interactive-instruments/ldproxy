@@ -42,8 +42,8 @@ import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.services.domain.ServicesContext;
-import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
@@ -82,7 +82,7 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
   public static final String SCHEMA_REF = "#/components/schemas/glTF";
 
   private final FeaturesCoreProviders providers;
-  private final KeyValueStore<Codelist> codelistStore;
+  private final Values<Codelist> codelistStore;
   private final FeaturesCoreValidation featuresCoreValidator;
   private final CrsTransformerFactory crsTransformerFactory;
   private CrsTransformer toEcef;
