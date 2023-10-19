@@ -27,7 +27,7 @@ public abstract class TileFormatExtension implements FormatExtension {
     return apiData
         .getExtension(TilesConfiguration.class)
         .filter(TilesConfiguration::isEnabled)
-        .filter(TilesConfiguration::hasDatasetTiles)
+        .filter(cfg -> cfg.hasDatasetTiles(tilesProviders, apiData))
         .filter(
             config ->
                 tilesProviders
@@ -42,7 +42,7 @@ public abstract class TileFormatExtension implements FormatExtension {
     return apiData
         .getExtension(TilesConfiguration.class, collectionId)
         .filter(TilesConfiguration::isEnabled)
-        .filter(TilesConfiguration::hasCollectionTiles)
+        .filter(cfg -> cfg.hasCollectionTiles(tilesProviders, apiData, collectionId))
         .filter(
             config ->
                 tilesProviders
