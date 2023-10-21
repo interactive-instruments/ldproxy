@@ -16,7 +16,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.transform.OnlyReturnables;
+import de.ii.xtraplatform.features.domain.transform.OnlyReturnablesAndReceivables;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import java.util.List;
@@ -50,7 +50,8 @@ public class SchemaCacheFeatures extends JsonSchemaCache {
             .map(WithTransformationsApplied::new)
             .orElse(new WithTransformationsApplied());
 
-    OnlyReturnables onlyReturnables = new OnlyReturnables();
+    OnlyReturnablesAndReceivables onlyReturnablesAndReceivables =
+        new OnlyReturnablesAndReceivables();
 
     SchemaDeriverFeatures schemaDeriverFeatures =
         new SchemaDeriverFeatures(
@@ -61,6 +62,9 @@ public class SchemaCacheFeatures extends JsonSchemaCache {
             codelistSupplier.get());
 
     return (JsonSchemaDocument)
-        schema.accept(schemaTransformer).accept(onlyReturnables).accept(schemaDeriverFeatures);
+        schema
+            .accept(schemaTransformer)
+            .accept(onlyReturnablesAndReceivables)
+            .accept(schemaDeriverFeatures);
   }
 }
