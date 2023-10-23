@@ -190,7 +190,8 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
 
     String descriptor = String.format("%s/%s/%s", apiData.getId(), collectionId, styleId);
     try {
-      return Optional.of(new StylesheetContent(toBytes(mbStyleDerived), descriptor, true));
+      return Optional.of(
+          new StylesheetContent(toBytes(mbStyleDerived), descriptor, true, mbStyleDerived));
     } catch (JsonProcessingException e) {
       LOGGER.error(
           String.format("Could not derive style %s. Reason: %s", descriptor, e.getMessage()));

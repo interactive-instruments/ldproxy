@@ -161,6 +161,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
             () -> factories,
             entityDataDefaultsStore,
             new MockBlobStore(),
+            new MockValueStore(),
             noDefaults);
     this.entitySchemas = new HashMap<>();
     this.migrations = Migrations.create(entityDataStore);

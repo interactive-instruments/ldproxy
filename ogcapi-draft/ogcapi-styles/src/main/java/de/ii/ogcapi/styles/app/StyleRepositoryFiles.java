@@ -202,7 +202,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     // a stylesheet exists, if we have a stylesheet document or if we can derive one
     if (exists(apiData, collectionId, styleId, styleFormat)) {
       try {
-        if (styleFormat instanceof StyleFormatMbStyle) {
+        if (isMbStyle(styleFormat)) {
           return LastModified.from(
               mbStylesStore.lastModified(styleId, getPathMbStyles(apiData, collectionId)));
         }
@@ -218,7 +218,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
         && deriveCollectionStylesEnabled(apiData, collectionId.get())) {
       if (exists(apiData, Optional.empty(), styleId, styleFormat)) {
         try {
-          if (styleFormat instanceof StyleFormatMbStyle) {
+          if (isMbStyle(styleFormat)) {
             return LastModified.from(mbStylesStore.lastModified(styleId, apiData.getId()));
           }
           return LastModified.from(
@@ -348,7 +348,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       String styleId,
       StyleFormatExtension styleFormat) {
     try {
-      if (styleFormat instanceof StyleFormatMbStyle) {
+      if (isMbStyle(styleFormat)) {
         return mbStylesStore.has(styleId, getPathMbStyles(apiData, collectionId));
       }
       return stylesStore.has(getPathStyle(apiData, Optional.empty(), styleId, styleFormat));
@@ -412,7 +412,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       throws IOException {
     Path pathStyle = getPathStyle(apiData, Optional.empty(), styleId, styleFormat);
 
-    if (styleFormat instanceof StyleFormatMbStyle) {
+    if (isMbStyle(styleFormat)) {
       MbStyleStylesheet stylesheet =
           mbStylesStore.get(styleId, getPathMbStyles(apiData, collectionId));
       return new StylesheetContent(
@@ -807,7 +807,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       StyleFormatExtension format,
       byte[] requestBody)
       throws IOException {
-    if (format instanceof StyleFormatMbStyle) {
+    if (isMbStyle(format)) {
       MbStyleStylesheet stylesheet = StyleFormatMbStyle.parse(requestBody, false);
       try {
         mbStylesStore.put(styleId, stylesheet, getPathMbStyles(apiData, collectionId)).join();
@@ -838,7 +838,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       throws IOException {
     for (StyleFormatExtension format :
         getStyleFormatStream(apiData, collectionId).collect(Collectors.toUnmodifiableList())) {
-      if (format instanceof StyleFormatMbStyle) {
+      if (isMbStyle(format)) {
         mbStylesStore.delete(styleId, getPathMbStyles(apiData, collectionId));
       }
       stylesStore.delete(getStylesheetPath(apiData, collectionId, styleId, format));
@@ -956,6 +956,10 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     return collectionId.isPresent()
         ? new String[] {apiData.getId(), collectionId.get()}
         : new String[] {apiData.getId()};
+  }
+
+  private boolean isMbStyle(StyleFormatExtension format) {
+    return format instanceof StyleFormatMbStyle || format instanceof StyleFormatHtml;
   }
 
   private Path getPathStyle(
