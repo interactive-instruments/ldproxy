@@ -105,34 +105,22 @@ public interface FeatureFormatExtension extends FormatExtension {
       return getPropertyTransformations(collectionData);
     }
 
+    // FIXME
+    // TODO: Currently there is no PropertyTransformation to convert a FEATURE_REF to a Link
+    //       object, so we just map it to the URI for now. For now, the Link object must be
+    //       handled in the feature encoders of the formats that support 'rel-as-link'.
+    //       FIXME
     ImmutableProfileTransformations.Builder builder = new ImmutableProfileTransformations.Builder();
     switch (profile.get()) {
       default:
       case AS_KEY:
-        // nothing to transform
-        return getPropertyTransformations(collectionData);
+        reduceToKey(schema, builder);
+        break;
       case AS_URI:
+        reduceToUri(schema, builder);
+        break;
       case AS_LINK:
-        // TODO: Currently there is no PropertyTransformation to convert a FEATURE_REF to a Link
-        //       object, so we just map it to the URI for now. For now, the Link object must be
-        //       handled in the feature encoders of the formats that support 'rel-as-link'.
-        schema
-            .map(SchemaBase::getAllNestedProperties)
-            .ifPresent(
-                properties ->
-                    properties.stream()
-                        .filter(SchemaBase::isFeatureRef)
-                        .forEach(
-                            property ->
-                                getTemplate(property)
-                                    .ifPresent(
-                                        template ->
-                                            builder.putTransformations(
-                                                property.getFullPathAsString(),
-                                                ImmutableList.of(
-                                                    new ImmutablePropertyTransformation.Builder()
-                                                        .stringFormat(template)
-                                                        .build())))));
+        // mapHref(schema, builder);
     }
     ProfileTransformations profileTransformations = builder.build();
     return Optional.of(
@@ -141,7 +129,159 @@ public interface FeatureFormatExtension extends FormatExtension {
             .orElse(profileTransformations));
   }
 
-  static Optional<String> getTemplate(FeatureSchema property) {
+  private static void mapHref(
+      Optional<FeatureSchema> schema, ImmutableProfileTransformations.Builder builder) {
+    schema
+        .map(SchemaBase::getAllNestedProperties)
+        .ifPresent(
+            properties ->
+                properties.stream()
+                    .filter(SchemaBase::isFeatureRef)
+                    .forEach(
+                        property -> {
+                          if (property.isValue()) {
+                            getUriTemplate(property)
+                                .ifPresent(
+                                    template ->
+                                        builder.putTransformations(
+                                            property.getFullPathAsString(),
+                                            ImmutableList.of(
+                                                new ImmutablePropertyTransformation.Builder()
+                                                    .stringFormat(
+                                                        template.replace("{featureId}", "{value}"))
+                                                    .build())));
+                          } else if (property.isObject()) {
+                            getUriTemplate(property)
+                                .ifPresent(
+                                    template ->
+                                        property.getProperties().stream()
+                                            .filter(p -> "featureId".equals(p.getName()))
+                                            .map(SchemaBase::getFullPathAsString)
+                                            .findFirst()
+                                            .ifPresent(
+                                                path ->
+                                                    builder.putTransformations(
+                                                        path,
+                                                        ImmutableList.of(
+                                                            new ImmutablePropertyTransformation
+                                                                    .Builder()
+                                                                .stringFormat(
+                                                                    template.replace(
+                                                                        "{featureId}", "{value}"))
+                                                                .rename("href")
+                                                                .build()))));
+                          }
+                        }));
+  }
+
+  static void reduceToUri(
+      Optional<FeatureSchema> schema, ImmutableProfileTransformations.Builder builder) {
+    schema
+        .map(SchemaBase::getAllNestedProperties)
+        .ifPresent(
+            properties ->
+                properties.stream()
+                    .filter(SchemaBase::isFeatureRef)
+                    .forEach(
+                        property -> {
+                          if (property.isValue()) {
+                            getUriTemplate(property)
+                                .ifPresent(
+                                    template ->
+                                        builder.putTransformations(
+                                            property.getFullPathAsString(),
+                                            ImmutableList.of(
+                                                new ImmutablePropertyTransformation.Builder()
+                                                    .stringFormat(
+                                                        template.replace("{featureId}", "{value}"))
+                                                    .build())));
+                          } else if (property.isObject()) {
+                            getUriTemplate(property)
+                                .ifPresent(
+                                    template ->
+                                        builder.putTransformations(
+                                            property.getFullPathAsString(),
+                                            ImmutableList.of(
+                                                new ImmutablePropertyTransformation.Builder()
+                                                    .reduceStringFormat(
+                                                        template.replace(
+                                                            "{value}", "{hatObjekt.3_featureId}"))
+                                                    .build())));
+                          }
+                        }));
+  }
+
+  static void reduceToKey(
+      Optional<FeatureSchema> schema, ImmutableProfileTransformations.Builder builder) {
+    schema
+        .map(SchemaBase::getAllNestedProperties)
+        .ifPresent(
+            properties ->
+                properties.stream()
+                    .filter(SchemaBase::isFeatureRef)
+                    .filter(SchemaBase::isObject)
+                    .forEach(
+                        property -> {
+                          builder.putTransformations(
+                              property.getFullPathAsString(),
+                              ImmutableList.of(
+                                  new ImmutablePropertyTransformation.Builder()
+                                      .reduceStringFormat(
+                                          getKeyTemplate(property)
+                                              .orElse("{{hatObjekt.3_featureId}}"))
+                                      .build()));
+                        }));
+  }
+
+  /* FIXME
+  private static void reduceToKey(Optional<FeatureSchema> schema,
+      ImmutableProfileTransformations.Builder builder) {
+    schema
+        .map(SchemaBase::getAllNestedProperties)
+        .ifPresent(
+            properties ->
+                properties.stream()
+                    .filter(SchemaBase::isFeatureRef)
+                    .filter(SchemaBase::isObject)
+                    .forEach(
+                        property ->
+                            builder.putTransformations(
+                            property.getFullPathAsString(),
+                            ImmutableList.of(
+                                new ImmutablePropertyTransformation.Builder()
+                                    .reduceStringFormat(
+                                        property.getProperties().stream().anyMatch(p -> "collectionId".equals(p.getName())) ?
+                                        "{{collectionId}}::{{featureId}}" : "{{featureId}}")
+                                    .build())) ));
+  }
+   */
+
+  private static void removeTitle(
+      Optional<FeatureSchema> schema, ImmutableProfileTransformations.Builder builder) {
+    schema
+        .map(SchemaBase::getAllNestedProperties)
+        .ifPresent(
+            properties ->
+                properties.stream()
+                    .filter(SchemaBase::isFeatureRef)
+                    .filter(SchemaBase::isObject)
+                    .forEach(
+                        property ->
+                            property.getProperties().stream()
+                                .filter(p -> "title".equals(p.getName()))
+                                .map(SchemaBase::getFullPathAsString)
+                                .findFirst()
+                                .ifPresent(
+                                    path ->
+                                        builder.putTransformations(
+                                            path,
+                                            ImmutableList.of(
+                                                new ImmutablePropertyTransformation.Builder()
+                                                    .remove("ALWAYS")
+                                                    .build())))));
+  }
+
+  static Optional<String> getUriTemplate(FeatureSchema property) {
     return Optional.ofNullable(
         property
             .getRefUriTemplate()
@@ -157,6 +297,10 @@ public interface FeatureFormatExtension extends FormatExtension {
                                 ? Optional.empty()
                                 : Optional.of("{{apiUri}}/collections/{{type}}/items/{{value}}"))
                     .orElse(null)));
+  }
+
+  static Optional<String> getKeyTemplate(FeatureSchema property) {
+    return property.getRefKeyTemplate();
   }
 
   default boolean supportsHitsOnly() {

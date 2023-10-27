@@ -131,6 +131,7 @@ public class QueryParameterProfileFeatures extends QueryParameterProfile
                     .map(
                         schema ->
                             schema.getAllNestedProperties().stream()
+                                // FIXME
                                 .anyMatch(SchemaBase::isFeatureRef))
                     .orElse(false));
   }

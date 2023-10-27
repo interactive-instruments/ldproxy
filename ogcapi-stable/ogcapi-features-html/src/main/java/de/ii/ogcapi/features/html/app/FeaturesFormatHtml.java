@@ -179,12 +179,16 @@ public class FeaturesFormatHtml
       return getPropertyTransformations(collectionData);
     }
 
+    // FIXME
     ImmutableProfileTransformations.Builder builder = new ImmutableProfileTransformations.Builder();
     switch (profile.get()) {
       default:
       case AS_KEY:
-        return getPropertyTransformations(collectionData);
+        FeatureFormatExtension.reduceToKey(schema, builder);
+        break;
       case AS_URI:
+        FeatureFormatExtension.reduceToUri(schema, builder);
+        /* FIXME
         schema
             .map(SchemaBase::getAllNestedProperties)
             .ifPresent(
@@ -193,7 +197,7 @@ public class FeaturesFormatHtml
                         .filter(SchemaBase::isFeatureRef)
                         .forEach(
                             property ->
-                                FeatureFormatExtension.getTemplate(property)
+                                FeatureFormatExtension.getUriTemplate(property)
                                     .ifPresent(
                                         template ->
                                             builder.putTransformations(
@@ -202,8 +206,11 @@ public class FeaturesFormatHtml
                                                     new ImmutablePropertyTransformation.Builder()
                                                         .stringFormat(template)
                                                         .build())))));
+         */
         break;
       case AS_LINK:
+        mapHref(schema, builder);
+        /* FIXME
         schema
             .map(SchemaBase::getAllNestedProperties)
             .ifPresent(
@@ -212,7 +219,7 @@ public class FeaturesFormatHtml
                         .filter(SchemaBase::isFeatureRef)
                         .forEach(
                             property ->
-                                getLinkTemplate(FeatureFormatExtension.getTemplate(property))
+                                getLinkTemplate(FeatureFormatExtension.getUriTemplate(property))
                                     .ifPresent(
                                         template ->
                                             builder.putTransformations(
@@ -221,6 +228,7 @@ public class FeaturesFormatHtml
                                                     new ImmutablePropertyTransformation.Builder()
                                                         .stringFormat(template)
                                                         .build())))));
+         */
         break;
     }
 
@@ -233,6 +241,47 @@ public class FeaturesFormatHtml
 
   private static Optional<String> getLinkTemplate(Optional<String> template) {
     return template.map(t -> String.format("<a href=\"%s\">{{value}}</a>", t));
+  }
+
+  private static Optional<String> getLinkTemplateWithTitle(Optional<String> template) {
+    return template.map(t -> String.format("<a href=\"%s\">{{title}}</a>", t));
+  }
+
+  private static void mapHref(
+      Optional<FeatureSchema> schema, ImmutableProfileTransformations.Builder builder) {
+    schema
+        .map(SchemaBase::getAllNestedProperties)
+        .ifPresent(
+            properties ->
+                properties.stream()
+                    .filter(SchemaBase::isFeatureRef)
+                    .forEach(
+                        property -> {
+                          if (property.isValue()) {
+                            getLinkTemplate(FeatureFormatExtension.getUriTemplate(property))
+                                .ifPresent(
+                                    template ->
+                                        builder.putTransformations(
+                                            property.getFullPathAsString(),
+                                            ImmutableList.of(
+                                                new ImmutablePropertyTransformation.Builder()
+                                                    .stringFormat(
+                                                        template.replace("{featureId}", "{value}"))
+                                                    .build())));
+                          } else if (property.isObject()) {
+                            getLinkTemplateWithTitle(
+                                    FeatureFormatExtension.getUriTemplate(property))
+                                .ifPresent(
+                                    template ->
+                                        builder.putTransformations(
+                                            property.getFullPathAsString(),
+                                            ImmutableList.of(
+                                                new ImmutablePropertyTransformation.Builder()
+                                                    .reduceStringFormat(
+                                                        template.replace("{value}", "{featureId}"))
+                                                    .build())));
+                          }
+                        }));
   }
 
   @Override

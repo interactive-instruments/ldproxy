@@ -144,10 +144,12 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         context.encoding().getJson().writeObjectFieldStart(getPropertiesFieldName());
       }
 
+      // FIXME
       if (schema.isFeatureRef()
           && context.encoding().getProfile().filter(p -> p == Profile.AS_LINK).isPresent()) {
         // TODO: remove once a property transformation that maps to a Link object exists
         if (context.encoding().getGeoJsonConfig().isFlattened()) {
+          // FIXME: does not work for JSON-FG, if GeoJSON is flattened, but JSON-FG is not
           String separator =
               context
                   .encoding()

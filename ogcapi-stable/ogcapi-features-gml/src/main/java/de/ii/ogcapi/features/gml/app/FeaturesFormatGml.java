@@ -263,6 +263,7 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
       return getPropertyTransformations(collectionData);
     }
 
+    // FIXME
     ImmutableProfileTransformations.Builder builder = new ImmutableProfileTransformations.Builder();
     schema
         .map(SchemaBase::getAllNestedProperties)
@@ -272,7 +273,7 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
                     .filter(SchemaBase::isFeatureRef)
                     .forEach(
                         property ->
-                            FeatureFormatExtension.getTemplate(property)
+                            FeatureFormatExtension.getUriTemplate(property)
                                 .ifPresent(
                                     template ->
                                         builder.putTransformations(

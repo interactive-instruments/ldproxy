@@ -13,6 +13,7 @@ import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.features.domain.transform.FeatureEncoderSfFlat;
 import de.ii.xtraplatform.features.domain.transform.FeatureSfFlat;
@@ -244,10 +245,18 @@ public class FeatureEncoderFlatgeobuf extends FeatureEncoderSfFlat {
       case OBJECT:
       case OBJECT_ARRAY:
       case VALUE_ARRAY:
+      case FEATURE_REF_OBJECT_ARRAY:
       case FEATURE_REF_ARRAY:
       case STRING:
-      case FEATURE_REF:
+      case FEATURE_REF_OBJECT:
         column.type = ColumnType.String;
+        break;
+      case FEATURE_REF:
+        if (schema.getValueType().orElse(Type.STRING) == Type.INTEGER) {
+          column.type = ColumnType.Int;
+        } else {
+          column.type = ColumnType.String;
+        }
         break;
       default:
         LOGGER.warn(
