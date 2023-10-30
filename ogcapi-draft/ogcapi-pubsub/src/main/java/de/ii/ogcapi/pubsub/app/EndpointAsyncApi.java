@@ -23,6 +23,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.pubsub.domain.AsyncApiDefinitionFormatExtension;
 import de.ii.ogcapi.pubsub.domain.QueriesHandlerPubSub;
 import de.ii.ogcapi.pubsub.domain.QueriesHandlerPubSub.Query;
@@ -91,7 +92,9 @@ public class EndpointAsyncApi extends Endpoint {
             Optional.empty(),
             getOperationId("getAsyncApiDefinition"),
             GROUP_DISCOVER_READ,
-            ImmutableList.of())
+            ImmutableList.of(),
+            Optional.of(SpecificationMaturity.DRAFT_LDPROXY),
+            Optional.empty())
         .ifPresent(operation -> resourceBuilder1.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder1.build());
 
