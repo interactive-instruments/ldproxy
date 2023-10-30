@@ -29,6 +29,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.tiles3d.app.Tiles3dBuildingBlock;
 import de.ii.ogcapi.tiles3d.app.Tiles3dContentUtil;
 import de.ii.ogcapi.tiles3d.domain.Format3dTilesContent;
 import de.ii.ogcapi.tiles3d.domain.ImmutableQueryInputContent;
@@ -155,7 +156,9 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
                 Optional.empty(),
                 getOperationId("get3dTilesContent", collectionId),
                 GROUP_TILES_READ,
-                TAGS)
+                TAGS,
+                Tiles3dBuildingBlock.MATURITY,
+                Tiles3dBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());
@@ -210,7 +213,7 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
     byte[] content = fromCache(r);
 
     if (Objects.isNull(content)) {
-      return computeAndCache(requestContext, api.getData(), collectionId, cfg, r);
+      return computeAndCache(requestContext, api, collectionId, cfg, r);
     }
 
     QueryInputContent queryInput =
@@ -248,13 +251,17 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
 
   private Response computeAndCache(
       ApiRequestContext requestContext,
-      OgcApiDataV2 apiData,
+      OgcApi api,
       String collectionId,
       Tiles3dConfiguration cfg,
       TileResourceDescriptor r)
       throws URISyntaxException {
+    OgcApiDataV2 apiData = api.getData();
     Response response =
         Tiles3dContentUtil.getContent(
+            extensionRegistry,
+            api,
+            collectionId,
             providers.getFeatureProviderOrThrow(
                 apiData, apiData.getCollectionData(collectionId).orElseThrow()),
             queriesHandlerFeatures,

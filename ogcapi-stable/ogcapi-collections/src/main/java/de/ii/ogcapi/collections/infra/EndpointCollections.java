@@ -11,6 +11,7 @@ import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.GROUP_COLLECTIONS_
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.collections.app.CollectionsBuildingBlock;
 import de.ii.ogcapi.collections.app.ImmutableQueryInputCollections;
 import de.ii.ogcapi.collections.app.QueriesHandlerCollectionsImpl;
 import de.ii.ogcapi.collections.domain.CollectionsConfiguration;
@@ -32,9 +33,9 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Optional;
@@ -154,7 +155,9 @@ public class EndpointCollections extends Endpoint implements ConformanceClass {
             Optional.empty(),
             getOperationId("getCollections"),
             GROUP_COLLECTIONS_READ,
-            TAGS)
+            TAGS,
+            CollectionsBuildingBlock.MATURITY,
+            CollectionsBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
 

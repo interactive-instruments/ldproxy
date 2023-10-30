@@ -29,12 +29,35 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @buildingBlock HTML
- * @langEn ### Custom Templates
- *     <p>The HTML encoding is implemented using [Mustache templates](https://mustache.github.io/).
- *     Custom templates are supported, they have to reside in the data directory under the relative
- *     path `templates/html/{templateName}.mustache`, where `{templateName}` equals the name of a
- *     default template (see [source code on
- *     GitHub](https://github.com/search?q=repo%3Ainteractive-instruments%2Fldproxy+extension%3Amustache&type=Code)).
+ * @langEn ### Customization
+ *     <p>The HTML encoding is implemented using [Mustache templates](https://mustache.github.io/)
+ *     which can be overridden by the user. Any template may be overridden but doing so for
+ *     non-empty templates is strongly discouraged since it will most certainly lead to issues on
+ *     updates.
+ *     <p>There are predefined empty templates prefixed with `custom-` that should cover most use
+ *     cases:
+ *     <p><code>
+ * - `custom-head.mustache`: add something to the `<head>` element, e.g. CSS styles
+ * - `custom-body-start.mustache`: add something at the start of the `<body>` element
+ * - `custom-body-end.mustache`: add something at the end of the `<body>` element
+ * - `custom-navbar-start.mustache`: add something at the left side of the navbar
+ * - `custom-navbar-end.mustache`: add something at the right side of the navbar
+ * - `custom-footer-start.mustache`: add something at the start of the footer
+ * - `custom-footer-end.mustache`: add something at the end of footer
+ * - `custom-footer-url.mustache`: add a link to the list at the right of the footer
+ *     </code>
+ *     <p>These templates have to reside in the data directory either under the relative path
+ *     `templates/html/{templateName}.mustache` if you are still using the old layout (deprecated,
+ *     will stop working in v4) or under `resources/html/templates/{templateName}.mustache` with the
+ *     new layout.
+ *     <p>#### Custom assets
+ *     <p>It is also possible to publish any custom files, e.g. CSS files that can then be included
+ *     in `custom-head.mustache`. The files have to reside in the data directory either under the
+ *     relative path `store/resources/html/assets/` if you are still using the old layout
+ *     (deprecated, will stop working in v4) or under `resources/html/assets/` with the new layout.
+ *     <p>For example the CSS file `resources/html/assets/my.css` could be included in
+ *     `custom-head.mustache` with `<link href="{{urlPrefix}}/custom/assets/my.css"
+ *     rel="stylesheet">`.
  *     <p>### Login Provider
  *     <p>For APIs with [restricted access](../README.md#access-control) using an [identity
  *     provider](../../application/65-auth.md) with login capabilities, the `loginProvider` option
@@ -50,14 +73,35 @@ import org.slf4j.LoggerFactory;
  *     <p>::: info If the identity provider uses `https` (which it should), this feature only works
  *     if the API is also published using `https`. The only exception is accessing an API on
  *     `localhost`. :::
- * @langDe ### Benutzerdefinierte Templates
+ * @langDe ### Benutzerdefinierte Anpassungen
  *     <p>Die HTML-Ausgabe ist mittels [Mustache-Templates](https://mustache.github.io/)
- *     implementiert. Anstelle der Standardtemplates können auch benutzerspezifische Templates
- *     verwendet werden. Die eigenen Templates müssen als Dateien im Datenverzeichnis unter dem
- *     relativen Pfad `templates/html/{templateName}.mustache` liegen, wobei `{templateName}` der
- *     Name des Default-Templates ist. Die Standardtemplates liegen jeweils in den
- *     Resource-Verzeichnissen der Module, die sie verwenden ([Link zur Suche in
- *     GitHub](https://github.com/search?q=repo%3Ainteractive-instruments%2Fldproxy+extension%3Amustache&type=Code)).
+ *     implementiert welche vom Nutzer überschrieben werden können. Jedes Template kann
+ *     überschrieben werden, aber für nicht leere Templates wird stark davon abgeraten, da dies bei
+ *     Updates häufig zu Problemen führt.
+ *     <p>Es gibt vordefinierte leere Templates mit dem Präfix `custom-` welche die meisten
+ *     Anwendungsfälle abdecken sollten:
+ *     <p><code>
+ * - `custom-head.mustache`: etwas zum `<head>` Element hinzufügen, z.B. CSS Styles
+ * - `custom-body-start.mustache`: etwas am Anfang des `<body>` Elements hinzufügen
+ * - `custom-body-end.mustache`: etwas am Ende des `<body>` Elements hinzufügen
+ * - `custom-navbar-start.mustache`: etwas auf der linken Seite der Navbar hinzufügen
+ * - `custom-navbar-end.mustache`: etwas auf der rechten Seite der Navbar hinzufügen
+ * - `custom-footer-start.mustache`: etwas am Anfang des Footers hinzufügen
+ * - `custom-footer-end.mustache`: etwas am Ende des Footers hinzufügen
+ * - `custom-footer-url.mustache`: einen Link zur Liste auf der rechten Seite des Footers hinzufügen
+ *     </code>
+ *     <p>Diese Templates müssen als Dateien im Datenverzeichnis entweder unter dem relativen Pfad
+ *     `templates/html/{templateName}.mustache` liegen, wenn noch das alte Layout verwendet wird
+ *     (Deprecated, wird in v4 nicht mehr funktionieren), oder unter
+ *     `resources/html/templates/{templateName}.mustache` mit dem neuen Layout.
+ *     <p>#### Benutzerdefinierte Dateien
+ *     <p>Es können auch beliebige Dateien veröffentlicht werden, z.B. CSS Dateien, die dann in
+ *     `custom-head.mustache` eingebunden werden. Diese Dateien müssen im Datenverzeichnis entweder
+ *     unter dem relativen Pfad `store/resources/html/assets/` liegen, wenn noch das alte Layout
+ *     verwendet wird (Deprecated, wird in v4 nicht mehr funktionieren), oder unter
+ *     `resources/html/assets/` mit dem neuen Layout.
+ *     <p>Zum Beispiel könnte die CSS-Datei `resources/html/assets/my.css` in `custom-head.mustache`
+ *     eingebunden werden mit `<link href="{{urlPrefix}}/custom/assets/my.css" rel="stylesheet">`.
  *     <p>### Login Provider
  *     <p>Für APIs mit [beschränktem Zugriff](../README.md#access-control) die einen
  *     [Identity-Provider](../../application/65-auth.md) mit Login-Fähigkeiten verwenden, kann die

@@ -27,9 +27,9 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryInput;
-import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsOgcApi;
+import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTile;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
@@ -114,7 +114,9 @@ public interface EndpointTileMixin {
                 Optional.empty(),
                 operationId,
                 GROUP_TILES_READ,
-                tags)
+                tags,
+                TilesBuildingBlock.MATURITY,
+                TilesBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());
@@ -164,7 +166,9 @@ public interface EndpointTileMixin {
             Optional.empty(),
             operationId,
             GROUP_TILES_READ,
-            tags)
+            tags,
+            TilesBuildingBlock.MATURITY,
+            TilesBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations(method.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
 
@@ -189,17 +193,11 @@ public interface EndpointTileMixin {
     OgcApiDataV2 apiData = api.getData();
     Optional<FeatureTypeConfigurationOgcApi> collectionData =
         collectionId.map(id -> apiData.getCollections().get(id));
-    Map<String, String> parameterValues = requestContext.getParameters();
-    final List<OgcApiQueryParameter> parameterDefinitions =
-        collectionId.isPresent()
-            ? ((EndpointSubCollection) endpoint)
-                .getQueryParameters(extensionRegistry, apiData, definitionPath, collectionId.get())
-            : endpoint.getQueryParameters(extensionRegistry, apiData, definitionPath);
 
-    if (collectionId.isPresent()) {
-      endpoint.checkPathParameter(
-          extensionRegistry, apiData, definitionPath, "collectionId", collectionId.get());
-    }
+    collectionId.ifPresent(
+        id ->
+            endpoint.checkPathParameter(
+                extensionRegistry, apiData, definitionPath, "collectionId", id));
     endpoint.checkPathParameter(
         extensionRegistry, apiData, definitionPath, "tileMatrixSetId", tileMatrixSetId);
     endpoint.checkPathParameter(
@@ -274,9 +272,7 @@ public interface EndpointTileMixin {
         .level(level)
         .row(row)
         .col(col)
-        .parameters(
-            QueryParameterSet.of(parameterDefinitions, parameterValues)
-                .evaluate(api, collectionData))
+        .parameters(requestContext.getQueryParameterSet())
         .build();
   }
 

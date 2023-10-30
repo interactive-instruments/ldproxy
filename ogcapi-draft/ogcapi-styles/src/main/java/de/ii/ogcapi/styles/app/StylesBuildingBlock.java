@@ -12,9 +12,12 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.styles.domain.ImmutableStylesConfiguration.Builder;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -120,6 +123,12 @@ import javax.inject.Singleton;
 @AutoBind
 public class StylesBuildingBlock implements ApiBuildingBlock {
 
+  public static final Optional<SpecificationMaturity> MATURITY =
+      Optional.of(SpecificationMaturity.DRAFT_OGC);
+  public static final Optional<ExternalDocumentation> SPEC =
+      Optional.of(
+          ExternalDocumentation.of(
+              "https://docs.ogc.org/DRAFTS/20-009.html", "OGC API - Styles (DRAFT)"));
   public static final String STORE_RESOURCE_TYPE = "styles";
 
   private final ExtensionRegistry extensionRegistry;

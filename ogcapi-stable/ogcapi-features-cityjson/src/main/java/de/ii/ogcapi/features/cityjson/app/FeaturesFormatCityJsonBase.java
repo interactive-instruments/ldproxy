@@ -59,13 +59,13 @@ import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.entities.domain.EntityRegistry;
+import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
-import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.NumberSchema;
@@ -236,16 +236,6 @@ public abstract class FeaturesFormatCityJsonBase implements FeatureFormatExtensi
             .crs(crs)
             .textSequences(textSequences)
             .version(version)
-            .prettify(
-                Optional.ofNullable(
-                        transformationContext.getOgcApiRequest().getParameters().get("pretty"))
-                    .filter(value -> Objects.equals(value, "true"))
-                    .isPresent())
-            .debugJson(
-                Optional.ofNullable(
-                        transformationContext.getOgcApiRequest().getParameters().get("debug"))
-                    .filter(value -> Objects.equals(value, "true"))
-                    .isPresent())
             .build();
 
     return Optional.of(new FeatureEncoderCityJson(transformationContextCityJson, cityJsonWriters));

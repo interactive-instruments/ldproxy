@@ -88,6 +88,10 @@ public interface ApiOperation {
     return false;
   }
 
+  Optional<SpecificationMaturity> getSpecificationMaturity();
+
+  Optional<ExternalDocumentation> getSpecificationRef();
+
   @Value.Derived
   @Value.Auxiliary
   default String getOperationIdWithoutPrefix() {
@@ -109,7 +113,9 @@ public interface ApiOperation {
       Optional<ExternalDocumentation> externalDocs,
       String operationId,
       PermissionGroup permissionGroup,
-      List<String> tags) {
+      List<String> tags,
+      Optional<SpecificationMaturity> specMaturity,
+      Optional<ExternalDocumentation> spec) {
     if (responseContent.isEmpty()) {
       if (LOGGER.isErrorEnabled()) {
         LOGGER.error(
@@ -126,23 +132,15 @@ public interface ApiOperation {
       Optional<String> collectionId =
           path.startsWith("/collections/") ? Optional.of(path.split("/", 4)[2]) : Optional.empty();
       Schema<Object> formSchema = new ObjectSchema();
-      queryParameters.stream()
-          // Drop support for "f" in URL-encoded POST requests, content negotiation must be used,
-          // but this is not a real issue, since the f parameter is mainly for clickable links,
-          // that is GET/HEAD requests.
-          // The main reason is that the f parameter is evaluated in ApiRequestDispatcher,
-          // that is before the f parameter in the payload of the POST request is (easily)
-          // available.
-          .filter(param -> !"f".equals(param.getName()))
-          .forEach(
-              param -> {
-                Schema<?> paramSchema =
-                    param.getSchema(apiData, collectionId).description(param.getDescription());
-                formSchema.addProperties(param.getName(), paramSchema);
-                if (param.getRequired(apiData, collectionId)) {
-                  formSchema.addRequiredItem(param.getName());
-                }
-              });
+      queryParameters.forEach(
+          param -> {
+            Schema<?> paramSchema =
+                param.getSchema(apiData, collectionId).description(param.getDescription());
+            formSchema.addProperties(param.getName(), paramSchema);
+            if (param.getRequired(apiData, collectionId)) {
+              formSchema.addRequiredItem(param.getName());
+            }
+          });
       body =
           new ImmutableApiRequestBody.Builder()
               .description("The query parameters of the GET request encoded in the request body.")
@@ -172,6 +170,8 @@ public interface ApiOperation {
             .operationId(operationId)
             .permissionGroup(permissionGroup)
             .tags(tags)
+            .specificationMaturity(specMaturity)
+            .specificationRef(spec)
             .queryParameters(postUrlEncoded ? ImmutableList.of() : queryParameters)
             .headers(
                 headers.stream()
@@ -203,7 +203,9 @@ public interface ApiOperation {
       Optional<ExternalDocumentation> externalDocs,
       String operationId,
       PermissionGroup permissionGroup,
-      List<String> tags) {
+      List<String> tags,
+      Optional<SpecificationMaturity> specMaturity,
+      Optional<ExternalDocumentation> spec) {
     if ((method == HttpMethods.POST || method == HttpMethods.PUT || method == HttpMethods.PATCH)
         && requestContent.isEmpty()) {
       if (LOGGER.isErrorEnabled()) {
@@ -223,6 +225,8 @@ public interface ApiOperation {
             .operationId(operationId)
             .permissionGroup(permissionGroup)
             .tags(tags)
+            .specificationMaturity(specMaturity)
+            .specificationRef(spec)
             .queryParameters(queryParameters)
             .headers(
                 headers.stream()
@@ -261,7 +265,9 @@ public interface ApiOperation {
       Optional<ExternalDocumentation> externalDocs,
       String operationId,
       PermissionGroup permissionGroup,
-      List<String> tags) {
+      List<String> tags,
+      Optional<SpecificationMaturity> specMaturity,
+      Optional<ExternalDocumentation> spec) {
     ImmutableApiResponse.Builder responseBuilder =
         new ImmutableApiResponse.Builder()
             .statusCode(SUCCESS_STATUS_PROCESSING.get(HttpMethods.POST))
@@ -281,6 +287,8 @@ public interface ApiOperation {
             .operationId(operationId)
             .permissionGroup(permissionGroup)
             .tags(tags)
+            .specificationMaturity(specMaturity)
+            .specificationRef(spec)
             .queryParameters(queryParameters)
             .headers(
                 headers.stream()
@@ -306,15 +314,8 @@ public interface ApiOperation {
       Set<Integer> errorCodes) {
     Operation op = new Operation();
     op.summary(getSummary());
-    op.description(getDescription().orElse(null));
-    getExternalDocs()
-        .ifPresent(
-            externalDocs -> {
-              io.swagger.v3.oas.models.ExternalDocumentation docs =
-                  new io.swagger.v3.oas.models.ExternalDocumentation().url(externalDocs.getUrl());
-              externalDocs.getDescription().ifPresent(docs::description);
-              op.externalDocs(docs);
-            });
+    setOpenApiDescriptionAndExternalDoc(apiData, op);
+
     getTags().forEach(op::addTagsItem);
     op.operationId(getOperationId());
 
@@ -347,13 +348,15 @@ public interface ApiOperation {
 
     getHeaders()
         .forEach(
-            header ->
-                op.addParametersItem(
-                    new Parameter()
-                        .in("header")
-                        .name(header.getId())
-                        .description(header.getDescription())
-                        .schema(header.getSchema(apiData))));
+            header -> {
+              Parameter param =
+                  new Parameter()
+                      .in("header")
+                      .name(header.getId())
+                      .schema(header.getSchema(apiData));
+              header.setOpenApiDescription(apiData, param);
+              op.addParametersItem(param);
+            });
 
     getSuccess().ifPresent(success -> success.updateOpenApiDefinition(apiData, openAPI, op));
 
@@ -381,6 +384,69 @@ public interface ApiOperation {
           }
         }
       }
+    }
+  }
+
+  private void setOpenApiDescriptionAndExternalDoc(OgcApiDataV2 apiData, Operation op) {
+    if (apiData
+        .getExtension(FoundationConfiguration.class)
+        .map(FoundationConfiguration::includesSpecificationInformation)
+        .orElse(false)) {
+      getSpecificationMaturity()
+          .ifPresentOrElse(
+              maturity -> {
+                op.description(
+                    getDescription()
+                        .map(
+                            desc ->
+                                String.format(
+                                    "%s\n\n_%s_",
+                                    desc, String.format(maturity.toString(), "operation")))
+                        .orElse(String.format(maturity.toString(), "operation")));
+                op.setExtensions(ImmutableMap.of("x-maturity", maturity.name()));
+                if (Objects.equals(maturity, SpecificationMaturity.DEPRECATED)) {
+                  op.setDeprecated(true);
+                }
+              },
+              () -> op.description(getDescription().orElse(null)));
+      getExternalDocs()
+          .ifPresentOrElse(
+              externalDocs -> {
+                io.swagger.v3.oas.models.ExternalDocumentation docs =
+                    new io.swagger.v3.oas.models.ExternalDocumentation().url(externalDocs.getUrl());
+                externalDocs.getDescription().ifPresent(docs::description);
+                op.externalDocs(docs);
+              },
+              () ->
+                  getSpecificationRef()
+                      .ifPresent(
+                          spec -> {
+                            io.swagger.v3.oas.models.ExternalDocumentation docs =
+                                new io.swagger.v3.oas.models.ExternalDocumentation()
+                                    .url(spec.getUrl());
+                            spec.getDescription()
+                                .ifPresentOrElse(
+                                    desc ->
+                                        docs.description(
+                                            String.format(
+                                                "The specification that describes this operation: %s",
+                                                desc)),
+                                    () ->
+                                        docs.description(
+                                            "The specification that describes this operation."));
+                            op.externalDocs(docs);
+                          }));
+
+    } else {
+      op.description(getDescription().orElse(null));
+      getExternalDocs()
+          .ifPresent(
+              externalDocs -> {
+                io.swagger.v3.oas.models.ExternalDocumentation docs =
+                    new io.swagger.v3.oas.models.ExternalDocumentation().url(externalDocs.getUrl());
+                externalDocs.getDescription().ifPresent(docs::description);
+                op.externalDocs(docs);
+              });
     }
   }
 

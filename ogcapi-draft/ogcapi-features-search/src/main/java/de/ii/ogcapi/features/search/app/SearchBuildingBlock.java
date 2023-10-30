@@ -11,6 +11,9 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.search.domain.ImmutableSearchConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -169,6 +172,14 @@ import javax.inject.Singleton;
 @AutoBind
 public class SearchBuildingBlock implements ApiBuildingBlock {
 
+  public static final Optional<SpecificationMaturity> MATURITY =
+      Optional.of(SpecificationMaturity.DRAFT_OGC);
+  public static final Optional<ExternalDocumentation> SPEC =
+      Optional.of(
+          ExternalDocumentation.of(
+              "https://docs.ogc.org/per/22-024r2.html",
+              "Testbed-18: Filtering Service and Rule Set Engineering Report (PREDRAFT)"));
+
   public static final String STORE_RESOURCE_TYPE = "queries";
   public static final String QUERY_ID_PATTERN = "[\\w\\-]+";
 
@@ -183,5 +194,15 @@ public class SearchBuildingBlock implements ApiBuildingBlock {
         .validationEnabled(false)
         .allLinksAreLocal(false)
         .build();
+  }
+
+  @Override
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return SearchBuildingBlock.MATURITY;
+  }
+
+  @Override
+  public Optional<ExternalDocumentation> getSpecificationRef() {
+    return SearchBuildingBlock.SPEC;
   }
 }

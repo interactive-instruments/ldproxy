@@ -23,7 +23,7 @@ package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoModule;
 import de.ii.xtraplatform.docs.DocIgnore;
-import de.ii.xtraplatform.store.domain.entities.maptobuilder.encoding.BuildableMapEncodingEnabled;
+import de.ii.xtraplatform.entities.domain.maptobuilder.encoding.BuildableMapEncodingEnabled;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.ExceptionMapper;

@@ -13,9 +13,9 @@ import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
-import de.ii.ogcapi.features.gltf.domain.FeatureTransformationContextGltf;
 import de.ii.ogcapi.features.gltf.domain.GltfAsset;
 import de.ii.ogcapi.features.gltf.domain.GltfConfiguration;
+import de.ii.ogcapi.features.gltf.domain.GltfQueryParameter;
 import de.ii.ogcapi.features.gltf.domain.GltfSchema;
 import de.ii.ogcapi.features.gltf.domain.ImmutableFeatureTransformationContextGltf;
 import de.ii.ogcapi.features.gltf.domain.Metadata3dSchemaCache;
@@ -27,11 +27,17 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.entities.domain.EntityRegistry;
+import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.SchemaBase.Type;
@@ -39,10 +45,6 @@ import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.services.domain.ServicesContext;
-import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
@@ -364,24 +366,25 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
             collectionId,
             entityRegistry.getEntitiesForType(Codelist.class));
 
-    FeatureTransformationContextGltf transformationContextGltf =
+    ImmutableFeatureTransformationContextGltf.Builder builder =
         ImmutableFeatureTransformationContextGltf.builder()
             .from(transformationContext)
-            .clampToEllipsoid(
-                "true"
-                    .equalsIgnoreCase(
-                        transformationContext
-                            .getOgcApiRequest()
-                            .getParameters()
-                            .get("clampToEllipsoid")))
             .crsTransformerCrs84hToEcef(toEcef)
             .schemaUri(schemaUri)
             .gltfSchema(gltfSchema)
             .gltfConfiguration(
                 apiData.getExtension(GltfConfiguration.class, collectionId).orElseThrow())
-            .build();
+            .clampToEllipsoid(false);
 
-    return Optional.of(new FeatureEncoderGltf(transformationContextGltf));
+    QueryParameterSet queryParameterSet =
+        transformationContext.getOgcApiRequest().getQueryParameterSet();
+    for (OgcApiQueryParameter parameter : queryParameterSet.getDefinitions()) {
+      if (parameter instanceof GltfQueryParameter) {
+        ((GltfQueryParameter) parameter).applyTo(builder, queryParameterSet);
+      }
+    }
+
+    return Optional.of(new FeatureEncoderGltf(builder.build()));
   }
 
   @Override

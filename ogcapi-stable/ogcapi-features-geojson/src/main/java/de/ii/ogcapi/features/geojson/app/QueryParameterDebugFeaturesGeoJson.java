@@ -8,6 +8,8 @@
 package de.ii.ogcapi.features.geojson.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import de.ii.ogcapi.features.core.domain.FeatureTransformationQueryParameter;
+import de.ii.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric.Builder;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -16,7 +18,9 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.xtraplatform.base.domain.AppContext;
 import io.swagger.v3.oas.models.media.BooleanSchema;
@@ -37,9 +41,9 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterDebugFeaturesGeoJson extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<Boolean> {
-
-  // TODO #846
+    implements OgcApiQueryParameter,
+        TypedQueryParameter<Boolean>,
+        FeatureTransformationQueryParameter {
 
   private final Schema<?> schema = new BooleanSchema()._default(false);
   private final boolean allowDebug;
@@ -110,5 +114,15 @@ public class QueryParameterDebugFeaturesGeoJson extends ApiExtensionCache
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return GeoJsonConfiguration.class;
+  }
+
+  @Override
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return Optional.of(SpecificationMaturity.DRAFT_LDPROXY);
+  }
+
+  @Override
+  public void applyTo(Builder builder, QueryParameterSet queryParameterSet) {
+    queryParameterSet.getValue(this).ifPresent(builder::debug);
   }
 }

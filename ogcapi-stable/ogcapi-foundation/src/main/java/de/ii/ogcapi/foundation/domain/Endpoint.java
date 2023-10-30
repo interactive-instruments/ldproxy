@@ -8,9 +8,9 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.google.common.collect.ImmutableMap;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;

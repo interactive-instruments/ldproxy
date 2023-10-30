@@ -25,7 +25,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.xtraplatform.store.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.BlobStore;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
@@ -178,7 +178,9 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
                 Optional.empty(),
                 getOperationId("getJsonLdContext", collectionId),
                 GROUP_COLLECTIONS_READ,
-                TAGS)
+                TAGS,
+                GeoJsonLdBuildingBlock.MATURITY,
+                GeoJsonLdBuildingBlock.SPEC)
             .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());
       }

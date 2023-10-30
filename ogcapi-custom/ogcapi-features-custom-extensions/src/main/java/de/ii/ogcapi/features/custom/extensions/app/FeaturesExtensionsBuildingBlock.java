@@ -11,6 +11,9 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.custom.extensions.domain.ImmutableFeaturesExtensionsConfiguration.Builder;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -69,6 +72,10 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class FeaturesExtensionsBuildingBlock implements ApiBuildingBlock {
+
+  public static final Optional<SpecificationMaturity> MATURITY =
+      Optional.of(SpecificationMaturity.DRAFT_LDPROXY);
+  public static final Optional<ExternalDocumentation> SPEC = Optional.empty();
 
   @Inject
   public FeaturesExtensionsBuildingBlock() {}

@@ -13,6 +13,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ogcapi.common.domain.QueryParameterDryRun;
 import de.ii.ogcapi.features.core.domain.EndpointRequiresFeatures;
 import de.ii.ogcapi.features.search.domain.ImmutableQueryExpression;
 import de.ii.ogcapi.features.search.domain.ImmutableQueryInputStoredQueryCreateReplace;
@@ -36,6 +37,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import java.io.IOException;
@@ -47,11 +49,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -160,7 +160,9 @@ public class EndpointStoredQueriesManager extends EndpointRequiresFeatures
               Optional.empty(),
               getOperationId("createOrUpdateStoredQuery"),
               GROUP_SEARCH_WRITE,
-              TAGS)
+              TAGS,
+              SearchBuildingBlock.MATURITY,
+              SearchBuildingBlock.SPEC)
           .ifPresent(operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
 
       queryParameters = getQueryParameters(extensionRegistry, apiData, path, HttpMethods.DELETE);
@@ -178,7 +180,9 @@ public class EndpointStoredQueriesManager extends EndpointRequiresFeatures
               Optional.empty(),
               getOperationId("deleteStoredQuery"),
               GROUP_SEARCH_WRITE,
-              TAGS)
+              TAGS,
+              SearchBuildingBlock.MATURITY,
+              SearchBuildingBlock.SPEC)
           .ifPresent(
               operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));
       definitionBuilder.putResources(path, resourceBuilder.build());
@@ -198,7 +202,6 @@ public class EndpointStoredQueriesManager extends EndpointRequiresFeatures
   public Response putStoredQuery(
       @Auth Optional<User> optionalUser,
       @PathParam("queryId") String queryId,
-      @DefaultValue("false") @QueryParam("dry-run") boolean dryRun,
       @Context OgcApi api,
       @Context ApiRequestContext requestContext,
       @Context HttpServletRequest request,
@@ -223,16 +226,21 @@ public class EndpointStoredQueriesManager extends EndpointRequiresFeatures
 
     // TODO recompute API definition of EndpointStoredQuery
 
-    SearchQueriesHandler.QueryInputStoredQueryCreateReplace queryInput =
+    ImmutableQueryInputStoredQueryCreateReplace.Builder builder =
         new ImmutableQueryInputStoredQueryCreateReplace.Builder()
             .queryId(queryId)
             .query(query)
-            .strict(strictHandling(request.getHeaders("Prefer")))
-            .dryRun(dryRun)
-            .build();
+            .strict(strictHandling(request.getHeaders("Prefer")));
+
+    QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
+    for (OgcApiQueryParameter parameter : queryParameterSet.getDefinitions()) {
+      if (parameter instanceof QueryParameterDryRun) {
+        ((QueryParameterDryRun) parameter).applyTo(builder, queryParameterSet);
+      }
+    }
 
     return queryHandler.handle(
-        SearchQueriesHandler.Query.CREATE_REPLACE, queryInput, requestContext);
+        SearchQueriesHandler.Query.CREATE_REPLACE, builder.build(), requestContext);
   }
 
   /**

@@ -60,12 +60,12 @@ import de.ii.ogcapi.routes.domain.WaypointsValue;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
@@ -312,7 +312,9 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
             Optional.empty(),
             getOperationId("computeRoute"),
             GROUP_ROUTES_WRITE,
-            TAGS)
+            TAGS,
+            RoutingBuildingBlock.MATURITY,
+            RoutingBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations(method.toString(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
 
@@ -367,11 +369,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
             .map(RoutingConfiguration::getElevationProfileSimplificationTolerance)
             .orElse(null);
 
-    List<OgcApiQueryParameter> parameterDefinitions =
-        getQueryParameters(extensionRegistry, api.getData(), "/routes", HttpMethods.POST);
-    QueryParameterSet queryParameterSet =
-        QueryParameterSet.of(parameterDefinitions, requestContext.getParameters())
-            .evaluate(api, Optional.empty());
+    QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
 
     FeatureQuery query =
         ogcApiFeaturesQuery.requestToBareFeatureQuery(

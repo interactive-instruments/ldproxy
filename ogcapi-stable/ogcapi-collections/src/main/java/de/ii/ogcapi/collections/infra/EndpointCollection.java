@@ -12,6 +12,7 @@ import static de.ii.ogcapi.common.domain.QueriesHandlerCommon.GROUP_COLLECTIONS_
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ogcapi.collections.app.CollectionsBuildingBlock;
 import de.ii.ogcapi.collections.app.ImmutableQueryInputFeatureCollection;
 import de.ii.ogcapi.collections.app.QueriesHandlerCollectionsImpl;
 import de.ii.ogcapi.collections.domain.CollectionFormatExtension;
@@ -40,9 +41,9 @@ import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import io.dropwizard.auth.Auth;
 import java.text.MessageFormat;
 import java.time.Instant;
@@ -263,7 +264,9 @@ public class EndpointCollection extends EndpointSubCollection {
                 Optional.empty(),
                 getOperationId("getCollection", collectionId),
                 GROUP_COLLECTIONS_READ,
-                TAGS)
+                TAGS,
+                CollectionsBuildingBlock.MATURITY,
+                CollectionsBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());

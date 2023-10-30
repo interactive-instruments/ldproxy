@@ -28,6 +28,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableRequestContext
 import de.ii.ogcapi.foundation.domain.ImmutableTemporalExtent
 import de.ii.ogcapi.foundation.domain.OgcApi
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2
+import de.ii.ogcapi.foundation.domain.QueryParameterSet
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.OgcCrs
 import io.swagger.v3.oas.models.media.ObjectSchema
@@ -137,6 +138,7 @@ class LandingPageSpec extends Specification {
                         .build())
                 .api(apiEntity)
                 .requestUri(new URI(uri))
+                .queryParameterSet(QueryParameterSet.of())
                 .build()
     }
 

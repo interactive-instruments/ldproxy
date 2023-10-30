@@ -13,6 +13,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ogcapi.collections.schema.app.SchemaBuildingBlock;
 import de.ii.ogcapi.collections.schema.domain.ImmutableQueryInputSchema;
 import de.ii.ogcapi.collections.schema.domain.QueriesHandlerSchema;
 import de.ii.ogcapi.collections.schema.domain.QueriesHandlerSchema.QueryInputSchema;
@@ -129,7 +130,9 @@ public class EndpointSchema extends EndpointSubCollection {
                 Optional.empty(),
                 getOperationId("getSchema", collectionId),
                 GROUP_COLLECTIONS_READ,
-                TAGS)
+                TAGS,
+                SchemaBuildingBlock.MATURITY,
+                SchemaBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());

@@ -45,6 +45,7 @@ import de.ii.ogcapi.tilematrixsets.app.TileMatrixSetsBuildingBlock;
 import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
 import de.ii.ogcapi.tiles3d.app.Tiles3dBuildingBlock;
 import de.ii.ogcapi.xml.app.XmlBuildingBlock;
+import de.ii.xtraplatform.base.domain.AppContext;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,7 +54,7 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
 
   private final Set<ApiExtension> apiExtensions;
 
-  OgcApiExtensionRegistry() {
+  OgcApiExtensionRegistry(AppContext appContext) {
     this.apiExtensions =
         ImmutableSet.<ApiExtension>builder()
             .add(new CityJsonBuildingBlock())
@@ -73,7 +74,7 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
             .add(new GeometrySimplificationBuildingBlock())
             .add(new GltfBuildingBlock())
             .add(new GmlBuildingBlock())
-            .add(new HtmlBuildingBlock(null))
+            .add(new HtmlBuildingBlock(appContext))
             .add(new JsonBuildingBlock())
             .add(new JsonFgBuildingBlock())
             .add(new OpenApiBuildingBlock())

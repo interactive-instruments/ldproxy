@@ -8,12 +8,18 @@
 package de.ii.ogcapi.tiles3d.app;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.Query;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeatures;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
+import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tiles3d.domain.TileResourceDescriptor;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
@@ -25,6 +31,8 @@ import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import java.net.URISyntaxException;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.ws.rs.core.Response;
@@ -34,6 +42,9 @@ public final class Tiles3dContentUtil {
   private Tiles3dContentUtil() {}
 
   public static Response getContent(
+      ExtensionRegistry extensionRegistry,
+      OgcApi api,
+      String collectionId,
       FeatureProvider2 provider,
       FeaturesCoreQueriesHandler queriesHandlerFeatures,
       Cql cql,
@@ -58,7 +69,8 @@ public final class Tiles3dContentUtil {
         getQueryInputFeatures(query, provider, r, queryInputGeneric);
 
     ApiRequestContext requestContextGltf =
-        getFeaturesRequestContext(uriCustomizer, cfg, r, contentFilterString);
+        getFeaturesRequestContext(
+            extensionRegistry, api, collectionId, uriCustomizer, cfg, r, contentFilterString);
 
     return queriesHandlerFeatures.handle(Query.FEATURES, queryInput, requestContextGltf);
   }
@@ -85,11 +97,44 @@ public final class Tiles3dContentUtil {
   }
 
   private static ApiRequestContext getFeaturesRequestContext(
+      ExtensionRegistry extensionRegistry,
+      OgcApi api,
+      String collectionId,
       URICustomizer uriCustomizer,
       Tiles3dConfiguration cfg,
       TileResourceDescriptor r,
       String contentFilterString)
       throws URISyntaxException {
+
+    List<OgcApiQueryParameter> knownParameters =
+        extensionRegistry.getExtensionsForType(EndpointSubCollection.class).stream()
+            .filter(endpoint -> endpoint.isEnabledForApi(api.getData(), collectionId))
+            .filter(
+                endpoint ->
+                    endpoint
+                        .getDefinition(api.getData())
+                        .matches(String.format("/collections/%s/items", collectionId), "GET"))
+            .map(
+                endpoint ->
+                    endpoint.getQueryParameters(
+                        extensionRegistry,
+                        api.getData(),
+                        "/collections/{collectionId}/items",
+                        collectionId))
+            .filter(list -> !list.isEmpty())
+            .findFirst()
+            .orElse(ImmutableList.of());
+    Map<String, String> actualParameters =
+        ImmutableMap.of(
+            "bbox",
+            r.getBboxString(),
+            "filter",
+            contentFilterString,
+            "clampToEllipsoid",
+            String.valueOf(cfg.shouldClampToEllipsoid()));
+    QueryParameterSet queryParameterSet =
+        QueryParameterSet.of(knownParameters, actualParameters)
+            .evaluate(api, api.getData().getCollectionData(collectionId));
     return new Builder()
         .api(r.getApi())
         .requestUri(
@@ -98,11 +143,9 @@ public final class Tiles3dContentUtil {
                 .removeLastPathSegments(2)
                 .ensureLastPathSegment("items")
                 .clearParameters()
-                .addParameter("f", Format3dTilesContentGltfBinary.MEDIA_TYPE.parameter())
-                .addParameter("bbox", r.getBboxString())
-                .addParameter("filter", contentFilterString)
-                .addParameter("clampToEllipsoid", String.valueOf(cfg.shouldClampToEllipsoid()))
+                // query parameters have been evaluated and are not necessary here
                 .build())
+        .queryParameterSet(queryParameterSet)
         .externalUri(uriCustomizer.copy().removeLastPathSegments(4).clearParameters().build())
         .mediaType(Format3dTilesContentGltfBinary.MEDIA_TYPE)
         .alternateMediaTypes(ImmutableList.of())

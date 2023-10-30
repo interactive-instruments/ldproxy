@@ -36,7 +36,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
+import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Map;
@@ -177,7 +177,9 @@ public class EndpointQueryables extends EndpointSubCollection implements Conform
                 Optional.empty(),
                 getOperationId("getQueryables", collectionId),
                 GROUP_COLLECTIONS_READ,
-                TAGS)
+                TAGS,
+                QueryablesBuildingBlock.MATURITY,
+                QueryablesBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.GET.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());

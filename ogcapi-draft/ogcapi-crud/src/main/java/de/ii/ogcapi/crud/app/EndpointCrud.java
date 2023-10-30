@@ -15,14 +15,13 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputFeatureCreate;
+import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputFeatureDelete;
 import de.ii.ogcapi.crud.app.CommandHandlerCrud.QueryInputFeatureReplace;
 import de.ii.ogcapi.features.core.domain.EndpointFeaturesDefinition;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.QueryInputFeature;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeature;
 import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
@@ -36,7 +35,6 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
-import de.ii.ogcapi.foundation.domain.ImmutableQueryParameterSet;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
@@ -222,7 +220,9 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 Optional.empty(),
                 getOperationId(EndpointFeaturesDefinition.OP_ID_CREATE_ITEM, collectionId),
                 GROUP_DATA_WRITE,
-                TAGS)
+                TAGS,
+                CrudBuildingBlock.MATURITY,
+                CrudBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.POST.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());
@@ -270,7 +270,9 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 Optional.empty(),
                 getOperationId(EndpointFeaturesDefinition.OP_ID_REPLACE_ITEM, collectionId),
                 GROUP_DATA_WRITE,
-                TAGS)
+                TAGS,
+                CrudBuildingBlock.MATURITY,
+                CrudBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PUT.name(), operation));
 
@@ -293,7 +295,9 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 Optional.empty(),
                 getOperationId(EndpointFeaturesDefinition.OP_ID_UPDATE_ITEM, collectionId),
                 GROUP_DATA_WRITE,
-                TAGS)
+                TAGS,
+                CrudBuildingBlock.MATURITY,
+                CrudBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.PATCH.name(), operation));
 
@@ -313,7 +317,9 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                 Optional.empty(),
                 getOperationId(EndpointFeaturesDefinition.OP_ID_DELETE_ITEM, collectionId),
                 GROUP_DATA_WRITE,
-                TAGS)
+                TAGS,
+                CrudBuildingBlock.MATURITY,
+                CrudBuildingBlock.SPEC)
             .ifPresent(
                 operation -> resourceBuilder.putOperations(HttpMethods.DELETE.name(), operation));
         definitionBuilder.putResources(resourcePath, resourceBuilder.build());
@@ -410,23 +416,14 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
 
     String featureType = coreConfiguration.getFeatureType().orElse(collectionId);
 
-    List<OgcApiQueryParameter> parameterDefinitions =
-        getQueryParameters(
-            extensionRegistry,
-            api.getData(),
-            "/collections/{collectionId}/items/{featureId}",
-            collectionId);
-    Map<String, String> values =
-        Objects.nonNull(crs)
-            ? ImmutableMap.of("crs", crs.substring(1, crs.length() - 1))
-            : ImmutableMap.of();
+    QueryParameterSet queryParameterSet = getQueryParameterSet(api, collectionData, crs);
     FeatureQuery query =
         queryParser.requestToFeatureQuery(
             api.getData(),
             collectionData,
             coreConfiguration.getDefaultEpsgCrs(),
             coreConfiguration.getCoordinatePrecision(),
-            QueryParameterSet.of(parameterDefinitions, values),
+            queryParameterSet,
             featureId,
             crudConfiguration.filter(CrudConfiguration::supportsEtag).map(ignore -> Type.STRONG),
             FeatureSchemaBase.Scope.MUTATIONS);
@@ -438,6 +435,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             .featureType(featureType)
             .featureId(featureId)
             .query(query)
+            .queryParameterSet(queryParameterSet)
             .featureProvider(featureProvider)
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .requestBody(requestBody)
@@ -486,23 +484,14 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
 
     String featureType = coreConfiguration.getFeatureType().orElse(collectionId);
 
-    List<OgcApiQueryParameter> parameterDefinitions =
-        getQueryParameters(
-            extensionRegistry,
-            api.getData(),
-            "/collections/{collectionId}/items/{featureId}",
-            collectionId);
-    Map<String, String> values =
-        Objects.nonNull(crs)
-            ? ImmutableMap.of("crs", crs.substring(1, crs.length() - 1))
-            : ImmutableMap.of();
+    QueryParameterSet queryParameterSet = getQueryParameterSet(api, collectionData, crs);
     FeatureQuery query =
         queryParser.requestToFeatureQuery(
             api.getData(),
             collectionData,
             coreConfiguration.getDefaultEpsgCrs(),
             coreConfiguration.getCoordinatePrecision(),
-            QueryParameterSet.of(parameterDefinitions, values),
+            queryParameterSet,
             featureId,
             crudConfiguration.filter(CrudConfiguration::supportsEtag).map(ignore -> Type.STRONG),
             FeatureSchemaBase.Scope.MUTATIONS);
@@ -514,6 +503,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             .featureType(featureType)
             .featureId(featureId)
             .query(query)
+            .queryParameterSet(queryParameterSet)
             .featureProvider(featureProvider)
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .requestBody(requestBody)
@@ -557,29 +547,48 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
                         != FeaturesCoreConfiguration.ItemType.unknown)
             .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
+    QueryParameterSet queryParameterSet = getQueryParameterSet(api, collectionData, null);
     FeatureQuery query =
         queryParser.requestToFeatureQuery(
             api.getData(),
             collectionData,
             coreConfiguration.getDefaultEpsgCrs(),
             coreConfiguration.getCoordinatePrecision(),
-            new ImmutableQueryParameterSet.Builder().build(),
+            queryParameterSet,
             featureId,
             crudConfiguration.filter(CrudConfiguration::supportsEtag).map(ignore -> Type.STRONG),
             FeatureSchemaBase.Scope.MUTATIONS);
 
-    QueryInputFeature queryInput =
-        new ImmutableQueryInputFeature.Builder()
+    QueryInputFeatureDelete queryInput =
+        ImmutableQueryInputFeatureDelete.builder()
             .from(getGenericQueryInput(api.getData()))
             .collectionId(collectionId)
             .featureId(featureId)
             .query(query)
+            .queryParameterSet(queryParameterSet)
             .featureProvider(featureProvider)
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .profile(Profile.AS_KEY)
             .build();
 
     return commandHandler.deleteItemResponse(queryInput, apiRequestContext);
+  }
+
+  private QueryParameterSet getQueryParameterSet(
+      OgcApi api, FeatureTypeConfigurationOgcApi collectionData, String crs) {
+    List<OgcApiQueryParameter> parameterDefinitions =
+        getQueryParameters(
+            extensionRegistry,
+            api.getData(),
+            "/collections/{collectionId}/items/{featureId}",
+            collectionData.getId(),
+            HttpMethods.GET);
+    Map<String, String> values =
+        Objects.nonNull(crs)
+            ? ImmutableMap.of("schema", "receivables", "crs", crs.substring(1, crs.length() - 1))
+            : ImmutableMap.of("schema", "receivables");
+    return QueryParameterSet.of(parameterDefinitions, values)
+        .evaluate(api, Optional.of(collectionData));
   }
 
   private static void checkHeader(

@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import com.google.common.collect.ImmutableList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,18 +15,35 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import javax.ws.rs.core.MultivaluedHashMap;
+import javax.ws.rs.core.MultivaluedMap;
 import org.immutables.value.Value;
 
 @Value.Immutable
 public interface QueryParameterSet {
 
+  static QueryParameterSet of() {
+    return new ImmutableQueryParameterSet.Builder()
+        .definitions(ImmutableList.of())
+        .values(new MultivaluedHashMap<>())
+        .build();
+  }
+
   static QueryParameterSet of(List<OgcApiQueryParameter> definitions, Map<String, String> values) {
+    return new ImmutableQueryParameterSet.Builder()
+        .definitions(definitions)
+        .values(new MultivaluedHashMap<>(values))
+        .build();
+  }
+
+  static QueryParameterSet of(
+      List<OgcApiQueryParameter> definitions, MultivaluedMap<String, String> values) {
     return new ImmutableQueryParameterSet.Builder().definitions(definitions).values(values).build();
   }
 
   Set<OgcApiQueryParameter> getDefinitions();
 
-  Map<String, String> getValues();
+  MultivaluedMap<String, String> getValues();
 
   Map<String, Object> getTypedValues();
 
@@ -36,7 +54,7 @@ public interface QueryParameterSet {
 
   default QueryParameterSet evaluate(
       OgcApi api, Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
-    Map<String, String> values = new LinkedHashMap<>(getValues());
+    MultivaluedMap<String, String> values = new MultivaluedHashMap<>(getValues());
     Map<String, Object> typedValues = new LinkedHashMap<>();
 
     int numberOfParsingPasses =

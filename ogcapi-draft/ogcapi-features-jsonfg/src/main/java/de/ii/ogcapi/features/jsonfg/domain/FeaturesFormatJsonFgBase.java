@@ -24,13 +24,13 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
@@ -138,17 +138,9 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
             .geoJsonConfig(geoJsonConfig)
             .mediaType(getMediaType())
             .prettify(
-                Optional.ofNullable(
-                            transformationContext.getOgcApiRequest().getParameters().get("pretty"))
-                        .filter(value -> Objects.equals(value, "true"))
-                        .isPresent()
+                transformationContext.getPrettify()
                     || (Objects.requireNonNullElse(
                         geoJsonConfig.getUseFormattedJsonOutput(), false)))
-            .debugJson(
-                Optional.ofNullable(
-                        transformationContext.getOgcApiRequest().getParameters().get("debug"))
-                    .filter(value -> Objects.equals(value, "true"))
-                    .isPresent())
             .suppressPrimaryGeometry(!includePrimaryGeometry(transformationContext))
             .forceDefaultCrs(true);
 

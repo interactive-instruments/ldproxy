@@ -14,9 +14,11 @@ import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
+import de.ii.ogcapi.filter.app.FilterBuildingBlock;
 import de.ii.ogcapi.filter.domain.FilterConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -24,6 +26,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
 import de.ii.xtraplatform.cql.domain.Cql;
@@ -33,13 +36,13 @@ import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
+import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
 import de.ii.xtraplatform.tiles.domain.TileGenerationSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -114,9 +117,9 @@ public class QueryParameterFilter extends ApiExtensionCache
   @Override
   public String getDescription() {
     return "Filter features in the collection using the query expression in the parameter value. Filter expressions "
-        + "are written in the Common Query Language (CQL2), which is a candidate OGC standard. This API implements "
-        + "the draft version from February 2022, which is a release candidate. "
-        + "The language for this query parameter is CQL2 Text (`filter-lang=cql2-text`).\n\n"
+        + "are written in the [Common Query Language (CQL2)](https://docs.ogc.org/DRAFTS/21-065.html), "
+        + "which is a candidate OGC standard. This API implements the draft version from May 2022.\n\n"
+        + "The recommended language for this query parameter is CQL2 Text (`filter-lang=cql2-text`).\n\n"
         + "CQL2 Text expressions are similar to SQL expressions and also support spatial, temporal and array predicates. "
         + "All property references must be queryables of the collection and must be declared in the Queryables sub-resource "
         + "of the collection.\n\n"
@@ -142,9 +145,7 @@ public class QueryParameterFilter extends ApiExtensionCache
         + "  * `T_AFTER(creationDate, DATE('2018-01-01'))`\n"
         + "  * `T_BEFORE(creationDate, DATE('2018-01-01'))`\n"
         + "  * `T_INTERSECTS(creationDate, INTERVAL('2018-01-01','2018-12-31'))`\n"
-        + "  * `T_INTERSECTS(INTERVAL(begin,end), INTERVAL('2018-01-01','2018-12-31'))`\n\n"
-        + "Warning: The final version of the Common Query Language standard may include changes to the "
-        + "CQL2 Text language supported by this API.";
+        + "  * `T_INTERSECTS(INTERVAL(begin,end), INTERVAL('2018-01-01','2018-12-31'))`";
   }
 
   @Override
@@ -349,5 +350,15 @@ public class QueryParameterFilter extends ApiExtensionCache
     if (parameters.getTypedValues().containsKey(getName()) && generationSchema.isPresent()) {
       userParametersBuilder.addFilters((Cql2Expression) parameters.getTypedValues().get(getName()));
     }
+  }
+
+  @Override
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return FilterBuildingBlock.MATURITY;
+  }
+
+  @Override
+  public Optional<ExternalDocumentation> getSpecificationRef() {
+    return FilterBuildingBlock.SPEC;
   }
 }

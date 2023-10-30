@@ -20,9 +20,9 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration.TileCacheType;
 import de.ii.xtraplatform.base.domain.util.Tuple;
-import de.ii.xtraplatform.store.domain.Identifier;
-import de.ii.xtraplatform.store.domain.entities.EntityData;
-import de.ii.xtraplatform.store.domain.entities.EntityMigration;
+import de.ii.xtraplatform.entities.domain.EntityData;
+import de.ii.xtraplatform.entities.domain.EntityMigration;
+import de.ii.xtraplatform.entities.domain.Identifier;
 import de.ii.xtraplatform.tiles.domain.Cache;
 import de.ii.xtraplatform.tiles.domain.Cache.Storage;
 import de.ii.xtraplatform.tiles.domain.Cache.Type;
@@ -194,13 +194,14 @@ public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2
     Map<String, FeatureTypeConfigurationOgcApi> collections =
         apiData.getCollections().entrySet().stream()
             .filter(
-                entry ->
-                    entry
-                        .getValue()
-                        .getExtension(TilesConfiguration.class)
-                        .filter(TilesConfiguration::isEnabled)
-                        .filter(TilesConfiguration::hasCollectionTiles)
-                        .isPresent())
+                entry -> {
+                  FeatureTypeConfigurationOgcApi collectionData = entry.getValue();
+                  return collectionData
+                      .getExtension(TilesConfiguration.class)
+                      .filter(TilesConfiguration::isEnabled)
+                      .filter(cfg -> cfg.hasCollectionTiles(null, apiData, collectionData.getId()))
+                      .isPresent();
+                })
             .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
     if (Objects.nonNull(tiles.get().getTileProvider())
@@ -247,7 +248,7 @@ public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2
                 .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
                 .build())
         .putAllTilesets(
-            tilesConfiguration.hasDatasetTiles()
+            tilesConfiguration.hasDatasetTiles(null, null)
                 ? Map.of(
                     TilesBuildingBlock.DATASET_TILES,
                     new ImmutableTilesetMbTiles.Builder()
@@ -311,7 +312,7 @@ public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2
                             ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
                 .build())
         .putAllTilesets(
-            tilesConfiguration.hasDatasetTiles()
+            tilesConfiguration.hasDatasetTiles(null, null)
                 ? Map.of(
                     TilesBuildingBlock.DATASET_TILES,
                     new ImmutableTilesetHttp.Builder()
@@ -396,7 +397,7 @@ public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2
                         : Optional.empty())
                 .build())
         .putAllTilesets(
-            tilesConfiguration.hasDatasetTiles()
+            tilesConfiguration.hasDatasetTiles(null, null)
                 ? Map.of(
                     TilesBuildingBlock.DATASET_TILES,
                     new ImmutableTilesetFeatures.Builder()

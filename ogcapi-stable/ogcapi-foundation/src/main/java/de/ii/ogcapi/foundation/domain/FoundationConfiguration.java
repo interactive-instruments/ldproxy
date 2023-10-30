@@ -7,8 +7,10 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -162,6 +164,27 @@ public interface FoundationConfiguration extends ExtensionConfiguration {
    */
   @Nullable
   String getGoogleSiteVerification();
+
+  /**
+   * @langEn Controls whether information (name, link, maturity) about the specification of an API
+   *     component, e.g., an operation or query parameter, is included in the API definition. It is
+   *     recommended to enable this option, if the API includes building blocks that are not marked
+   *     as `stable`.
+   * @langDe Steuert, ob Informationen (Name, Link, Reifegrad) über die Spezifikation einer
+   *     API-Komponente, z.B. eine Operation oder ein Query-Parameter, in die API-Definition
+   *     aufgenommen werden. Es wird empfohlen, diese Option zu aktivieren, wenn die API Module
+   *     enthält, die nicht als `stable` gekennzeichnet sind.
+   * @default false
+   */
+  @Nullable
+  Boolean getIncludeSpecificationInformation();
+
+  @JsonIgnore
+  @Value.Derived
+  @Value.Auxiliary
+  default boolean includesSpecificationInformation() {
+    return Objects.equals(Boolean.TRUE, getIncludeSpecificationInformation());
+  }
 
   @Override
   default Builder getBuilder() {

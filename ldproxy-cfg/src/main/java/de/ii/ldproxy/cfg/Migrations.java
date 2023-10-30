@@ -9,9 +9,9 @@ package de.ii.ldproxy.cfg;
 
 import de.ii.ogcapi.text.search.app.QueryablesMigrationV4;
 import de.ii.ogcapi.tiles.domain.TilesMigrationV4;
-import de.ii.xtraplatform.store.domain.entities.EntityDataStore;
-import de.ii.xtraplatform.store.domain.entities.EntityMigration;
-import de.ii.xtraplatform.store.domain.entities.EntityMigration.EntityMigrationContext;
+import de.ii.xtraplatform.entities.domain.EntityDataStore;
+import de.ii.xtraplatform.entities.domain.EntityMigration;
+import de.ii.xtraplatform.entities.domain.EntityMigration.EntityMigrationContext;
 import java.util.List;
 
 public interface Migrations {

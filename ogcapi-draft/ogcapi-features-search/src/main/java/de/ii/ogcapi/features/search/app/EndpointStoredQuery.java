@@ -19,6 +19,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.search.domain.ImmutableQueryExpression;
 import de.ii.ogcapi.features.search.domain.ImmutableQueryInputQuery;
 import de.ii.ogcapi.features.search.domain.QueryExpression;
+import de.ii.ogcapi.features.search.domain.QueryExpressionQueryParameter;
 import de.ii.ogcapi.features.search.domain.SearchConfiguration;
 import de.ii.ogcapi.features.search.domain.SearchQueriesHandler;
 import de.ii.ogcapi.features.search.domain.SearchQueriesHandler.Query;
@@ -37,10 +38,10 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -177,7 +178,9 @@ public class EndpointStoredQuery extends EndpointRequiresFeatures {
                       Optional.empty(),
                       getOperationId("executeStoredQuery"),
                       GROUP_DATA_READ,
-                      TAGS)
+                      TAGS,
+                      SearchBuildingBlock.MATURITY,
+                      SearchBuildingBlock.SPEC)
                   .ifPresent(operation -> resourceBuilder.putOperations("GET", operation));
               definitionBuilder.putResources(path, resourceBuilder.build());
             });
@@ -203,23 +206,16 @@ public class EndpointStoredQuery extends EndpointRequiresFeatures {
     checkPathParameter(extensionRegistry, apiData, "/search/{queryId}", "queryId", queryId);
 
     QueryExpression query = repository.get(apiData, queryId);
+    ImmutableQueryExpression.Builder builder = new ImmutableQueryExpression.Builder().from(query);
 
-    List<OgcApiQueryParameter> parameterDefinitions =
-        getQueryParameters(extensionRegistry, apiData, "/search/{queryId}");
-    QueryParameterSet queryParameterSet =
-        QueryParameterSet.of(parameterDefinitions, requestContext.getParameters())
-            .evaluate(api, Optional.empty());
-
-    // TODO #846
-    final String offset = requestContext.getParameters().get("offset");
-    if (Objects.nonNull(offset)) {
-      query =
-          new ImmutableQueryExpression.Builder()
-              .from(query)
-              .offset(Integer.parseInt(offset))
-              .build();
+    QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
+    for (OgcApiQueryParameter parameter : queryParameterSet.getDefinitions()) {
+      if (parameter instanceof QueryExpressionQueryParameter) {
+        ((QueryExpressionQueryParameter) parameter).applyTo(builder, queryParameterSet);
+      }
     }
-    query = query.resolveParameters(requestContext.getParameters(), schemaValidator);
+
+    query = builder.build().resolveParameters(queryParameterSet, schemaValidator);
 
     FeaturesCoreConfiguration coreConfiguration =
         apiData.getExtension(FeaturesCoreConfiguration.class).orElseThrow();

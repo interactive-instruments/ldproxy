@@ -37,14 +37,14 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.entities.domain.EntityRegistry;
+import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
-import de.ii.xtraplatform.store.domain.entities.EntityRegistry;
-import de.ii.xtraplatform.store.domain.entities.ImmutableValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
@@ -314,10 +314,7 @@ public class FeaturesFormatGeoJson
                     .getExtension(GeoJsonConfiguration.class)
                     .get())
             .prettify(
-                Optional.ofNullable(
-                            transformationContext.getOgcApiRequest().getParameters().get("pretty"))
-                        .filter(value -> Objects.equals(value, "true"))
-                        .isPresent()
+                transformationContext.getPrettify()
                     || (transformationContext
                         .getApiData()
                         .getCollections()
@@ -325,11 +322,6 @@ public class FeaturesFormatGeoJson
                         .getExtension(GeoJsonConfiguration.class)
                         .get()
                         .getUseFormattedJsonOutput()))
-            .debugJson(
-                Optional.ofNullable(
-                        transformationContext.getOgcApiRequest().getParameters().get("debug"))
-                    .filter(value -> Objects.equals(value, "true"))
-                    .isPresent())
             .build();
 
     return Optional.of(new FeatureEncoderGeoJson(transformationContextGeoJson, geoJsonWriters));

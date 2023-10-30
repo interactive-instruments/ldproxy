@@ -13,6 +13,7 @@ import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.foundation.domain.WithDryRun;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import java.util.Map;
@@ -94,14 +95,12 @@ public interface SearchQueriesHandler extends QueriesHandler<SearchQueriesHandle
   }
 
   @Value.Immutable
-  interface QueryInputStoredQueryCreateReplace extends QueryInput {
+  interface QueryInputStoredQueryCreateReplace extends QueryInput, WithDryRun {
     String getQueryId();
 
     QueryExpression getQuery();
 
     boolean getStrict();
-
-    boolean getDryRun();
   }
 
   @Value.Immutable

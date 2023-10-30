@@ -14,10 +14,13 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FoundationConfiguration;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.HttpRequestOverrideQueryParameter;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import io.swagger.v3.oas.models.media.Schema;
@@ -26,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.ws.rs.container.ContainerRequestContext;
 
 /**
  * @title token
@@ -39,9 +43,9 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterToken extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<String> {
-
-  // TODO #846, do we need to do anything here? This is probably all handled by dropwizard.
+    implements OgcApiQueryParameter,
+        TypedQueryParameter<String>,
+        HttpRequestOverrideQueryParameter {
 
   private Schema<?> schema = null;
   private final SchemaValidator schemaValidator;
@@ -63,6 +67,15 @@ public class QueryParameterToken extends ApiExtensionCache
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
     return value;
+  }
+
+  // This is probably not necessary and implicitly handled by dropwizard?
+  @Override
+  public void applyTo(ContainerRequestContext requestContext, QueryParameterSet parameters) {
+    if (parameters.getTypedValues().containsKey(getName())) {
+      String value = (String) parameters.getTypedValues().get(getName());
+      requestContext.getHeaders().add("Authentication", String.format("Bearer %s", value));
+    }
   }
 
   @Override
@@ -98,5 +111,10 @@ public class QueryParameterToken extends ApiExtensionCache
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return FoundationConfiguration.class;
+  }
+
+  @Override
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return Optional.of(SpecificationMaturity.STABLE_LDPROXY);
   }
 }

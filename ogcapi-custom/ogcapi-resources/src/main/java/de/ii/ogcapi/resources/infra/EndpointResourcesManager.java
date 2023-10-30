@@ -32,7 +32,7 @@ import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.store.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.BlobStore;
 import io.dropwizard.auth.Auth;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -146,7 +146,9 @@ public class EndpointResourcesManager extends Endpoint {
             Optional.empty(),
             getOperationId("createOrReplaceResource"),
             GROUP_RESOURCES_WRITE,
-            TAGS)
+            TAGS,
+            ResourcesBuildingBlock.MATURITY,
+            ResourcesBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations(methodReplace.name(), operation));
     HttpMethods methodDelete = HttpMethods.DELETE;
     queryParameters = getQueryParameters(extensionRegistry, apiData, path, methodDelete);
@@ -166,7 +168,9 @@ public class EndpointResourcesManager extends Endpoint {
             Optional.empty(),
             getOperationId("deleteResource"),
             GROUP_RESOURCES_WRITE,
-            TAGS)
+            TAGS,
+            ResourcesBuildingBlock.MATURITY,
+            ResourcesBuildingBlock.SPEC)
         .ifPresent(operation -> resourceBuilder.putOperations(methodDelete.name(), operation));
     definitionBuilder.putResources(path, resourceBuilder.build());
 

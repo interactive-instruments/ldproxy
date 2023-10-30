@@ -33,6 +33,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.xtraplatform.auth.domain.User;
 import io.dropwizard.auth.Auth;
 import java.util.List;
@@ -138,7 +139,9 @@ public class EndpointGltfSchema extends EndpointSubCollection {
                 Optional.empty(),
                 getOperationId("getGltfSchema", collectionId),
                 GROUP_TILES_READ,
-                TAGS)
+                TAGS,
+                Optional.of(SpecificationMaturity.DRAFT_LDPROXY),
+                Optional.empty())
             .ifPresent(
                 operation ->
                     resourceBuilder.putOperations(

@@ -7,7 +7,7 @@
  */
 package de.ii.ldproxy.cfg;
 
-import de.ii.xtraplatform.store.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.BlobStore;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;

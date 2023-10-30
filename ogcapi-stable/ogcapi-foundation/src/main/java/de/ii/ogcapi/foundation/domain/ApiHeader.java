@@ -8,10 +8,14 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.xtraplatform.base.domain.LogContext;
 import io.swagger.v3.core.util.Json;
+import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.parameters.Parameter;
+import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +62,58 @@ public interface ApiHeader extends ApiExtension {
           String.format(
               "An exception occurred while validating the value '%s' for header '%s'",
               value, getId()));
+    }
+  }
+
+  default void setOpenApiDescription(OgcApiDataV2 apiData, Header header) {
+    if (apiData
+        .getExtension(FoundationConfiguration.class)
+        .map(FoundationConfiguration::includesSpecificationInformation)
+        .orElse(false)) {
+      header.setDescription(
+          getSpecificationMaturity()
+              .map(
+                  maturity ->
+                      String.format(
+                          "%s\n\n_%s_",
+                          getDescription(), String.format(maturity.toString(), "header")))
+              .orElse(getDescription()));
+      getSpecificationMaturity()
+          .ifPresent(
+              maturity -> {
+                header.setExtensions(ImmutableMap.of("x-maturity", maturity.name()));
+                if (Objects.equals(maturity, SpecificationMaturity.DEPRECATED)) {
+                  header.setDeprecated(true);
+                }
+              });
+    } else {
+      header.setDescription(getDescription());
+    }
+  }
+
+  default void setOpenApiDescription(OgcApiDataV2 apiData, Parameter param) {
+    if (apiData
+        .getExtension(FoundationConfiguration.class)
+        .map(FoundationConfiguration::includesSpecificationInformation)
+        .orElse(false)) {
+      param.setDescription(
+          getSpecificationMaturity()
+              .map(
+                  maturity ->
+                      String.format(
+                          "%s\n\n_%s_",
+                          getDescription(), String.format(maturity.toString(), "header")))
+              .orElse(getDescription()));
+      getSpecificationMaturity()
+          .ifPresent(
+              maturity -> {
+                param.setExtensions(ImmutableMap.of("x-maturity", maturity.name()));
+                if (Objects.equals(maturity, SpecificationMaturity.DEPRECATED)) {
+                  param.setDeprecated(true);
+                }
+              });
+    } else {
+      param.setDescription(getDescription());
     }
   }
 }

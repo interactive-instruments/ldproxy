@@ -8,9 +8,10 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult;
-import de.ii.xtraplatform.store.domain.entities.ValidationResult.MODE;
+import de.ii.xtraplatform.entities.domain.ValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 @AutoMultiBind
@@ -55,5 +56,13 @@ public interface ApiExtension {
 
   default int getStartupPriority() {
     return 1000;
+  }
+
+  default Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return Optional.empty();
+  }
+
+  default Optional<ExternalDocumentation> getSpecificationRef() {
+    return Optional.empty();
   }
 }

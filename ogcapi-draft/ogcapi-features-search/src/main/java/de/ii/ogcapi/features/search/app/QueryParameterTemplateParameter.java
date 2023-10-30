@@ -7,22 +7,45 @@
  */
 package de.ii.ogcapi.features.search.app;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.google.common.base.Splitter;
 import de.ii.ogcapi.features.search.domain.SearchConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
+import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
+import io.swagger.v3.oas.models.media.ArraySchema;
+import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.StringSchema;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.immutables.value.Value;
 
 @Value.Immutable
 public abstract class QueryParameterTemplateParameter extends ApiExtensionCache
-    implements OgcApiQueryParameter {
+    implements OgcApiQueryParameter, TypedQueryParameter<JsonNode> {
 
-  // TODO #846
+  ObjectMapper MAPPER =
+      new ObjectMapper()
+          .registerModule(new Jdk8Module())
+          .registerModule(new GuavaModule())
+          .configure(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY, true)
+          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
   public abstract String getApiId();
 
@@ -86,5 +109,95 @@ public abstract class QueryParameterTemplateParameter extends ApiExtensionCache
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {
     return getSchema();
+  }
+
+  @Override
+  public JsonNode parse(
+      String value,
+      Map<String, Object> typedValues,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
+    if (Objects.isNull(value)) {
+      // no default value
+      return null;
+    }
+
+    return getValue(value, getSchema());
+  }
+
+  @SuppressWarnings("PMD.NullAssignment")
+  private JsonNode getValue(String value, Schema<?> schema) {
+    JsonNode valueAsNode;
+    StringBuilder valueAsString = new StringBuilder();
+    if (schema instanceof ArraySchema && !value.trim().startsWith("[")) {
+      Schema<?> itemsSchema = ((ArraySchema) schema).getItems();
+      if (itemsSchema instanceof StringSchema) {
+        valueAsString.append(
+            String.format(
+                "[\"%s\"]",
+                Splitter.on(',')
+                    .trimResults()
+                    .splitToStream(value)
+                    .map(s -> s.replace("\"", "\\\""))
+                    .collect(Collectors.joining("\",\""))));
+      } else {
+        valueAsString.append(
+            String.format(
+                "[%s]",
+                Splitter.on(',')
+                    .trimResults()
+                    .splitToStream(value)
+                    .map(s -> s.replace("\"", "\\\""))
+                    .collect(Collectors.joining(","))));
+      }
+    } else if (schema instanceof ObjectSchema && !value.trim().startsWith("{")) {
+      Map<String, Schema> properties = schema.getProperties();
+      valueAsString.append('{');
+      String key = null;
+      for (String s : Splitter.on(',').trimResults().split(value)) {
+        if (Objects.isNull(key)) {
+          key = s;
+          valueAsString.append(String.format("\"%s\":", s));
+        } else {
+          if (properties.containsKey(key) && properties.get(key) instanceof StringSchema) {
+            valueAsString.append(String.format("\"%s\"", s));
+          } else {
+            valueAsString.append(s);
+          }
+          key = null;
+        }
+      }
+      valueAsString.append('}');
+
+    } else {
+      if (schema instanceof StringSchema) {
+        valueAsString.append(String.format("\"%s\"", value.replace("\"", "\\\"")));
+      } else {
+        valueAsString.append(value);
+      }
+    }
+    try {
+      // convert to a JSON Node for processing
+      valueAsNode = MAPPER.readTree(valueAsString.toString());
+    } catch (JsonProcessingException e) {
+      throw new IllegalArgumentException(
+          String.format(
+              "The value '%s' provided for parameter '%s' could not be converted to a value for the parameter.",
+              value, getName()),
+          e);
+    }
+    return valueAsNode;
+  }
+
+  @Override
+  @Value.Default
+  public Optional<SpecificationMaturity> getSpecificationMaturity() {
+    return SearchBuildingBlock.MATURITY;
+  }
+
+  @Override
+  @Value.Default
+  public Optional<ExternalDocumentation> getSpecificationRef() {
+    return SearchBuildingBlock.SPEC;
   }
 }
