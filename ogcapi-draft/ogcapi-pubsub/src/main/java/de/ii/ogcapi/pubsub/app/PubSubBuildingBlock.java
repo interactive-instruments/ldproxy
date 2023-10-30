@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.hivemq.client.mqtt.MqttClient;
 import com.hivemq.client.mqtt.exceptions.ConnectionClosedException;
@@ -31,10 +32,14 @@ import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.ParameterExtension;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.base.domain.LogContext.MARKER;
@@ -54,6 +59,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -409,8 +415,18 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
       URI uri =
           new URICustomizer(api.getUri())
               .ensureLastPathSegments("collections", collectionId, "items", featureId)
-              .addParameter("profile", "rel-as-key")
               .build();
+      List<OgcApiQueryParameter> parameterDefinitions =
+          extensionRegistry.getExtensionsForType(OgcApiQueryParameter.class).stream()
+              .filter(
+                  param ->
+                      param.isApplicable(
+                          api.getData(),
+                          "/collections/{collectionId}/items/{featureId}",
+                          collectionId,
+                          HttpMethods.GET))
+              .sorted(Comparator.comparing(ParameterExtension::getName))
+              .collect(ImmutableList.toImmutableList());
       ApiRequestContext requestContextGeoJson =
           new ImmutableRequestContext.Builder()
               .api(api)
@@ -431,6 +447,10 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
                       .filter(
                           mediaType -> !"geo+json".equalsIgnoreCase(mediaType.type().getSubtype()))
                       .collect(Collectors.toUnmodifiableSet()))
+              .queryParameterSet(
+                  QueryParameterSet.of(
+                          parameterDefinitions, ImmutableMap.of("profile", "rel-as-key"))
+                      .evaluate(api, api.getData().getCollectionData(collectionId)))
               .build();
 
       @SuppressWarnings("OptionalGetWithoutIsPresent")
