@@ -54,7 +54,7 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
 
   @Override
   public int getSortPriority() {
-    return 120;
+    return 24;
   }
 
   @Override
@@ -143,6 +143,9 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
       writeTypes(context.encoding(), writeAtEnd);
       writeAtEnd = ImmutableList.of();
     }
+    if (!context.encoding().isFeatureCollection()) {
+      writeSchemas(context.encoding());
+    }
 
     next.accept(context);
   }
@@ -150,7 +153,9 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
   @Override
   public void onEnd(EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
-    writeSchemas(context.encoding());
+    if (context.encoding().isFeatureCollection()) {
+      writeSchemas(context.encoding());
+    }
 
     next.accept(context);
   }
