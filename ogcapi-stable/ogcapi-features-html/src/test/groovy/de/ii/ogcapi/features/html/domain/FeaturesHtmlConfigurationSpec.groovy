@@ -56,7 +56,7 @@ class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec i
                 .from(getSimple())
                 .transformations(ImmutableMap.of(
                         "foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()],
-                        "*{objectType=Link}", [new ImmutablePropertyTransformation.Builder().reduceStringFormat("<a href=\"{{href}}\">{{title}}</a>").build()],
+                        "*{objectType=Link}", [new ImmutablePropertyTransformation.Builder().objectReduceFormat("<a href=\"{{href}}\">{{title}}</a>").build()],
                         "*", [new ImmutablePropertyTransformation.Builder().flatten(".").build()]
                 ))
                 .build()
