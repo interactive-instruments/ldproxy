@@ -44,7 +44,6 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.WithConnectionInfo;
-import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.gml.domain.ConnectionInfoWfsHttp;
@@ -270,17 +269,7 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
             properties ->
                 properties.stream()
                     .filter(SchemaBase::isFeatureRef)
-                    .forEach(
-                        property ->
-                            FeatureFormatExtension.getTemplate(property)
-                                .ifPresent(
-                                    template ->
-                                        builder.putTransformations(
-                                            property.getFullPathAsString(),
-                                            ImmutableList.of(
-                                                new ImmutablePropertyTransformation.Builder()
-                                                    .stringFormat(template)
-                                                    .build())))));
+                    .forEach(property -> FeatureFormatExtension.reduceToUri(property, builder)));
 
     ProfileTransformations profileTransformations = builder.build();
     return Optional.of(

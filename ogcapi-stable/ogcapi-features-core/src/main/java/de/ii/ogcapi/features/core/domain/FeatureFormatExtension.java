@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.core.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -18,6 +19,7 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.transform.FeatureRefResolver;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Locale;
@@ -25,6 +27,16 @@ import java.util.Optional;
 
 @AutoMultiBind
 public interface FeatureFormatExtension extends FormatExtension {
+
+  String URI_TEMPLATE =
+      String.format(
+          "{{%s | orElse:'{{apiUri}}/collections/%s/items/%s'}}",
+          FeatureRefResolver.URI_TEMPLATE, FeatureRefResolver.SUB_TYPE, FeatureRefResolver.SUB_ID);
+
+  String KEY_TEMPLATE =
+      String.format(
+          "{{%s | orElse:'%s::%s'}}",
+          FeatureRefResolver.KEY_TEMPLATE, FeatureRefResolver.SUB_TYPE, FeatureRefResolver.SUB_ID);
 
   ApiMediaType getCollectionMediaType();
 
@@ -106,34 +118,29 @@ public interface FeatureFormatExtension extends FormatExtension {
     }
 
     ImmutableProfileTransformations.Builder builder = new ImmutableProfileTransformations.Builder();
-    switch (profile.get()) {
-      default:
-      case AS_KEY:
-        // nothing to transform
-        return getPropertyTransformations(collectionData);
-      case AS_URI:
-      case AS_LINK:
-        // TODO: Currently there is no PropertyTransformation to convert a FEATURE_REF to a Link
-        //       object, so we just map it to the URI for now. For now, the Link object must be
-        //       handled in the feature encoders of the formats that support 'rel-as-link'.
-        schema
-            .map(SchemaBase::getAllNestedProperties)
-            .ifPresent(
-                properties ->
-                    properties.stream()
-                        .filter(SchemaBase::isFeatureRef)
-                        .forEach(
-                            property ->
-                                getTemplate(property)
-                                    .ifPresent(
-                                        template ->
-                                            builder.putTransformations(
-                                                property.getFullPathAsString(),
-                                                ImmutableList.of(
-                                                    new ImmutablePropertyTransformation.Builder()
-                                                        .stringFormat(template)
-                                                        .build())))));
-    }
+
+    schema
+        .map(SchemaBase::getAllNestedProperties)
+        .ifPresent(
+            properties ->
+                properties.stream()
+                    .filter(SchemaBase::isFeatureRef)
+                    .forEach(
+                        property -> {
+                          switch (profile.get()) {
+                            default:
+                            case AS_KEY:
+                              reduceToKey(property, builder);
+                              break;
+                            case AS_URI:
+                              reduceToUri(property, builder);
+                              break;
+                            case AS_LINK:
+                              mapToLink(property, builder);
+                              break;
+                          }
+                        }));
+
     ProfileTransformations profileTransformations = builder.build();
     return Optional.of(
         getPropertyTransformations(collectionData)
@@ -141,22 +148,35 @@ public interface FeatureFormatExtension extends FormatExtension {
             .orElse(profileTransformations));
   }
 
-  static Optional<String> getTemplate(FeatureSchema property) {
-    return Optional.ofNullable(
-        property
-            .getRefUriTemplate()
-            .orElse(
-                property
-                    .getRefType()
-                    .map(
-                        refType ->
-                            String.format("{{apiUri}}/collections/%s/items/{{value}}", refType))
-                    .or(
-                        () ->
-                            property.getConcat().isEmpty() && property.getCoalesce().isEmpty()
-                                ? Optional.empty()
-                                : Optional.of("{{apiUri}}/collections/{{type}}/items/{{value}}"))
-                    .orElse(null)));
+  static void reduceToKey(FeatureSchema schema, ImmutableProfileTransformations.Builder builder) {
+    builder.putTransformations(
+        schema.getFullPathAsString(),
+        ImmutableList.of(
+            new ImmutablePropertyTransformation.Builder()
+                // TODO: this would be the old version where only the id
+                // with the actual type (e.g. INTEGER) is returned
+                // .objectReduceSelect(FeatureRefResolver.ID)
+                .objectReduceFormat(KEY_TEMPLATE)
+                .build()));
+  }
+
+  static void reduceToUri(FeatureSchema schema, ImmutableProfileTransformations.Builder builder) {
+    builder.putTransformations(
+        schema.getFullPathAsString(),
+        ImmutableList.of(
+            new ImmutablePropertyTransformation.Builder()
+                .objectReduceFormat(URI_TEMPLATE)
+                .build()));
+  }
+
+  static void mapToLink(FeatureSchema schema, ImmutableProfileTransformations.Builder builder) {
+    builder.putTransformations(
+        schema.getFullPathAsString(),
+        ImmutableList.of(
+            new ImmutablePropertyTransformation.Builder()
+                .objectMapFormat(
+                    ImmutableMap.of("title", FeatureRefResolver.SUB_TITLE, "href", URI_TEMPLATE))
+                .build()));
   }
 
   default boolean supportsHitsOnly() {

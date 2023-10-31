@@ -9,17 +9,13 @@ package de.ii.ogcapi.features.geojson.app;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.features.core.domain.Profile;
-import de.ii.ogcapi.features.core.domain.ProfileTransformations;
 import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase.Type;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import java.io.IOException;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -144,52 +140,23 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         context.encoding().getJson().writeObjectFieldStart(getPropertiesFieldName());
       }
 
-      if (schema.isFeatureRef()
-          && context.encoding().getProfile().filter(p -> p == Profile.AS_LINK).isPresent()) {
-        // TODO: remove once a property transformation that maps to a Link object exists
-        if (context.encoding().getGeoJsonConfig().isFlattened()) {
-          String separator =
-              context
-                  .encoding()
-                  .getGeoJsonConfig()
-                  .getTransformations()
-                  .get(ProfileTransformations.WILDCARD)
-                  .stream()
-                  .map(PropertyTransformation::getFlatten)
-                  .flatMap(Optional::stream)
-                  .findFirst()
-                  .orElse(".");
-          json.writeFieldName(String.format("%s%stitle", schema.getName(), separator));
-          writeValue(json, value.substring(value.lastIndexOf('/') + 1), Type.STRING);
-          json.writeFieldName(String.format("%s%shref", schema.getName(), separator));
-          writeValue(json, value, Type.STRING);
-        } else {
-          openObject(context.encoding(), schema);
-          json.writeFieldName("title");
-          writeValue(json, value.substring(value.lastIndexOf('/') + 1), Type.STRING);
-          json.writeFieldName("href");
-          writeValue(json, value, Type.STRING);
-          closeObject(context.encoding());
-        }
+      if (schema.isArray() && !context.encoding().getGeoJsonConfig().isFlattened()) {
+        writeValue(
+            json,
+            value,
+            schema
+                .getValueType()
+                .orElse(Objects.requireNonNullElse(context.valueType(), Type.STRING)));
       } else {
-        if (schema.isArray() && !context.encoding().getGeoJsonConfig().isFlattened()) {
-          writeValue(
-              json,
-              value,
-              schema
-                  .getValueType()
-                  .orElse(Objects.requireNonNullElse(context.valueType(), Type.STRING)));
-        } else {
-          json.writeFieldName(schema.getName());
-          Type valueType =
-              schema.getCoalesce().isEmpty()
-                      || (schema.getType() != Type.VALUE && schema.getType() != Type.FEATURE_REF)
-                  ? schema.getType()
-                  : schema
-                      .getValueType()
-                      .orElse(Objects.requireNonNullElse(context.valueType(), Type.STRING));
-          writeValue(json, value, valueType);
-        }
+        json.writeFieldName(schema.getName());
+        Type valueType =
+            schema.getCoalesce().isEmpty()
+                    || (schema.getType() != Type.VALUE && schema.getType() != Type.FEATURE_REF)
+                ? schema.getType()
+                : schema
+                    .getValueType()
+                    .orElse(Objects.requireNonNullElse(context.valueType(), Type.STRING));
+        writeValue(json, value, valueType);
       }
     }
 
