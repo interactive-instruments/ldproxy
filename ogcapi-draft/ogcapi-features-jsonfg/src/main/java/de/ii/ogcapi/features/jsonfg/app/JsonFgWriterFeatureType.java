@@ -257,8 +257,7 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
   }
 
   private void writeSingleSchema(
-      FeatureTransformationContextGeoJson transformationContext, Optional<String> schema)
-      throws IOException {
+      FeatureTransformationContextGeoJson transformationContext, Optional<String> schema) {
     schema.ifPresent(
         s -> {
           try {
@@ -270,11 +269,12 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
 
   private void writeSchemas(FeatureTransformationContextGeoJson transformationContext)
       throws IOException {
-    if (effectiveSchemas.isEmpty()) {
-      return;
+    if (effectiveSchemas.size() == 1) {
+      transformationContext
+          .getJson()
+          .writeStringField(JSON_KEY_SCHEMA, effectiveSchemas.values().iterator().next());
+    } else if (!effectiveSchemas.isEmpty()) {
+      transformationContext.getJson().writeObjectField(JSON_KEY_SCHEMA, effectiveSchemas);
     }
-    JsonGenerator json = transformationContext.getJson();
-
-    json.writeObjectField(JSON_KEY_SCHEMA, effectiveSchemas);
   }
 }

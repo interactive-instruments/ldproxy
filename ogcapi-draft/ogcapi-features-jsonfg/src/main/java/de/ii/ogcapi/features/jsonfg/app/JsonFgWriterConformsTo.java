@@ -84,9 +84,7 @@ public class JsonFgWriterConformsTo implements GeoJsonWriter {
   public void onFeatureStart(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
-    if (isEnabled
-        && !context.encoding().isFeatureCollection()
-        && Objects.requireNonNullElse(collectionMap.get(context.type()), false)) {
+    if (isEnabled && !context.encoding().isFeatureCollection()) {
       writeConformsTo(context.encoding().getJson());
     }
 
