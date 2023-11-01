@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +27,7 @@ public abstract class JsonSchemaNumber extends JsonSchema {
 
   public abstract Optional<Double> getMaximum();
 
+  @JsonProperty("x-ogc-unit")
   public abstract Optional<String> getUnit();
 
   public abstract static class Builder extends JsonSchema.Builder {}
