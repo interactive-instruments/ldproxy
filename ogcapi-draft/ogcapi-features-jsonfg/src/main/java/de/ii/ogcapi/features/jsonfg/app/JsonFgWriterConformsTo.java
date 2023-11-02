@@ -14,7 +14,6 @@ import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
-import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import java.io.IOException;
@@ -108,7 +107,13 @@ public class JsonFgWriterConformsTo implements GeoJsonWriter {
     return transformationContext
         .getApiData()
         .getExtension(JsonFgConfiguration.class, transformationContext.getCollectionId())
-        .map(ExtensionConfiguration::isEnabled)
+        .map(
+            cfg ->
+                cfg.isEnabled()
+                    && (transformationContext.getMediaType().equals(FeaturesFormatJsonFg.MEDIA_TYPE)
+                        || transformationContext
+                            .getMediaType()
+                            .equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE)))
         .orElse(false);
   }
 

@@ -233,11 +233,11 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
 
   /**
    * @langEn The option allows selected JSON-FG extensions to be included in the GeoJSON encoding as
-   *     well. Allowed values are: `describedby`, `featureType`, `time`, `place`, `coordRefSys`,
-   *     `links`.
+   *     well. Allowed values are: `describedby`, `featureType`, `featureSchema`, `time`, `place`,
+   *     `coordRefSys`, `links`. `conformsTo` is only used in JSON-FG responses.
    * @langDe Die Option ermöglicht, dass ausgewählte JSON-FG-Erweiterungen auch im GeoJSON-Encoding
-   *     berücksichtigt werden. Erlaubte Werte sind: `describedby`, `featureType`, `time`, `place`,
-   *     `coordRefSys`, `links`
+   *     berücksichtigt werden. Erlaubte Werte sind: `describedby`, `featureType`, `featureSchema`,
+   *     `time`, `place`, `coordRefSys`, `links`. `conformsTo` wird nur in JSON-FG unterstützt.
    * @default []
    * @since v3.1
    */
