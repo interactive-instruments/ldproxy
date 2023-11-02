@@ -182,17 +182,10 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
                                   || transformationContext
                                       .getMediaType()
                                       .equals(FeaturesFormatJsonFgCompatibility.MEDIA_TYPE))) {
-                            List<String> value = cfg.getFeatureType();
-                            if (Objects.isNull(value) || value.isEmpty()) {
-                              value =
-                                  transformationContext
-                                      .getFeatureSchemas()
-                                      .get(collectionId)
-                                      .flatMap(FeatureSchema::getObjectType)
-                                      .map(ImmutableList::of)
-                                      .orElse(ImmutableList.of());
-                            }
-                            builder.put(collectionId, value);
+                            builder.put(
+                                collectionId,
+                                cfg.getEffectiveFeatureType(
+                                    transformationContext.getFeatureSchemas().get(collectionId)));
                           } else {
                             builder.put(collectionId, ImmutableList.of());
                           }
@@ -231,10 +224,14 @@ public class JsonFgWriterFeatureType implements GeoJsonWriter {
                         cfg -> {
                           if (cfg.isEnabled()
                               && !Objects.requireNonNullElse(
-                                      cfg.getFeatureType(), ImmutableList.of())
+                                      cfg.getEffectiveFeatureType(
+                                          transformationContext
+                                              .getFeatureSchemas()
+                                              .get(collectionId)),
+                                      ImmutableList.of())
                                   .isEmpty()
                               && (cfg.getIncludeInGeoJson()
-                                      .contains(JsonFgConfiguration.OPTION.featureType)
+                                      .contains(JsonFgConfiguration.OPTION.featureSchema)
                                   || transformationContext
                                       .getMediaType()
                                       .equals(FeaturesFormatJsonFg.MEDIA_TYPE)

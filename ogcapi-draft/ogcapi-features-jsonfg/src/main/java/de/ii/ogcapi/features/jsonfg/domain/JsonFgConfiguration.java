@@ -8,13 +8,16 @@
 package de.ii.ogcapi.features.jsonfg.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.jsonfg.domain.ImmutableJsonFgConfiguration.Builder;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -208,6 +211,18 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
    */
   @Nullable
   List<String> getFeatureType();
+
+  default List<String> getEffectiveFeatureType(Optional<FeatureSchema> schema) {
+    List<String> value = getFeatureType();
+    if (Objects.isNull(value) || value.isEmpty()) {
+      value =
+          schema
+              .flatMap(FeatureSchema::getObjectType)
+              .map(ImmutableList::of)
+              .orElse(ImmutableList.of());
+    }
+    return value;
+  }
 
   /**
    * @langEn If `true`, values in "conformsTo" and "coordRefSys" will be Safe CURIEs, not HTTP URIs.
