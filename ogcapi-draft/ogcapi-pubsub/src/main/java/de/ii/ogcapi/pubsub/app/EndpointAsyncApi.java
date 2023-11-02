@@ -48,6 +48,8 @@ import javax.ws.rs.core.Response;
 @AutoBind
 public class EndpointAsyncApi extends Endpoint {
 
+  private static final List<String> TAGS = ImmutableList.of("Capabilities");
+
   private final QueriesHandlerPubSub queryHandler;
 
   @Inject
@@ -92,7 +94,7 @@ public class EndpointAsyncApi extends Endpoint {
             Optional.empty(),
             getOperationId("getAsyncApiDefinition"),
             GROUP_DISCOVER_READ,
-            ImmutableList.of(),
+            TAGS,
             Optional.of(SpecificationMaturity.DRAFT_LDPROXY),
             Optional.empty())
         .ifPresent(operation -> resourceBuilder1.putOperations("GET", operation));
