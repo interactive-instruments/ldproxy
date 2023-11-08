@@ -1,7 +1,7 @@
 
 dependencies {
-    layers group: 'de.interactive_instruments', name: 'xtraplatform-core', version: '5.4.0-s3-SNAPSHOT'
-    layers group: 'de.interactive_instruments', name: 'xtraplatform-native', version: "2.3.0-${platform}-s3-SNAPSHOT"
-    layers group: 'de.interactive_instruments', name: 'xtraplatform-spatial', version: '6.4.0-s3-SNAPSHOT'
+    layers group: 'de.interactive_instruments', name: 'xtraplatform-core', version: '5.4.0-SNAPSHOT'
+    layers group: 'de.interactive_instruments', name: 'xtraplatform-native', version: "2.3.0-${platform}-SNAPSHOT"
+    layers group: 'de.interactive_instruments', name: 'xtraplatform-spatial', version: '6.4.0-SNAPSHOT'
 }
 

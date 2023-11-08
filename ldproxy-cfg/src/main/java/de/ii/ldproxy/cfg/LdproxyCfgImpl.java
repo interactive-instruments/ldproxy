@@ -27,6 +27,7 @@ import de.ii.xtraplatform.base.domain.JacksonProvider;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
 import de.ii.xtraplatform.base.domain.StoreSource;
 import de.ii.xtraplatform.base.domain.StoreSourceDefault;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.entities.app.EntityDataDefaultsStoreImpl;
 import de.ii.xtraplatform.entities.app.EntityDataStoreImpl;
@@ -148,8 +149,10 @@ class LdproxyCfgImpl implements LdproxyCfg {
           }
         });
     AppContext appContext = new AppContextCfg();
+    ResourceStore mockResourceStore = new MockResourceStore();
     OgcApiExtensionRegistry extensionRegistry = new OgcApiExtensionRegistry(appContext);
-    Set<EntityFactory> factories = EntityFactories.factories(extensionRegistry);
+    Set<EntityFactory> factories =
+        EntityFactories.factories(appContext, extensionRegistry, mockResourceStore);
     this.entityFactories = new EntityFactoriesImpl(() -> factories);
     this.entityDataDefaultsStore =
         new EntityDataDefaultsStoreImpl(appContext, eventStore, jackson, () -> factories);
@@ -160,7 +163,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
             jackson,
             () -> factories,
             entityDataDefaultsStore,
-            new MockBlobStore(),
+            mockResourceStore,
             new MockValueStore(),
             noDefaults);
     this.entitySchemas = new HashMap<>();

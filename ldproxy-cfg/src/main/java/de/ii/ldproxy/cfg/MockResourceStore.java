@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
-class MockBlobStore implements ResourceStore {
+class MockResourceStore implements ResourceStore {
 
   @Override
   public CompletableFuture<Void> onReady() {

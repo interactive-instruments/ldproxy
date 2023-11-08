@@ -11,24 +11,30 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.foundation.app.OgcApiFactory;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.xtraplatform.auth.app.UserFactory;
+import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import de.ii.xtraplatform.entities.domain.EntityData;
 import de.ii.xtraplatform.entities.domain.EntityFactory;
 import de.ii.xtraplatform.entities.domain.PersistentEntity;
 import de.ii.xtraplatform.features.gml.app.FeatureProviderWfsFactory;
 import de.ii.xtraplatform.features.sql.app.FeatureProviderSqlFactory;
+import de.ii.xtraplatform.features.sql.app.SqlClientBasicFactorySimple;
 import de.ii.xtraplatform.tiles.app.TileProviderFeaturesFactory;
 import de.ii.xtraplatform.tiles.app.TileProviderHttpFactory;
 import de.ii.xtraplatform.tiles.app.TileProviderMbTilesFactory;
+import de.ii.xtraplatform.web.app.HttpApache;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public interface EntityFactories {
 
-  static Set<EntityFactory> factories(ExtensionRegistry extensionRegistry) {
+  static Set<EntityFactory> factories(
+      AppContext appContext, ExtensionRegistry extensionRegistry, ResourceStore mockResourceStore) {
     return ImmutableSet.<EntityFactory>builder()
         .add(
-            new FeatureProviderSqlFactory() {
+            new FeatureProviderSqlFactory(
+                new SqlClientBasicFactorySimple(appContext, mockResourceStore)) {
               @Override
               public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
                 return CompletableFuture.completedFuture(null);
@@ -50,7 +56,7 @@ public interface EntityFactories {
               public void addEntityGoneListener(Consumer<PersistentEntity> listener) {}
             })
         .add(
-            new FeatureProviderWfsFactory() {
+            new FeatureProviderWfsFactory(new HttpApache(appContext)) {
               @Override
               public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
                 return CompletableFuture.completedFuture(null);
