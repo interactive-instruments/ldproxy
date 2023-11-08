@@ -31,12 +31,14 @@ import org.immutables.value.Value;
 public interface SchemaConfiguration extends ExtensionConfiguration, CachingConfiguration {
 
   /**
-   * @langEn List of enabled JSON Schema versions. Supported are 2020-12 (`V202012`), 2019-09
-   *     (`V201909`) and 07 (`V7`).
-   * @langDe Steuert, welche JSON-Schema-Versionen unterstützt werden sollen. Zur Verfügung stehen
-   *     2020-12 (`V202012`), 2019-09 (`V201909`) und 07 (`V7`).
+   * @langEn **Deprecated** List of enabled JSON Schema versions. Supported are 2020-12 (`V202012`),
+   *     2019-09 (`V201909`) and 07 (`V7`). The draft specification only supports 2020-12.
+   * @langDe **Deprecated** Steuert, welche JSON-Schema-Versionen unterstützt werden sollen. Zur
+   *     Verfügung stehen 2020-12 (`V202012`), 2019-09 (`V201909`) und 07 (`V7`). Der Entwurf der
+   *     Spezifikation unterstützt nur 2020-12.
    * @default [ "V202012" ]
    */
+  @Deprecated(since = "3.6")
   Set<JsonSchemaDocument.VERSION> getVersions();
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
