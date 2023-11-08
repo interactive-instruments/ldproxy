@@ -34,7 +34,6 @@ import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
@@ -45,6 +44,8 @@ import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.services.domain.ServicesContext;
+import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import io.swagger.v3.oas.models.media.BinarySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
@@ -57,8 +58,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -85,7 +84,7 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
   public static final String SCHEMA_REF = "#/components/schemas/glTF";
 
   private final FeaturesCoreProviders providers;
-  private final EntityRegistry entityRegistry;
+  private final Values<Codelist> codelistStore;
   private final FeaturesCoreValidation featuresCoreValidator;
   private final CrsTransformerFactory crsTransformerFactory;
   private CrsTransformer toEcef;
@@ -95,13 +94,13 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
   @Inject
   public FeaturesFormatGltfBinary(
       FeaturesCoreProviders providers,
-      EntityRegistry entityRegistry,
+      ValueStore valueStore,
       FeaturesCoreValidation featuresCoreValidator,
       CrsTransformerFactory crsTransformerFactory,
       ServicesContext servicesContext,
       Metadata3dSchemaCache schemaCache) {
     this.providers = providers;
-    this.entityRegistry = entityRegistry;
+    this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;
     this.crsTransformerFactory = crsTransformerFactory;
     this.toEcef = null;
@@ -188,17 +187,13 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
 
   private void validateTransformations(
       ImmutableValidationResult.Builder builder, Map<String, GltfConfiguration> configurationMap) {
-    Set<String> codelists =
-        entityRegistry.getEntitiesForType(Codelist.class).stream()
-            .map(Codelist::getId)
-            .collect(Collectors.toUnmodifiableSet());
     for (Map.Entry<String, GltfConfiguration> entry : configurationMap.entrySet()) {
       String collectionId = entry.getKey();
       for (Map.Entry<String, List<PropertyTransformation>> entry2 :
           entry.getValue().getTransformations().entrySet()) {
         String property = entry2.getKey();
         for (PropertyTransformation transformation : entry2.getValue()) {
-          transformation.validate(builder, collectionId, property, codelists);
+          transformation.validate(builder, collectionId, property, codelistStore.ids());
         }
       }
     }
@@ -364,7 +359,7 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
             transformationContext.getFeatureSchema().orElseThrow(),
             apiData,
             collectionId,
-            entityRegistry.getEntitiesForType(Codelist.class));
+            codelistStore.asMap());
 
     ImmutableFeatureTransformationContextGltf.Builder builder =
         ImmutableFeatureTransformationContextGltf.builder()

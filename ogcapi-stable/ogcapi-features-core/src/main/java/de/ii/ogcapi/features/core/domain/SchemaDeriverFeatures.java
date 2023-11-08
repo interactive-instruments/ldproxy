@@ -25,7 +25,7 @@ public class SchemaDeriverFeatures extends SchemaDeriverJsonSchema {
       Optional<String> schemaUri,
       String label,
       Optional<String> description,
-      List<Codelist> codelists) {
+      Map<String, Codelist> codelists) {
     super(version, schemaUri, label, description, codelists, true);
   }
 

@@ -21,8 +21,13 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.app.SchemaCacheStyleLayer;
 import de.ii.ogcapi.styles.domain.MbStyleLayer.LayerType;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.values.domain.StoredValue;
+import de.ii.xtraplatform.values.domain.ValueBuilder;
+import de.ii.xtraplatform.values.domain.ValueEncoding.FORMAT;
+import de.ii.xtraplatform.values.domain.Values;
+import de.ii.xtraplatform.values.domain.annotations.FromValueStore;
+import de.ii.xtraplatform.values.domain.annotations.FromValueStore.FormatAlias;
 import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.List;
@@ -34,9 +39,12 @@ import java.util.stream.Collectors;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Style(jdkOnly = true, deepImmutablesDetection = true)
-@JsonDeserialize(as = ImmutableMbStyleStylesheet.class)
-public abstract class MbStyleStylesheet {
+@Value.Style(jdkOnly = true, builder = "new", deepImmutablesDetection = true)
+@FromValueStore(
+    type = "maplibre-styles",
+    formatAliases = {@FormatAlias(extension = "mbs", format = FORMAT.JSON)})
+@JsonDeserialize(builder = ImmutableMbStyleStylesheet.Builder.class)
+public abstract class MbStyleStylesheet implements StoredValue {
 
   public static final String SCHEMA_REF = "#/components/schemas/MbStyleStylesheet";
 
@@ -82,10 +90,9 @@ public abstract class MbStyleStylesheet {
   // TODO: replace with SchemaDeriverStyleLayer
   @JsonIgnore
   public List<StyleLayer> getLayerMetadata(
-      OgcApiDataV2 apiData, FeaturesCoreProviders providers, EntityRegistry entityRegistry) {
+      OgcApiDataV2 apiData, FeaturesCoreProviders providers, Values<Codelist> codelistStore) {
     // prepare a map with the JSON schemas of the feature collections used in the style
-    JsonSchemaCache schemas =
-        new SchemaCacheStyleLayer(() -> entityRegistry.getEntitiesForType(Codelist.class));
+    JsonSchemaCache schemas = new SchemaCacheStyleLayer(codelistStore::asMap);
 
     Map<String, JsonSchemaObject> schemaMap =
         getLayers().stream()
@@ -287,7 +294,7 @@ public abstract class MbStyleStylesheet {
                                     .matches("^.*\\{serviceUrl\\}.*$"))));
     if (!templated) return this;
 
-    return ImmutableMbStyleStylesheet.builder()
+    return new ImmutableMbStyleStylesheet.Builder()
         .from(this)
         .sprite(
             this.getSprite().isPresent()
@@ -348,4 +355,6 @@ public abstract class MbStyleStylesheet {
                         })))
         .build();
   }
+
+  abstract static class Builder implements ValueBuilder<MbStyleStylesheet> {}
 }

@@ -11,7 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.tiles3d.domain.TileResourceCache;
 import de.ii.ogcapi.tiles3d.domain.TileResourceDescriptor;
-import de.ii.xtraplatform.blobs.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,10 +27,10 @@ import javax.inject.Singleton;
 @AutoBind
 public class TileResourceCacheImpl implements TileResourceCache {
 
-  private final BlobStore cacheStore;
+  private final ResourceStore cacheStore;
 
   @Inject
-  public TileResourceCacheImpl(BlobStore blobStore) {
+  public TileResourceCacheImpl(ResourceStore blobStore) {
     this.cacheStore = blobStore.with(Tiles3dBuildingBlock.STORE_RESOURCE_TYPE);
   }
 
@@ -41,7 +41,7 @@ public class TileResourceCacheImpl implements TileResourceCache {
 
   @Override
   public Optional<InputStream> getTileResource(TileResourceDescriptor r) throws IOException {
-    return cacheStore.get(getPath(r));
+    return cacheStore.content(getPath(r));
   }
 
   @Override

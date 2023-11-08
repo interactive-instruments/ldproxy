@@ -16,6 +16,7 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion.VersionFlag;
 import com.networknt.schema.ValidationMessage;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.base.app.StoreImpl;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration.Builder;
@@ -26,12 +27,11 @@ import de.ii.xtraplatform.base.domain.JacksonProvider;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
 import de.ii.xtraplatform.base.domain.StoreSource;
 import de.ii.xtraplatform.base.domain.StoreSourceDefault;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.codelists.domain.CodelistData;
 import de.ii.xtraplatform.entities.app.EntityDataDefaultsStoreImpl;
 import de.ii.xtraplatform.entities.app.EntityDataStoreImpl;
 import de.ii.xtraplatform.entities.app.EventStoreDefault;
-import de.ii.xtraplatform.entities.app.ValueEncodingJackson;
 import de.ii.xtraplatform.entities.domain.EntityData;
 import de.ii.xtraplatform.entities.domain.EntityDataBuilder;
 import de.ii.xtraplatform.entities.domain.EntityDataDefaultsStore;
@@ -41,17 +41,17 @@ import de.ii.xtraplatform.entities.domain.EntityFactory;
 import de.ii.xtraplatform.entities.domain.EventStore;
 import de.ii.xtraplatform.entities.domain.EventStoreDriver;
 import de.ii.xtraplatform.entities.domain.EventStoreSubscriber;
-import de.ii.xtraplatform.entities.domain.Identifier;
 import de.ii.xtraplatform.entities.domain.ReplayEvent;
-import de.ii.xtraplatform.entities.domain.ValueEncoding.FORMAT;
 import de.ii.xtraplatform.entities.infra.EventStoreDriverFs;
 import de.ii.xtraplatform.features.domain.ProviderData;
 import de.ii.xtraplatform.features.sql.app.FeatureProviderSql;
 import de.ii.xtraplatform.features.sql.domain.FeatureProviderSqlData;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
-import de.ii.xtraplatform.store.app.StoreImpl;
 import de.ii.xtraplatform.streams.domain.Event;
+import de.ii.xtraplatform.values.api.ValueEncodingJackson;
+import de.ii.xtraplatform.values.domain.Identifier;
+import de.ii.xtraplatform.values.domain.ValueEncoding.FORMAT;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -59,7 +59,6 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -149,8 +148,10 @@ class LdproxyCfgImpl implements LdproxyCfg {
           }
         });
     AppContext appContext = new AppContextCfg();
+    ResourceStore mockResourceStore = new MockResourceStore(dataDirectory);
     OgcApiExtensionRegistry extensionRegistry = new OgcApiExtensionRegistry(appContext);
-    Set<EntityFactory> factories = EntityFactories.factories(extensionRegistry);
+    Set<EntityFactory> factories =
+        EntityFactories.factories(appContext, extensionRegistry, mockResourceStore);
     this.entityFactories = new EntityFactoriesImpl(() -> factories);
     this.entityDataDefaultsStore =
         new EntityDataDefaultsStoreImpl(appContext, eventStore, jackson, () -> factories);
@@ -161,7 +162,8 @@ class LdproxyCfgImpl implements LdproxyCfg {
             jackson,
             () -> factories,
             entityDataDefaultsStore,
-            new MockBlobStore(),
+            mockResourceStore,
+            new MockValueStore(),
             noDefaults);
     this.entitySchemas = new HashMap<>();
     this.migrations = Migrations.create(entityDataStore);
@@ -279,7 +281,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
 
   @Override
   public <T extends EntityData> void writeEntity(T data, Path... patches) throws IOException {
-    Path path = getPath(data);
+    Path path = getEntityPath(data);
     Identifier identifier = Identifier.from(data.getId(), getType(data));
 
     T patched = applyPatch(identifier, data, patches);
@@ -298,7 +300,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
       throws IOException {
     writeEntity(data);
 
-    Path path = getPath(data);
+    Path path = getEntityPath(data);
 
     Files.copy(path, outputStream);
   }
@@ -349,15 +351,12 @@ class LdproxyCfgImpl implements LdproxyCfg {
     }
   }
 
-  private <T extends EntityData> Path getPath(T data) {
-    return dataDirectory.resolve(
-        Paths.get("store", "entities", getType(data), data.getId() + ".yml"));
+  @Override
+  public <T extends EntityData> Path getEntityPath(T data) {
+    return getEntitiesPath().resolve(Path.of(getType(data), data.getId() + ".yml"));
   }
 
   private static <T extends EntityData> String getType(T data) {
-    if (data instanceof CodelistData) {
-      return Codelist.ENTITY_TYPE;
-    }
     if (data instanceof ProviderData) {
       return ProviderData.ENTITY_TYPE;
     }
@@ -368,7 +367,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
   }
 
   private static <T extends EntityData> String getSubType(T data) {
-    if (data instanceof CodelistData) {
+    if (data instanceof Codelist) {
       return null;
     }
     if (data instanceof FeatureProviderSqlData) {

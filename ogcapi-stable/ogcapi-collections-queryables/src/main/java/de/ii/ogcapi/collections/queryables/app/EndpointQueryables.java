@@ -36,7 +36,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
+import de.ii.xtraplatform.values.domain.ValueStore;
 import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Map;
@@ -81,13 +81,12 @@ public class EndpointQueryables extends EndpointSubCollection implements Conform
   public EndpointQueryables(
       ExtensionRegistry extensionRegistry,
       CollectionPropertiesQueriesHandler queryHandler,
-      EntityRegistry entityRegistry,
+      ValueStore valueStore,
       FeaturesCoreProviders featuresCoreProviders) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
     this.schemaCache =
-        new SchemaCacheQueryables(
-            () -> entityRegistry.getEntitiesForType(Codelist.class), featuresCoreProviders);
+        new SchemaCacheQueryables(valueStore.forType(Codelist.class)::asMap, featuresCoreProviders);
   }
 
   @Override

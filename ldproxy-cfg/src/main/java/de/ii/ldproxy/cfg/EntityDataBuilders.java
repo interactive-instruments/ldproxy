@@ -9,7 +9,6 @@ package de.ii.ldproxy.cfg;
 
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.xtraplatform.codelists.domain.ImmutableCodelistData;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.sql.app.FeatureProviderSql;
 import de.ii.xtraplatform.features.sql.domain.ImmutableFeatureProviderSqlData;
@@ -27,9 +26,5 @@ public interface EntityDataBuilders {
         .entityStorageVersion(2)
         .providerType(FeatureProvider2.PROVIDER_TYPE)
         .providerSubType(FeatureProviderSql.PROVIDER_SUB_TYPE);
-  }
-
-  default ImmutableCodelistData.Builder codelist() {
-    return new ImmutableCodelistData.Builder();
   }
 }

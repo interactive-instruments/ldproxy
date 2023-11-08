@@ -66,7 +66,7 @@ class SchemaCacheSortables extends JsonSchemaCache {
             schemaUri,
             collectionData.getLabel(),
             Optional.empty(),
-            ImmutableList.of(),
+            ImmutableMap.of(),
             ImmutableList.of("*"));
 
     return (JsonSchemaDocument)

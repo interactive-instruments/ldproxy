@@ -33,7 +33,7 @@ import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.xtraplatform.web.domain.ETag;
+import de.ii.xtraplatform.base.domain.ETag;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
