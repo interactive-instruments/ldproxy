@@ -17,12 +17,12 @@ class AppContextCfg implements AppContext {
 
   @Override
   public String getName() {
-    return null;
+    return "ldproxy-cfg";
   }
 
   @Override
   public String getVersion() {
-    return null;
+    return "";
   }
 
   @Override

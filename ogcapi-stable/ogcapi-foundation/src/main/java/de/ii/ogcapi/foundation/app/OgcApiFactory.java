@@ -18,9 +18,12 @@ import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ApiSecurity;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMetadata;
 import de.ii.ogcapi.foundation.domain.ImmutableApiSecurity;
 import de.ii.ogcapi.foundation.domain.ImmutableCollectionExtent;
+import de.ii.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi.Builder;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiDataHydratorExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -28,6 +31,8 @@ import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.entities.domain.AbstractEntityFactory;
+import de.ii.xtraplatform.entities.domain.AutoEntity;
+import de.ii.xtraplatform.entities.domain.AutoEntityFactory;
 import de.ii.xtraplatform.entities.domain.EntityData;
 import de.ii.xtraplatform.entities.domain.EntityDataBuilder;
 import de.ii.xtraplatform.entities.domain.EntityFactory;
@@ -40,13 +45,17 @@ import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -56,7 +65,7 @@ import org.slf4j.LoggerFactory;
 @Singleton
 @AutoBind
 public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEntity>
-    implements EntityFactory {
+    implements EntityFactory, AutoEntityFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OgcApiFactory.class);
 
@@ -132,6 +141,45 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
   @Override
   public Class<? extends EntityData> dataClass() {
     return OgcApiDataV2.class;
+  }
+
+  @Override
+  public Optional<AutoEntityFactory> auto() {
+    return Optional.of(this);
+  }
+
+  @Override
+  public <T extends AutoEntity> Map<String, String> check(T entityData) {
+    return Map.of();
+  }
+
+  @Override
+  public <T extends AutoEntity> Map<String, List<String>> analyze(T entityData) {
+    return Map.of();
+  }
+
+  @Override
+  public <T extends AutoEntity> T generate(
+      T entityData, Map<String, List<String>> types, Consumer<Map<String, List<String>>> tracker) {
+    if (!(entityData instanceof OgcApiDataV2)) {
+      return entityData;
+    }
+
+    OgcApiDataV2 data = (OgcApiDataV2) entityData;
+
+    Map<String, FeatureTypeConfigurationOgcApi> collections =
+        types.values().stream()
+            .flatMap(Collection::stream)
+            .map(
+                type -> {
+                  ImmutableFeatureTypeConfigurationOgcApi collection =
+                      new Builder().id(type).label(type).build();
+
+                  return new SimpleImmutableEntry<>(type, collection);
+                })
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+
+    return (T) new ImmutableOgcApiDataV2.Builder().from(data).collections(collections).build();
   }
 
   @Override
