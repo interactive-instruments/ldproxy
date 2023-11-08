@@ -59,7 +59,6 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -149,7 +148,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
           }
         });
     AppContext appContext = new AppContextCfg();
-    ResourceStore mockResourceStore = new MockResourceStore();
+    ResourceStore mockResourceStore = new MockResourceStore(dataDirectory);
     OgcApiExtensionRegistry extensionRegistry = new OgcApiExtensionRegistry(appContext);
     Set<EntityFactory> factories =
         EntityFactories.factories(appContext, extensionRegistry, mockResourceStore);
@@ -282,7 +281,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
 
   @Override
   public <T extends EntityData> void writeEntity(T data, Path... patches) throws IOException {
-    Path path = getPath(data);
+    Path path = getEntityPath(data);
     Identifier identifier = Identifier.from(data.getId(), getType(data));
 
     T patched = applyPatch(identifier, data, patches);
@@ -301,7 +300,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
       throws IOException {
     writeEntity(data);
 
-    Path path = getPath(data);
+    Path path = getEntityPath(data);
 
     Files.copy(path, outputStream);
   }
@@ -352,9 +351,9 @@ class LdproxyCfgImpl implements LdproxyCfg {
     }
   }
 
-  private <T extends EntityData> Path getPath(T data) {
-    return dataDirectory.resolve(
-        Paths.get("store", "entities", getType(data), data.getId() + ".yml"));
+  @Override
+  public <T extends EntityData> Path getEntityPath(T data) {
+    return getEntitiesPath().resolve(Path.of(getType(data), data.getId() + ".yml"));
   }
 
   private static <T extends EntityData> String getType(T data) {

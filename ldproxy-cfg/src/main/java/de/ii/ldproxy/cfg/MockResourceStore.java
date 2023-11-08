@@ -18,6 +18,11 @@ import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
 class MockResourceStore implements ResourceStore {
+  private final Path dataDirectory;
+
+  public MockResourceStore(Path dataDirectory) {
+    this.dataDirectory = dataDirectory.resolve("resources");
+  }
 
   @Override
   public CompletableFuture<Void> onReady() {
@@ -31,7 +36,7 @@ class MockResourceStore implements ResourceStore {
 
   @Override
   public Optional<Path> asLocalPath(Path path, boolean writable) throws IOException {
-    return Optional.empty();
+    return Optional.of(dataDirectory.resolve(path));
   }
 
   @Override

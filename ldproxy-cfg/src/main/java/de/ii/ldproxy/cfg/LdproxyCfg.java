@@ -56,4 +56,6 @@ public interface LdproxyCfg extends LdproxyCfgWriter {
   Migrations migrations();
 
   Set<ValidationMessage> validateEntity(Path entityPath, String entityType) throws IOException;
+
+  <T extends EntityData> Path getEntityPath(T data);
 }

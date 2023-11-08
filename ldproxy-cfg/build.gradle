@@ -17,14 +17,18 @@ ext {
             'com/codahale',
             'com/github',
             'com/google',
+            'com/sun',
             'io',
             'javax',
             'javax/ws',
             'org',
             'org/apache',
+            'org/codehaus',
             'org/eclipse',
             'org/yaml',
             'org/threeten',
+            'org/relaxng',
+            'us',
 
     ]
     includePaths = [
@@ -34,17 +38,26 @@ ext {
             'com/fasterxml',
             'com/google/common',
             'com/networknt',
+            'com/sun/xml',
             'dagger',
             'io/dropwizard',
             'io/swagger',
             'javax/servlet',
             'javax/ws/rs',
+            //'javax/xml',
             'org/apache/commons',
             'org/apache/hc',
+            'org/codehaus/stax2',
+            'org/codehaus/staxmate',
             'org/eclipse/jetty',
             'org/yaml/snakeyaml',
             'org/commonmark',
+            'org/postgresql',
+            'org/sqlite',
             'org/threeten/extra',
+            'org/relaxng/datatype',
+            'schemacrawler',
+            'us/fatehi',
     ]
 }
 
@@ -64,19 +77,25 @@ tasks.shadowJar {
     }
     include {
         it.path.startsWith('json-schema/entities') || it.name.endsWith('jsv-messages.properties')
+                || it.name.endsWith('sql2003_reserved_words.txt') || it.name.endsWith('SchemaCrawler.txt') || it.name.endsWith('schemacrawler-postgresql.config.properties') || it.name.endsWith('schemacrawler-sqlite.config.properties')
+                || it.path.endsWith('Mac/aarch64/libsqlitejdbc.dylib') || it.path.endsWith('Linux/x86_64/libsqlitejdbc.so') || it.path.endsWith('Linux/aarch64/libsqlitejdbc.so') || it.path.endsWith('Windows/x86_64/sqlitejdbc.dll')
+                || it.path.contains('com/sun/xml/xsom/impl/parser') || it.name.endsWith('.xsd')
     }
     minimize()
     relocate('com.', 'shadow.com.')
     relocate('dagger.', 'shadow.dagger.')
     relocate('io.', 'shadow.io.')
-    relocate('javax.', 'shadow.javax.') {
-        exclude 'javax.management.*'
-    }
+    relocate('javax.servlet.', 'shadow.javax.servlet.')
+    relocate('javax.ws.rs.', 'shadow.javax.ws.rs.')
     relocate('org.', 'shadow.org.') {
         exclude 'org.slf4j.*'
         exclude 'org.slf4j.event.*'
         exclude 'org.w3c.dom.*'
+        exclude 'org.sqlite.**'
+        exclude 'org.xml.sax.**'
     }
+    relocate('schemacrawler.', 'shadow.schemacrawler.')
+    relocate('us.', 'shadow.us.')
 }
 
 artifacts {
