@@ -25,7 +25,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.xtraplatform.blobs.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
@@ -52,10 +52,10 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointJsonLdContext.class);
   private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
-  private final BlobStore contextStore;
+  private final ResourceStore contextStore;
 
   @Inject
-  EndpointJsonLdContext(BlobStore blobStore, ExtensionRegistry extensionRegistry) {
+  EndpointJsonLdContext(ResourceStore blobStore, ExtensionRegistry extensionRegistry) {
     super(extensionRegistry);
     this.contextStore = blobStore.with(GeoJsonLdBuildingBlock.STORE_RESOURCE_TYPE);
   }
@@ -106,7 +106,7 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
             contextFileName.orElse(null),
             format.getMediaType().parameter());
 
-    Optional<InputStream> context = contextStore.get(contextPath);
+    Optional<InputStream> context = contextStore.content(contextPath);
 
     if (context.isEmpty()) {
       throw new NotFoundException(

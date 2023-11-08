@@ -34,6 +34,7 @@ import de.ii.ogcapi.styles.domain.ImmutableStyleEntry.Builder;
 import de.ii.ogcapi.styles.domain.ImmutableStyleMetadata;
 import de.ii.ogcapi.styles.domain.ImmutableStyles;
 import de.ii.ogcapi.styles.domain.ImmutableStylesheetMetadata;
+import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.ogcapi.styles.domain.StyleEntry;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleMetadata;
@@ -48,10 +49,14 @@ import de.ii.ogcapi.styles.domain.StylesheetMetadata;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
 import de.ii.xtraplatform.base.domain.LogContext;
-import de.ii.xtraplatform.blobs.domain.BlobStore;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.services.domain.ServicesContext;
+import de.ii.xtraplatform.values.domain.Identifier;
+import de.ii.xtraplatform.values.domain.KeyValueStore;
+import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import de.ii.xtraplatform.web.domain.LastModified;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -65,6 +70,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
@@ -82,7 +88,8 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
   private static final Logger LOGGER = LoggerFactory.getLogger(StyleRepositoryFiles.class);
 
   private final ExtensionRegistry extensionRegistry;
-  private final BlobStore stylesStore;
+  private final ResourceStore stylesStore;
+  private final KeyValueStore<MbStyleStylesheet> mbStylesStore;
   private final I18n i18n;
   private final DefaultLinksGenerator defaultLinkGenerator;
   private final ObjectMapper patchMapperLenient;
@@ -90,22 +97,23 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
   private final ObjectMapper metadataMapper;
   private final URI servicesUri;
   private final FeaturesCoreProviders providers;
-  private final EntityRegistry entityRegistry;
+  private final Values<Codelist> codelistStore;
 
   @Inject
   public StyleRepositoryFiles(
-      BlobStore blobStore,
+      ResourceStore blobStore,
       ServicesContext servicesContext,
       ExtensionRegistry extensionRegistry,
       I18n i18n,
       FeaturesCoreProviders providers,
-      EntityRegistry entityRegistry) {
+      ValueStore valueStore) {
     this.stylesStore = blobStore.with(StylesBuildingBlock.STORE_RESOURCE_TYPE);
+    this.mbStylesStore = valueStore.forTypeWritable(MbStyleStylesheet.class);
     this.i18n = i18n;
     this.extensionRegistry = extensionRegistry;
     this.servicesUri = servicesContext.getUri();
     this.providers = providers;
-    this.entityRegistry = entityRegistry;
+    this.codelistStore = valueStore.forType(Codelist.class);
     this.defaultLinkGenerator = new DefaultLinksGenerator();
     this.patchMapperLenient = new ObjectMapper();
     patchMapperLenient.registerModule(new Jdk8Module());
@@ -192,10 +200,14 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       StyleFormatExtension styleFormat,
       boolean includeDerived) {
     // a stylesheet exists, if we have a stylesheet document or if we can derive one
-    Path stylesheetFile = getPathStyle(apiData, collectionId, styleId, styleFormat);
-    if (exists(stylesheetFile)) {
+    if (exists(apiData, collectionId, styleId, styleFormat)) {
       try {
-        return LastModified.from(stylesStore.lastModified(stylesheetFile));
+        if (isMbStyle(styleFormat)) {
+          return LastModified.from(
+              mbStylesStore.lastModified(styleId, getPathMbStyles(apiData, collectionId)));
+        }
+        return LastModified.from(
+            stylesStore.lastModified(getPathStyle(apiData, collectionId, styleId, styleFormat)));
       } catch (IOException e) {
         // continue
       }
@@ -204,10 +216,14 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     if (includeDerived
         && collectionId.isPresent()
         && deriveCollectionStylesEnabled(apiData, collectionId.get())) {
-      stylesheetFile = getPathStyle(apiData, Optional.empty(), styleId, styleFormat);
-      if (exists(stylesheetFile)) {
+      if (exists(apiData, Optional.empty(), styleId, styleFormat)) {
         try {
-          return LastModified.from(stylesStore.lastModified(stylesheetFile));
+          if (isMbStyle(styleFormat)) {
+            return LastModified.from(mbStylesStore.lastModified(styleId, apiData.getId()));
+          }
+          return LastModified.from(
+              stylesStore.lastModified(
+                  getPathStyle(apiData, Optional.empty(), styleId, styleFormat)));
         } catch (IOException e) {
           // continue
         }
@@ -326,9 +342,16 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
         .build();
   }
 
-  private boolean exists(Path path) {
+  private boolean exists(
+      OgcApiDataV2 apiData,
+      Optional<String> collectionId,
+      String styleId,
+      StyleFormatExtension styleFormat) {
     try {
-      return stylesStore.has(path);
+      if (isMbStyle(styleFormat)) {
+        return mbStylesStore.has(styleId, getPathMbStyles(apiData, collectionId));
+      }
+      return stylesStore.has(getPathStyle(apiData, Optional.empty(), styleId, styleFormat));
     } catch (IOException e) {
       return false;
     }
@@ -350,7 +373,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       StyleFormatExtension styleFormat,
       boolean includeDerived) {
     // a stylesheet exists, if we have a stylesheet document or if we can derive one
-    return exists(getPathStyle(apiData, collectionId, styleId, styleFormat))
+    return exists(apiData, collectionId, styleId, styleFormat)
         || (includeDerived && willDeriveStylesheet(apiData, collectionId, styleId, styleFormat));
   }
 
@@ -362,16 +385,13 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     // for specific style encodings, we derive a style for a single feature collection from a
     // multi-collection stylesheet, if this capability is not switched of for the collection
     try {
-      Path pathStyle = getPathStyle(apiData, Optional.empty(), styleId, styleFormat);
-
       return collectionId.isPresent()
           && deriveCollectionStylesEnabled(apiData, collectionId.get())
-          && exists(pathStyle)
+          && exists(apiData, Optional.empty(), styleId, styleFormat)
           && styleFormat.canDeriveCollectionStyle()
           && styleFormat
               .deriveCollectionStyle(
-                  new StylesheetContent(
-                      stylesStore.get(pathStyle).get().readAllBytes(), pathStyle.toString(), true),
+                  getStylesheetContent(apiData, Optional.empty(), styleId, styleFormat),
                   apiData,
                   collectionId.get(),
                   styleId)
@@ -384,14 +404,31 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     return false;
   }
 
+  private StylesheetContent getStylesheetContent(
+      OgcApiDataV2 apiData,
+      Optional<String> collectionId,
+      String styleId,
+      StyleFormatExtension styleFormat)
+      throws IOException {
+    Path pathStyle = getPathStyle(apiData, Optional.empty(), styleId, styleFormat);
+
+    if (isMbStyle(styleFormat)) {
+      MbStyleStylesheet stylesheet =
+          mbStylesStore.get(styleId, getPathMbStyles(apiData, collectionId));
+      return new StylesheetContent(
+          StyleFormatMbStyle.toBytes(stylesheet), pathStyle.toString(), true, stylesheet);
+    }
+
+    return new StylesheetContent(
+        stylesStore.content(pathStyle).get().readAllBytes(), pathStyle.toString(), true);
+  }
+
   public StylesheetContent getStylesheet(
       OgcApiDataV2 apiData,
       Optional<String> collectionId,
       String styleId,
       StyleFormatExtension styleFormat,
       ApiRequestContext requestContext) {
-    Path pathStyle = getPathStyle(apiData, collectionId, styleId, styleFormat);
-
     if (!stylesheetExists(apiData, collectionId, styleId, styleFormat)) {
       boolean styleExists = getStyleIds(apiData, collectionId).contains(styleId);
 
@@ -417,9 +454,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     }
 
     try {
-      // TODO parse first?
-      return new StylesheetContent(
-          stylesStore.get(pathStyle).get().readAllBytes(), pathStyle.toString(), true);
+      return getStylesheetContent(apiData, collectionId, styleId, styleFormat);
     } catch (IOException e) {
       if (collectionId.isPresent())
         throw new RuntimeException(
@@ -508,7 +543,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
                   getStylesheet(apiData, collectionId, styleId, format.get(), requestContext, true),
                   apiData,
                   providers,
-                  entityRegistry));
+                  codelistStore));
     }
     StyleMetadata metadata = builder.build();
 
@@ -553,7 +588,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     Path patchFile = getPathMetadata(apiData, collectionId, styleId);
 
     try {
-      Optional<InputStream> patch = stylesStore.get(patchFile);
+      Optional<InputStream> patch = stylesStore.content(patchFile);
       if (patch.isEmpty()) return Optional.empty();
 
       try {
@@ -599,7 +634,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
 
     try {
       JsonMergePatch patch;
-      Optional<InputStream> patchStream = stylesStore.get(patchFile);
+      Optional<InputStream> patchStream = stylesStore.content(patchFile);
 
       if (patchStream.isEmpty()) return additionalPatchContent;
 
@@ -772,9 +807,21 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       StyleFormatExtension format,
       byte[] requestBody)
       throws IOException {
-    stylesStore.put(
-        getStylesheetPath(apiData, collectionId, styleId, format),
-        new ByteArrayInputStream(requestBody));
+    if (isMbStyle(format)) {
+      MbStyleStylesheet stylesheet = StyleFormatMbStyle.parse(requestBody, false);
+      try {
+        mbStylesStore.put(styleId, stylesheet, getPathMbStyles(apiData, collectionId)).join();
+      } catch (CompletionException e) {
+        if (e.getCause() instanceof IOException) {
+          throw (IOException) e.getCause();
+        }
+        throw e;
+      }
+    } else {
+      stylesStore.put(
+          getStylesheetPath(apiData, collectionId, styleId, format),
+          new ByteArrayInputStream(requestBody));
+    }
   }
 
   @Override
@@ -791,6 +838,9 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       throws IOException {
     for (StyleFormatExtension format :
         getStyleFormatStream(apiData, collectionId).collect(Collectors.toUnmodifiableList())) {
+      if (isMbStyle(format)) {
+        mbStylesStore.delete(styleId, getPathMbStyles(apiData, collectionId));
+      }
       stylesStore.delete(getStylesheetPath(apiData, collectionId, styleId, format));
     }
     stylesStore.delete(getStyleMetadataPath(apiData, collectionId, styleId));
@@ -902,6 +952,16 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
         : Path.of(apiData.getId());
   }
 
+  private String[] getPathMbStyles(OgcApiDataV2 apiData, Optional<String> collectionId) {
+    return collectionId.isPresent()
+        ? new String[] {apiData.getId(), collectionId.get()}
+        : new String[] {apiData.getId()};
+  }
+
+  private boolean isMbStyle(StyleFormatExtension format) {
+    return format instanceof StyleFormatMbStyle || format instanceof StyleFormatHtml;
+  }
+
   private Path getPathStyle(
       OgcApiDataV2 apiData,
       Optional<String> collectionId,
@@ -938,6 +998,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
             .map(StyleFormatExtension::getFileExtension)
             .collect(Collectors.toUnmodifiableSet());
     Path parent = getPathStyles(apiData, collectionId);
+    String[] parentMb = getPathMbStyles(apiData, collectionId);
 
     try (Stream<Path> fileStream =
         stylesStore.walk(
@@ -949,10 +1010,12 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
                     && formatExt.contains(
                         com.google.common.io.Files.getFileExtension(
                             path.getFileName().toString())))) {
-      return fileStream
-          .map(
-              path ->
-                  com.google.common.io.Files.getNameWithoutExtension(path.getFileName().toString()))
+      return Stream.concat(
+              mbStylesStore.identifiers(parentMb).stream().map(Identifier::id),
+              fileStream.map(
+                  path ->
+                      com.google.common.io.Files.getNameWithoutExtension(
+                          path.getFileName().toString())))
           .distinct()
           .sorted()
           .collect(ImmutableSet.toImmutableSet());

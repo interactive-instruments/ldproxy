@@ -13,7 +13,7 @@ import de.ii.xtraplatform.entities.domain.EntityData;
 import de.ii.xtraplatform.entities.domain.EntityDataDefaultsStore;
 import de.ii.xtraplatform.entities.domain.EntityDataStore;
 import de.ii.xtraplatform.entities.domain.EntityFactories;
-import de.ii.xtraplatform.entities.domain.Identifier;
+import de.ii.xtraplatform.values.domain.Identifier;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;

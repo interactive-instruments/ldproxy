@@ -7,7 +7,8 @@
  */
 package de.ii.ldproxy.cfg;
 
-import de.ii.xtraplatform.blobs.domain.BlobStore;
+import de.ii.xtraplatform.blobs.domain.Blob;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -16,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
-class MockBlobStore implements BlobStore {
+class MockResourceStore implements ResourceStore {
 
   @Override
   public CompletableFuture<Void> onReady() {
@@ -39,7 +40,12 @@ class MockBlobStore implements BlobStore {
   }
 
   @Override
-  public Optional<InputStream> get(Path path) throws IOException {
+  public Optional<InputStream> content(Path path) throws IOException {
+    return Optional.empty();
+  }
+
+  @Override
+  public Optional<Blob> get(Path path) throws IOException {
     return Optional.empty();
   }
 

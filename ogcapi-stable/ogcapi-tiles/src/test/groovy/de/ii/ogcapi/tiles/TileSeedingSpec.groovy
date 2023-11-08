@@ -7,13 +7,12 @@
  */
 package de.ii.ogcapi.tiles
 
-
-import de.ii.xtraplatform.tiles.domain.TileMatrixSet
 import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.EpsgCrs
+import de.ii.xtraplatform.tiles.app.TileMatrixSetRepositoryImpl
 import spock.lang.Specification
 
-class TileSeedingSpec extends Specification{
+class TileSeedingSpec extends Specification {
 
 
     def 'Compute the minimum and maximum rows and cols for zoom Level zero'() {
@@ -21,7 +20,7 @@ class TileSeedingSpec extends Specification{
         given: "a zoom Level of 0 and a spatial extent of the following Tile: zoom level 8, row 103, col 153"
 
         def zoomLevel = 0
-        def tilingScheme = TileMatrixSet.fromWellKnownId("WebMercatorQuad").orElseThrow()
+        def tilingScheme = TileMatrixSetRepositoryImpl.fromWellKnownId("WebMercatorQuad").orElseThrow()
 
         def crsTransformation = null
 
@@ -37,7 +36,7 @@ class TileSeedingSpec extends Specification{
 
         when: "getLimits is called"
 
-        def result = tilingScheme.getLimits(zoomLevel,bbox)
+        def result = tilingScheme.getLimits(zoomLevel, bbox)
 
         then: 'it should return a map with min/max row/col with values of 0'
 
@@ -47,12 +46,13 @@ class TileSeedingSpec extends Specification{
         result.maxTileRow == 0
 
     }
-    def 'Compute the minimum and maximum rows and cols for no specified spatial extent'(){
+
+    def 'Compute the minimum and maximum rows and cols for no specified spatial extent'() {
 
         given: "a zoom Level of 10 and a spatial extent with default values"
 
         def zoomLevel = 10
-        def tilingScheme = TileMatrixSet.fromWellKnownId("WebMercatorQuad").orElseThrow();
+        def tilingScheme = TileMatrixSetRepositoryImpl.fromWellKnownId("WebMercatorQuad").orElseThrow();
 
 
         def crsTransformation = null
@@ -68,7 +68,7 @@ class TileSeedingSpec extends Specification{
 
         when: "getLimits is called"
 
-        def result = tilingScheme.getLimits(zoomLevel,bbox)
+        def result = tilingScheme.getLimits(zoomLevel, bbox)
 
         then: 'it should return a map with and the minimum and maximum values for the row and col for that specific zoom level'
 
@@ -79,13 +79,13 @@ class TileSeedingSpec extends Specification{
 
     }
 
-    def 'Compute the minimum and maximum rows and cols for non-zero zoomLevel and specified spatial extent'(){
+    def 'Compute the minimum and maximum rows and cols for non-zero zoomLevel and specified spatial extent'() {
 
 
         given: "a zoom Level of 12 and a spatial extent of the following Tile: zoom level 8, row 103, col 153"
 
         def zoomLevel = 12
-        def tilingScheme = TileMatrixSet.fromWellKnownId("WebMercatorQuad").orElseThrow()
+        def tilingScheme = TileMatrixSetRepositoryImpl.fromWellKnownId("WebMercatorQuad").orElseThrow()
 
         def crsTransformation = null
 
@@ -100,7 +100,7 @@ class TileSeedingSpec extends Specification{
 
         when: "getLimits is called"
 
-        def result = tilingScheme.getLimits(zoomLevel,bbox)
+        def result = tilingScheme.getLimits(zoomLevel, bbox)
 
         then: 'it should return a map with min/max row/col values'
 

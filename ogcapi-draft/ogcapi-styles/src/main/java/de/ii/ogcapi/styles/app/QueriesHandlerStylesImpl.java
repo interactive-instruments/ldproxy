@@ -30,7 +30,7 @@ import de.ii.ogcapi.styles.domain.StyleRepository;
 import de.ii.ogcapi.styles.domain.Styles;
 import de.ii.ogcapi.styles.domain.StylesFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
-import de.ii.xtraplatform.web.domain.ETag;
+import de.ii.xtraplatform.base.domain.ETag;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;

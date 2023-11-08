@@ -30,24 +30,22 @@ import de.ii.ogcapi.routes.domain.Routes;
 import de.ii.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutesLinksGenerator;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
-import de.ii.xtraplatform.base.domain.LogContext;
-import de.ii.xtraplatform.blobs.domain.BlobStore;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
+import de.ii.xtraplatform.values.domain.Identifier;
+import de.ii.xtraplatform.values.domain.KeyValueStore;
+import de.ii.xtraplatform.values.domain.ValueStore;
 import de.ii.xtraplatform.web.domain.LastModified;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,15 +57,18 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
   private static final Logger LOGGER = LoggerFactory.getLogger(RouteRepositoryFiles.class);
 
   private final ExtensionRegistry extensionRegistry;
-  private final BlobStore routesStore;
+  private final KeyValueStore<Route> routesStore;
+  private final KeyValueStore<RouteDefinition> routeDefinitionsStore;
   private final I18n i18n;
   private final DefaultLinksGenerator defaultLinkGenerator;
   private final RoutesLinksGenerator routesLinkGenerator;
   private final ObjectMapper mapper;
 
   @Inject
-  public RouteRepositoryFiles(BlobStore blobStore, ExtensionRegistry extensionRegistry, I18n i18n) {
-    this.routesStore = blobStore.with(RoutingBuildingBlock.STORE_RESOURCE_TYPE);
+  public RouteRepositoryFiles(
+      ValueStore valueStore, ExtensionRegistry extensionRegistry, I18n i18n) {
+    this.routesStore = valueStore.forTypeWritable(Route.class);
+    this.routeDefinitionsStore = valueStore.forTypeWritable(RouteDefinition.class);
     this.i18n = i18n;
     this.extensionRegistry = extensionRegistry;
     this.defaultLinkGenerator = new DefaultLinksGenerator();
@@ -99,40 +100,16 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
   }
 
   private List<String> getRouteIds(OgcApiDataV2 apiData) {
-    Set<String> formatExt =
-        getRouteFormatStream(apiData)
-            .map(RouteFormatExtension::getFileExtension)
-            .collect(Collectors.toUnmodifiableSet());
-    Path parent = getPathRoutes(apiData);
-
-    try (Stream<Path> fileStream =
-        routesStore.walk(
-            parent,
-            1,
-            (path, attributes) ->
-                attributes.isValue()
-                    && !attributes.isHidden()
-                    && !path.getFileName().toString().contains(".definition")
-                    && formatExt.contains(
-                        com.google.common.io.Files.getFileExtension(
-                            path.getFileName().toString())))) {
-      return fileStream
-          .map(
-              path ->
-                  com.google.common.io.Files.getNameWithoutExtension(path.getFileName().toString()))
-          .distinct()
-          .sorted()
-          .collect(ImmutableList.toImmutableList());
-    } catch (IOException e) {
-      LogContext.error(LOGGER, e, "Could not parse routes");
-    }
-    return ImmutableList.of();
+    return routesStore.identifiers(apiData.getId()).stream()
+        .map(Identifier::id)
+        .sorted()
+        .collect(ImmutableList.toImmutableList());
   }
 
   @Override
   public Routes getRoutes(OgcApiDataV2 apiData, ApiRequestContext requestContext) {
     List<String> routeIds = getRouteIds(apiData);
-    final RoutesLinksGenerator routesLinkGenerator = new RoutesLinksGenerator();
+
     ImmutableRoutes.Builder builder =
         new ImmutableRoutes.Builder()
             .addAllLinks(
@@ -142,6 +119,7 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
                     requestContext.getAlternateMediaTypes(),
                     i18n,
                     requestContext.getLanguage()));
+
     routeIds.forEach(
         routeId ->
             builder.addLinks(
@@ -156,8 +134,7 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
 
   @Override
   public boolean routeExists(OgcApiDataV2 apiData, String routeId) {
-    return getRouteFormatStream(apiData)
-        .anyMatch(format -> exists(getPathRoute(apiData, routeId, format)));
+    return routesStore.has(routeId, apiData.getId());
   }
 
   private String getRouteName(OgcApiDataV2 apiData, String routeId, Optional<Locale> language) {
@@ -174,38 +151,22 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
           MessageFormat.format("The route ''{0}'' does not exist in this API.", routeId));
     }
 
-    try {
-      return mapper.readValue(
-          routesStore.get(getPathDefinition(apiData, routeId)).get(), RouteDefinition.class);
-    } catch (IOException e) {
-      throw new InternalServerErrorException(
-          MessageFormat.format(
-              "Route definition file in route store is invalid for route ''{0}'' in API ''{1}''.",
-              routeId, apiData.getId()),
-          e);
-    }
+    return Objects.requireNonNullElseGet(
+        routeDefinitionsStore.get(routeId, apiData.getId()),
+        () -> routeDefinitionsStore.get(toOldDefinitionId(routeId), apiData.getId()));
   }
 
   @Override
   public ImmutableValidationResult.Builder validate(
       ImmutableValidationResult.Builder builder, OgcApiDataV2 apiData) {
     List<String> routeIds = getRouteIds(apiData);
-    Set<String> formatExt =
-        getRouteFormatStream(apiData)
-            .map(RouteFormatExtension::getFileExtension)
-            .collect(Collectors.toUnmodifiableSet());
 
     routeIds.forEach(
         routeId -> {
-          formatExt.forEach(
-              ext -> {
-                if (!exists(getPathRoute(apiData, routeId, ext)))
-                  builder.addStrictErrors(
-                      "Route Repository: Route '{}' is mssing in the format with extension '{}'.",
-                      routeId,
-                      ext);
-              });
-          if (!exists(getPathDefinition(apiData, routeId)))
+          if (!routesStore.has(routeId, apiData.getId()))
+            builder.addStrictErrors("Route Repository: Route '{}' is not available.", routeId);
+          if (!routeDefinitionsStore.has(routeId, apiData.getId())
+              && !routeDefinitionsStore.has(toOldDefinitionId(routeId), apiData.getId()))
             builder.addStrictErrors(
                 "Route Repository: The definition of route '{}' is not available.", routeId);
         });
@@ -220,27 +181,16 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
           MessageFormat.format("The route ''{0}'' does not exist in this API.", routeId));
     }
 
-    try {
-      return mapper.readValue(
-          routesStore.get(getPathRoute(apiData, routeId, format)).get(), Route.class);
-    } catch (IOException e) {
-      throw new InternalServerErrorException(
-          MessageFormat.format(
-              "Route file in route store is invalid for route ''{0}'' in API ''{1}''.",
-              routeId, apiData.getId()),
-          e);
-    }
+    return routesStore.get(routeId, apiData.getId());
   }
 
   @Override
   public Date getLastModified(OgcApiDataV2 apiData, String routeId) {
-    Path definitionFile = getPathDefinition(apiData, routeId);
-    if (exists(definitionFile)) {
-      try {
-        return LastModified.from(routesStore.lastModified(definitionFile));
-      } catch (IOException e) {
-        // continue
-      }
+    if (routeDefinitionsStore.has(routeId, apiData.getId())) {
+      return LastModified.from(routeDefinitionsStore.lastModified(routeId, apiData.getId()));
+    } else if (routeDefinitionsStore.has(toOldDefinitionId(routeId), apiData.getId())) {
+      return LastModified.from(
+          routeDefinitionsStore.lastModified(toOldDefinitionId(routeId), apiData.getId()));
     }
 
     return null;
@@ -251,63 +201,55 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
       OgcApiDataV2 apiData,
       String routeId,
       RouteFormatExtension format,
-      byte[] route,
+      byte[] routeBytes,
       RouteDefinition routeDefinition,
       List<Link> routeDefinitionLinks)
       throws IOException {
-    Path routePath = getPathRoute(apiData, routeId, format);
-    Path definitionPath = getPathDefinition(apiData, routeId);
     try {
-      routesStore.put(routePath, new ByteArrayInputStream(route));
+      Route route = mapper.readValue(routeBytes, Route.class);
+      routesStore.put(routeId, route, apiData.getId()).join();
     } catch (IOException e) {
-      routesStore.delete(routePath);
+      routesStore.delete(routeId, apiData.getId());
+      throw e;
+    } catch (CompletionException e) {
+      routesStore.delete(routeId, apiData.getId());
+      if (e.getCause() instanceof IOException) {
+        throw (IOException) e.getCause();
+      }
       throw e;
     }
     try {
-      byte[] definition =
-          this.mapper.writeValueAsBytes(
-              new ImmutableRouteDefinition.Builder()
-                  .from(routeDefinition)
-                  .links(routeDefinitionLinks)
-                  .build());
-      routesStore.put(definitionPath, new ByteArrayInputStream(definition));
-    } catch (IOException e) {
-      routesStore.delete(routePath);
-      routesStore.delete(definitionPath);
+      RouteDefinition definition =
+          new ImmutableRouteDefinition.Builder()
+              .from(routeDefinition)
+              .links(routeDefinitionLinks)
+              .build();
+      routeDefinitionsStore.put(routeId, definition, apiData.getId()).join();
+    } catch (CompletionException e) {
+      deleteRoute(apiData, routeId);
+      if (e.getCause() instanceof IOException) {
+        throw (IOException) e.getCause();
+      }
       throw e;
     }
   }
 
   @Override
   public void deleteRoute(OgcApiDataV2 apiData, String routeId) throws IOException {
-    for (RouteFormatExtension format :
-        getRouteFormatStream(apiData).collect(Collectors.toUnmodifiableList())) {
-      routesStore.delete(getPathRoute(apiData, routeId, format));
-    }
-    routesStore.delete(getPathDefinition(apiData, routeId));
-  }
-
-  private Path getPathRoutes(OgcApiDataV2 apiData) {
-    return Path.of(apiData.getId());
-  }
-
-  private Path getPathRoute(OgcApiDataV2 apiData, String routeId, RouteFormatExtension format) {
-    return getPathRoute(apiData, routeId, format.getFileExtension());
-  }
-
-  private Path getPathRoute(OgcApiDataV2 apiData, String routeId, String ext) {
-    return getPathRoutes(apiData).resolve(String.format("%s.%s", routeId, ext));
-  }
-
-  private Path getPathDefinition(OgcApiDataV2 apiData, String routeId) {
-    return getPathRoutes(apiData).resolve(String.format("%s.definition.json", routeId));
-  }
-
-  private boolean exists(Path path) {
     try {
-      return routesStore.has(path);
-    } catch (IOException e) {
-      return false;
+      routesStore.delete(routeId, apiData.getId()).join();
+      routeDefinitionsStore.delete(routeId, apiData.getId()).join();
+      routeDefinitionsStore.delete(toOldDefinitionId(routeId), apiData.getId()).join();
+    } catch (CompletionException e) {
+      if (e.getCause() instanceof IOException) {
+        throw (IOException) e.getCause();
+      }
+      throw e;
     }
+  }
+
+  @Deprecated(since = "3.6", forRemoval = true)
+  private String toOldDefinitionId(String routeId) {
+    return routeId + ".definition";
   }
 }

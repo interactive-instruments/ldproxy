@@ -59,13 +59,14 @@ import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.NumberSchema;
@@ -82,14 +83,13 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public abstract class FeaturesFormatCityJsonBase implements FeatureFormatExtension {
 
   public static final String IGNORE = "ignore";
   protected final FeaturesCoreProviders providers;
-  protected final EntityRegistry entityRegistry;
+  private final Values<Codelist> codelistStore;
   protected final FeaturesCoreValidation featuresCoreValidator;
   protected final SchemaGeneratorOpenApi schemaGeneratorFeature;
   protected final SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection;
@@ -99,7 +99,7 @@ public abstract class FeaturesFormatCityJsonBase implements FeatureFormatExtensi
 
   public FeaturesFormatCityJsonBase(
       FeaturesCoreProviders providers,
-      EntityRegistry entityRegistry,
+      ValueStore valueStore,
       FeaturesCoreValidation featuresCoreValidator,
       SchemaGeneratorOpenApi schemaGeneratorFeature,
       SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
@@ -107,7 +107,7 @@ public abstract class FeaturesFormatCityJsonBase implements FeatureFormatExtensi
       CrsTransformerFactory crsTransformerFactory,
       CrsInfo crsInfo) {
     this.providers = providers;
-    this.entityRegistry = entityRegistry;
+    this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;
     this.schemaGeneratorFeature = schemaGeneratorFeature;
     this.schemaGeneratorFeatureCollection = schemaGeneratorFeatureCollection;
@@ -166,17 +166,13 @@ public abstract class FeaturesFormatCityJsonBase implements FeatureFormatExtensi
       }
     }
 
-    Set<String> codelists =
-        entityRegistry.getEntitiesForType(Codelist.class).stream()
-            .map(Codelist::getId)
-            .collect(Collectors.toUnmodifiableSet());
     for (Map.Entry<String, CityJsonConfiguration> entry : configurationMap.entrySet()) {
       String collectionId = entry.getKey();
       for (Map.Entry<String, List<PropertyTransformation>> entry2 :
           entry.getValue().getTransformations().entrySet()) {
         String property = entry2.getKey();
         for (PropertyTransformation transformation : entry2.getValue()) {
-          builder = transformation.validate(builder, collectionId, property, codelists);
+          builder = transformation.validate(builder, collectionId, property, codelistStore.ids());
         }
       }
     }

@@ -32,9 +32,9 @@ import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleLayer;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
-import de.ii.xtraplatform.base.domain.LogContext;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
+import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.services.domain.ServicesContext;
+import de.ii.xtraplatform.values.domain.Values;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
 import java.net.URI;
@@ -127,7 +127,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
 
   @Override
   public String getTitle(String styleId, StylesheetContent stylesheetContent) {
-    Optional<MbStyleStylesheet> optionalStylesheet = parse(stylesheetContent, "", false, false);
+    Optional<MbStyleStylesheet> optionalStylesheet = stylesheetContent.getMbStyle();
     return optionalStylesheet.isPresent()
         ? optionalStylesheet.get().getName().orElse(styleId)
         : styleId;
@@ -144,7 +144,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         new URICustomizer(servicesUri)
             .ensureLastPathSegments(api.getData().getSubPath().toArray(String[]::new));
     String serviceUrl = uriCustomizer.toString();
-    return parse(stylesheetContent, serviceUrl, true, false);
+    return stylesheetContent.getMbStyle().map(mbs -> mbs.replaceParameters(serviceUrl));
   }
 
   @Override
@@ -163,7 +163,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
             .ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
     String serviceUrl = uriCustomizer.toString();
     Optional<MbStyleStylesheet> mbStyleOriginal =
-        StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, false, false);
+        stylesheetContent.getMbStyle().map(mbs -> mbs.replaceParameters(serviceUrl));
     if (mbStyleOriginal.isEmpty()
         || mbStyleOriginal.get().getLayers().stream()
             .noneMatch(
@@ -175,7 +175,7 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
       return Optional.empty();
 
     MbStyleStylesheet mbStyleDerived =
-        ImmutableMbStyleStylesheet.builder()
+        new ImmutableMbStyleStylesheet.Builder()
             .from(mbStyleOriginal.get())
             .layers(
                 mbStyleOriginal.get().getLayers().stream()
@@ -190,10 +190,8 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
 
     String descriptor = String.format("%s/%s/%s", apiData.getId(), collectionId, styleId);
     try {
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.registerModule(new Jdk8Module());
       return Optional.of(
-          new StylesheetContent(mapper.writeValueAsBytes(mbStyleDerived), descriptor, true));
+          new StylesheetContent(toBytes(mbStyleDerived), descriptor, true, mbStyleDerived));
     } catch (JsonProcessingException e) {
       LOGGER.error(
           String.format("Could not derive style %s. Reason: %s", descriptor, e.getMessage()));
@@ -211,21 +209,24 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
       StylesheetContent stylesheetContent,
       OgcApiDataV2 apiData,
       FeaturesCoreProviders providers,
-      EntityRegistry entityRegistry) {
+      Values<Codelist> codelistStore) {
     URICustomizer uriCustomizer =
         new URICustomizer(servicesUri)
             .ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
     String serviceUrl = uriCustomizer.toString();
     Optional<MbStyleStylesheet> mbStyle =
-        StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, false, false);
+        stylesheetContent.getMbStyle().map(mbs -> mbs.replaceParameters(serviceUrl));
     if (mbStyle.isEmpty()) return ImmutableList.of();
 
-    return mbStyle.get().getLayerMetadata(apiData, providers, entityRegistry);
+    return mbStyle.get().getLayerMetadata(apiData, providers, codelistStore);
   }
 
   @Override
   public Optional<String> analyze(StylesheetContent stylesheetContent, boolean strict) {
-    MbStyleStylesheet stylesheet = parse(stylesheetContent, "", true, strict).get();
+    MbStyleStylesheet stylesheet =
+        stylesheetContent
+            .getMbStyle()
+            .orElseGet(() -> parse(stylesheetContent.getContent(), strict));
 
     // TODO add more checks
     if (strict) {
@@ -269,45 +270,26 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
     return styleIdCandidate;
   }
 
-  static Optional<MbStyleStylesheet> parse(
-      StylesheetContent stylesheetContent,
-      String serviceUrl,
-      boolean throwOnError,
-      boolean strict) {
-    final byte[] content = stylesheetContent.getContent();
+  private static ObjectMapper MAPPER =
+      new ObjectMapper()
+          .registerModule(new Jdk8Module())
+          .registerModule(new GuavaModule())
+          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+          .enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
 
-    // prepare Jackson mapper for deserialization
-    final ObjectMapper mapper = new ObjectMapper();
-    mapper.registerModule(new Jdk8Module());
-    mapper.registerModule(new GuavaModule());
-    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, strict);
-    mapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
-    MbStyleStylesheet parsedContent;
+  private static ObjectMapper STRICT_MAPPER =
+      MAPPER.copy().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+
+  static MbStyleStylesheet parse(byte[] content, boolean strict) {
+    ObjectMapper mapper = strict ? STRICT_MAPPER : MAPPER;
     try {
-      // parse input
-      parsedContent = mapper.readValue(content, MbStyleStylesheet.class);
+      return mapper.readValue(content, MbStyleStylesheet.class);
     } catch (IOException e) {
-      if (stylesheetContent.getInStore()) {
-        // this is an invalid style already in the store: server error
-        if (throwOnError)
-          throw new RuntimeException(
-              "The content of a stylesheet is invalid: " + stylesheetContent.getDescriptor() + ".",
-              e);
-      } else {
-        // a style provided by a client: client error
-        if (throwOnError)
-          throw new IllegalArgumentException("The content of the stylesheet is invalid.", e);
-      }
-      LOGGER.error(
-          "The content of a stylesheet ''{}'' is invalid: {}",
-          stylesheetContent.getDescriptor(),
-          e.getMessage());
-      if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
-        LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
-      }
-      return Optional.empty();
+      throw new IllegalArgumentException("The content of the stylesheet is invalid.", e);
     }
+  }
 
-    return Optional.of(parsedContent.replaceParameters(serviceUrl));
+  static byte[] toBytes(MbStyleStylesheet stylesheet) throws JsonProcessingException {
+    return MAPPER.writeValueAsBytes(stylesheet);
   }
 }
