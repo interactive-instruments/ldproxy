@@ -21,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType
 import de.ii.ogcapi.foundation.domain.ApiRequestContext
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2
 import de.ii.ogcapi.foundation.domain.OgcApi
+import de.ii.ogcapi.foundation.domain.QueryParameterSet
 import de.ii.ogcapi.foundation.domain.URICustomizer
 import de.ii.xtraplatform.auth.domain.User
 import de.ii.xtraplatform.crs.domain.CrsTransformer
@@ -101,6 +102,11 @@ class JsonFgWriterSetupUtil {
                     @Override
                     Optional<User> getUser() {
                         return null
+                    }
+
+                    @Override
+                    QueryParameterSet getQueryParameterSet() {
+                        return QueryParameterSet.of()
                     }
                 })
                 .limit(10)

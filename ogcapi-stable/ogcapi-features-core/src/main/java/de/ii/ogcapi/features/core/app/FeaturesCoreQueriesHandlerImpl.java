@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureLinksGenerator;
+import de.ii.ogcapi.features.core.domain.FeatureTransformationQueryParameter;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
@@ -26,9 +27,11 @@ import de.ii.ogcapi.foundation.domain.HeaderItems;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
@@ -303,6 +306,14 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             .isHitsOnlyIfMore(onlyHitsIfMore)
             .showsFeatureSelfLink(showsFeatureSelfLink)
             .profile(profile);
+
+    QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
+    for (OgcApiQueryParameter parameter : queryParameterSet.getDefinitions()) {
+      if (parameter instanceof FeatureTransformationQueryParameter) {
+        ((FeatureTransformationQueryParameter) parameter)
+            .applyTo(transformationContext, queryParameterSet);
+      }
+    }
 
     FeatureStream featureStream;
     FeatureTokenEncoder<?> encoder;

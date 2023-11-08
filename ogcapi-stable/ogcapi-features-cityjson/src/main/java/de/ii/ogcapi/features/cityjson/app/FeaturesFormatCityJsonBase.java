@@ -232,16 +232,6 @@ public abstract class FeaturesFormatCityJsonBase implements FeatureFormatExtensi
             .crs(crs)
             .textSequences(textSequences)
             .version(version)
-            .prettify(
-                Optional.ofNullable(
-                        transformationContext.getOgcApiRequest().getParameters().get("pretty"))
-                    .filter(value -> Objects.equals(value, "true"))
-                    .isPresent())
-            .debugJson(
-                Optional.ofNullable(
-                        transformationContext.getOgcApiRequest().getParameters().get("debug"))
-                    .filter(value -> Objects.equals(value, "true"))
-                    .isPresent())
             .build();
 
     return Optional.of(new FeatureEncoderCityJson(transformationContextCityJson, cityJsonWriters));

@@ -9,6 +9,8 @@ package de.ii.ogcapi.features.gltf.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.gltf.domain.GltfConfiguration;
+import de.ii.ogcapi.features.gltf.domain.GltfQueryParameter;
+import de.ii.ogcapi.features.gltf.domain.ImmutableFeatureTransformationContextGltf;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -16,6 +18,7 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
@@ -39,9 +42,7 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterClampToEllipsoid extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<Boolean> {
-
-  // TODO #846
+    implements OgcApiQueryParameter, TypedQueryParameter<Boolean>, GltfQueryParameter {
 
   private final SchemaValidator schemaValidator;
 
@@ -115,5 +116,12 @@ public class QueryParameterClampToEllipsoid extends ApiExtensionCache
   @Override
   public Optional<SpecificationMaturity> getSpecificationMaturity() {
     return Optional.of(SpecificationMaturity.DRAFT_LDPROXY);
+  }
+
+  @Override
+  public void applyTo(
+      ImmutableFeatureTransformationContextGltf.Builder builder,
+      QueryParameterSet queryParameterSet) {
+    builder.clampToEllipsoid(queryParameterSet.getValue(this).orElse(false));
   }
 }

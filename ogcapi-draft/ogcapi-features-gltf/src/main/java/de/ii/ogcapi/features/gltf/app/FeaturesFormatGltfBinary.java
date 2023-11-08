@@ -13,9 +13,9 @@ import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
-import de.ii.ogcapi.features.gltf.domain.FeatureTransformationContextGltf;
 import de.ii.ogcapi.features.gltf.domain.GltfAsset;
 import de.ii.ogcapi.features.gltf.domain.GltfConfiguration;
+import de.ii.ogcapi.features.gltf.domain.GltfQueryParameter;
 import de.ii.ogcapi.features.gltf.domain.GltfSchema;
 import de.ii.ogcapi.features.gltf.domain.ImmutableFeatureTransformationContextGltf;
 import de.ii.ogcapi.features.gltf.domain.Metadata3dSchemaCache;
@@ -27,6 +27,8 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -359,24 +361,25 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
             collectionId,
             codelistStore.asMap());
 
-    FeatureTransformationContextGltf transformationContextGltf =
+    ImmutableFeatureTransformationContextGltf.Builder builder =
         ImmutableFeatureTransformationContextGltf.builder()
             .from(transformationContext)
-            .clampToEllipsoid(
-                "true"
-                    .equalsIgnoreCase(
-                        transformationContext
-                            .getOgcApiRequest()
-                            .getParameters()
-                            .get("clampToEllipsoid")))
             .crsTransformerCrs84hToEcef(toEcef)
             .schemaUri(schemaUri)
             .gltfSchema(gltfSchema)
             .gltfConfiguration(
                 apiData.getExtension(GltfConfiguration.class, collectionId).orElseThrow())
-            .build();
+            .clampToEllipsoid(false);
 
-    return Optional.of(new FeatureEncoderGltf(transformationContextGltf));
+    QueryParameterSet queryParameterSet =
+        transformationContext.getOgcApiRequest().getQueryParameterSet();
+    for (OgcApiQueryParameter parameter : queryParameterSet.getDefinitions()) {
+      if (parameter instanceof GltfQueryParameter) {
+        ((GltfQueryParameter) parameter).applyTo(builder, queryParameterSet);
+      }
+    }
+
+    return Optional.of(new FeatureEncoderGltf(builder.build()));
   }
 
   @Override

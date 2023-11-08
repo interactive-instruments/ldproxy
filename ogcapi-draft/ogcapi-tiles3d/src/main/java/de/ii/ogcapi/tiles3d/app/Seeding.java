@@ -13,6 +13,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiBackgroundTask;
@@ -62,6 +63,7 @@ public class Seeding implements OgcApiBackgroundTask {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Seeding.class);
 
+  private final ExtensionRegistry extensionRegistry;
   private final TileResourceCache tileResourcesCache;
   private final URI servicesUri;
   private final FeaturesCoreProviders providers;
@@ -70,11 +72,13 @@ public class Seeding implements OgcApiBackgroundTask {
 
   @Inject
   public Seeding(
+      ExtensionRegistry extensionRegistry,
       TileResourceCache tileResourcesCache,
       ServicesContext servicesContext,
       FeaturesCoreProviders providers,
       FeaturesCoreQueriesHandler queryHandlerFeatures,
       Cql cql) {
+    this.extensionRegistry = extensionRegistry;
     this.tileResourcesCache = tileResourcesCache;
     this.servicesUri = servicesContext.getUri();
     this.providers = providers;
@@ -601,6 +605,9 @@ public class Seeding implements OgcApiBackgroundTask {
                 .orElseThrow();
         Response response =
             Tiles3dContentUtil.getContent(
+                extensionRegistry,
+                content.getApi(),
+                content.getCollectionId(),
                 providers.getFeatureProviderOrThrow(
                     apiData, apiData.getCollectionData(content.getCollectionId()).orElseThrow()),
                 queryHandlerFeatures,

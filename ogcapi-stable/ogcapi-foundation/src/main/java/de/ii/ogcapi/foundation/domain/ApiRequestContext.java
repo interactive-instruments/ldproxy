@@ -40,6 +40,8 @@ public interface ApiRequestContext {
 
   Optional<User> getUser();
 
+  QueryParameterSet getQueryParameterSet();
+
   @Value.Default
   default int getMaxResponseLinkHeaderSize() {
     return 2048;

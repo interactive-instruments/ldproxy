@@ -21,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -34,11 +35,14 @@ public class TilesOnCollection implements CollectionExtension {
 
   private final I18n i18n;
   private final ExtensionRegistry extensionRegistry;
+  private final TilesProviders tilesProviders;
 
   @Inject
-  public TilesOnCollection(I18n i18n, ExtensionRegistry extensionRegistry) {
+  public TilesOnCollection(
+      I18n i18n, ExtensionRegistry extensionRegistry, TilesProviders tilesProviders) {
     this.i18n = i18n;
     this.extensionRegistry = extensionRegistry;
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -63,7 +67,9 @@ public class TilesOnCollection implements CollectionExtension {
         && isExtensionEnabled(
             featureTypeConfiguration,
             TilesConfiguration.class,
-            TilesConfiguration::hasCollectionTiles)) {
+            cfg ->
+                cfg.hasCollectionTiles(
+                    tilesProviders, api.getData(), featureTypeConfiguration.getId()))) {
       Optional<DataType> dataType =
           extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
               .filter(

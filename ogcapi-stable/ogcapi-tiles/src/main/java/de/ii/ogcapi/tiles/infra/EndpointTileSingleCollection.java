@@ -77,7 +77,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection
     return apiData
         .getExtension(TilesConfiguration.class, collectionId)
         .filter(TilesConfiguration::isEnabled)
-        .filter(TilesConfiguration::hasCollectionTiles)
+        .filter(cfg -> cfg.hasCollectionTiles(tilesProviders, apiData, collectionId))
         .isPresent();
   }
 

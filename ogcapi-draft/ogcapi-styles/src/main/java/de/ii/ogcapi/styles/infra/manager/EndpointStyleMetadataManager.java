@@ -12,6 +12,7 @@ import static de.ii.ogcapi.styles.domain.QueriesHandlerStyles.GROUP_STYLES_WRITE
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
+import de.ii.ogcapi.common.domain.QueryParameterDryRun;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -27,6 +28,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.styles.app.StylesBuildingBlock;
 import de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
@@ -43,11 +45,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -249,7 +249,6 @@ public class EndpointStyleMetadataManager extends Endpoint {
   public Response putStyleMetadata(
       @Auth Optional<User> optionalUser,
       @PathParam("styleId") String styleId,
-      @DefaultValue("false") @QueryParam("dry-run") boolean dryRun,
       @Context OgcApi api,
       @Context ApiRequestContext requestContext,
       @Context HttpServletRequest request,
@@ -259,17 +258,17 @@ public class EndpointStyleMetadataManager extends Endpoint {
     checkPathParameter(
         extensionRegistry, apiData, "/styles/{styleId}/metadata", "styleId", styleId);
 
-    QueriesHandlerStylesManager.QueryInputStyleMetadata queryInput =
+    ImmutableQueryInputStyleMetadata.Builder builder =
         new ImmutableQueryInputStyleMetadata.Builder()
             .styleId(styleId)
             .contentType(mediaTypeFromString(request.getContentType()))
             .requestBody(requestBody)
-            .strict(strictHandling(request.getHeaders("Prefer")))
-            .dryRun(dryRun)
-            .build();
+            .strict(strictHandling(request.getHeaders("Prefer")));
+
+    applyParameters(requestContext.getQueryParameterSet(), builder);
 
     return queryHandler.handle(
-        QueriesHandlerStylesManager.Query.REPLACE_STYLE_METADATA, queryInput, requestContext);
+        QueriesHandlerStylesManager.Query.REPLACE_STYLE_METADATA, builder.build(), requestContext);
   }
 
   /**
@@ -284,7 +283,6 @@ public class EndpointStyleMetadataManager extends Endpoint {
   public Response patchStyleMetadata(
       @Auth Optional<User> optionalUser,
       @PathParam("styleId") String styleId,
-      @DefaultValue("false") @QueryParam("dry-run") boolean dryRun,
       @Context OgcApi api,
       @Context ApiRequestContext requestContext,
       @Context HttpServletRequest request,
@@ -294,16 +292,25 @@ public class EndpointStyleMetadataManager extends Endpoint {
     checkPathParameter(
         extensionRegistry, apiData, "/styles/{styleId}/metadata", "styleId", styleId);
 
-    QueriesHandlerStylesManager.QueryInputStyleMetadata queryInput =
+    ImmutableQueryInputStyleMetadata.Builder builder =
         new ImmutableQueryInputStyleMetadata.Builder()
             .styleId(styleId)
             .contentType(mediaTypeFromString(request.getContentType()))
             .requestBody(requestBody)
-            .strict(strictHandling(request.getHeaders("Prefer")))
-            .dryRun(dryRun)
-            .build();
+            .strict(strictHandling(request.getHeaders("Prefer")));
+
+    applyParameters(requestContext.getQueryParameterSet(), builder);
 
     return queryHandler.handle(
-        QueriesHandlerStylesManager.Query.UPDATE_STYLE_METADATA, queryInput, requestContext);
+        QueriesHandlerStylesManager.Query.UPDATE_STYLE_METADATA, builder.build(), requestContext);
+  }
+
+  private static void applyParameters(
+      QueryParameterSet queryParameterSet, ImmutableQueryInputStyleMetadata.Builder builder) {
+    for (OgcApiQueryParameter parameter : queryParameterSet.getDefinitions()) {
+      if (parameter instanceof QueryParameterDryRun) {
+        ((QueryParameterDryRun) parameter).applyTo(builder, queryParameterSet);
+      }
+    }
   }
 }

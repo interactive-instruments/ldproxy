@@ -23,7 +23,6 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.base.domain.ETag.Type;
@@ -32,7 +31,6 @@ import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchemaBase.Scope;
 import io.dropwizard.auth.Auth;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
@@ -125,15 +123,7 @@ public class EndpointFeature extends EndpointFeaturesDefinition
                         != FeaturesCoreConfiguration.ItemType.unknown)
             .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
-    List<OgcApiQueryParameter> parameterDefinitions =
-        getQueryParameters(
-            extensionRegistry,
-            api.getData(),
-            "/collections/{collectionId}/items/{featureId}",
-            collectionId);
-    QueryParameterSet queryParameterSet =
-        QueryParameterSet.of(parameterDefinitions, requestContext.getParameters())
-            .evaluate(api, Optional.of(collectionData));
+    QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
     Optional<Profile> profile =
         Optional.ofNullable(
             (Profile)

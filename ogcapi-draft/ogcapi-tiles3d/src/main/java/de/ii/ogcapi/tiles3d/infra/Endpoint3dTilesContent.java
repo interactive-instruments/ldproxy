@@ -213,7 +213,7 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
     byte[] content = fromCache(r);
 
     if (Objects.isNull(content)) {
-      return computeAndCache(requestContext, api.getData(), collectionId, cfg, r);
+      return computeAndCache(requestContext, api, collectionId, cfg, r);
     }
 
     QueryInputContent queryInput =
@@ -251,13 +251,17 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
 
   private Response computeAndCache(
       ApiRequestContext requestContext,
-      OgcApiDataV2 apiData,
+      OgcApi api,
       String collectionId,
       Tiles3dConfiguration cfg,
       TileResourceDescriptor r)
       throws URISyntaxException {
+    OgcApiDataV2 apiData = api.getData();
     Response response =
         Tiles3dContentUtil.getContent(
+            extensionRegistry,
+            api,
+            collectionId,
             providers.getFeatureProviderOrThrow(
                 apiData, apiData.getCollectionData(collectionId).orElseThrow()),
             queriesHandlerFeatures,
