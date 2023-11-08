@@ -108,8 +108,7 @@ public class JsonFgWriterLinks implements GeoJsonWriter {
 
   @Override
   public void onPropertiesEnd(
-      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
-      throws IOException {
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next) {
     if (isEnabled) {
       currentLinks.forEach(
           link -> {
