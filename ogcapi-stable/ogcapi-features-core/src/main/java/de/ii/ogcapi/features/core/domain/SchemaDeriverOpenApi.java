@@ -39,7 +39,7 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
   protected final Optional<String> description;
 
   public SchemaDeriverOpenApi(
-      String label, Optional<String> description, List<Codelist> codelists) {
+      String label, Optional<String> description, Map<String, Codelist> codelists) {
     super(codelists);
     this.label = label;
     this.description = description;
@@ -218,7 +218,7 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
       Schema<?> oapiSchema,
       SchemaConstraints constraints,
       FeatureSchema property,
-      List<Codelist> codelists) {
+      Map<String, Codelist> codelists) {
     if (oapiSchema instanceof ArraySchema) {
       if (constraints.getMinOccurrence().isPresent()) {
         oapiSchema.minItems(constraints.getMinOccurrence().get());
@@ -250,15 +250,13 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
       }
     } else if (constraints.getCodelist().isPresent()) {
       Optional<Codelist> codelist =
-          codelists.stream()
-              .filter(cl -> cl.getId().equals(constraints.getCodelist().get()))
-              .findAny();
-      if (codelist.isPresent() && !codelist.get().getData().getFallback().isPresent()) {
+          Optional.ofNullable(codelists.get(constraints.getCodelist().get()));
+      if (codelist.isPresent() && !codelist.get().getFallback().isPresent()) {
         boolean isString =
             property.isArray()
                 ? property.getValueType().orElse(Type.UNKNOWN) != Type.INTEGER
                 : property.getType() != Type.INTEGER;
-        Set<String> values = codelist.get().getData().getEntries().keySet();
+        Set<String> values = codelist.get().getEntries().keySet();
         if (isString) {
           ((Schema<String>) result).setEnum(new ArrayList<>(values));
         } else {

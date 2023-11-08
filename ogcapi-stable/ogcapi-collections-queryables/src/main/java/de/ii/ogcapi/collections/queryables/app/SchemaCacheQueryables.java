@@ -23,7 +23,7 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -31,11 +31,12 @@ class SchemaCacheQueryables extends JsonSchemaCache {
 
   private static final String DEFAULT_FLATTENING_SEPARATOR = ".";
 
-  private final Supplier<List<Codelist>> codelistSupplier;
+  private final Supplier<Map<String, Codelist>> codelistSupplier;
   private final FeaturesCoreProviders providers;
 
   public SchemaCacheQueryables(
-      Supplier<List<Codelist>> codelistSupplier, FeaturesCoreProviders featuresCoreProviders) {
+      Supplier<Map<String, Codelist>> codelistSupplier,
+      FeaturesCoreProviders featuresCoreProviders) {
     super();
     this.codelistSupplier = codelistSupplier;
     this.providers = featuresCoreProviders;

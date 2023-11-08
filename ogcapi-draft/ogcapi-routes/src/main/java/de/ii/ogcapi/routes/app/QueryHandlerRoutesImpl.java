@@ -38,6 +38,7 @@ import de.ii.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutesLinksGenerator;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ogcapi.routes.domain.RoutingFlag;
+import de.ii.xtraplatform.base.domain.ETag;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.cql.domain.Geometry;
@@ -45,8 +46,6 @@ import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
-import de.ii.xtraplatform.entities.domain.PersistentEntity;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureStream;
@@ -58,7 +57,8 @@ import de.ii.xtraplatform.routes.sql.domain.RouteQuery;
 import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive;
-import de.ii.xtraplatform.web.domain.ETag;
+import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -87,7 +87,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
   private final I18n i18n;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
   private final CrsTransformerFactory crsTransformerFactory;
-  private final EntityRegistry entityRegistry;
+  private final Values<Codelist> codelistStore;
   private final CrsSupport crsSupport;
   private final CrsInfo crsInfo;
   private final RouteRepository routeRepository;
@@ -97,13 +97,13 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
       I18n i18n,
       CrsTransformerFactory crsTransformerFactory,
       CrsInfo crsInfo,
-      EntityRegistry entityRegistry,
+      ValueStore valueStore,
       CrsSupport crsSupport,
       RouteRepository routeRepository) {
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
     this.crsInfo = crsInfo;
-    this.entityRegistry = entityRegistry;
+    this.codelistStore = valueStore.forType(Codelist.class);
     this.crsSupport = crsSupport;
     this.routeRepository = routeRepository;
 
@@ -253,9 +253,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
                         featureProvider.getData().getTypes().get(queryInput.getFeatureTypeId()))))
             .ogcApiRequest(requestContext)
             .crsTransformer(crsTransformer)
-            .codelists(
-                entityRegistry.getEntitiesForType(Codelist.class).stream()
-                    .collect(Collectors.toMap(PersistentEntity::getId, c -> c)))
+            .codelists(codelistStore.asMap())
             .defaultCrs(queryInput.getDefaultCrs())
             .sourceCrs(Optional.ofNullable(sourceCrs))
             .crs(targetCrs)

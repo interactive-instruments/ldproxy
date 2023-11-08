@@ -47,6 +47,7 @@ import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.xtraplatform.base.domain.ETag;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
@@ -58,8 +59,6 @@ import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
-import de.ii.xtraplatform.entities.domain.PersistentEntity;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureStream;
@@ -77,7 +76,8 @@ import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
 import de.ii.xtraplatform.streams.domain.Reactive.Sink;
 import de.ii.xtraplatform.streams.domain.Reactive.SinkTransformed;
-import de.ii.xtraplatform.web.domain.ETag;
+import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
@@ -115,7 +115,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
   private final CrsTransformerFactory crsTransformerFactory;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
   private final ExtensionRegistry extensionRegistry;
-  private final EntityRegistry entityRegistry;
+  private final Values<Codelist> codelistStore;
   private final CrsInfo crsInfo;
   private final Cql cql;
   private final StoredQueryRepository repository;
@@ -127,7 +127,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       I18n i18n,
       CrsTransformerFactory crsTransformerFactory,
       ExtensionRegistry extensionRegistry,
-      EntityRegistry entityRegistry,
+      ValueStore valueStore,
       CrsInfo crsInfo,
       Cql cql,
       StoredQueryRepository repository,
@@ -135,7 +135,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
     this.extensionRegistry = extensionRegistry;
-    this.entityRegistry = entityRegistry;
+    this.codelistStore = valueStore.forType(Codelist.class);
     this.crsInfo = crsInfo;
     this.cql = cql;
     this.repository = repository;
@@ -777,9 +777,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
             .featureSchemas(schemas)
             .ogcApiRequest(requestContext)
             .crsTransformer(crsTransformer)
-            .codelists(
-                entityRegistry.getEntitiesForType(Codelist.class).stream()
-                    .collect(Collectors.toMap(PersistentEntity::getId, c -> c)))
+            .codelists(codelistStore.asMap())
             .defaultCrs(defaultCrs)
             .sourceCrs(Optional.ofNullable(sourceCrs))
             .links(links)

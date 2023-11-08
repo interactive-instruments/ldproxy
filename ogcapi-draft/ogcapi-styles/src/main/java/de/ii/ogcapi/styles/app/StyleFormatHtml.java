@@ -125,7 +125,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
             .ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
     String serviceUrl = uriCustomizer.toString();
     Optional<MbStyleStylesheet> mbStyleOriginal =
-        StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, false, false);
+        stylesheetContent.getMbStyle().map(mbs -> mbs.replaceParameters(serviceUrl));
     if (mbStyleOriginal.isEmpty()
         || mbStyleOriginal.get().getLayers().stream()
             .noneMatch(
@@ -137,7 +137,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
       return Optional.empty();
 
     MbStyleStylesheet mbStyleDerived =
-        ImmutableMbStyleStylesheet.builder()
+        new ImmutableMbStyleStylesheet.Builder()
             .from(mbStyleOriginal.get())
             .layers(
                 mbStyleOriginal.get().getLayers().stream()
@@ -155,7 +155,8 @@ public class StyleFormatHtml implements StyleFormatExtension {
       ObjectMapper mapper = new ObjectMapper();
       mapper.registerModule(new Jdk8Module());
       return Optional.of(
-          new StylesheetContent(mapper.writeValueAsBytes(mbStyleDerived), descriptor, true));
+          new StylesheetContent(
+              mapper.writeValueAsBytes(mbStyleDerived), descriptor, true, mbStyleDerived));
     } catch (JsonProcessingException e) {
       LOGGER.error(
           String.format("Could not derive style %s. Reason: %s", descriptor, e.getMessage()));
@@ -207,7 +208,7 @@ public class StyleFormatHtml implements StyleFormatExtension {
     ArrayListMultimap<String, String> layerMap = ArrayListMultimap.create();
     if (layerControl) {
       MbStyleStylesheet mbStyle =
-          StyleFormatMbStyle.parse(stylesheetContent, serviceUrl, true, false).get();
+          stylesheetContent.getMbStyle().map(mbs -> mbs.replaceParameters(serviceUrl)).get();
       if (allLayers) {
         Map<String, FeatureTypeConfigurationOgcApi> collectionData = apiData.getCollections();
         mbStyle.getLayers().stream()

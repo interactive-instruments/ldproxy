@@ -24,7 +24,7 @@ public class SchemaDeriverOpenApiCollectionProperties extends SchemaDeriverOpenA
   public SchemaDeriverOpenApiCollectionProperties(
       String label,
       Optional<String> description,
-      List<Codelist> codelists,
+      Map<String, Codelist> codelists,
       List<String> properties) {
     super(label, description, codelists);
     this.properties = properties;

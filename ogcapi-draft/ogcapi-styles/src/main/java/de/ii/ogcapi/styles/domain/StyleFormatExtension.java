@@ -15,7 +15,8 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
+import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.values.domain.Values;
 import java.util.List;
 import java.util.Optional;
 
@@ -125,7 +126,7 @@ public interface StyleFormatExtension extends FormatExtension {
       StylesheetContent stylesheetContent,
       OgcApiDataV2 apiData,
       FeaturesCoreProviders providers,
-      EntityRegistry entityRegistry) {
+      Values<Codelist> entityRegistry) {
     return ImmutableList.of();
   }
 

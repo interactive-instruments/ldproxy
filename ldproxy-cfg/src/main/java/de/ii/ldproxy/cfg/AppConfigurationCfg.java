@@ -33,7 +33,7 @@ class AppConfigurationCfg extends AppConfiguration {
 
   @Override
   public HttpClientConfiguration getHttpClient() {
-    return null;
+    return new HttpClientConfiguration();
   }
 
   @Override

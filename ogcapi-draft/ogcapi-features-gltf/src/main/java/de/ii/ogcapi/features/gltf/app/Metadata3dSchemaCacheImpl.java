@@ -24,7 +24,6 @@ import de.ii.ogcapi.features.gltf.domain.SchemaProperty.ComponentType;
 import de.ii.ogcapi.features.gltf.domain.SchemaProperty.Type;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.codelists.domain.CodelistData;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import java.util.HashMap;
@@ -57,7 +56,7 @@ public class Metadata3dSchemaCacheImpl implements Metadata3dSchemaCache {
       FeatureSchema featureSchema,
       OgcApiDataV2 apiData,
       String collectionId,
-      List<Codelist> codelists) {
+      Map<String, Codelist> codelists) {
     int apiHashCode = apiData.hashCode();
     if (!cache.containsKey(apiHashCode)) {
       cache.put(apiHashCode, new ConcurrentHashMap<>());
@@ -72,7 +71,10 @@ public class Metadata3dSchemaCacheImpl implements Metadata3dSchemaCache {
   }
 
   protected GltfSchema deriveSchema(
-      FeatureSchema schema, OgcApiDataV2 apiData, String collectionId, List<Codelist> codelists) {
+      FeatureSchema schema,
+      OgcApiDataV2 apiData,
+      String collectionId,
+      Map<String, Codelist> codelists) {
 
     boolean withSurfaceTypes =
         apiData
@@ -125,7 +127,7 @@ public class Metadata3dSchemaCacheImpl implements Metadata3dSchemaCache {
       Builder schemaBuilder,
       ImmutableSchemaClass.Builder classBuilder,
       Map<String, Map<String, Integer>> propertyEnums,
-      List<Codelist> codelists) {
+      Map<String, Codelist> codelists) {
     Type type = gltfPropertyDefinition.getType();
     Optional<ComponentType> componentType = gltfPropertyDefinition.getComponentType();
     String noData = gltfPropertyDefinition.getNoData();
@@ -201,7 +203,7 @@ public class Metadata3dSchemaCacheImpl implements Metadata3dSchemaCache {
   }
 
   private void processCodelist(
-      List<Codelist> codelists,
+      Map<String, Codelist> codelists,
       Builder schemaBuilder,
       FeatureSchema property,
       Optional<ComponentType> componentType,
@@ -212,13 +214,7 @@ public class Metadata3dSchemaCacheImpl implements Metadata3dSchemaCache {
     property
         .getConstraints()
         .flatMap(SchemaConstraints::getCodelist)
-        .flatMap(
-            codelist ->
-                codelists.stream()
-                    .filter(codelist1 -> codelist1.getId().equals(codelist))
-                    .findFirst()
-                    .map(Codelist::getData)
-                    .map(CodelistData::getEntries))
+        .flatMap(codelist -> Optional.ofNullable(codelists.get(codelist)).map(Codelist::getEntries))
         .ifPresent(
             codelistValues ->
                 codelistValues.forEach(
