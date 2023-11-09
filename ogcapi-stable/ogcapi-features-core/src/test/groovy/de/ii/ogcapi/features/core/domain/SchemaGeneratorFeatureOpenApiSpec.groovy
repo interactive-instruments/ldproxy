@@ -17,6 +17,7 @@ import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformat
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry
 import de.ii.xtraplatform.entities.app.EntityRegistryImpl
 import de.ii.xtraplatform.entities.domain.EntityFactory
+import de.ii.xtraplatform.values.domain.ValueStore
 import io.swagger.v3.oas.models.media.ArraySchema
 import io.swagger.v3.oas.models.media.ObjectSchema
 import io.swagger.v3.oas.models.media.Schema
@@ -29,8 +30,8 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
     @Shared SchemaGeneratorFeatureOpenApi schemaGenerator
 
     def setupSpec() {
-        Lazy<Set<EntityFactory>> factories = () -> [] as Set
-        schemaGenerator = new SchemaGeneratorFeatureOpenApi(null, new EntityRegistryImpl(factories))
+        ValueStore valueStore = Stub()
+        schemaGenerator = new SchemaGeneratorFeatureOpenApi(null, valueStore)
     }
 
     def 'Test Open API schema generation for QUERYABLES type'() {

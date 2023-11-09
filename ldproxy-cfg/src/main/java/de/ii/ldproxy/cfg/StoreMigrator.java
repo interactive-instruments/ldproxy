@@ -10,18 +10,17 @@ package de.ii.ldproxy.cfg;
 import de.ii.xtraplatform.base.domain.AppConfiguration;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.Constants.ENV;
+import de.ii.xtraplatform.base.domain.Store;
 import de.ii.xtraplatform.base.domain.StoreFilters;
 import de.ii.xtraplatform.base.domain.StoreSource;
 import de.ii.xtraplatform.base.domain.StoreSource.Content;
-import de.ii.xtraplatform.base.domain.StoreSource.Type;
 import de.ii.xtraplatform.base.domain.StoreSourceFs;
-import de.ii.xtraplatform.blobs.app.BlobStoreImpl;
-import de.ii.xtraplatform.blobs.domain.BlobStore;
+import de.ii.xtraplatform.blobs.app.ResourceStoreImpl;
 import de.ii.xtraplatform.blobs.domain.BlobStoreDriver;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import de.ii.xtraplatform.blobs.domain.StoreMigration;
 import de.ii.xtraplatform.blobs.domain.StoreMigration.StoreMigrationContext;
 import de.ii.xtraplatform.blobs.infra.BlobStoreDriverFs;
-import de.ii.xtraplatform.store.domain.Store;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
@@ -73,8 +72,8 @@ class StoreMigrator implements Migrator<StoreMigrationContext, StoreSourceFs, St
         return storeMigration.getMoves().stream()
             .map(
                 moves -> {
-                  BlobStore blobStoreFrom = store(moves.first());
-                  BlobStore blobStoreTo = store(moves.second());
+                  ResourceStore blobStoreFrom = store(moves.first());
+                  ResourceStore blobStoreTo = store(moves.second());
 
                   try (Stream<Path> paths =
                       blobStoreFrom.walk(Path.of(""), 16, (p, a) -> a.isValue())) {
@@ -165,8 +164,9 @@ class StoreMigrator implements Migrator<StoreMigrationContext, StoreSourceFs, St
     }
   }
 
-  public BlobStore store(StoreSourceFs source) {
-    BlobStoreImpl blobStore = new BlobStoreImpl(new MigrationStore(source), () -> blobStoreDrivers);
+  public ResourceStore store(StoreSourceFs source) {
+    ResourceStoreImpl blobStore =
+        new ResourceStoreImpl(new MigrationStore(source), () -> blobStoreDrivers);
     blobStore.onStart();
 
     return blobStore;
@@ -185,7 +185,7 @@ class StoreMigrator implements Migrator<StoreMigrationContext, StoreSourceFs, St
     }
 
     @Override
-    public List<StoreSource> get(Type type) {
+    public List<StoreSource> get(String type) {
       return null;
     }
 
@@ -195,22 +195,22 @@ class StoreMigrator implements Migrator<StoreMigrationContext, StoreSourceFs, St
     }
 
     @Override
-    public <U> List<U> get(Type type, Function<StoreSource, U> map) {
+    public <U> List<U> get(String type, Function<StoreSource, U> map) {
       return null;
     }
 
     @Override
-    public boolean has(Type type) {
+    public boolean has(String type) {
       return false;
     }
 
     @Override
-    public Optional<StoreSource> getWritable(Type type) {
+    public Optional<StoreSource> getWritable(String type) {
       return Optional.empty();
     }
 
     @Override
-    public <U> Optional<U> getWritable(Type type, Function<StoreSource, U> map) {
+    public <U> Optional<U> getWritable(String type, Function<StoreSource, U> map) {
       return Optional.empty();
     }
 

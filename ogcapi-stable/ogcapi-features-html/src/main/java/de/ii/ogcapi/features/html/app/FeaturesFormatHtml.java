@@ -47,9 +47,7 @@ import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.ogcapi.html.domain.NavigationDTO;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
-import de.ii.xtraplatform.entities.domain.PersistentEntity;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -63,6 +61,8 @@ import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.strings.domain.StringTemplateFilters;
+import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import de.ii.xtraplatform.web.domain.Http;
 import de.ii.xtraplatform.web.domain.HttpClient;
 import de.ii.xtraplatform.web.domain.MustacheRenderer;
@@ -82,7 +82,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -106,7 +105,7 @@ public class FeaturesFormatHtml
           FeatureFormatExtension.URI_TEMPLATE, FeatureRefResolver.SUB_TITLE);
 
   private final ExtensionRegistry extensionRegistry;
-  private final EntityRegistry entityRegistry;
+  private final Values<Codelist> codelistStore;
   private final I18n i18n;
   private final FeaturesCoreProviders providers;
   private final FeaturesCoreValidation featuresCoreValidator;
@@ -117,7 +116,7 @@ public class FeaturesFormatHtml
   @Inject
   public FeaturesFormatHtml(
       ExtensionRegistry extensionRegistry,
-      EntityRegistry entityRegistry,
+      ValueStore valueStore,
       MustacheRenderer mustacheRenderer,
       I18n i18n,
       FeaturesCoreProviders providers,
@@ -125,7 +124,7 @@ public class FeaturesFormatHtml
       ServicesContext servicesContext,
       Http http) {
     this.extensionRegistry = extensionRegistry;
-    this.entityRegistry = entityRegistry;
+    this.codelistStore = valueStore.forType(Codelist.class);
     this.i18n = i18n;
     this.providers = providers;
     this.featuresCoreValidator = featuresCoreValidator;
@@ -270,17 +269,13 @@ public class FeaturesFormatHtml
       }
     }
 
-    Set<String> codelists =
-        entityRegistry.getEntitiesForType(Codelist.class).stream()
-            .map(Codelist::getId)
-            .collect(Collectors.toUnmodifiableSet());
     for (Map.Entry<String, FeaturesHtmlConfiguration> entry : htmlConfigurationMap.entrySet()) {
       String collectionId = entry.getKey();
       for (Map.Entry<String, List<PropertyTransformation>> entry2 :
           entry.getValue().getTransformations().entrySet()) {
         String property = entry2.getKey();
         for (PropertyTransformation transformation : entry2.getValue()) {
-          builder = transformation.validate(builder, collectionId, property, codelists);
+          builder = transformation.validate(builder, collectionId, property, codelistStore.ids());
         }
       }
     }
@@ -464,9 +459,7 @@ public class FeaturesFormatHtml
         ImmutableFeatureTransformationContextHtml.builder()
             .from(transformationContext)
             .collectionView(featureTypeDataset)
-            .codelists(
-                entityRegistry.getEntitiesForType(Codelist.class).stream()
-                    .collect(Collectors.toMap(PersistentEntity::getId, c -> c)))
+            .codelists(codelistStore.asMap())
             .mustacheRenderer(mustacheRenderer)
             .i18n(i18n)
             .language(language)

@@ -22,12 +22,11 @@ import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.resources.domain.QueriesHandlerResources;
 import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
-import de.ii.xtraplatform.blobs.domain.BlobStore;
-import de.ii.xtraplatform.web.domain.ETag;
+import de.ii.xtraplatform.base.domain.ETag;
+import de.ii.xtraplatform.blobs.domain.Blob;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import de.ii.xtraplatform.web.domain.LastModified;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLConnection;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -53,11 +52,11 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
   private final I18n i18n;
   private final ExtensionRegistry extensionRegistry;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
-  private final BlobStore resourcesStore;
+  private final ResourceStore resourcesStore;
 
   @Inject
   public QueriesHandlerResourcesImpl(
-      ExtensionRegistry extensionRegistry, I18n i18n, BlobStore blobStore) {
+      ExtensionRegistry extensionRegistry, I18n i18n, ResourceStore blobStore) {
     this.extensionRegistry = extensionRegistry;
     this.i18n = i18n;
     this.resourcesStore = blobStore.with(ResourcesBuildingBlock.STORE_RESOURCE_TYPE);
@@ -167,48 +166,32 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
                             requestContext.getMediaType().type())));
 
     try {
-      Optional<InputStream> resourceStream = resourcesStore.get(resourcePath);
+      Optional<Blob> resourceBlob = resourcesStore.get(resourcePath);
 
-      if (resourceStream.isEmpty()) {
+      if (resourceBlob.isEmpty()) {
         throw new NotFoundException(
             MessageFormat.format("The resource ''{0}'' does not exist.", resourceId));
       }
 
-      byte[] resource = resourceStream.get().readAllBytes();
-      String contentType = guessContentType(resourceId, resourceStream.get());
+      Blob blob = resourceBlob.get();
       // TODO
-      Date lastModified = LastModified.from(resourcesStore.lastModified(resourcePath));
-      EntityTag etag = ETag.from(resource);
-      Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+      Date lastModified = LastModified.from(blob.lastModified());
+      EntityTag eTag = blob.eTag();
+      Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, eTag);
       if (Objects.nonNull(response)) return response.build();
 
       return prepareSuccessResponse(
               requestContext,
               null,
-              HeaderCaching.of(lastModified, etag, queryInput),
+              HeaderCaching.of(lastModified, eTag, queryInput),
               null,
               HeaderContentDisposition.of(resourceId))
-          .entity(format.getResourceEntity(resource, resourceId, apiData, requestContext))
-          .type(contentType)
+          .entity(format.getResourceEntity(blob.content(), resourceId, apiData, requestContext))
+          .type(blob.contentType())
           .build();
 
     } catch (IOException e) {
       throw new ServerErrorException("resource could not be read: " + resourceId, 500);
     }
-  }
-
-  private String guessContentType(String resourceId, InputStream resourceStream) {
-    // TODO: URLConnection content-type guessing doesn't seem to work well, maybe try Apache Tika
-    String contentType = URLConnection.guessContentTypeFromName(resourceId);
-    if (contentType == null) {
-      try {
-        contentType = URLConnection.guessContentTypeFromStream(resourceStream);
-      } catch (IOException e) {
-        // nothing we can do here, just take the default
-      }
-    }
-    if (contentType == null || contentType.isEmpty()) contentType = "application/octet-stream";
-
-    return contentType;
   }
 }

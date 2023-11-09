@@ -21,8 +21,8 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
+import de.ii.xtraplatform.values.domain.ValueStore;
 import java.util.Locale;
 import java.util.Optional;
 import javax.inject.Inject;
@@ -47,7 +47,7 @@ public class FeaturesFormatCityJson extends FeaturesFormatCityJsonBase {
   @Inject
   public FeaturesFormatCityJson(
       FeaturesCoreProviders providers,
-      EntityRegistry entityRegistry,
+      ValueStore valueStore,
       FeaturesCoreValidation featuresCoreValidator,
       SchemaGeneratorOpenApi schemaGeneratorFeature,
       SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
@@ -56,7 +56,7 @@ public class FeaturesFormatCityJson extends FeaturesFormatCityJsonBase {
       CrsInfo crsInfo) {
     super(
         providers,
-        entityRegistry,
+        valueStore,
         featuresCoreValidator,
         schemaGeneratorFeature,
         schemaGeneratorFeatureCollection,

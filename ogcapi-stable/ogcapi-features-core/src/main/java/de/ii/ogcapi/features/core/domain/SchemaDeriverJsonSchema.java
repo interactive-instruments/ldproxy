@@ -39,7 +39,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
       Optional<String> schemaUri,
       String label,
       Optional<String> description,
-      List<Codelist> codelists,
+      Map<String, Codelist> codelists,
       boolean useCodelistKeys) {
     super(codelists);
     this.version = version;
@@ -316,7 +316,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
       JsonSchema schema,
       SchemaConstraints constraints,
       FeatureSchema property,
-      List<Codelist> codelists) {
+      Map<String, Codelist> codelists) {
     if (schema instanceof JsonSchemaArray) {
       return new ImmutableJsonSchemaArray.Builder()
           .from(schema)
@@ -352,18 +352,16 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
                   .build();
     } else if (constraints.getCodelist().isPresent()) {
       Optional<Codelist> codelist =
-          codelists.stream()
-              .filter(cl -> cl.getId().equals(constraints.getCodelist().get()))
-              .findAny();
-      if (codelist.isPresent() && !codelist.get().getData().getFallback().isPresent()) {
+          Optional.ofNullable(codelists.get(constraints.getCodelist().get()));
+      if (codelist.isPresent() && !codelist.get().getFallback().isPresent()) {
         boolean string =
             property.isArray()
                 ? property.getValueType().orElse(SchemaBase.Type.UNKNOWN) != SchemaBase.Type.INTEGER
                 : property.getType() != SchemaBase.Type.INTEGER;
         Collection<String> values =
             useCodelistKeys
-                ? codelist.get().getData().getEntries().keySet()
-                : codelist.get().getData().getEntries().values();
+                ? codelist.get().getEntries().keySet()
+                : codelist.get().getEntries().values();
         result =
             string
                 ? new ImmutableJsonSchemaString.Builder().from(result).enums(values).build()

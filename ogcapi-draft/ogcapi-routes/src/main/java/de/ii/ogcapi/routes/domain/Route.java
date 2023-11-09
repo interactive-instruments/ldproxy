@@ -9,14 +9,18 @@ package de.ii.ogcapi.routes.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.xtraplatform.values.domain.StoredValue;
+import de.ii.xtraplatform.values.domain.ValueBuilder;
+import de.ii.xtraplatform.values.domain.annotations.FromValueStore;
 import java.util.List;
 import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(jdkOnly = true, deepImmutablesDetection = true, builder = "new")
+@FromValueStore(type = "routes/results")
 @JsonDeserialize(builder = ImmutableRoute.Builder.class)
-public abstract class Route {
+public abstract class Route implements StoredValue {
 
   public static final String SCHEMA_REF = "#/components/schemas/Route";
 
@@ -31,4 +35,6 @@ public abstract class Route {
   public abstract List<RouteComponent> getFeatures();
 
   public abstract List<Link> getLinks();
+
+  abstract static class Builder implements ValueBuilder<Route> {}
 }
