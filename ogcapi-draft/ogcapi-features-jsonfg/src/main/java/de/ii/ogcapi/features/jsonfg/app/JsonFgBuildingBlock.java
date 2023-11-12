@@ -42,11 +42,11 @@ import javax.inject.Singleton;
  *     Solid-Geometrie und eine Grundriss-Geometrie hat, kann es sinnvoll sein, den Solid in `place`
  *     und den Grundriss in `geometry` / GeoJSON bereitzustellen. Um eine andere
  *     Geometrieeigenschaft in `place` zu verwenden, geben Sie den Eigenschaftsnamen an.
- * @conformanceEn The module is based on [draft 0.1.1 of
- *     JSON-FG](https://github.com/opengeospatial/ogc-feat-geo-json/releases/tag/v0.1.1). The
+ * @conformanceEn The module is based on [draft 0.2.1 of
+ *     JSON-FG](https://github.com/opengeospatial/ogc-feat-geo-json/releases/tag/v0.2.1). The
  *     implementation will change as the draft will evolve during the standardization process.
- * @conformanceDe Das Modul basiert auf dem [Entwurf 0.1.1 von
- *     JSON-FG](https://github.com/opengeospatial/ogc-feat-geo-json/releases/tag/v0.1.1). Die
+ * @conformanceDe Das Modul basiert auf dem [Entwurf 0.2.1 von
+ *     JSON-FG](https://github.com/opengeospatial/ogc-feat-geo-json/releases/tag/v0.2.1). Die
  *     Implementierung wird sich im Zuge der weiteren Standardisierung der Spezifikation noch
  *     ändern.
  * @ref:cfg {@link de.ii.ogcapi.features.jsonfg.domain.JsonFgConfiguration}
@@ -64,7 +64,8 @@ public class JsonFgBuildingBlock implements ApiBuildingBlock {
   public ExtensionConfiguration getDefaultConfiguration() {
     return new Builder()
         .enabled(false)
-        .describedby(true)
+        .describedby(false)
+        .useCuries(false)
         .coordRefSys(true)
         .geojsonCompatibility(true)
         .build();

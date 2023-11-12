@@ -19,15 +19,15 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.transform.OnlyReturnablesAndReceivables;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 public class SchemaCacheFeatures extends JsonSchemaCache {
 
-  private final Supplier<List<Codelist>> codelistSupplier;
+  private final Supplier<Map<String, Codelist>> codelistSupplier;
 
-  public SchemaCacheFeatures(Supplier<List<Codelist>> codelistSupplier) {
+  public SchemaCacheFeatures(Supplier<Map<String, Codelist>> codelistSupplier) {
     super();
     this.codelistSupplier = codelistSupplier;
   }

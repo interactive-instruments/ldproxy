@@ -179,8 +179,6 @@ public class SearchBuildingBlock implements ApiBuildingBlock {
           ExternalDocumentation.of(
               "https://docs.ogc.org/per/22-024r2.html",
               "Testbed-18: Filtering Service and Rule Set Engineering Report (PREDRAFT)"));
-
-  public static final String STORE_RESOURCE_TYPE = "queries";
   public static final String QUERY_ID_PATTERN = "[\\w\\-]+";
 
   @Inject

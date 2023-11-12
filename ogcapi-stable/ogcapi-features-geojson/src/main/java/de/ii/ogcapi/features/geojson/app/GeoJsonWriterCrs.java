@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.ws.rs.core.MediaType;
 
 /**
  * @author zahnen
@@ -44,7 +45,8 @@ public class GeoJsonWriterCrs implements GeoJsonWriter {
   public void onStart(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
-    if (context.encoding().isFeatureCollection()) {
+    if (context.encoding().isFeatureCollection()
+        && context.encoding().getMediaType().matches(new MediaType("application", "geo+json"))) {
       writeCrs(
           context.encoding().getJson(),
           context.encoding().getCrsTransformer(),
@@ -59,7 +61,8 @@ public class GeoJsonWriterCrs implements GeoJsonWriter {
   public void onFeatureStart(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
-    if (!context.encoding().isFeatureCollection()) {
+    if (!context.encoding().isFeatureCollection()
+        && context.encoding().getMediaType().matches(new MediaType("application", "geo+json"))) {
       writeCrs(
           context.encoding().getJson(),
           context.encoding().getCrsTransformer(),

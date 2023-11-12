@@ -7,16 +7,25 @@
  */
 package de.ii.ogcapi.styles.domain;
 
+import java.util.Optional;
+
 public class StylesheetContent {
 
   final String descriptor;
   final byte[] content;
   final boolean inStore;
+  final Optional<MbStyleStylesheet> mbStyle;
 
   public StylesheetContent(byte[] content, String descriptor, boolean inStore) {
+    this(content, descriptor, inStore, null);
+  }
+
+  public StylesheetContent(
+      byte[] content, String descriptor, boolean inStore, MbStyleStylesheet mbStyle) {
     this.content = content;
     this.descriptor = descriptor;
     this.inStore = inStore;
+    this.mbStyle = Optional.ofNullable(mbStyle);
   }
 
   public byte[] getContent() {
@@ -29,5 +38,9 @@ public class StylesheetContent {
 
   public boolean getInStore() {
     return inStore;
+  }
+
+  public Optional<MbStyleStylesheet> getMbStyle() {
+    return mbStyle;
   }
 }

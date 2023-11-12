@@ -16,15 +16,15 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 public class SchemaCacheStyleLayer extends JsonSchemaCache {
 
-  private final Supplier<List<Codelist>> codelistSupplier;
+  private final Supplier<Map<String, Codelist>> codelistSupplier;
 
-  public SchemaCacheStyleLayer(Supplier<List<Codelist>> codelistSupplier) {
+  public SchemaCacheStyleLayer(Supplier<Map<String, Codelist>> codelistSupplier) {
     this.codelistSupplier = codelistSupplier;
   }
 
