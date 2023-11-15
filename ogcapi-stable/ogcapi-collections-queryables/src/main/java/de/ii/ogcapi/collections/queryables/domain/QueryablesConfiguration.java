@@ -21,7 +21,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
 import java.util.Map;
@@ -162,7 +161,7 @@ public interface QueryablesConfiguration extends ExtensionConfiguration, Caching
     return getQueryablesSchema(apiData, collectionData, schema, providers)
         .getAllNestedProperties()
         .stream()
-        .filter(SchemaBase::queryable)
+        .filter(FeatureSchema::queryable)
         .map(
             subschema ->
                 new SimpleImmutableEntry<>(

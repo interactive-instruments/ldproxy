@@ -18,7 +18,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
 import java.util.Map;
@@ -112,7 +111,7 @@ public interface SortingConfiguration extends ExtensionConfiguration {
     return getSortablesSchema(apiData, collectionData, schema, providers)
         .getAllNestedProperties()
         .stream()
-        .filter(SchemaBase::sortable)
+        .filter(FeatureSchema::sortable)
         .map(
             subschema ->
                 new SimpleImmutableEntry<>(
