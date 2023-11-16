@@ -46,8 +46,8 @@ import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.FeatureSchemaBase;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import io.dropwizard.auth.Auth;
 import java.io.InputStream;
 import java.util.List;
@@ -426,7 +426,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             queryParameterSet,
             featureId,
             crudConfiguration.filter(CrudConfiguration::supportsEtag).map(ignore -> Type.STRONG),
-            FeatureSchemaBase.Scope.MUTATIONS);
+            SchemaBase.Scope.RECEIVABLE);
 
     QueryInputFeatureReplace queryInput =
         ImmutableQueryInputFeatureReplace.builder()
@@ -494,7 +494,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             queryParameterSet,
             featureId,
             crudConfiguration.filter(CrudConfiguration::supportsEtag).map(ignore -> Type.STRONG),
-            FeatureSchemaBase.Scope.MUTATIONS);
+            SchemaBase.Scope.RECEIVABLE);
 
     QueryInputFeatureReplace queryInput =
         ImmutableQueryInputFeatureReplace.builder()
@@ -557,7 +557,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
             queryParameterSet,
             featureId,
             crudConfiguration.filter(CrudConfiguration::supportsEtag).map(ignore -> Type.STRONG),
-            FeatureSchemaBase.Scope.MUTATIONS);
+            SchemaBase.Scope.RECEIVABLE);
 
     QueryInputFeatureDelete queryInput =
         ImmutableQueryInputFeatureDelete.builder()
