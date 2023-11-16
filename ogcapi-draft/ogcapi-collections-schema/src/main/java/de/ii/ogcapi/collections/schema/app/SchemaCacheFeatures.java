@@ -15,6 +15,9 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.transform.WithScope;
+import java.util.EnumSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -46,6 +49,6 @@ public class SchemaCacheFeatures extends JsonSchemaCache {
             Optional.empty(),
             codelistSupplier.get());
 
-    return (JsonSchemaDocument) schema.accept(schemaDeriverFeatures);
+    return (JsonSchemaDocument) schema.accept(WITH_SCOPE_SCHEMA).accept(schemaDeriverFeatures);
   }
 }
