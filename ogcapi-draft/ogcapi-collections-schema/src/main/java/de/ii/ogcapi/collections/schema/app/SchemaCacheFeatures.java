@@ -11,13 +11,10 @@ import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.ogcapi.features.core.domain.SchemaDeriverFeatures;
-import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
-import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -39,16 +36,6 @@ public class SchemaCacheFeatures extends JsonSchemaCache {
       Optional<String> schemaUri,
       VERSION version) {
 
-    Optional<PropertyTransformations> propertyTransformations =
-        collectionData
-            .getExtension(GeoJsonConfiguration.class)
-            .map(geoJsonConfiguration -> (PropertyTransformations) geoJsonConfiguration);
-
-    WithTransformationsApplied schemaTransformer =
-        propertyTransformations
-            .map(WithTransformationsApplied::new)
-            .orElse(new WithTransformationsApplied());
-
     SchemaDeriverFeatures schemaDeriverFeatures =
         new SchemaDeriverFeatures(
             version,
@@ -57,6 +44,6 @@ public class SchemaCacheFeatures extends JsonSchemaCache {
             Optional.empty(),
             codelistSupplier.get());
 
-    return (JsonSchemaDocument) schema.accept(schemaTransformer).accept(schemaDeriverFeatures);
+    return (JsonSchemaDocument) schema.accept(schemaDeriverFeatures);
   }
 }
