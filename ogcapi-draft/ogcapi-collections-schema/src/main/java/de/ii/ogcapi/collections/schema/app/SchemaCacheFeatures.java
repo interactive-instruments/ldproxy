@@ -22,6 +22,8 @@ import java.util.function.Supplier;
 public class SchemaCacheFeatures extends JsonSchemaCache {
 
   private final Supplier<Map<String, Codelist>> codelistSupplier;
+  private static final WithScope WITH_SCOPE_SCHEMA =
+      new WithScope(EnumSet.of(SchemaBase.Scope.RETURNABLE, SchemaBase.Scope.RECEIVABLE));
 
   public SchemaCacheFeatures(Supplier<Map<String, Codelist>> codelistSupplier) {
     super();

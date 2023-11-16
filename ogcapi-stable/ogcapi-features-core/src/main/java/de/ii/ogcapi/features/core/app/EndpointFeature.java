@@ -29,7 +29,7 @@ import de.ii.xtraplatform.base.domain.ETag.Type;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
-import de.ii.xtraplatform.features.domain.FeatureSchemaBase.Scope;
+import de.ii.xtraplatform.features.domain.SchemaBase.Scope;
 import io.dropwizard.auth.Auth;
 import java.util.Objects;
 import java.util.Optional;
@@ -138,7 +138,7 @@ public class EndpointFeature extends EndpointFeaturesDefinition
             queryParameterSet,
             featureId,
             Optional.of(Type.STRONG),
-            Scope.QUERIES);
+            Scope.RETURNABLE);
 
     Builder queryInputBuilder =
         new Builder()
