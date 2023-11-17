@@ -20,7 +20,6 @@ class SchemaDeriverFixtures {
                     .name("test-name")
                     .type(SchemaBase.Type.OBJECT)
                     .description("bar")
-                    .addTransformations(new ImmutablePropertyTransformation.Builder().flatten(".").build())
                     .putPropertyMap("ID", new ImmutableFeatureSchema.Builder()
                             .name("id")
                             .type(SchemaBase.Type.INTEGER)

@@ -131,64 +131,6 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
         Objects.nonNull(schema.getProperties().get("geometry"))
     }
 
-    def 'Test Open API schema generation for the RETURNABLES_FLAT type'() {
-        FeatureTypeConfigurationOgcApi collectionData = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
-                .id("id")
-                .label("foo")
-                .build()
-        when:
-        Schema schema = schemaGenerator.getSchema(FEATURE_SCHEMA_FLAT, collectionData)
-        then:
-        Objects.nonNull(schema)
-        schema.getRequired() == ["type", "geometry", "properties"]
-        schema.getProperties().get("id").getType() == "integer"
-        ObjectSchema properties = schema.getProperties().get("properties") as ObjectSchema
-        properties.getRequired() == ["string"]
-        properties.getProperties().get("string").getType() == "string"
-        properties.getProperties().get("string").getTitle() == "foo"
-        properties.getProperties().get("string").getDescription() == "bar"
-        properties.getProperties().get("link.title").getType() == "string"
-        properties.getProperties().get("link.title").getTitle() == "link > foo"
-        properties.getProperties().get("link.title").getDescription() == "bar"
-        properties.getProperties().get("link.href").getType() == "string"
-        properties.getProperties().get("links.1.title").getType() == "string"
-        properties.getProperties().get("links.1.title").getTitle() == "foo > foo"
-        properties.getProperties().get("links.1.title").getDescription() == "bar"
-        properties.getProperties().get("links.1.href").getType() == "string"
-        properties.getProperties().get("links.1.href").getTitle() == "foo > foo"
-        properties.getProperties().get("links.1.href").getDescription() == "bar"
-        properties.getProperties().get("datetime").getType() == "string"
-        properties.getProperties().get("datetime").getFormat() == "date-time"
-        properties.getProperties().get("datetime").getTitle() == "foo"
-        properties.getProperties().get("datetime").getDescription() == "bar"
-        properties.getProperties().get("endLifespanVersion").getType() == "string"
-        properties.getProperties().get("endLifespanVersion").getFormat() == "date-time"
-        properties.getProperties().get("endLifespanVersion").getTitle() == "foo"
-        properties.getProperties().get("endLifespanVersion").getDescription() == "bar"
-        properties.getProperties().get("boolean").getType() == "boolean"
-        properties.getProperties().get("boolean").getTitle() == "foo"
-        properties.getProperties().get("boolean").getDescription() == "bar"
-        properties.getProperties().get("percent").getType() == "number"
-        properties.getProperties().get("percent").getTitle() == "foo"
-        properties.getProperties().get("percent").getDescription() == "bar"
-        properties.getProperties().get("strings.1").getType() == "string"
-        properties.getProperties().get("strings.1").getTitle() == "foo"
-        properties.getProperties().get("strings.1").getDescription() == "bar"
-        properties.getProperties().get("objects.1.integer").getType() == "integer"
-        properties.getProperties().get("objects.1.integer").getTitle() == "foo > foo"
-        properties.getProperties().get("objects.1.integer").getDescription() == "bar"
-        properties.getProperties().get("objects.1.date").getType() == "string"
-        properties.getProperties().get("objects.1.date").getFormat() == "date-time"
-        properties.getProperties().get("objects.1.object2.regex").getType() == "string"
-        properties.getProperties().get("objects.1.object2.regex").getPattern() == "'^_\\\\w+\$'"
-        properties.getProperties().get("objects.1.object2.codelist").getType() == "string"
-        properties.getProperties().get("objects.1.object2.enum").getType() == "string"
-        properties.getProperties().get("objects.1.object2.strings.1").getType() == "string"
-        schema.getProperties().get("type").getType() == "string"
-        schema.getProperties().get("links").getType() == "array"
-        Objects.nonNull(schema.getProperties().get("geometry"))
-    }
-
     static final FeatureSchema FEATURE_SCHEMA =
         new ImmutableFeatureSchema.Builder()
                 .name("test-name")
@@ -324,11 +266,5 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
                                 .build())
                         .build())
                 .type(SchemaBase.Type.OBJECT)
-                .build()
-
-    static final FeatureSchema FEATURE_SCHEMA_FLAT =
-            new ImmutableFeatureSchema.Builder()
-                .from(FEATURE_SCHEMA)
-                .addTransformations(new ImmutablePropertyTransformation.Builder().flatten(".").build())
                 .build()
 }
