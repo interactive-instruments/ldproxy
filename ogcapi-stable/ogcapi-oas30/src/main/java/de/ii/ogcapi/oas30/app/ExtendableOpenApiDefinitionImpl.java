@@ -128,7 +128,7 @@ public class ExtendableOpenApiDefinitionImpl implements ExtendableOpenApiDefinit
             .map(FoundationConfiguration::includesSpecificationInformation)
             .orElse(true)) {
           String note =
-              "Note: This is API is based on API building blocks (e.g., operations, query parameters, or headers) specified in OGC API Standards or drafts of those standards. For more information about OGC API Standards, see [https://ogcapi.ogc.org](https://ogcapi.ogc.org/). Some building blocks of this API can be preliminary and may change in this API, because they are not yet based on a stable specification. The maturity is stated for each building block.";
+              "Note: This API is based on API building blocks (e.g., operations, query parameters, or headers) specified in OGC API Standards or drafts of those standards. For more information about OGC API Standards, see [https://ogcapi.ogc.org](https://ogcapi.ogc.org/). Some building blocks of this API can be preliminary and may change in this API, because they are not yet based on a stable specification. The maturity is stated for each building block.";
           openAPI.getInfo().description(apiData.getDescription().orElse(""));
           apiData
               .getDescription()
