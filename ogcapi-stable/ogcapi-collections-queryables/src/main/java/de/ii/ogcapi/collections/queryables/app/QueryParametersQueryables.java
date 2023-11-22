@@ -129,20 +129,22 @@ public class QueryParametersQueryables
       FeatureTypeConfigurationOgcApi collectionData,
       FeatureSchema featureSchema,
       Map.Entry<String, FeatureSchema> queryableDefinition) {
-    String field = queryableDefinition.getKey();
+    String name = queryableDefinition.getKey();
+    String property = queryableDefinition.getValue().getFullPathAsString();
     Optional<Schema<?>> schema2 =
-        schemaGeneratorFeature.getProperty(featureSchema, collectionData, field);
+        schemaGeneratorFeature.getProperty(featureSchema, collectionData, property);
     if (schema2.isEmpty()) {
       if (LOGGER.isWarnEnabled()) {
         LOGGER.warn(
-            "Query parameter for property '{}' at path '/collections/{}/items' could not be created, the property was not found in the feature schema.",
-            field,
+            "Query parameter '{}' for property '{}' at path '/collections/{}/items' could not be created, the property was not found in the feature schema.",
+            name,
+            property,
             collectionData.getId());
       }
       return null;
     }
     StringBuilder description =
-        new StringBuilder("Filter the collection by property '").append(field).append('\'');
+        new StringBuilder("Filter the collection by property '").append(name).append('\'');
     if (Objects.nonNull(schema2.get().getTitle()) && !schema2.get().getTitle().isEmpty()) {
       description.append(" (").append(schema2.get().getTitle()).append(')');
     }
@@ -155,7 +157,8 @@ public class QueryParametersQueryables
     return new ImmutableQueryParameterTemplateQueryable.Builder()
         .apiId(apiData.getId())
         .collectionId(collectionData.getId())
-        .name(field)
+        .name(name)
+        .property(property)
         .type(queryableDefinition.getValue().getType())
         .valueType(queryableDefinition.getValue().getValueType())
         .description(description.toString())

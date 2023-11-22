@@ -51,7 +51,8 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
   @Override
   protected JsonSchema deriveValueSchema(FeatureSchema schema) {
     JsonSchema schema2 = super.deriveValueSchema(schema);
-    if (!(schema2 instanceof JsonSchemaArray) && schema.getName().contains("[].")) {
+    if (!(schema2 instanceof JsonSchemaArray)
+        && (schema.getName().contains("[].") || schema.getName().endsWith("[]"))) {
       schema2 = withArrayWrapper(schema2);
     }
     return schema2;

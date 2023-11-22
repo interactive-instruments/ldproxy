@@ -164,8 +164,14 @@ public interface QueryablesConfiguration extends ExtensionConfiguration, Caching
         .filter(FeatureSchema::queryable)
         .map(
             subschema ->
-                new SimpleImmutableEntry<>(
-                    subschema.getFullPathAsString(getPathSeparator().toString()), subschema))
+                subschema.isFeatureRef()
+                    ? new SimpleImmutableEntry<>(
+                        subschema
+                            .getFullPathAsString(getPathSeparator().toString())
+                            .replaceAll("\\.id$", ""),
+                        subschema)
+                    : new SimpleImmutableEntry<>(
+                        subschema.getFullPathAsString(getPathSeparator().toString()), subschema))
         .collect(
             ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue, (first, second) -> second));
   }

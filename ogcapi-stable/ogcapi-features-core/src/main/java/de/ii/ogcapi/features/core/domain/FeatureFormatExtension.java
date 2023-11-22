@@ -152,12 +152,13 @@ public interface FeatureFormatExtension extends FormatExtension {
     builder.putTransformations(
         schema.getFullPathAsString(),
         ImmutableList.of(
-            new ImmutablePropertyTransformation.Builder()
-                // TODO: this would be the old version where only the id
-                // with the actual type (e.g. INTEGER) is returned
-                // .objectReduceSelect(FeatureRefResolver.ID)
-                .objectReduceFormat(KEY_TEMPLATE)
-                .build()));
+            schema.getRefType().isPresent() && schema.getRefKeyTemplate().isEmpty()
+                ? new ImmutablePropertyTransformation.Builder()
+                    .objectReduceSelect(FeatureRefResolver.ID)
+                    .build()
+                : new ImmutablePropertyTransformation.Builder()
+                    .objectReduceFormat(KEY_TEMPLATE)
+                    .build()));
   }
 
   static void reduceToUri(FeatureSchema schema, ImmutableProfileTransformations.Builder builder) {
