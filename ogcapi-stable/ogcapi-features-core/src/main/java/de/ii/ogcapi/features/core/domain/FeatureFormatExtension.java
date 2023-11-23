@@ -23,6 +23,7 @@ import de.ii.xtraplatform.features.domain.transform.FeatureRefResolver;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 
 @AutoMultiBind
@@ -152,7 +153,13 @@ public interface FeatureFormatExtension extends FormatExtension {
     builder.putTransformations(
         schema.getFullPathAsString(),
         ImmutableList.of(
-            schema.getRefType().isPresent() && schema.getRefKeyTemplate().isEmpty()
+            schema
+                        .getRefType()
+                        .filter(
+                            refType ->
+                                !Objects.equals(refType, FeatureRefResolver.REF_TYPE_DYNAMIC))
+                        .isPresent()
+                    && schema.getRefKeyTemplate().isEmpty()
                 ? new ImmutablePropertyTransformation.Builder()
                     .objectReduceSelect(FeatureRefResolver.ID)
                     .build()
