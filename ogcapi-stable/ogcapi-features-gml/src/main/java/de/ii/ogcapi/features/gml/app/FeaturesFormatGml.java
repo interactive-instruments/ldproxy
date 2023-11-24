@@ -17,9 +17,7 @@ import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
-import de.ii.ogcapi.features.core.domain.ImmutableProfileTransformations;
 import de.ii.ogcapi.features.core.domain.Profile;
-import de.ii.ogcapi.features.core.domain.ProfileTransformations;
 import de.ii.ogcapi.features.gml.domain.GmlConfiguration;
 import de.ii.ogcapi.features.gml.domain.GmlConfiguration.Conformance;
 import de.ii.ogcapi.features.gml.domain.GmlWriter;
@@ -41,10 +39,8 @@ import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
-import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.WithConnectionInfo;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.gml.domain.ConnectionInfoWfsHttp;
 import de.ii.xtraplatform.values.domain.ValueStore;
 import de.ii.xtraplatform.values.domain.Values;
@@ -252,31 +248,6 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
   @Override
   public boolean supportsProfile(Profile profile) {
     return profile == Profile.AS_LINK;
-  }
-
-  @Override
-  public Optional<PropertyTransformations> getPropertyTransformations(
-      FeatureTypeConfigurationOgcApi collectionData,
-      Optional<FeatureSchema> schema,
-      Optional<Profile> profile) {
-    if (profile.isEmpty() || schema.isEmpty()) {
-      return getPropertyTransformations(collectionData);
-    }
-
-    ImmutableProfileTransformations.Builder builder = new ImmutableProfileTransformations.Builder();
-    schema
-        .map(SchemaBase::getAllNestedProperties)
-        .ifPresent(
-            properties ->
-                properties.stream()
-                    .filter(SchemaBase::isFeatureRef)
-                    .forEach(property -> FeatureFormatExtension.reduceToUri(property, builder)));
-
-    ProfileTransformations profileTransformations = builder.build();
-    return Optional.of(
-        getPropertyTransformations(collectionData)
-            .map(pts -> pts.mergeInto(profileTransformations))
-            .orElse(profileTransformations));
   }
 
   @Override
