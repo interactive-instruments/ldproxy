@@ -62,8 +62,6 @@ public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache
   @Override
   public abstract String getName();
 
-  public abstract String getProperty();
-
   @Override
   public abstract String getDescription();
 
@@ -141,15 +139,15 @@ public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache
       case INTEGER:
       case FLOAT:
       case BOOLEAN:
-        return Eq.of(getProperty(), getScalarLiteral(value, getType()));
+        return Eq.of(getName(), getScalarLiteral(value, getType()));
       case STRING:
         if (value.contains("*")) {
-          return Like.of(getProperty(), ScalarLiteral.of(value.replaceAll("\\*", "%")));
+          return Like.of(getName(), ScalarLiteral.of(value.replaceAll("\\*", "%")));
         }
-        return Eq.of(getProperty(), ScalarLiteral.of(value));
+        return Eq.of(getName(), ScalarLiteral.of(value));
       case VALUE_ARRAY:
         return AEquals.of(
-            Property.of(getProperty()),
+            Property.of(getName()),
             ArrayLiteral.of(
                 ARRAY_SPLITTER.splitToList(value).stream()
                     .map(s -> getScalarLiteral(s, getValueType().orElse(Type.STRING)))
