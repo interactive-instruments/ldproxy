@@ -15,7 +15,6 @@ import de.ii.ogcapi.features.html.domain.Geometry;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.PropertyBase;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-import de.ii.xtraplatform.features.domain.transform.FeaturePropertyTransformerFlatten;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import java.util.List;
 import java.util.Objects;
@@ -105,11 +104,6 @@ public interface PropertyGltf extends PropertyBase<PropertyGltf, FeatureSchema> 
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .findFirst());
-  }
-
-  @Value.Lazy
-  default boolean isFlattened() {
-    return getTransformed().containsKey(FeaturePropertyTransformerFlatten.TYPE);
   }
 
   @Value.Lazy
