@@ -12,6 +12,7 @@ import de.ii.ogcapi.features.cityjson.domain.CityJsonWriter;
 import de.ii.ogcapi.features.cityjson.domain.EncodingAwareContextCityJson;
 import de.ii.ogcapi.features.cityjson.domain.FeatureTransformationContextCityJson;
 import java.io.IOException;
+import java.util.UUID;
 import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -165,6 +166,7 @@ public class CityJsonWriterFeature implements CityJsonWriter {
     return (context.getState().inBuildingPart() && !building
             ? context.getState().getCurrentIdBuildingPart()
             : context.getState().getCurrentId())
-        .orElseThrow(() -> new IllegalStateException("CityJSON features must have an id."));
+        // if there is no id, we generate a UUID
+        .orElse(UUID.randomUUID().toString());
   }
 }
