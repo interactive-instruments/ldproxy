@@ -141,26 +141,26 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
       }
 
       if (schema.isArray() && !context.encoding().getGeoJsonConfig().isFlattened()) {
-        writeValue(
-            json,
-            value,
-            schema
-                .getValueType()
-                .orElse(Objects.requireNonNullElse(context.valueType(), Type.STRING)));
+        writeValue(json, value, getValueType(schema, context.valueType()));
       } else {
         json.writeFieldName(schema.getName());
         Type valueType =
             schema.getCoalesce().isEmpty()
                     || (schema.getType() != Type.VALUE && schema.getType() != Type.FEATURE_REF)
                 ? schema.getType()
-                : schema
-                    .getValueType()
-                    .orElse(Objects.requireNonNullElse(context.valueType(), Type.STRING));
+                : getValueType(schema, context.valueType());
         writeValue(json, value, valueType);
       }
     }
 
     next.accept(context);
+  }
+
+  private Type getValueType(FeatureSchema schema, Type fromValue) {
+    return schema
+        .getValueType()
+        .filter(t -> t != Type.VALUE && t != Type.VALUE_ARRAY)
+        .orElse(Objects.requireNonNullElse(fromValue, Type.STRING));
   }
 
   protected String getPropertiesFieldName() {
