@@ -35,7 +35,7 @@ public abstract class JsonSchemaDocument extends JsonSchemaObject {
     V7("http://json-schema.org/draft-07/schema#", "definitions");
 
     public static VERSION current() {
-      return V201909;
+      return V202012;
     }
 
     private final String url;
