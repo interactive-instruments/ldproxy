@@ -55,7 +55,7 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
     if (Objects.nonNull(schema2)
         && !(schema2 instanceof JsonSchemaArray)
         && (schema.getName().contains("[].") || schema.getName().endsWith("[]"))) {
-      schema2 = withArrayWrapper(schema2);
+      schema2 = withArrayWrapper(schema2, schema.getName().endsWith("[]"));
     }
     return schema2;
   }

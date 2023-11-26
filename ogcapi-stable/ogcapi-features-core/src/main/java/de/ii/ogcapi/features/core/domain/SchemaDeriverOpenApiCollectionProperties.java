@@ -60,7 +60,7 @@ public class SchemaDeriverOpenApiCollectionProperties extends SchemaDeriverOpenA
     if (Objects.nonNull(schema2)
         && !(schema2 instanceof ArraySchema)
         && schema.getName().contains("[].")) {
-      schema2 = withArrayWrapper(schema2);
+      schema2 = withArrayWrapper(schema2, false);
     }
     return schema2;
   }
