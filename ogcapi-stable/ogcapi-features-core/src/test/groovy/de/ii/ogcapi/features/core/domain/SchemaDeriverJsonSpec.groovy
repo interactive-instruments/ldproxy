@@ -13,10 +13,12 @@ import de.ii.xtraplatform.features.domain.FeatureSchema
 import de.ii.xtraplatform.features.domain.SchemaBase
 import de.ii.xtraplatform.features.domain.transform.FeatureRefResolver
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
+import de.ii.xtraplatform.features.domain.transform.OnlyQueryables
 import de.ii.xtraplatform.features.domain.transform.WithScope
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied
-import spock.lang.Ignore
 import spock.lang.Specification
+
+import java.util.function.Predicate
 
 class SchemaDeriverJsonSpec extends Specification {
 
@@ -44,18 +46,22 @@ class SchemaDeriverJsonSpec extends Specification {
         JsonSchemaDocument.VERSION.V7      || EXPECTED_SCHEMA_V7
     }
 
-    // FIXME
-    @Ignore
     def 'Queryables schema derivation, JSON Schema draft #version'() {
 
         given:
-        List<String> queryables = ["geometry", "datetime", "objects.date"]
+        FeatureRefResolver featureRefResolver = new FeatureRefResolver(Set.of("JSON"))
+        List<String> queryables = ["geometry", "datetime", "featureRef" /*, "objects.date" */]
+        Predicate<String> excludeConnectors = path -> path.matches(".+?\\[[^=\\]]+].+");
+        OnlyQueryables queryablesSelector = new OnlyQueryables(queryables, List.of(), ".", excludeConnectors);
+        WithTransformationsApplied schemaFlattener = new WithTransformationsApplied(ImmutableMap.of("*", new ImmutablePropertyTransformation.Builder().flatten(".").build()))
         SchemaDeriverJsonSchema schemaDeriver = new SchemaDeriverCollectionProperties(version, Optional.empty(), "test-label", Optional.empty(), ImmutableMap.of(), queryables)
-        WithTransformationsApplied schemaFlattener = new WithTransformationsApplied(ImmutableMap.of("*", new ImmutablePropertyTransformation.Builder().flatten("_").build()))
-        FeatureSchema flatSchema = SchemaDeriverFixtures.FEATURE_SCHEMA.accept(schemaFlattener)
 
         when:
-        JsonSchemaDocument document = flatSchema.accept(schemaDeriver) as JsonSchemaDocument
+        JsonSchemaDocument document = SchemaDeriverFixtures.FEATURE_SCHEMA
+                .accept(featureRefResolver)
+                .accept(queryablesSelector)
+                .accept(schemaFlattener)
+                .accept(schemaDeriver) as JsonSchemaDocument
 
         then:
         document == expected
@@ -199,6 +205,12 @@ class SchemaDeriverJsonSpec extends Specification {
                     .schema(JsonSchemaDocument.VERSION.V202012.url())
                     .title("test-label")
                     .description("bar")
+                    .putProperties("featureRef", new ImmutableJsonSchemaInteger.Builder()
+                            .title("foo")
+                            .description("bar")
+                            .role("reference")
+                            .refCollectionId("foo")
+                            .build())
                     .putProperties("geometry", new ImmutableJsonSchemaGeometry.Builder()
                             .format("geometry-multipolygon")
                             .role("primary-geometry")
@@ -209,12 +221,14 @@ class SchemaDeriverJsonSpec extends Specification {
                             .description("bar")
                             .role("primary-instant")
                             .build())
+                    /*
                     .putProperties("objects.date", new ImmutableJsonSchemaArray.Builder()
+                            .title("foo > date")
                             .items(new ImmutableJsonSchemaString.Builder()
-                                .title("foo > date")
                                 .format("date")
                                 .build())
                             .build())
+                     */
                     .additionalProperties(new ImmutableJsonSchemaFalse.Builder().build())
                     .build();
 
