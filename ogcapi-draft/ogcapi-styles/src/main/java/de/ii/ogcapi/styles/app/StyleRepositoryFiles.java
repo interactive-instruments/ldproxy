@@ -46,6 +46,7 @@ import de.ii.ogcapi.styles.domain.StylesFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesLinkGenerator;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
 import de.ii.ogcapi.styles.domain.StylesheetMetadata;
+import de.ii.ogcapi.styles.domain.Tiles3dStylesheet;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
 import de.ii.xtraplatform.base.domain.LogContext;
@@ -90,6 +91,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
   private final ExtensionRegistry extensionRegistry;
   private final ResourceStore stylesStore;
   private final KeyValueStore<MbStyleStylesheet> mbStylesStore;
+  private final KeyValueStore<Tiles3dStylesheet> tiles3dStylesStore;
   private final I18n i18n;
   private final DefaultLinksGenerator defaultLinkGenerator;
   private final ObjectMapper patchMapperLenient;
@@ -109,6 +111,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       ValueStore valueStore) {
     this.stylesStore = blobStore.with(StylesBuildingBlock.STORE_RESOURCE_TYPE);
     this.mbStylesStore = valueStore.forTypeWritable(MbStyleStylesheet.class);
+    this.tiles3dStylesStore = valueStore.forTypeWritable(Tiles3dStylesheet.class);
     this.i18n = i18n;
     this.extensionRegistry = extensionRegistry;
     this.servicesUri = servicesContext.getUri();
@@ -204,7 +207,11 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       try {
         if (isMbStyle(styleFormat)) {
           return LastModified.from(
-              mbStylesStore.lastModified(styleId, getPathMbStyles(apiData, collectionId)));
+              mbStylesStore.lastModified(styleId, getPathArrayStyles(apiData, collectionId)));
+        }
+        if (is3dTilesStyle(styleFormat)) {
+          return LastModified.from(
+              tiles3dStylesStore.lastModified(styleId, getPathArrayStyles(apiData, collectionId)));
         }
         return LastModified.from(
             stylesStore.lastModified(getPathStyle(apiData, collectionId, styleId, styleFormat)));
@@ -220,6 +227,9 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
         try {
           if (isMbStyle(styleFormat)) {
             return LastModified.from(mbStylesStore.lastModified(styleId, apiData.getId()));
+          }
+          if (is3dTilesStyle(styleFormat)) {
+            return LastModified.from(tiles3dStylesStore.lastModified(styleId, apiData.getId()));
           }
           return LastModified.from(
               stylesStore.lastModified(getPathStyle(apiData, collectionId, styleId, styleFormat)));
@@ -349,7 +359,10 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       StyleFormatExtension styleFormat) {
     try {
       if (isMbStyle(styleFormat)) {
-        return mbStylesStore.has(styleId, getPathMbStyles(apiData, collectionId));
+        return mbStylesStore.has(styleId, getPathArrayStyles(apiData, collectionId));
+      }
+      if (is3dTilesStyle(styleFormat)) {
+        return tiles3dStylesStore.has(styleId, getPathArrayStyles(apiData, collectionId));
       }
       return stylesStore.has(getPathStyle(apiData, collectionId, styleId, styleFormat));
     } catch (IOException e) {
@@ -414,9 +427,15 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
 
     if (isMbStyle(styleFormat)) {
       MbStyleStylesheet stylesheet =
-          mbStylesStore.get(styleId, getPathMbStyles(apiData, collectionId));
+          mbStylesStore.get(styleId, getPathArrayStyles(apiData, collectionId));
       return new StylesheetContent(
           StyleFormatMbStyle.toBytes(stylesheet), pathStyle.toString(), true, stylesheet);
+    }
+    if (is3dTilesStyle(styleFormat)) {
+      Tiles3dStylesheet stylesheet =
+          tiles3dStylesStore.get(styleId, getPathArrayStyles(apiData, collectionId));
+      return new StylesheetContent(
+          StyleFormat3dTiles.toBytes(stylesheet), pathStyle.toString(), true, stylesheet);
     }
 
     return new StylesheetContent(
@@ -810,7 +829,19 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     if (isMbStyle(format)) {
       MbStyleStylesheet stylesheet = StyleFormatMbStyle.parse(requestBody, false);
       try {
-        mbStylesStore.put(styleId, stylesheet, getPathMbStyles(apiData, collectionId)).join();
+        mbStylesStore.put(styleId, stylesheet, getPathArrayStyles(apiData, collectionId)).join();
+      } catch (CompletionException e) {
+        if (e.getCause() instanceof IOException) {
+          throw (IOException) e.getCause();
+        }
+        throw e;
+      }
+    } else if (is3dTilesStyle(format)) {
+      Tiles3dStylesheet stylesheet = StyleFormat3dTiles.parse(requestBody, false);
+      try {
+        tiles3dStylesStore
+            .put(styleId, stylesheet, getPathArrayStyles(apiData, collectionId))
+            .join();
       } catch (CompletionException e) {
         if (e.getCause() instanceof IOException) {
           throw (IOException) e.getCause();
@@ -839,7 +870,10 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     for (StyleFormatExtension format :
         getStyleFormatStream(apiData, collectionId).collect(Collectors.toUnmodifiableList())) {
       if (isMbStyle(format)) {
-        mbStylesStore.delete(styleId, getPathMbStyles(apiData, collectionId));
+        mbStylesStore.delete(styleId, getPathArrayStyles(apiData, collectionId));
+      }
+      if (is3dTilesStyle(format)) {
+        tiles3dStylesStore.delete(styleId, getPathArrayStyles(apiData, collectionId));
       }
       stylesStore.delete(getStylesheetPath(apiData, collectionId, styleId, format));
     }
@@ -952,7 +986,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
         : Path.of(apiData.getId());
   }
 
-  private String[] getPathMbStyles(OgcApiDataV2 apiData, Optional<String> collectionId) {
+  private String[] getPathArrayStyles(OgcApiDataV2 apiData, Optional<String> collectionId) {
     return collectionId.isPresent()
         ? new String[] {apiData.getId(), collectionId.get()}
         : new String[] {apiData.getId()};
@@ -960,6 +994,10 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
 
   private boolean isMbStyle(StyleFormatExtension format) {
     return format instanceof StyleFormatMbStyle || format instanceof StyleFormatHtml;
+  }
+
+  private boolean is3dTilesStyle(StyleFormatExtension format) {
+    return format instanceof StyleFormat3dTiles;
   }
 
   private Path getPathStyle(
@@ -998,7 +1036,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
             .map(StyleFormatExtension::getFileExtension)
             .collect(Collectors.toUnmodifiableSet());
     Path parent = getPathStyles(apiData, collectionId);
-    String[] parentMb = getPathMbStyles(apiData, collectionId);
+    String[] parentArray = getPathArrayStyles(apiData, collectionId);
 
     try (Stream<Path> fileStream =
         stylesStore.walk(
@@ -1011,7 +1049,13 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
                         com.google.common.io.Files.getFileExtension(
                             path.getFileName().toString())))) {
       return Stream.concat(
-              mbStylesStore.identifiers(parentMb).stream().map(Identifier::id),
+              Stream.concat(
+                  mbStylesStore.identifiers(parentArray).stream()
+                      .filter(identifier -> identifier.path().size() == parentArray.length)
+                      .map(Identifier::id),
+                  tiles3dStylesStore.identifiers(parentArray).stream()
+                      .filter(identifier -> identifier.path().size() == parentArray.length)
+                      .map(Identifier::id)),
               fileStream.map(
                   path ->
                       com.google.common.io.Files.getNameWithoutExtension(
