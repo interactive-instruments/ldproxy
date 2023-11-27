@@ -222,8 +222,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
             return LastModified.from(mbStylesStore.lastModified(styleId, apiData.getId()));
           }
           return LastModified.from(
-              stylesStore.lastModified(
-                  getPathStyle(apiData, Optional.empty(), styleId, styleFormat)));
+              stylesStore.lastModified(getPathStyle(apiData, collectionId, styleId, styleFormat)));
         } catch (IOException e) {
           // continue
         }
@@ -298,6 +297,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
             .lastModified(
                 styleEntries.stream()
                     .map(StyleEntry::getLastModified)
+                    .filter(Optional::isPresent)
                     .map(Optional::get)
                     .max(Comparator.naturalOrder()))
             .links(
@@ -351,7 +351,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       if (isMbStyle(styleFormat)) {
         return mbStylesStore.has(styleId, getPathMbStyles(apiData, collectionId));
       }
-      return stylesStore.has(getPathStyle(apiData, Optional.empty(), styleId, styleFormat));
+      return stylesStore.has(getPathStyle(apiData, collectionId, styleId, styleFormat));
     } catch (IOException e) {
       return false;
     }
@@ -410,7 +410,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       String styleId,
       StyleFormatExtension styleFormat)
       throws IOException {
-    Path pathStyle = getPathStyle(apiData, Optional.empty(), styleId, styleFormat);
+    Path pathStyle = getPathStyle(apiData, collectionId, styleId, styleFormat);
 
     if (isMbStyle(styleFormat)) {
       MbStyleStylesheet stylesheet =
