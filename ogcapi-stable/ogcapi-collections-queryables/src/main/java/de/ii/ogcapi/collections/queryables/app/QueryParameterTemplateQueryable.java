@@ -135,18 +135,16 @@ public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache
       return null;
     }
 
-    switch (getType()) {
+    switch (getValueType().orElse(getType())) {
       case INTEGER:
       case FLOAT:
       case BOOLEAN:
         return Eq.of(getName(), getScalarLiteral(value, getType()));
-      case FEATURE_REF:
       case STRING:
         if (value.contains("*")) {
           return Like.of(getName(), ScalarLiteral.of(value.replaceAll("\\*", "%")));
         }
         return Eq.of(getName(), ScalarLiteral.of(value));
-      case FEATURE_REF_ARRAY:
       case VALUE_ARRAY:
         return AEquals.of(
             Property.of(getName()),

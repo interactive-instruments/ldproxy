@@ -322,13 +322,13 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   @Value.Check
   default FeaturesHtmlConfiguration transformLinks() {
     if (!hasTransformation(
-        LINK_WILDCARD, transformation -> transformation.getReduceStringFormat().isPresent())) {
+        LINK_WILDCARD, transformation -> transformation.getObjectReduceFormat().isPresent())) {
 
       Map<String, List<PropertyTransformation>> transformations =
           withTransformation(
               LINK_WILDCARD,
               new ImmutablePropertyTransformation.Builder()
-                  .reduceStringFormat("<a href=\"{{href}}\">{{title}}</a>")
+                  .objectReduceFormat("<a href=\"{{href}}\">{{title}}</a>")
                   .build());
 
       return new ImmutableFeaturesHtmlConfiguration.Builder()
@@ -396,14 +396,14 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
         Map<String, List<PropertyTransformation>> value) {
       if (value.containsKey(LINK_WILDCARD)
           && value.get(LINK_WILDCARD).stream()
-              .anyMatch(transformation -> transformation.getReduceStringFormat().isPresent())) {
+              .anyMatch(transformation -> transformation.getObjectReduceFormat().isPresent())) {
 
         return value.entrySet().stream()
             .filter(
                 entry ->
                     !Objects.equals(entry.getKey(), LINK_WILDCARD)
                         || entry.getValue().size() != 1
-                        || entry.getValue().get(0).getReduceStringFormat().isEmpty())
+                        || entry.getValue().get(0).getObjectReduceFormat().isEmpty())
             .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
       }
 

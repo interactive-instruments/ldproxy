@@ -65,7 +65,8 @@ public class GmlWriterProperties implements GmlWriter {
 
       String objectType = schema.getObjectType().orElse("FIX:ME");
 
-      if ("Link".equals(objectType)) {
+      if ("Link".equals(objectType) || schema.isFeatureRef()) {
+        // rel-as-link is the only profile supported by the GML format
         context.encoding().getState().setInLink(true);
       } else if ("Measure".equals(objectType)) {
         context.encoding().getState().setInMeasure(true);
@@ -138,11 +139,6 @@ public class GmlWriterProperties implements GmlWriter {
           if (context.encoding().getXmlAttributes().contains(schema.getFullPathAsString())) {
             // encode as XML attribute
             context.encoding().writeAsXmlAtt(schema.getName(), value);
-          } else if (schema.isFeatureRef()) {
-            context.encoding().write("<");
-            context.encoding().write(schema.getName());
-            writeLinkAttribute(context, "href", value);
-            context.encoding().write("/>");
           } else {
             // opening tag of property element
             context.encoding().write("<");

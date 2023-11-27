@@ -13,7 +13,6 @@ import de.ii.ogcapi.features.core.domain.Geometry;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.PropertyBase;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-import de.ii.xtraplatform.features.domain.transform.FeaturePropertyTransformerFlatten;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -67,11 +66,6 @@ public interface PropertyRoutes extends PropertyBase<PropertyRoutes, FeatureSche
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .findFirst());
-  }
-
-  @Value.Lazy
-  default boolean isFlattened() {
-    return getTransformed().containsKey(FeaturePropertyTransformerFlatten.TYPE);
   }
 
   Splitter PATH_SPLITTER = Splitter.on('.').omitEmptyStrings();

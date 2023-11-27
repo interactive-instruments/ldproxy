@@ -53,6 +53,7 @@ import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.transform.FeatureRefResolver;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
@@ -98,6 +99,10 @@ public class FeaturesFormatHtml
           ImmutableMap.of(
               PropertyTransformations.WILDCARD,
               new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
+  private static final String LINK_TEMPLATE =
+      String.format(
+          "<a href=\"%s\">%s</a>",
+          FeatureFormatExtension.URI_TEMPLATE, FeatureRefResolver.SUB_TITLE);
 
   private final ExtensionRegistry extensionRegistry;
   private final Values<Codelist> codelistStore;
@@ -179,59 +184,45 @@ public class FeaturesFormatHtml
     }
 
     ImmutableProfileTransformations.Builder builder = new ImmutableProfileTransformations.Builder();
-    switch (profile.get()) {
-      default:
-      case AS_KEY:
-        return getPropertyTransformations(collectionData);
-      case AS_URI:
-        schema
-            .map(SchemaBase::getAllNestedProperties)
-            .ifPresent(
-                properties ->
-                    properties.stream()
-                        .filter(SchemaBase::isFeatureRef)
-                        .forEach(
-                            property ->
-                                FeatureFormatExtension.getTemplate(property)
-                                    .ifPresent(
-                                        template ->
-                                            builder.putTransformations(
-                                                property.getFullPathAsString(),
-                                                ImmutableList.of(
-                                                    new ImmutablePropertyTransformation.Builder()
-                                                        .stringFormat(template)
-                                                        .build())))));
-        break;
-      case AS_LINK:
-        schema
-            .map(SchemaBase::getAllNestedProperties)
-            .ifPresent(
-                properties ->
-                    properties.stream()
-                        .filter(SchemaBase::isFeatureRef)
-                        .forEach(
-                            property ->
-                                getLinkTemplate(FeatureFormatExtension.getTemplate(property))
-                                    .ifPresent(
-                                        template ->
-                                            builder.putTransformations(
-                                                property.getFullPathAsString(),
-                                                ImmutableList.of(
-                                                    new ImmutablePropertyTransformation.Builder()
-                                                        .stringFormat(template)
-                                                        .build())))));
-        break;
-    }
+
+    schema
+        .map(SchemaBase::getAllNestedProperties)
+        .ifPresent(
+            properties ->
+                properties.stream()
+                    .filter(SchemaBase::isFeatureRef)
+                    .forEach(
+                        property -> {
+                          switch (profile.get()) {
+                            default:
+                            case AS_KEY:
+                              FeatureFormatExtension.reduceToKey(property, builder);
+                              break;
+                            case AS_URI:
+                              FeatureFormatExtension.reduceToUri(property, builder);
+                              break;
+                            case AS_LINK:
+                              reduceToLink(property, builder);
+                              break;
+                          }
+                        }));
 
     ProfileTransformations profileTransformations = builder.build();
+
     return Optional.of(
         getPropertyTransformations(collectionData)
             .map(pts -> pts.mergeInto(profileTransformations))
             .orElse(profileTransformations));
   }
 
-  private static Optional<String> getLinkTemplate(Optional<String> template) {
-    return template.map(t -> String.format("<a href=\"%s\">{{value}}</a>", t));
+  private static void reduceToLink(
+      FeatureSchema schema, ImmutableProfileTransformations.Builder builder) {
+    builder.putTransformations(
+        schema.getFullPathAsString(),
+        ImmutableList.of(
+            new ImmutablePropertyTransformation.Builder()
+                .objectReduceFormat(LINK_TEMPLATE)
+                .build()));
   }
 
   @Override

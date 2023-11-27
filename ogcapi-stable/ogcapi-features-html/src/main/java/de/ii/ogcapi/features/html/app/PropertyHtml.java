@@ -13,7 +13,6 @@ import de.ii.ogcapi.features.html.domain.Geometry;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.PropertyBase;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-import de.ii.xtraplatform.features.domain.transform.FeaturePropertyTransformerFlatten;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -174,11 +173,6 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .findFirst());
-  }
-
-  @Value.Lazy
-  default boolean isFlattened() {
-    return getTransformed().containsKey(FeaturePropertyTransformerFlatten.TYPE);
   }
 
   Splitter PATH_SPLITTER = Splitter.on('.').omitEmptyStrings();
