@@ -120,7 +120,7 @@ public class GeoJsonWriterJsonLd implements GeoJsonWriter {
   public void onValue(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
-    if (context.schema().isPresent() || Objects.nonNull(context.value())) {
+    if (context.schema().isPresent() && Objects.nonNull(context.value())) {
 
       final FeatureSchema currentSchema = context.schema().get();
       String currentValue = context.value();

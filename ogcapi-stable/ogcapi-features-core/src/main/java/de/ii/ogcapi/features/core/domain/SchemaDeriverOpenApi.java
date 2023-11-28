@@ -284,11 +284,20 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
   }
 
   @Override
-  protected Schema<?> withArrayWrapper(Schema<?> oapiSchema) {
-    return new ArraySchema()
-        .items(oapiSchema)
-        .name(oapiSchema.getName())
-        .description(oapiSchema.getDescription());
+  protected Schema<?> withArrayWrapper(Schema<?> oapiSchema, boolean moveTitleAndDescription) {
+    if (moveTitleAndDescription
+        && (Objects.nonNull(oapiSchema.getTitle())
+            || Objects.nonNull(oapiSchema.getDescription()))) {
+      String title = oapiSchema.getTitle();
+      String desc = oapiSchema.getDescription();
+      return new ArraySchema()
+          .items(oapiSchema.title(null).description(null))
+          .name(oapiSchema.getName())
+          .title(title)
+          .description(desc);
+    }
+    oapiSchema.getDescription();
+    return new ArraySchema().items(oapiSchema).name(oapiSchema.getName());
   }
 
   @Override

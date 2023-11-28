@@ -12,7 +12,7 @@
         <div class="col-md-{{#descCols}}{{.}}{{/descCols}}{{^descCols}}9{{/descCols}}">
             <ul class="list-unstyled">
                 {{#title}}<li>{{.}}{{#description}}: {{{.}}}{{/description}}</li>{{/title}}</li>
-                <li>{{typeTitle}}: {{type}}</li>
+                <li>{{typeTitle}}: {{#isArray}}[{{/isArray}} {{type}} {{#isArray}}]{{/isArray}}</li>
                 {{#valueList}}
                     <li>{{enumTitle}}: {{.}}</li>
                 {{/valueList}}
