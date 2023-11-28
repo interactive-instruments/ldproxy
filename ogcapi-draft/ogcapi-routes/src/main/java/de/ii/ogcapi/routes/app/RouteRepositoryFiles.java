@@ -29,7 +29,9 @@ import de.ii.ogcapi.routes.domain.RouteRepository;
 import de.ii.ogcapi.routes.domain.Routes;
 import de.ii.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutesLinksGenerator;
+import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
+import de.ii.xtraplatform.base.domain.StoreSource.Content;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.values.domain.Identifier;
 import de.ii.xtraplatform.values.domain.KeyValueStore;
@@ -63,10 +65,14 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
   private final DefaultLinksGenerator defaultLinkGenerator;
   private final RoutesLinksGenerator routesLinkGenerator;
   private final ObjectMapper mapper;
+  private final boolean isStoreLayoutV3;
 
   @Inject
   public RouteRepositoryFiles(
-      ValueStore valueStore, ExtensionRegistry extensionRegistry, I18n i18n) {
+      AppContext appContext,
+      ValueStore valueStore,
+      ExtensionRegistry extensionRegistry,
+      I18n i18n) {
     this.routesStore = valueStore.forTypeWritable(Route.class);
     this.routeDefinitionsStore = valueStore.forTypeWritable(RouteDefinition.class);
     this.i18n = i18n;
@@ -78,6 +84,12 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
     mapper.registerModule(new GuavaModule());
     mapper.configure(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY, true);
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    this.isStoreLayoutV3 =
+        appContext.getConfiguration().getStore().getSources(appContext.getDataDir()).stream()
+            .anyMatch(
+                source ->
+                    source.getContent() == Content.VALUES
+                        && Objects.equals(source.getPrefix().orElse(""), "routes/definitions"));
   }
 
   @Override
@@ -224,7 +236,8 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
               .from(routeDefinition)
               .links(routeDefinitionLinks)
               .build();
-      routeDefinitionsStore.put(routeId, definition, apiData.getId()).join();
+      String definitionId = isStoreLayoutV3 ? toOldDefinitionId(routeId) : routeId;
+      routeDefinitionsStore.put(definitionId, definition, apiData.getId()).join();
     } catch (CompletionException e) {
       deleteRoute(apiData, routeId);
       if (e.getCause() instanceof IOException) {
