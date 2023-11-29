@@ -135,23 +135,27 @@ public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache
       return null;
     }
 
-    switch (getValueType().orElse(getType())) {
+    // handle array case
+    if (getType() == Type.VALUE_ARRAY) {
+      return AEquals.of(
+          Property.of(getName()),
+          ArrayLiteral.of(
+              ARRAY_SPLITTER.splitToList(value).stream()
+                  .map(s -> getScalarLiteral(s, getValueType().orElse(Type.STRING)))
+                  .collect(Collectors.toUnmodifiableList())));
+    }
+
+    Type t = getValueType().orElse(getType());
+    switch (t) {
       case INTEGER:
       case FLOAT:
       case BOOLEAN:
-        return Eq.of(getName(), getScalarLiteral(value, getType()));
+        return Eq.of(getName(), getScalarLiteral(value, t));
       case STRING:
         if (value.contains("*")) {
           return Like.of(getName(), ScalarLiteral.of(value.replaceAll("\\*", "%")));
         }
         return Eq.of(getName(), ScalarLiteral.of(value));
-      case VALUE_ARRAY:
-        return AEquals.of(
-            Property.of(getName()),
-            ArrayLiteral.of(
-                ARRAY_SPLITTER.splitToList(value).stream()
-                    .map(s -> getScalarLiteral(s, getValueType().orElse(Type.STRING)))
-                    .collect(Collectors.toUnmodifiableList())));
       default:
         return BooleanValue2.of(false);
     }
