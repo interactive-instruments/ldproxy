@@ -8,6 +8,7 @@
 package de.ii.ogcapi.features.html.domain;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
@@ -157,6 +158,7 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
    */
   @Deprecated(since = "3.1.0")
   @Nullable
+  @JsonProperty(value = "layout", access = JsonProperty.Access.WRITE_ONLY)
   LAYOUT getLayout();
 
   /**
