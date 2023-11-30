@@ -31,7 +31,7 @@
   "$defs": {
     "OgcApiDataV2": {
       "title": "OgcApiDataV2",
-      "description": "# OGC API       Each API represents a deployment of a single OGC Web API, i.e., an API that implements     conformance classes from OGC API standards.       ## General rules       ### Response encoding       For operations that return a response, the encoding is chosen using standard HTTP content     negotiation with `Accept` headers.       GET operations that support more than one encoding additionally support the query     parameter `f`, which allows to explicitly choose the encoding and override the result of the     content negotiation. The supported encodings depend on the affected resource and the     configuration.       ### Response language       For operations that return a response, the language for linguistic texts is chosen using     standard HTTP content negiotiation with `Accept-Language` headers.       If enabled in [Common Core](building-blocks/common_core.md), GET operations additionally     support the query parameter `lang`, which allows to explicitely choose the language and     override the result of the content negotiation. The supported languages depend on the     affected resource and the configuration. Support for multilingualism is currently limited.     There are four possible sources for linguistic texts:        - Static texts: For example link labels or static texts in HTML represenations. Currently the languages English (`en`) and German (`de`) are supported. - Texts contained in the data: Currently not supported. - Texts set in the configuration: Currently not supported. - Error messages: These are always in english, the messages are currently hard-coded.        ### Resource paths       All resource paths in this documentation are relative to the base URI of the API. For     example given the base URI `https://example.com/pfad/zu/apis/{apiId}` and the relative     resource path `collections`, the full path would be     `https://example.com/pfad/zu/apis/{apiId}/collections`.  ## Configuration       Details regarding the API modules can be found [here](building-blocks/README.md), see     `api` in the table below.       {@docTable:properties }  ### Collection       Every collection corresponds to a feature type defined in the feature provider (only     *Feature Collections* are currently supported).       {@docTable:collectionProperties }  ### Building Blocks       Building blocks might be configured for the API or for single collections. The final     configuration is formed by merging the following sources in this order:        - The building block defaults, see [Building Blocks](building-blocks/README.md). - Optional deployment defaults in the `defaults` directory. - API level configuration. - Collection level configuration. - Optional deployment overrides in the `overrides` directory.          ### Metadata       {@docVar:metadata }       {@docTable:metadataProperties }  ### External document       {@docVar:externalDocument }       {@docTable:externalDocumentProperties }  ### Default extent       {@docVar:extent }       {@docTable:extentProperties }  ### Caching       {@docVar:caching }       {@docTable:cachingProperties }  ### Access Control       {@docVar:security }       {@docTable:securityProperties }  ### Examples       See the [API     configuration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)     of the API [Vineyards in Rhineland-Palatinate, Germany](https://demo.ldproxy.net/vineyards).  ## Storage       API configurations reside under the relative path `store/entities/services/{apiId}.yml` in     the data directory.",
+      "description": "# OGC API       Each API represents a deployment of a single OGC Web API, i.e., an API that implements     conformance classes from OGC API standards.       ## General rules       ### Response encoding       For operations that return a response, the encoding is chosen using standard HTTP content     negotiation with `Accept` headers.       GET operations that support more than one encoding additionally support the query     parameter `f`, which allows to explicitly choose the encoding and override the result of the     content negotiation. The supported encodings depend on the affected resource and the     configuration.       ### Response language       For operations that return a response, the language for linguistic texts is chosen using     standard HTTP content negiotiation with `Accept-Language` headers.       If enabled in [Common Core](building-blocks/common_core.md), GET operations additionally     support the query parameter `lang`, which allows to explicitely choose the language and     override the result of the content negotiation. The supported languages depend on the     affected resource and the configuration. Support for multilingualism is currently limited.     There are four possible sources for linguistic texts:        - Static texts: For example link labels or static texts in HTML represenations. Currently the languages English (`en`) and German (`de`) are supported. - Texts contained in the data: Currently not supported. - Texts set in the configuration: Currently not supported. - Error messages: These are always in english, the messages are currently hard-coded.        ### Resource paths       All resource paths in this documentation are relative to the base URI of the API. For     example given the base URI `https://example.com/pfad/zu/apis/{apiId}` and the relative     resource path `collections`, the full path would be     `https://example.com/pfad/zu/apis/{apiId}/collections`.  ## Configuration       Details regarding the API modules can be found [here](building-blocks/README.md), see     `api` in the table below.       {@docTable:properties }  ### Collection       Every collection corresponds to a feature type defined in the feature provider (only     *Feature Collections* are currently supported).       {@docTable:collectionProperties }  ### Building Blocks       Building blocks might be configured for the API or for single collections. The final     configuration is formed by merging the following sources in this order:        - The building block defaults, see [Building Blocks](building-blocks/README.md). - Optional deployment defaults in the `defaults` directory. - API level configuration. - Collection level configuration. - Optional deployment overrides in the `overrides` directory.          ### Metadata       {@docVar:metadata }       {@docTable:metadataProperties }  ### External document       {@docVar:externalDocument }       {@docTable:externalDocumentProperties }  ### Default extent       {@docVar:extent }       {@docTable:extentProperties }  ### Caching       {@docVar:caching }       {@docTable:cachingProperties }  ### Access Control       {@docVar:security }       #### Configuration       {@docTable:securityProperties }       {@docVar:policies }       {@docTable:policies }  ### Examples       See the [API     configuration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)     of the API [Vineyards in Rhineland-Palatinate, Germany](https://demo.ldproxy.net/vineyards).  ## Storage       API configurations reside under the relative path `store/entities/services/{apiId}.yml` in     the data directory.",
       "type": "object",
       "properties": {
         "id": {
@@ -179,7 +179,7 @@
         },
         "autoPersist": {
           "title": "autoPersist",
-          "description": "Option to persist definitions generated with `auto` to the configuration file. The     [Store](/application/40-store.md) must not be `READ_ONLY` for this to take effect.",
+          "description": "*Deprecated, use the editor instead.* Option to persist definitions generated with     `auto` to the configuration file. The [Store](/application/40-store.md) must not be     `READ_ONLY` for this to take effect.",
           "oneOf": [
             {
               "type": "boolean"
@@ -839,9 +839,82 @@
       },
       "additionalProperties": false
     },
+    "PolicyAttribute": {
+      "title": "PolicyAttribute",
+      "description": "",
+      "type": "object",
+      "properties": {
+        "constant": {
+          "title": "constant",
+          "description": "",
+          "type": "object"
+        },
+        "property": {
+          "title": "property",
+          "description": "",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "parameter": {
+          "title": "parameter",
+          "description": "",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "Policies": {
+      "title": "Policies",
+      "description": "##### Policies",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "title": "enabled",
+          "description": "Enable an additional authorization layer using a *Policy Decision Point* defined in     the [global configuration](../application/70-reference.md).",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attributes": {
+          "title": "attributes",
+          "description": "Add the given attributes to the request sent to the *Policy Decision Point*. Keys are     attribute ids, values are single key objects using either `constant` for a fixed string ,     `property` for a property path or `parameter` for a query parameter. Attributes using     `property` are only relevant for operations involving features. May be defined per     collection.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/PolicyAttribute"
+          }
+        },
+        "obligations": {
+          "title": "obligations",
+          "description": "Applies the given attributes of obligations returned by the *Policy Decision Point*.     Keys are attribute ids, values are single key objects using `parameter` for a query     parameter. Parameters defined in an obligation will overwrite parameters in the request     with the exception if `filter`, which is merged using `AND`, May be defined per     collection.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/PolicyAttribute"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "ApiSecurity": {
       "title": "ApiSecurity",
-      "description": "Access control for all API operations (combination of endpoint and HTTP method).       The control mechanism is based on scopes, currently only two exist:        - `write`: every operation with HTTP method `POST`, `PUT`, `PATCH` or `DELETE` - `read`: any other operation            To support authenticated users, a bearer token has to be included in the `Authorization`     header in requests to the API. Validation and evaluation of these tokens has to be configured     in the [global configuration](../application/70-reference.md).",
+      "description": "Access control for all API operations (combination of endpoint and HTTP method).       #### Permissions       Access control is based on permissions and permission groups.       Permissions are a combination of a group prefix (see below) and an OpenAPI operation id     (without any prefix), for example `data:getItems` or `tiles:getTile`. These can be used if a     more fine-grained control is needed in comparison to permission groups.       #### Permission groups       These are the **predefined main permission groups**, every operation/permission is     contained in exactly one main group:        - `discover`: access API landing pages, conformance declarations and OpenAPI definitions - `collections:read`: access feature collection metadata - `data:read`: access and query features - `data:write`: mutate features - `tiles:read`: access tiles - `styles:read`: access styles and their metadata - `styles:write`: mutate styles and update their metadata - `resources:read`: access file resources - `resources:write`: mutate file resources - `search:read`: access stored queries and their parameters - `search:write`: mutate stored queries - `routes:read`: access stored routes and their definition - `routes:write`: compute and store routes, delete stored routes        These are the **predefined parent permission groups** (convenient unions of main groups):        - `collections`: includes `collections:read` - `data`: includes `data:read` and `data:write` - `tiles`: includes `tiles:read` - `styles`: includes `styles:read` and `styles:write` - `resources`: includes `resources:read` and `resources:write` - `search`: includes `search:read` and `search:write` - `routes`: includes `routes:read` and `routes:write`        These are the **predefined base permission groups** (convenient unions of main groups):        - `read`: includes `discover`, `collections:read`, `data:read`, `tiles:read`, `styles:read`, `resources:read`, `search:read` and `routes:read` - `write`: includes `data:write`, `styles:write`, `resources:write`, `search:write` and `routes:write`        **Custom permission groups** are defined in `groups`, they may contain permissions and/or     predefined permission groups.       The special **permission group `public`** defines the list of permissions and/or     predefined permission groups that every user possesses, if authenticated or not.       #### Data-specific permissions       The permissions groups and permissions described above will permit access to any API and     collection. To restrict the access to specific APIs or collections, a suffix can be added to     permission groups and permissions, for example `read::daraa` or     `data:getItems::daraa:AeronauticSrf`.       #### Scopes       *OAuth2 Scopes* are an optional additional authorization layer. They are typically used     when access to an API is granted to a third-party application on behalf of a user. Scopes     then allow to limit which of the users permissions should be granted to the application. The     application would request the scopes it needs and the user would be presented a consent form     where he can choose the scopes he wishes to grant.       Scopes are disabled by default and can be enabled by setting the `scopes` option. The     value is a list of the permission group types that should be used as scopes. That allows to     set the granularity of scopes, since presenting too many scopes in a consent form might be     overwhelming and all the enabled scopes have to actually exist in the identity provider.       For example setting `scopes` to `[BASIC]` would enable the scopes `read` and `write`. When     a user then grants the `write` scope to an application, that does not automatically mean the     application is allowed to write anything. What the application can write is still defined by     the users permissions. But not granting the `write` scope is an easy way to prohibit any     write access, even if the user has such permissions.       #### Authentication and authorization       To support authenticated users, a bearer token has to be included in the `Authorization`     header in requests to the API. Validation and evaluation of these tokens has to be configured     in the [global configuration](../application/70-reference.md).       To determine if a user is authorized to perform the requested operation, the following     steps are executed:        1. If the operation is covered by the `public` group, authorization is granted, even if no token or an invalid token were provided. (Then jump to 6.) 2. If no token or an invalid token (wrong signature or expired) are provided, authorization is rejected. 3. If `audience` is non-empty and does not intersect the audience claim of the provided token, authorization is rejected. 4. If `scopes` is non-empty and the scope claim of the provided token does not contain at least one permission group that covers    the requested operation, authorization is rejected. 5. If the permissions claim of the provided token does not contain at least one permission, predefined permission group or custom    permission group that covers the requested operation, authorization is rejected. 6. If `policies` is enabled and the PDP returns `Deny`, authorization is rejected.",
       "type": "object",
       "properties": {
         "enabled": {
@@ -862,7 +935,8 @@
         },
         "publicScopes": {
           "title": "publicScopes",
-          "description": "List of permissions that every user possesses, if authenticated or not.",
+          "description": "*Deprecated, see `groups\u0027.* List of permissions that every user possesses, if     authenticated or not.",
+          "deprecated": true,
           "allOf": [
             {
               "if": {
@@ -893,6 +967,117 @@
               }
             }
           ]
+        },
+        "groups": {
+          "title": "groups",
+          "description": "Definition of custom permission groups, the key is the group name, the value a list of     permissions and/or predefined permission groups. The group `public` defines the list of     permissions that every user possesses, if authenticated or not.",
+          "type": "object",
+          "additionalProperties": {
+            "allOf": [
+              {
+                "if": {
+                  "type": "array"
+                },
+                "then": {
+                  "items": {
+                    "type": [
+                      "string",
+                      "number",
+                      "boolean",
+                      "null"
+                    ]
+                  }
+                }
+              },
+              {
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "scopes": {
+          "title": "scopes",
+          "description": "If non-empty, *OAuth2 Scopes* are added to the OpenAPI definition. Then only tokens     that contain at least one scope that covers the requested operation are accepted. Scopes     reuse permissions groups, values are the types of permission groups that should be used:     `BASE` (e.g. `read`), `PARENT` (e.g. `data`), `MAIN` (e.g. `data:read`) and `CUSTOM`     (everything defined in `groups` besides `public`).",
+          "allOf": [
+            {
+              "if": {
+                "type": "array"
+              },
+              "then": {
+                "items": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            },
+            {
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              }
+            }
+          ]
+        },
+        "audience": {
+          "title": "audience",
+          "description": "If non-empty, only tokens that contain at least one of the given values in the audience     claim are accepted.",
+          "allOf": [
+            {
+              "if": {
+                "type": "array"
+              },
+              "then": {
+                "items": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            },
+            {
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              }
+            }
+          ]
+        },
+        "policies": {
+          "title": "policies",
+          "description": "Optional additional authorization layer using a *Policy Decision Point* defined in the     [global configuration](../application/65-auth.md), see [Policies](#policies).",
+          "type": "object",
+          "$ref": "#/$defs/Policies"
         }
       },
       "additionalProperties": false
@@ -1478,15 +1663,44 @@
             "null"
           ]
         },
-        "reduceStringFormat": {
-          "title": "reduceStringFormat",
-          "description": "Reduces an object to a string using the same syntax as `stringFormat` but with     additional replacements for objects property names.",
+        "objectReduceFormat": {
+          "title": "objectReduceFormat",
+          "description": "Reduces an object to a string using the same syntax as `stringFormat` but with     additional replacements for the object property names.",
           "type": [
             "string",
             "number",
             "boolean",
             "null"
           ]
+        },
+        "reduceStringFormat": {
+          "title": "reduceStringFormat",
+          "description": "*Deprecated* See `objectReduceFormat`.",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "deprecated": true
+        },
+        "objectReduceSelect": {
+          "title": "objectReduceSelect",
+          "description": "Reduces an object to one of its properties, the value is the desired property name.",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "objectMapFormat": {
+          "title": "objectMapFormat",
+          "description": "Maps an object to another object, the value is map where the keys are the new property     names. The values use the same syntax as `stringFormat` but with additional replacements     for the source object property names.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "stringFormat": {
           "title": "stringFormat",
@@ -1562,23 +1776,13 @@
             "null"
           ],
           "deprecated": true
-        },
-        "asLink": {
-          "title": "asLink",
-          "description": "TODO",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ]
         }
       },
       "additionalProperties": false
     },
     "CityJsonConfiguration": {
       "title": "CityJsonConfiguration",
-      "description": "### Prerequisites       The module requires that the feature provider includes a type `building` that is mapped to     a CityJSON Building feature. Properties of the type `building` are mapped to CityJSON as     follows:        - `consistsOfBuildingPart`: The value must be an object with the same properties as `building`.   The object is encoded as a BuildingPart feature of the Building feature. - `address`: The value must be an array of address objects. The following attributes are mapped   to an Address object, all other properties are ignored:   - `multiPoint`: a  MULTI_POINT geometry representing the address location   - `ThoroughfareName`: a string   - `ThoroughfareNumber`: a string   - `LocalityName`: a string   - `PostalCode`: a string   - `AdministrativeArea`: a string   - `CountryName`: a string - `lod1Solid`: a closed MULTI_POLYGON geometry that represents the shell of the building at LoD 1. - `lod2Solid`: a closed MULTI_POLYGON geometry that represents the shell of the building at LoD 2. - `surfaces`: an array of semantic surface objects. The object must have a `surfaceType` and the   values must be one of the following: `CeilingSurface`, `ClosureSurface`, `Door`, `FloorSurface`,   `GroundSurface`, `InteriorWallSurface`, `OuterCeilingSurface`, `OuterFloorSurface`, `RoofSurface`,   `WallSurface`, or `Window`. The object should have a property with a POLYGON or MULTI_POLYGON   geometry that represents the surface geometry. - all other properties: The property will be mapped to a CityJSON attribute, except for `gml_id` properties.            The property of the `building` with the role `ID` will be used as the CityJSON id. Since     the embedded building parts do not have a property with a role `ID`, the building part     feature must have a unique property `id`, which will be used as the id of the CityJSON     building part.       The [example](#examples) includes a sample type definition for the building features in a     PostgreSQL feature provider based on the CityGML profile of the German surveying and mapping     authorities.",
+      "description": "### Prerequisites       The module requires that the feature provider includes a type `building` that is mapped to     a CityJSON Building feature. Properties of the type `building` are mapped to CityJSON as     follows:        - `consistsOfBuildingPart`: The value must be an object with the same properties as `building`.   The object is encoded as a BuildingPart feature of the Building feature. - `address`: The value must be an array of address objects. The following attributes are mapped   to an Address object, all other properties are ignored:   - `multiPoint`: a  MULTI_POINT geometry representing the address location   - `ThoroughfareName`: a string   - `ThoroughfareNumber`: a string   - `LocalityName`: a string   - `PostalCode`: a string   - `AdministrativeArea`: a string   - `CountryName`: a string - `lod1Solid`: a closed MULTI_POLYGON geometry that represents the shell of the building at LoD 1. - `lod2Solid`: a closed MULTI_POLYGON geometry that represents the shell of the building at LoD 2. - `surfaces`: an array of semantic surface objects. The object must have a `surfaceType` and the   values must be one of the following: `CeilingSurface`, `ClosureSurface`, `Door`, `FloorSurface`,   `GroundSurface`, `InteriorWallSurface`, `OuterCeilingSurface`, `OuterFloorSurface`, `RoofSurface`,   `WallSurface`, or `Window`. The object should have a property with a POLYGON or MULTI_POLYGON   geometry that represents the surface geometry. - all other properties: The property will be mapped to a CityJSON attribute, except for `gml_id` properties.            The property of the `building` with the role `ID` will be used as the CityJSON id. Since     the embedded building parts do not have a property with a role `ID`, the building part     feature will use the value of a property `id` as the id of the CityJSON building part,     otherwise a UUID will be generated. If `id` is provided, its values must be unique.       The [example](#examples) includes a sample type definition for the building features in a     PostgreSQL feature provider based on the CityGML profile of the German surveying and mapping     authorities.",
       "type": "object",
       "properties": {
         "buildingBlock": {
@@ -2829,6 +3033,22 @@
             "boolean",
             "null"
           ]
+        },
+        "includeSpecificationInformation": {
+          "title": "includeSpecificationInformation",
+          "description": "Controls whether information (name, link, maturity) about the specification of an API     component, e.g., an operation or query parameter, is included in the API definition. It is     recommended to enable this option, if the API includes building blocks that are not marked     as `stable`.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -2965,7 +3185,7 @@
     },
     "HtmlConfiguration": {
       "title": "HtmlConfiguration",
-      "description": "### Custom Templates       The HTML encoding is implemented using [Mustache templates](https://mustache.github.io/).     Custom templates are supported, they have to reside in the data directory under the relative     path `templates/html/{templateName}.mustache`, where `{templateName}` equals the name of a     default template (see [source code on     GitHub](https://github.com/search?q\u003drepo%3Ainteractive-instruments%2Fldproxy+extension%3Amustache\u0026type\u003dCode)).",
+      "description": "### Customization       The HTML encoding is implemented using [Mustache templates](https://mustache.github.io/)     which can be overridden by the user. Any template may be overridden but doing so for     non-empty templates is strongly discouraged since it will most certainly lead to issues on     updates.       There are predefined empty templates prefixed with `custom-` that should cover most use     cases:        - `custom-head.mustache`: add something to the `\u003chead\u003e` element, e.g. CSS styles - `custom-body-start.mustache`: add something at the start of the `\u003cbody\u003e` element - `custom-body-end.mustache`: add something at the end of the `\u003cbody\u003e` element - `custom-navbar-start.mustache`: add something at the left side of the navbar - `custom-navbar-end.mustache`: add something at the right side of the navbar - `custom-footer-start.mustache`: add something at the start of the footer - `custom-footer-end.mustache`: add something at the end of footer - `custom-footer-url.mustache`: add a link to the list at the right of the footer            These templates have to reside in the data directory either under the relative path     `templates/html/{templateName}.mustache` if you are still using the old layout (deprecated,     will stop working in v4) or under `resources/html/templates/{templateName}.mustache` with the     new layout.       #### Custom assets       It is also possible to publish any custom files, e.g. CSS files that can then be included     in `custom-head.mustache`. The files have to reside in the data directory either under the     relative path `store/resources/html/assets/` if you are still using the old layout     (deprecated, will stop working in v4) or under `resources/html/assets/` with the new layout.       For example the CSS file `resources/html/assets/my.css` could be included in     `custom-head.mustache` with `\u003clink href\u003d\"{{urlPrefix}}/custom/assets/my.css\" rel\u003d\"stylesheet\" \u003e`.       ### Login Provider       For APIs with [restricted access](../README.md#access-control) using an [identity     provider](../../application/65-auth.md) with login capabilities, the `loginProvider` option     can be set to enable automatic redirects to the login form of the identity provider for     restricted HTML pages. The logged-in user will also be shown on all HTML pages along with a     logout button.        ::: warning   This functionality uses cookies to retain the login information when     navigating between HTML pages. The cookies are neither processed nor passed on to any third     party.       In regard to the European GDPR and the German TTDSG we would deem these cookies as     technically required. That means if you publish an API with this functionality, you would be     required to mention these cookies in the privacy policy.  :::6        ::: info   If the identity provider uses `https` (which it should), this feature only works     if the API is also published using `https`. The only exception is accessing an API on     `localhost`.  :::",
       "type": "object",
       "properties": {
         "buildingBlock": {
@@ -3221,6 +3441,16 @@
         "footerText": {
           "title": "footerText",
           "description": "Additional text shown in footer of every site.",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "loginProvider": {
+          "title": "loginProvider",
+          "description": "Option to enable automatic redirects to the login form of an identity provider. The     value is the id of a provider with login capabilities in the [global     configuration](../../application/65-auth.md). Also see [Login Provider](#login-provider).",
           "type": [
             "string",
             "number",
@@ -4493,7 +4723,7 @@
         },
         "collectionTiles": {
           "title": "collectionTiles",
-          "description": "Enable vector tiles for each *Feature Collection*. Every tile contains a layer with the     feature from the collection.",
+          "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)* Enable vector tiles for each *Feature     Collection*. Every tile contains a layer with the feature from the collection. If a Tile     Provider is specified, tiles will always be enabled for a collection, if the tileset is     specified in the Tile Provider, independent of the value of this option.",
           "oneOf": [
             {
               "type": "boolean"
@@ -4505,7 +4735,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "deprecated": true
         },
         "singleCollectionEnabled": {
           "title": "singleCollectionEnabled",
@@ -4526,7 +4757,7 @@
         },
         "datasetTiles": {
           "title": "datasetTiles",
-          "description": "Enable vector tiles for the whole dataset. Every tile contains one layer per collection     with the features of that collection.",
+          "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)* Enable vector tiles for the whole     dataset. Every tile contains one layer per collection with the features of that collection.     If a Tile Provider is specified, tiles will always be enabled for the dataset, if the     corresponding tileset is specified in the Tile Provider, independent of the value of this     option.",
           "oneOf": [
             {
               "type": "boolean"
@@ -4538,7 +4769,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "deprecated": true
         },
         "multiCollectionEnabled": {
           "title": "multiCollectionEnabled",
@@ -4791,7 +5023,8 @@
         },
         "versions": {
           "title": "versions",
-          "description": "List of enabled JSON Schema versions. Supported are 2020-12 (`V202012`), 2019-09     (`V201909`) and 07 (`V7`).",
+          "description": "**Deprecated** List of enabled JSON Schema versions. Supported are 2020-12 (`V202012`),     2019-09 (`V201909`) and 07 (`V7`). The draft specification only supports 2020-12.",
+          "deprecated": true,
           "allOf": [
             {
               "if": {
@@ -4863,6 +5096,38 @@
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "optimisticLockingLastModified": {
+          "title": "optimisticLockingLastModified",
+          "description": "Option to enable support for conditional processing of PUT, PATCH, and DELETE requests,     based on the time when the feature was last updated. Such requests must include an     `If-Unmodified-Since` header, otherwise they will be rejected. A feature will only be     changed, if the feature was not changed since the timestamp in the header (or if no last     modification time is known for the feature).       The setting is ignored, if `optimisticLockingETag` is enabled.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "optimisticLockingETag": {
+          "title": "optimisticLockingETag",
+          "description": "Option to enable support for conditional processing of PUT, PATCH, and DELETE requests,     based on a strong Entity Tag (ETag) of the feature. Such requests must include an     `If-Match` header, otherwise they will be rejected. A feature will only be changed, if the     feature matches the Etag(s) in the header.",
           "oneOf": [
             {
               "type": "boolean"
@@ -5178,7 +5443,7 @@
         },
         "describedby": {
           "title": "describedby",
-          "description": "*Partially Deprecated* For schemas specific to the feature type, use `schemaCollection`     and `schemaFeature`. Enables that links to the generic JSON-FG and GeoJSON JSON Schema     documents tare added to the JSON-FG response document. The links have the link relation     type \"describedby\". The schemas can be used to validate the JSON document.",
+          "description": "*Partially Deprecated* For schemas specific to the feature type, use `schemaCollection`     and `schemaFeature`. Enables that links to the generic JSON-FG and GeoJSON JSON Schema     documents are added to the JSON-FG response document. The links have the link relation type     \"describedby\". The schemas can be used to validate the JSON document.",
           "oneOf": [
             {
               "type": "boolean"
@@ -5246,7 +5511,7 @@
         },
         "featureType": {
           "title": "featureType",
-          "description": "Features are often categorized by type. Typically, all features of the same type have     the same schema and the same properties.       Many GIS clients depend on knowledge about the feature type when processing feature     data. For example, when associating a style to a feature in order to render that feature on     a map.       This option adds a \"featureType\" member with the specified values. If a single value is     specified, then a string is added, otherwise an array of strings.       A value can include a template `{{type}}`, which will be replaced with the value of the     feature property with `role: TYPE` in the provider schema of the feature type of the     collection. The property must be of type `STRING`.",
+          "description": "Features are often categorized by type. Typically, all features of the same type have     the same schema and the same properties.       Many GIS clients depend on knowledge about the feature type when processing feature     data. For example, when associating a style to a feature in order to render that feature on     a map.       This option adds a \"featureType\" member with the specified values. If a single value is     specified, then a string is added, otherwise an array of strings.       A value can include a template `{{type}}`, which will be replaced with the value of the     feature property with `role: TYPE` in the provider schema of the feature type of the     collection. The property must be of type `STRING`.       If the feature type in the provider schema includes an `objectType` value, the value     will be used as the default. Otherwise, the default is an empty array.",
           "allOf": [
             {
               "if": {
@@ -5278,6 +5543,22 @@
             }
           ]
         },
+        "useCuries": {
+          "title": "useCuries",
+          "description": "If `true`, values in \"conformsTo\" and \"coordRefSys\" will be Safe CURIEs, not HTTP URIs.     For example, `[EPSG:25832]` instead of `http://www.opengis.net/def/crs/EPSG/0/25832`.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "string",
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "links": {
           "title": "links",
           "description": "Adds the specified links to the `links` array of features. All values of the array must     be a valid link object with `href` and `rel`.",
@@ -5304,7 +5585,7 @@
         },
         "includeInGeoJson": {
           "title": "includeInGeoJson",
-          "description": "The option allows selected JSON-FG extensions to be included in the GeoJSON encoding as     well. Allowed values are: `describedby`, `featureType`, `time`, `place`, `coordRefSys`,     `links`.",
+          "description": "The option allows selected JSON-FG extensions to be included in the GeoJSON encoding as     well. Allowed values are: `describedby`, `featureType`, `featureSchema`, `time`, `place`,     `coordRefSys`, `links`. `conformsTo` is only used in JSON-FG responses.",
           "allOf": [
             {
               "if": {
@@ -6926,7 +7207,7 @@
         },
         "postOnItems": {
           "title": "postOnItems",
-          "description": "Enables support for the POST HTTP method on the \"Features\" resource.",
+          "description": "**Deprecated** Instead, use an Ad-hoc Query from [Features -     Search](#features_-_search.html). Enables support for the POST HTTP method on the     \"Features\" resource.",
           "oneOf": [
             {
               "type": "boolean"
@@ -6938,7 +7219,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "deprecated": true
         },
         "intersectsParameter": {
           "title": "intersectsParameter",
