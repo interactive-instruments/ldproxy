@@ -8,6 +8,7 @@
 package de.ii.ogcapi.styles.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
@@ -1531,6 +1532,7 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
    */
   @Deprecated
   @Nullable
+  @JsonProperty(value = "resourcesEnabled", access = JsonProperty.Access.WRITE_ONLY)
   Boolean getResourcesEnabled();
 
   @Deprecated
@@ -1548,6 +1550,7 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
    */
   @Deprecated
   @Nullable
+  @JsonProperty(value = "resourceManagerEnabled", access = JsonProperty.Access.WRITE_ONLY)
   Boolean getResourceManagerEnabled();
 
   @Deprecated
@@ -1565,6 +1568,7 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
    */
   @Deprecated(since = "3.1.0")
   @Nullable
+  @JsonProperty(value = "defaultStyle", access = JsonProperty.Access.WRITE_ONLY)
   String getDefaultStyle();
 
   /**

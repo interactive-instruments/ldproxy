@@ -574,8 +574,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
                           Objects.requireNonNullElse(getTileProviderTileset(), collectionId)))
           .orElse(false);
     }
-    return Objects.equals(getCollectionTiles(), true)
-        || (Objects.nonNull(getTileProvider()) && getTileProvider().isSingleCollectionEnabled());
+    return false;
   }
 
   /**
@@ -615,8 +614,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
                           Objects.requireNonNullElse(getTileProviderTileset(), DATASET_TILES)))
           .orElse(false);
     }
-    return Objects.equals(getDatasetTiles(), true)
-        || (Objects.nonNull(getTileProvider()) && getTileProvider().isMultiCollectionEnabled());
+    return false;
   }
 
   /**
