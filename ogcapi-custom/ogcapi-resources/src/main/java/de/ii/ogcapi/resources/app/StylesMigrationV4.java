@@ -33,7 +33,7 @@ public class StylesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV
 
   @Override
   public String getSubject() {
-    return "building block Styles, properties 'resourcesEnables', 'resourceManagerEnabled', and 'defaultStyle'";
+    return "building block STYLES, properties 'resourcesEnables', 'resourceManagerEnabled', and 'defaultStyle'";
   }
 
   @Override
