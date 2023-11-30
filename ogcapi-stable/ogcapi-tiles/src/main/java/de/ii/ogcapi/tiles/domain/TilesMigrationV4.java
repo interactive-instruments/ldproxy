@@ -135,6 +135,8 @@ public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2
             .filters(Map.of())
             .rules(Map.of())
             .minimumSizeInPixel(null)
+            .datasetTiles(null)
+            .collectionTiles(null)
             .build();
 
     return new ImmutableOgcApiDataV2.Builder()
@@ -199,7 +201,7 @@ public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2
                   return collectionData
                       .getExtension(TilesConfiguration.class)
                       .filter(TilesConfiguration::isEnabled)
-                      .filter(cfg -> cfg.hasCollectionTiles(null, apiData, collectionData.getId()))
+                      .filter(cfg -> hasCollectionTiles(cfg))
                       .isPresent();
                 })
             .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -248,7 +250,7 @@ public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2
                 .putAllLevels(tilesConfiguration.getZoomLevelsDerived())
                 .build())
         .putAllTilesets(
-            tilesConfiguration.hasDatasetTiles(null, null)
+            hasDatasetTiles(tilesConfiguration)
                 ? Map.of(
                     TilesBuildingBlock.DATASET_TILES,
                     new ImmutableTilesetMbTiles.Builder()
@@ -312,7 +314,7 @@ public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2
                             ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
                 .build())
         .putAllTilesets(
-            tilesConfiguration.hasDatasetTiles(null, null)
+            hasDatasetTiles(tilesConfiguration)
                 ? Map.of(
                     TilesBuildingBlock.DATASET_TILES,
                     new ImmutableTilesetHttp.Builder()
@@ -397,7 +399,7 @@ public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2
                         : Optional.empty())
                 .build())
         .putAllTilesets(
-            tilesConfiguration.hasDatasetTiles(null, null)
+            hasDatasetTiles(tilesConfiguration)
                 ? Map.of(
                     TilesBuildingBlock.DATASET_TILES,
                     new ImmutableTilesetFeatures.Builder()
@@ -519,5 +521,17 @@ public class TilesMigrationV4 extends EntityMigration<OgcApiDataV2, OgcApiDataV2
                     LonLat.of(cfg.getCenterDerived().get(0), cfg.getCenterDerived().get(1)))
                 : Optional.empty())
         .build();
+  }
+
+  private static boolean hasDatasetTiles(TilesConfiguration tilesConfigurationOld) {
+    return Objects.equals(tilesConfigurationOld.getDatasetTiles(), true)
+        || (Objects.nonNull(tilesConfigurationOld.getTileProvider())
+            && tilesConfigurationOld.getTileProvider().isMultiCollectionEnabled());
+  }
+
+  private static boolean hasCollectionTiles(TilesConfiguration tilesConfigurationOld) {
+    return Objects.equals(tilesConfigurationOld.getCollectionTiles(), true)
+        || (Objects.nonNull(tilesConfigurationOld.getTileProvider())
+            && tilesConfigurationOld.getTileProvider().isSingleCollectionEnabled());
   }
 }
