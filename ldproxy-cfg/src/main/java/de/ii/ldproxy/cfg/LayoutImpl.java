@@ -191,6 +191,63 @@ class LayoutImpl implements Layout {
     }
 
     @Override
+    public Map<String, Long> values() throws IOException {
+      if (source.isSingleContent() && source.getContent() != Content.VALUES) {
+        return Map.of();
+      }
+
+      List<StoreSource> sources =
+          source.getContent() == Content.MULTI
+              ? source.explode().stream()
+                  .filter(s -> s.getContent() == Content.VALUES)
+                  .collect(Collectors.toList())
+              : List.of(source);
+
+      if (sources.isEmpty()) {
+        return Map.of();
+      }
+
+      Map<String, Long> result = new TreeMap<>();
+
+      for (StoreSource s : sources) {
+        Path path = s.getPath(Content.VALUES);
+        Optional<String> prefix = s.getPrefix().map(p -> Path.of(p).getName(0).toString());
+
+        if (blobSource.has(path)) {
+          try (Stream<Path> values =
+              blobSource.walk(
+                  path, 16, (p, a) -> p.getNameCount() > 1 && a.isValue() && isValue(p))) {
+            Map<String, Long> collected =
+                values.collect(
+                    Collectors.groupingBy(
+                        p -> prefix.orElse(p.getName(0).toString()), Collectors.counting()));
+
+            collected.forEach(
+                (k, v) -> {
+                  if (result.containsKey(k)) {
+                    result.put(k, result.get(k) + v);
+                  } else {
+                    result.put(k, v);
+                  }
+                });
+          }
+        }
+      }
+
+      result.remove("values");
+
+      return result;
+    }
+
+    boolean isValue(Path path) {
+      return path.getFileName().toString().endsWith(".yml")
+          || path.getFileName().toString().endsWith(".yaml")
+          || path.getFileName().toString().endsWith(".json")
+          || path.getFileName().toString().endsWith(".mbs")
+          || path.getFileName().toString().endsWith(".3dtiles");
+    }
+
+    @Override
     public Map<String, Long> resources() throws IOException {
       if (source.isSingleContent() && source.getContent() != Content.RESOURCES) {
         return Map.of();
@@ -213,10 +270,10 @@ class LayoutImpl implements Layout {
         Optional<String> prefix = s.getPrefix().map(p -> Path.of(p).getName(0).toString());
 
         if (blobSource.has(path)) {
-          try (Stream<Path> entities =
+          try (Stream<Path> resources =
               blobSource.walk(path, 16, (p, a) -> p.getNameCount() > 1 && a.isValue())) {
             Map<String, Long> collected =
-                entities.collect(
+                resources.collect(
                     Collectors.groupingBy(
                         p -> prefix.orElse(p.getName(0).toString()), Collectors.counting()));
 
