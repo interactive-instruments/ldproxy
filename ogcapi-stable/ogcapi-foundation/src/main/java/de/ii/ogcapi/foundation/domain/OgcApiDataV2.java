@@ -179,10 +179,11 @@ import org.immutables.value.Value;
  *     der API [Weinlagen in Rheinland-Pfalz](https://demo.ldproxy.net/vineyards).
  * @langEn ## Storage
  *     <p>API configurations reside under the relative path `store/entities/services/{apiId}.yml` in
- *     the data directory.
+ *     the data directory or in the [Store (new)](41-store-new.md) as entities with type `services`.
  * @langDe ## Speicherung
  *     <p>API-Konfigurationen liegen unter dem relativen Pfad `store/entities/services/{apiId}.yml`
- *     im Datenverzeichnis.
+ *     im Datenverzeichnis (alt) oder im [Store (neu)](41-store-new.md) als Entities mit Typ
+ *     `services`.
  * @ref:cfgProperties {@link de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2}
  * @ref:cfgProperties:collection {@link
  *     de.ii.ogcapi.foundation.domain.ImmutableFeatureTypeConfigurationOgcApi}

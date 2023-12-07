@@ -27,6 +27,7 @@ bin/
 !.yarn/releases/
 !.yarn/plugins/
 !.yarn/patches/
+install-state.gz
 # Neutrino build directory
 build
 

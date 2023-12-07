@@ -22,44 +22,59 @@ import org.immutables.value.Value;
 /**
  * @buildingBlock STYLES
  * @langEn ### Storage
- *     <p>The stylesheets, style metadata and style information all reside as files in the data
- *     directory:
  *     <p><code>
- * - Stylesheets reside under the relative path `styles/{apiId}/{styleId}.{ext}`. The URIs (Sprites,
- *     Glyphs, Source.url, Source.tiles) used in Mapbox styles links might contain `{serviceUrl}`.
+ * - MapLibre stylesheets reside under the relative path `styles/{apiId}/{styleId}.mbs` in
+ *      the data directory (old) or in the [Store (new)](41-store-new.md) as values with type
+ *      `maplibre-styles` and path `{apiId}/{styleId}`. In the latter case the extension `mbs` is
+ *      still supported, but preferably stylesheets are stored as plain YAML or JSON files. The URIs (Sprites,
+ *     Glyphs, Source.url, Source.tiles) used in MapLibre styles links might contain `{serviceUrl}`.
+ * - 3d Tiles stylesheets reside under the relative path `styles/{apiId}/{styleId}.3dtiles` in
+ *      the data directory (old) or in the [Store (new)](41-store-new.md) as values with type
+ *      `3dtiles-styles` and path `{apiId}/{styleId}`. In the latter case the extension `3dtiles`
+ *      is still supported, but preferably stylesheets are stored as plain YAML or JSON files.
+ * - Other stylesheets reside under the relative path `styles/{apiId}/{styleId}.{ext}` in
+ *      the data directory (old) or in the [Store (new)](41-store-new.md) as resources with type
+ *      `other-styles` and path `{apiId}/{styleId}.{ext}`.
  *     The file extension `{ext}` must have the following value depending on the style encoding:
- *   - Mapbox Style: `mbs`
  *   - OGC SLD 1.0: `sld10`
  *   - OGC SLD 1.1: `sld11`
  *   - QGIS QML: `qml`
  *   - ArcGIS Desktop: `lyr`
  *   - ArcGIS Pro: `lyrx`
- *   - 3D Tiles Styling: `3dtiles`
- * - Style metadata reside under the relative path `styles/{apiId}/{styleId}.metadata`. Links
+ * - Style metadata reside under the relative path `styles/{apiId}/{styleId}.metadata` in
+ *       the data directory (old) or in the [Store (new)](41-store-new.md) as resources with type
+ *       `other-styles` and path `{apiId}/{styleId}.metadata`. Links
  *     might be templates (by setting `templated` to `true`) containing `{serviceUrl}`.
- * - Style information reside under the relative path `style-infos/{apiId}/{collectionId}.json`. Links
- *     might be templates (by setting `templated` to `true`) containing `{serviceUrl}` and
- *     `{collectionId}`.
+ *     *Deprecated, the support for style metadata will be removed in v4.*
  *     </code>
  * @langDe ### Speicherung
- *     <p>Die Stylesheets, die Style-Metadaten und die Style-Informationen liegen als Dateien im
- *     Datenverzeichnis:
  *     <p><code>
- * - Die Stylesheets müssen unter dem relativen Pfad
- *      `api-resources/styles/{apiId}/{styleId}.{ext}` liegen. Die URIs (Sprites, Glyphs, Source.url,
+ * - MapLibre Stylesheets liegen im ldproxy-Datenverzeichnis unter dem relativen
+ *      Pfad `styles/{apiId}/{styleId}.mbs` (alt) oder im [Store (neu)](41-store-new.md)
+ *      als Values mit Typ `maplibre-styles` und Pfad `{apiId}/{styleId}`. Im letzten Fall wird `mbs`
+ *      als Erweiterung weiterhin unterstützt, aber bevorzugt werden Stylesheets als normale
+ *      YAML- oder JSON-Dateien gespeichert. Die URIs (Sprites, Glyphs, Source.url,
  *      Source.tiles) bei den Mapbox-Styles Links können dabei als Parameter `{serviceUrl}`
- *      enthalten. Die Dateikennung `{ext}` muss den folgenden Wert in Abhängigkeit des Style-Formats
- *      haben:
- *   - Mapbox Style: `mbs`
+ *      enthalten.
+ * - 3d Tiles Stylesheets liegen im ldproxy-Datenverzeichnis unter dem relativen
+ *      Pfad `styles/{apiId}/{styleId}.3dtiles` (alt) oder im [Store (neu)](41-store-new.md)
+ *      als Values mit Typ `3dtiles-styles` und Pfad `{apiId}/{styleId}`. Im letzten Fall wird `3dtiles`
+ *      als Erweiterung weiterhin unterstützt, aber bevorzugt werden Stylesheets als normale
+ *      YAML- oder JSON-Dateien gespeichert.
+ * - Andere Stylesheets liegen im ldproxy-Datenverzeichnis unter dem relativen
+ *      Pfad `api-resources/styles/{apiId}/{styleId}.{ext}` (alt) oder im [Store (neu)](41-store-new.md)
+ *      als Ressourcen mit Typ `other-styles` und Pfad `{apiId}/{styleId}.{ext}`.
+ *      Die Dateikennung `{ext}` muss den folgenden Wert in Abhängigkeit des Style-Formats haben:
  *   - OGC SLD 1.0: `sld10`
  *   - OGC SLD 1.1: `sld11`
  *   - QGIS QML: `qml`
  *   - ArcGIS Desktop: `lyr`
  *   - ArcGIS Pro: `lyrx`
- *   - 3D Tiles Styling: `3dtiles`
- * - Die Style-Metadaten müssen unter dem relativen
- *     Pfad `api-resources/styles/{apiId}/{styleId}.metadata` liegen. Links können dabei Templates
+ * - Die Style-Metadaten liegen im ldproxy-Datenverzeichnis unter dem relativen
+ *     Pfad `api-resources/styles/{apiId}/{styleId}.metadata` (alt) oder im [Store (neu)](41-store-new.md)
+ *     als Ressourcen mit Typ `other-styles` und Pfad `{apiId}/{styleId}.metadata`. Links können dabei Templates
  *     sein (d.h. `templated` ist `true`) und als Parameter `{serviceUrl}` enthalten.
+ *     *Deprecated, die Unterstützung für Style-Metadaten wird in v4 entfernt.*
  *     </code>
  * @langEn ### Layer Control
  *     <p>The layer control dialog in the webmap is activated via the `webmapWithLayerControl`

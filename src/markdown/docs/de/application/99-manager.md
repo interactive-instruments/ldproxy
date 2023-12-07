@@ -1,5 +1,9 @@
 # Manager
 
+::: warning Warnung
+Der Manager ist _deprecated_ und wird in `v4.0` entfernt. Er wird durch den [Editor](../editor) abgelöst.
+:::
+
 Der Manager ist eine Web-Applikation mit deren Hilfe einfache APIs (Dienste) neu angelegt und konfiguriert werden können.
 
 ## Einleitung
@@ -27,26 +31,26 @@ Der Manager kann zur Erstkonfiguration sowie zur Anpassung einfacher (zuvor auch
 
 Voraussetzungen:
 
-* Die Software ist auf dem Server erfolgreich gestartet und über http erreichbar (unter dem konfigurierten [Port](../global-configuration.md#port)).
-* Im Webbrowser (mit dem der Manager bedient wird) ist JavaScript aktiviert und Cookies sind erlaubt.
+- Die Software ist auf dem Server erfolgreich gestartet und über http erreichbar (unter dem konfigurierten [Port](../global-configuration.md#port)).
+- Im Webbrowser (mit dem der Manager bedient wird) ist JavaScript aktiviert und Cookies sind erlaubt.
 
 Hinweise zum Funktionsumfang:
 
-* Als Backend werden derzeit PostgreSQL-Datenbank mit PostGIS sowie WFS unterstützt (siehe [Feature-Provider](../configuration/providers)).
-* Ein direkter Zugriff auf den Server ist empfohlen und teilweise sogar erforderlich (Sichtung Logdatei, nachträgliche Anpassung von Datenbankparametern).  
-* Bei großen und komplexen Schemata und großen Datenmengen kann die Erstellung der Konfiguration sowie Änderung der Parameter zu langen Wartezeiten führen.
-  * Bei großen Schemata mit vielen Tabellen kann als Abhilfe die Menge der Tabellen beim Aufsetzen des Dienstes aus SQL-Datenbank mit dem Tabellenfilter auf den benötigten (kleineren) Umfang eingeschränkt werden. Beziehen sich die Angaben im Tabellenfilter auf Views, so werden durch den automatischen Konfigurationsschritt auch die zugrunde liegenden Tabellen ausgewählt und unter Collections angezeigt.
-* Komplexe Abbildungen mit Joins sowie Filterung (Prädikate) auf Datenbanktabellen (SQL-Provider) sind nur manuell in YAML-Konfiguration möglich.
-* Einmal im Manager konfigurierte Werte für den Provider (insbesondere die Datenbankparameter) können später nur noch in YAML-Datei geändert werden. Beim Service sind auch nicht alle Parameter über den Manager steuerbar.
-* Manuelle Änderungen in den YAML-Dateien sollten nur in folgenden Ausnamefällen erfolgen:
-  * Man möchte danach den Manager nicht mehr verwenden (ab jetzt nur noch Bearbeitung direkt von YAML-Dateien).
-  * Anpassung von Datenbankeinstellungen in dem Provider.
-  * Anpassung von Beschreibungen im Provider (`description`). Es dürfen dabei keine Schema-Informationen geändert werden, die bereits in der API-Konfiguration (services) verwendet werden.  
-* Die Funktionalität der Konfiguration über `overrides` und `additionalLocations` werden nicht unterstützt.
-* Das Passwort für SQL-Datenbank wird als Base64-kodiert erwartet. Falls es nicht schon so vorliegt, kann ein Text z.B. unter Linux wie folgt kodiert werden: `echo -n "Passwort" | base64`
-* Bei der automatischen Konfiguration von Datenbank-Views können Id-Spalten nicht immer korrekt erkannt und konfiguriert werden. Bei Bedarf muss die Angaben `role: ID` sowie `sourcePathDefaults`  in der erzeugten YAML-Datei (unter `store/entitites/providers`) manuell ergänzt werden.
-* Grundsätzlich werden alle Provider-spezifischen Parameter nur einmal beim Einrichten des Dienstes vorgegeben bzw. auf Standardwerte gesetzt und können danach nur  in den erzeugten YAML-Dateien manuell geändert werden (z.B. Name der Datenbank, Host der Datenbank, Passwort, Einstellungen zum Datenbank-Verbindungs-Pool, usw.). Dies betrifft praktisch alle Parameter im Provider.
-* Wird das native CRS bei der automatischen Konfiguration nicht wie erwartet ermittelt, kann der Wert nachträglich in der YAML-Datei manuell angepasst werden.
+- Als Backend werden derzeit PostgreSQL-Datenbank mit PostGIS sowie WFS unterstützt (siehe [Feature-Provider](../configuration/providers)).
+- Ein direkter Zugriff auf den Server ist empfohlen und teilweise sogar erforderlich (Sichtung Logdatei, nachträgliche Anpassung von Datenbankparametern).
+- Bei großen und komplexen Schemata und großen Datenmengen kann die Erstellung der Konfiguration sowie Änderung der Parameter zu langen Wartezeiten führen.
+  - Bei großen Schemata mit vielen Tabellen kann als Abhilfe die Menge der Tabellen beim Aufsetzen des Dienstes aus SQL-Datenbank mit dem Tabellenfilter auf den benötigten (kleineren) Umfang eingeschränkt werden. Beziehen sich die Angaben im Tabellenfilter auf Views, so werden durch den automatischen Konfigurationsschritt auch die zugrunde liegenden Tabellen ausgewählt und unter Collections angezeigt.
+- Komplexe Abbildungen mit Joins sowie Filterung (Prädikate) auf Datenbanktabellen (SQL-Provider) sind nur manuell in YAML-Konfiguration möglich.
+- Einmal im Manager konfigurierte Werte für den Provider (insbesondere die Datenbankparameter) können später nur noch in YAML-Datei geändert werden. Beim Service sind auch nicht alle Parameter über den Manager steuerbar.
+- Manuelle Änderungen in den YAML-Dateien sollten nur in folgenden Ausnamefällen erfolgen:
+  - Man möchte danach den Manager nicht mehr verwenden (ab jetzt nur noch Bearbeitung direkt von YAML-Dateien).
+  - Anpassung von Datenbankeinstellungen in dem Provider.
+  - Anpassung von Beschreibungen im Provider (`description`). Es dürfen dabei keine Schema-Informationen geändert werden, die bereits in der API-Konfiguration (services) verwendet werden.
+- Die Funktionalität der Konfiguration über `overrides` und `additionalLocations` werden nicht unterstützt.
+- Das Passwort für SQL-Datenbank wird als Base64-kodiert erwartet. Falls es nicht schon so vorliegt, kann ein Text z.B. unter Linux wie folgt kodiert werden: `echo -n "Passwort" | base64`
+- Bei der automatischen Konfiguration von Datenbank-Views können Id-Spalten nicht immer korrekt erkannt und konfiguriert werden. Bei Bedarf muss die Angaben `role: ID` sowie `sourcePathDefaults` in der erzeugten YAML-Datei (unter `store/entitites/providers`) manuell ergänzt werden.
+- Grundsätzlich werden alle Provider-spezifischen Parameter nur einmal beim Einrichten des Dienstes vorgegeben bzw. auf Standardwerte gesetzt und können danach nur in den erzeugten YAML-Dateien manuell geändert werden (z.B. Name der Datenbank, Host der Datenbank, Passwort, Einstellungen zum Datenbank-Verbindungs-Pool, usw.). Dies betrifft praktisch alle Parameter im Provider.
+- Wird das native CRS bei der automatischen Konfiguration nicht wie erwartet ermittelt, kann der Wert nachträglich in der YAML-Datei manuell angepasst werden.
 
 ## Globale Konfiguration und erster Aufruf
 
