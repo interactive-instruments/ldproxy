@@ -1,7 +1,7 @@
 # Manager
 
 ::: warning Warnung
-Der Manager ist _deprecated_ und wird in `v4.0` entfernt. Er wird durch den [Editor](../editor) abgelöst.
+Der Manager ist _deprecated_ und wird in `v4.0` entfernt. Er wird durch den [Editor](../editor/README.md) abgelöst.
 :::
 
 Der Manager ist eine Web-Applikation mit deren Hilfe einfache APIs (Dienste) neu angelegt und konfiguriert werden können.
@@ -12,9 +12,9 @@ Der Manager ist eine Web-Applikation mit deren Hilfe einfache APIs (Dienste) neu
 
 Mit Hilfe einer webbasierten Benutzerführung wird ein neuer Dienst in nur wenigen Schritten konfiguriert und automatisch gestartet. Dazu wird nur ein Webbrowser mit Zugriff auf den Installationsserver über http benötigt. Die API kann anschließend sofort getestet und ggf. weiter angepasst werden.
 
-Zur Einrichtung werden zunächst einmal nur grundlegende Informationen zum [Feature-Provider](../providers) benötigt (Verbindungsdaten zu einer PostgreSQL-Datenbank oder die URL eines WFS). Weitere Angaben wie Beschreibung zur API können auch später ergänzt und geändert werden.
+Zur Einrichtung werden zunächst einmal nur grundlegende Informationen zum [Feature-Provider](../providers/feature/README.md) benötigt (Verbindungsdaten zu einer PostgreSQL-Datenbank oder die URL eines WFS). Weitere Angaben wie Beschreibung zur API können auch später ergänzt und geändert werden.
 
-Der Manager analysiert das Schema serverseitig und erzeugt aus den gewonnenen Informationen automatisch eine passende [API-Konfiguration](../services). Der Vorgang nimmt typischerweise - je nach Größe des Schemas - wenige Sekunden bis mehrere Minuten in Anspruch.
+Der Manager analysiert das Schema serverseitig und erzeugt aus den gewonnenen Informationen automatisch eine passende [API-Konfiguration](../services/README.md). Der Vorgang nimmt typischerweise - je nach Größe des Schemas - wenige Sekunden bis mehrere Minuten in Anspruch.
 
 Zur Unterstützung bei der Einrichtung eines Dienstes liefern Tooltips in den Formularen Beschreibungen, Erläuterungen und Hinweise zu den entsprechenden Konfigurationseigenschaften.
 
@@ -31,12 +31,12 @@ Der Manager kann zur Erstkonfiguration sowie zur Anpassung einfacher (zuvor auch
 
 Voraussetzungen:
 
-- Die Software ist auf dem Server erfolgreich gestartet und über http erreichbar (unter dem konfigurierten [Port](../global-configuration.md#port)).
+- Die Software ist auf dem Server erfolgreich gestartet und über http erreichbar (unter dem konfigurierten [Port](20-configuration/30-server.md#port)).
 - Im Webbrowser (mit dem der Manager bedient wird) ist JavaScript aktiviert und Cookies sind erlaubt.
 
 Hinweise zum Funktionsumfang:
 
-- Als Backend werden derzeit PostgreSQL-Datenbank mit PostGIS sowie WFS unterstützt (siehe [Feature-Provider](../configuration/providers)).
+- Als Backend werden derzeit PostgreSQL-Datenbank mit PostGIS sowie WFS unterstützt (siehe [Feature-Provider](../providers/feature/README.md)).
 - Ein direkter Zugriff auf den Server ist empfohlen und teilweise sogar erforderlich (Sichtung Logdatei, nachträgliche Anpassung von Datenbankparametern).
 - Bei großen und komplexen Schemata und großen Datenmengen kann die Erstellung der Konfiguration sowie Änderung der Parameter zu langen Wartezeiten führen.
   - Bei großen Schemata mit vielen Tabellen kann als Abhilfe die Menge der Tabellen beim Aufsetzen des Dienstes aus SQL-Datenbank mit dem Tabellenfilter auf den benötigten (kleineren) Umfang eingeschränkt werden. Beziehen sich die Angaben im Tabellenfilter auf Views, so werden durch den automatischen Konfigurationsschritt auch die zugrunde liegenden Tabellen ausgewählt und unter Collections angezeigt.

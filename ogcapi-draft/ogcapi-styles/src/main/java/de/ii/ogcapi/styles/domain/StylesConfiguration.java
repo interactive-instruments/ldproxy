@@ -24,16 +24,16 @@ import org.immutables.value.Value;
  * @langEn ### Storage
  *     <p><code>
  * - MapLibre stylesheets reside under the relative path `styles/{apiId}/{styleId}.mbs` in
- *      the data directory (old) or in the [Store (new)](41-store-new.md) as values with type
+ *      the data directory (old) or in the [Store (new)](../../application/20-configuration/10-store-new.md) as values with type
  *      `maplibre-styles` and path `{apiId}/{styleId}`. In the latter case the extension `mbs` is
  *      still supported, but preferably stylesheets are stored as plain YAML or JSON files. The URIs (Sprites,
  *     Glyphs, Source.url, Source.tiles) used in MapLibre styles links might contain `{serviceUrl}`.
  * - 3d Tiles stylesheets reside under the relative path `styles/{apiId}/{styleId}.3dtiles` in
- *      the data directory (old) or in the [Store (new)](41-store-new.md) as values with type
+ *      the data directory (old) or in the [Store (new)](../../application/20-configuration/10-store-new.md) as values with type
  *      `3dtiles-styles` and path `{apiId}/{styleId}`. In the latter case the extension `3dtiles`
  *      is still supported, but preferably stylesheets are stored as plain YAML or JSON files.
  * - Other stylesheets reside under the relative path `styles/{apiId}/{styleId}.{ext}` in
- *      the data directory (old) or in the [Store (new)](41-store-new.md) as resources with type
+ *      the data directory (old) or in the [Store (new)](../../application/20-configuration/10-store-new.md) as resources with type
  *      `other-styles` and path `{apiId}/{styleId}.{ext}`.
  *     The file extension `{ext}` must have the following value depending on the style encoding:
  *   - OGC SLD 1.0: `sld10`
@@ -42,7 +42,7 @@ import org.immutables.value.Value;
  *   - ArcGIS Desktop: `lyr`
  *   - ArcGIS Pro: `lyrx`
  * - Style metadata reside under the relative path `styles/{apiId}/{styleId}.metadata` in
- *       the data directory (old) or in the [Store (new)](41-store-new.md) as resources with type
+ *       the data directory (old) or in the [Store (new)](../../application/20-configuration/10-store-new.md) as resources with type
  *       `other-styles` and path `{apiId}/{styleId}.metadata`. Links
  *     might be templates (by setting `templated` to `true`) containing `{serviceUrl}`.
  *     *Deprecated, the support for style metadata will be removed in v4.*
@@ -50,19 +50,19 @@ import org.immutables.value.Value;
  * @langDe ### Speicherung
  *     <p><code>
  * - MapLibre Stylesheets liegen im ldproxy-Datenverzeichnis unter dem relativen
- *      Pfad `styles/{apiId}/{styleId}.mbs` (alt) oder im [Store (neu)](41-store-new.md)
+ *      Pfad `styles/{apiId}/{styleId}.mbs` (alt) oder im [Store (neu)](../../application/20-configuration/10-store-new.md)
  *      als Values mit Typ `maplibre-styles` und Pfad `{apiId}/{styleId}`. Im letzten Fall wird `mbs`
  *      als Erweiterung weiterhin unterstützt, aber bevorzugt werden Stylesheets als normale
  *      YAML- oder JSON-Dateien gespeichert. Die URIs (Sprites, Glyphs, Source.url,
  *      Source.tiles) bei den Mapbox-Styles Links können dabei als Parameter `{serviceUrl}`
  *      enthalten.
  * - 3d Tiles Stylesheets liegen im ldproxy-Datenverzeichnis unter dem relativen
- *      Pfad `styles/{apiId}/{styleId}.3dtiles` (alt) oder im [Store (neu)](41-store-new.md)
+ *      Pfad `styles/{apiId}/{styleId}.3dtiles` (alt) oder im [Store (neu)](../../application/20-configuration/10-store-new.md)
  *      als Values mit Typ `3dtiles-styles` und Pfad `{apiId}/{styleId}`. Im letzten Fall wird `3dtiles`
  *      als Erweiterung weiterhin unterstützt, aber bevorzugt werden Stylesheets als normale
  *      YAML- oder JSON-Dateien gespeichert.
  * - Andere Stylesheets liegen im ldproxy-Datenverzeichnis unter dem relativen
- *      Pfad `api-resources/styles/{apiId}/{styleId}.{ext}` (alt) oder im [Store (neu)](41-store-new.md)
+ *      Pfad `api-resources/styles/{apiId}/{styleId}.{ext}` (alt) oder im [Store (neu)](../../application/20-configuration/10-store-new.md)
  *      als Ressourcen mit Typ `other-styles` und Pfad `{apiId}/{styleId}.{ext}`.
  *      Die Dateikennung `{ext}` muss den folgenden Wert in Abhängigkeit des Style-Formats haben:
  *   - OGC SLD 1.0: `sld10`
@@ -71,7 +71,7 @@ import org.immutables.value.Value;
  *   - ArcGIS Desktop: `lyr`
  *   - ArcGIS Pro: `lyrx`
  * - Die Style-Metadaten liegen im ldproxy-Datenverzeichnis unter dem relativen
- *     Pfad `api-resources/styles/{apiId}/{styleId}.metadata` (alt) oder im [Store (neu)](41-store-new.md)
+ *     Pfad `api-resources/styles/{apiId}/{styleId}.metadata` (alt) oder im [Store (neu)](../../application/20-configuration/10-store-new.md)
  *     als Ressourcen mit Typ `other-styles` und Pfad `{apiId}/{styleId}.metadata`. Links können dabei Templates
  *     sein (d.h. `templated` ist `true`) und als Parameter `{serviceUrl}` enthalten.
  *     *Deprecated, die Unterstützung für Style-Metadaten wird in v4 entfernt.*

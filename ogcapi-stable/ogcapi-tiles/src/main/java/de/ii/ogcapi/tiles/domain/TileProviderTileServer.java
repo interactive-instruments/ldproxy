@@ -19,14 +19,14 @@ import org.immutables.value.Value;
  * @langEn With this tile provider, the tiles are obtained from [TileServer-GL
  *     instance](https://github.com/maptiler/tileserver-gl). Only the "WebMercatorQuad" tile scheme
  *     is supported.
- *     <p>In the current version, this provider is only supported in the [Map Tiles](map_tiles.md)
+ *     <p>In the current version, this provider is only supported in the [Map Tiles]()
  *     module. Only bitmap tile formats are supported. Seeding or caching are not supported.
  *     <p>This tile provider is experimental and its configuration options may change in future
  *     versions.
  * @langDe Bei diesem Tile-Provider werden die Kacheln über eine
  *     [TileServer-GL-Instanz](https://github.com/maptiler/tileserver-gl) bezogen. Unterstützt wird
  *     nur das Kachelschema "WebMercatorQuad".
- *     <p>In der aktuellen Version wird dieser Provider nur im Modul [Map Tiles](map_tiles.md)
+ *     <p>In der aktuellen Version wird dieser Provider nur im Modul [Map Tiles]()
  *     unterstützt. Unterstützt werden nur die Bitmap-Kachelformate. Seeding oder Caching werden
  *     nicht unterstützt.
  *     <p>Dieser Tile-Provider ist experimentell und seine Konfigurationsoptionen können sich in

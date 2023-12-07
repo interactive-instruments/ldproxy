@@ -240,7 +240,7 @@ public interface FeaturesCoreConfiguration
 
   /**
    * @langEn *Deprecated* Use [Module Feature Collections -
-   *     Queryables](collections_-_queryables.md). Controls which of the attributes in queries can
+   *     Queryables](feature_collections_-_queryables.md). Controls which of the attributes in queries can
    *     be used for filtering data. A distinction is made between spatial (`spatial`), temporal
    *     (`temporal`) and "regular" (`q`, `other`) attributes. The attributes under `spatial` must
    *     be of type `GEOMETRY` in the provider schema, the attributes under `temporal` of type
