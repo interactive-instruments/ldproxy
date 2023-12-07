@@ -60,9 +60,11 @@ const sidebar = (lang) => {
     group({ en: "CLI", de: "CLI" }[lang], prefix + "cli", {
       children: [
         group({ en: "xtracfg", de: "xtracfg" }[lang], prefix + "cli/xtracfg", {
+          collapsible: true,
           headerReadme: true,
         }),
         group({ en: "xtractl", de: "xtractl" }[lang], prefix + "cli/xtractl", {
+          collapsible: true,
           headerReadme: true,
         }),
       ],

@@ -33,10 +33,11 @@ tasks.register('docsAssembleCli') {
         def targetDir = new File(project.buildDir, 'tmp/tools/cli')
         def targetDirDe = new File(project.buildDir, 'tmp/tools/de/cli')
         def process = { f ->
+            def name = f.path == "README_DE.md" ? "README.md" : f.path
             if (f.sourceURL.path.contains('xtractl')) {
-                f.path = "xtractl/${f.path}"
+                f.path = "xtractl/${name}"
             } else if (f.sourceURL.path.contains('xtracfg')) {
-                f.path = "xtracfg/${f.path}"
+                f.path = "xtracfg/${name}"
             }
         }
 
