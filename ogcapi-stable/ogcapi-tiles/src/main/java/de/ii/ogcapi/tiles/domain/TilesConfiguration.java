@@ -46,15 +46,18 @@ import org.immutables.value.Value;
  *     configured, it is automatically enabled if *Tiles* is enabled.
  *     <p>### Storage
  *     <p>The tile cache is located in the data directory under the relative path
- *     `cache/tiles/{apiId}`. If the data for an API or tile configuration has been changed, then
+ *     `cache/tiles/{apiId}` (old) or in the [Store (new)](../../application/20-configuration/10-store-new.md) as resource with path
+ *       `tiles/{apiId}`.
+ *     <p>If the data for an API or tile configuration has been changed, then
  *     the cache directory for the API should be deleted so that the cache is rebuilt with the
  *     updated data or rules.
  * @langDe ### Voraussetzungen
  *     <p>Das Modul *Tile Matrix Sets* muss aktiviert sein. Wenn dieses Modul nicht konfiguriert
  *     ist, wird es automatisch aktiviert, wenn *Tiles* aktiviert ist.
  *     <p>### Storage
- *     <p>Der Tile-Cache liegt im Datenverzeichnis unter dem relativen Pfad `cache/tiles/{apiId}`.
- *     Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden, dann sollte das
+ *     <p>Der Tile-Cache liegt im Datenverzeichnis unter dem relativen Pfad `cache/tiles/{apiId}` (alt) oder im [Store (neu)](../../application/20-configuration/10-store-new.md)
+ *       als Ressource mit dem Pfad `tiles/{apiId}`.
+ *     <p>Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden, dann sollte das
  *     Cache-Verzeichnis für die API gelöscht werden, damit der Cache mit den aktualisierten Daten
  *     oder Regeln neu aufgebaut wird.
  * @examplesEn Example of the specifications in the configuration file from the API for [Vineyards

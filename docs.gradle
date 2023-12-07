@@ -1,23 +1,77 @@
 apply plugin: 'com.github.node-gradle.node'
+apply plugin: 'de.undercouch.download'
 
 node {
-    version = '16.15.1'
-    yarnVersion = '1.22.19'
+    version = '20.10.0'
+    yarnVersion = 'berry'
     download = project.findProperty('downloadNode') != 'false' ?: false
 }
 
 ext {
     workingDir = new File(project.buildDir, 'markdown').absolutePath
+    cliVersion = 'main'
+    editorVersion = 'main'
 }
 
+def docsDownload(List<String> files, File targetDir, Closure<?> process = null) {
+    download.run {
+        src files
+        dest targetDir
+        onlyIfModified true
+        useETag "all"
+        if (process != null) {
+            eachFile process
+        }
+    }
+}
+
+tasks.register('docsAssembleCli') {
+    doLast {
+        def baseUrl = "https://raw.githubusercontent.com/interactive-instruments/xtraplatform-cli/${cliVersion}"
+        def files = ["${baseUrl}/xtractl/README.md", "${baseUrl}/xtractl/COMMANDS.md", "${baseUrl}/xtracfg/README.md", "${baseUrl}/xtracfg/COMMANDS.md"]
+        def filesDe = ["${baseUrl}/xtractl/README_DE.md", "${baseUrl}/xtractl/COMMANDS.md", "${baseUrl}/xtracfg/README_DE.md", "${baseUrl}/xtracfg/COMMANDS.md"]
+        def targetDir = new File(project.buildDir, 'tmp/tools/cli')
+        def targetDirDe = new File(project.buildDir, 'tmp/tools/de/cli')
+        def process = { f ->
+            def name = f.path == "README_DE.md" ? "README.md" : f.path
+            if (f.sourceURL.path.contains('xtractl')) {
+                f.path = "xtractl/${name}"
+            } else if (f.sourceURL.path.contains('xtracfg')) {
+                f.path = "xtracfg/${name}"
+            }
+        }
+
+        docsDownload(files, targetDir, process)
+        docsDownload(filesDe, targetDirDe, process)
+    }
+}
+
+tasks.register('docsAssembleEditor') {
+    doLast {
+        def baseUrl = "https://raw.githubusercontent.com/ldproxy/editor/${editorVersion}"
+        def targetDir = new File(project.buildDir, 'tmp/tools/editor/README.md')
+        def targetDirDe = new File(project.buildDir, 'tmp/tools/de/editor/README.md')
+        def files = ["${baseUrl}/README.md"]
+        def filesDe = ["${baseUrl}/README.md"]
+
+        docsDownload(files, targetDir)
+        docsDownload(filesDe, targetDirDe)
+    }
+}
 
 tasks.register('docsAssemble', Sync) {
+    dependsOn tasks.named("docsAssembleCli")
+    // TODO: include editor docs
+    //dependsOn tasks.named("docsAssembleEditor")
     finalizedBy tasks.named('markdownAssemble')
+
     from(file('src/markdown/docs')) {
         exclude 'en'
     }
     from file('src/markdown/docs/en')
+    from new File(project.buildDir, 'tmp/tools')
     from tasks.named('docsExtract')
+
     into new File(project.buildDir, 'markdown/docs')
     //duplicatesStrategy = 'INCLUDE'
 }
@@ -26,6 +80,7 @@ tasks.register('markdownAssemble', Copy) {
     from file('src/markdown')
     into new File(project.buildDir, 'markdown')
     include "*.*"
+    include ".yarn/releases/*.*"
 }
 
 yarn_install {

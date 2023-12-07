@@ -2,6 +2,7 @@ plugins {
     alias catalog.plugins.xtraplatform.application
     alias catalog.plugins.spotless apply false
     alias catalog.plugins.node apply false
+    alias catalog.plugins.download apply false
 }
 
 allprojects {

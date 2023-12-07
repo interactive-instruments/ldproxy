@@ -240,14 +240,14 @@ public interface FeaturesCoreConfiguration
 
   /**
    * @langEn *Deprecated* Use [Module Feature Collections -
-   *     Queryables](collections_-_queryables.md). Controls which of the attributes in queries can
-   *     be used for filtering data. A distinction is made between spatial (`spatial`), temporal
-   *     (`temporal`) and "regular" (`q`, `other`) attributes. The attributes under `spatial` must
-   *     be of type `GEOMETRY` in the provider schema, the attributes under `temporal` of type
-   *     `DATETIME` or `DATE`. The searchable attributes are each listed by their name in an array.
-   *     The queryables can be used in filter expressions ([building block "filter"](filter.md)).
-   *     The primary spatial and temporal attributes (see provider configuration) can be used for
-   *     selection via the [parameters
+   *     Queryables](feature_collections_-_queryables.md). Controls which of the attributes in
+   *     queries can be used for filtering data. A distinction is made between spatial (`spatial`),
+   *     temporal (`temporal`) and "regular" (`q`, `other`) attributes. The attributes under
+   *     `spatial` must be of type `GEOMETRY` in the provider schema, the attributes under
+   *     `temporal` of type `DATETIME` or `DATE`. The searchable attributes are each listed by their
+   *     name in an array. The queryables can be used in filter expressions ([building block
+   *     "filter"](filter.md)). The primary spatial and temporal attributes (see provider
+   *     configuration) can be used for selection via the [parameters
    *     `bbox`](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_bbox) and [parameters
    *     `datetime`](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_datetime),
    *     respectively. The remaining attributes are defined as [additional parameters for the

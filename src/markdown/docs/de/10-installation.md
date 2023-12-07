@@ -29,7 +29,6 @@ CONTAINER ID        IMAGE                 COMMAND                  CREATED      
 62db022d9bee        iide/ldproxy:latest   "/ldproxy/bin/ldproxy"   16 minutes ago      Up 16 minutes       0.0.0.0:7080->7080/tcp   ldproxy
 ```
 
-Prüfen Sie, ob ldproxy läuft, indem Sie die URI http://localhost:7080/manager in einem Webbrowser aufrufen, das sollte den [Manager](application/20-manager.md) öffnen.
+Prüfen Sie, ob ldproxy läuft, indem Sie die URI http://localhost:7080/manager in einem Webbrowser aufrufen, das sollte den [Manager](application/99-manager.md) öffnen.
 
 Falls ldproxy nicht antwortet, konsultieren Sie das Protokoll mit `docker logs ldproxy`.
-

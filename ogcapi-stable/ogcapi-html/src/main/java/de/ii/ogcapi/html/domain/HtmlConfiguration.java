@@ -60,10 +60,10 @@ import org.slf4j.LoggerFactory;
  *     rel="stylesheet">`.
  *     <p>### Login Provider
  *     <p>For APIs with [restricted access](../README.md#access-control) using an [identity
- *     provider](../../application/65-auth.md) with login capabilities, the `loginProvider` option
- *     can be set to enable automatic redirects to the login form of the identity provider for
- *     restricted HTML pages. The logged-in user will also be shown on all HTML pages along with a
- *     logout button.
+ *     provider](../../application/20-configuration/40-auth.md) with login capabilities, the
+ *     `loginProvider` option can be set to enable automatic redirects to the login form of the
+ *     identity provider for restricted HTML pages. The logged-in user will also be shown on all
+ *     HTML pages along with a logout button.
  *     <p>::: warning This functionality uses cookies to retain the login information when
  *     navigating between HTML pages. The cookies are neither processed nor passed on to any third
  *     party.
@@ -104,10 +104,10 @@ import org.slf4j.LoggerFactory;
  *     eingebunden werden mit `<link href="{{urlPrefix}}/custom/assets/my.css" rel="stylesheet">`.
  *     <p>### Login Provider
  *     <p>Für APIs mit [beschränktem Zugriff](../README.md#access-control) die einen
- *     [Identity-Provider](../../application/65-auth.md) mit Login-Fähigkeiten verwenden, kann die
- *     Option `loginProvider` gesetzt werden, um für abgesicherte HTML-Seiten automatische Redirects
- *     zum Login-Formular des Identity-Providers zu aktivieren. Der eingeloggte User wird auf allen
- *     HTML-Seiten angezeigt ebenso wie ein Logout-Button.
+ *     [Identity-Provider](../../application/20-configuration/40-auth.md) mit Login-Fähigkeiten
+ *     verwenden, kann die Option `loginProvider` gesetzt werden, um für abgesicherte HTML-Seiten
+ *     automatische Redirects zum Login-Formular des Identity-Providers zu aktivieren. Der
+ *     eingeloggte User wird auf allen HTML-Seiten angezeigt ebenso wie ein Logout-Button.
  *     <p>::: warning Diese Funktionalität verwendet Cookies um die Login-Information beim
  *     Navigieren zwischen HTML-Seiten zu bewahren. Diese Cookies werden weder verarbeitet noch an
  *     Dritte weitergegeben.
@@ -355,10 +355,12 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
   /**
    * @langEn Option to enable automatic redirects to the login form of an identity provider. The
    *     value is the id of a provider with login capabilities in the [global
-   *     configuration](../../application/65-auth.md). Also see [Login Provider](#login-provider).
+   *     configuration](../../application/20-configuration/40-auth.md). Also see [Login
+   *     Provider](#login-provider).
    * @langDe Option um automatische Redirects zum Login-Formular eines Identity-Providers zu
    *     aktivieren. Der Wert ist die Id eines Provider mit Login-Fähigkeiten in der [globalen
-   *     Konfiguration](../../application/65-auth.md). Siehe auch [Login Provider](#login-provider).
+   *     Konfiguration](../../application/20-configuration/40-auth.md). Siehe auch [Login
+   *     Provider](#login-provider).
    * @default null
    */
   @Nullable
