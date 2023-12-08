@@ -1,5 +1,48 @@
 # Changelog
 
+## v3.6.0 (08/12/2023)
+
+> [!IMPORTANT]
+> This is definitely the last feature release for `v3.x`. The upcoming major release `v4.0` will bring some breaking changes:
+> - All configurations options marked as deprecated will be removed (#1113).
+> - The current data directory layout is deprecated and will no longer be supported. It is superseded by the new [store](https://docs.ldproxy.net/application/20-configuration/10-store-new.html) (#1114).
+> - The manager is deprecated and will be removed (#1116). 
+> - Custom style metadata is deprecated and will be removed (#1115). 
+> 
+> To prepare your configurations for the upcoming changes, check out the [upgrade documentation](https://docs.ldproxy.net/application/40-upgrades.html#configuration).
+
+#### Implemented enhancements
+
+-  support re-sorting of json column properties [#1089](https://github.com/interactive-instruments/ldproxy/issues/1089)
+-  support queryables/sortables that are not returnables [#1084](https://github.com/interactive-instruments/ldproxy/issues/1084)
+-  support title in feature reference links [#977](https://github.com/interactive-instruments/ldproxy/issues/977)
+-  schema enhancements [#974](https://github.com/interactive-instruments/ldproxy/issues/974)
+-  support s3 store sources [#878](https://github.com/interactive-instruments/ldproxy/issues/878)
+
+#### Improvements
+
+-  upgrade Schema to OGC API Features Part 5 [#1092](https://github.com/interactive-instruments/ldproxy/issues/1092)
+-  CRUD cannot be supported with GPKG providers [#1079](https://github.com/interactive-instruments/ldproxy/issues/1079)
+-  improve storage strategies [#1077](https://github.com/interactive-instruments/ldproxy/issues/1077)
+-  upgrade JSON-FG to version 0.2 [#1065](https://github.com/interactive-instruments/ldproxy/issues/1065)
+-  collections without a tileset in the tile provider (part 2) [#1005](https://github.com/interactive-instruments/ldproxy/issues/1005)
+
+#### Fixed bugs
+
+-  typo in API maturity statement in OpenAPI document [#1097](https://github.com/interactive-instruments/ldproxy/issues/1097)
+-  coalesce and arrays [#1076](https://github.com/interactive-instruments/ldproxy/issues/1076)
+-  DEBUG log messages despite logging.level set to INFO [#1075](https://github.com/interactive-instruments/ldproxy/issues/1075)
+-  incorrect handling of object array properties [#1071](https://github.com/interactive-instruments/ldproxy/issues/1071)
+-  GeoJSON: requesting profiles rel-as-key/uri throws an exception [#1069](https://github.com/interactive-instruments/ldproxy/issues/1069)
+-  java.lang.NoClassDefFoundError: org/jsoup/Jsoup [#1068](https://github.com/interactive-instruments/ldproxy/issues/1068)
+
+#### Dependency updates
+
+-  upgrade sqlite-jdbc from 3.40.0.0 to 3.41.2.2 [#1111](https://github.com/interactive-instruments/ldproxy/issues/1111)
+-  upgrade PROJ from 9.1.0 to 9.3.0 [#1086](https://github.com/interactive-instruments/ldproxy/issues/1086)
+-  upgrade dropwizard from 3.0.1 to 3.0.4 [#1074](https://github.com/interactive-instruments/ldproxy/issues/1074)
+
+---
 ## v3.5.0 (05/10/2023)
 
 > [!IMPORTANT]
