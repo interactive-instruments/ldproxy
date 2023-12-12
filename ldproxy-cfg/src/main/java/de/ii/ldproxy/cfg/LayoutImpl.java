@@ -46,7 +46,7 @@ class LayoutImpl implements Layout {
     }
     // TODO: parse cfg.yml
 
-    return Optional.empty();
+    return Optional.of(v4);
   }
 
   private final StoreSourceFs source;

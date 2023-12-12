@@ -78,7 +78,7 @@ tasks.shadowJar {
     include {
         it.path.startsWith('json-schema/entities') || it.name.endsWith('jsv-messages.properties')
                 || it.name.endsWith('sql2003_reserved_words.txt') || it.name.endsWith('SchemaCrawler.txt') || it.name.endsWith('schemacrawler-postgresql.config.properties') || it.name.endsWith('schemacrawler-sqlite.config.properties')
-                || it.path.endsWith('Mac/aarch64/libsqlitejdbc.dylib') || it.path.endsWith('Linux/x86_64/libsqlitejdbc.so') || it.path.endsWith('Linux/aarch64/libsqlitejdbc.so') || it.path.endsWith('Windows/x86_64/sqlitejdbc.dll')
+                || it.path.endsWith('Mac/aarch64/libsqlitejdbc.dylib') || it.path.endsWith('Linux/x86_64/libsqlitejdbc.so') || it.path.endsWith('Linux/aarch64/libsqlitejdbc.so') || it.path.endsWith('Windows/x86_64/sqlitejdbc.dll') || it.path.endsWith('native-image.properties') || it.path.contains('SqliteJdbcFeature')
                 || it.path.contains('com/sun/xml/xsom/impl/parser') || it.name.endsWith('.xsd')
     }
     minimize()
@@ -93,9 +93,17 @@ tasks.shadowJar {
         exclude 'org.w3c.dom.*'
         exclude 'org.sqlite.**'
         exclude 'org.xml.sax.**'
+        exclude 'org.graalvm.**'
     }
     relocate('schemacrawler.', 'shadow.schemacrawler.')
     relocate('us.', 'shadow.us.')
+}
+
+//needed for sqlite in native image builds
+jar {
+    manifest {
+        attributes('Multi-Release': 'true')
+    }
 }
 
 artifacts {
