@@ -132,8 +132,11 @@ export default defineUserConfig({
     }),
     mdEnhancePlugin({
       //container: true,
+      alert: true,
+      gfm: true,
+      hint: true,
       mermaid: true,
-      linkCheck: "always",
+      checkLinks: {status: "always"},
     }),
     /*['@vuepress/plugin-shiki', {
       //theme: 'material-lighter',
