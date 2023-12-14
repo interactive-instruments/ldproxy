@@ -10,7 +10,7 @@ node {
 ext {
     workingDir = new File(project.buildDir, 'markdown').absolutePath
     cliVersion = 'main'
-    editorVersion = 'main'
+    editorVersion = '0.9'
 }
 
 def docsDownload(List<String> files, File targetDir, Closure<?> process = null) {
@@ -49,20 +49,22 @@ tasks.register('docsAssembleCli') {
 tasks.register('docsAssembleEditor') {
     doLast {
         def baseUrl = "https://raw.githubusercontent.com/ldproxy/editor/${editorVersion}"
-        def targetDir = new File(project.buildDir, 'tmp/tools/editor/README.md')
-        def targetDirDe = new File(project.buildDir, 'tmp/tools/de/editor/README.md')
-        def files = ["${baseUrl}/README.md"]
-        def filesDe = ["${baseUrl}/README.md"]
+        def targetDir = new File(project.buildDir, 'tmp/tools/editor')
+        def targetDirDe = new File(project.buildDir, 'tmp/tools/de/editor')
+        def files = ["${baseUrl}/README.md", "${baseUrl}/screenshot.png"]
+        def filesDe = ["${baseUrl}/README_DE.md", "${baseUrl}/screenshot.png"]
+        def process = { f ->
+            f.path = f.path == "README_DE.md" ? "README.md" : f.path
+        }
 
-        docsDownload(files, targetDir)
-        docsDownload(filesDe, targetDirDe)
+        docsDownload(files, targetDir, process)
+        docsDownload(filesDe, targetDirDe, process)
     }
 }
 
 tasks.register('docsAssemble', Sync) {
     dependsOn tasks.named("docsAssembleCli")
-    // TODO: include editor docs
-    //dependsOn tasks.named("docsAssembleEditor")
+    dependsOn tasks.named("docsAssembleEditor")
     finalizedBy tasks.named('markdownAssemble')
 
     from(file('src/markdown/docs')) {
