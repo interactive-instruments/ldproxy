@@ -336,7 +336,7 @@ public abstract class FeaturesView extends OgcApiDatasetView {
       List<String> ignore = Splitter.on(',').trimResults().omitEmptyStrings().splitToList(without);
 
       List<NameValuePair> query =
-          URLEncodedUtils.parse(RawQuery().substring(1), StandardCharsets.ISO_8859_1).stream()
+          URLEncodedUtils.parse(RawQuery().substring(1), StandardCharsets.UTF_8).stream()
               .filter(kvp -> !ignore.contains(kvp.getName().toLowerCase()))
               .collect(Collectors.toList());
 
