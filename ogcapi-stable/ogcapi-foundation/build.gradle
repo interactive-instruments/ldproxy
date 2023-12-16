@@ -2,6 +2,11 @@
 maturity = 'MATURE'
 
 dependencies {
+    provided 'de.interactive_instruments:xtraplatform-auth'
+    provided 'de.interactive_instruments:xtraplatform-web'
+    provided 'de.interactive_instruments:xtraplatform-crs'
+    provided 'de.interactive_instruments:xtraplatform-features'
+
     embeddedExport (group: 'com.networknt', name: 'json-schema-validator', version: '1.0.86') {
         exclude module: 'jackson-core'
         exclude module: 'jackson-databind'

@@ -2,6 +2,15 @@
 maturity = 'MATURE'
 
 dependencies {
+    provided 'de.interactive_instruments:xtraplatform-auth'
+    provided 'de.interactive_instruments:xtraplatform-streams'
+    provided 'de.interactive_instruments:xtraplatform-codelists'
+    provided 'de.interactive_instruments:xtraplatform-cql'
+    provided 'de.interactive_instruments:xtraplatform-crs'
+    provided 'de.interactive_instruments:xtraplatform-features'
+    provided 'de.interactive_instruments:xtraplatform-geometries'
+    provided 'de.interactive_instruments:xtraplatform-proj'
+    provided 'de.interactive_instruments:xtraplatform-strings'
     provided project(":ogcapi-foundation")
     provided project(":ogcapi-common")
     provided project(":ogcapi-collections")

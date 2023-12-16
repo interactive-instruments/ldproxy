@@ -5,6 +5,8 @@ plugins {
 maturity = 'MATURE'
 
 dependencies {
+    provided 'de.interactive_instruments:xtraplatform-blobs'
+    provided 'de.interactive_instruments:xtraplatform-web'
     provided project(":ogcapi-foundation")
 
     testImplementation(testFixtures(project(":ogcapi-foundation")))

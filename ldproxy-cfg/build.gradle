@@ -6,6 +6,13 @@ dependencies {
     api(group: 'org.slf4j', name: 'slf4j-api', version: '1.7.35')
 }
 
+// add all modules from all layers with all transitive dependencies to provided
+parent.configurations.layerModules.resolvedConfiguration.firstLevelModuleDependencies.each({
+    it.children.each { module ->
+            project.dependencies.add('provided', module.name)
+    }
+})
+
 moduleInfo {
     enabled = false
 }

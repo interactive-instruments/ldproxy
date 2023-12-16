@@ -1,2 +1,15 @@
 
 maturity = 'PROPOSAL'
+
+
+dependencies {
+    provided 'de.interactive_instruments:xtraplatform-auth'
+    provided 'de.interactive_instruments:xtraplatform-web'
+    provided 'de.interactive_instruments:xtraplatform-crs'
+    provided 'de.interactive_instruments:xtraplatform-cql'
+    provided 'de.interactive_instruments:xtraplatform-features'
+    provided 'de.interactive_instruments:xtraplatform-geometries'
+    provided 'de.interactive_instruments:ogcapi-collections'
+    provided 'de.interactive_instruments:ogcapi-features-core'
+    provided 'de.interactive_instruments:ogcapi-features-html'
+}
