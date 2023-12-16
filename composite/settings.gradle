@@ -24,7 +24,7 @@ if (hasProperty('build-plugins') && xtraplatformBuild) {
     includeBuild "../../${xtraplatformBuild.name}"
 }
 if (xtraplatform) {
-    includeBuild "../../${xtraplatform.name}/xtraplatform-core"
+    includeBuild "../../${xtraplatform.name}"
 }
 if (hasProperty('native') && xtraplatformNative) {
     includeBuild "../../${xtraplatformNative.name}"
