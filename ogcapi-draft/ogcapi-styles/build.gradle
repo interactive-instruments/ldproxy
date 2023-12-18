@@ -15,7 +15,7 @@ dependencies {
     provided 'de.interactive_instruments:ogcapi-html'
     provided 'de.interactive_instruments:ogcapi-tiles'
 
-    embeddedExport (group: 'com.github.java-json-tools', name: 'json-patch', version: '1.13') {
+    embeddedExport (catalog.json.patch) {
         exclude module: 'jackson-core'
         exclude module: 'jackson-databind'
         exclude module: 'jsr305'

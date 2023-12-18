@@ -16,5 +16,5 @@ dependencies {
     provided 'de.interactive_instruments:ogcapi-html'
     provided 'de.interactive_instruments:ogcapi-tilematrixsets'
 
-    embedded (group: 'io.github.earcut4j', name: 'earcut4j', version: '2.2.2')
+    embedded (catalog.earcut4j)
 }
