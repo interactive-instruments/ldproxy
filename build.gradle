@@ -65,6 +65,12 @@ task spotlessApply {
     dependsOn(':ldproxy-cfg:spotlessApply')
 }
 
+tasks.modules {
+    dependsOn project.gradle.includedBuild('ogcapi-stable').task(':modules')
+    dependsOn project.gradle.includedBuild('ogcapi-draft').task(':modules')
+    dependsOn project.gradle.includedBuild('ogcapi-custom').task(':modules')
+}
+
 //TODO: MarkdownTask not available in docs.gradle
 tasks.register('docsExtract', de.interactive_instruments.xtraplatform.docs.MarkdownTask) {
     docsName 'docs'
