@@ -63,6 +63,5 @@ steps:
       platforms:
         - linux/amd64
         - linux/arm64
-    secrets: [ docker_username, docker_password]
     when:
       branch: master

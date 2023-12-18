@@ -37,6 +37,7 @@ steps:
     settings: 
       repo: iide/ldproxy
       auto_tag: true
+      force_tag: true
       username:
         from_secret: docker_username
       password:
@@ -46,26 +47,6 @@ steps:
       platforms:
         - linux/amd64
         - linux/arm64
-    secrets: [ docker_username, docker_password]
-
-  docker-latest:
-    image: docker.ci.interactive-instruments.de/cicd/drone-docker-buildx
-    privileged: true
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    settings: 
-      repo: iide/ldproxy
-      tags: latest
-      username:
-        from_secret: docker_username
-      password:
-        from_secret: docker_password
-      dockerfile: build/docker/Dockerfile
-      context: build/docker
-      platforms:
-        - linux/amd64
-        - linux/arm64
-    secrets: [ docker_username, docker_password]
 
   github:
     image: node:18
