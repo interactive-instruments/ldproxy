@@ -2,6 +2,14 @@
 maturity = 'MATURE'
 
 dependencies {
+    provided 'de.interactive_instruments:xtraplatform-auth'
+    provided 'de.interactive_instruments:xtraplatform-web'
+    provided 'de.interactive_instruments:xtraplatform-codelists'
+    provided 'de.interactive_instruments:xtraplatform-cql'
+    provided 'de.interactive_instruments:xtraplatform-crs'
+    provided 'de.interactive_instruments:xtraplatform-features'
+    provided 'de.interactive_instruments:xtraplatform-geometries'
+    provided 'de.interactive_instruments:xtraplatform-tiles'
     provided project(":ogcapi-foundation")
     provided project(":ogcapi-common")
     provided project(":ogcapi-collections")
@@ -13,6 +21,6 @@ dependencies {
     provided project(":ogcapi-oas30")
     provided project(":ogcapi-tilematrixsets")
 
-    testImplementation(testFixtures(group: 'de.interactive_instruments', name: 'ogcapi-foundation'))
+    testImplementation(testFixtures(project(":ogcapi-foundation")))
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }

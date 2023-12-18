@@ -87,6 +87,7 @@ tasks.register('markdownAssemble', Copy) {
 
 yarn_install {
     dependsOn tasks.named("docsAssemble")
+    dependsOn tasks.named("markdownAssemble")
     inputs.file("${project.workingDir}/package.json")
     inputs.file("${project.workingDir}/yarn.lock")
     outputs.dir("${project.workingDir}/node_modules")

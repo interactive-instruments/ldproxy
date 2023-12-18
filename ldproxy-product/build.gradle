@@ -1,2 +1,6 @@
 
 maturity = 'MATURE'
+
+dependencies {
+    provided 'de.interactive_instruments:xtraplatform-web'
+}

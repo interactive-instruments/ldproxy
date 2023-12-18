@@ -1,2 +1,7 @@
 
 maturity = 'CANDIDATE'
+
+dependencies {
+    provided 'de.interactive_instruments:xtraplatform-features'
+    provided 'de.interactive_instruments:ogcapi-features-core'
+}
