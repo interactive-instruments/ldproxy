@@ -1,11 +1,7 @@
+when:
+  event: pull_request
 
-clone: 
-  git:
-    image: woodpeckerci/plugin-git
-    when:
-      event: pull_request
-
-pipeline:
+steps:
 
   code:
     image: eclipse-temurin:11
@@ -28,5 +24,3 @@ pipeline:
       forge_repo_token: 
         from_secret: github_token
     secrets: [ github_token, surge_token ]
-    when:
-      event: pull_request

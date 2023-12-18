@@ -1,11 +1,7 @@
+when:
+  event: tag
 
-clone: 
-  git:
-    image: woodpeckerci/plugin-git
-    when:
-      event: tag
-
-pipeline:
+steps:
 
   libs:
     image: eclipse-temurin:11
@@ -14,8 +10,6 @@ pipeline:
     commands:
       - ./gradlew publish dockerContext docsVuepress -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
-    when:
-      event: tag
 
   docs:
     image: williamjackson/netlify-cli
@@ -24,8 +18,9 @@ pipeline:
     commands:
       - netlify deploy --prod --auth $NETLIFY_TOKEN --site 09d0be51-d517-4c96-a048-438ec3cf94e2 --message "$CI_COMMIT_MESSAGE" --dir $CI_WORKSPACE/build/markdown/docs/.vuepress/dist/
     secrets: [ netlify_token]
+# TODO: does not work, only tags from master should trigger this
+# check https://woodpecker-ci.org/docs/usage/workflow-syntax#evaluate, does any of the CI_ vars contain the branch?
     when:
-      event: tag
       branch: master
 
   dist-arm64:
@@ -33,8 +28,6 @@ pipeline:
     commands:
       - ./gradlew dockerContext -Pplatform=linux-arm64 -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
-    when:
-      event: tag
 
   docker:
     image: docker.ci.interactive-instruments.de/cicd/drone-docker-buildx
@@ -54,8 +47,6 @@ pipeline:
         - linux/amd64
         - linux/arm64
     secrets: [ docker_username, docker_password]
-    when:
-      event: tag
 
   docker-latest:
     image: docker.ci.interactive-instruments.de/cicd/drone-docker-buildx
@@ -75,8 +66,6 @@ pipeline:
         - linux/amd64
         - linux/arm64
     secrets: [ docker_username, docker_password]
-    when:
-      event: tag
 
   github:
     image: node:18
@@ -96,5 +85,3 @@ pipeline:
 #      - git push -u https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$CI_REPO_NAME.git changelog-$CI_COMMIT_TAG #> /dev/null 2>&1
 #      - GITHUB_TOKEN=$GITHUB_TOKEN ./gh_1.2.0_linux_amd64/bin/gh pr create --base $CI_COMMIT_BRANCH --head changelog-$CI_COMMIT_TAG --reviewer $CI_COMMIT_AUTHOR --title "add changelog for $CI_COMMIT_TAG" --body ""
     secrets: [ github_token, github_user ]
-    when:
-      event: tag
