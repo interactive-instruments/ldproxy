@@ -1,6 +1,6 @@
 [versions]
 # plugins
-xtraplatform-build = "5.0.0-SNAPSHOT"
+xtraplatform-build = "5.0.0"
 spotless = "6.23.3"
 node = "7.0.1"
 download = "5.5.0"
@@ -34,4 +34,3 @@ flatbuffers = { module = "com.google.flatbuffers:flatbuffers-java", version.ref 
 flatgeobuf = { module = "org.wololo:flatgeobuf", version.ref = "flatgeobuf" }
 
 [bundles]
-auth = []
