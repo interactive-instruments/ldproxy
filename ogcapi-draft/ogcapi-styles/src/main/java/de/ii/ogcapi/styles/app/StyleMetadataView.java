@@ -169,14 +169,6 @@ public abstract class StyleMetadataView extends OgcApiView {
 
   public StyleMetadataView() {
     super("styleMetadata.mustache");
-    /*
-    metadata.getLinks(),
-    i18n().get("styleMetadataTitle", language()),
-    null);
-    */
-
-    // TODO the view could be improved
-
   }
 
   public boolean hasLayers() {

@@ -17,7 +17,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
-import de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleRepository;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
@@ -55,11 +54,7 @@ public class QueriesHandlerStylesManagerImpl implements QueriesHandlerStylesMana
                 QueryHandler.with(QueryInputStyleCreateReplace.class, this::createOrReplaceStyle),
             Query.REPLACE_STYLE,
                 QueryHandler.with(QueryInputStyleCreateReplace.class, this::createOrReplaceStyle),
-            Query.DELETE_STYLE, QueryHandler.with(QueryInputStyleDelete.class, this::deleteStyle),
-            Query.REPLACE_STYLE_METADATA,
-                QueryHandler.with(QueryInputStyleMetadata.class, this::replaceStyleMetadata),
-            Query.UPDATE_STYLE_METADATA,
-                QueryHandler.with(QueryInputStyleMetadata.class, this::updateStyleMetadata));
+            Query.DELETE_STYLE, QueryHandler.with(QueryInputStyleDelete.class, this::deleteStyle));
   }
 
   @Override
@@ -184,103 +179,6 @@ public class QueriesHandlerStylesManagerImpl implements QueriesHandlerStylesMana
     } catch (IOException e) {
       throw new WebApplicationException(
           "Could not delete the style from the store.", e, Response.Status.INTERNAL_SERVER_ERROR);
-    }
-
-    return Response.noContent().build();
-  }
-
-  private Response replaceStyleMetadata(
-      QueryInputStyleMetadata queryInput, ApiRequestContext requestContext) {
-
-    OgcApi api = requestContext.getApi();
-    OgcApiDataV2 apiData = api.getData();
-    Optional<String> collectionId = queryInput.getCollectionId();
-    String styleId = queryInput.getStyleId();
-    boolean strict = queryInput.getStrict();
-    boolean dryRun = queryInput.getDryRun();
-    MediaType contentType = queryInput.getContentType();
-    byte[] requestBody = queryInput.getRequestBody();
-
-    StyleMetadataFormatExtension format =
-        styleRepository
-            .getStyleMetadataFormatStream(apiData, collectionId)
-            .filter(f -> contentType.isCompatible(f.getMediaType().type()))
-            .filter(f -> f.canSupportTransactions())
-            .findAny()
-            .orElseThrow(
-                () ->
-                    new WebApplicationException(
-                        String.format(
-                            "The content type '%s' is not supported for style metadata.",
-                            contentType.getType()),
-                        Response.Status.UNSUPPORTED_MEDIA_TYPE));
-
-    // check that the style does exist (including as a derived style)
-    if (!styleRepository.getStyleIds(apiData, collectionId, true).contains(styleId))
-      throw new NotFoundException(
-          String.format("A style with the identifier '%s' does not exist.", styleId));
-
-    // Validate style metadata by parsing it
-    format.parse(requestBody, strict, false);
-
-    if (dryRun) return Response.noContent().build();
-
-    try {
-      styleRepository.writeStyleMetadataDocument(apiData, collectionId, styleId, requestBody);
-    } catch (Exception e) {
-      throw new WebApplicationException(
-          "Could not write the style metadata to the store.",
-          e,
-          Response.Status.INTERNAL_SERVER_ERROR);
-    }
-
-    return Response.noContent().build();
-  }
-
-  private Response updateStyleMetadata(
-      QueryInputStyleMetadata queryInput, ApiRequestContext requestContext) {
-
-    OgcApi api = requestContext.getApi();
-    OgcApiDataV2 apiData = api.getData();
-    Optional<String> collectionId = queryInput.getCollectionId();
-    String styleId = queryInput.getStyleId();
-    boolean strict = queryInput.getStrict();
-    boolean dryRun = queryInput.getDryRun();
-    MediaType contentType = queryInput.getContentType();
-    byte[] requestBody = queryInput.getRequestBody();
-
-    StyleMetadataFormatExtension format =
-        styleRepository
-            .getStyleMetadataFormatStream(apiData, collectionId)
-            .filter(f -> contentType.isCompatible(f.getMediaType().type()))
-            .filter(f -> f.canSupportTransactions())
-            .findAny()
-            .orElseThrow(
-                () ->
-                    new WebApplicationException(
-                        String.format(
-                            "The content type '%s' is not supported for style metadata.",
-                            contentType.getType()),
-                        Response.Status.UNSUPPORTED_MEDIA_TYPE));
-
-    // check that the style does exist (including as a derived style)
-    if (!styleRepository.getStyleIds(apiData, collectionId, true).contains(styleId))
-      throw new NotFoundException(
-          String.format("A style with the identifier '%s' does not exist.", styleId));
-
-    byte[] patched =
-        styleRepository.updateStyleMetadataPatch(
-            apiData, Optional.empty(), styleId, requestBody, strict);
-
-    if (dryRun) return Response.noContent().build();
-
-    try {
-      styleRepository.writeStyleMetadataDocument(apiData, collectionId, styleId, patched);
-    } catch (Exception e) {
-      throw new WebApplicationException(
-          "Could not write the style metadata to the store.",
-          e,
-          Response.Status.INTERNAL_SERVER_ERROR);
     }
 
     return Response.noContent().build();
