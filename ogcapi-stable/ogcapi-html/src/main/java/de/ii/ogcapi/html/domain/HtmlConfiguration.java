@@ -309,42 +309,6 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
   String getBasemapAttribution();
 
   /**
-   * @langEn *Deprecated* See `basemapUrl`.
-   * @langDe *Deprecated* Siehe `basemapUrl`.
-   * @default https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
-   */
-  @Deprecated(since = "3.1.0")
-  @Nullable
-  String getLeafletUrl();
-
-  /**
-   * @langEn *Deprecated* See `basemapAttribution`.
-   * @langDe *Deprecated* Siehe `basemapAttribution`.
-   * @default &copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors
-   */
-  @Deprecated(since = "3.1.0")
-  @Nullable
-  String getLeafletAttribution();
-
-  /**
-   * @langEn *Deprecated* See `basemapUrl`.
-   * @langDe *Deprecated* Siehe `basemapUrl`.
-   * @default https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png
-   */
-  @Deprecated(since = "3.1.0")
-  @Nullable
-  String getOpenLayersUrl();
-
-  /**
-   * @langEn *Deprecated* See `basemapAttribution`
-   * @langDe *Deprecated* Siehe `basemapAttribution`.
-   * @default &copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors
-   */
-  @Deprecated(since = "3.1.0")
-  @Nullable
-  String getOpenLayersAttribution();
-
-  /**
    * @langEn Additional text shown in footer of every site.
    * @langDe Zusätzlicher Text, der auf jeder HTML-Seite im Footer angezeigt wird.
    * @default null

@@ -119,12 +119,8 @@ public abstract class RoutesView extends OgcApiView {
   @Value.Derived
   public MapClient mapClient() {
     return new ImmutableMapClient.Builder()
-        .backgroundUrl(
-            Optional.ofNullable(htmlConfig().getLeafletUrl())
-                .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
-        .attribution(
-            Optional.ofNullable(htmlConfig().getLeafletAttribution())
-                .or(() -> Optional.ofNullable(htmlConfig().getBasemapAttribution())))
+        .backgroundUrl(Optional.ofNullable(htmlConfig().getBasemapUrl()))
+        .attribution(Optional.ofNullable(htmlConfig().getBasemapAttribution()))
         .data(
             new ImmutableSource.Builder()
                 .type(MapClient.Source.TYPE.geojson)

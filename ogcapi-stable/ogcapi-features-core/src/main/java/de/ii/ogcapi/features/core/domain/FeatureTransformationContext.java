@@ -88,11 +88,6 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
   Map<String, Codelist> getCodelists();
 
   @Value.Default
-  default boolean getShowsFeatureSelfLink() {
-    return true;
-  }
-
-  @Value.Default
   default boolean isHitsOnly() {
     return false;
   }

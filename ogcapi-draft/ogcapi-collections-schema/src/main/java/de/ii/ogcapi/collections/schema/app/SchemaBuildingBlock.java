@@ -8,9 +8,7 @@
 package de.ii.ogcapi.collections.schema.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.schema.domain.ImmutableSchemaConfiguration.Builder;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
@@ -48,14 +46,14 @@ public class SchemaBuildingBlock implements ApiBuildingBlock {
   public static final Optional<ExternalDocumentation> SPEC =
       Optional.of(
           ExternalDocumentation.of(
-              "https://github.com/opengeospatial/ogcapi-features/issues/740#issuecomment-1597279889",
-              "OGC API - Features - Part 5: Schemas (DRAFT, NOT YET PUBLISHED)"));
+              "https://docs.ogc.org/DRAFTS/23-058.html",
+              "OGC API - Features - Part 5: Schemas (DRAFT)"));
 
   @Inject
   public SchemaBuildingBlock() {}
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
-    return new Builder().enabled(false).versions(ImmutableList.of(VERSION.V202012)).build();
+    return new Builder().enabled(false).build();
   }
 }

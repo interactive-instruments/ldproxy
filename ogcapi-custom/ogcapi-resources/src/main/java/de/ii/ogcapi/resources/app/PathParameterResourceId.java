@@ -14,7 +14,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
-import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
@@ -79,11 +78,7 @@ public class PathParameterResourceId implements OgcApiPathParameter {
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return OgcApiPathParameter.super.isEnabledForApi(apiData)
-        || apiData
-            .getExtension(StylesConfiguration.class)
-            .map(StylesConfiguration::isResourcesEnabled)
-            .orElse(false);
+    return OgcApiPathParameter.super.isEnabledForApi(apiData);
   }
 
   @Override

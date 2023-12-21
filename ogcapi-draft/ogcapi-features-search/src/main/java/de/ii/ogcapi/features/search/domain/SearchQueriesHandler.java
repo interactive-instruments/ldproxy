@@ -59,8 +59,6 @@ public interface SearchQueriesHandler extends QueriesHandler<SearchQueriesHandle
 
     Optional<Integer> getMaximumPageSize();
 
-    boolean getShowsFeatureSelfLink();
-
     @Value.Default
     default boolean getAllLinksAreLocal() {
       return false;

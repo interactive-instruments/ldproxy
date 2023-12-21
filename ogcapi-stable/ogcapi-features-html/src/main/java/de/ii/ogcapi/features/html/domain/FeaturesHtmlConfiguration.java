@@ -8,7 +8,6 @@
 package de.ii.ogcapi.features.html.domain;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
@@ -131,11 +130,6 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
-  enum LAYOUT {
-    CLASSIC,
-    COMPLEX_OBJECTS
-  }
-
   enum POSITION {
     AUTO,
     TOP,
@@ -148,18 +142,6 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   @Nullable
   @Override
   Boolean getEnabled();
-
-  /**
-   * @langEn *Deprecated* Superseded by `mapPosition` and the [`flattern`
-   *     transformation](../../providers/details/transformations.md).
-   * @langDe *Deprecated* Wird abgelöst von `mapPosition` und der
-   *     [`flatten`-Transformation](../../providers/details/transformations.md).
-   * @default `CLASSIC`
-   */
-  @Deprecated(since = "3.1.0")
-  @Nullable
-  @JsonProperty(value = "layout", access = JsonProperty.Access.WRITE_ONLY)
-  LAYOUT getLayout();
 
   /**
    * @langEn Can be `TOP`, `RIGHT` or `AUTO`. `AUTO` is the default, it chooses `TOP` when any
@@ -290,34 +272,6 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
    */
   @Nullable
   Boolean getPropertyTooltipsOnItems();
-
-  @Value.Check
-  default FeaturesHtmlConfiguration backwardsCompatibility() {
-    if (getLayout() == LAYOUT.CLASSIC
-        && (!hasTransformation(
-            PropertyTransformations.WILDCARD,
-            transformations -> transformations.getFlatten().isPresent()))) {
-      Map<String, List<PropertyTransformation>> transformations =
-          withTransformation(
-              PropertyTransformations.WILDCARD,
-              new ImmutablePropertyTransformation.Builder().flatten(".").build());
-
-      return new ImmutableFeaturesHtmlConfiguration.Builder()
-          .from(this)
-          .mapPosition(POSITION.RIGHT)
-          .transformations(transformations)
-          .build();
-    }
-
-    if (getLayout() == LAYOUT.COMPLEX_OBJECTS && getMapPosition() != POSITION.TOP) {
-      return new ImmutableFeaturesHtmlConfiguration.Builder()
-          .from(this)
-          .mapPosition(POSITION.TOP)
-          .build();
-    }
-
-    return this;
-  }
 
   String LINK_WILDCARD = "*{objectType=Link}";
 

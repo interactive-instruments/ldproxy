@@ -30,7 +30,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.resources.app.ResourcesBuildingBlock;
 import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
-import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import io.dropwizard.auth.Auth;
@@ -82,13 +81,9 @@ public class EndpointResourcesManager extends Endpoint {
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
     return apiData
-            .getExtension(ResourcesConfiguration.class)
-            .map(ResourcesConfiguration::isManagerEnabled)
-            .orElse(false)
-        || apiData
-            .getExtension(StylesConfiguration.class)
-            .map(StylesConfiguration::isResourceManagerEnabled)
-            .orElse(false);
+        .getExtension(ResourcesConfiguration.class)
+        .map(ResourcesConfiguration::isManagerEnabled)
+        .orElse(false);
   }
 
   @Override

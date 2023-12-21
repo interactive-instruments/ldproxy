@@ -8,12 +8,7 @@
 package de.ii.ogcapi.features.core.domain
 
 import com.google.common.collect.ImmutableMap
-import de.ii.ogcapi.foundation.domain.AbstractExtensionConfigurationSpec
-import de.ii.ogcapi.foundation.domain.MergeBase
-import de.ii.ogcapi.foundation.domain.MergeMap
-import de.ii.ogcapi.foundation.domain.MergeMinimal
-import de.ii.ogcapi.foundation.domain.MergeNested
-import de.ii.ogcapi.foundation.domain.MergeSimple
+import de.ii.ogcapi.foundation.domain.*
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
 
 @SuppressWarnings('ClashingTraitMethods')
@@ -29,12 +24,6 @@ class FeaturesCoreConfigurationSpec extends AbstractExtensionConfigurationSpec i
                 .minimumPageSize(1)
                 .defaultPageSize(5)
                 .maximumPageSize(10)
-                .showsFeatureSelfLink(false)
-                .queryables(new ImmutableFeaturesCollectionQueryables.Builder()
-                        .addSpatial("geometry")
-                        .addTemporal("date")
-                        .addOther("string")
-                        .build())
                 .putTransformations("foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()])
                 .build()
     }
@@ -60,7 +49,6 @@ class FeaturesCoreConfigurationSpec extends AbstractExtensionConfigurationSpec i
                 .minimumPageSize(10)
                 .defaultPageSize(50)
                 .maximumPageSize(100)
-                .showsFeatureSelfLink(true)
                 .build()
     }
 
@@ -95,11 +83,6 @@ class FeaturesCoreConfigurationSpec extends AbstractExtensionConfigurationSpec i
     FeaturesCoreConfiguration getNested() {
         return new ImmutableFeaturesCoreConfiguration.Builder()
                 .putTransformations("foo", [new ImmutablePropertyTransformation.Builder().codelist("cl").build()])
-                .queryables(new ImmutableFeaturesCollectionQueryables.Builder()
-                        .addSpatial("secondGeometry")
-                        .addTemporal("secondDate")
-                        .addOther("secondString")
-                        .build())
                 .build()
     }
 
@@ -113,11 +96,6 @@ class FeaturesCoreConfigurationSpec extends AbstractExtensionConfigurationSpec i
                         new ImmutablePropertyTransformation.Builder().codelist("cl").build()
                 ]
                 ))
-                .queryables(new ImmutableFeaturesCollectionQueryables.Builder()
-                        .addSpatial("geometry", "secondGeometry")
-                        .addTemporal("date", "secondDate")
-                        .addOther("string", "secondString")
-                        .build())
                 .build()
     }
 }

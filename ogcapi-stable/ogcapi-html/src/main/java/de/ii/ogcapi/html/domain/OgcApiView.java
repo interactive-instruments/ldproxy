@@ -157,9 +157,6 @@ public abstract class OgcApiView extends View {
     if (Objects.isNull(htmlConfig())) {
       return null;
     }
-    if (Objects.nonNull(htmlConfig().getLeafletAttribution())) {
-      return htmlConfig().getLeafletAttribution();
-    }
     return htmlConfig().getBasemapAttribution();
   }
 }

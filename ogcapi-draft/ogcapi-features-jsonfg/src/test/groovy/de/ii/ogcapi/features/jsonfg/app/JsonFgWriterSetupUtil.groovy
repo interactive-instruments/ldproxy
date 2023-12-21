@@ -9,20 +9,10 @@ package de.ii.ogcapi.features.jsonfg.app
 
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
-import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson
-import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson
-import de.ii.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContextGeoJson
-import de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration
-import de.ii.ogcapi.features.geojson.domain.ModifiableEncodingAwareContextGeoJson
-import de.ii.ogcapi.features.geojson.domain.ModifiableStateGeoJson
+import de.ii.ogcapi.features.geojson.domain.*
 import de.ii.ogcapi.features.jsonfg.domain.ImmutableJsonFgConfiguration
 import de.ii.ogcapi.foundation.app.OgcApiEntity
-import de.ii.ogcapi.foundation.domain.ApiMediaType
-import de.ii.ogcapi.foundation.domain.ApiRequestContext
-import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2
-import de.ii.ogcapi.foundation.domain.OgcApi
-import de.ii.ogcapi.foundation.domain.QueryParameterSet
-import de.ii.ogcapi.foundation.domain.URICustomizer
+import de.ii.ogcapi.foundation.domain.*
 import de.ii.xtraplatform.auth.domain.User
 import de.ii.xtraplatform.crs.domain.CrsTransformer
 import de.ii.xtraplatform.crs.domain.OgcCrs
@@ -114,7 +104,8 @@ class JsonFgWriterSetupUtil {
                 .maxAllowableOffset(0)
                 .isHitsOnly(false)
                 .state(ModifiableStateGeoJson.create())
-                .geoJsonConfig(new ImmutableGeoJsonConfiguration.Builder().enabled(true).useFormattedJsonOutput(true).build())
+                .prettify(true)
+                .geoJsonConfig(new ImmutableGeoJsonConfiguration.Builder().enabled(true).build())
                 .build()
 
         return ModifiableEncodingAwareContextGeoJson.create().setEncoding(transformationContext)

@@ -481,7 +481,6 @@ public interface Subtree {
             .defaultCrs(OgcCrs.CRS84h)
             .defaultPageSize(1)
             .sendResponseAsStream(false)
-            .showsFeatureSelfLink(false)
             .build();
 
     ApiRequestContext requestContext =

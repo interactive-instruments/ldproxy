@@ -92,7 +92,7 @@ public interface QueriesHandlerSchema extends QueriesHandler<Query> {
                     .build());
 
     JsonSchemaDocument schema =
-        getJsonSchema(featureSchema, apiData, collectionData, schemaUri, outputFormat.getVersion());
+        getJsonSchema(featureSchema, apiData, collectionData, schemaUri, VERSION.V202012);
 
     Date lastModified = getLastModified(queryInput);
     EntityTag etag =

@@ -568,7 +568,6 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
             featureProvider,
             outputFormat,
             profile,
-            queryInput.getShowsFeatureSelfLink(),
             queryInput.getDefaultCrs(),
             targetCrs,
             links);
@@ -745,7 +744,6 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       FeatureProvider2 featureProvider,
       FeatureFormatExtension outputFormat,
       Optional<Profile> profile,
-      boolean showsFeatureSelfLink,
       EpsgCrs defaultCrs,
       EpsgCrs targetCrs,
       List<Link> links) {
@@ -787,7 +785,6 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
             .maxAllowableOffset(query.getMaxAllowableOffset())
             .geometryPrecision(query.getGeometryPrecision())
             .isHitsOnlyIfMore(false)
-            .showsFeatureSelfLink(showsFeatureSelfLink)
             .fields(fields)
             .allLinksAreLocal(allLinksAreLocal)
             .idsIncludeCollectionId(collectionIds.size() > 1)

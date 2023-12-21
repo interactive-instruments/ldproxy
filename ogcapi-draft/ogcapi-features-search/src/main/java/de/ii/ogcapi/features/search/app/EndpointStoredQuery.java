@@ -43,7 +43,6 @@ import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -229,8 +228,6 @@ public class EndpointStoredQuery extends EndpointRequiresFeatures {
             .minimumPageSize(Optional.ofNullable(coreConfiguration.getMinimumPageSize()))
             .defaultPageSize(Optional.ofNullable(coreConfiguration.getDefaultPageSize()))
             .maximumPageSize(Optional.ofNullable(coreConfiguration.getMaximumPageSize()))
-            .showsFeatureSelfLink(
-                Objects.equals(coreConfiguration.getShowsFeatureSelfLink(), Boolean.TRUE))
             .allLinksAreLocal(
                 api.getData()
                     .getExtension(SearchConfiguration.class)

@@ -7,14 +7,12 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import com.google.common.base.CaseFormat;
 import de.ii.xtraplatform.base.domain.JacksonProvider;
-import de.ii.xtraplatform.docs.JsonTypeInfoAlias;
 import de.ii.xtraplatform.entities.domain.Mergeable;
 import de.ii.xtraplatform.entities.domain.maptobuilder.Buildable;
 import de.ii.xtraplatform.entities.domain.maptobuilder.BuildableBuilder;
@@ -34,7 +32,6 @@ import org.immutables.value.Value;
     use = JsonTypeInfo.Id.CUSTOM,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
     property = "buildingBlock")
-@JsonTypeInfoAlias("extensionType")
 @JsonTypeIdResolver(JacksonProvider.DynamicTypeIdResolver.class)
 @JsonPropertyOrder({"buildingBlock", "enabled"})
 public interface ExtensionConfiguration
@@ -52,10 +49,9 @@ public interface ExtensionConfiguration
   }
 
   /**
-   * @langEn Always `{@buildingBlock}{@buildingBlockAlias ` or (*deprecated*) `|||}`.
-   * @langDe Immer `{@buildingBlock}{@buildingBlockAlias ` or (*deprecated*) `|||}`.
+   * @langEn Always `{@buildingBlock}`.
+   * @langDe Immer `{@buildingBlock}`.
    */
-  @JsonAlias("extensionType")
   @Value.Derived
   default String getBuildingBlock() {
     return getBuildingBlockIdentifier(this.getClass());

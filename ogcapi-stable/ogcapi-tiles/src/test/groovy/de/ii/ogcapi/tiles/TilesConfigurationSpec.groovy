@@ -10,12 +10,10 @@ package de.ii.ogcapi.tiles
 import com.google.common.collect.ImmutableList
 import com.google.common.collect.ImmutableMap
 import de.ii.ogcapi.foundation.domain.*
+import de.ii.ogcapi.html.domain.MapClient
 import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration
 import de.ii.ogcapi.tiles.domain.TilesConfiguration
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
-import de.ii.xtraplatform.tiles.domain.ImmutableLevelFilter
-import de.ii.xtraplatform.tiles.domain.ImmutableLevelTransformation
-import de.ii.xtraplatform.tiles.domain.ImmutableMinMax
 
 @SuppressWarnings('ClashingTraitMethods')
 class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<TilesConfiguration>, MergeMinimal<TilesConfiguration>, MergeSimple<TilesConfiguration>, MergeCollection<TilesConfiguration>, MergeMap<TilesConfiguration>, MergeNested<TilesConfiguration> {
@@ -23,20 +21,13 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
     TilesConfiguration getFull() {
         return new ImmutableTilesConfiguration.Builder()
                 .enabled(true)
-                .collectionTiles(true)
-                .datasetTiles(true)
-                .ignoreInvalidGeometries(true)
-                .limit(1)
-                .minimumSizeInPixel(1)
-                .center(ImmutableList.<Double> of(1))
-                .addTileEncodings("foo")
+                .tileProvider("foo")
+                .tileProviderTileset("bar")
                 .addTileSetEncodings("foo")
+                .mapClientType(MapClient.Type.MAP_LIBRE)
+                .style("foo")
+                .removeZoomLevelConstraints(true)
                 .putTransformations("foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()])
-                .putZoomLevels("foo", new ImmutableMinMax.Builder().min(1).max(10).build())
-                .putZoomLevelsCache("foo", new ImmutableMinMax.Builder().min(1).max(10).build())
-                .putSeeding("foo", new ImmutableMinMax.Builder().min(1).max(10).build())
-                .putFilters("foo", ImmutableList.of(new ImmutableLevelFilter.Builder().min(1).max(10).filter("").build()))
-                .putRules("foo", ImmutableList.of(new ImmutableLevelTransformation.Builder().min(1).max(10).build()))
                 .build()
     }
 
@@ -55,11 +46,8 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
     TilesConfiguration getSimple() {
         return new ImmutableTilesConfiguration.Builder()
                 .enabled(false)
-                .collectionTiles(false)
-                .datasetTiles(false)
-                .ignoreInvalidGeometries(false)
-                .limit(10)
-                .minimumSizeInPixel(10)
+                .mapClientType(MapClient.Type.MAP_LIBRE)
+                .style("foo")
                 .build()
     }
 
@@ -74,8 +62,7 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
     @Override
     TilesConfiguration getCollection() {
         return new ImmutableTilesConfiguration.Builder()
-                .center(ImmutableList.<Double> of(1, 2))
-                .addTileEncodings("foo", "bar")
+                .tileProviderTileset("foo")
                 .addTileSetEncodings("bar")
                 .build()
     }
@@ -84,11 +71,7 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
     TilesConfiguration getCollectionFullMerged() {
         return new ImmutableTilesConfiguration.Builder()
                 .from(getFull())
-                .center(ImmutableList.<Double> of(1, 2))
-                .tileEncodings(ImmutableList.of(
-                        "foo",
-                        "bar"
-                ))
+                .tileProviderTileset("foo")
                 .tileSetEncodings(ImmutableList.of(
                         "foo",
                         "bar"
@@ -100,11 +83,6 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
     TilesConfiguration getMap() {
         return new ImmutableTilesConfiguration.Builder()
                 .putTransformations("bar", [new ImmutablePropertyTransformation.Builder().rename("foo").build()])
-                .putZoomLevels("bar", new ImmutableMinMax.Builder().min(1).max(10).build())
-                .putZoomLevelsCache("bar", new ImmutableMinMax.Builder().min(1).max(10).build())
-                .putSeeding("bar", new ImmutableMinMax.Builder().min(1).max(10).build())
-                .putFilters("bar", ImmutableList.of(new ImmutableLevelFilter.Builder().min(1).max(10).filter("").build()))
-                .putRules("bar", ImmutableList.of(new ImmutableLevelTransformation.Builder().min(1).max(10).build()))
                 .build()
     }
 
@@ -115,26 +93,6 @@ class TilesConfigurationSpec extends AbstractExtensionConfigurationSpec implemen
                 .transformations(ImmutableMap.of(
                         "foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()],
                         "bar", [new ImmutablePropertyTransformation.Builder().rename("foo").build()]
-                ))
-                .zoomLevels(ImmutableMap.of(
-                        "foo", new ImmutableMinMax.Builder().min(1).max(10).build(),
-                        "bar", new ImmutableMinMax.Builder().min(1).max(10).build()
-                ))
-                .zoomLevelsCache(ImmutableMap.of(
-                        "foo", new ImmutableMinMax.Builder().min(1).max(10).build(),
-                        "bar", new ImmutableMinMax.Builder().min(1).max(10).build()
-                ))
-                .seeding(ImmutableMap.of(
-                        "foo", new ImmutableMinMax.Builder().min(1).max(10).build(),
-                        "bar", new ImmutableMinMax.Builder().min(1).max(10).build()
-                ))
-                .filters(ImmutableMap.of(
-                        "foo", ImmutableList.of(new ImmutableLevelFilter.Builder().min(1).max(10).filter("").build()),
-                        "bar", ImmutableList.of(new ImmutableLevelFilter.Builder().min(1).max(10).filter("").build())
-                ))
-                .rules(ImmutableMap.of(
-                        "foo", ImmutableList.of(new ImmutableLevelTransformation.Builder().min(1).max(10).build()),
-                        "bar", ImmutableList.of(new ImmutableLevelTransformation.Builder().min(1).max(10).build())
                 ))
                 .build()
     }

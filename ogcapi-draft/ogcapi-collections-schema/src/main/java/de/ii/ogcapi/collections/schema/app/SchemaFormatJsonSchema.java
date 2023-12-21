@@ -22,13 +22,13 @@ import javax.ws.rs.core.MediaType;
 
 @Singleton
 @AutoBind
-public class SchemaFormatJsonSchema202012 implements SchemaFormatExtension {
-  static ApiMediaType JSON_SCHEMA_202012_MEDIA_TYPE =
+public class SchemaFormatJsonSchema implements SchemaFormatExtension {
+  static ApiMediaType JSON_SCHEMA_MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
           .type(
               new MediaType(
                   "application", "schema+json", ImmutableMap.of("schema", VERSION.V202012.url())))
-          .label("JSON Schema (2020-12)")
+          .label("JSON Schema")
           .parameter("json")
           .fileExtension("schema.json")
           .build();
@@ -36,25 +36,20 @@ public class SchemaFormatJsonSchema202012 implements SchemaFormatExtension {
   static ApiMediaTypeContent SCHEMA_CONTENT =
       new ImmutableApiMediaTypeContent.Builder()
           .schema(new ObjectSchema())
-          .schemaRef("#/components/schemas/JsonSchema202012")
-          .ogcApiMediaType(JSON_SCHEMA_202012_MEDIA_TYPE)
+          .schemaRef("#/components/schemas/JsonSchema")
+          .ogcApiMediaType(JSON_SCHEMA_MEDIA_TYPE)
           .build();
 
   @Inject
-  SchemaFormatJsonSchema202012() {}
+  SchemaFormatJsonSchema() {}
 
   @Override
   public ApiMediaType getMediaType() {
-    return JSON_SCHEMA_202012_MEDIA_TYPE;
+    return JSON_SCHEMA_MEDIA_TYPE;
   }
 
   @Override
   public ApiMediaTypeContent getContent() {
     return SCHEMA_CONTENT;
-  }
-
-  @Override
-  public VERSION getVersion() {
-    return VERSION.V202012;
   }
 }

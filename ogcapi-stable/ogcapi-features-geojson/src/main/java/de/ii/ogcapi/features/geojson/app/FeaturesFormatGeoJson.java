@@ -176,33 +176,6 @@ public class FeaturesFormatGeoJson
             .filter(Objects::nonNull)
             .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    for (Map.Entry<String, GeoJsonConfiguration> entry : geoJsonConfigurationMap.entrySet()) {
-      String collectionId = entry.getKey();
-      GeoJsonConfiguration config = entry.getValue();
-
-      if (config.getNestedObjectStrategy() == GeoJsonConfiguration.NESTED_OBJECTS.FLATTEN
-          && config.getMultiplicityStrategy() != GeoJsonConfiguration.MULTIPLICITY.SUFFIX) {
-        builder.addStrictErrors(
-            MessageFormat.format(
-                "The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.",
-                collectionId, config.getMultiplicityStrategy()));
-      } else if (config.getNestedObjectStrategy() == GeoJsonConfiguration.NESTED_OBJECTS.NEST
-          && config.getMultiplicityStrategy() != GeoJsonConfiguration.MULTIPLICITY.ARRAY) {
-        builder.addStrictErrors(
-            MessageFormat.format(
-                "The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.",
-                collectionId, config.getMultiplicityStrategy()));
-      }
-
-      List<String> separators = ImmutableList.of(".", "_", ":", "/");
-      if (!separators.contains(config.getSeparator())) {
-        builder.addStrictErrors(
-            MessageFormat.format(
-                "The separator ''{0}'' in collection ''{1}'' is invalid, it must be one of {2}.",
-                config.getSeparator(), collectionId, separators));
-      }
-    }
-
     Map<String, Collection<String>> keyMap =
         geoJsonConfigurationMap.entrySet().stream()
             .map(
@@ -308,15 +281,7 @@ public class FeaturesFormatGeoJson
                     .get(transformationContext.getCollectionId())
                     .getExtension(GeoJsonConfiguration.class)
                     .get())
-            .prettify(
-                transformationContext.getPrettify()
-                    || (transformationContext
-                        .getApiData()
-                        .getCollections()
-                        .get(transformationContext.getCollectionId())
-                        .getExtension(GeoJsonConfiguration.class)
-                        .get()
-                        .getUseFormattedJsonOutput()))
+            .prettify(transformationContext.getPrettify())
             .build();
 
     return Optional.of(new FeatureEncoderGeoJson(transformationContextGeoJson, geoJsonWriters));

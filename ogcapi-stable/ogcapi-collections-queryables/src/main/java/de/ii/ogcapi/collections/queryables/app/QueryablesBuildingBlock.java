@@ -8,13 +8,10 @@
 package de.ii.ogcapi.collections.queryables.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfiguration;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration.PathSeparator;
-import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
@@ -155,8 +152,6 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
     }
 
     for (Map.Entry<String, QueryablesConfiguration> entry : configs.entrySet()) {
-      List<String> deprecatedQueryables = getDeprecatedQueryables(builder, api, entry);
-
       FeatureTypeConfigurationOgcApi collectionData =
           Objects.requireNonNull(api.getData().getCollections().get(entry.getKey()));
       List<String> properties =
@@ -168,9 +163,8 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
                 "Queryables is enabled for collection ''{0}'', but no provider has been configured.",
                 entry.getKey()));
       } else {
-        checkQueryableExists(builder, entry, deprecatedQueryables, properties);
-        checkQueryableIsEligible(
-            builder, entry, deprecatedQueryables, api.getData(), collectionData, schema, providers);
+        checkQueryableExists(builder, entry, properties);
+        checkQueryableIsEligible(builder, entry, api.getData(), collectionData, schema, providers);
       }
     }
 
@@ -180,14 +174,10 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
   private void checkQueryableExists(
       ImmutableValidationResult.Builder builder,
       Map.Entry<String, QueryablesConfiguration> entry,
-      List<String> deprecatedQueryables,
       List<String> properties) {
     for (String queryable :
         Stream.concat(
-                deprecatedQueryables.stream(),
-                Stream.concat(
-                    entry.getValue().getIncluded().stream(),
-                    entry.getValue().getExcluded().stream()))
+                entry.getValue().getIncluded().stream(), entry.getValue().getExcluded().stream())
             .filter(v -> !"*".equals(v))
             .collect(Collectors.toUnmodifiableList())) {
       // does the collection include the sortable property?
@@ -203,7 +193,6 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
   private void checkQueryableIsEligible(
       Builder builder,
       Entry<String, QueryablesConfiguration> entry,
-      List<String> deprecatedQueryables,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
       Optional<FeatureSchema> schema,
@@ -216,7 +205,7 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
             .stream()
             .map(SchemaBase::getFullPathAsString)
             .collect(Collectors.toList());
-    Stream.concat(deprecatedQueryables.stream(), entry.getValue().getIncluded().stream())
+    entry.getValue().getIncluded().stream()
         .filter(propertyName -> !"*".equals(propertyName))
         .filter(propertyName -> !queryables.contains(propertyName))
         .forEach(
@@ -225,27 +214,6 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
                     MessageFormat.format(
                         "The queryables configuration for collection ''{0}'' includes a property ''{1}'', but the property is not eligible.",
                         entry.getKey(), propertyName)));
-  }
-
-  private List<String> getDeprecatedQueryables(
-      ImmutableValidationResult.Builder builder,
-      OgcApi api,
-      Map.Entry<String, QueryablesConfiguration> entry) {
-    @SuppressWarnings("deprecation")
-    List<String> deprecatedQueryables =
-        api.getData()
-            .getExtension(FeaturesCoreConfiguration.class, entry.getKey())
-            .flatMap(FeaturesCoreConfiguration::getQueryables)
-            .map(FeaturesCollectionQueryables::getAll)
-            .orElse(ImmutableList.of());
-    // check that there is at least one queryable for each collection where queryables is enabled
-    if (entry.getValue().getIncluded().isEmpty() && deprecatedQueryables.isEmpty()) {
-      builder.addStrictErrors(
-          MessageFormat.format(
-              "Queryables is enabled for collection ''{0}'', but no queryable property has been configured.",
-              entry.getKey()));
-    }
-    return deprecatedQueryables;
   }
 
   private Map<String, QueryablesConfiguration> getConfigurations(OgcApi api) {

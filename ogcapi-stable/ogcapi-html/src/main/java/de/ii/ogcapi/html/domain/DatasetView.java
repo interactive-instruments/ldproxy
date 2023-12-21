@@ -155,12 +155,6 @@ public class DatasetView extends GenericView {
   }
 
   public String getAttribution() {
-    if (Objects.nonNull(htmlConfig.getLeafletAttribution())) {
-      return htmlConfig.getLeafletAttribution();
-    }
-    if (Objects.nonNull(htmlConfig.getOpenLayersAttribution())) {
-      return htmlConfig.getOpenLayersAttribution();
-    }
     return htmlConfig.getBasemapAttribution();
   }
 }
