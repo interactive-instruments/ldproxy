@@ -7,7 +7,6 @@ download = "5.5.0"
 # libs
 schema-validator = '1.0.86'
 earcut4j = '2.2.2'
-json-patch = '1.13'
 flatbuffers = '22.10.26'
 flatgeobuf = '3.24.0'
 
@@ -26,10 +25,7 @@ schema-validator = { module = "com.networknt:json-schema-validator", version.ref
 # gltf
 earcut4j = { module = "io.github.earcut4j:earcut4j", version.ref = "earcut4j" }
 
-# styles
-json-patch = { module = "com.github.java-json-tools:json-patch", version.ref = "json-patch" }
-
-# flatgeobug
+# flatgeobuf
 flatbuffers = { module = "com.google.flatbuffers:flatbuffers-java", version.ref = "flatbuffers" }
 flatgeobuf = { module = "org.wololo:flatgeobuf", version.ref = "flatgeobuf" }
 
