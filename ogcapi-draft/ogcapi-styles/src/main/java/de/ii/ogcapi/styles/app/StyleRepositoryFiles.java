@@ -7,15 +7,7 @@
  */
 package de.ii.ogcapi.styles.app;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.github.fge.jsonpatch.JsonPatchException;
-import com.github.fge.jsonpatch.mergepatch.JsonMergePatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -61,7 +53,6 @@ import de.ii.xtraplatform.values.domain.Values;
 import de.ii.xtraplatform.web.domain.LastModified;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.text.MessageFormat;
@@ -94,9 +85,6 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
   private final KeyValueStore<Tiles3dStylesheet> tiles3dStylesStore;
   private final I18n i18n;
   private final DefaultLinksGenerator defaultLinkGenerator;
-  private final ObjectMapper patchMapperLenient;
-  private final ObjectMapper patchMapperStrict;
-  private final ObjectMapper metadataMapper;
   private final URI servicesUri;
   private final FeaturesCoreProviders providers;
   private final Values<Codelist> codelistStore;
@@ -118,21 +106,6 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     this.providers = providers;
     this.codelistStore = valueStore.forType(Codelist.class);
     this.defaultLinkGenerator = new DefaultLinksGenerator();
-    this.patchMapperLenient = new ObjectMapper();
-    patchMapperLenient.registerModule(new Jdk8Module());
-    patchMapperLenient.registerModule(new GuavaModule());
-    patchMapperLenient.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    patchMapperLenient.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-    this.patchMapperStrict = new ObjectMapper();
-    patchMapperStrict.registerModule(new Jdk8Module());
-    patchMapperStrict.registerModule(new GuavaModule());
-    patchMapperStrict.configure(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY, true);
-    patchMapperStrict.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-    patchMapperStrict.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-    this.metadataMapper = new ObjectMapper();
-    metadataMapper.registerModule(new Jdk8Module());
-    metadataMapper.registerModule(new GuavaModule());
-    metadataMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
   }
 
   public Stream<StylesFormatExtension> getStylesFormatStream(
@@ -140,9 +113,9 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     return extensionRegistry.getExtensionsForType(StylesFormatExtension.class).stream()
         .filter(
             format ->
-                collectionId.isPresent()
-                    ? format.isEnabledForApi(apiData, collectionId.get())
-                    : format.isEnabledForApi(apiData));
+                collectionId
+                    .map(s -> format.isEnabledForApi(apiData, s))
+                    .orElseGet(() -> format.isEnabledForApi(apiData)));
   }
 
   public Stream<StyleFormatExtension> getStyleFormatStream(
@@ -150,9 +123,9 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     return extensionRegistry.getExtensionsForType(StyleFormatExtension.class).stream()
         .filter(
             format ->
-                collectionId.isPresent()
-                    ? format.isEnabledForApi(apiData, collectionId.get())
-                    : format.isEnabledForApi(apiData));
+                collectionId
+                    .map(s -> format.isEnabledForApi(apiData, s))
+                    .orElseGet(() -> format.isEnabledForApi(apiData)));
   }
 
   public Stream<StyleMetadataFormatExtension> getStyleMetadataFormatStream(
@@ -160,9 +133,9 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     return extensionRegistry.getExtensionsForType(StyleMetadataFormatExtension.class).stream()
         .filter(
             format ->
-                collectionId.isPresent()
-                    ? format.isEnabledForApi(apiData, collectionId.get())
-                    : format.isEnabledForApi(apiData));
+                collectionId
+                    .map(s -> format.isEnabledForApi(apiData, s))
+                    .orElseGet(() -> format.isEnabledForApi(apiData)));
   }
 
   @Override
@@ -301,26 +274,23 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
                 })
             .collect(Collectors.toList());
 
-    Styles styles =
-        ImmutableStyles.builder()
-            .styles(styleEntries)
-            .lastModified(
-                styleEntries.stream()
-                    .map(StyleEntry::getLastModified)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .max(Comparator.naturalOrder()))
-            .links(
-                new DefaultLinksGenerator()
-                    .generateLinks(
-                        requestContext.getUriCustomizer(),
-                        requestContext.getMediaType(),
-                        requestContext.getAlternateMediaTypes(),
-                        i18n,
-                        requestContext.getLanguage()))
-            .build();
-
-    return styles;
+    return ImmutableStyles.builder()
+        .styles(styleEntries)
+        .lastModified(
+            styleEntries.stream()
+                .map(StyleEntry::getLastModified)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .max(Comparator.naturalOrder()))
+        .links(
+            new DefaultLinksGenerator()
+                .generateLinks(
+                    requestContext.getUriCustomizer(),
+                    requestContext.getMediaType(),
+                    requestContext.getAlternateMediaTypes(),
+                    i18n,
+                    requestContext.getLanguage()))
+        .build();
   }
 
   @Override
@@ -396,7 +366,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       String styleId,
       StyleFormatExtension styleFormat) {
     // for specific style encodings, we derive a style for a single feature collection from a
-    // multi-collection stylesheet, if this capability is not switched of for the collection
+    // multi-collection stylesheet, if this capability is not switched off for the collection
     try {
       return collectionId.isPresent()
           && deriveCollectionStylesEnabled(apiData, collectionId.get())
@@ -411,8 +381,11 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
               .isPresent();
     } catch (IOException e) {
       LOGGER.error(
-          "Could not derive stylesheet for style ''{0}'' in collection ''{1}'' in API ''{2}'' for style encoding ''{3}''",
-          styleId, collectionId, apiData.getId(), styleFormat.getMediaType().label());
+          "Could not derive stylesheet for style '{}' in collection '{}' in API '{}' for style encoding '{}'",
+          styleId,
+          collectionId,
+          apiData.getId(),
+          styleFormat.getMediaType().label());
     }
     return false;
   }
@@ -455,7 +428,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
         if (collectionId.isPresent())
           throw new NotAcceptableException(
               MessageFormat.format(
-                  "The style ''{0}'' is not available in the requested format ''{{1}}'' for collection ''{2}''.",
+                  "The style ''{0}'' is not available in the requested format ''{1}'' for collection ''{2}''.",
                   styleId, styleFormat.getMediaType().label(), collectionId.get()));
         throw new NotAcceptableException(
             MessageFormat.format(
@@ -546,160 +519,31 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
 
     Optional<StyleFormatExtension> format =
         getStyleFormatStream(apiData, collectionId)
-            .filter(f -> f.canDeriveMetadata())
+            .filter(StyleFormatExtension::canDeriveMetadata)
             .filter(f -> stylesheetExists(apiData, collectionId, styleId, f, true))
             .findAny();
     ImmutableStyleMetadata.Builder builder =
         ImmutableStyleMetadata.builder()
             .id(Optional.ofNullable(styleId))
             .title(title.orElse(styleId))
-            .stylesheets(stylesheets);
-    if (format.isPresent()) {
-      builder.layers(
-          format
-              .get()
-              .deriveLayerMetadata(
-                  getStylesheet(apiData, collectionId, styleId, format.get(), requestContext, true),
-                  apiData,
-                  providers,
-                  codelistStore));
-    }
+            .stylesheets(stylesheets)
+            .addAllLinks(links);
+    format.ifPresent(
+        styleFormatExtension ->
+            builder.layers(
+                styleFormatExtension.deriveLayerMetadata(
+                    getStylesheet(
+                        apiData, collectionId, styleId, styleFormatExtension, requestContext, true),
+                    apiData,
+                    providers,
+                    codelistStore)));
     StyleMetadata metadata = builder.build();
-
-    Optional<JsonMergePatch> patch = getStyleMetadataPatch(apiData, collectionId, styleId);
-    if (patch.isEmpty()
-        && collectionId.isPresent()
-        && deriveCollectionStylesEnabled(apiData, collectionId.get())) {
-      patch = getStyleMetadataPatch(apiData, Optional.empty(), styleId);
-    }
-    if (patch.isPresent()) {
-      try {
-        metadata =
-            metadataMapper.treeToValue(
-                patch.get().apply(metadataMapper.valueToTree(metadata)), StyleMetadata.class);
-      } catch (JsonProcessingException | JsonPatchException e) {
-        if (collectionId.isPresent())
-          throw new IllegalStateException(
-              MessageFormat.format(
-                  "Style metadata file in styles store is invalid for style ''{0}'' in collection ''{1}'' in API ''{2}''.",
-                  styleId, collectionId.get(), apiData.getId()),
-              e);
-        throw new IllegalStateException(
-            MessageFormat.format(
-                "Style metadata file in styles store is invalid for style ''{0}'' in API ''{1}''.",
-                styleId, apiData.getId()),
-            e);
-      }
-    }
-
-    metadata = ImmutableStyleMetadata.builder().from(metadata).addAllLinks(links).build();
 
     URICustomizer uriCustomizer =
         new URICustomizer(servicesUri)
             .ensureLastPathSegments(apiData.getSubPath().toArray(String[]::new));
     String serviceUrl = uriCustomizer.toString();
     return metadata.replaceParameters(serviceUrl);
-  }
-
-  @Override
-  public Optional<JsonMergePatch> getStyleMetadataPatch(
-      OgcApiDataV2 apiData, Optional<String> collectionId, String styleId) {
-    Path patchFile = getPathMetadata(apiData, collectionId, styleId);
-
-    try {
-      Optional<InputStream> patch = stylesStore.content(patchFile);
-      if (patch.isEmpty()) return Optional.empty();
-
-      try {
-        // parse patch file
-        return Optional.of(patchMapperLenient.readValue(patch.get(), JsonMergePatch.class));
-      } catch (IOException e) {
-        if (collectionId.isPresent())
-          throw new IllegalStateException(
-              MessageFormat.format(
-                  "Style metadata file in styles store is invalid for style ''{0}'' in collection ''{1}'' in API ''{2}''.",
-                  styleId, collectionId.get(), apiData.getId()),
-              e);
-        throw new IllegalStateException(
-            MessageFormat.format(
-                "Style metadata file in styles store is invalid for style ''{0}'' in API ''{1}''.",
-                styleId, apiData.getId()),
-            e);
-      }
-    } catch (IOException e) {
-      if (collectionId.isPresent())
-        throw new IllegalStateException(
-            MessageFormat.format(
-                "Style metadata could not be read for style ''{0}'' in collection ''{1}'' in API ''{2}''.",
-                styleId, collectionId.get(), apiData.getId()),
-            e);
-      throw new IllegalStateException(
-          MessageFormat.format(
-              "Style metadata could not be read for style ''{0}'' in API ''{1}''.",
-              styleId, apiData.getId()),
-          e);
-    }
-  }
-
-  @Override
-  public byte[] updateStyleMetadataPatch(
-      OgcApiDataV2 apiData,
-      Optional<String> collectionId,
-      String styleId,
-      byte[] additionalPatchContent,
-      boolean strict) {
-    ObjectMapper mapper = strict ? patchMapperStrict : patchMapperLenient;
-    Path patchFile = getPathMetadata(apiData, collectionId, styleId);
-
-    try {
-      JsonMergePatch patch;
-      Optional<InputStream> patchStream = stylesStore.content(patchFile);
-
-      if (patchStream.isEmpty()) return additionalPatchContent;
-
-      try {
-        // parse patch file
-        patch = mapper.readValue(additionalPatchContent, JsonMergePatch.class);
-        if (strict) mapper.readValue(additionalPatchContent, StyleMetadata.class);
-      } catch (IOException e) {
-        throw new IllegalArgumentException(
-            MessageFormat.format(
-                "Style metadata patch file is invalid for style ''{0}'' in API ''{1}''.",
-                styleId, apiData.getId()),
-            e);
-      }
-
-      try {
-        // parse patch file
-        StyleMetadata current = mapper.readValue(patchStream.get(), StyleMetadata.class);
-        return mapper.writeValueAsBytes(
-            mapper.treeToValue(patch.apply(mapper.valueToTree(current)), JsonMergePatch.class));
-      } catch (IOException | JsonPatchException e) {
-        if (collectionId.isPresent())
-          throw new IllegalStateException(
-              MessageFormat.format(
-                  "Style metadata file in styles store is invalid for style ''{0}'' in collection ''{1}'' in API ''{2}''.",
-                  styleId, collectionId.get(), apiData.getId()),
-              e);
-        throw new IllegalStateException(
-            MessageFormat.format(
-                "Style metadata file in styles store is invalid for style ''{0}'' in API ''{1}''.",
-                styleId, apiData.getId()),
-            e);
-      }
-    } catch (IOException e) {
-      if (collectionId.isPresent())
-        throw new IllegalStateException(
-            MessageFormat.format(
-                "Style metadata could not be read for style ''{0}'' in collection ''{1}'' in API ''{2}''.",
-                styleId, collectionId.get(), apiData.getId()),
-            e);
-      throw new IllegalStateException(
-          MessageFormat.format(
-              "Style metadata could not be read for style ''{0}'' in API ''{1}''.",
-              styleId, apiData.getId()),
-          e);
-    }
   }
 
   @Override
@@ -886,17 +730,17 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       String styleId,
       StyleFormatExtension format) {
     String filename = styleId + "." + format.getFileExtension();
-    return collectionId.isEmpty()
-        ? Path.of(apiData.getId()).resolve(filename)
-        : Path.of(apiData.getId()).resolve(collectionId.get()).resolve(filename);
+    return collectionId
+        .map(s -> Path.of(apiData.getId()).resolve(s).resolve(filename))
+        .orElseGet(() -> Path.of(apiData.getId()).resolve(filename));
   }
 
   private Path getStyleMetadataPath(
       OgcApiDataV2 apiData, Optional<String> collectionId, String styleId) {
     String filename = styleId + ".metadata";
-    return collectionId.isEmpty()
-        ? Path.of(apiData.getId()).resolve(filename)
-        : Path.of(apiData.getId()).resolve(collectionId.get()).resolve(filename);
+    return collectionId
+        .map(s -> Path.of(apiData.getId()).resolve(s).resolve(filename))
+        .orElseGet(() -> Path.of(apiData.getId()).resolve(filename));
   }
 
   private boolean deriveCollectionStylesEnabled(OgcApiDataV2 apiData, String collectionId) {
@@ -956,7 +800,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       String styleId,
       ApiRequestContext requestContext) {
     final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
-    ImmutableList.Builder<StylesheetMetadata> builder = new ImmutableList.Builder();
+    ImmutableList.Builder<StylesheetMetadata> builder = new ImmutableList.Builder<>();
     builder.addAll(
         getStyleFormatStream(apiData, collectionId)
             .filter(format -> !format.getDerived())
@@ -981,15 +825,15 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
   }
 
   private Path getPathStyles(OgcApiDataV2 apiData, Optional<String> collectionId) {
-    return collectionId.isPresent()
-        ? Path.of(apiData.getId()).resolve(collectionId.get())
-        : Path.of(apiData.getId());
+    return collectionId
+        .map(s -> Path.of(apiData.getId()).resolve(s))
+        .orElseGet(() -> Path.of(apiData.getId()));
   }
 
   private String[] getPathArrayStyles(OgcApiDataV2 apiData, Optional<String> collectionId) {
-    return collectionId.isPresent()
-        ? new String[] {apiData.getId(), collectionId.get()}
-        : new String[] {apiData.getId()};
+    return collectionId
+        .map(s -> new String[] {apiData.getId(), s})
+        .orElseGet(() -> new String[] {apiData.getId()});
   }
 
   private boolean isMbStyle(StyleFormatExtension format) {
@@ -1007,11 +851,6 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       StyleFormatExtension styleFormat) {
     return getPathStyles(apiData, collectionId)
         .resolve(String.format("%s.%s", styleId, styleFormat.getFileExtension()));
-  }
-
-  private Path getPathMetadata(
-      OgcApiDataV2 apiData, Optional<String> collectionId, String styleId) {
-    return getPathStyles(apiData, collectionId).resolve(String.format("%s.metadata", styleId));
   }
 
   private Optional<String> getTitle(

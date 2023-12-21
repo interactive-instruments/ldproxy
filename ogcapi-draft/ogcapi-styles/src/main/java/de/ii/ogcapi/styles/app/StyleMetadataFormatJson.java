@@ -7,10 +7,6 @@
  */
 package de.ii.ogcapi.styles.app;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -21,7 +17,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.domain.StyleMetadata;
 import de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
-import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import javax.inject.Inject;
@@ -70,30 +65,5 @@ public class StyleMetadataFormatJson implements StyleMetadataFormatExtension {
         .referencedSchemas(referencedSchemas)
         .ogcApiMediaType(getMediaType())
         .build();
-  }
-
-  public StyleMetadata parse(byte[] content, boolean strict, boolean inStore) {
-
-    // prepare Jackson mapper for deserialization
-    final ObjectMapper mapper = new ObjectMapper();
-    mapper.registerModule(new Jdk8Module());
-    mapper.registerModule(new GuavaModule());
-    mapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
-    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, strict);
-    StyleMetadata parsedContent;
-    try {
-      // parse input
-      parsedContent = mapper.readValue(content, StyleMetadata.class);
-    } catch (IOException e) {
-      if (inStore) {
-        // this is invalid style metadata already in the store: server error
-        throw new RuntimeException("The style metadata is invalid.", e);
-      } else {
-        // style metadata provided by a client: client error
-        throw new IllegalArgumentException("The style metadata is invalid.", e);
-      }
-    }
-
-    return parsedContent;
   }
 }

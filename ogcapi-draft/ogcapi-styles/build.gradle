@@ -15,12 +15,6 @@ dependencies {
     provided 'de.interactive_instruments:ogcapi-html'
     provided 'de.interactive_instruments:ogcapi-tiles'
 
-    embeddedExport (catalog.json.patch) {
-        exclude module: 'jackson-core'
-        exclude module: 'jackson-databind'
-        exclude module: 'jsr305'
-    }
-
     testImplementation(testFixtures(group: 'de.interactive_instruments', name: 'ogcapi-foundation'))
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }
