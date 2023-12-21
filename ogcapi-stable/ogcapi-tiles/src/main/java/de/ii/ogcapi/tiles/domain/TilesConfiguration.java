@@ -337,7 +337,6 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
    * @default __all__ \| {collectionId}
    * @since v3.3
    */
-  @JsonAlias("tileLayer")
   @Nullable
   String getTileProviderTileset();
 
