@@ -1,5 +1,8 @@
 
 maturity = 'MATURE'
+maintenance = 'FULL'
+description = 'Additional coordinate reference systems.'
+descriptionDe = 'Zusätzliche Koordinatenreferenzsysteme.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-crs'

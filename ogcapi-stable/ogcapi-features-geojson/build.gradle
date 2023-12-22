@@ -1,5 +1,8 @@
 
 maturity = 'MATURE'
+maintenance = 'FULL'
+description = 'Encode features as GeoJSON.'
+descriptionDe = 'Kodierung von Features als GeoJSON.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-streams'

@@ -1,5 +1,8 @@
 
 maturity = 'PROPOSAL'
+maintenance = 'LOW'
+description = 'Sort features in a response.'
+descriptionDe = 'Sortieren von Features in Rückgaben.'
 
 
 dependencies {

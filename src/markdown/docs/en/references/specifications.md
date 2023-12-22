@@ -1,6 +1,6 @@
-# Supported specifications and technologies
+# Specifications and technologies
 
-This is an overview. For constraints and limitations see the documentation of the ldproxy building blocks.
+This is an overview of supported specifications and technologies. For constraints and limitations see the documentation of the ldproxy building blocks.
 
 ## Web API Specifications
 

@@ -1,5 +1,8 @@
 
 maturity = 'MATURE'
+maintenance = 'FULL'
+description = 'Publish OpenAPI definitions.'
+descriptionDe = 'Veröffentlichung von OpenAPI-Definitionen.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-auth'

@@ -1,5 +1,8 @@
 
 maturity = 'CANDIDATE'
+maintenance = 'FULL'
+description = 'Select the feature properties included in the feature response.'
+descriptionDe = 'Auswahl der Feature-Eigenschaften in Rückgaben.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-features'

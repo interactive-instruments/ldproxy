@@ -1,6 +1,6 @@
-# Unterstützte Spezifikationen und Technologien
+# Spezifikationen und Technologien
 
-Dies ist ein Überblick. Für Einschränkungen und Begrenzungen siehe die Dokumentation der ldproxy-Bausteine.
+Dies ist ein Überblick über unterstützte Spezifikationen und Technologien. Für Einschränkungen und Begrenzungen siehe die Dokumentation der ldproxy-Bausteine.
 
 ## Web-API-Spezifikationen
 

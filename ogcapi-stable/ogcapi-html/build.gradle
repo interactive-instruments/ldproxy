@@ -3,6 +3,9 @@ plugins {
 }
 
 maturity = 'MATURE'
+maintenance = 'FULL'
+description = 'HTML encoding for every supported resource.'
+descriptionDe = 'HTML-Kodierung für alle unterstützten Ressourcen.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-blobs'

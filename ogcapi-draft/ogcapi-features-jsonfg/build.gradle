@@ -1,5 +1,8 @@
 
 maturity = 'CANDIDATE'
+maintenance = 'LOW'
+description = 'Encode features as JSON-FG.'
+descriptionDe = 'Kodierung von Features als JSON-FG.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-entities'
