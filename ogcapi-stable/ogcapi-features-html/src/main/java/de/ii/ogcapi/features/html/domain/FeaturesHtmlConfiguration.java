@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.features.html.domain;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
@@ -166,7 +165,6 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
    *     ersetzt.
    * @default `{{id}}`
    */
-  @JsonAlias("itemLabelFormat")
   Optional<String> getFeatureTitleTemplate();
 
   /**

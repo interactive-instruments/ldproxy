@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.html.domain;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ApiCatalogEntry;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -208,7 +207,6 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
    *     eingebettet sein sollen, sofern. Die Annotationen werden im Format JSON-LD eingebettet.
    * @default true
    */
-  @JsonAlias(value = "microdataEnabled")
   @Nullable
   Boolean getSchemaOrgEnabled();
 
