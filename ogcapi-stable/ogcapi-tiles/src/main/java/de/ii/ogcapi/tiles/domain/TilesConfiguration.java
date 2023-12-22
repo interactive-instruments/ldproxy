@@ -8,16 +8,11 @@
 package de.ii.ogcapi.tiles.domain;
 
 import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
-import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.LIMIT_DEFAULT;
-import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.MINIMUM_SIZE_IN_PIXEL;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import de.ii.ogcapi.features.core.domain.SfFlatConfiguration;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -26,16 +21,9 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
-import de.ii.xtraplatform.tiles.domain.ImmutableMinMax;
-import de.ii.xtraplatform.tiles.domain.LevelFilter;
-import de.ii.xtraplatform.tiles.domain.LevelTransformation;
-import de.ii.xtraplatform.tiles.domain.MinMax;
-import de.ii.xtraplatform.tiles.domain.SeedingOptions;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -329,37 +317,17 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
 public interface TilesConfiguration extends SfFlatConfiguration, CachingConfiguration {
 
-  @Deprecated(since = "3.3")
-  enum TileCacheType {
-    FILES,
-    MBTILES,
-    NONE
-  }
-
   /**
-   * @langEn *Deprecated (from v4.0 on you have to use [Tile
-   *     Provider](../../providers/tile/README.md) entities)* Specifies the data source for the
-   *     tiles, see [Tile provider objects](#tile-provider).
-   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
-   *     verwendet werden)* Spezifiziert die Datenquelle für die Kacheln, siehe
-   *     [Tile-Provider-Objekte](#tile-provider).
-   * @default { "type": "FEATURES", ... }
-   */
-  @Deprecated(since = "3.3")
-  @Nullable
-  TileProvider getTileProvider();
-
-  /**
-   * @langEn *Deprecated (will be renamed to `tileProvider` in v4.0)* Specifies the data source for
-   *     the tiles, see [Tile Providers](../../providers/tile/README.md).
-   * @langDe *Deprecated (wird in v4.0 zu `tileProvider` umbenannt)* Spezifiziert die Datenquelle
-   *     für die Kacheln, siehe [Tile-Provider](../../providers/tile/README.md).
+   * @langEn Specifies the data source for the tiles, see [Tile
+   *     Providers](../../providers/tile/README.md).
+   * @langDe Spezifiziert die Datenquelle für die Kacheln, siehe
+   *     [Tile-Provider](../../providers/tile/README.md).
    * @default null
-   * @since v3.3
+   * @since v4.0
    */
-  @Deprecated(since = "3.3")
+  @JsonAlias("tileProviderId")
   @Nullable
-  String getTileProviderId();
+  String getTileProvider();
 
   /**
    * @langEn Specifies the tileset from the tile provider that should be used. The default is
@@ -369,7 +337,6 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
    * @default __all__ \| {collectionId}
    * @since v3.3
    */
-  @JsonAlias("tileLayer")
   @Nullable
   String getTileProviderTileset();
 
@@ -384,20 +351,6 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
    * @default [ "JSON", "TileJSON" ]
    */
   List<String> getTileSetEncodings();
-
-  /**
-   * @langEn *Deprecated (from v4.0 on you have to use [Tile
-   *     Provider](../../providers/tile/README.md) entities) `FILES` stores each tile as a file in
-   *     the file system. `MBTILES` stores the tiles in an MBTiles file (one MBTiles file per
-   *     tileset).
-   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
-   *     verwendet werden) `FILES` speichert jede Kachel als Datei im Dateisystem. `MBTILES`
-   *     speichert die Kacheln in einer MBTiles-Datei (eine MBTiles-Datei pro Tileset).
-   * @default FILES
-   */
-  @Deprecated(since = "3.3")
-  @Nullable
-  TileCacheType getCache();
 
   /**
    * @langEn Selection of the map client to be used in the HTML output. The default is MapLibre GL
@@ -448,120 +401,6 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   @Nullable
   Boolean getRemoveZoomLevelConstraints();
 
-  /**
-   * @langEn *Deprecated (from v4.0 on you have to use [Tile
-   *     Provider](../../providers/tile/README.md) entities)* List of tile formats to be supported,
-   *     in general `MVT` (Mapbox Vector Tiles), `PNG`, `WebP` and `JPEG` are allowed. The actually
-   *     supported formats depend on the [Tile Provider](../../providers/tile/README.md).
-   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
-   *     verwendet werden)* Liste der zu unterstützenden Kachelformate, generell erlaubt sind `MVT`
-   *     (Mapbox Vector Tiles), `PNG`, `WebP` und `JPEG`. Die konkret unterstützten Formate sind vom
-   *     [Tile-Provider](../../providers/tile/README.md) abhängig.
-   * @default [ "MVT" ]
-   */
-  @Deprecated(since = "3.4")
-  List<String> getTileEncodings();
-
-  // Note: Most configuration options have been moved to TileProviderFeatures and have been
-  // deprecated here.
-  // The getXyzDerived() methods support the deprecated configurations as well as the new style.
-
-  @Deprecated(since = "3.4")
-  @Value.Auxiliary
-  @Value.Derived
-  @JsonIgnore
-  default List<String> getTileEncodingsDerived() {
-    return !getTileEncodings().isEmpty()
-        ? getTileEncodings()
-        : getTileProvider() instanceof TileProviderFeatures
-            ? getTileProvider().getTileEncodings()
-            : getTileProvider() instanceof TileProviderMbtiles
-                    && Objects.nonNull(((TileProviderMbtiles) getTileProvider()).getTileEncoding())
-                ? ImmutableList.of(((TileProviderMbtiles) getTileProvider()).getTileEncoding())
-                : getTileProvider() instanceof TileProviderTileServer
-                        && Objects.nonNull(
-                            ((TileProviderTileServer) getTileProvider()).getTileEncodings())
-                    ? getTileProvider().getTileEncodings()
-                    : ImmutableList.of();
-  }
-
-  /**
-   * @langEn *Deprecated (from v4.0 on you have to use [Tile
-   *     Provider](../../providers/tile/README.md) entities)*
-   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
-   *     verwendet werden)*
-   * @default [ 0, 0 ]
-   */
-  @Deprecated
-  List<Double> getCenter();
-
-  @Deprecated(since = "3.4")
-  @Value.Auxiliary
-  @Value.Derived
-  @JsonIgnore
-  default List<Double> getCenterDerived() {
-    return !getCenter().isEmpty()
-        ? getCenter()
-        : getTileProvider() instanceof TileProviderFeatures
-            ? ((TileProviderFeatures) getTileProvider()).getCenter()
-            : getTileProvider() instanceof TileProviderMbtiles
-                ? ((TileProviderMbtiles) getTileProvider()).getCenter()
-                : ImmutableList.of();
-  }
-
-  /**
-   * @langEn *Deprecated (from v4.0 on you have to use [Tile
-   *     Provider](../../providers/tile/README.md) entities)* Controls the zoom levels available for
-   *     each active tiling scheme as well as which zoom level to use as default.
-   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
-   *     verwendet werden)* Steuert die Zoomstufen, die für jedes aktive Kachelschema verfügbar sind
-   *     sowie welche Zoomstufe als Default bei verwendet werden soll.
-   * @default { "WebMercatorQuad" : { "min": 0, "max": 23 } }
-   */
-  @Deprecated(since = "3.4")
-  Map<String, MinMax> getZoomLevels();
-
-  @Deprecated(since = "3.4")
-  @Value.Auxiliary
-  @Value.Derived
-  @JsonIgnore
-  default Map<String, MinMax> getZoomLevelsDerived() {
-    return !getZoomLevels().isEmpty()
-        ? getZoomLevels()
-        : getTileProvider() instanceof TileProviderFeatures
-            ? ((TileProviderFeatures) getTileProvider()).getZoomLevels()
-            : getTileProvider() instanceof TileProviderMbtiles
-                ? ((TileProviderMbtiles) getTileProvider()).getZoomLevels()
-                : ImmutableMap.of();
-  }
-
-  @Deprecated(since = "3.4")
-  @Value.Auxiliary
-  @Value.Derived
-  @JsonIgnore
-  default Set<String> getTileMatrixSets() {
-    return getZoomLevelsDerived().keySet();
-  }
-
-  /**
-   * @langEn *Deprecated (from v4.0 on you have to use [Tile
-   *     Provider](../../providers/tile/README.md) entities)* Enable vector tiles for each *Feature
-   *     Collection*. Every tile contains a layer with the feature from the collection. If a Tile
-   *     Provider is specified, tiles will always be enabled for a collection, if the tileset is
-   *     specified in the Tile Provider, independent of the value of this option.
-   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
-   *     verwendet werden)* Steuert, ob Vector Tiles für jede Feature Collection aktiviert werden
-   *     sollen. Jede Kachel hat einen Layer mit den Features aus der Collection. Wenn ein
-   *     Tile-Provider spezifiziert ist, dann werden - unabhängig von dieser Option - Kacheln für
-   *     eine Collection genau dann aktiviert, wenn das Tileset im Tile Provider spezifiziert ist.
-   * @default true
-   * @since v3.3
-   */
-  @JsonAlias("singleCollectionEnabled")
-  @Nullable
-  @Deprecated(since = "3.6")
-  Boolean getCollectionTiles();
-
   default boolean hasCollectionTiles(
       TilesProviders providers, OgcApiDataV2 apiData, String collectionId) {
     if (Objects.nonNull(providers)
@@ -579,27 +418,6 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
     }
     return false;
   }
-
-  /**
-   * @langEn *Deprecated (from v4.0 on you have to use [Tile
-   *     Provider](../../providers/tile/README.md) entities)* Enable vector tiles for the whole
-   *     dataset. Every tile contains one layer per collection with the features of that collection.
-   *     If a Tile Provider is specified, tiles will always be enabled for the dataset, if the
-   *     corresponding tileset is specified in the Tile Provider, independent of the value of this
-   *     option.
-   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
-   *     verwendet werden)* Steuert, ob Vector Tiles auf Ebene des Datensatzes aktiviert werden
-   *     sollen. Jede Kachel hat einen Layer pro Collection mit den Features aus der Collection.
-   *     Wenn ein Tile-Provider spezifiziert ist, dann werden - unabhängig von dieser Option -
-   *     Kacheln für Datensatz genau dann aktiviert, wenn das entsprechende Tileset im Tile Provider
-   *     spezifiziert ist.
-   * @default true
-   * @since v3.3
-   */
-  @JsonAlias("multiCollectionEnabled")
-  @Nullable
-  @Deprecated(since = "3.6")
-  Boolean getDatasetTiles();
 
   @Value.Auxiliary
   @Value.Derived
@@ -620,186 +438,6 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
     return false;
   }
 
-  /**
-   * @langEn *Deprecated (from v4.0 on you have to use [Tile
-   *     Provider](../../providers/tile/README.md) entities)*
-   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
-   *     verwendet werden)*
-   * @default {}
-   */
-  @Deprecated(since = "3.2")
-  Map<String, MinMax> getZoomLevelsCache();
-
-  @Deprecated(since = "3.4")
-  @Value.Auxiliary
-  @Value.Derived
-  @JsonIgnore
-  default Map<String, MinMax> getZoomLevelsCacheDerived() {
-    return !getZoomLevelsCache().isEmpty()
-        ? getZoomLevelsCache()
-        : getTileProvider() instanceof TileProviderFeatures
-            ? ((TileProviderFeatures) getTileProvider()).getZoomLevelsCache()
-            : ImmutableMap.of();
-  }
-
-  /**
-   * @langEn *Deprecated (from v4.0 on you have to use [Tile
-   *     Provider](../../providers/tile/README.md) entities)*
-   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
-   *     verwendet werden)*
-   * @default {}
-   */
-  @Deprecated(since = "3.2")
-  Map<String, MinMax> getSeeding();
-
-  @Deprecated(since = "3.4")
-  @Value.Auxiliary
-  @Value.Derived
-  @JsonIgnore
-  default Map<String, MinMax> getSeedingDerived() {
-    return !getSeeding().isEmpty()
-        ? getSeeding()
-        : getTileProvider() instanceof TileProviderFeatures
-            ? ((TileProviderFeatures) getTileProvider()).getSeeding()
-            : ImmutableMap.of();
-  }
-
-  /**
-   * @langEn *Deprecated (from v4.0 on you have to use [Tile
-   *     Provider](../../providers/tile/README.md) entities)*
-   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
-   *     verwendet werden)*
-   * @default {}
-   */
-  @Deprecated(since = "3.3")
-  Optional<SeedingOptions> getSeedingOptions();
-
-  @Deprecated(since = "3.4")
-  @Value.Auxiliary
-  @Value.Derived
-  @JsonIgnore
-  default Optional<SeedingOptions> getSeedingOptionsDerived() {
-    return getTileProvider() instanceof TileProviderFeatures
-        ? ((TileProviderFeatures) getTileProvider()).getSeedingOptions().or(this::getSeedingOptions)
-        : getSeedingOptions();
-  }
-
-  /**
-   * @langEn *Deprecated (from v4.0 on you have to use [Tile
-   *     Provider](../../providers/tile/README.md) entities)*
-   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
-   *     verwendet werden)*
-   * @default 100000
-   */
-  @Deprecated(since = "3.2")
-  @Nullable
-  Integer getLimit();
-
-  @Deprecated(since = "3.4")
-  @Value.Auxiliary
-  @Value.Derived
-  @JsonIgnore
-  default Integer getLimitDerived() {
-    return Objects.nonNull(getLimit())
-        ? getLimit()
-        : Objects.requireNonNullElse(
-            getTileProvider() instanceof TileProviderFeatures
-                ? ((TileProviderFeatures) getTileProvider()).getLimit()
-                : null,
-            LIMIT_DEFAULT);
-  }
-
-  /**
-   * @langEn *Deprecated (from v4.0 on you have to use [Tile
-   *     Provider](../../providers/tile/README.md) entities)*
-   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
-   *     verwendet werden)*
-   * @default false
-   */
-  @Deprecated(since = "3.2")
-  @Nullable
-  Boolean getIgnoreInvalidGeometries();
-
-  @Deprecated(since = "3.4")
-  @Value.Auxiliary
-  @Value.Derived
-  @JsonIgnore
-  default boolean isIgnoreInvalidGeometriesDerived() {
-    return Objects.equals(getIgnoreInvalidGeometries(), true)
-        || (getTileProvider() instanceof TileProviderFeatures
-            && ((TileProviderFeatures) getTileProvider()).isIgnoreInvalidGeometries())
-        || isEnabled();
-  }
-
-  /**
-   * @langEn *Deprecated (from v4.0 on you have to use [Tile
-   *     Provider](../../providers/tile/README.md) entities)*
-   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
-   *     verwendet werden)*
-   * @default {}
-   */
-  @Deprecated(since = "3.2")
-  Map<String, List<LevelFilter>> getFilters();
-
-  @Deprecated(since = "3.4")
-  @Value.Auxiliary
-  @Value.Derived
-  @JsonIgnore
-  default Map<String, List<LevelFilter>> getFiltersDerived() {
-    return !getFilters().isEmpty()
-        ? getFilters()
-        : getTileProvider() instanceof TileProviderFeatures
-            ? ((TileProviderFeatures) getTileProvider()).getFilters()
-            : ImmutableMap.of();
-  }
-
-  /**
-   * @langEn *Deprecated (from v4.0 on you have to use [Tile
-   *     Provider](../../providers/tile/README.md) entities)*
-   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
-   *     verwendet werden)*
-   * @default {}
-   */
-  @Deprecated(since = "3.2")
-  Map<String, List<LevelTransformation>> getRules();
-
-  @Deprecated(since = "3.4")
-  @Value.Auxiliary
-  @Value.Derived
-  @JsonIgnore
-  default Map<String, List<LevelTransformation>> getRulesDerived() {
-    return !getRules().isEmpty()
-        ? getRules()
-        : getTileProvider() instanceof TileProviderFeatures
-            ? ((TileProviderFeatures) getTileProvider()).getRules()
-            : ImmutableMap.of();
-  }
-
-  /**
-   * @langEn *Deprecated (from v4.0 on you have to use [Tile
-   *     Provider](../../providers/tile/README.md) entities)*
-   * @langDe *Deprecated (ab v4.0 müssen [Tile-Provider](../../providers/tile/README.md) Entities
-   *     verwendet werden)*
-   * @default 0.5
-   */
-  @Deprecated(since = "3.2")
-  @Nullable
-  Double getMinimumSizeInPixel();
-
-  @Deprecated(since = "3.4")
-  @Value.Auxiliary
-  @Value.Derived
-  @JsonIgnore
-  default double getMinimumSizeInPixelDerived() {
-    return Objects.requireNonNullElse(
-        getMinimumSizeInPixel(),
-        Objects.requireNonNullElse(
-            getTileProvider() instanceof TileProviderFeatures
-                ? ((TileProviderFeatures) getTileProvider()).getMinimumSizeInPixel()
-                : null,
-            MINIMUM_SIZE_IN_PIXEL));
-  }
-
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   @Override
@@ -808,7 +446,6 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   }
 
   @Override
-  @SuppressWarnings("deprecation")
   default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
     ImmutableTilesConfiguration.Builder builder =
         ((ImmutableTilesConfiguration.Builder) source.getBuilder())
@@ -820,22 +457,6 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
                     .getTransformations());
 
     TilesConfiguration src = (TilesConfiguration) source;
-
-    if (Objects.nonNull(getTileProvider()) && Objects.nonNull(src.getTileProvider()))
-      builder.tileProvider(getTileProvider().mergeInto(src.getTileProvider()));
-
-    List<String> tileEncodings =
-        Objects.nonNull(src.getTileEncodings())
-            ? Lists.newArrayList(src.getTileEncodings())
-            : Lists.newArrayList();
-    getTileEncodings()
-        .forEach(
-            tileEncoding -> {
-              if (!tileEncodings.contains(tileEncoding)) {
-                tileEncodings.add(tileEncoding);
-              }
-            });
-    builder.tileEncodings(tileEncodings);
 
     List<String> tileSetEncodings =
         Objects.nonNull(src.getTileSetEncodings())
@@ -850,79 +471,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
             });
     builder.tileSetEncodings(tileSetEncodings);
 
-    Map<String, MinMax> mergedSeeding =
-        Objects.nonNull(src.getSeeding())
-            ? Maps.newLinkedHashMap(src.getSeeding())
-            : Maps.newLinkedHashMap();
-    if (Objects.nonNull(getSeeding())) getSeeding().forEach(mergedSeeding::put);
-    builder.seeding(mergedSeeding);
-
-    Map<String, MinMax> mergedZoomLevels =
-        Objects.nonNull(src.getZoomLevels())
-            ? Maps.newLinkedHashMap(src.getZoomLevels())
-            : Maps.newLinkedHashMap();
-    if (Objects.nonNull(getZoomLevels())) getZoomLevels().forEach(mergedZoomLevels::put);
-    builder.zoomLevels(mergedZoomLevels);
-
-    Map<String, MinMax> mergedZoomLevelsCache =
-        Objects.nonNull(src.getZoomLevelsCache())
-            ? Maps.newLinkedHashMap(src.getZoomLevelsCache())
-            : Maps.newLinkedHashMap();
-    if (Objects.nonNull(getZoomLevelsCache()))
-      getZoomLevelsCache().forEach(mergedZoomLevelsCache::put);
-    builder.zoomLevelsCache(mergedZoomLevelsCache);
-
-    Map<String, List<LevelTransformation>> mergedRules =
-        Objects.nonNull(src.getRules())
-            ? Maps.newLinkedHashMap(src.getRules())
-            : Maps.newLinkedHashMap();
-    if (Objects.nonNull(getRules())) getRules().forEach(mergedRules::put);
-    builder.rules(mergedRules);
-
-    Map<String, List<LevelFilter>> mergedFilters =
-        Objects.nonNull(src.getFilters())
-            ? Maps.newLinkedHashMap(src.getFilters())
-            : Maps.newLinkedHashMap();
-    if (Objects.nonNull(getFilters())) getFilters().forEach(mergedFilters::put);
-    builder.filters(mergedFilters);
-
-    if (!getCenter().isEmpty()) builder.center(getCenter());
-    else if (!src.getCenter().isEmpty()) builder.center(src.getCenter());
-
     return builder.build();
-  }
-
-  /**
-   * @return seeding map also considering the zoom level configuration (drops zoom levels outside of
-   *     the range from seeding)
-   */
-  @JsonIgnore
-  @Value.Lazy
-  default Map<String, MinMax> getEffectiveSeeding() {
-    Map<String, MinMax> baseSeeding = getSeedingDerived();
-    if (baseSeeding.isEmpty()) return baseSeeding;
-
-    Map<String, MinMax> zoomLevels = getZoomLevelsDerived();
-
-    ImmutableMap.Builder<String, MinMax> responseBuilder = ImmutableMap.builder();
-    for (Map.Entry<String, MinMax> entry : baseSeeding.entrySet()) {
-      if (zoomLevels.containsKey(entry.getKey())) {
-        MinMax minmax = zoomLevels.get(entry.getKey());
-        int minSeeding = entry.getValue().getMin();
-        int maxSeeding = entry.getValue().getMax();
-        int minRange = minmax.getMin();
-        int maxRange = minmax.getMax();
-        if (maxSeeding >= minRange && minSeeding <= maxRange)
-          responseBuilder.put(
-              entry.getKey(),
-              new ImmutableMinMax.Builder()
-                  .min(Math.max(minSeeding, minRange))
-                  .max(Math.min(maxSeeding, maxRange))
-                  .build());
-      }
-    }
-
-    return responseBuilder.build();
   }
 
   static Optional<FeatureTypeConfigurationOgcApi> getCollectionData(

@@ -148,12 +148,8 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
   @Value.Derived
   public MapClient mapClient() {
     return new ImmutableMapClient.Builder()
-        .backgroundUrl(
-            Optional.ofNullable(htmlConfig().getLeafletUrl())
-                .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
-        .attribution(
-            Optional.ofNullable(htmlConfig().getLeafletAttribution())
-                .or(() -> Optional.ofNullable(htmlConfig().getBasemapAttribution())))
+        .backgroundUrl(Optional.ofNullable(htmlConfig().getBasemapUrl()))
+        .attribution(Optional.ofNullable(htmlConfig().getBasemapAttribution()))
         .bounds(Optional.ofNullable(this.getBbox()))
         .drawBounds(true)
         .isInteractive(false)

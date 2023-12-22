@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMetadata;
@@ -104,25 +103,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
                   if (Objects.isNull(config)) return null;
 
-                  final String collectionId = entry.getKey();
-                  final String buildingBlock = config.getBuildingBlock();
-
-                  if (apiValidation != MODE.STRICT && config.hasDeprecatedTransformationKeys())
-                    config =
-                        new ImmutableFeaturesCoreConfiguration.Builder()
-                            .from(config)
-                            .transformations(
-                                config.normalizeTransformationKeys(buildingBlock, collectionId))
-                            .build();
-
-                  if (apiValidation != MODE.STRICT && config.hasDeprecatedQueryables())
-                    config =
-                        new ImmutableFeaturesCoreConfiguration.Builder()
-                            .from(config)
-                            .queryables(config.normalizeQueryables(collectionId))
-                            .build();
-
-                  return new AbstractMap.SimpleImmutableEntry<>(collectionId, config);
+                  return new AbstractMap.SimpleImmutableEntry<>(entry.getKey(), config);
                 })
             .filter(Objects::nonNull)
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));

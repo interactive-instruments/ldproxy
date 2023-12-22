@@ -8,7 +8,6 @@
 package de.ii.ogcapi.styles.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
@@ -1539,52 +1538,6 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
   default boolean shouldUseIdFromStylesheet() {
     return Objects.equals(getUseIdFromStylesheet(), true);
   }
-
-  /**
-   * @langEn *Deprecated* See `enabled` in [Modul Resources](resources.md).
-   * @langDe *Deprecated* Siehe `enabled` in [Modul Resources](resources.md).
-   * @default false
-   */
-  @Deprecated
-  @Nullable
-  @JsonProperty(value = "resourcesEnabled", access = JsonProperty.Access.WRITE_ONLY)
-  Boolean getResourcesEnabled();
-
-  @Deprecated
-  @JsonIgnore
-  @Value.Derived
-  @Value.Auxiliary
-  default boolean isResourcesEnabled() {
-    return Objects.equals(getResourcesEnabled(), true);
-  }
-
-  /**
-   * @langEn *Deprecated* See `managerEnabled` in [Modul Resources](resources.md).
-   * @langDe *Deprecated* Siehe `managerEnabled` in [Modul Resources](resources.md).
-   * @default false
-   */
-  @Deprecated
-  @Nullable
-  @JsonProperty(value = "resourceManagerEnabled", access = JsonProperty.Access.WRITE_ONLY)
-  Boolean getResourceManagerEnabled();
-
-  @Deprecated
-  @JsonIgnore
-  @Value.Derived
-  @Value.Auxiliary
-  default boolean isResourceManagerEnabled() {
-    return Objects.equals(getResourceManagerEnabled(), true);
-  }
-
-  /**
-   * @langEn *Deprecated* See `defaultStyle` in [Modul HTML](html.md).
-   * @langDe *Deprecated* Siehe `defaultStyle` in [Modul HTML](html.md).
-   * @default null
-   */
-  @Deprecated(since = "3.1.0")
-  @Nullable
-  @JsonProperty(value = "defaultStyle", access = JsonProperty.Access.WRITE_ONLY)
-  String getDefaultStyle();
 
   /**
    * @langEn Only applies to styles in Mapbox Style format. Controls whether the styles at the

@@ -272,8 +272,6 @@ public class EndpointAdHocQuery extends EndpointRequiresFeatures implements Conf
             .minimumPageSize(Optional.ofNullable(coreConfiguration.getMinimumPageSize()))
             .defaultPageSize(Optional.ofNullable(coreConfiguration.getDefaultPageSize()))
             .maximumPageSize(Optional.ofNullable(coreConfiguration.getMaximumPageSize()))
-            .showsFeatureSelfLink(
-                Objects.equals(coreConfiguration.getValidateCoordinatesInQueries(), Boolean.TRUE))
             .allLinksAreLocal(
                 api.getData()
                     .getExtension(SearchConfiguration.class)

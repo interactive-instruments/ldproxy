@@ -25,7 +25,6 @@ import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesLinkGenerator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -70,25 +69,14 @@ public class StylesOnCollection implements CollectionExtension {
       return collection;
     }
 
-    String defaultStyle =
+    Optional<String> defaultStyle =
         apiData
             .getCollections()
             .get(collectionId)
-            .getExtension(StylesConfiguration.class)
-            .map(StylesConfiguration::getDefaultStyle)
-            .map(s -> s.equals("NONE") ? null : s)
-            .orElse(null);
-    if (Objects.isNull(defaultStyle)) {
-      defaultStyle =
-          apiData
-              .getCollections()
-              .get(collectionId)
-              .getExtension(HtmlConfiguration.class)
-              .map(HtmlConfiguration::getDefaultStyle)
-              .map(s -> s.equals("NONE") ? null : s)
-              .orElse(null);
-    }
-    if (Objects.nonNull(defaultStyle)) {
+            .getExtension(HtmlConfiguration.class)
+            .map(HtmlConfiguration::getDefaultStyle)
+            .filter(s -> !s.equals("NONE"));
+    if (defaultStyle.isPresent()) {
       Optional<StyleFormatExtension> htmlStyleFormat =
           styleRepo
               .getStyleFormatStream(apiData, Optional.of(collectionId))
@@ -96,12 +84,11 @@ public class StylesOnCollection implements CollectionExtension {
               .findAny();
       if (htmlStyleFormat.isPresent()
           && !styleRepo.stylesheetExists(
-              apiData, Optional.of(collectionId), defaultStyle, htmlStyleFormat.get(), true))
-        defaultStyle = null;
+              apiData, Optional.of(collectionId), defaultStyle.get(), htmlStyleFormat.get(), true))
+        defaultStyle = Optional.empty();
     }
     return collection.addAllLinks(
         new StylesLinkGenerator()
-            .generateCollectionLinks(
-                uriCustomizer, Optional.ofNullable(defaultStyle), i18n, language));
+            .generateCollectionLinks(uriCustomizer, defaultStyle, i18n, language));
   }
 }

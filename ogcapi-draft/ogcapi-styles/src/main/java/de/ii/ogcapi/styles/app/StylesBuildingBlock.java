@@ -143,8 +143,6 @@ public class StylesBuildingBlock implements ApiBuildingBlock {
         .managerEnabled(false)
         .validationEnabled(false)
         .useIdFromStylesheet(false)
-        .resourcesEnabled(false)
-        .resourceManagerEnabled(false)
         .styleEncodings(
             extensionRegistry.getExtensionsForType(StyleFormatExtension.class).stream()
                 .filter(FormatExtension::isEnabledByDefault)

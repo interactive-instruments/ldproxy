@@ -50,11 +50,6 @@ class SchemaGeneratorFeatureOpenApiSpec extends Specification {
         FeatureTypeConfigurationOgcApi collectionData = new ImmutableFeatureTypeConfigurationOgcApi.Builder()
                 .id("test-id")
                 .label("test-label")
-                .addExtensions(new ImmutableFeaturesCoreConfiguration.Builder()
-                        .queryables(new ImmutableFeaturesCollectionQueryables.Builder()
-                                .temporal(Collections.singletonList("date"))
-                                .build())
-                        .build())
                 .build()
         when:
         Optional<Schema<?>> schema = schemaGenerator.getProperty(featureSchema, collectionData, "date")

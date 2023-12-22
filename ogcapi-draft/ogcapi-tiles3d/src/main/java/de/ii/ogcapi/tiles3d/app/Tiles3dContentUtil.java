@@ -90,7 +90,6 @@ public final class Tiles3dContentUtil {
             .featureProvider(provider)
             .defaultCrs(OgcCrs.CRS84h)
             .defaultPageSize(Optional.of(TileResourceDescriptor.MAX_FEATURES_PER_TILE))
-            .showsFeatureSelfLink(false)
             .sendResponseAsStream(false)
             .build();
     return queryInput;

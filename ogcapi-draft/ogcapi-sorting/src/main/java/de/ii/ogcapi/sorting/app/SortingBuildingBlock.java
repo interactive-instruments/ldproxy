@@ -123,7 +123,7 @@ public class SortingBuildingBlock implements ApiBuildingBlock {
 
     for (Map.Entry<String, SortingConfiguration> entry : configs.entrySet()) {
       // check that there is at least one sortable for each collection where sorting is enabled
-      if (entry.getValue().getIncluded().isEmpty() && entry.getValue().getSortables().isEmpty()) {
+      if (entry.getValue().getIncluded().isEmpty()) {
         builder.addStrictErrors(
             MessageFormat.format(
                 "Sorting is enabled for collection ''{0}'', but no sortable property has been configured.",
@@ -154,10 +154,7 @@ public class SortingBuildingBlock implements ApiBuildingBlock {
       List<String> properties) {
     for (String sortable :
         Stream.concat(
-                entry.getValue().getSortables().stream(),
-                Stream.concat(
-                    entry.getValue().getIncluded().stream(),
-                    entry.getValue().getExcluded().stream()))
+                entry.getValue().getIncluded().stream(), entry.getValue().getExcluded().stream())
             .filter(v -> !"*".equals(v))
             .collect(Collectors.toUnmodifiableList())) {
       // does the collection include the sortable property?
@@ -185,7 +182,7 @@ public class SortingBuildingBlock implements ApiBuildingBlock {
             .stream()
             .map(SchemaBase::getFullPathAsString)
             .collect(Collectors.toList());
-    Stream.concat(entry.getValue().getSortables().stream(), entry.getValue().getIncluded().stream())
+    entry.getValue().getIncluded().stream()
         .filter(propertyName -> !"*".equals(propertyName))
         .filter(propertyName -> !sortables.contains(propertyName))
         .forEach(

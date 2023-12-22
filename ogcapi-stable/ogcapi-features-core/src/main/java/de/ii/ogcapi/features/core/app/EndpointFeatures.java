@@ -263,7 +263,6 @@ public class EndpointFeatures extends EndpointFeaturesDefinition
                             api.getId(), collectionId)));
 
     int defaultPageSize = coreConfiguration.getDefaultPageSize();
-    boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
 
     QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
     Optional<Profile> profile =
@@ -288,7 +287,6 @@ public class EndpointFeatures extends EndpointFeaturesDefinition
             .featureProvider(providers.getFeatureProviderOrThrow(api.getData(), collectionData))
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .defaultPageSize(Optional.of(defaultPageSize))
-            .showsFeatureSelfLink(showsFeatureSelfLink)
             .build();
 
     return queryHandler.handle(

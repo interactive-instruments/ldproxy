@@ -10,9 +10,8 @@ package de.ii.ogcapi.text.search.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
-import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
@@ -36,7 +35,6 @@ import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -92,24 +90,15 @@ public class QueryParameterQ extends ApiExtensionCache
       return null;
     }
 
-    Set<String> qProperties = new HashSet<>();
-    List<String> textSearchProperties =
+    Set<String> textSearchProperties =
         optionalCollectionData
             .map(cd -> cd.getExtension(TextSearchConfiguration.class))
             .orElse(api.getData().getExtension(TextSearchConfiguration.class))
             .map(TextSearchConfiguration::getProperties)
-            .orElse(ImmutableList.of());
-    if (textSearchProperties.isEmpty()) {
-      optionalCollectionData
-          .map(cd -> cd.getExtension(FeaturesCoreConfiguration.class))
-          .orElse(api.getData().getExtension(FeaturesCoreConfiguration.class))
-          .flatMap(FeaturesCoreConfiguration::getQueryables)
-          .ifPresent(queryables -> qProperties.addAll(queryables.getQ()));
-    } else {
-      qProperties.addAll(textSearchProperties);
-    }
+            .map(Set::copyOf)
+            .orElse(ImmutableSet.of());
 
-    return qToCql(qProperties, Splitter.on(",").trimResults().splitToList(value));
+    return qToCql(textSearchProperties, Splitter.on(",").trimResults().splitToList(value));
   }
 
   @Override
@@ -152,14 +141,9 @@ public class QueryParameterQ extends ApiExtensionCache
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
     return isExtensionEnabled(
-            apiData.getCollections().get(collectionId),
-            FeaturesCoreConfiguration.class,
-            config ->
-                !config.getQueryables().orElse(FeaturesCollectionQueryables.of()).getQ().isEmpty())
-        || isExtensionEnabled(
-            apiData.getCollections().get(collectionId),
-            TextSearchConfiguration.class,
-            config -> !config.getProperties().isEmpty());
+        apiData.getCollections().get(collectionId),
+        TextSearchConfiguration.class,
+        config -> !config.getProperties().isEmpty());
   }
 
   @Override

@@ -11,12 +11,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
-import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -196,43 +191,6 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
   @Override
   Boolean getEnabled();
 
-  /**
-   * @langEn *Deprecated* Use the [`flatten`
-   *     transformation](../../providers/details/transformations.md) instead.
-   * @langDe *Deprecated* Wird abgelöst durch die
-   *     [`flatten`-Transformation](../../providers/details/transformations.md).
-   * @default FLATTEN
-   */
-  @Deprecated(since = "3.1.0")
-  @Nullable
-  NESTED_OBJECTS getNestedObjectStrategy();
-
-  /**
-   * @langEn *Deprecated* Use the [`flatten`
-   *     transformation](../../providers/details/transformations.md) instead.
-   * @langDe *Deprecated* Wird abgelöst durch die
-   *     [`flatten`-Transformation](../../providers/details/transformations.md).
-   * @default SUFFIX
-   */
-  @Deprecated(since = "3.1.0")
-  @Nullable
-  MULTIPLICITY getMultiplicityStrategy();
-
-  @Deprecated(since = "3.1.0")
-  @Nullable
-  Boolean getUseFormattedJsonOutput();
-
-  /**
-   * @langEn *Deprecated* Use the [`flatten`
-   *     transformation](../../providers/details/transformations.md) instead.
-   * @langDe *Deprecated* Wird abgelöst durch die
-   *     [`flatten`-Transformation](../../providers/details/transformations.md).
-   * @default "."
-   */
-  @Deprecated(since = "3.1.0")
-  @Nullable
-  String getSeparator();
-
   @JsonIgnore
   @Value.Derived
   @Value.Auxiliary
@@ -240,28 +198,6 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
     return hasTransformation(
         PropertyTransformations.WILDCARD,
         transformation -> transformation.getFlatten().isPresent());
-  }
-
-  @Value.Check
-  default GeoJsonConfiguration backwardsCompatibility() {
-    if (getNestedObjectStrategy() == NESTED_OBJECTS.FLATTEN
-        && getMultiplicityStrategy() == MULTIPLICITY.SUFFIX
-        && !isFlattened()) {
-
-      Map<String, List<PropertyTransformation>> transformations =
-          withTransformation(
-              PropertyTransformations.WILDCARD,
-              new ImmutablePropertyTransformation.Builder()
-                  .flatten(Optional.ofNullable(getSeparator()).orElse("."))
-                  .build());
-
-      return new ImmutableGeoJsonConfiguration.Builder()
-          .from(this)
-          .transformations(transformations)
-          .build();
-    }
-
-    return this;
   }
 
   @Override

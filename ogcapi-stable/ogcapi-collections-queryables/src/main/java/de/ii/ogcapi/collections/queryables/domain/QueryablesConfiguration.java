@@ -9,10 +9,7 @@ package de.ii.ogcapi.collections.queryables.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -74,15 +71,13 @@ public interface QueryablesConfiguration extends ExtensionConfiguration, Caching
    *     filtering query parameters are provided for a collection. Properties that are not of type
    *     `OBJECT` or `OBJECT_ARRAY` are eligible as queryables unless `isQueryable` is set to
    *     `false` for the property. The special value `*` includes all eligible properties as
-   *     queryables. By default, no property is queryable (this is for backwards compatibility, in
-   *     v4.0 the default behaviour will change to all eligible properties).
+   *     queryables. By default, no property is queryable.
    * @langDe Die Liste der Eigenschaften, die in CQL2-Filterausdrücken verwendet werden können
    *     und/oder für die filternde Abfrageparameter für eine Collection bereitgestellt werden.
    *     Eigenschaften, die nicht vom Typ `OBJECT` oder `OBJECT_ARRAY` sind, kommen als Queryables
    *     in Frage, es sei denn `isQueryable` ist für die Eigenschaft auf `false` gesetzt. Der
    *     spezielle Wert `*` schließt alle in Frage kommenden Eigenschaften als abfragbar ein.
-   *     Standardmäßig ist keine Eigenschaft abfragbar (dies dient der Abwärtskompatibilität, in
-   *     v4.0 wird das Standardverhalten auf alle in Frage kommenden Eigenschaften geändert werden).
+   *     Standardmäßig ist keine Eigenschaft abfragbar.
    * @default []
    * @since v3.4
    */
@@ -179,30 +174,7 @@ public interface QueryablesConfiguration extends ExtensionConfiguration, Caching
         providers.getFeatureProviderOrThrow(apiData, collectionData).queries();
 
     return featureQueries.getQueryablesSchema(
-        schema,
-        getIncludedBackwardsCompatible(collectionData),
-        getExcludedBackwardsCompatible(collectionData),
-        getPathSeparator().toString());
-  }
-
-  default List<String> getIncludedBackwardsCompatible(
-      FeatureTypeConfigurationOgcApi collectionData) {
-    if (getIncluded().isEmpty() && getExcluded().isEmpty()) {
-      return collectionData
-          .getExtension(FeaturesCoreConfiguration.class)
-          .flatMap(FeaturesCoreConfiguration::getQueryables)
-          .map(FeaturesCollectionQueryables::getAll)
-          .orElse(ImmutableList.of());
-    }
-    return getIncluded();
-  }
-
-  default List<String> getExcludedBackwardsCompatible(
-      FeatureTypeConfigurationOgcApi collectionData) {
-    if (getIncluded().isEmpty() && getExcluded().isEmpty()) {
-      return ImmutableList.of();
-    }
-    return getExcluded();
+        schema, getIncluded(), getExcluded(), getPathSeparator().toString());
   }
 
   abstract class Builder extends ExtensionConfiguration.Builder {}

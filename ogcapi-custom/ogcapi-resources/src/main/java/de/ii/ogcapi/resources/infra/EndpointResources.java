@@ -29,7 +29,6 @@ import de.ii.ogcapi.resources.domain.ImmutableQueryInputResources;
 import de.ii.ogcapi.resources.domain.QueriesHandlerResources;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
-import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import java.util.List;
 import java.util.Optional;
 import javax.inject.Inject;
@@ -72,11 +71,7 @@ public class EndpointResources extends Endpoint {
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return super.isEnabledForApi(apiData)
-        || apiData
-            .getExtension(StylesConfiguration.class)
-            .map(StylesConfiguration::isResourcesEnabled)
-            .orElse(false);
+    return super.isEnabledForApi(apiData);
   }
 
   @Override

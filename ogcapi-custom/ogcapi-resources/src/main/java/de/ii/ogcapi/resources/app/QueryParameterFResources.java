@@ -17,7 +17,6 @@ import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
-import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -57,11 +56,7 @@ public class QueryParameterFResources extends QueryParameterF {
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return super.isEnabledForApi(apiData)
-        || apiData
-            .getExtension(StylesConfiguration.class)
-            .map(StylesConfiguration::isResourcesEnabled)
-            .orElse(false);
+    return super.isEnabledForApi(apiData);
   }
 
   @Override

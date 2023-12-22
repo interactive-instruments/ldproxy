@@ -8,6 +8,5 @@ descriptionDe = 'Generelle Textsuche über mehrere Properties der Daten.'
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-cql'
     provided 'de.interactive_instruments:xtraplatform-features'
-    provided 'de.interactive_instruments:ogcapi-collections-queryables'
     provided 'de.interactive_instruments:ogcapi-features-core'
 }

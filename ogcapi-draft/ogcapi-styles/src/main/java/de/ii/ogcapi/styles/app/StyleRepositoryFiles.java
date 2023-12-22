@@ -569,22 +569,17 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       }
 
       // check that the default stylesheet for the web map exists
-      String defaultStyle = config.get().getDefaultStyle();
-      if (Objects.isNull(defaultStyle)) {
-        defaultStyle =
-            (collectionId.isEmpty() ? apiData : apiData.getCollections().get(collectionId.get()))
-                .getExtension(HtmlConfiguration.class)
-                .map(HtmlConfiguration::getDefaultStyle)
-                .orElse("NONE");
-      }
+      String defaultStyle =
+          (collectionId.isEmpty() ? apiData : apiData.getCollections().get(collectionId.get()))
+              .getExtension(HtmlConfiguration.class)
+              .map(HtmlConfiguration::getDefaultStyle)
+              .orElse("NONE");
       if (!defaultStyle.equals("NONE")) {
-        String finalDefaultStyle = defaultStyle;
         boolean exists =
             getStyleFormatStream(apiData, collectionId)
                 .filter(StyleFormatExtension::getAsDefault)
                 .anyMatch(
-                    format ->
-                        stylesheetExists(apiData, collectionId, finalDefaultStyle, format, true));
+                    format -> stylesheetExists(apiData, collectionId, defaultStyle, format, true));
         if (!exists) {
           if (collectionId.isPresent())
             builder.addWarnings(

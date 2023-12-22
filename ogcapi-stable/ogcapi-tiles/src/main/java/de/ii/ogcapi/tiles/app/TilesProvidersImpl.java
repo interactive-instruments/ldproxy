@@ -103,7 +103,7 @@ public class TilesProvidersImpl implements TilesProviders {
     return extendableConfiguration
         .getExtension(TilesConfiguration.class)
         .filter(ExtensionConfiguration::isEnabled)
-        .flatMap(cfg -> Optional.ofNullable(cfg.getTileProviderId()))
+        .flatMap(cfg -> Optional.ofNullable(cfg.getTileProvider()))
         .flatMap(id -> entityRegistry.getEntity(TileProvider.class, id));
   }
 

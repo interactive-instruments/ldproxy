@@ -92,8 +92,6 @@ import org.immutables.value.Value;
 public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
   enum OPTION {
-    @Deprecated(since = "3.6")
-    describedby,
     featureType,
     featureSchema,
     time,

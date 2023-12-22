@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.html.domain;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ApiCatalogEntry;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -208,7 +207,6 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
    *     eingebettet sein sollen, sofern. Die Annotationen werden im Format JSON-LD eingebettet.
    * @default true
    */
-  @JsonAlias(value = "microdataEnabled")
   @Nullable
   Boolean getSchemaOrgEnabled();
 
@@ -307,42 +305,6 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
    */
   @Nullable
   String getBasemapAttribution();
-
-  /**
-   * @langEn *Deprecated* See `basemapUrl`.
-   * @langDe *Deprecated* Siehe `basemapUrl`.
-   * @default https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png
-   */
-  @Deprecated(since = "3.1.0")
-  @Nullable
-  String getLeafletUrl();
-
-  /**
-   * @langEn *Deprecated* See `basemapAttribution`.
-   * @langDe *Deprecated* Siehe `basemapAttribution`.
-   * @default &copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors
-   */
-  @Deprecated(since = "3.1.0")
-  @Nullable
-  String getLeafletAttribution();
-
-  /**
-   * @langEn *Deprecated* See `basemapUrl`.
-   * @langDe *Deprecated* Siehe `basemapUrl`.
-   * @default https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png
-   */
-  @Deprecated(since = "3.1.0")
-  @Nullable
-  String getOpenLayersUrl();
-
-  /**
-   * @langEn *Deprecated* See `basemapAttribution`
-   * @langDe *Deprecated* Siehe `basemapAttribution`.
-   * @default &copy; <a href='http://osm.org/copyright'>OpenStreetMap</a> contributors
-   */
-  @Deprecated(since = "3.1.0")
-  @Nullable
-  String getOpenLayersAttribution();
 
   /**
    * @langEn Additional text shown in footer of every site.

@@ -8,11 +8,7 @@
 package de.ii.ogcapi.styles.domain
 
 import com.google.common.collect.ImmutableList
-import de.ii.ogcapi.foundation.domain.AbstractExtensionConfigurationSpec
-import de.ii.ogcapi.foundation.domain.MergeBase
-import de.ii.ogcapi.foundation.domain.MergeCollection
-import de.ii.ogcapi.foundation.domain.MergeMinimal
-import de.ii.ogcapi.foundation.domain.MergeSimple
+import de.ii.ogcapi.foundation.domain.*
 
 @SuppressWarnings('ClashingTraitMethods')
 class StylesConfigurationSpec extends AbstractExtensionConfigurationSpec implements MergeBase<StylesConfiguration>, MergeMinimal<StylesConfiguration>, MergeSimple<StylesConfiguration>, MergeCollection<StylesConfiguration> {
@@ -25,7 +21,6 @@ class StylesConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                 .webmapWithPopup(true)
                 .webmapWithLayerControl(true)
                 .layerControlAllLayers(true)
-                .defaultStyle("foo")
                 .addStyleEncodings("foo", "bar")
                 .build()
     }
@@ -50,7 +45,6 @@ class StylesConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                 .webmapWithPopup(false)
                 .webmapWithLayerControl(false)
                 .layerControlAllLayers(false)
-                .defaultStyle("bar")
                 .build()
     }
 
