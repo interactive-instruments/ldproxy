@@ -110,9 +110,7 @@ import javax.inject.Singleton;
  *     de.ii.ogcapi.styles.infra.EndpointStyleCollection}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyleMetadataCollection}, {@link
  *     de.ii.ogcapi.styles.infra.manager.EndpointStylesManager}, {@link
- *     de.ii.ogcapi.styles.infra.manager.EndpointStyleMetadataManager}, {@link
- *     de.ii.ogcapi.styles.infra.manager.EndpointStylesManagerCollection}, {@link
- *     de.ii.ogcapi.styles.infra.manager.EndpointStyleMetadataManagerCollection}
+ *     de.ii.ogcapi.styles.infra.manager.EndpointStylesManagerCollection}
  * @ref:pathParameters {@link de.ii.ogcapi.styles.domain.PathParameterCollectionIdStyles}, {@link
  *     de.ii.ogcapi.styles.domain.PathParameterStyleId}
  * @ref:queryParameters {@link de.ii.ogcapi.styles.domain.QueryParameterFStyles}, {@link
