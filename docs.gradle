@@ -30,8 +30,8 @@ tasks.register('docsAssembleCli') {
         def baseUrl = "https://raw.githubusercontent.com/interactive-instruments/xtraplatform-cli/${cliVersion}"
         def files = ["${baseUrl}/xtractl/README.md", "${baseUrl}/xtractl/COMMANDS.md", "${baseUrl}/xtracfg/README.md", "${baseUrl}/xtracfg/COMMANDS.md"]
         def filesDe = ["${baseUrl}/xtractl/README_DE.md", "${baseUrl}/xtractl/COMMANDS.md", "${baseUrl}/xtracfg/README_DE.md", "${baseUrl}/xtracfg/COMMANDS.md"]
-        def targetDir = new File(project.buildDir, 'tmp/tools/cli')
-        def targetDirDe = new File(project.buildDir, 'tmp/tools/de/cli')
+        def targetDir = new File(project.buildDir, 'tmp/tools/tools')
+        def targetDirDe = new File(project.buildDir, 'tmp/tools/de/tools')
         def process = { f ->
             def name = f.path == "README_DE.md" ? "README.md" : f.path
             if (f.sourceURL.path.contains('xtractl')) {
@@ -49,12 +49,13 @@ tasks.register('docsAssembleCli') {
 tasks.register('docsAssembleEditor') {
     doLast {
         def baseUrl = "https://raw.githubusercontent.com/ldproxy/editor/${editorVersion}"
-        def targetDir = new File(project.buildDir, 'tmp/tools/editor')
-        def targetDirDe = new File(project.buildDir, 'tmp/tools/de/editor')
+        def targetDir = new File(project.buildDir, 'tmp/tools/tools')
+        def targetDirDe = new File(project.buildDir, 'tmp/tools/de/tools')
         def files = ["${baseUrl}/README.md", "${baseUrl}/screenshot.png"]
         def filesDe = ["${baseUrl}/README_DE.md", "${baseUrl}/screenshot.png"]
         def process = { f ->
-            f.path = f.path == "README_DE.md" ? "README.md" : f.path
+            def name = f.path == "README_DE.md" ? "README.md" : f.path
+            f.path = "editor/${name}"
         }
 
         docsDownload(files, targetDir, process)

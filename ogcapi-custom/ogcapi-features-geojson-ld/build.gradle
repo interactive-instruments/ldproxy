@@ -1,5 +1,8 @@
 
 maturity = 'CANDIDATE'
+maintenance = 'NONE'
+description = 'Encode features as GeoJSON-LD.'
+descriptionDe = 'Kodierung von Features als GeoJSON-LD.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-blobs'

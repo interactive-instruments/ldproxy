@@ -1,5 +1,8 @@
 
 maturity = 'MATURE'
+maintenance = 'FULL'
+description = 'Publish geographic data as tiles.'
+descriptionDe = 'Veröffentlichen von Geodaten als Kacheln.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-auth'

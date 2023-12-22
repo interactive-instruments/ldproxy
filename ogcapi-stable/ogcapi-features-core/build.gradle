@@ -1,5 +1,8 @@
 
 maturity = 'MATURE'
+maintenance = 'FULL'
+description = 'The core capabilities to publish feature data (vector data).'
+descriptionDe = 'Die Kernfunktionen zur Bereitstellung von Features (Vektordaten).'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-auth'

@@ -1,5 +1,8 @@
 
 maturity = 'CANDIDATE'
+maintenance = 'FULL'
+description = 'Publish styles.'
+descriptionDe = 'Veröffentlichung von Styles.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-auth'

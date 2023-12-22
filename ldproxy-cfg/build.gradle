@@ -16,6 +16,7 @@ parent.configurations.layerModules.resolvedConfiguration.firstLevelModuleDepende
 moduleInfo {
     enabled = false
 }
+docIgnore = true
 
 ext {
     includePathsParent = [

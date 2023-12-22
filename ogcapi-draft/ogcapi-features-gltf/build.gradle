@@ -1,4 +1,8 @@
+
 maturity = 'PROPOSAL'
+maintenance = 'LOW'
+description = 'Encode CityGML building features (LoD1, LoD2) as glTF 2.0.'
+descriptionDe = 'Kodierung von CityGML Gebäuden (LoD1, LoD2) in glTF 2.0.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-auth'

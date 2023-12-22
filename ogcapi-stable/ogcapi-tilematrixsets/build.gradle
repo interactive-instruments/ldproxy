@@ -1,5 +1,8 @@
 
 maturity = 'MATURE'
+maintenance = 'FULL'
+description = 'Provides definitions of the Tile Matrix Sets used in the API.'
+descriptionDe = 'Stellt die in der API verwendeten Kachelschemas bereit.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-auth'
