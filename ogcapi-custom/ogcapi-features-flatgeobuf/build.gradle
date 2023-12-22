@@ -1,8 +1,8 @@
 
 maturity = 'CANDIDATE'
 maintenance = 'LOW'
-description = 'Encode features as [FlatGeobuf](https://flatgeobuf.org).'
-descriptionDe = 'Kodierung von Features als [FlatGeobuf](https://flatgeobuf.org).'
+description = 'Encode features as FlatGeobuf.'
+descriptionDe = 'Kodierung von Features als FlatGeobuf.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-streams'
