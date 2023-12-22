@@ -1,5 +1,8 @@
 
 maturity = 'CANDIDATE'
+maintenance = 'NONE'
+description = 'XML encoding for every supported resource.'
+descriptionDe = 'XML-Kodierung für alle unterstützten Ressourcen.'
 
 dependencies {
     provided project(":ogcapi-foundation")

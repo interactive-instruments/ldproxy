@@ -1,5 +1,8 @@
 
 maturity = 'MATURE'
+maintenance = 'FULL'
+description = 'Branding.'
+docIgnore = true
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-web'

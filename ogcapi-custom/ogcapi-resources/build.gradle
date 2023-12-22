@@ -1,5 +1,8 @@
 
 maturity = 'CANDIDATE'
+maintenance = 'FULL'
+description = 'Publish and manage file resources.'
+descriptionDe = 'Bereitstellung und Verwaltung von Datei-Ressourcen.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-auth'

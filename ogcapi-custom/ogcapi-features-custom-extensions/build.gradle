@@ -1,5 +1,8 @@
 
 maturity = 'PROPOSAL'
+maintenance = 'NONE'
+description = 'POST on `/items` and filter by geometry intersection.'
+descriptionDe = 'POST für `/items` und Filterung durch Geometrie-Überschneidung.'
 
 
 dependencies {

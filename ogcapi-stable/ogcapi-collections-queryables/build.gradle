@@ -1,5 +1,8 @@
 
 maturity = 'MATURE'
+maintenance = 'FULL'
+description = 'Metadata about the properties of the features in a feature collection that can be used in filter expressions.'
+descriptionDe = 'Metadaten über die Eigenschaften von Objekten aus einer Feature Collection, die in Filter-Ausdrücken verwendet werden können.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-auth'

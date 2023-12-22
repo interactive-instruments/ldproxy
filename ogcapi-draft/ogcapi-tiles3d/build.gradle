@@ -1,4 +1,8 @@
+
 maturity = 'PROPOSAL'
+maintenance = 'LOW'
+description = 'Publish geographic data as 3D Tiles.'
+descriptionDe = 'Veröffentlichen von Geodaten als 3D Tiles.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-auth'

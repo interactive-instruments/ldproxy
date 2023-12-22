@@ -1,5 +1,8 @@
 
 maturity = 'CANDIDATE'
+maintenance = 'LOW'
+description = 'Encode features as comma-separated values (CSV).'
+descriptionDe = 'Kodierung von Features als komma-separierte Werte (CSV).'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-features'

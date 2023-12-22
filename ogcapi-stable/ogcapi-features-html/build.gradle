@@ -1,5 +1,8 @@
 
 maturity = 'MATURE'
+maintenance = 'FULL'
+description = 'Encode features as HTML.'
+descriptionDe = 'Kodierung von Features als HTML.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-auth'

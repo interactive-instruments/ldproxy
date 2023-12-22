@@ -56,19 +56,22 @@ const sidebar = (lang) => {
     group({ en: "Auxiliaries", de: "Zubehör" }[lang], prefix + "auxiliaries", {
       ignoreReadme: true,
     }),
-    group({ en: "Editor", de: "Editor" }[lang], prefix + "editor"),
-    group({ en: "CLI", de: "CLI" }[lang], prefix + "cli", {
+    group({ en: "Tools", de: "Tools" }[lang], prefix + "tools", {
       children: [
-        group({ en: "xtracfg", de: "xtracfg" }[lang], prefix + "cli/xtracfg", {
+        group({ en: "Editor", de: "Editor" }[lang], prefix + "tools/editor", {
+          headerReadme: true,
+        }),
+        group({ en: "xtracfg", de: "xtracfg" }[lang], prefix + "tools/xtracfg", {
           collapsible: true,
           headerReadme: true,
         }),
-        group({ en: "xtractl", de: "xtractl" }[lang], prefix + "cli/xtractl", {
+        group({ en: "xtractl", de: "xtractl" }[lang], prefix + "tools/xtractl", {
           collapsible: true,
           headerReadme: true,
         }),
       ],
     }),
+    group({ en: "References", de: "Referenzen" }[lang], prefix + "references"),
   ];
 };
 

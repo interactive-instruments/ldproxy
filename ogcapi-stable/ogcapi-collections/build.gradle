@@ -1,5 +1,8 @@
 
 maturity = 'MATURE'
+maintenance = 'FULL'
+description = 'Feature Collections.'
+descriptionDe = 'Feature Collections.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-auth'

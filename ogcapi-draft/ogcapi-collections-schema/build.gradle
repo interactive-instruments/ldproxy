@@ -1,5 +1,8 @@
 
 maturity = 'CANDIDATE'
+maintenance = 'LOW'
+description = 'Publish a logical schema of the feature properties, described in JSON Schema.'
+descriptionDe = 'Veröffentlichen eines logisches Schema der Feature-Eigenschaften, beschrieben in JSON Schema.'
 
 
 dependencies {

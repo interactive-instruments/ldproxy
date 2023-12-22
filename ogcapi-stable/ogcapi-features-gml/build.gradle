@@ -1,5 +1,8 @@
 
 maturity = 'CANDIDATE'
+maintenance = 'LOW'
+description = 'Encode features as GML.'
+descriptionDe = 'Kodierung von Features als GML.'
 
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-streams'

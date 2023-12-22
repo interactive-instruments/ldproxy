@@ -1,6 +1,6 @@
-# Unterstützte Spezifikationen und Technologien
+# Spezifikationen und Technologien
 
-Dies ist ein Überblick. Für Einschränkungen und Begrenzungen siehe die Dokumentation der ldproxy-Bausteine.
+Dies ist ein Überblick über unterstützte Spezifikationen und Technologien. Für Einschränkungen und Begrenzungen siehe die Dokumentation der ldproxy-Bausteine.
 
 ## Web-API-Spezifikationen
 
@@ -10,6 +10,7 @@ Unterstützt werden derzeit die folgenden OGC-Standards bzw. aktuellen Entwürfe
 * [OGC API - Features - Part 2: Coordinate Reference Systems by Reference 1.0.1](https://docs.ogc.org/is/18-058r1/18-058r1.html)
 * [OGC API - Features - Part 3: Filtering, draft](https://docs.ogc.org/DRAFTS/19-079r1.html)
 * [OGC API - Features - Part 4: Create, Replace, Update and Delete, draft](https://docs.ogc.org/DRAFTS/20-002.html)
+* [OGC API - Features - Part 5: Schemas, draft](https://docs.ogc.org/DRAFTS/23-058.html)
 * [OGC API - Tiles - Part 1: Core, Version 1.0.0](https://docs.ogc.org/is/20-057/20-057.html)
 * [OGC API - Styles, draft](https://docs.ogc.org/DRAFTS/20-009.html)
 * [OGC API - Routes - Part 1: Core, draft](https://docs.ogc.org/DRAFTS/21-000.html)
@@ -36,7 +37,7 @@ ldproxy unterstützt die folgenden Formate, die von verschiedenen Tools und Bibl
   * [OpenAPI 3.0](http://spec.openapis.org/oas/v3.0.3) als JSON, YAML und HTML
 * Features
   * [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946)
-  * [JSON-FG 0.1.1](https://docs.ogc.org/DRAFTS/21-045.html)
+  * [JSON-FG 0.2.1](https://docs.ogc.org/DRAFTS/21-045.html)
   * HTML
   * [GML 3.2.2](https://portal.ogc.org/files/?artifact_id=74183&version=2)
   * [FlatGeobuf](https://flatgeobuf.org/)
