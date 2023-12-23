@@ -183,7 +183,6 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
         .defaultPageSize(DEFAULT_PAGE_SIZE)
         .maximumPageSize(MAX_PAGE_SIZE)
         .validateCoordinatesInQueries(false)
-        .showsFeatureSelfLink(false)
         .build();
   }
 

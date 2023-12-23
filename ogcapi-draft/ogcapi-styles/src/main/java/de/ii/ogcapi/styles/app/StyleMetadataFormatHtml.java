@@ -131,10 +131,4 @@ public class StyleMetadataFormatHtml implements StyleMetadataFormatExtension {
         .user(requestContext.getUser())
         .build();
   }
-
-  @Override
-  public StyleMetadata parse(byte[] content, boolean strict, boolean inStore) {
-    throw new RuntimeException(
-        "Style metadata in HTML cannot be parsed. This method should never be called.");
-  }
 }

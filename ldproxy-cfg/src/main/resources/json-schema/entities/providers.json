@@ -379,7 +379,7 @@
         },
         "autoPersist": {
           "title": "autoPersist",
-          "description": "Option to persist definitions generated with `auto` to the configuration file. The     [Store](/application/40-store.md) must not be `READ_ONLY` for this to take effect.",
+          "description": "*Deprecated, use the editor instead.* Option to persist definitions generated with     `auto` to the configuration file. The [Store](/application/40-store.md) must not be     `READ_ONLY` for this to take effect.",
           "oneOf": [
             {
               "type": "boolean"
@@ -395,7 +395,8 @@
         },
         "autoTypes": {
           "title": "autoTypes",
-          "description": "List of source types to include in derived `types` definitions when `auto: true`.     Currently only works for [SQL](sql.md).",
+          "description": "*Deprecated, use the editor instead.* List of source types to include in derived     `types` definitions when `auto: true`. Currently only works for [SQL](sql.md).",
+          "deprecated": true,
           "allOf": [
             {
               "if": {
@@ -636,7 +637,7 @@
         },
         "autoPersist": {
           "title": "autoPersist",
-          "description": "Option to persist definitions generated with `auto` to the configuration file. The     [Store](/application/40-store.md) must not be `READ_ONLY` for this to take effect.",
+          "description": "*Deprecated, use the editor instead.* Option to persist definitions generated with     `auto` to the configuration file. The [Store](/application/40-store.md) must not be     `READ_ONLY` for this to take effect.",
           "oneOf": [
             {
               "type": "boolean"
@@ -652,7 +653,8 @@
         },
         "autoTypes": {
           "title": "autoTypes",
-          "description": "List of source types to include in derived `types` definitions when `auto: true`.     Currently only works for [SQL](sql.md).",
+          "description": "*Deprecated, use the editor instead.* List of source types to include in derived     `types` definitions when `auto: true`. Currently only works for [SQL](sql.md).",
+          "deprecated": true,
           "allOf": [
             {
               "if": {
@@ -822,7 +824,7 @@
         },
         "autoPersist": {
           "title": "autoPersist",
-          "description": "Option to persist definitions generated with `auto` to the configuration file. The     [Store](/application/40-store.md) must not be `READ_ONLY` for this to take effect.",
+          "description": "*Deprecated, use the editor instead.* Option to persist definitions generated with     `auto` to the configuration file. The [Store](/application/40-store.md) must not be     `READ_ONLY` for this to take effect.",
           "oneOf": [
             {
               "type": "boolean"
@@ -1616,15 +1618,44 @@
             "null"
           ]
         },
-        "reduceStringFormat": {
-          "title": "reduceStringFormat",
-          "description": "Reduces an object to a string using the same syntax as `stringFormat` but with     additional replacements for objects property names.",
+        "objectReduceFormat": {
+          "title": "objectReduceFormat",
+          "description": "Reduces an object to a string using the same syntax as `stringFormat` but with     additional replacements for the object property names.",
           "type": [
             "string",
             "number",
             "boolean",
             "null"
           ]
+        },
+        "reduceStringFormat": {
+          "title": "reduceStringFormat",
+          "description": "*Deprecated* See `objectReduceFormat`.",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ],
+          "deprecated": true
+        },
+        "objectReduceSelect": {
+          "title": "objectReduceSelect",
+          "description": "Reduces an object to one of its properties, the value is the desired property name.",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "objectMapFormat": {
+          "title": "objectMapFormat",
+          "description": "Maps an object to another object, the value is map where the keys are the new property     names. The values use the same syntax as `stringFormat` but with additional replacements     for the source object property names.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "stringFormat": {
           "title": "stringFormat",
@@ -1700,16 +1731,6 @@
             "null"
           ],
           "deprecated": true
-        },
-        "asLink": {
-          "title": "asLink",
-          "description": "TODO",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ]
         }
       },
       "additionalProperties": false
@@ -1949,6 +1970,16 @@
             "null"
           ]
         },
+        "refKeyTemplate": {
+          "title": "refKeyTemplate",
+          "description": "",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
         "sourcePath": {
           "title": "sourcePath",
           "description": "The relative path for this schema object. The syntax depends on the provider types, see     [SQL](sql.md#path-syntax) or [WFS](wfs.md#path-syntax).",
@@ -1972,7 +2003,8 @@
         },
         "sourcePaths": {
           "title": "sourcePaths",
-          "description": "The relative paths for this schema object. The syntax depends on the provider types,     see [SQL](sql.md#path-syntax) or [WFS](wfs.md#path-syntax).",
+          "description": "*Deprected, use `concat` or `coalesce` instead.* The relative paths for this schema     object. The syntax depends on the provider types, see [SQL](sql.md#path-syntax) or     [WFS](wfs.md#path-syntax).",
+          "deprecated": true,
           "allOf": [
             {
               "if": {
@@ -2016,7 +2048,7 @@
         },
         "role": {
           "title": "role",
-          "description": "`ID` has to be set for the property that should be used as the unique feature id. As a     rule that should be the first property ion the `properties` object. Property names cannot     contain spaces (\" \") or slashes (\"/\"). Set `TYPE` for a property that specifies the type     name of the object.",
+          "description": "Indicates special meanings of the property. `ID` is to be specified at the property of     an object to be used for the `featureId` in the API. This property is typically the first     property in the `properties` object. Allowed characters in these properties are all     characters except the space character (\" \") and the horizontal bar (\"/\"). `TYPE` can be     specified at the property of an object that contains the name of a subobject type. If an     object type has multiple geometry properties, then specify `PRIMARY_GEOMETRY` at the     property to be used for `bbox` queries and to be encoded in data formats with exactly one     or a singled out geometry (e.g. in GeoJSON `geometry`). If an object type has multiple     temporal properties, then `PRIMARY_INSTANT` should be specified at the property to be used     for `datetime` queries, provided that a time instant describes the temporal extent of the     features. If, on the other hand, the temporal extent is a time interval, then     `PRIMARY_INTERVAL_START` and `PRIMARY_INTERVAL_END` should be specified at the respective     temporal properties.",
           "type": [
             "string",
             "number",
@@ -2096,12 +2128,47 @@
         },
         "scope": {
           "title": "scope",
-          "description": "Optional scope for properties that should only be used when either reading (`QUERIES`)     or writing (`MUTATIONS`) features.",
+          "description": "`*Deprecated, use `excludedScopes` instead.*` Optional scope for properties that should     only be used when either reading (`QUERIES`) or writing (`MUTATIONS`) features.",
           "type": [
             "string",
             "number",
             "boolean",
             "null"
+          ],
+          "deprecated": true
+        },
+        "excludedScopes": {
+          "title": "excludedScopes",
+          "description": "Optional exclusion of a property from a schema scope. See [Schema     Scopes](../details/scopes.md) for a description of the scopes.",
+          "allOf": [
+            {
+              "if": {
+                "type": "array"
+              },
+              "then": {
+                "items": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            },
+            {
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              }
+            }
           ]
         },
         "schema": {
@@ -2178,7 +2245,7 @@
         },
         "isQueryable": {
           "title": "isQueryable",
-          "description": "Properties that are not of type OBJECT or OBJECT_ARRAY are by default eligible as     queryables. This setting can be used to declare a property as ineligible, for example, if     the property is not optimized for use in queries. If an eligible property can actually be     queried is decided by the provider implementation, that might not be feasible due to     technical reasons.",
+          "description": "*Deprecated, use `excludedScopes` instead.* Properties that are not of type OBJECT or     OBJECT_ARRAY are by default eligible as queryables. This setting can be used to declare a     property as ineligible, for example, if the property is not optimized for use in queries.     If an eligible property can actually be queried is decided by the provider implementation,     that might not be feasible due to technical reasons.",
           "oneOf": [
             {
               "type": "boolean"
@@ -2190,11 +2257,12 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "deprecated": true
         },
         "isSortable": {
           "title": "isSortable",
-          "description": "Only the direct properties of a feature type that are of type STRING, FLOAT, INTEGER,     DATE, or DATETIME are eligible as sortables. This setting can be used to declare a property     as ineligible, for example, if the property is not optimized for use in queries. If an     eligible property can actually be used as sortable is decided by the provider     implementation, that might not be feasible due to technical reasons.",
+          "description": "*Deprecated, use `excludedScopes` instead.* Only the direct properties of a feature     type that are of type STRING, FLOAT, INTEGER, DATE, or DATETIME are eligible as sortables.     This setting can be used to declare a property as ineligible, for example, if the property     is not optimized for use in queries. If an eligible property can actually be used as     sortable is decided by the provider implementation, that might not be feasible due to     technical reasons.",
           "oneOf": [
             {
               "type": "boolean"
@@ -2206,7 +2274,8 @@
             {
               "type": "null"
             }
-          ]
+          ],
+          "deprecated": true
         },
         "isLastModified": {
           "title": "isLastModified",

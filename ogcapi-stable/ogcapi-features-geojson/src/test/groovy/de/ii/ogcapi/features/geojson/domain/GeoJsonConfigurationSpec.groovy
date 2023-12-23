@@ -18,10 +18,6 @@ class GeoJsonConfigurationSpec extends AbstractExtensionConfigurationSpec implem
     GeoJsonConfiguration getFull() {
         return new ImmutableGeoJsonConfiguration.Builder()
                 .enabled(true)
-                .nestedObjectStrategy(GeoJsonConfiguration.NESTED_OBJECTS.NEST)
-                .multiplicityStrategy(GeoJsonConfiguration.MULTIPLICITY.ARRAY)
-                .useFormattedJsonOutput(true)
-                .separator(".")
                 .putTransformations("foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()])
                 .build()
     }
@@ -41,10 +37,6 @@ class GeoJsonConfigurationSpec extends AbstractExtensionConfigurationSpec implem
     GeoJsonConfiguration getSimple() {
         return new ImmutableGeoJsonConfiguration.Builder()
                 .enabled(false)
-                .nestedObjectStrategy(GeoJsonConfiguration.NESTED_OBJECTS.FLATTEN)
-                .multiplicityStrategy(GeoJsonConfiguration.MULTIPLICITY.SUFFIX)
-                .useFormattedJsonOutput(false)
-                .separator("-")
                 .build()
     }
 

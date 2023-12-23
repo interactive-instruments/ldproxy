@@ -8,7 +8,6 @@
 package de.ii.ogcapi.sorting.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration.PathSeparator;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
@@ -47,36 +46,17 @@ import org.immutables.value.Value;
 public interface SortingConfiguration extends ExtensionConfiguration {
 
   /**
-   * @langEn *Deprecated* Superseded by `included`. Controls which of the attributes in queries can
-   *     be used for sorting data. Only direct attributes of the data types `STRING`, `DATE`,
-   *     `DATETIME`, `INTEGER` and `FLOAT` are allowed (no attributes from arrays or embedded
-   *     objects).
-   * @langDe *Deprecated* Ersetzt durch `included`. Steuert, welche der Attribute in Queries für die
-   *     Sortierung von Daten verwendet werden können. Erlaubt sind nur direkte Attribute (keine
-   *     Attribute aus Arrays oder eingebetteten Objekten) der Datentypen `STRING`, `DATE`,
-   *     `DATETIME`, `INTEGER` und `FLOAT`.
-   * @default []
-   */
-  @SuppressWarnings("DeprecatedIsStillUsed")
-  @Deprecated(since = "3.4.0")
-  List<String> getSortables();
-
-  /**
    * @langEn Controls which of the attributes in queries can be used for sorting data. Only direct
    *     attributes of the data types `STRING`, `DATE`, `DATETIME`, `INTEGER` and `FLOAT` are
    *     eligible as sortables (that is, no attributes from arrays or embedded objects) unless
    *     `isSortable` is set to `false` for the property. The special value `*` includes all
-   *     eligible properties as sortables. By default, no property is sortable (this is for
-   *     backwards compatibility, in v4.0 the default behaviour will change to all eligible
-   *     properties).
+   *     eligible properties as sortables. By default, no property is sortable.
    * @langDe Ersetzt durch `included`. Steuert, welche der Attribute in Queries für die Sortierung
    *     von Daten verwendet werden können. Als Sortables kommen nur direkte Attribute (keine
    *     Attribute aus Arrays oder eingebetteten Objekten) der Datentypen `STRING`, `DATE`,
    *     `DATETIME`, `INTEGER` und `FLOAT` in Frage, es sei denn `isSortable` ist für die
    *     Eigenschaft auf `false` gesetzt. Der spezielle Wert `*` schließt alle infrage kommenden
-   *     Eigenschaften als sortierbar ein. Standardmäßig ist keine Eigenschaft sortierbar (dies
-   *     dient der Abwärtskompatibilität, in v4.0 wird das Standardverhalten auf alle infrage
-   *     kommenden Eigenschaften geändert werden).
+   *     Eigenschaften als sortierbar ein. Standardmäßig ist keine Eigenschaft sortierbar.
    * @default []
    * @since v3.4
    */
@@ -129,29 +109,7 @@ public interface SortingConfiguration extends ExtensionConfiguration {
         providers.getFeatureProviderOrThrow(apiData, collectionData).queries();
 
     return featureQueries.getSortablesSchema(
-        schema,
-        getIncludedBackwardsCompatible(collectionData),
-        getExcludedBackwardsCompatible(collectionData),
-        getPathSeparator().toString());
-  }
-
-  default List<String> getIncludedBackwardsCompatible(
-      FeatureTypeConfigurationOgcApi collectionData) {
-    if (getIncluded().isEmpty() && getExcluded().isEmpty()) {
-      return collectionData
-          .getExtension(SortingConfiguration.class)
-          .map(SortingConfiguration::getSortables)
-          .orElse(ImmutableList.of());
-    }
-    return getIncluded();
-  }
-
-  default List<String> getExcludedBackwardsCompatible(
-      FeatureTypeConfigurationOgcApi collectionData) {
-    if (getIncluded().isEmpty() && getExcluded().isEmpty()) {
-      return ImmutableList.of();
-    }
-    return getExcluded();
+        schema, getIncluded(), getExcluded(), getPathSeparator().toString());
   }
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
@@ -163,7 +121,6 @@ public interface SortingConfiguration extends ExtensionConfiguration {
 
   @Override
   default ExtensionConfiguration mergeInto(ExtensionConfiguration source) {
-    //noinspection deprecation
     return new ImmutableSortingConfiguration.Builder()
         .from(source)
         .from(this)
@@ -175,12 +132,6 @@ public interface SortingConfiguration extends ExtensionConfiguration {
         .excluded(
             Stream.concat(
                     ((SortingConfiguration) source).getExcluded().stream(), getExcluded().stream())
-                .distinct()
-                .collect(Collectors.toList()))
-        .sortables(
-            Stream.concat(
-                    ((SortingConfiguration) source).getSortables().stream(),
-                    getSortables().stream())
                 .distinct()
                 .collect(Collectors.toList()))
         .build();

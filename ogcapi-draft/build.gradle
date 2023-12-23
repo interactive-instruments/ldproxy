@@ -27,6 +27,16 @@ layer {
     }
 }
 
+subprojects {
+    dependencies {
+        provided 'de.interactive_instruments:xtraplatform-entities'
+        provided 'de.interactive_instruments:xtraplatform-openapi'
+        provided 'de.interactive_instruments:xtraplatform-services'
+        provided 'de.interactive_instruments:xtraplatform-values'
+        provided 'de.interactive_instruments:ogcapi-foundation'
+    }
+}
+
 task checkAll { dependsOn subprojects*.tasks*.findByPath('check') }
 task testAll { dependsOn subprojects*.tasks*.findByPath('test') }
 tasks.publish { dependsOn subprojects*.tasks*.findByPath('publish') }

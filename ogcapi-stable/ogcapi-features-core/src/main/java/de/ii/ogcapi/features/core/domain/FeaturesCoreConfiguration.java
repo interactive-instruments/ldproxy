@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -220,16 +219,6 @@ public interface FeaturesCoreConfiguration
   Set<String> getEmbeddedFeatureLinkRels();
 
   /**
-   * @langEn Always add `self` link to features, even in the *Features* resource.
-   * @langDe Steuert, ob in Features immer, auch in der Features-Ressourcen, ein `self`-Link
-   *     enthalten ist.
-   * @default false
-   */
-  @Deprecated
-  @Nullable
-  Boolean getShowsFeatureSelfLink();
-
-  /**
    * Validate the coordinates of the bbox or filter parameters against the domain of validity of the
    * coordinate reference system
    */
@@ -237,44 +226,6 @@ public interface FeaturesCoreConfiguration
   Boolean getValidateCoordinatesInQueries();
 
   Optional<ItemType> getItemType();
-
-  /**
-   * @langEn *Deprecated* Use [Module Feature Collections -
-   *     Queryables](collections_-_queryables.md). Controls which of the attributes in queries can
-   *     be used for filtering data. A distinction is made between spatial (`spatial`), temporal
-   *     (`temporal`) and "regular" (`q`, `other`) attributes. The attributes under `spatial` must
-   *     be of type `GEOMETRY` in the provider schema, the attributes under `temporal` of type
-   *     `DATETIME` or `DATE`. The searchable attributes are each listed by their name in an array.
-   *     The queryables can be used in filter expressions ([building block "filter"](filter.md)).
-   *     The primary spatial and temporal attributes (see provider configuration) can be used for
-   *     selection via the [parameters
-   *     `bbox`](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_bbox) and [parameters
-   *     `datetime`](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_datetime),
-   *     respectively. The remaining attributes are defined as [additional parameters for the
-   *     respective feature
-   *     collections](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties)
-   *     ("*" can be used as wildcard). In this way a selection of objects is already possible
-   *     without additional building blocks. The attributes under `q` are also taken into account in
-   *     the free text search in the query parameter with the same name.
-   * @langDe Steuert, welche der Attribute in Queries für die Filterung von Daten verwendet werden
-   *     können. Unterschieden werden räumliche (`spatial`), zeitliche (`temporal`) und "normale"
-   *     (`q`, `other`) Attribute. Die Attribute unter `spatial` müssen im Provider-Schema vom Typ
-   *     `GEOMETRY`, die Attribute unter `temporal` vom Typ `DATETIME` oder `DATE` sein. Die
-   *     suchbaren Attribute werden jeweils über ihren Namen in einem Array aufgelistet. Die
-   *     Queryables können in Filter-Ausdrücken ([Modul "Filter"](filter.md)) genutzt werden. Die
-   *     primären räumlichen und zeitlichen Attribute (siehe Provider-Konfiguration) können über die
-   *     [Parameter `bbox`](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_bbox) bzw.
-   *     [Parameter `datetime`](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_datetime)
-   *     für die Selektion verwendet werden. Die übrigen Attribute werden als [zusätzliche Parameter
-   *     für die jeweilige Feature
-   *     Collections](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties)
-   *     definiert ("*" kann als Wildcard verwendet werden). Auf diese Weise ist eine Selektion von
-   *     Objekten bereits ohne zusätzliche Module möglich. Die Attribute unter `q` werden außerdem
-   *     bei der freien Textsuche im Query-Parameter mit demselben Namen berücksichtigt.
-   * @default {}
-   */
-  @Deprecated(since = "3.4.0")
-  Optional<FeaturesCollectionQueryables> getQueryables();
 
   /**
    * @langEn Controls whether coordinates are limited to a certain number of places depending on the
@@ -297,52 +248,6 @@ public interface FeaturesCoreConfiguration
         getDefaultCrs() == DefaultCrs.CRS84h ? OgcCrs.CRS84h : OgcCrs.CRS84);
   }
 
-  @JsonIgnore
-  @Value.Derived
-  @Value.Auxiliary
-  @Deprecated(since = "3.4.0")
-  default boolean hasDeprecatedQueryables() {
-    return getQueryables().orElse(FeaturesCollectionQueryables.of()).getAll().stream()
-        .anyMatch(key -> key.matches(".*\\[[^]]*].*"));
-  }
-
-  @Deprecated(since = "3.4.0")
-  default List<String> normalizeQueryables(List<String> queryables, String collectionId) {
-    return queryables.stream()
-        .map(
-            queryable -> {
-              if (queryable.matches(".*\\[[^]]*].*")) {
-                LOGGER.warn(
-                    "The queryable '{}' in collection '{}' uses a deprecated style that includes square brackets for arrays. The brackets have been dropped during hydration.",
-                    queryable,
-                    collectionId);
-                return queryable.replaceAll("\\[[^]]*]", "");
-              }
-              return queryable;
-            })
-        .collect(Collectors.toUnmodifiableList());
-  }
-
-  @Deprecated(since = "3.4.0")
-  default Optional<FeaturesCollectionQueryables> normalizeQueryables(String collectionId) {
-    Optional<FeaturesCollectionQueryables> queryables = getQueryables();
-    if (queryables.isPresent()) {
-      List<String> spatial = normalizeQueryables(queryables.get().getSpatial(), collectionId);
-      List<String> temporal = normalizeQueryables(queryables.get().getTemporal(), collectionId);
-      List<String> q = normalizeQueryables(queryables.get().getQ(), collectionId);
-      List<String> other = normalizeQueryables(queryables.get().getOther(), collectionId);
-      queryables =
-          Optional.of(
-              new ImmutableFeaturesCollectionQueryables.Builder()
-                  .spatial(spatial)
-                  .temporal(temporal)
-                  .q(q)
-                  .other(other)
-                  .build());
-    }
-    return queryables;
-  }
-
   @Override
   default Builder getBuilder() {
     return new ImmutableFeaturesCoreConfiguration.Builder().from(this);
@@ -358,14 +263,6 @@ public interface FeaturesCoreConfiguration
                 PropertyTransformations.super
                     .mergeInto((PropertyTransformations) source)
                     .getTransformations());
-
-    if (getQueryables().isPresent()
-        && ((FeaturesCoreConfiguration) source).getQueryables().isPresent()) {
-      builder.queryables(
-          getQueryables()
-              .get()
-              .mergeInto(((FeaturesCoreConfiguration) source).getQueryables().get()));
-    }
 
     Map<String, Integer> mergedCoordinatePrecision =
         new LinkedHashMap<>(((FeaturesCoreConfiguration) source).getCoordinatePrecision());

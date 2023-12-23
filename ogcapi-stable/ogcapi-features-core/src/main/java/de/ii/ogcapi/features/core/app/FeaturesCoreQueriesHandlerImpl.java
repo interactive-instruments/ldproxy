@@ -150,7 +150,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         outputFormat,
         onlyHitsIfMore,
         defaultPageSize,
-        queryInput.getShowsFeatureSelfLink(),
         queryInput.getIncludeLinkHeader(),
         queryInput.getDefaultCrs(),
         queryInput.sendResponseAsStream());
@@ -210,7 +209,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         outputFormat,
         false,
         Optional.empty(),
-        false,
         queryInput.getIncludeLinkHeader(),
         queryInput.getDefaultCrs(),
         sendResponseAsStream);
@@ -229,7 +227,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
       FeatureFormatExtension outputFormat,
       boolean onlyHitsIfMore,
       Optional<Integer> defaultPageSize,
-      boolean showsFeatureSelfLink,
       boolean includeLinkHeader,
       EpsgCrs defaultCrs,
       boolean sendResponseAsStream) {
@@ -304,7 +301,6 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
             .maxAllowableOffset(query.getMaxAllowableOffset())
             .geometryPrecision(query.getGeometryPrecision())
             .isHitsOnlyIfMore(onlyHitsIfMore)
-            .showsFeatureSelfLink(showsFeatureSelfLink)
             .profile(profile);
 
     QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();

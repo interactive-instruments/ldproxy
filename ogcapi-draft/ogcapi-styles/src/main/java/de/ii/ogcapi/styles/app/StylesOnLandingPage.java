@@ -25,7 +25,6 @@ import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesLinkGenerator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -65,21 +64,12 @@ public class StylesOnLandingPage implements LandingPageExtension {
 
     final StylesLinkGenerator stylesLinkGenerator = new StylesLinkGenerator();
 
-    String defaultStyle =
+    Optional<String> defaultStyle =
         apiData
-            .getExtension(StylesConfiguration.class)
-            .map(StylesConfiguration::getDefaultStyle)
-            .map(s -> s.equals("NONE") ? null : s)
-            .orElse(null);
-    if (Objects.isNull(defaultStyle)) {
-      defaultStyle =
-          apiData
-              .getExtension(HtmlConfiguration.class)
-              .map(HtmlConfiguration::getDefaultStyle)
-              .map(s -> s.equals("NONE") ? null : s)
-              .orElse(null);
-    }
-    if (Objects.nonNull(defaultStyle)) {
+            .getExtension(HtmlConfiguration.class)
+            .map(HtmlConfiguration::getDefaultStyle)
+            .filter(s -> !s.equals("NONE"));
+    if (defaultStyle.isPresent()) {
       Optional<StyleFormatExtension> htmlStyleFormat =
           styleRepo
               .getStyleFormatStream(apiData, Optional.empty())
@@ -87,12 +77,11 @@ public class StylesOnLandingPage implements LandingPageExtension {
               .findAny();
       if (htmlStyleFormat.isPresent()
           && !styleRepo.stylesheetExists(
-              apiData, Optional.empty(), defaultStyle, htmlStyleFormat.get(), true))
-        defaultStyle = null;
+              apiData, Optional.empty(), defaultStyle.get(), htmlStyleFormat.get(), true))
+        defaultStyle = Optional.empty();
     }
     List<Link> links =
-        stylesLinkGenerator.generateLandingPageLinks(
-            uriCustomizer, Optional.ofNullable(defaultStyle), i18n, language);
+        stylesLinkGenerator.generateLandingPageLinks(uriCustomizer, defaultStyle, i18n, language);
     landingPageBuilder.addAllLinks(links);
 
     return landingPageBuilder;

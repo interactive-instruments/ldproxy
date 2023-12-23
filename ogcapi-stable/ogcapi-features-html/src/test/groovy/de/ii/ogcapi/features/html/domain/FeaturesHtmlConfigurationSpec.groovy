@@ -8,12 +8,7 @@
 package de.ii.ogcapi.features.html.domain
 
 import com.google.common.collect.ImmutableMap
-import de.ii.ogcapi.foundation.domain.AbstractExtensionConfigurationSpec
-import de.ii.ogcapi.foundation.domain.MergeBase
-import de.ii.ogcapi.foundation.domain.MergeMap
-import de.ii.ogcapi.foundation.domain.MergeMinimal
-import de.ii.ogcapi.foundation.domain.MergeNested
-import de.ii.ogcapi.foundation.domain.MergeSimple
+import de.ii.ogcapi.foundation.domain.*
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation
 
 @SuppressWarnings('ClashingTraitMethods')
@@ -23,9 +18,10 @@ class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec i
     FeaturesHtmlConfiguration getFull() {
         return new ImmutableFeaturesHtmlConfiguration.Builder()
                 .enabled(true)
-                .layout(FeaturesHtmlConfiguration.LAYOUT.CLASSIC)
+                .mapPosition(FeaturesHtmlConfiguration.POSITION.RIGHT)
                 .featureTitleTemplate("foo")
                 .putTransformations("foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()])
+                .putTransformations("*", [new ImmutablePropertyTransformation.Builder().flatten(".").build()])
                 .build()
     }
 
@@ -44,7 +40,7 @@ class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec i
     FeaturesHtmlConfiguration getSimple() {
         return new ImmutableFeaturesHtmlConfiguration.Builder()
                 .enabled(false)
-                .layout(FeaturesHtmlConfiguration.LAYOUT.COMPLEX_OBJECTS)
+                .mapPosition(FeaturesHtmlConfiguration.POSITION.TOP)
                 .featureTitleTemplate("bar")
                 .build()
     }
@@ -75,7 +71,8 @@ class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec i
                 .from(getFull())
                 .transformations(ImmutableMap.of(
                         "foo", [new ImmutablePropertyTransformation.Builder().rename("bar").build()],
-                        "bar", [new ImmutablePropertyTransformation.Builder().rename("foo").build()]
+                        "bar", [new ImmutablePropertyTransformation.Builder().rename("foo").build()],
+                        "*", [new ImmutablePropertyTransformation.Builder().flatten(".").build()]
                 ))
                 .build()
     }
@@ -95,7 +92,8 @@ class FeaturesHtmlConfigurationSpec extends AbstractExtensionConfigurationSpec i
                         "foo", [
                         new ImmutablePropertyTransformation.Builder().rename("bar").build(),
                         new ImmutablePropertyTransformation.Builder().codelist("cl").build()
-                        ]
+                        ],
+                        "*", [new ImmutablePropertyTransformation.Builder().flatten(".").build()]
                 ))
                 .build()
     }

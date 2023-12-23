@@ -11,8 +11,6 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
-import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
@@ -69,19 +67,11 @@ public class QueryParametersQueryables
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-    //noinspection deprecation
     return apiData
-            .getExtension(QueryablesConfiguration.class, collectionId)
-            .filter(QueryablesConfiguration::isEnabled)
-            .filter(QueryablesConfiguration::provideAsQueryParameters)
-            .isPresent()
-        // also check deprecated configuration option
-        || apiData
-            .getExtension(FeaturesCoreConfiguration.class, collectionId)
-            .filter(FeaturesCoreConfiguration::isEnabled)
-            .filter(
-                cfg -> cfg.getQueryables().map(FeaturesCollectionQueryables::getAll).isPresent())
-            .isPresent();
+        .getExtension(QueryablesConfiguration.class, collectionId)
+        .filter(QueryablesConfiguration::isEnabled)
+        .filter(QueryablesConfiguration::provideAsQueryParameters)
+        .isPresent();
   }
 
   @Override

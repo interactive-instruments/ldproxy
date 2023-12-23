@@ -1,5 +1,8 @@
 
 maturity = 'MATURE'
+maintenance = 'FULL'
+description = 'JSON encoding for every supported resource.'
+descriptionDe = 'JSON-Kodierung für alle unterstützten Ressourcen.'
 
 dependencies {
     provided project(":ogcapi-foundation")

@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -102,7 +101,6 @@ public interface FeatureTypeConfigurationOgcApi
    * @default []
    */
   @JsonProperty("api")
-  @JsonAlias("capabilities")
   @Override
   List<ExtensionConfiguration> getExtensions();
 

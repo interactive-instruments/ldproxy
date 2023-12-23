@@ -52,8 +52,6 @@ public interface FeaturesCoreQueriesHandler
 
     Optional<Integer> getDefaultPageSize();
 
-    boolean getShowsFeatureSelfLink();
-
     @Value.Default
     default boolean sendResponseAsStream() {
       return !getQuery().hitsOnly();

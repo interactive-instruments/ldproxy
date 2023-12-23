@@ -8,13 +8,10 @@
 package de.ii.ogcapi.collections.queryables.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfiguration;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration.PathSeparator;
-import de.ii.ogcapi.features.core.domain.FeaturesCollectionQueryables;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
@@ -52,15 +49,20 @@ import javax.inject.Singleton;
  * @scopeEn The queryables are represented as a schema where each queryable is a property. The
  *     schema for each queryable is automatically derived from the definition of the property in the
  *     feature provider. Supported encodings are JSON Schema and HTML.
- *     <p>Properties that are not objects (or an array of objects) can be declared as a queryable.
+ *     <p>The following types of properties cannot be queryables: <code>
+ * - objects or arrays of objects;
+ * - properties with multiple sources, i.e., with `coalesce` or `concat`.
+ *     </code>
  *     <p>If the queryable property is a value, e.g., a string or integer, that is nested in an
  *     array, the type of the queryable will be an array of values.
  * @scopeDe Die Queryables werden als Schema kodiert, wobei jede Queryable eine Objekteigenschaft
  *     ist. Das Schema für jede abfragbare Eigenschaft wird automatisch aus der Definition der
  *     Eigenschaft im Feature-Provider abgeleitet. Unterstützte Kodierungen sind JSON Schema und
  *     HTML.
- *     <p>Eigenschaften, die keine Objekte (oder ein Array von Objekten) sind, können als Queryable
- *     deklariert werden.
+ *     <p>Die folgenden Arten von Eigenschaften können keine Queryables sein: <code>
+ * - Objekte oder Arrays von Objekten
+ * - Eigenschaften mit multiplen Quellen, d.h. mit `coalesce` oder `concat`.
+ *     </code>
  *     <p>Wenn die abfragbare Eigenschaft ein Wert ist, z.B. ein String oder ein Integer, die in
  *     einem Array verschachtelt ist, ist der Typ der abfragbaren Eigenschaft ein Array der Werte.
  * @conformanceEn *Feature Collections - Queryables* implements all requirements and recommendations
@@ -69,6 +71,19 @@ import javax.inject.Singleton;
  * @conformanceDe Das Modul implementiert die Vorgaben und Empfehlungen aus Kapitel 6 ("Queryables")
  *     des [Entwurfs von OGC API - Features - Part 3:
  *     Filtering](https://docs.ogc.org/DRAFTS/19-079r1.html#queryables).
+ * @limitationsEn The draft of OGC API - Features - Part 3 does not specify how a queryable that is
+ *     a feature reference which has more variables than the local feature id should be handled. If
+ *     such a property is a queryable, the current implementation uses the local feature id as the
+ *     value of the queryable. That is, such queryables are only useful, if the local feature ids
+ *     are globally unique. As such, the current approach is a temporary solution that may still
+ *     change in the future, if the behavior is specified in a standard.
+ * @limitationsDe Der Entwurf von OGC API - Features - Part 3 spezifiziert nicht, wie ein Queryable,
+ *     das eine Feature-Referenz ist, die mehr Variablen als die lokale Feature-ID hat, behandelt
+ *     werden soll. Wenn eine solche Eigenschaft ein Queryable ist, verwendet die aktuelle
+ *     Implementierung die lokale Feature-ID als Wert des Queryables. Das heißt, solche Queryables
+ *     sind nur dann sinnvoll, wenn die lokalen Feature-IDs global eindeutig sind. Der derzeitige
+ *     Ansatz ist dementsprechend eine Übergangslösung, die sich in Zukunft noch ändern kann, wenn
+ *     das Verhalten in einem Standard festgelegt wird.
  * @ref:cfg {@link de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration}
  * @ref:cfgProperties {@link
  *     de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfiguration}
@@ -137,8 +152,6 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
     }
 
     for (Map.Entry<String, QueryablesConfiguration> entry : configs.entrySet()) {
-      List<String> deprecatedQueryables = getDeprecatedQueryables(builder, api, entry);
-
       FeatureTypeConfigurationOgcApi collectionData =
           Objects.requireNonNull(api.getData().getCollections().get(entry.getKey()));
       List<String> properties =
@@ -150,9 +163,8 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
                 "Queryables is enabled for collection ''{0}'', but no provider has been configured.",
                 entry.getKey()));
       } else {
-        checkQueryableExists(builder, entry, deprecatedQueryables, properties);
-        checkQueryableIsEligible(
-            builder, entry, deprecatedQueryables, api.getData(), collectionData, schema, providers);
+        checkQueryableExists(builder, entry, properties);
+        checkQueryableIsEligible(builder, entry, api.getData(), collectionData, schema, providers);
       }
     }
 
@@ -162,14 +174,10 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
   private void checkQueryableExists(
       ImmutableValidationResult.Builder builder,
       Map.Entry<String, QueryablesConfiguration> entry,
-      List<String> deprecatedQueryables,
       List<String> properties) {
     for (String queryable :
         Stream.concat(
-                deprecatedQueryables.stream(),
-                Stream.concat(
-                    entry.getValue().getIncluded().stream(),
-                    entry.getValue().getExcluded().stream()))
+                entry.getValue().getIncluded().stream(), entry.getValue().getExcluded().stream())
             .filter(v -> !"*".equals(v))
             .collect(Collectors.toUnmodifiableList())) {
       // does the collection include the sortable property?
@@ -185,7 +193,6 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
   private void checkQueryableIsEligible(
       Builder builder,
       Entry<String, QueryablesConfiguration> entry,
-      List<String> deprecatedQueryables,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
       Optional<FeatureSchema> schema,
@@ -198,7 +205,7 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
             .stream()
             .map(SchemaBase::getFullPathAsString)
             .collect(Collectors.toList());
-    Stream.concat(deprecatedQueryables.stream(), entry.getValue().getIncluded().stream())
+    entry.getValue().getIncluded().stream()
         .filter(propertyName -> !"*".equals(propertyName))
         .filter(propertyName -> !queryables.contains(propertyName))
         .forEach(
@@ -207,27 +214,6 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
                     MessageFormat.format(
                         "The queryables configuration for collection ''{0}'' includes a property ''{1}'', but the property is not eligible.",
                         entry.getKey(), propertyName)));
-  }
-
-  private List<String> getDeprecatedQueryables(
-      ImmutableValidationResult.Builder builder,
-      OgcApi api,
-      Map.Entry<String, QueryablesConfiguration> entry) {
-    @SuppressWarnings("deprecation")
-    List<String> deprecatedQueryables =
-        api.getData()
-            .getExtension(FeaturesCoreConfiguration.class, entry.getKey())
-            .flatMap(FeaturesCoreConfiguration::getQueryables)
-            .map(FeaturesCollectionQueryables::getAll)
-            .orElse(ImmutableList.of());
-    // check that there is at least one queryable for each collection where queryables is enabled
-    if (entry.getValue().getIncluded().isEmpty() && deprecatedQueryables.isEmpty()) {
-      builder.addStrictErrors(
-          MessageFormat.format(
-              "Queryables is enabled for collection ''{0}'', but no queryable property has been configured.",
-              entry.getKey()));
-    }
-    return deprecatedQueryables;
   }
 
   private Map<String, QueryablesConfiguration> getConfigurations(OgcApi api) {

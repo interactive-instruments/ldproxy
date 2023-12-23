@@ -48,14 +48,13 @@ import org.slf4j.LoggerFactory;
  * @path styles/{styleId}/metadata
  * @langEn Style metadata is essential information about a style in order to support users to
  *     discover and select styles for rendering their data and for visual style editors to create
- *     user interfaces for editing a style. This operations returns the metadata for the requested
- *     style as a single document. The stylesheet of the style will typically include some the
- *     metadata, too.
+ *     user interfaces for editing a style. This operation returns the metadata for the requested
+ *     style as a single document. The style metadata is derived from the style and the stylesheet.
  * @langDe Style-Metadaten sind wichtige Informationen über einen Style, damit Benutzer Styles für
  *     die Darstellung ihrer Daten erkennen und auswählen können und visuelle Style-Editoren
  *     Benutzeroberflächen für die Bearbeitung eines Styles bereitstellen können. Diese Operation
- *     gibt die Metadaten für den angeforderten Style als ein einziges Dokument zurück. Das
- *     Stylesheet des Styles enthält in der Regel auch einige der Metadaten.
+ *     gibt die Metadaten für den angeforderten Style als ein einziges Dokument zurück. Die
+ *     Metadaten werden aus dem Style und dem Stylesheet abgeleitet.
  * @ref:formats {@link de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension}
  */
 @Singleton
@@ -109,8 +108,8 @@ public class EndpointStyleMetadata extends Endpoint {
               "Style metadata is essential information about a style in order to "
                   + "support users to discover and select styles for rendering their data and for visual style editors "
                   + "to create user interfaces for editing a style. This operations returns the metadata for the "
-                  + "requested style as a single document. The stylesheet of the style will typically include some "
-                  + "the metadata, too.");
+                  + "requested style as a single document. The style metadata is derived from the style and the "
+                  + "stylesheet.");
       ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
           new ImmutableOgcApiResourceAuxiliary.Builder().path(path).pathParameters(pathParameters);
       ApiOperation.getResource(

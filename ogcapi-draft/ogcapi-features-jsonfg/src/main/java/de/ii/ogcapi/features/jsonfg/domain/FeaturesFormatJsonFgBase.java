@@ -137,10 +137,7 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
             .from(transformationContext)
             .geoJsonConfig(geoJsonConfig)
             .mediaType(getMediaType())
-            .prettify(
-                transformationContext.getPrettify()
-                    || (Objects.requireNonNullElse(
-                        geoJsonConfig.getUseFormattedJsonOutput(), false)))
+            .prettify(transformationContext.getPrettify())
             .suppressPrimaryGeometry(!includePrimaryGeometry(transformationContext))
             .forceDefaultCrs(true);
 
