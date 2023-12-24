@@ -34,11 +34,13 @@ public abstract class Endpoint implements EndpointExtension {
   protected final ExtensionRegistry extensionRegistry;
   // temporarily changed to protected
   protected final Map<Integer, ApiEndpointDefinition> apiDefinitions;
+  protected final Map<String, Integer> apiHashes;
   protected List<? extends FormatExtension> formats;
 
   public Endpoint(ExtensionRegistry extensionRegistry) {
     this.extensionRegistry = extensionRegistry;
     this.apiDefinitions = new ConcurrentHashMap<>();
+    this.apiHashes = new ConcurrentHashMap<>();
   }
 
   @Override
@@ -80,6 +82,12 @@ public abstract class Endpoint implements EndpointExtension {
     if (!isEnabledForApi(apiData)) {
       return EndpointExtension.super.getDefinition(apiData);
     }
+
+    if (apiHashes.containsKey(apiData.getId())) {
+      apiDefinitions.remove(apiHashes.get(apiData.getId()));
+    }
+
+    apiHashes.put(apiData.getId(), apiData.hashCode());
 
     return apiDefinitions.computeIfAbsent(
         apiData.hashCode(),
