@@ -76,6 +76,16 @@ public abstract class Endpoint implements EndpointExtension {
     return builder.build();
   }
 
+  @Override
+  public void onShutdown(OgcApi api) {
+    if (apiHashes.containsKey(api.getId())) {
+      apiDefinitions.remove(apiHashes.get(api.getId()));
+      apiHashes.remove(api.getId());
+    }
+
+    EndpointExtension.super.onShutdown(api);
+  }
+
   // temporarily removed "final" until a better solution has been implemented
   @Override
   public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
