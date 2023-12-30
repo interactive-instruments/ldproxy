@@ -12,6 +12,7 @@ import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.core.domain.WithChangeListeners;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -51,7 +52,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
+public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChangeListeners {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TileSeedingBackgroundTask.class);
 
@@ -115,13 +116,18 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     providers
         .getFeatureProvider(api.getData())
-        .ifPresent(
-            provider -> {
-              provider.getChangeHandler().addListener(onDatasetChange(api));
-              provider.getChangeHandler().addListener(onFeatureChange(api));
-            });
+        .ifPresent(provider -> updateChangeListeners(provider.getChangeHandler(), api));
 
     return ValidationResult.of();
+  }
+
+  @Override
+  public void onShutdown(OgcApi api) {
+    providers
+        .getFeatureProvider(api.getData())
+        .ifPresent(provider -> removeChangeListeners(provider.getChangeHandler(), api));
+
+    OgcApiBackgroundTask.super.onShutdown(api);
   }
 
   @Override
@@ -275,7 +281,8 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
     tileProvider.seeding().seed(tilesets, formats, reseed, taskContext);
   }
 
-  private DatasetChangeListener onDatasetChange(OgcApi api) {
+  @Override
+  public DatasetChangeListener onDatasetChange(OgcApi api) {
     return change -> {
       for (String featureType : change.getFeatureTypes()) {
         String collectionId = FeaturesCoreConfiguration.getCollectionId(api.getData(), featureType);
@@ -297,7 +304,8 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask {
     };
   }
 
-  private FeatureChangeListener onFeatureChange(OgcApi api) {
+  @Override
+  public FeatureChangeListener onFeatureChange(OgcApi api) {
     return change -> {
       String collectionId =
           FeaturesCoreConfiguration.getCollectionId(api.getData(), change.getFeatureType());
