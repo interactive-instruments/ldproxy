@@ -32,9 +32,12 @@ import javax.inject.Singleton;
 @AutoBind
 public class PathParameterCollectionIdTiles extends AbstractPathParameterCollectionId {
 
+  private final TilesProviders tilesProviders;
+
   @Inject
-  PathParameterCollectionIdTiles(SchemaValidator schemaValidator) {
+  PathParameterCollectionIdTiles(SchemaValidator schemaValidator, TilesProviders tilesProviders) {
     super(schemaValidator);
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -44,6 +47,15 @@ public class PathParameterCollectionIdTiles extends AbstractPathParameterCollect
           apiData.hashCode(),
           apiData.getCollections().values().stream()
               .filter(collection -> apiData.isCollectionEnabled(collection.getId()))
+              .filter(
+                  collection ->
+                      collection
+                          .getExtension(TilesConfiguration.class)
+                          .map(
+                              cfg ->
+                                  cfg.hasCollectionTiles(
+                                      tilesProviders, apiData, collection.getId()))
+                          .orElse(false))
               .filter(
                   collection ->
                       collection

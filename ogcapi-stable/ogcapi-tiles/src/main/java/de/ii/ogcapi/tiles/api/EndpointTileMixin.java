@@ -282,7 +282,9 @@ public interface EndpointTileMixin {
         ? id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER + ".", "")
             .replace(
                 EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
-                tilesProviders.getTilesetMetadataOrThrow(apiData).isVector() ? "vector" : "map")
+                tilesProviders.getTilesetMetadata(apiData).filter(md -> !md.isVector()).isPresent()
+                    ? "map"
+                    : "vector")
         : id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER, collectionId)
             .replace(
                 EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
