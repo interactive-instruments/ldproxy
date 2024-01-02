@@ -12,13 +12,14 @@ import de.ii.ogcapi.common.domain.QueryParameterF;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
  * @title f
- * @endpoints Dataset Tile, Collection Tile
+ * @endpoints Dataset Tile
  * @langEn Select the output format of the response. If no value is provided, the standard HTTP
  *     rules apply, i.e., the "Accept" header will be used to determine the format.
  * @langDe Wählt das Ausgabeformat der Antwort. Wenn kein Wert angegeben wird, gelten die
@@ -28,22 +29,34 @@ import javax.inject.Singleton;
 @AutoBind
 public class QueryParameterFTile extends QueryParameterF {
 
+  private final TilesProviders tilesProviders;
+
   @Inject
   protected QueryParameterFTile(
-      ExtensionRegistry extensionRegistry, SchemaValidator schemaValidator) {
+      ExtensionRegistry extensionRegistry,
+      SchemaValidator schemaValidator,
+      TilesProviders tilesProviders) {
     super(extensionRegistry, schemaValidator);
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
   public String getId() {
-    return "fTile";
+    return "fTileDataset";
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return apiData
+        .getExtension(TilesConfiguration.class, collectionId)
+        .filter(TilesConfiguration::isEnabled)
+        .filter(cfg -> cfg.hasDatasetTiles(tilesProviders, apiData))
+        .isPresent();
   }
 
   @Override
   protected boolean matchesPath(String definitionPath) {
-    return (definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
-        || definitionPath.equals(
-            "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
+    return definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
   }
 
   @Override

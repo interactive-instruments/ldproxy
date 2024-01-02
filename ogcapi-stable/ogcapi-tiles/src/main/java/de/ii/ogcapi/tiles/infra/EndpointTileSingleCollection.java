@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -29,7 +30,10 @@ import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -37,6 +41,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
@@ -115,6 +120,20 @@ public class EndpointTileSingleCollection extends EndpointSubCollection
             "collection",
             EndpointTileMixin.DATA_TYPE_PLACEHOLDER),
         TAGS);
+  }
+
+  @Override
+  public Map<MediaType, ApiMediaTypeContent> getResponseContent(OgcApiDataV2 apiData) {
+    return getResourceFormats().stream()
+        .filter(
+            inputFormatExtension ->
+                apiData.getCollections().keySet().stream()
+                    .anyMatch(
+                        collectionId ->
+                            inputFormatExtension.isEnabledForApi(apiData, collectionId)))
+        .map(FormatExtension::getContent)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
   }
 
   @Path("/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
