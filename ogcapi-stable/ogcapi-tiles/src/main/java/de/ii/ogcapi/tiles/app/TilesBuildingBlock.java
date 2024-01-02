@@ -145,6 +145,7 @@ import org.slf4j.LoggerFactory;
  * @ref:queryParameters {@link de.ii.ogcapi.tiles.domain.QueryParameterCollections}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterDatetimeTile}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterFTile}, {@link
+ *     de.ii.ogcapi.tiles.domain.QueryParameterFTileCollection}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterFTileSet}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterFTileSets}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterLimitTile}
