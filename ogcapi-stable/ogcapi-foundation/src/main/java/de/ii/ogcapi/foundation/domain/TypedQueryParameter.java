@@ -39,4 +39,10 @@ public interface TypedQueryParameter<T> {
     }
     return parse(value.get(0), typedValues, api, optionalCollectionData);
   }
+
+  // TODO is there a way to use T instead of Object for the parameters?
+  default T mergeValues(Object value1, Object value2) {
+    throw new IllegalStateException(
+        String.format("Merging values is not supported for parameter '%s'", getName()));
+  }
 }
