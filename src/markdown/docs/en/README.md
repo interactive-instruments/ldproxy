@@ -15,4 +15,4 @@ The software is characterized by the following features:
 
 To get an idea how the APIs look like, have a look at the [Demo APIs](https://demo.ldproxy.net).
 
-More information on the supported specifications and technologies is available in [English](https://docs.ldproxy.net/advanced/specifications.html) and [German](https://docs.ldproxy.net/de/advanced/specifications.html).
+More information on the supported specifications and technologies is available [here](https://docs.ldproxy.net/advanced/specifications.html).
