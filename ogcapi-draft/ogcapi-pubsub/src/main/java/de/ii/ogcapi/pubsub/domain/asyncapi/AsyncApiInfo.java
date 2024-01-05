@@ -5,29 +5,24 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.pubsub.domain;
+package de.ii.ogcapi.pubsub.domain.asyncapi;
 
-import de.ii.ogcapi.features.core.domain.JsonSchema;
 import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public interface AsyncApiMessage {
+public interface AsyncApiInfo {
 
-  Optional<String> getName();
-
-  Optional<String> getTitle();
-
-  Optional<String> getSummary();
+  String getTitle();
 
   Optional<String> getDescription();
 
   @Value.Default
-  default String getContentType() {
-    return "application/geo+json";
+  default String getVersion() {
+    return "1.0.0";
   }
 
-  Optional<JsonSchema> getPayload();
+  Optional<AsyncApiContact> getContact();
 
-  Optional<AsyncApiMessageBindingsMqtt> getBindings();
+  Optional<AsyncApiLicense> getLicense();
 }

@@ -5,19 +5,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.pubsub.domain;
+package de.ii.ogcapi.pubsub.domain.asyncapi;
 
-import java.util.Optional;
+import de.ii.ogcapi.features.core.domain.JsonSchema;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public interface AsyncApiOperationBindingsMqtt {
+public interface AsyncApiParameter {
 
-  Optional<Integer> getQos();
-
-  Optional<Boolean> getRetain();
-
-  default String getBindingVersion() {
-    return "0.1.0";
-  }
+  JsonSchema getSchema();
 }

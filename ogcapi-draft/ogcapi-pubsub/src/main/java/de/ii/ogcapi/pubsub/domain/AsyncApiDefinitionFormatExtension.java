@@ -10,6 +10,7 @@ package de.ii.ogcapi.pubsub.domain;
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.pubsub.domain.asyncapi.AsyncApi;
 import java.util.Optional;
 import javax.ws.rs.core.Response;
 

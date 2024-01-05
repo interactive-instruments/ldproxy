@@ -5,9 +5,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.pubsub.domain;
+package de.ii.ogcapi.pubsub.domain.asyncapi;
 
+import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public interface AsyncApiChannelBindingsMqtt {}
+public interface AsyncApiOperationBindingsMqtt {
+
+  Optional<Integer> getQos();
+
+  Optional<Boolean> getRetain();
+
+  default String getBindingVersion() {
+    return "0.1.0";
+  }
+}
