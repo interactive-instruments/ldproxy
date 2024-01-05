@@ -43,9 +43,10 @@ tasks.publish { dependsOn subprojects*.tasks*.findByPath('publish') }
 task cleanAll { dependsOn subprojects*.tasks*.findByPath('clean') + tasks.clean }
 task spotlessApplyAll { dependsOn subprojects*.tasks*.findByPath('spotlessApply') }
 
-// TODO: workaround for issues with hivemq-client which also uses dagger
-// our dagger will recompile hivemq classes which leads to various errors
-// dagger does not touch classes in the extra module generated for intellij, so we enforce that 
+// TODO: workaround for issues with hivemq-client which also uses dagger;
+// our dagger will recompile hivemq classes which leads to various errors;
+// dagger does not touch classes in the extra module generated for intellij, 
+// so we enforce that 
 if (System.getProperty("idea.active") != "true") {
     configure(subprojects) {
         it.beforeEvaluate {

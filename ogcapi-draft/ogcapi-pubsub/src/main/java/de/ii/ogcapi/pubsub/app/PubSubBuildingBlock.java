@@ -77,16 +77,77 @@ import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @title PubSub
- * @langEn TODO.
- * @langDe TODO.
- * @conformanceEn TODO.
- * @conformanceDe TODO.
+ * @langEn Publish feature changes via a MQTT broker
+ * @langDe Veröffentlichen von Objektänderungen über einen MQTT-Broker
+ * @scopeEn This building block publishes messages about feature changes via MQTT brokers.
+ *     <p>The building block specifies one or more brokers (option: `brokers`), the unique publisher
+ *     identifier in the brokers (option: `publisher`), and one or more types of publications
+ *     (option: `publications`).
+ *     <p>#### Publications
+ *     <p>The topic identifiers follow the pattern
+ *     `ogcapi/{publisherId}/{apiId}/collections/{collectionId}/{subPath}`, where `publisherId` is
+ *     the value of the configuration option `publisher`, `apiId` is the identifier of the API and
+ *     `collectionId` is the identifier of the collection of the new, changed or deleted feature.
+ *     `subPath` depends on the type of publication. Two types of publications are supported.
+ *     <p>All publication types support the following configuration options: <code>
+ *  - `broker`: the identifier of the broker to send publication messages to;
+ *  - `mqttQos`: the MQTT QoS value for the messages, `AT_MOST_ONCE` (default), `AT_LEAST_ONCE`, or `EXACTLY_ONCE`.
+ *  - `retain`: boolean flag whether the broker should retain the message (default: `false);
+ *  - `timeout`: the timeout in seconds (default: 60).
+ *  </code>
+ *     <p>##### Type: Single topic for all feature changes in a collection
+ *     <p>For these publications `subPath` is `items`. The message is a GeoJSON feature with three
+ *     additional properties: <code>
+ *  - `$id`: a UUID for the publication;
+ *  - `$pubtime`: the timestamp when the publication was created;
+ *  - `$operation`: One of `create`, `update`, or `delete`.
+ *  </code>
+ *     <p>In case of `create` or `update`, the feature includes the id, the geometry and the feature
+ *     properties. For `delete`, only the id is included.
+ *     <p>See the `items` publication in the [example](#examples).
+ *     <p>##### Type: One or more topics for changes to a feature property
+ *     <p>For these publications `subPath` must not be `items`. The subPath can include multiple
+ *     path elements and a path element can be a parameter in curly brackets.
+ *     <p>The `parameters` configuration option in the publication maps these parameters to feature
+ *     properties. The values of the properties in the instance are used to construct the topic.
+ *     This allows to publish, for example, measurements by station, if one of the parameters is a
+ *     station identifier.
+ *     <p>The `property` configuration option identifies the property whose value is sent in the
+ *     publication message. This could be, for example, the value of a measurement.
+ *     <p>See the `{wigos_station_identifier}/{observed_property}` publication in the
+ *     [example](#examples).
+ * @scopeDe When this extension is enabled `schema` references can point to JSON schema files in
+ *     addition to local fragments. The reference can be either a URL or a relative path to a file
+ *     in `resources/schemas`. It also supports referencing sub-schemas in `$defs`. Examples: <code>
+ *  - `https://example.com/buildings.json`
+ *  - `https://example.com/buildings.json#/$defs/address`
+ *  - `buildings.json`
+ *  - `buildings.json#/$defs/address`
+ *  </code>
+ * @limitationsEn This building block is an initial version that was developed during OGC Testbed
+ *     19. Additional development and testing is required to ensure the module supports a sufficient
+ *     range of use cases.
+ *     <p>Currently only MQTT 3.1.1 is supported.
+ * @limitationsDe Bei diesem Baustein handelt es sich um eine erste Version, die im Rahmen von OGC
+ *     Testbed 19 entwickelt wurde. Weitere Entwicklungen und Tests sind erforderlich, um
+ *     sicherzustellen, dass der Baustein eine ausreichende Anzahl von Anwendungsfällen unterstützt.
+ *     <p>Derzeit wird nur MQTT 3.1.1 unterstützt.
+ * @conformanceEn OGC is starting to work on [a standard that enables publish/subscribe
+ *     functionality for resources supported by OGC API
+ *     Standards(https://github.com/opengeospatial/pubsub). The work is in its early stages.
+ *     <p>The event-driven API is described using [AsyncAPI 2.6](https://www.asyncapi.com/) and
+ *     complements the OpenAPI definition (API requests initiated by clients).
+ * @conformanceDe OGC beginnt mit der Arbeit an [einem Standard, der eine
+ *     Publish/Subscribe-Funktionalität für Ressourcen ermöglicht, die von OGC API Standards
+ *     (https://github.com/opengeospatial/pubsub) unterstützt werden. Die Arbeiten befinden sich in
+ *     einem frühen Stadium.
+ *     <p>Die ereignisgesteuerte API wird mit [AsyncAPI 2.6](https://www.asyncapi.com/) beschrieben
+ *     und ergänzt die OpenAPI-Definition (von Nutzern initiierte API-Anfragen).
  * @ref:cfg {@link de.ii.ogcapi.pubsub.app.PubSubConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.pubsub.app.ImmutablePubSubConfiguration}
  */
@@ -119,12 +180,13 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
-    return ImmutablePubSubConfiguration.builder().enabled(false).build();
+    return ImmutablePubSubConfiguration.builder().enabled(false).publisher("ldproxy").build();
   }
 
   @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
 
+    // TODO remove listeners on reload or shutdown
     providers
         .getFeatureProvider(api.getData())
         .ifPresent(provider -> provider.getChangeHandler().addListener(onFeatureChange(api)));
@@ -383,7 +445,7 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
       } else {
         matcher.appendReplacement(result, "unknown");
         if (LOGGER.isErrorEnabled()) {
-          // TODO add to validation at startup
+          // TODO add to validation on startup
           LOGGER.error(
               "PubSub: Invalid configuration, unknown feature property {}", matcher.group(1));
         }
@@ -394,7 +456,6 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
     return result.toString();
   }
 
-  @NotNull
   private ObjectNode initFeature(String featureId) {
     ObjectNode geojson;
     geojson = mapper.createObjectNode();
