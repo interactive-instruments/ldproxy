@@ -147,7 +147,7 @@ import org.slf4j.LoggerFactory;
  * </code>
  *     <p>Im Falle von `create` oder `update` enthält das Feature die id, die Geometrie und die
  *     Feature-Eigenschaften. Bei `delete` ist nur die ID enthalten.
- *     <p>Siehe die Veröffentlichung `items` im [example](#examples).
+ *     <p>Siehe die Veröffentlichung `items` im [Beispiel](#beispiele).
  *     <p>#### Veröffentlichungstyp: Ein oder mehrere Themen für Änderungen an einer
  *     Feature-Eigenschaft.
  *     <p>Für diese Veröffentlichungen darf `subPath` nicht `items` sein. Der `subPath` kann mehrere
@@ -170,13 +170,13 @@ import org.slf4j.LoggerFactory;
  *     <p>Derzeit wird nur MQTT 3.1.1 unterstützt.
  * @conformanceEn OGC is starting to work on [a standard that enables publish/subscribe
  *     functionality for resources supported by OGC API
- *     Standards(https://github.com/opengeospatial/pubsub). The work is in its early stages.
+ *     Standards](https://github.com/opengeospatial/pubsub). The work is in its early stages.
  *     <p>The event-driven API is described using [AsyncAPI 2.6](https://www.asyncapi.com/) and
  *     complements the OpenAPI definition (API requests initiated by clients).
  * @conformanceDe OGC beginnt mit der Arbeit an [einem Standard, der eine
- *     Publish/Subscribe-Funktionalität für Ressourcen ermöglicht, die von OGC API Standards
- *     (https://github.com/opengeospatial/pubsub) unterstützt werden. Die Arbeiten befinden sich in
- *     einem frühen Stadium.
+ *     Publish/Subscribe-Funktionalität für Ressourcen ermöglicht, die von OGC API
+ *     Standards](https://github.com/opengeospatial/pubsub) unterstützt werden. Die Arbeiten
+ *     befinden sich in einem frühen Stadium.
  *     <p>Die ereignisgesteuerte API wird mit [AsyncAPI 2.6](https://www.asyncapi.com/) beschrieben
  *     und ergänzt die OpenAPI-Definition (von Nutzern initiierte API-Anfragen).
  * @ref:cfg {@link de.ii.ogcapi.pubsub.app.PubSubConfiguration}

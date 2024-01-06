@@ -75,7 +75,7 @@ public interface PubSubConfiguration extends ExtensionConfiguration {
 
   /**
    * @langEn See [Publications](#publications)
-   * @langDe Siehe [Veröffentlichungen](#veröffentlichungen)
+   * @langDe Siehe [Veröffentlichungen](#veroffentlichungen)
    * @default {}
    */
   Map<String, Publication> getPublications();
