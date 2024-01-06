@@ -7,10 +7,18 @@
  */
 package de.ii.ogcapi.pubsub.domain.asyncapi;
 
+import com.google.common.hash.Funnel;
+import java.nio.charset.StandardCharsets;
 import org.immutables.value.Value;
 
 @Value.Immutable
 public interface AsyncApiSecurity {
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<AsyncApiSecurity> FUNNEL =
+      (from, into) -> {
+        into.putString(from.getType(), StandardCharsets.UTF_8);
+      };
 
   default String getType() {
     return "userPassword";

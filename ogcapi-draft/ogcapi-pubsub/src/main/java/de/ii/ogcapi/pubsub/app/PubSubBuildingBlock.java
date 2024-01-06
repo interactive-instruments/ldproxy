@@ -88,7 +88,7 @@ import org.slf4j.LoggerFactory;
  *     <p>The building block specifies one or more brokers (option: `brokers`), the unique publisher
  *     identifier in the brokers (option: `publisher`), and one or more types of publications
  *     (option: `publications`).
- *     <p>#### Publications
+ *     <p>### Publications
  *     <p>The topic identifiers follow the pattern
  *     `ogcapi/{publisherId}/{apiId}/collections/{collectionId}/{subPath}`, where `publisherId` is
  *     the value of the configuration option `publisher`, `apiId` is the identifier of the API and
@@ -97,10 +97,10 @@ import org.slf4j.LoggerFactory;
  *     <p>All publication types support the following configuration options: <code>
  *  - `broker`: the identifier of the broker to send publication messages to;
  *  - `mqttQos`: the MQTT QoS value for the messages, `AT_MOST_ONCE` (default), `AT_LEAST_ONCE`, or `EXACTLY_ONCE`.
- *  - `retain`: boolean flag whether the broker should retain the message (default: `false);
+ *  - `retain`: flag whether the broker should retain the message (default: `false);
  *  - `timeout`: the timeout in seconds (default: 60).
  *  </code>
- *     <p>##### Type: Single topic for all feature changes in a collection
+ *     <p>#### Publication type: Single topic for all feature changes in a collection
  *     <p>For these publications `subPath` is `items`. The message is a GeoJSON feature with three
  *     additional properties: <code>
  *  - `$id`: a UUID for the publication;
@@ -110,7 +110,7 @@ import org.slf4j.LoggerFactory;
  *     <p>In case of `create` or `update`, the feature includes the id, the geometry and the feature
  *     properties. For `delete`, only the id is included.
  *     <p>See the `items` publication in the [example](#examples).
- *     <p>##### Type: One or more topics for changes to a feature property
+ *     <p>#### Publication type: One or more topics for changes of a feature property
  *     <p>For these publications `subPath` must not be `items`. The subPath can include multiple
  *     path elements and a path element can be a parameter in curly brackets.
  *     <p>The `parameters` configuration option in the publication maps these parameters to feature
@@ -121,14 +121,45 @@ import org.slf4j.LoggerFactory;
  *     publication message. This could be, for example, the value of a measurement.
  *     <p>See the `{wigos_station_identifier}/{observed_property}` publication in the
  *     [example](#examples).
- * @scopeDe When this extension is enabled `schema` references can point to JSON schema files in
- *     addition to local fragments. The reference can be either a URL or a relative path to a file
- *     in `resources/schemas`. It also supports referencing sub-schemas in `$defs`. Examples: <code>
- *  - `https://example.com/buildings.json`
- *  - `https://example.com/buildings.json#/$defs/address`
- *  - `buildings.json`
- *  - `buildings.json#/$defs/address`
- *  </code>
+ * @scopeDe Dieser Baustein veröffentlicht Nachrichten über Feature-Änderungen über MQTT-Broker.
+ *     <p>Der Baustein spezifiziert einen oder mehrere Broker (Option: `brokers`), die eindeutige
+ *     Publisher-Kennung in den Brokern (Option: `publisher`) und eine oder mehrere Arten von
+ *     Publikationen (Option: `publications`).
+ *     <p>### Veröffentlichungen
+ *     <p>Die Themenbezeichner folgen dem Muster
+ *     `ogcapi/{publisherId}/{apiId}/collections/{collectionId}/{subPath}`, wobei `publisherId` der
+ *     Wert der Konfigurationsoption `publisher` ist, `apiId` der Bezeichner der API und
+ *     `collectionId` der Bezeichner der Collection des neuen, geänderten oder gelöschten Features
+ *     ist. `subPath` hängt von der Art der Veröffentlichung ab. Es werden zwei Typen von
+ *     Veröffentlichungen unterstützt.
+ *     <p>Alle Veröffentlichungstypen unterstützen die folgenden Konfigurationsoptionen: <code>
+ * - `broker`: der Identifikator des Brokers, an den die Publikationsnachrichten gesendet werden;
+ * - `mqttQos`: der MQTT QoS-Wert für die Nachrichten, `AT_MOST_ONCE` (Standard), `AT_LEAST_ONCE`, oder `EXACTLY_ONCE`;
+ * - `retain`: Schalter, ob der Broker die Nachricht aufbewahren soll (Voreinstellung: `false);
+ * - `timeout`: der Timeout in Sekunden (Standardwert: 60).
+ * </code>
+ *     <p>#### Veröffentlichungstyp: Einzelnes Thema für alle Feature-Änderungen in einer Collection
+ *     <p>Für diese Veröffentlichungen ist `items` der Wert von`subPath`. Die Nachricht ist ein
+ *     GeoJSON Feature mit drei zusätzlichen Eigenschaften: <code>
+ * - `$id`: eine UUID für die Veröffentlichung;
+ * - `$pubtime`: der Zeitstempel, wann die Publikation erstellt wurde;
+ * - `$operation`: Einer der Werte `create`, `update`, oder `delete`.
+ * </code>
+ *     <p>Im Falle von `create` oder `update` enthält das Feature die id, die Geometrie und die
+ *     Feature-Eigenschaften. Bei `delete` ist nur die ID enthalten.
+ *     <p>Siehe die Veröffentlichung `items` im [example](#examples).
+ *     <p>#### Veröffentlichungstyp: Ein oder mehrere Themen für Änderungen an einer
+ *     Feature-Eigenschaft.
+ *     <p>Für diese Veröffentlichungen darf `subPath` nicht `items` sein. Der `subPath` kann mehrere
+ *     Pfadelemente enthalten und ein Pfadelement kann ein Parameter in geschweiften Klammern sein.
+ *     <p>Die Konfigurationsoption `parameters` in der Veröffentlichung bildet diese Parameter auf
+ *     Feature-Eigenschaften ab. Die Werte der Eigenschaften in der Instanz werden verwendet, um das
+ *     Thema zu konstruieren. Dies ermöglicht z.B. die Veröffentlichung von Messungen nach
+ *     Stationen, wenn einer der Parameter eine Stationskennung ist.
+ *     <p>Die Konfigurationsoption `property` identifiziert die Eigenschaft, deren Wert in der
+ *     Veröffentlichungsnachricht gesendet wird. Dies kann z.B. der Wert einer Messung sein.
+ *     <p>Siehe die Veröffentlichung `{wigos_station_identifier}/{observed_property}` im
+ *     [Beispiel](#beispiele).
  * @limitationsEn This building block is an initial version that was developed during OGC Testbed
  *     19. Additional development and testing is required to ensure the module supports a sufficient
  *     range of use cases.
@@ -186,7 +217,7 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
   @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
 
-    // TODO remove listeners on reload or shutdown
+    // TODO remove listeners on reload or shutdown after #1132 has been merged
     providers
         .getFeatureProvider(api.getData())
         .ifPresent(provider -> provider.getChangeHandler().addListener(onFeatureChange(api)));
@@ -445,7 +476,7 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
       } else {
         matcher.appendReplacement(result, "unknown");
         if (LOGGER.isErrorEnabled()) {
-          // TODO add to validation on startup
+          // TODO move to validation on startup
           LOGGER.error(
               "PubSub: Invalid configuration, unknown feature property {}", matcher.group(1));
         }

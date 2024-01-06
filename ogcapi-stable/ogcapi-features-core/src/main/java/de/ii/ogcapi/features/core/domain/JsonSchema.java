@@ -47,6 +47,8 @@ public abstract class JsonSchema {
           JsonSchemaRef.FUNNEL.funnel((JsonSchemaRef) from, into);
         else if (from instanceof JsonSchemaOneOf)
           JsonSchemaOneOf.FUNNEL.funnel((JsonSchemaOneOf) from, into);
+        else if (from instanceof JsonSchemaAllOf)
+          JsonSchemaAllOf.FUNNEL.funnel((JsonSchemaAllOf) from, into);
       };
 
   public abstract Optional<String> getTitle();

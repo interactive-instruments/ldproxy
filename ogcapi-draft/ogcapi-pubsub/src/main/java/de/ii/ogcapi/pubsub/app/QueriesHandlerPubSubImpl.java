@@ -10,11 +10,23 @@ package de.ii.ogcapi.pubsub.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaAllOf;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaBoolean;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaInteger;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaNumber;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaRef;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaString;
+import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaTrue;
+import de.ii.ogcapi.features.core.domain.JsonSchema;
+import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
+import de.ii.ogcapi.features.core.domain.SchemaDeriverCollectionProperties;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.HeaderCaching;
+import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
@@ -38,6 +50,11 @@ import de.ii.ogcapi.pubsub.domain.asyncapi.ImmutableAsyncApiReference;
 import de.ii.ogcapi.pubsub.domain.asyncapi.ImmutableAsyncApiSecurity;
 import de.ii.ogcapi.pubsub.domain.asyncapi.ImmutableAsyncApiServer;
 import de.ii.ogcapi.pubsub.domain.asyncapi.ImmutableAsyncApiServerBindingsMqtt;
+import de.ii.xtraplatform.base.domain.ETag;
+import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase.Type;
+import de.ii.xtraplatform.values.domain.ValueStore;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -47,6 +64,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -60,9 +78,13 @@ public class QueriesHandlerPubSubImpl implements QueriesHandlerPubSub {
 
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
   private final Map<String, AsyncApi> asyncApiDefinitions;
+  private final FeaturesCoreProviders providers;
+  private final Supplier<Map<String, Codelist>> codelistSupplier;
 
   @Inject
-  public QueriesHandlerPubSubImpl() {
+  public QueriesHandlerPubSubImpl(FeaturesCoreProviders providers, ValueStore valueStore) {
+    this.providers = providers;
+    this.codelistSupplier = valueStore.forType(Codelist.class)::asMap;
     this.queryHandlers =
         ImmutableMap.of(
             Query.ASYNC_API_DEFINITION,
@@ -91,14 +113,6 @@ public class QueriesHandlerPubSubImpl implements QueriesHandlerPubSub {
                         MessageFormat.format(
                             "The requested media type ''{0}'' is not supported for this resource.",
                             requestContext.getMediaType())));
-
-    Date lastModified = getLastModified(queryInput);
-    // TODO support ETag
-    EntityTag etag = null;
-    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
-    if (Objects.nonNull(response)) {
-      return response.build();
-    }
 
     OgcApiDataV2 apiData = requestContext.getApi().getData();
 
@@ -171,6 +185,8 @@ public class QueriesHandlerPubSubImpl implements QueriesHandlerPubSub {
               (collectionId, collectionData) -> {
                 PubSubConfiguration collectionCfg =
                     collectionData.getExtension(PubSubConfiguration.class).get();
+                Optional<FeatureSchema> featureSchema =
+                    providers.getFeatureSchema(apiData, collectionData);
                 if (collectionCfg.isEnabled() && !collectionCfg.getPublications().isEmpty()) {
                   components.putMessages(
                       String.format("featureChange_%s", collectionId),
@@ -178,10 +194,41 @@ public class QueriesHandlerPubSubImpl implements QueriesHandlerPubSub {
                           .name("featureChangeMessage")
                           .title("Feature Change")
                           .summary("Information about a new, updated or deleted feature.")
-                          // .description("TODO")
+                          .description(
+                              "The message is a GeoJSON representation of the feature with three additional properties: `$id` with a UUID for the publication; `$pubtime` with the timestamp when the publication was created; `$operation` with `create`, `update`, or `delete`. In case of `create` or `update`, the feature includes the id, the geometry and the feature properties. For `delete`, only the id is included.")
                           .payload(
-                              new ImmutableJsonSchemaObject.Builder()
-                                  // TODO
+                              new ImmutableJsonSchemaAllOf.Builder()
+                                  .addAllOf(
+                                      new ImmutableJsonSchemaRef.Builder()
+                                          .ref("https://geojson.org/schema/Feature.json")
+                                          .build(),
+                                      new ImmutableJsonSchemaObject.Builder()
+                                          .addRequired("properties")
+                                          .properties(
+                                              ImmutableMap.of(
+                                                  "properties",
+                                                  new ImmutableJsonSchemaObject.Builder()
+                                                      .addRequired("$id", "$pubtime", "$operation")
+                                                      .additionalProperties(
+                                                          ImmutableJsonSchemaTrue.builder().build())
+                                                      .putProperties(
+                                                          "$id",
+                                                          new ImmutableJsonSchemaString.Builder()
+                                                              .format("uuid")
+                                                              .build())
+                                                      .putProperties(
+                                                          "$pubtime",
+                                                          new ImmutableJsonSchemaString.Builder()
+                                                              .format("date-time")
+                                                              .build())
+                                                      .putProperties(
+                                                          "$operation",
+                                                          new ImmutableJsonSchemaString.Builder()
+                                                              .addEnums(
+                                                                  "create", "update", "delete")
+                                                              .build())
+                                                      .build()))
+                                          .build())
                                   .build())
                           .build());
 
@@ -193,6 +240,19 @@ public class QueriesHandlerPubSubImpl implements QueriesHandlerPubSub {
                                 pub.getProperty()
                                     .map(
                                         propertyName -> {
+                                          Type type =
+                                              featureSchema
+                                                  .flatMap(
+                                                      schema ->
+                                                          schema.getAllNestedProperties().stream()
+                                                              .filter(
+                                                                  p ->
+                                                                      propertyName.equals(
+                                                                          p.getName()))
+                                                              .map(FeatureSchema::getType)
+                                                              .findFirst())
+                                                  .orElse(Type.STRING);
+
                                           components.putMessages(
                                               String.format(
                                                   "valueChange_%s_%s", collectionId, propertyName),
@@ -200,13 +260,25 @@ public class QueriesHandlerPubSubImpl implements QueriesHandlerPubSub {
                                                   .name("valueChangeMessage")
                                                   .title("Value Change")
                                                   .summary(
-                                                      "Information about a new or updated feature property.")
-                                                  // .description("TODO")
+                                                      String.format(
+                                                          "Information about an updated value for property '%s' of a feature in collection '%s'.",
+                                                          propertyName, collectionData.getLabel()))
                                                   .contentType("plain/text")
                                                   .payload(
-                                                      // TODO
-                                                      new ImmutableJsonSchemaNumber.Builder()
-                                                          .build())
+                                                      type == Type.INTEGER
+                                                          ? new ImmutableJsonSchemaInteger.Builder()
+                                                              .build()
+                                                          : type == Type.FLOAT
+                                                              ? new ImmutableJsonSchemaNumber
+                                                                      .Builder()
+                                                                  .build()
+                                                              : type == Type.BOOLEAN
+                                                                  ? new ImmutableJsonSchemaBoolean
+                                                                          .Builder()
+                                                                      .build()
+                                                                  : new ImmutableJsonSchemaString
+                                                                          .Builder()
+                                                                      .build())
                                                   .build());
                                           return ImmutableAsyncApiReference.builder()
                                               .ref(
@@ -237,17 +309,19 @@ public class QueriesHandlerPubSubImpl implements QueriesHandlerPubSub {
                                                         .replace("{", "")
                                                         .replace("}", "")
                                                         .replace("/", "_")))
-                                            // .summary("TODO")
+                                            .summary(
+                                                String.format(
+                                                    "Publishes changes to features of collection '%s'.",
+                                                    collectionData.getLabel()))
                                             .parameters(
-                                                // TODO map to proper schema of the property
                                                 pub.getParameters().entrySet().stream()
                                                     .collect(
                                                         Collectors.toUnmodifiableMap(
                                                             Entry::getKey,
-                                                            e ->
-                                                                new ImmutableJsonSchemaString
-                                                                        .Builder()
-                                                                    .build())))
+                                                            entry ->
+                                                                getSchema(
+                                                                    featureSchema,
+                                                                    entry.getValue()))))
                                             .bindings(
                                                 ImmutableAsyncApiOperationBindingsMqtt.builder()
                                                     .qos(pub.getMqttQos().getCode())
@@ -271,8 +345,48 @@ public class QueriesHandlerPubSubImpl implements QueriesHandlerPubSub {
               .build());
     }
 
-    // TODO support headers
-    return outputFormatExtension.getResponse(
-        asyncApiDefinitions.get(apiData.getId()), requestContext);
+    AsyncApi apiDefinition = asyncApiDefinitions.get(apiData.getId());
+
+    Date lastModified = getLastModified(queryInput);
+    EntityTag etag =
+        ETag.from(apiDefinition, AsyncApi.FUNNEL, outputFormatExtension.getMediaType().label());
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) {
+      return response.build();
+    }
+
+    return prepareSuccessResponse(
+            requestContext,
+            null,
+            HeaderCaching.of(lastModified, etag, queryInput),
+            null,
+            HeaderContentDisposition.of(
+                String.format("asyncapi.%s", outputFormatExtension.getMediaType().fileExtension())))
+        .entity(outputFormatExtension.getAsyncApiEntity(apiDefinition, requestContext))
+        .build();
+  }
+
+  private JsonSchema getSchema(Optional<FeatureSchema> schema, String propertyName) {
+    if (schema.isPresent()) {
+      SchemaDeriverCollectionProperties schemaDeriverCollectionProperties =
+          new SchemaDeriverCollectionProperties(
+              VERSION.V7,
+              Optional.empty(),
+              "ignore",
+              Optional.empty(),
+              codelistSupplier.get(),
+              ImmutableList.of(propertyName));
+
+      JsonSchema result =
+          ((JsonSchemaDocument) schema.get().accept(schemaDeriverCollectionProperties))
+              .getProperties()
+              .get(propertyName);
+
+      if (Objects.nonNull(result)) {
+        return result;
+      }
+    }
+
+    return new ImmutableJsonSchemaString.Builder().build();
   }
 }

@@ -7,11 +7,18 @@
  */
 package de.ii.ogcapi.pubsub.domain.asyncapi;
 
+import com.google.common.hash.Funnel;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
 import org.immutables.value.Value;
 
 @Value.Immutable
 public interface AsyncApiParameter {
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<AsyncApiParameter> FUNNEL =
+      (from, into) -> {
+        JsonSchema.FUNNEL.funnel(from.getSchema(), into);
+      };
 
   JsonSchema getSchema();
 }

@@ -12,12 +12,11 @@ import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.pubsub.domain.asyncapi.AsyncApi;
 import java.util.Optional;
-import javax.ws.rs.core.Response;
 
 @AutoMultiBind
 public interface AsyncApiDefinitionFormatExtension extends FormatExtension {
 
-  Response getResponse(AsyncApi asyncApi, ApiRequestContext apiRequestContext);
+  Object getAsyncApiEntity(AsyncApi asyncApi, ApiRequestContext apiRequestContext);
 
   default Optional<String> getRel() {
     return Optional.empty();

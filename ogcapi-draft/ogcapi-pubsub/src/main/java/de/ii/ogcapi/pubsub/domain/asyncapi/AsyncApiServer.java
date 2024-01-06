@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.pubsub.domain.asyncapi;
 
+import com.google.common.hash.Funnel;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,6 +16,25 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 public interface AsyncApiServer {
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<AsyncApiServer> FUNNEL =
+      (from, into) -> {
+        into.putString(from.getProtocol(), StandardCharsets.UTF_8);
+        into.putString(from.getProtocolVersion(), StandardCharsets.UTF_8);
+        into.putString(from.getUrl(), StandardCharsets.UTF_8);
+        from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getSecurity()
+            .forEach(
+                s ->
+                    s.keySet().stream()
+                        .sorted()
+                        .forEachOrdered(
+                            key ->
+                                s.get(key)
+                                    .forEach(v -> into.putString(v, StandardCharsets.UTF_8))));
+        from.getBindings().ifPresent(v -> AsyncApiServerBindingsMqtt.FUNNEL.funnel(v, into));
+      };
 
   @Value.Default
   default String getProtocol() {

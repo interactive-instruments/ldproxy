@@ -7,12 +7,26 @@
  */
 package de.ii.ogcapi.pubsub.domain.asyncapi;
 
+import com.google.common.hash.Funnel;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
 public interface AsyncApiMessage {
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<AsyncApiMessage> FUNNEL =
+      (from, into) -> {
+        from.getName().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getTitle().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getSummary().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        into.putString(from.getContentType(), StandardCharsets.UTF_8);
+        from.getPayload().ifPresent(v -> JsonSchema.FUNNEL.funnel(v, into));
+        from.getBindings().ifPresent(v -> AsyncApiMessageBindingsMqtt.FUNNEL.funnel(v, into));
+      };
 
   Optional<String> getName();
 

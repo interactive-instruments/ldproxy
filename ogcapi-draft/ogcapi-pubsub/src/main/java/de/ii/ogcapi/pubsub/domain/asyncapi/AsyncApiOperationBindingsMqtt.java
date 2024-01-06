@@ -7,11 +7,21 @@
  */
 package de.ii.ogcapi.pubsub.domain.asyncapi;
 
+import com.google.common.hash.Funnel;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
 public interface AsyncApiOperationBindingsMqtt {
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<AsyncApiOperationBindingsMqtt> FUNNEL =
+      (from, into) -> {
+        from.getQos().ifPresent(into::putInt);
+        from.getRetain().ifPresent(into::putBoolean);
+        into.putString(from.getBindingVersion(), StandardCharsets.UTF_8);
+      };
 
   Optional<Integer> getQos();
 

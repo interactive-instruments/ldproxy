@@ -7,7 +7,12 @@
  */
 package de.ii.ogcapi.pubsub.domain.asyncapi;
 
+import com.google.common.hash.Funnel;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public interface AsyncApiChannelBindingsMqtt {}
+public interface AsyncApiChannelBindingsMqtt {
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<AsyncApiChannelBindingsMqtt> FUNNEL = (from, into) -> {};
+}

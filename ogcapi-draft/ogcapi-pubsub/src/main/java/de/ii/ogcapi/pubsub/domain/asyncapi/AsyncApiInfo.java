@@ -7,11 +7,23 @@
  */
 package de.ii.ogcapi.pubsub.domain.asyncapi;
 
+import com.google.common.hash.Funnel;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
 public interface AsyncApiInfo {
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<AsyncApiInfo> FUNNEL =
+      (from, into) -> {
+        into.putString(from.getTitle(), StandardCharsets.UTF_8);
+        from.getDescription().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+        into.putString(from.getVersion(), StandardCharsets.UTF_8);
+        from.getContact().ifPresent(v -> AsyncApiContact.FUNNEL.funnel(v, into));
+        from.getLicense().ifPresent(v -> AsyncApiLicense.FUNNEL.funnel(v, into));
+      };
 
   String getTitle();
 

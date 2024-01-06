@@ -29,7 +29,6 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  * @title YAML
@@ -71,7 +70,7 @@ public class AsyncApiYaml implements AsyncApiDefinitionFormatExtension {
   }
 
   @Override
-  public Response getResponse(AsyncApi asyncApi, ApiRequestContext apiRequestContext) {
+  public Object getAsyncApiEntity(AsyncApi asyncApi, ApiRequestContext apiRequestContext) {
     try {
       ObjectMapper mapper =
           new ObjectMapper(
@@ -80,10 +79,7 @@ public class AsyncApiYaml implements AsyncApiDefinitionFormatExtension {
           .registerModule(new GuavaModule())
           .registerModule(new Jdk8Module())
           .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-      return Response.status(Response.Status.OK)
-          .entity(mapper.writeValueAsBytes(asyncApi))
-          .type(MEDIA_TYPE.type())
-          .build();
+      return mapper.writeValueAsBytes(asyncApi);
     } catch (JsonProcessingException e) {
       throw new IllegalStateException(e);
     }

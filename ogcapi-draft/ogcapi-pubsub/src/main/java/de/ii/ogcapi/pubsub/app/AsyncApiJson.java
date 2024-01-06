@@ -22,7 +22,6 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 /**
  * @title JSON
@@ -64,8 +63,8 @@ public class AsyncApiJson implements AsyncApiDefinitionFormatExtension {
   }
 
   @Override
-  public Response getResponse(AsyncApi asyncApi, ApiRequestContext apiRequestContext) {
-    return Response.status(Response.Status.OK).entity(asyncApi).type(MEDIA_TYPE.type()).build();
+  public Object getAsyncApiEntity(AsyncApi asyncApi, ApiRequestContext apiRequestContext) {
+    return asyncApi;
   }
 
   @Override

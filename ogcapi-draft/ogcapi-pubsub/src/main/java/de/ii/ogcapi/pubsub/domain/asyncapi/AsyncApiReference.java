@@ -8,11 +8,19 @@
 package de.ii.ogcapi.pubsub.domain.asyncapi;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.hash.Funnel;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
 public interface AsyncApiReference {
+
+  @SuppressWarnings("UnstableApiUsage")
+  Funnel<AsyncApiReference> FUNNEL =
+      (from, into) -> {
+        from.getRef().ifPresent(s -> into.putString(s, StandardCharsets.UTF_8));
+      };
 
   @JsonProperty("$ref")
   Optional<String> getRef();
