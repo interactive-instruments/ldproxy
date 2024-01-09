@@ -1,6 +1,6 @@
 # Einführung
 
-ldproxy macht Geodaten auf einfache Weise über moderne Web APIs zugänglich.
+ldproxy macht Geodaten auf über moderne Web APIs [auffindbar, zugänglich, interoperabel und wiederverwendbar](https://www.go-fair.org/fair-principles/).
 
 Die Software zeichnet sich durch folgende Eigenschaften aus:
 
@@ -12,7 +12,7 @@ Die Software zeichnet sich durch folgende Eigenschaften aus:
 * **Open Source**: Der Quellcode ist unter der [Mozilla Public License 2.0](http://mozilla.org/MPL/2.0/) auf [GitHub](https://github.com/interactive-instruments/ldproxy) verfügbar.
 * **Optimiert**: Es werden Reactive Streams verwendet, um Hardwareressourcen zu schonen und so schnell wie möglich mit der Datenübertragung beginnen zu können.
 * **Variabel**: Die Unterstützung mehrerer APIs in einem einzigen Deployment wird unterstützt, zum Beispiel für mehrere Datensätze.
-* **Erweiterbar**: ldproxy ist modular aufgebaut, in Java geschrieben (aktuell unterstützte Version: Java 11) und auf Erweiterbarkeit ausgelegt.
+* **Erweiterbar**: ldproxy ist modular aufgebaut, in Java geschrieben (aktuell unterstützte Versionen: Java 11 und 17) und auf Erweiterbarkeit ausgelegt.
 
 Um eine Vorstellung davon zu bekommen, wie die APIs aussehen, werfen Sie einen Blick auf die [Demo APIs](https://demo.ldproxy.net).
 
