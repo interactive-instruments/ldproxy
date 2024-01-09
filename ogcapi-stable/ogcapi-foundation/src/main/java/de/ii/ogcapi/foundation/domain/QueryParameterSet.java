@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -76,6 +77,53 @@ public interface QueryParameterSet {
         }
       }
     }
+
+    return new ImmutableQueryParameterSet.Builder()
+        .definitions(getDefinitions())
+        .values(values)
+        .typedValues(typedValues)
+        .build();
+  }
+
+  default QueryParameterSet merge(
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData,
+      Map<String, String> additionalValues) {
+    MultivaluedMap<String, String> values = new MultivaluedHashMap<>(getValues());
+    Map<String, Object> typedValues = new LinkedHashMap<>(getTypedValues());
+    additionalValues.forEach(
+        (parameterName, value) ->
+            getDefinitions().stream()
+                .filter(p -> Objects.equals(p.getId(), parameterName))
+                .findFirst()
+                .ifPresentOrElse(
+                    parameter -> {
+                      if (parameter instanceof TypedQueryParameter<?>) {
+                        Object currentValue = typedValues.get(parameterName);
+                        Object obligationValue =
+                            ((TypedQueryParameter<?>) parameter)
+                                .parse(value, typedValues, api, optionalCollectionData);
+                        if (Objects.nonNull(obligationValue)) {
+                          Object mergedValue =
+                              ((TypedQueryParameter<?>) parameter)
+                                  .mergeValues(currentValue, obligationValue);
+                          if (Objects.nonNull(mergedValue)) {
+                            typedValues.put(parameterName, mergedValue);
+                          } else if (Objects.nonNull(currentValue)) {
+                            typedValues.remove(parameterName);
+                          }
+                        }
+                      } else {
+                        // untyped parameter, just add the value
+                        values.add(parameterName, value);
+                      }
+                    },
+                    // unknown parameter, throw an error
+                    () -> {
+                      throw new IllegalStateException(
+                          String.format(
+                              "Adding value for an unknown query parameter '%s'.", parameterName));
+                    }));
 
     return new ImmutableQueryParameterSet.Builder()
         .definitions(getDefinitions())

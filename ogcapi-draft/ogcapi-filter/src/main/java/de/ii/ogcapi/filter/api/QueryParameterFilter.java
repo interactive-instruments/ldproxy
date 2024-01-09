@@ -29,6 +29,7 @@ import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
+import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql.Format;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
@@ -340,6 +341,16 @@ public class QueryParameterFilter extends ApiExtensionCache
     }
 
     return cql2Expression;
+  }
+
+  @Override
+  public Cql2Expression mergeValues(Object value1, Object value2) {
+    if (Objects.isNull(value1)) {
+      return (Cql2Expression) value2;
+    } else if (Objects.isNull(value2)) {
+      return (Cql2Expression) value1;
+    }
+    return And.of((Cql2Expression) value1, (Cql2Expression) value2);
   }
 
   @Override
