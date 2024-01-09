@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
+import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.xtraplatform.features.domain.DatasetChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureChangeHandler;
@@ -14,6 +15,8 @@ import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+// ignore in bindings
+@AutoMultiBind(exclude = {WithChangeListeners.class})
 public interface WithChangeListeners {
 
   Map<String, DatasetChangeListener> datasetChangeListeners = new ConcurrentHashMap<>();
