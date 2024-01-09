@@ -58,6 +58,8 @@ public interface ApiExtension {
     return 1000;
   }
 
+  default void onShutdown(OgcApi api) {}
+
   default Optional<SpecificationMaturity> getSpecificationMaturity() {
     return Optional.empty();
   }
