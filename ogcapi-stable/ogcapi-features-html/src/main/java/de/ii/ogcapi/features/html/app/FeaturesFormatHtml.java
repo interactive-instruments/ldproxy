@@ -221,6 +221,7 @@ public class FeaturesFormatHtml
         schema.getFullPathAsString(),
         ImmutableList.of(
             new ImmutablePropertyTransformation.Builder()
+                .objectRemoveSelect(FeatureRefResolver.ID)
                 .objectReduceFormat(LINK_TEMPLATE)
                 .build()));
   }
