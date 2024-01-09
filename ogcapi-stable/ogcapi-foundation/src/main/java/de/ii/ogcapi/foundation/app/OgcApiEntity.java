@@ -115,6 +115,27 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
   }
 
   @Override
+  protected void onShutdown() {
+    OgcApiDataV2 apiData = getData();
+    if (LOGGER.isTraceEnabled()) {
+      LOGGER.trace("Shutting down service '{}'.", apiData.getId());
+    }
+
+    List<ApiExtension> extensions =
+        extensionRegistry.getExtensions().stream()
+            .sorted(Comparator.comparingInt(ApiExtension::getStartupPriority).reversed())
+            .collect(Collectors.toList());
+
+    for (ApiExtension extension : extensions) {
+      if (extension.isEnabledForApi(apiData)) {
+        extension.onShutdown(this);
+      }
+    }
+
+    super.onShutdown();
+  }
+
+  @Override
   public <T extends FormatExtension> Optional<T> getOutputFormat(
       Class<T> extensionType, ApiMediaType mediaType, Optional<String> collectionId) {
     List<T> candidates =
