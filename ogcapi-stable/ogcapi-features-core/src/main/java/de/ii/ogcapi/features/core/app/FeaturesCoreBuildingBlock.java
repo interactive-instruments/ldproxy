@@ -25,6 +25,7 @@ import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.features.core.domain.JsonSchemaOneOf;
 import de.ii.ogcapi.features.core.domain.JsonSchemaRef;
 import de.ii.ogcapi.features.core.domain.JsonSchemaString;
+import de.ii.ogcapi.features.core.domain.WithChangeListeners;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.CollectionExtent;
@@ -147,7 +148,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
+public class FeaturesCoreBuildingBlock implements ApiBuildingBlock, WithChangeListeners {
 
   public static final Optional<SpecificationMaturity> MATURITY =
       Optional.of(SpecificationMaturity.STABLE_OGC);
@@ -199,11 +200,7 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
 
     providers
         .getFeatureProvider(apiData)
-        .ifPresent(
-            provider -> {
-              provider.getChangeHandler().addListener(onDatasetChange(api));
-              provider.getChangeHandler().addListener(onFeatureChange(api));
-            });
+        .ifPresent(provider -> updateChangeListeners(provider.getChangeHandler(), api));
 
     // register schemas that cannot be derived automatically
     // TODO Setting a schema here has no effect since onStartup is executed *after* the
@@ -240,6 +237,15 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
             JsonSchemaOneOf.class));
 
     return ValidationResult.of();
+  }
+
+  @Override
+  public void onShutdown(OgcApi api) {
+    providers
+        .getFeatureProvider(api.getData())
+        .ifPresent(provider -> removeChangeListeners(provider.getChangeHandler(), api));
+
+    ApiBuildingBlock.super.onShutdown(api);
   }
 
   // TODO: add capability to periodically reinitialize metadata from the feature data (to account
@@ -280,7 +286,8 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
     }
   }
 
-  private DatasetChangeListener onDatasetChange(OgcApi api) {
+  @Override
+  public DatasetChangeListener onDatasetChange(OgcApi api) {
     return change -> {
       for (String featureType : change.getFeatureTypes()) {
         String collectionId = FeaturesCoreConfiguration.getCollectionId(api.getData(), featureType);
@@ -290,7 +297,8 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock {
     };
   }
 
-  private FeatureChangeListener onFeatureChange(OgcApi api) {
+  @Override
+  public FeatureChangeListener onFeatureChange(OgcApi api) {
     return change -> {
       String collectionId =
           FeaturesCoreConfiguration.getCollectionId(api.getData(), change.getFeatureType());

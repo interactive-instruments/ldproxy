@@ -8,18 +8,16 @@
 package de.ii.ogcapi.foundation.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ApiSecurity.PolicyAttribute;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.PolicyObligationFulfiller;
+import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.base.domain.util.Tuple;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -44,8 +42,7 @@ public class PolicyObligationFulfillerParameters implements PolicyObligationFulf
       ApiOperation apiOperation,
       ApiRequestContext requestContext,
       Map<String, String> values) {
-    Map<String, String> newParameters = new LinkedHashMap<>();
-    ApiRequestContext newRequestContext = requestContext;
+    final QueryParameterSet[] newQueryParameterSet = {requestContext.getQueryParameterSet()};
     Set<String> fulfilled = new HashSet<>();
 
     obligations.entrySet().stream()
@@ -57,36 +54,23 @@ public class PolicyObligationFulfillerParameters implements PolicyObligationFulf
               String attribute = entry.getKey();
               String parameter = entry.getValue().getParameter().get();
 
-              Optional<OgcApiQueryParameter> queryParameter =
-                  apiOperation.getQueryParameters().stream()
-                      .filter(
-                          ogcApiQueryParameter ->
-                              Objects.equals(ogcApiQueryParameter.getName(), parameter))
-                      .findFirst();
-
-              if (queryParameter.isPresent()) {
-                // TODO: a cleaner solution would be to add a method merge to TypedQueryParameter
-                // and call that
-                if (Objects.equals(parameter, "filter")
-                    && requestContext.getParameters().containsKey(parameter)) {
-                  newParameters.put(
-                      queryParameter.get().getName(),
-                      String.format(
-                          "(%s) AND (%s)",
-                          requestContext.getParameters().get(parameter), values.get(attribute)));
-                } else {
-                  newParameters.put(queryParameter.get().getName(), values.get(attribute));
-                }
-                fulfilled.add(attribute);
-              }
+              newQueryParameterSet[0] =
+                  newQueryParameterSet[0].merge(
+                      requestContext.getApi(),
+                      requestContext
+                          .getCollectionId()
+                          .flatMap(
+                              collectionId ->
+                                  requestContext
+                                      .getApi()
+                                      .getData()
+                                      .getCollectionData(collectionId)),
+                      ImmutableMap.of(parameter, values.get(attribute)));
+              fulfilled.add(attribute);
             });
 
-    if (!newParameters.isEmpty()) {
-      Map<String, String> mergedParameters = new LinkedHashMap<>(requestContext.getParameters());
-      mergedParameters.putAll(newParameters);
-
-      newRequestContext = new Builder().from(requestContext).parameters(mergedParameters).build();
-    }
+    ApiRequestContext newRequestContext =
+        new Builder().from(requestContext).queryParameterSet(newQueryParameterSet[0]).build();
 
     return Tuple.of(newRequestContext, fulfilled);
   }

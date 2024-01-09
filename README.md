@@ -17,7 +17,7 @@ Key characteristics:
 * **Certified**: ldproxy is a certified [OGC Reference Implementation](https://www.ogc.org/resource/products/details/?pid=1705) for [OGC API - Features - Part 1: Core 1.0](http://www.opengis.net/doc/IS/ogcapi-features-1/1.0) and [OGC API - Features - Part 2: Coordinate Reference Systems by Reference 1.0](http://www.opengis.net/doc/IS/ogcapi-features-2/1.0).
 * **Open Source**: The source code is available under the [Mozilla Public License 2.0](http://mozilla.org/MPL/2.0/) on [GitHub](https://github.com/interactive-instruments/ldproxy).
 * **Multiple Data Sources**: Currently three types of data sources are supported: [PostgreSQL](https://www.postgresql.org/) databases with the [PostGIS extension](https://postgis.net/), [GeoPackage](https://www.geopackage.org) and [OGC Web Feature Services (WFS)](https://www.ogc.org/standards/wfs).
-* **Extensible**: ldproxy is modular, written in Java 11 and designed to be extended to support your needs.
+* **Extensible**: ldproxy is modular, written in Java (supported versions: 11 and 17) and designed to be extended to support your needs.
 
 To get an idea how the APIs look like, have a look at the [demos](https://demo.ldproxy.net).
 
