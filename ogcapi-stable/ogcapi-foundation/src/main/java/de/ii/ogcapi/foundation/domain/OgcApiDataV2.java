@@ -306,7 +306,7 @@ import org.immutables.value.Value;
             @DocStep(type = Step.TAG, params = "{@bodyBlock}")
           }),
     })
-@Value.Immutable
+@Value.Immutable(prehash = true)
 @JsonDeserialize(builder = ImmutableOgcApiDataV2.Builder.class)
 public interface OgcApiDataV2 extends ServiceData, ExtendableConfiguration {
 
