@@ -161,9 +161,11 @@ public interface FeatureFormatExtension extends FormatExtension {
                         .isPresent()
                     && schema.getRefKeyTemplate().isEmpty()
                 ? new ImmutablePropertyTransformation.Builder()
+                    .objectRemoveSelect(FeatureRefResolver.ID)
                     .objectReduceSelect(FeatureRefResolver.ID)
                     .build()
                 : new ImmutablePropertyTransformation.Builder()
+                    .objectRemoveSelect(FeatureRefResolver.ID)
                     .objectReduceFormat(KEY_TEMPLATE)
                     .build()));
   }
@@ -173,6 +175,7 @@ public interface FeatureFormatExtension extends FormatExtension {
         schema.getFullPathAsString(),
         ImmutableList.of(
             new ImmutablePropertyTransformation.Builder()
+                .objectRemoveSelect(FeatureRefResolver.ID)
                 .objectReduceFormat(URI_TEMPLATE)
                 .build()));
   }
@@ -182,6 +185,7 @@ public interface FeatureFormatExtension extends FormatExtension {
         schema.getFullPathAsString(),
         ImmutableList.of(
             new ImmutablePropertyTransformation.Builder()
+                .objectRemoveSelect(FeatureRefResolver.ID)
                 .objectMapFormat(
                     ImmutableMap.of("title", FeatureRefResolver.SUB_TITLE, "href", URI_TEMPLATE))
                 .build()));
