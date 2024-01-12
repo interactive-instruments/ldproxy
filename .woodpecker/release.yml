@@ -65,4 +65,4 @@ steps:
 #      - git commit -m "add changelog for $CI_COMMIT_TAG" -n
 #      - git push -u https://$GITHUB_USER:$GITHUB_TOKEN@github.com/$CI_REPO_NAME.git changelog-$CI_COMMIT_TAG #> /dev/null 2>&1
 #      - GITHUB_TOKEN=$GITHUB_TOKEN ./gh_1.2.0_linux_amd64/bin/gh pr create --base $CI_COMMIT_BRANCH --head changelog-$CI_COMMIT_TAG --reviewer $CI_COMMIT_AUTHOR --title "add changelog for $CI_COMMIT_TAG" --body ""
-    secrets: [ github_token, github_user ]
+    secrets: [ github_token ]
