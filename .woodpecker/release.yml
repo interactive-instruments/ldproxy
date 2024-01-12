@@ -38,6 +38,7 @@ steps:
       repo: iide/ldproxy
       auto_tag: true
       force_tag: true
+      tags: latest
       username:
         from_secret: docker_username
       password:
