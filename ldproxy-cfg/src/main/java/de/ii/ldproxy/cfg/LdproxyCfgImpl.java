@@ -57,6 +57,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -86,6 +87,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
   private final RequiredIncludes requiredIncludes;
   private final de.ii.xtraplatform.entities.domain.EntityFactories entityFactories;
   private final Map<String, JsonSchema> entitySchemas;
+  private final Map<String, String> rawSchemas;
   private final List<Identifier> entityIdentifiers;
   private final EventSubscriptionsSync eventSubscriptions;
 
@@ -166,6 +168,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
             new MockValueStore(),
             noDefaults);
     this.entitySchemas = new HashMap<>();
+    this.rawSchemas = new HashMap<>();
     this.migrations = Migrations.create(entityDataStore);
   }
 
@@ -253,10 +256,15 @@ class LdproxyCfgImpl implements LdproxyCfg {
           Resources.getResource(
               LdproxyCfgImpl.class, String.format("/json-schema/entities/%s.json", entityType));
 
-      JsonSchema schema = factory.getSchema(Resources.asByteSource(schemaResource).openStream());
+      String rawSchema =
+          new String(
+              Resources.asByteSource(schemaResource).openStream().readAllBytes(),
+              StandardCharsets.UTF_8);
+      JsonSchema schema = factory.getSchema(rawSchema);
       schema.initializeValidators();
 
       this.entitySchemas.put(entityType, schema);
+      this.rawSchemas.put("entities/" + entityType, rawSchema);
     }
   }
 
@@ -354,6 +362,11 @@ class LdproxyCfgImpl implements LdproxyCfg {
   @Override
   public <T extends EntityData> Path getEntityPath(T data) {
     return getEntitiesPath().resolve(Path.of(getType(data), data.getId() + ".yml"));
+  }
+
+  @Override
+  public Map<String, String> getRawSchemas() {
+    return rawSchemas;
   }
 
   private static <T extends EntityData> String getType(T data) {
