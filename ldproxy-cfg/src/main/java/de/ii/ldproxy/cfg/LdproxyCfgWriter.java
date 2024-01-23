@@ -8,6 +8,7 @@
 package de.ii.ldproxy.cfg;
 
 import de.ii.xtraplatform.entities.domain.EntityData;
+import de.ii.xtraplatform.values.domain.StoredValue;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
@@ -19,22 +20,10 @@ public interface LdproxyCfgWriter {
    * Create a new writer for the given FS store.
    *
    * @param store the root directory of an FS store
-   * @param layoutV3 set to true to use the deprecated V3 directory layout
-   * @return the new {@link LdproxyCfgWriter}
-   */
-  @Deprecated(since = "3.5", forRemoval = true)
-  static LdproxyCfgWriter create(Path store, boolean layoutV3) {
-    return new LdproxyCfgImpl(store, true, layoutV3);
-  }
-
-  /**
-   * Create a new writer for the given FS store.
-   *
-   * @param store the root directory of an FS store
    * @return the new {@link LdproxyCfgWriter}
    */
   static LdproxyCfgWriter create(Path store) {
-    return create(store, false);
+    return new LdproxyCfgImpl(store, true, false);
   }
 
   /**
@@ -70,6 +59,16 @@ public interface LdproxyCfgWriter {
    * @throws IOException when entity data cannot be written
    */
   <T extends EntityData> void writeEntity(T data, OutputStream outputStream) throws IOException;
+
+  /**
+   * Write value data as YAML file to the connected store.
+   *
+   * @param data a value data object constructed using {@link builder()}
+   * @param name file name
+   * @param path file path
+   * @throws IOException when value data cannot be written
+   */
+  <T extends StoredValue> void writeValue(T data, String name, String... path) throws IOException;
 
   /**
    * Write the connected store as ZIP file to the given OutputStream.
