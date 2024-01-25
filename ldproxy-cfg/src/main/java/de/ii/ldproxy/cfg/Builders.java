@@ -13,6 +13,10 @@ public interface Builders {
     return new EntityDataBuilders() {};
   }
 
+  default ValueBuilders value() {
+    return new ValueBuilders() {};
+  }
+
   default OgcApiExtensionBuilders ogcApiExtension() {
     return new OgcApiExtensionBuilders() {};
   }
