@@ -43,6 +43,7 @@ import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -211,17 +212,15 @@ public class QueryParameterBbox extends ApiExtensionCache
 
     Property property = Property.of(primaryGeometry.get().getFullPathAsString());
 
-    boolean supportsIsNull =
-        providers
-            .getFeatureProvider(api.getData(), collectionData)
-            .filter(provider -> provider instanceof FeatureQueries)
-            .map(provider -> ((FeatureQueries) provider).supportsIsNull())
-            .orElse(false);
-
     Cql2Expression cql2Expression =
-        supportsIsNull
-            ? Or.of(SIntersects.of(property, SpatialLiteral.of(envelope)), IsNull.of(property))
-            : SIntersects.of(property, SpatialLiteral.of(envelope));
+        primaryGeometry.map(SchemaBase::isRequired).orElse(false)
+                || !providers
+                    .getFeatureProvider(api.getData(), collectionData)
+                    .filter(provider -> provider instanceof FeatureQueries)
+                    .map(provider -> ((FeatureQueries) provider).supportsIsNull())
+                    .orElse(false)
+            ? SIntersects.of(property, SpatialLiteral.of(envelope))
+            : Or.of(SIntersects.of(property, SpatialLiteral.of(envelope)), IsNull.of(property));
 
     if (collectionData
         .getExtension(FeaturesCoreConfiguration.class)

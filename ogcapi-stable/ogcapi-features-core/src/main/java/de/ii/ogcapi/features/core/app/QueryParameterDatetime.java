@@ -122,15 +122,15 @@ public class QueryParameterDatetime extends AbstractQueryParameterDatetime
     Optional<FeatureSchema> primaryInstant = featureSchema.getPrimaryInstant();
     if (primaryInstant.isPresent()) {
       Property property = Property.of(primaryInstant.get().getFullPathAsString());
-      boolean supportsIsNull =
-          providers
+      if (primaryInstant.get().isRequired()
+          || !providers
               .getFeatureProvider(api.getData(), collectionData)
               .filter(provider -> provider instanceof FeatureQueries)
               .map(provider -> ((FeatureQueries) provider).supportsIsNull())
-              .orElse(false);
-      return supportsIsNull
-          ? Or.of(TIntersects.of(property, temporalLiteral), IsNull.of(property))
-          : TIntersects.of(property, temporalLiteral);
+              .orElse(false)) {
+        return TIntersects.of(property, temporalLiteral);
+      }
+      return Or.of(TIntersects.of(property, temporalLiteral), IsNull.of(property));
     }
     Optional<Tuple<FeatureSchema, FeatureSchema>> primaryInterval =
         featureSchema.getPrimaryInterval();
