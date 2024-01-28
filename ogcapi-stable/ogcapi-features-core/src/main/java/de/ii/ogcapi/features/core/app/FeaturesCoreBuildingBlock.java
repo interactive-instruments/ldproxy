@@ -79,6 +79,9 @@ import org.slf4j.LoggerFactory;
  * - Upper right corner, coordinate axis 1
  * - Upper right corner, coordinate axis 2
  *     </code>
+ *     <p>If the primary geometry is never `NULL`, the constraint `required: true` should be set for
+ *     the property in the provider schema. This speeds up queries with the `bbox` parameter,
+ *     especially with larger data sets.
  *     <p>The coordinate reference system of the values is WGS 84 longitude/latitude unless a
  *     different coordinate reference system is specified in the parameter `bbox-crs` (see building
  *     block [CRS](crs.md)).
@@ -90,6 +93,9 @@ import org.slf4j.LoggerFactory;
  *     either a local date, a date-time value in UTC or an interval. date and date-time expressions
  *     adhere to RFC 3339. Intervals are two instants, separated by a slash (`/`). To indicate a
  *     half-bounded interval end a double-dot (`..`) can be used.
+ *     <p>If the primary instant is never `NULL`, the constraint `required: true` should be set for
+ *     the property in the provider schema. This speeds up queries with the `datetime` parameter,
+ *     especially with larger data sets.
  *     <p>Additional attributes can be filtered based on their values, if they are configured as
  *     queryables.
  *     <p>All filter predicates must be met to select a feature.
@@ -113,6 +119,9 @@ import org.slf4j.LoggerFactory;
  * - Rechte obere Ecke, Koordinatenachse 1
  * - Rechte obere Ecke, Koordinatenachse 2
  *     </code>
+ *     <p>Sofern die primäre Geometrie nie `NULL` ist, sollte im Provider Schema für die Eigenschaft
+ *     der Constraint `required: true` gesetzt werden. Dies beschleunigt Abfragen mit dem
+ *     `bbox`-Parameter, besonders bei größeren Datensätzen.
  *     <p>Das Koordinatenreferenzsystem der Werte ist WGS 84 Längen-/Breitengrad, es sei denn, im
  *     Parameter `bbox-crs` (siehe Modul [CRS](crs.md)) wird ein anderes Koordinatenreferenzsystem
  *     angegeben.
@@ -125,6 +134,9 @@ import org.slf4j.LoggerFactory;
  *     Datums- und Zeitstempel-Ausdrücke entsprechen RFC 3339. Intervalle sind zwei Zeitpunkte, die
  *     durch einen Schrägstrich (`/`) getrennt sind. Zur Angabe eines unbegrenzten Intervallendes
  *     kann ein Doppelpunkt (`..`) verwendet werden.
+ *     <p>Sofern die primären Zeitangaben (der Zeitpunkt oder die Intervallenden) nie `NULL` sind,
+ *     sollte im Provider Schema für die Eigenschaft der Constraint `required: true` gesetzt werden.
+ *     Dies beschleunigt Abfragen mit dem `datetime`-Parameter, besonders bei größeren Datensätzen.
  *     <p>Zusätzliche Attribute können auf der Grundlage ihrer Werte gefiltert werden, wenn sie als
  *     abfragbar konfiguriert sind (Queryables).
  *     <p>Alle Filterprädikate müssen erfüllt sein, um ein Feature zu selektieren.
