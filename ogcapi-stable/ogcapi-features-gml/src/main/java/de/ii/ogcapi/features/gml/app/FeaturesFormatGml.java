@@ -380,6 +380,7 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
             .featureMemberElementName(Optional.ofNullable(config.getFeatureMemberElementName()))
             .supportsStandardResponseParameters(
                 Objects.requireNonNullElse(config.getSupportsStandardResponseParameters(), false))
+            .gmlIdOnGeometries(Objects.requireNonNullElse(config.getGmlIdOnGeometries(), false))
             .xmlAttributes(config.getXmlAttributes())
             .gmlIdPrefix(Optional.ofNullable(config.getGmlIdPrefix()))
             .build();
