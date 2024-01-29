@@ -93,7 +93,8 @@ public abstract class Endpoint implements EndpointExtension {
       return EndpointExtension.super.getDefinition(apiData);
     }
 
-    if (apiHashes.containsKey(apiData.getId())) {
+    if (apiHashes.containsKey(apiData.getId())
+        && apiHashes.get(apiData.getId()) != apiData.hashCode()) {
       apiDefinitions.remove(apiHashes.get(apiData.getId()));
     }
 
