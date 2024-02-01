@@ -26,6 +26,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.Query;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.QueryInputFeature;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeature;
+import de.ii.ogcapi.features.core.domain.WithChangeListeners;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -47,6 +48,7 @@ import de.ii.xtraplatform.cql.domain.In;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
+import de.ii.xtraplatform.features.domain.DatasetChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureChange.Action;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -184,7 +186,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class PubSubBuildingBlock implements ApiBuildingBlock {
+public class PubSubBuildingBlock implements ApiBuildingBlock, WithChangeListeners {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PubSubBuildingBlock.class);
 
@@ -217,10 +219,9 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
   @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
 
-    // TODO remove listeners on reload or shutdown after #1132 has been merged
     providers
         .getFeatureProvider(api.getData())
-        .ifPresent(provider -> provider.getChangeHandler().addListener(onFeatureChange(api)));
+        .ifPresent(provider -> updateChangeListeners(provider.getChangeHandler(), api));
 
     String publisher =
         api.getData()
@@ -289,6 +290,15 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
     return ValidationResult.of();
   }
 
+  @Override
+  public void onShutdown(OgcApi api) {
+    providers
+        .getFeatureProvider(api.getData())
+        .ifPresent(provider -> removeChangeListeners(provider.getChangeHandler(), api));
+
+    ApiBuildingBlock.super.onShutdown(api);
+  }
+
   private static Mqtt3AsyncClient getClient(String publisher, String brokerId, Broker broker) {
     Mqtt3ClientBuilder clientBuilder =
         MqttClient.builder()
@@ -341,7 +351,13 @@ public class PubSubBuildingBlock implements ApiBuildingBlock {
             .orElse(true);
   }
 
-  private FeatureChangeListener onFeatureChange(OgcApi api) {
+  @Override
+  public DatasetChangeListener onDatasetChange(OgcApi api) {
+    return change -> {};
+  }
+
+  @Override
+  public FeatureChangeListener onFeatureChange(OgcApi api) {
     return change -> {
       String collectionId =
           FeaturesCoreConfiguration.getCollectionId(api.getData(), change.getFeatureType());
