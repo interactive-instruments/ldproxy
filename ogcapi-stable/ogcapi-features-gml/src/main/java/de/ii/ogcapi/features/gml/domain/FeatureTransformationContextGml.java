@@ -75,6 +75,8 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
 
   public abstract boolean getSupportsStandardResponseParameters();
 
+  public abstract boolean getGmlIdOnGeometries();
+
   public abstract List<String> getXmlAttributes();
 
   public abstract Optional<String> getGmlIdPrefix();
@@ -512,11 +514,6 @@ public abstract class FeatureTransformationContextGml implements FeatureTransfor
     @Value.Default
     public boolean getDeferredSolidGeometry() {
       return false;
-    }
-
-    @Value.Default
-    public int getDeferredFeatureId() {
-      return 0;
     }
 
     @Value.Default

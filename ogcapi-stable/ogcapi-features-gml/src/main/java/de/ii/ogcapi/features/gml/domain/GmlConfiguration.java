@@ -413,6 +413,27 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
   @Nullable
   String getGmlIdPrefix();
 
+  /**
+   * @langEn This option adds a `gml:id` attribute on all GML geometry elements. The id attribute
+   *     was required by GML 3.2 until 2016, older copies of the GML schema may still require the
+   *     attribute. This option allows to create instances that are valid for such schemas.
+   * @langDe Diese Option fügt ein `gml:id`-Attribut zu allen GML-Geometrieelementen hinzu. Das
+   *     id-Attribut war in GML 3.2 bis 2016 verpflichtend, ältere Kopien des GML-Schemas können das
+   *     Attribut noch benötigen. Diese Option ermöglicht es, Instanzen zu erstellen, die für solche
+   *     Schemas gültig sind.
+   * @default false
+   * @examplesAll <code>
+   * ```yaml
+   * - buildingBlock: GML
+   *   enabled: true
+   *   gmlIdOnGeometries: true
+   * ```
+   * </code>
+   * @since v4.0
+   */
+  @Nullable
+  Boolean getGmlIdOnGeometries();
+
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
   @Override

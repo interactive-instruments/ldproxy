@@ -7,41 +7,20 @@
         "FEATURE",
         "TILE"
       ]
+    },
+    "providerSubType": {
+      "enum": [
+        "WFS",
+        "SQL",
+        "FEATURES",
+        "MBTILES",
+        "HTTP"
+      ]
     }
   },
   "required": [
+    "providerSubType",
     "providerType"
-  ],
-  "anyOf": [
-    {
-      "properties": {
-        "providerSubType": {
-          "enum": [
-            "MBTILES",
-            "WFS",
-            "HTTP",
-            "FEATURES",
-            "SQL"
-          ]
-        }
-      },
-      "required": [
-        "providerSubType"
-      ]
-    },
-    {
-      "required": [
-        "featureProviderType"
-      ],
-      "properties": {
-        "featureProviderType": {
-          "enum": [
-            "WFS",
-            "SQL"
-          ]
-        }
-      }
-    }
   ],
   "allOf": [
     {
@@ -69,25 +48,6 @@
           "providerType": {
             "const": "FEATURE"
           },
-          "featureProviderType": {
-            "const": "WFS"
-          }
-        },
-        "required": [
-          "providerType",
-          "featureProviderType"
-        ]
-      },
-      "then": {
-        "$ref": "#/$defs/FeatureProviderWfsData"
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "providerType": {
-            "const": "FEATURE"
-          },
           "providerSubType": {
             "const": "SQL"
           }
@@ -95,25 +55,6 @@
         "required": [
           "providerType",
           "providerSubType"
-        ]
-      },
-      "then": {
-        "$ref": "#/$defs/FeatureProviderSqlData"
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "providerType": {
-            "const": "FEATURE"
-          },
-          "featureProviderType": {
-            "const": "SQL"
-          }
-        },
-        "required": [
-          "providerType",
-          "featureProviderType"
         ]
       },
       "then": {
@@ -194,6 +135,22 @@
             "null"
           ]
         },
+        "entityStorageVersion": {
+          "title": "entityStorageVersion",
+          "description": "",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "createdAt": {
           "title": "createdAt",
           "description": "",
@@ -202,8 +159,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -218,24 +175,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "entityStorageVersion": {
-          "title": "entityStorageVersion",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -261,17 +202,6 @@
             "boolean",
             "null"
           ]
-        },
-        "featureProviderType": {
-          "title": "featureProviderType",
-          "description": "*Deprecated* See `providerSubType`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
         },
         "nativeCrs": {
           "title": "nativeCrs",
@@ -321,7 +251,7 @@
         },
         "extensions": {
           "title": "extensions",
-          "description": "Definition of extensions, see [Extensions](extensions/README.md).",
+          "description": "Definition of extensions, see [Extensions](90-extensions/README.md).",
           "allOf": [
             {
               "if": {
@@ -369,8 +299,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -379,52 +309,17 @@
         },
         "autoPersist": {
           "title": "autoPersist",
-          "description": "*Deprecated, use the editor instead.* Option to persist definitions generated with     `auto` to the configuration file. The [Store](/application/40-store.md) must not be     `READ_ONLY` for this to take effect.",
+          "description": "*Deprecated, use the editor instead.* Option to persist definitions generated with     `auto` to the configuration file. The [Store](/application/20-configuration/00-store.md)     must not be `READ_ONLY` for this to take effect.",
           "oneOf": [
             {
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
-            }
-          ]
-        },
-        "autoTypes": {
-          "title": "autoTypes",
-          "description": "*Deprecated, use the editor instead.* List of source types to include in derived     `types` definitions when `auto: true`. Currently only works for [SQL](sql.md).",
-          "deprecated": true,
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "type": [
-                    "string",
-                    "number",
-                    "boolean",
-                    "null"
-                  ]
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean",
-                  "null"
-                ]
-              }
             }
           ]
         },
@@ -460,6 +355,22 @@
             "null"
           ]
         },
+        "entityStorageVersion": {
+          "title": "entityStorageVersion",
+          "description": "",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "createdAt": {
           "title": "createdAt",
           "description": "",
@@ -468,8 +379,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -484,24 +395,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "entityStorageVersion": {
-          "title": "entityStorageVersion",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -527,17 +422,6 @@
             "boolean",
             "null"
           ]
-        },
-        "featureProviderType": {
-          "title": "featureProviderType",
-          "description": "*Deprecated* See `providerSubType`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
         },
         "nativeCrs": {
           "title": "nativeCrs",
@@ -587,7 +471,7 @@
         },
         "extensions": {
           "title": "extensions",
-          "description": "Definition of extensions, see [Extensions](extensions/README.md).",
+          "description": "Definition of extensions, see [Extensions](90-extensions/README.md).",
           "allOf": [
             {
               "if": {
@@ -627,8 +511,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -637,52 +521,17 @@
         },
         "autoPersist": {
           "title": "autoPersist",
-          "description": "*Deprecated, use the editor instead.* Option to persist definitions generated with     `auto` to the configuration file. The [Store](/application/40-store.md) must not be     `READ_ONLY` for this to take effect.",
+          "description": "*Deprecated, use the editor instead.* Option to persist definitions generated with     `auto` to the configuration file. The [Store](/application/20-configuration/00-store.md)     must not be `READ_ONLY` for this to take effect.",
           "oneOf": [
             {
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
-            }
-          ]
-        },
-        "autoTypes": {
-          "title": "autoTypes",
-          "description": "*Deprecated, use the editor instead.* List of source types to include in derived     `types` definitions when `auto: true`. Currently only works for [SQL](sql.md).",
-          "deprecated": true,
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "type": [
-                    "string",
-                    "number",
-                    "boolean",
-                    "null"
-                  ]
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean",
-                  "null"
-                ]
-              }
             }
           ]
         },
@@ -738,6 +587,22 @@
             "null"
           ]
         },
+        "entityStorageVersion": {
+          "title": "entityStorageVersion",
+          "description": "",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "createdAt": {
           "title": "createdAt",
           "description": "",
@@ -746,8 +611,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -762,24 +627,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "entityStorageVersion": {
-          "title": "entityStorageVersion",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -814,8 +663,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -824,14 +673,14 @@
         },
         "autoPersist": {
           "title": "autoPersist",
-          "description": "*Deprecated, use the editor instead.* Option to persist definitions generated with     `auto` to the configuration file. The [Store](/application/40-store.md) must not be     `READ_ONLY` for this to take effect.",
+          "description": "*Deprecated, use the editor instead.* Option to persist definitions generated with     `auto` to the configuration file. The [Store](/application/20-configuration/00-store.md)     must not be `READ_ONLY` for this to take effect.",
           "oneOf": [
             {
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -844,26 +693,10 @@
           "type": "object",
           "$ref": "#/$defs/TilesetFeaturesDefaults"
         },
-        "layerDefaults": {
-          "title": "layerDefaults",
-          "description": "*Deprecated* See `tilesetDefaults`.",
-          "type": "object",
-          "deprecated": true,
-          "$ref": "#/$defs/TilesetFeaturesDefaults"
-        },
         "tilesets": {
           "title": "tilesets",
           "description": "Definition of tilesets, see [Tileset](#tileset).",
           "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/TilesetFeatures"
-          }
-        },
-        "layers": {
-          "title": "layers",
-          "description": "*Deprecated* See `tilesets`.",
-          "type": "object",
-          "deprecated": true,
           "additionalProperties": {
             "$ref": "#/$defs/TilesetFeatures"
           }
@@ -916,6 +749,22 @@
             "null"
           ]
         },
+        "entityStorageVersion": {
+          "title": "entityStorageVersion",
+          "description": "",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "createdAt": {
           "title": "createdAt",
           "description": "",
@@ -924,8 +773,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -940,24 +789,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "entityStorageVersion": {
-          "title": "entityStorageVersion",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -990,26 +823,10 @@
           "type": "object",
           "$ref": "#/$defs/TilesetMbTilesDefaults"
         },
-        "layerDefaults": {
-          "title": "layerDefaults",
-          "description": "*Deprecated* See `tilesetDefaults`.",
-          "type": "object",
-          "deprecated": true,
-          "$ref": "#/$defs/TilesetMbTilesDefaults"
-        },
         "tilesets": {
           "title": "tilesets",
           "description": "Definition of tilesets.",
           "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/TilesetMbTiles"
-          }
-        },
-        "layers": {
-          "title": "layers",
-          "description": "*Deprecated* See `tilesets`.",
-          "type": "object",
-          "deprecated": true,
           "additionalProperties": {
             "$ref": "#/$defs/TilesetMbTiles"
           }
@@ -1032,6 +849,22 @@
             "null"
           ]
         },
+        "entityStorageVersion": {
+          "title": "entityStorageVersion",
+          "description": "",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "createdAt": {
           "title": "createdAt",
           "description": "",
@@ -1040,8 +873,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1056,24 +889,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "entityStorageVersion": {
-          "title": "entityStorageVersion",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1106,26 +923,10 @@
           "type": "object",
           "$ref": "#/$defs/TilesetHttpDefaults"
         },
-        "layerDefaults": {
-          "title": "layerDefaults",
-          "description": "*Deprecated* See `tilesetDefaults`.",
-          "type": "object",
-          "deprecated": true,
-          "$ref": "#/$defs/TilesetHttpDefaults"
-        },
         "tilesets": {
           "title": "tilesets",
           "description": "Definition of tilesets, see [Tileset](#tileset).",
           "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/TilesetHttp"
-          }
-        },
-        "layers": {
-          "title": "layers",
-          "description": "*Deprecated* See `tilesets`.",
-          "type": "object",
-          "deprecated": true,
           "additionalProperties": {
             "$ref": "#/$defs/TilesetHttp"
           }
@@ -1146,8 +947,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1162,30 +963,13 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
             }
           ]
-        },
-        "forceLongitudeFirst": {
-          "title": "forceLongitudeFirst",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
         },
         "forceAxisOrder": {
           "title": "forceAxisOrder",
@@ -1224,8 +1008,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1341,8 +1125,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1443,8 +1227,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1478,8 +1262,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1628,20 +1412,19 @@
             "null"
           ]
         },
-        "reduceStringFormat": {
-          "title": "reduceStringFormat",
-          "description": "*Deprecated* See `objectReduceFormat`.",
+        "objectReduceSelect": {
+          "title": "objectReduceSelect",
+          "description": "Reduces an object to one of its properties, the value is the desired property name.",
           "type": [
             "string",
             "number",
             "boolean",
             "null"
-          ],
-          "deprecated": true
+          ]
         },
-        "objectReduceSelect": {
-          "title": "objectReduceSelect",
-          "description": "Reduces an object to one of its properties, the value is the desired property name.",
+        "objectRemoveSelect": {
+          "title": "objectRemoveSelect",
+          "description": "Removes an object, if the property with the name in the value is `null`.",
           "type": [
             "string",
             "number",
@@ -1656,6 +1439,16 @@
           "additionalProperties": {
             "type": "string"
           }
+        },
+        "arrayReduceFormat": {
+          "title": "arrayReduceFormat",
+          "description": "Reduces a value array to a string using the same syntax as `stringFormat` but with     additional replacements for the array indexes.",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "stringFormat": {
           "title": "stringFormat",
@@ -1720,29 +1513,18 @@
               }
             }
           ]
-        },
-        "null": {
-          "title": "null",
-          "description": "*Deprecated* See `nullify`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
         }
       },
       "additionalProperties": false
     },
     "SchemaConstraints": {
       "title": "SchemaConstraints",
-      "description": "# Constraints  Currently only available in [German](../../de/providers/details/constraints.md).",
+      "description": "# Constraints  Schema constraints can be documented in the configuration of the feature types in the     feature provider. These are used, for example, when generating JSON schema documents.       {@docTable:properties }       As an example, here are the properties of the [road sections/branch features     (Abschnitt/Ast)](https://demo.ldproxy.net/strassen/collections/abschnitteaeste/items) in the     API [Road network and accidents in NRW](https://demo.ldproxy.net/strassen) with constraints:         ```yaml  types:   abschnitteaeste:     label: Abschnitte und Äste     sourcePath: /abschnitteaeste     type: OBJECT     properties:       kennung:         label: Kennung         description: 16-stellige Kennung des Abschnittes oder Astes         sourcePath: abs         type: STRING         role: ID         constraints:           regex: \u0027^[0-9]{7}[A-Z][0-9]{7}[A-Z]$\u0027       strasse:         label: Straße         type: OBJECT         objectType: Strasse         properties:           bez:             label: Straßenbezeichnung             sourcePath: strbez             type: STRING           klasse:             label: Straßenklasse             sourcePath: strkl             type: STRING             constraints:               enum:               - A               - B               - L               - K           nummer:             label: Straßennummer             sourcePath: strnr             type: INTEGER             constraints:               min: 1               max: 9999           zusatz:             label: Buchstabenzusatz             description: Buchstabenzusatz zur Straßennummer             sourcePath: strzus             type: STRING             constraints:               regex: \u0027^[A-Z]$\u0027       ...       absast:         label: Art         description: Art des Abschnittes oder Astes         sourcePath: absast         type: STRING         constraints:           enum:           - Abschnitt           - Ast       ...       laenge_m:         label: Länge [m]         description: Länge des Abschnittes oder Astes (m)         sourcePath: laenge         type: INTEGER         constraints:           min: 0  ```",
       "type": "object",
       "properties": {
         "codelist": {
           "title": "codelist",
-          "description": "TODO",
+          "description": "Identifies a [codelist](../../auxiliaries/codelists.md) that applies to the property.     Meaningful only for string or integer properties.",
           "type": [
             "string",
             "number",
@@ -1752,7 +1534,7 @@
         },
         "enum": {
           "title": "enum",
-          "description": "TODO",
+          "description": "List of permitted values for the property. Meaningful only for string or integer     properties.",
           "allOf": [
             {
               "if": {
@@ -1786,7 +1568,7 @@
         },
         "regex": {
           "title": "regex",
-          "description": "TODO",
+          "description": "A regular expression that must be fulfilled by all values. Meaningful only for string     properties.",
           "type": [
             "string",
             "number",
@@ -1796,14 +1578,14 @@
         },
         "required": {
           "title": "required",
-          "description": "TODO",
+          "description": "A property can be qualified as a mandatory property that must be set in all instances.",
           "oneOf": [
             {
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1812,14 +1594,14 @@
         },
         "min": {
           "title": "min",
-          "description": "TODO",
+          "description": "Minimum value for all instances. Meaningful only for numerical properties.",
           "oneOf": [
             {
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1828,14 +1610,14 @@
         },
         "max": {
           "title": "max",
-          "description": "TODO",
+          "description": "Maximum value for all instances. Meaningful only for numerical properties.",
           "oneOf": [
             {
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1844,14 +1626,14 @@
         },
         "minOccurrence": {
           "title": "minOccurrence",
-          "description": "TODO",
+          "description": "Minimum number of values for all instances. Meaningful only for array properties.",
           "oneOf": [
             {
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1860,14 +1642,14 @@
         },
         "maxOccurrence": {
           "title": "maxOccurrence",
-          "description": "TODO",
+          "description": "Maximum number of values for all instances. Meaningful only for array properties.",
           "oneOf": [
             {
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1882,8 +1664,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1898,8 +1680,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1950,61 +1732,9 @@
       "description": "",
       "type": "object",
       "properties": {
-        "refType": {
-          "title": "refType",
-          "description": "",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ]
-        },
-        "refUriTemplate": {
-          "title": "refUriTemplate",
-          "description": "",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ]
-        },
-        "refKeyTemplate": {
-          "title": "refKeyTemplate",
-          "description": "",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ]
-        },
-        "sourcePath": {
-          "title": "sourcePath",
-          "description": "The relative path for this schema object. The syntax depends on the provider types, see     [SQL](sql.md#path-syntax) or [WFS](wfs.md#path-syntax).",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ]
-        },
-        "path": {
-          "title": "path",
-          "description": "*Deprecated* See `sourcePath`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        },
         "sourcePaths": {
           "title": "sourcePaths",
-          "description": "*Deprected, use `concat` or `coalesce` instead.* The relative paths for this schema     object. The syntax depends on the provider types, see [SQL](sql.md#path-syntax) or     [WFS](wfs.md#path-syntax).",
-          "deprecated": true,
+          "description": "",
           "allOf": [
             {
               "if": {
@@ -2036,9 +1766,19 @@
             }
           ]
         },
+        "sourcePath": {
+          "title": "sourcePath",
+          "description": "The relative path for this schema object. The syntax depends on the provider types, see     [SQL](10-sql.md#path-syntax) or [WFS](50-wfs.md#path-syntax).",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
         "type": {
           "title": "type",
-          "description": "Data type of the schema object. Default is `OBJECT` when `properties` is set, otherwise     it is `STRING`. Possible values:        - `FLOAT`, `INTEGER`, `STRING`, `BOOLEAN`, `DATETIME`, `DATE` for simple values. - `GEOMETRY` for geometries. - `OBJECT` for objects. - `OBJECT_ARRAY` a list of objects. - `VALUE_ARRAY` a list of simple values.",
+          "description": "Data type of the schema object. Default is `OBJECT` when `properties` is set, otherwise     it is `STRING`. Possible values:        - `FLOAT`, `INTEGER`, `STRING`, `BOOLEAN`, `DATETIME`, `DATE` for simple values. - `GEOMETRY` for geometries. - `OBJECT` for objects. - `OBJECT_ARRAY` for a list of objects. - `VALUE_ARRAY` for a list of simple values. - `FEATURE_REF` for a reference to another feature or external resource. - `FEATURE_REF_ARRAY` for a list of references to others features or external resources.",
           "type": [
             "string",
             "number",
@@ -2126,17 +1866,6 @@
             "null"
           ]
         },
-        "scope": {
-          "title": "scope",
-          "description": "`*Deprecated, use `excludedScopes` instead.*` Optional scope for properties that should     only be used when either reading (`QUERIES`) or writing (`MUTATIONS`) features.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        },
         "excludedScopes": {
           "title": "excludedScopes",
           "description": "Optional exclusion of a property from a schema scope. See [Schema     Scopes](../details/scopes.md) for a description of the scopes.",
@@ -2171,6 +1900,36 @@
             }
           ]
         },
+        "refType": {
+          "title": "refType",
+          "description": "For a property of type `FEATURE_REF` or `FEATURE_REF_ARRAY` where the target is always     a feature of another type in the same provider, declare the feature type identifier in     `refType`. For details see [Feature References](#feature-references).",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "refUriTemplate": {
+          "title": "refUriTemplate",
+          "description": "For a property of type `FEATURE_REF` or `FEATURE_REF_ARRAY` where the target is an     external resource, declare the URI template of the link in `refUriTemplate`. For details     see [Feature References](#feature-references).",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "refKeyTemplate": {
+          "title": "refKeyTemplate",
+          "description": "For a property of type `FEATURE_REF` or `FEATURE_REF_ARRAY` where the type of the     target varies, declare the string template of the foreign key in `refKeyTemplate`. For     details see [Feature References](#feature-references).",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
         "schema": {
           "title": "schema",
           "description": "Reference to an external schema definition. The default resolver will resolve     references to entries in `fragments` e.g. `#/fragments/example`. For additional resolvers     see [Extensions](extensions).",
@@ -2189,8 +1948,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2235,47 +1994,29 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
             }
           ]
         },
-        "isQueryable": {
-          "title": "isQueryable",
-          "description": "*Deprecated, use `excludedScopes` instead.* Properties that are not of type OBJECT or     OBJECT_ARRAY are by default eligible as queryables. This setting can be used to declare a     property as ineligible, for example, if the property is not optimized for use in queries.     If an eligible property can actually be queried is decided by the provider implementation,     that might not be feasible due to technical reasons.",
+        "linearizeCurves": {
+          "title": "linearizeCurves",
+          "description": "Option to linearize curve geometries (e.g., CircularString or CurvePolygon) to a Simple     Features geometry. This option only applies to SQL feature providers of dialect PostGIS.",
           "oneOf": [
             {
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
             }
-          ],
-          "deprecated": true
-        },
-        "isSortable": {
-          "title": "isSortable",
-          "description": "*Deprecated, use `excludedScopes` instead.* Only the direct properties of a feature     type that are of type STRING, FLOAT, INTEGER, DATE, or DATETIME are eligible as sortables.     This setting can be used to declare a property as ineligible, for example, if the property     is not optimized for use in queries. If an eligible property can actually be used as     sortable is decided by the provider implementation, that might not be feasible due to     technical reasons.",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
+          ]
         },
         "isLastModified": {
           "title": "isLastModified",
@@ -2285,8 +2026,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2304,31 +2045,6 @@
         "merge": {
           "title": "merge",
           "description": "If only some of the `properties` are defined in an external `schema`, or if some of the     `properties` should be mapped to a different table, this provides a convenient way to     define these properties alongside the regular properties. The option takes a list of schema     objects, but only `sourcePath`, `schema` and `properties` are considered. For details see     [Mapping Operations](#merge).",
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "$ref": "#/$defs/PartialObjectSchema"
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "$ref": "#/$defs/PartialObjectSchema"
-              }
-            }
-          ]
-        },
-        "allOf": {
-          "title": "allOf",
-          "description": "*Deprecated* See `merge`.",
-          "deprecated": true,
           "allOf": [
             {
               "if": {
@@ -2526,8 +2242,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2542,8 +2258,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2558,8 +2274,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2595,8 +2311,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2648,76 +2364,6 @@
       },
       "additionalProperties": false
     },
-    "SqlPathDefaults": {
-      "title": "SqlPathDefaults",
-      "description": "",
-      "type": "object",
-      "properties": {
-        "primaryKey": {
-          "title": "primaryKey",
-          "description": "The default column that is used for join analysis if no differing primary key is set in     the [sourcePath](#path-syntax).",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ]
-        },
-        "defaultPrimaryKey": {
-          "title": "defaultPrimaryKey",
-          "description": "*Deprecated* See `primaryKey`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        },
-        "sortKey": {
-          "title": "sortKey",
-          "description": "The default column that is used to sort rows if no differing sort key is set in the     [sourcePath](#path-syntax).",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ]
-        },
-        "defaultSortKey": {
-          "title": "defaultSortKey",
-          "description": "*Deprecated* See `sortKey`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        },
-        "schema": {
-          "title": "schema",
-          "description": "The default schema that is applied to tables without prefix in     [sourcePaths](#path-syntax).",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ]
-        },
-        "junctionTablePattern": {
-          "title": "junctionTablePattern",
-          "description": "",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
     "ConnectionInfoSql": {
       "title": "ConnectionInfoSql",
       "description": "",
@@ -2745,7 +2391,7 @@
         },
         "database": {
           "title": "database",
-          "description": "The name of the database. For `GPKG` the file path, either absolute or relative to the     [data folder](../../application/30-data-folder.md).",
+          "description": "The name of the database. For `GPKG` a relative path to a resource with type `features`     in the [Store (new)](../../application/20-configuration/10-store-new.md).",
           "type": [
             "string",
             "number",
@@ -2836,98 +2482,54 @@
           "description": "",
           "type": "object",
           "$ref": "#/$defs/FeatureActionTrigger"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SqlPathDefaults": {
+      "title": "SqlPathDefaults",
+      "description": "",
+      "type": "object",
+      "properties": {
+        "primaryKey": {
+          "title": "primaryKey",
+          "description": "The default column that is used for join analysis if no differing primary key is set in     the [sourcePath](#path-syntax).",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
-        "maxConnections": {
-          "title": "maxConnections",
-          "description": "*Deprecated* See `pool.maxConnections`.",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
+        "sortKey": {
+          "title": "sortKey",
+          "description": "The default column that is used to sort rows if no differing sort key is set in the     [sourcePath](#path-syntax).",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
-        "maxThreads": {
-          "title": "maxThreads",
-          "description": "*Deprecated* See `maxConnections`.",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
+        "schema": {
+          "title": "schema",
+          "description": "The default schema that is applied to tables without prefix in     [sourcePaths](#path-syntax).",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
-        "minConnections": {
-          "title": "minConnections",
-          "description": "*Deprecated* See `pool.minConnections`.",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        },
-        "initFailFast": {
-          "title": "initFailFast",
-          "description": "*Deprecated* See `pool.initFailFast`.",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        },
-        "computeNumberMatched": {
-          "title": "computeNumberMatched",
-          "description": "*Deprecated* See [Query Generation](#query-generation) below.",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        },
-        "pathSyntax": {
-          "title": "pathSyntax",
-          "description": "*Deprecated* See [Source Path Defaults](#source-path-defaults) below.",
-          "type": "object",
-          "deprecated": true,
-          "$ref": "#/$defs/SqlPathDefaults"
+        "junctionTablePattern": {
+          "title": "junctionTablePattern",
+          "description": "",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         }
       },
       "additionalProperties": false
@@ -2945,8 +2547,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2961,8 +2563,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2995,8 +2597,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3011,8 +2613,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3035,8 +2637,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3051,8 +2653,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3067,8 +2669,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3159,8 +2761,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3175,8 +2777,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3191,8 +2793,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3221,8 +2823,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3237,8 +2839,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3253,8 +2855,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3322,8 +2924,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3338,8 +2940,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3406,8 +3008,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3422,8 +3024,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3438,8 +3040,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3580,8 +3182,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3622,8 +3224,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3648,8 +3250,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3664,8 +3266,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"

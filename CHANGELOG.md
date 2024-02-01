@@ -1,5 +1,25 @@
 # Changelog
 
+## v3.6.1 (12/01/2024)
+
+#### Improvements
+
+-  PostGIS: support geometry columns with curves [#1119](https://github.com/interactive-instruments/ldproxy/issues/1119)
+
+#### Fixed bugs
+
+-  CRUD operations ignore feature content [#1148](https://github.com/interactive-instruments/ldproxy/issues/1148)
+-  OpenId Connect callback might not work behind reverse proxy [#1147](https://github.com/interactive-instruments/ldproxy/issues/1147)
+-  auto mode does not generate any types [#1146](https://github.com/interactive-instruments/ldproxy/issues/1146)
+-  Projections: feature references are ignored [#1144](https://github.com/interactive-instruments/ldproxy/issues/1144)
+-  feature reference included on null value [#1139](https://github.com/interactive-instruments/ldproxy/issues/1139)
+-  XACML: obligations are ignored [#1136](https://github.com/interactive-instruments/ldproxy/issues/1136)
+-  Tiles: Issues in the edge case that tiles are only enabled for selected collections [#1134](https://github.com/interactive-instruments/ldproxy/issues/1134)
+-  HTML: Incorrect paging links, if query parameters use non-ASCII chars  [#1120](https://github.com/interactive-instruments/ldproxy/issues/1120)
+-  significant increase in memory consumption after reloading configs via tasks/reload-entities [#1088](https://github.com/interactive-instruments/ldproxy/issues/1088)
+
+---
+
 ## v3.6.0 (08/12/2023)
 
 > [!IMPORTANT]
