@@ -20,6 +20,7 @@ public abstract class ApiEndpointDefinition {
   public static final int SORT_PRIORITY_LANDING_PAGE = 0;
   public static final int SORT_PRIORITY_CONFORMANCE = 1;
   public static final int SORT_PRIORITY_API_DEFINITION = 2;
+  public static final int SORT_PRIORITY_ASYNC_API_DEFINITION = 3;
   public static final int SORT_PRIORITY_COLLECTIONS = 10;
   public static final int SORT_PRIORITY_COLLECTION = 11;
   public static final int SORT_PRIORITY_FEATURES = 100;
