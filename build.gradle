@@ -80,3 +80,4 @@ tasks.named('dockerRun') {
 }
 
 apply from: 'docs.gradle'
+
