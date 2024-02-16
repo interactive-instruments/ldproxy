@@ -110,9 +110,7 @@ import javax.inject.Singleton;
  *     de.ii.ogcapi.styles.infra.EndpointStyleCollection}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyleMetadataCollection}, {@link
  *     de.ii.ogcapi.styles.infra.manager.EndpointStylesManager}, {@link
- *     de.ii.ogcapi.styles.infra.manager.EndpointStyleMetadataManager}, {@link
- *     de.ii.ogcapi.styles.infra.manager.EndpointStylesManagerCollection}, {@link
- *     de.ii.ogcapi.styles.infra.manager.EndpointStyleMetadataManagerCollection}
+ *     de.ii.ogcapi.styles.infra.manager.EndpointStylesManagerCollection}
  * @ref:pathParameters {@link de.ii.ogcapi.styles.domain.PathParameterCollectionIdStyles}, {@link
  *     de.ii.ogcapi.styles.domain.PathParameterStyleId}
  * @ref:queryParameters {@link de.ii.ogcapi.styles.domain.QueryParameterFStyles}, {@link
@@ -129,7 +127,7 @@ public class StylesBuildingBlock implements ApiBuildingBlock {
       Optional.of(
           ExternalDocumentation.of(
               "https://docs.ogc.org/DRAFTS/20-009.html", "OGC API - Styles (DRAFT)"));
-  public static final String STORE_RESOURCE_TYPE = "styles";
+  public static final String STORE_RESOURCE_TYPE = "other-styles";
 
   private final ExtensionRegistry extensionRegistry;
 
@@ -145,8 +143,6 @@ public class StylesBuildingBlock implements ApiBuildingBlock {
         .managerEnabled(false)
         .validationEnabled(false)
         .useIdFromStylesheet(false)
-        .resourcesEnabled(false)
-        .resourceManagerEnabled(false)
         .styleEncodings(
             extensionRegistry.getExtensionsForType(StyleFormatExtension.class).stream()
                 .filter(FormatExtension::isEnabledByDefault)

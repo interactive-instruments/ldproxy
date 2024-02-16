@@ -13,7 +13,6 @@ import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.resources.app.Resources;
-import de.ii.ogcapi.styles.domain.StylesConfiguration;
 
 @AutoMultiBind
 public interface ResourcesFormatExtension extends GenericFormatExtension {
@@ -28,10 +27,6 @@ public interface ResourcesFormatExtension extends GenericFormatExtension {
 
   @Override
   default boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return GenericFormatExtension.super.isEnabledForApi(apiData)
-        || apiData
-            .getExtension(StylesConfiguration.class)
-            .map(StylesConfiguration::isResourcesEnabled)
-            .orElse(false);
+    return GenericFormatExtension.super.isEnabledForApi(apiData);
   }
 }

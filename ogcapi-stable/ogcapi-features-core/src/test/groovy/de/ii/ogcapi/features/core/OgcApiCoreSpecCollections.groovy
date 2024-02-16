@@ -17,7 +17,6 @@ import de.ii.ogcapi.features.core.app.CollectionExtensionFeatures
 import de.ii.ogcapi.features.core.app.CollectionsExtensionFeatures
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders
-import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCollectionQueryables
 import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration
 import de.ii.ogcapi.foundation.app.I18nDefault
 import de.ii.ogcapi.foundation.app.OgcApiEntity
@@ -28,7 +27,6 @@ import de.ii.xtraplatform.crs.domain.BoundingBox
 import de.ii.xtraplatform.crs.domain.OgcCrs
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema
 import de.ii.xtraplatform.features.domain.SchemaBase
-import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -295,10 +293,6 @@ class OgcApiCoreSpecCollections extends Specification {
                                 .build())
                         .addExtensions(new ImmutableFeaturesCoreConfiguration.Builder()
                                 .enabled(true)
-                                .queryables(new ImmutableFeaturesCollectionQueryables.Builder()
-                                        .spatial(ImmutableList.of('geometry'))
-                                        .temporal(ImmutableList.of('datum_open'))
-                                        .build())
                                 .build())
                         .enabled(true)
                         .build())

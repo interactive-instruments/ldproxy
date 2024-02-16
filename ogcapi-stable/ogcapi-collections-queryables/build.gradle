@@ -1,7 +1,14 @@
 
 maturity = 'MATURE'
+maintenance = 'FULL'
+description = 'Metadata about the properties of the features in a feature collection that can be used in filter expressions.'
+descriptionDe = 'Metadaten über die Eigenschaften von Objekten aus einer Feature Collection, die in Filter-Ausdrücken verwendet werden können.'
 
 dependencies {
+    provided 'de.interactive_instruments:xtraplatform-auth'
+    provided 'de.interactive_instruments:xtraplatform-codelists'
+    provided 'de.interactive_instruments:xtraplatform-cql'
+    provided 'de.interactive_instruments:xtraplatform-features'
     provided project(":ogcapi-foundation")
     provided project(":ogcapi-collections")
     provided project(":ogcapi-common")

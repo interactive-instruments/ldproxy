@@ -12,6 +12,7 @@ import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
@@ -24,7 +25,7 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
       Optional<String> schemaUri,
       String label,
       Optional<String> description,
-      List<Codelist> codelists,
+      Map<String, Codelist> codelists,
       List<String> properties) {
     super(version, schemaUri, label, description, codelists, true);
     this.properties = properties;
@@ -51,8 +52,10 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
   @Override
   protected JsonSchema deriveValueSchema(FeatureSchema schema) {
     JsonSchema schema2 = super.deriveValueSchema(schema);
-    if (!(schema2 instanceof JsonSchemaArray) && schema.getName().contains("[].")) {
-      schema2 = withArrayWrapper(schema2);
+    if (Objects.nonNull(schema2)
+        && !(schema2 instanceof JsonSchemaArray)
+        && (schema.getName().contains("[].") || schema.getName().endsWith("[]"))) {
+      schema2 = withArrayWrapper(schema2, schema.getName().endsWith("[]"));
     }
     return schema2;
   }

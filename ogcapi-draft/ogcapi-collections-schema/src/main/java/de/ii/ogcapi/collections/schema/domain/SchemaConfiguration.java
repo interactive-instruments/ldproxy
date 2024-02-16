@@ -8,11 +8,9 @@
 package de.ii.ogcapi.collections.schema.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
-import java.util.Set;
 import org.immutables.value.Value;
 
 /**
@@ -29,15 +27,6 @@ import org.immutables.value.Value;
 @JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "SCHEMA")
 @JsonDeserialize(builder = ImmutableSchemaConfiguration.Builder.class)
 public interface SchemaConfiguration extends ExtensionConfiguration, CachingConfiguration {
-
-  /**
-   * @langEn List of enabled JSON Schema versions. Supported are 2020-12 (`V202012`), 2019-09
-   *     (`V201909`) and 07 (`V7`).
-   * @langDe Steuert, welche JSON-Schema-Versionen unterstützt werden sollen. Zur Verfügung stehen
-   *     2020-12 (`V202012`), 2019-09 (`V201909`) und 07 (`V7`).
-   * @default [ "V202012" ]
-   */
-  Set<JsonSchemaDocument.VERSION> getVersions();
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 

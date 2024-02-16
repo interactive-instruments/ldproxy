@@ -8,13 +8,16 @@
 package de.ii.ogcapi.features.jsonfg.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.jsonfg.domain.ImmutableJsonFgConfiguration.Builder;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -89,8 +92,8 @@ import org.immutables.value.Value;
 public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTransformations {
 
   enum OPTION {
-    describedby,
     featureType,
+    featureSchema,
     time,
     place,
     coordRefSys,
@@ -101,14 +104,14 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
   /**
    * @langEn *Partially Deprecated* For schemas specific to the feature type, use `schemaCollection`
    *     and `schemaFeature`. Enables that links to the generic JSON-FG and GeoJSON JSON Schema
-   *     documents tare added to the JSON-FG response document. The links have the link relation
-   *     type "describedby". The schemas can be used to validate the JSON document.
+   *     documents are added to the JSON-FG response document. The links have the link relation type
+   *     "describedby". The schemas can be used to validate the JSON document.
    * @langDe *Teilweise Deprecated* Für Objektart-spezifische Schemas siehe `schemaCollection` and
    *     `schemaFeature`. Aktiviert, dass Links zu den generischen JSON-FG und GeoJSON
    *     JSON-Schema-Dokumenten in das JSON-FG-Antwortdokument eingefügt werden. Die Links haben den
    *     Relationstyp "describedby". Die Schemas können zur Validierung des JSON-Dokuments verwendet
    *     werden.
-   * @default true
+   * @default false
    * @since v3.1
    */
   @Nullable
@@ -207,6 +210,29 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
   @Nullable
   List<String> getFeatureType();
 
+  default List<String> getEffectiveFeatureType(Optional<FeatureSchema> schema) {
+    List<String> value = getFeatureType();
+    if (Objects.isNull(value) || value.isEmpty()) {
+      value =
+          schema
+              .flatMap(FeatureSchema::getObjectType)
+              .map(ImmutableList::of)
+              .orElse(ImmutableList.of());
+    }
+    return value;
+  }
+
+  /**
+   * @langEn If `true`, values in "conformsTo" and "coordRefSys" will be Safe CURIEs, not HTTP URIs.
+   *     For example, `[EPSG:25832]` instead of `http://www.opengis.net/def/crs/EPSG/0/25832`.
+   * @langDe Bei `true` sind die Werte in "conformsTo" und "coordRefSys" Safe CURIEs, keine HTTP
+   *     URIs. Beispiel: `[EPSG:25832]` statt `http://www.opengis.net/def/crs/EPSG/0/25832`.
+   * @default false
+   * @since v3.6
+   */
+  @Nullable
+  Boolean getUseCuries();
+
   /**
    * @langEn Adds the specified links to the `links` array of features. All values of the array must
    *     be a valid link object with `href` and `rel`.
@@ -220,11 +246,11 @@ public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTra
 
   /**
    * @langEn The option allows selected JSON-FG extensions to be included in the GeoJSON encoding as
-   *     well. Allowed values are: `describedby`, `featureType`, `time`, `place`, `coordRefSys`,
-   *     `links`.
+   *     well. Allowed values are: `describedby`, `featureType`, `featureSchema`, `time`, `place`,
+   *     `coordRefSys`, `links`. `conformsTo` is only used in JSON-FG responses.
    * @langDe Die Option ermöglicht, dass ausgewählte JSON-FG-Erweiterungen auch im GeoJSON-Encoding
-   *     berücksichtigt werden. Erlaubte Werte sind: `describedby`, `featureType`, `time`, `place`,
-   *     `coordRefSys`, `links`
+   *     berücksichtigt werden. Erlaubte Werte sind: `describedby`, `featureType`, `featureSchema`,
+   *     `time`, `place`, `coordRefSys`, `links`. `conformsTo` wird nur in JSON-FG unterstützt.
    * @default []
    * @since v3.1
    */

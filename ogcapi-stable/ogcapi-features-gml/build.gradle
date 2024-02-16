@@ -1,7 +1,16 @@
 
 maturity = 'CANDIDATE'
+maintenance = 'LOW'
+description = 'Encode features as GML.'
+descriptionDe = 'Kodierung von Features als GML.'
 
 dependencies {
+    provided 'de.interactive_instruments:xtraplatform-streams'
+    provided 'de.interactive_instruments:xtraplatform-codelists'
+    provided 'de.interactive_instruments:xtraplatform-crs'
+    provided 'de.interactive_instruments:xtraplatform-features'
+    provided 'de.interactive_instruments:xtraplatform-features-gml'
+    provided 'de.interactive_instruments:xtraplatform-geometries'
     provided project(":ogcapi-foundation")
     provided project(":ogcapi-common")
     provided project(":ogcapi-features-core")

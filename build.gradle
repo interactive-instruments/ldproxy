@@ -2,6 +2,7 @@ plugins {
     alias catalog.plugins.xtraplatform.application
     alias catalog.plugins.spotless apply false
     alias catalog.plugins.node apply false
+    alias catalog.plugins.download apply false
 }
 
 allprojects {
@@ -62,6 +63,12 @@ task spotlessApply {
     dependsOn project.gradle.includedBuild('ogcapi-draft').task(':spotlessApplyAll')
     dependsOn project.gradle.includedBuild('ogcapi-custom').task(':spotlessApplyAll')
     dependsOn(':ldproxy-cfg:spotlessApply')
+}
+
+tasks.modules {
+    dependsOn project.gradle.includedBuild('ogcapi-stable').task(':modules')
+    dependsOn project.gradle.includedBuild('ogcapi-draft').task(':modules')
+    dependsOn project.gradle.includedBuild('ogcapi-custom').task(':modules')
 }
 
 //TODO: MarkdownTask not available in docs.gradle

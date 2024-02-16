@@ -13,10 +13,11 @@ import de.ii.xtraplatform.entities.domain.EntityData;
 import de.ii.xtraplatform.entities.domain.EntityDataDefaultsStore;
 import de.ii.xtraplatform.entities.domain.EntityDataStore;
 import de.ii.xtraplatform.entities.domain.EntityFactories;
-import de.ii.xtraplatform.entities.domain.Identifier;
+import de.ii.xtraplatform.values.domain.Identifier;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /** Utility to read, write, validate and migrate ldproxy YAML configuration files. */
@@ -56,4 +57,8 @@ public interface LdproxyCfg extends LdproxyCfgWriter {
   Migrations migrations();
 
   Set<ValidationMessage> validateEntity(Path entityPath, String entityType) throws IOException;
+
+  <T extends EntityData> Path getEntityPath(T data);
+
+  Map<String, String> getRawSchemas();
 }

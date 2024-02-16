@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.styles.app;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
@@ -22,7 +23,6 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
 import de.ii.ogcapi.styles.domain.Tiles3dStylesheet;
-import de.ii.xtraplatform.base.domain.LogContext;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
 import java.util.Map;
@@ -103,7 +103,8 @@ public class StyleFormat3dTiles implements StyleFormatExtension {
 
   @Override
   public String getTitle(String styleId, StylesheetContent stylesheetContent) {
-    return parse(stylesheetContent, false, false)
+    return stylesheetContent
+        .get3dTilesStyle()
         .map(Tiles3dStylesheet::getExtras)
         .map(e -> e.containsKey("name") ? e.get("name").toString() : styleId)
         .orElse(styleId);
@@ -116,7 +117,7 @@ public class StyleFormat3dTiles implements StyleFormatExtension {
       Optional<String> collectionId,
       String styleId,
       ApiRequestContext requestContext) {
-    return parse(stylesheetContent, true, false);
+    return stylesheetContent.get3dTilesStyle();
   }
 
   @Override
@@ -131,7 +132,10 @@ public class StyleFormat3dTiles implements StyleFormatExtension {
 
   @Override
   public Optional<String> analyze(StylesheetContent stylesheetContent, boolean strict) {
-    Tiles3dStylesheet stylesheet = parse(stylesheetContent, true, strict).get();
+    Tiles3dStylesheet stylesheet =
+        stylesheetContent
+            .get3dTilesStyle()
+            .orElseGet(() -> parse(stylesheetContent.getContent(), strict));
 
     // TODO add checks
 
@@ -148,42 +152,26 @@ public class StyleFormat3dTiles implements StyleFormatExtension {
     return styleIdCandidate;
   }
 
-  static Optional<Tiles3dStylesheet> parse(
-      StylesheetContent stylesheetContent, boolean throwOnError, boolean strict) {
-    final byte[] content = stylesheetContent.getContent();
+  private static ObjectMapper MAPPER =
+      new ObjectMapper()
+          .registerModule(new Jdk8Module())
+          .registerModule(new GuavaModule())
+          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+          .enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
 
-    // prepare Jackson mapper for deserialization
-    final ObjectMapper mapper = new ObjectMapper();
-    mapper.registerModule(new Jdk8Module());
-    mapper.registerModule(new GuavaModule());
-    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, strict);
-    mapper.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY);
-    Tiles3dStylesheet parsedContent;
+  private static ObjectMapper STRICT_MAPPER =
+      MAPPER.copy().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+
+  static Tiles3dStylesheet parse(byte[] content, boolean strict) {
+    ObjectMapper mapper = strict ? STRICT_MAPPER : MAPPER;
     try {
-      // parse input
-      parsedContent = mapper.readValue(content, Tiles3dStylesheet.class);
+      return mapper.readValue(content, Tiles3dStylesheet.class);
     } catch (IOException e) {
-      if (stylesheetContent.getInStore()) {
-        // this is an invalid style already in the store: server error
-        if (throwOnError)
-          throw new RuntimeException(
-              "The content of a stylesheet is invalid: " + stylesheetContent.getDescriptor() + ".",
-              e);
-      } else {
-        // a style provided by a client: client error
-        if (throwOnError)
-          throw new IllegalArgumentException("The content of the stylesheet is invalid.", e);
-      }
-      LOGGER.error(
-          "The content of a stylesheet ''{}'' is invalid: {}",
-          stylesheetContent.getDescriptor(),
-          e.getMessage());
-      if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
-        LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace:", e);
-      }
-      return Optional.empty();
+      throw new IllegalArgumentException("The content of the stylesheet is invalid.", e);
     }
+  }
 
-    return Optional.of(parsedContent);
+  static byte[] toBytes(Tiles3dStylesheet stylesheet) throws JsonProcessingException {
+    return MAPPER.writeValueAsBytes(stylesheet);
   }
 }

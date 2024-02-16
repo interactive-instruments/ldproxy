@@ -31,6 +31,7 @@ public abstract class JsonSchemaString extends JsonSchema {
   @JsonProperty("enum")
   public abstract List<String> getEnums();
 
+  @JsonProperty("x-ogc-unit")
   public abstract Optional<String> getUnit();
 
   public abstract static class Builder extends JsonSchema.Builder {}

@@ -45,15 +45,12 @@ public class EndpointTileSetMultiCollection extends AbstractEndpointTileSetMulti
 
   private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
 
-  private final TilesProviders tilesProviders;
-
   @Inject
   EndpointTileSetMultiCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
       TilesProviders tilesProviders) {
-    super(extensionRegistry, queryHandler);
-    this.tilesProviders = tilesProviders;
+    super(extensionRegistry, queryHandler, tilesProviders);
   }
 
   @Override

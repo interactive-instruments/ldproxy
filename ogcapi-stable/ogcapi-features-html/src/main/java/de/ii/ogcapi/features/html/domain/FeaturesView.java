@@ -176,9 +176,7 @@ public abstract class FeaturesView extends OgcApiDatasetView {
     if (mapClientType().equals(MapClient.Type.MAP_LIBRE)) {
 
       return new ImmutableMapClient.Builder()
-          .backgroundUrl(
-              Optional.ofNullable(htmlConfig().getLeafletUrl())
-                  .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
+          .backgroundUrl(Optional.ofNullable(htmlConfig().getBasemapUrl()))
           .attribution(getAttribution().replace("'", "\\'"))
           .bounds(Optional.ofNullable(bbox()))
           .data(
@@ -195,8 +193,7 @@ public abstract class FeaturesView extends OgcApiDatasetView {
       return new ImmutableMapClient.Builder()
           .type(mapClientType())
           .backgroundUrl(
-              Optional.ofNullable(htmlConfig().getLeafletUrl())
-                  .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl()))
+              Optional.ofNullable(htmlConfig().getBasemapUrl())
                   .map(
                       url ->
                           url.replace("{z}", "{TileMatrix}")
@@ -217,12 +214,8 @@ public abstract class FeaturesView extends OgcApiDatasetView {
   public FilterEditor filterEditor() {
     if (Objects.nonNull(queryables())) {
       return new Builder()
-          .backgroundUrl(
-              Optional.ofNullable(htmlConfig().getLeafletUrl())
-                  .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
-          .attribution(
-              Optional.ofNullable(htmlConfig().getLeafletAttribution())
-                  .or(() -> Optional.ofNullable(htmlConfig().getBasemapAttribution())))
+          .backgroundUrl(Optional.ofNullable(htmlConfig().getBasemapUrl()))
+          .attribution(Optional.ofNullable(htmlConfig().getBasemapAttribution()))
           .fields(
               queryables().entrySet().stream()
                   .sorted(Map.Entry.comparingByValue())
@@ -336,7 +329,7 @@ public abstract class FeaturesView extends OgcApiDatasetView {
       List<String> ignore = Splitter.on(',').trimResults().omitEmptyStrings().splitToList(without);
 
       List<NameValuePair> query =
-          URLEncodedUtils.parse(RawQuery().substring(1), StandardCharsets.ISO_8859_1).stream()
+          URLEncodedUtils.parse(RawQuery().substring(1), StandardCharsets.UTF_8).stream()
               .filter(kvp -> !ignore.contains(kvp.getName().toLowerCase()))
               .collect(Collectors.toList());
 

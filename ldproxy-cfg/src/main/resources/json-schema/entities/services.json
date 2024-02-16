@@ -31,7 +31,7 @@
   "$defs": {
     "OgcApiDataV2": {
       "title": "OgcApiDataV2",
-      "description": "# OGC API       Each API represents a deployment of a single OGC Web API, i.e., an API that implements     conformance classes from OGC API standards.       ## General rules       ### Response encoding       For operations that return a response, the encoding is chosen using standard HTTP content     negotiation with `Accept` headers.       GET operations that support more than one encoding additionally support the query     parameter `f`, which allows to explicitly choose the encoding and override the result of the     content negotiation. The supported encodings depend on the affected resource and the     configuration.       ### Response language       For operations that return a response, the language for linguistic texts is chosen using     standard HTTP content negiotiation with `Accept-Language` headers.       If enabled in [Common Core](building-blocks/common_core.md), GET operations additionally     support the query parameter `lang`, which allows to explicitely choose the language and     override the result of the content negotiation. The supported languages depend on the     affected resource and the configuration. Support for multilingualism is currently limited.     There are four possible sources for linguistic texts:        - Static texts: For example link labels or static texts in HTML represenations. Currently the languages English (`en`) and German (`de`) are supported. - Texts contained in the data: Currently not supported. - Texts set in the configuration: Currently not supported. - Error messages: These are always in english, the messages are currently hard-coded.        ### Resource paths       All resource paths in this documentation are relative to the base URI of the API. For     example given the base URI `https://example.com/pfad/zu/apis/{apiId}` and the relative     resource path `collections`, the full path would be     `https://example.com/pfad/zu/apis/{apiId}/collections`.  ## Configuration       Details regarding the API modules can be found [here](building-blocks/README.md), see     `api` in the table below.       {@docTable:properties }  ### Collection       Every collection corresponds to a feature type defined in the feature provider (only     *Feature Collections* are currently supported).       {@docTable:collectionProperties }  ### Building Blocks       Building blocks might be configured for the API or for single collections. The final     configuration is formed by merging the following sources in this order:        - The building block defaults, see [Building Blocks](building-blocks/README.md). - Optional deployment defaults in the `defaults` directory. - API level configuration. - Collection level configuration. - Optional deployment overrides in the `overrides` directory.          ### Metadata       {@docVar:metadata }       {@docTable:metadataProperties }  ### External document       {@docVar:externalDocument }       {@docTable:externalDocumentProperties }  ### Default extent       {@docVar:extent }       {@docTable:extentProperties }  ### Caching       {@docVar:caching }       {@docTable:cachingProperties }  ### Access Control       {@docVar:security }       {@docTable:securityProperties }  ### Examples       See the [API     configuration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)     of the API [Vineyards in Rhineland-Palatinate, Germany](https://demo.ldproxy.net/vineyards).  ## Storage       API configurations reside under the relative path `store/entities/services/{apiId}.yml` in     the data directory.",
+      "description": "# OGC API       Each API represents a deployment of a single OGC Web API, i.e., an API that implements     conformance classes from OGC API standards.       ## General rules       ### Response encoding       For operations that return a response, the encoding is chosen using standard HTTP content     negotiation with `Accept` headers.       GET operations that support more than one encoding additionally support the query     parameter `f`, which allows to explicitly choose the encoding and override the result of the     content negotiation. The supported encodings depend on the affected resource and the     configuration.       ### Response language       For operations that return a response, the language for linguistic texts is chosen using     standard HTTP content negiotiation with `Accept-Language` headers.       If enabled in [Common Core](building-blocks/common_core.md), GET operations additionally     support the query parameter `lang`, which allows to explicitely choose the language and     override the result of the content negotiation. The supported languages depend on the     affected resource and the configuration. Support for multilingualism is currently limited.     There are four possible sources for linguistic texts:        - Static texts: For example link labels or static texts in HTML represenations. Currently the languages English (`en`) and German (`de`) are supported. - Texts contained in the data: Currently not supported. - Texts set in the configuration: Currently not supported. - Error messages: These are always in english, the messages are currently hard-coded.        ### Resource paths       All resource paths in this documentation are relative to the base URI of the API. For     example given the base URI `https://example.com/pfad/zu/apis/{apiId}` and the relative     resource path `collections`, the full path would be     `https://example.com/pfad/zu/apis/{apiId}/collections`.  ## Configuration       Details regarding the API modules can be found [here](building-blocks/README.md), see     `api` in the table below.       {@docTable:properties }  ### Collection       Every collection corresponds to a feature type defined in the feature provider (only     *Feature Collections* are currently supported).       {@docTable:collectionProperties }  ### Building Blocks       Building blocks might be configured for the API or for single collections. The final     configuration is formed by merging the following sources in this order:        - The building block defaults, see [Building Blocks](building-blocks/README.md). - Optional deployment defaults in the `defaults` directory. - API level configuration. - Collection level configuration. - Optional deployment overrides in the `overrides` directory.          ### Metadata       {@docVar:metadata }       {@docTable:metadataProperties }  ### External document       {@docVar:externalDocument }       {@docTable:externalDocumentProperties }  ### Default extent       {@docVar:extent }       {@docTable:extentProperties }  ### Caching       {@docVar:caching }       {@docTable:cachingProperties }  ### Access Control       {@docVar:security }       #### Configuration       {@docTable:securityProperties }       {@docVar:policies }       {@docTable:policies }  ### Examples       See the [API     configuration](https://github.com/interactive-instruments/ldproxy/blob/master/demo/vineyards/store/entities/services/vineyards.yml)     of the API [Vineyards in Rhineland-Palatinate, Germany](https://demo.ldproxy.net/vineyards).  ## Storage       API configurations reside under the relative path `store/entities/services/{apiId}.yml` in     the data directory or in the [Store (new)](../application/20-configuration/10-store-new.md)     as entities with type `services`.",
       "type": "object",
       "properties": {
         "id": {
@@ -52,8 +52,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -68,8 +68,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -84,8 +84,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -120,8 +120,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -136,8 +136,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -153,8 +153,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -169,8 +169,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -179,14 +179,14 @@
         },
         "autoPersist": {
           "title": "autoPersist",
-          "description": "Option to persist definitions generated with `auto` to the configuration file. The     [Store](/application/40-store.md) must not be `READ_ONLY` for this to take effect.",
+          "description": "*Deprecated, use the editor instead.* Option to persist definitions generated with     `auto` to the configuration file. The [Store](/application/20-configuration/00-store.md)     must not be `READ_ONLY` for this to take effect.",
           "oneOf": [
             {
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -535,8 +535,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -551,30 +551,13 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
             }
           ]
-        },
-        "forceLongitudeFirst": {
-          "title": "forceLongitudeFirst",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
         },
         "forceAxisOrder": {
           "title": "forceAxisOrder",
@@ -602,8 +585,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -618,8 +601,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -634,8 +617,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -650,8 +633,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -666,8 +649,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -682,8 +665,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -712,8 +695,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -728,8 +711,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -758,8 +741,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -780,8 +763,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -839,9 +822,82 @@
       },
       "additionalProperties": false
     },
+    "PolicyAttribute": {
+      "title": "PolicyAttribute",
+      "description": "",
+      "type": "object",
+      "properties": {
+        "constant": {
+          "title": "constant",
+          "description": "",
+          "type": "object"
+        },
+        "property": {
+          "title": "property",
+          "description": "",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "parameter": {
+          "title": "parameter",
+          "description": "",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "Policies": {
+      "title": "Policies",
+      "description": "##### Policies",
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "title": "enabled",
+          "description": "Enable an additional authorization layer using a *Policy Decision Point* defined in     the [global configuration](../application/20-configuration/README.md).",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "attributes": {
+          "title": "attributes",
+          "description": "Add the given attributes to the request sent to the *Policy Decision Point*. Keys are     attribute ids, values are single key objects using either `constant` for a fixed string ,     `property` for a property path or `parameter` for a query parameter. Attributes using     `property` are only relevant for operations involving features. May be defined per     collection.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/PolicyAttribute"
+          }
+        },
+        "obligations": {
+          "title": "obligations",
+          "description": "Applies the given attributes of obligations returned by the *Policy Decision Point*.     Keys are attribute ids, values are single key objects using `parameter` for a query     parameter. Parameters defined in an obligation will overwrite parameters in the request     with the exception if `filter`, which is merged using `AND`, May be defined per     collection.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/PolicyAttribute"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "ApiSecurity": {
       "title": "ApiSecurity",
-      "description": "Access control for all API operations (combination of endpoint and HTTP method).       The control mechanism is based on scopes, currently only two exist:        - `write`: every operation with HTTP method `POST`, `PUT`, `PATCH` or `DELETE` - `read`: any other operation            To support authenticated users, a bearer token has to be included in the `Authorization`     header in requests to the API. Validation and evaluation of these tokens has to be configured     in the [global configuration](../application/70-reference.md).",
+      "description": "Access control for all API operations (combination of endpoint and HTTP method).       #### Permissions       Access control is based on permissions and permission groups.       Permissions are a combination of a group prefix (see below) and an OpenAPI operation id     (without any prefix), for example `data:getItems` or `tiles:getTile`. These can be used if a     more fine-grained control is needed in comparison to permission groups.       #### Permission groups       These are the **predefined main permission groups**, every operation/permission is     contained in exactly one main group:        - `discover`: access API landing pages, conformance declarations and OpenAPI definitions - `collections:read`: access feature collection metadata - `data:read`: access and query features - `data:write`: mutate features - `tiles:read`: access tiles - `styles:read`: access styles and their metadata - `styles:write`: mutate styles and update their metadata - `resources:read`: access file resources - `resources:write`: mutate file resources - `search:read`: access stored queries and their parameters - `search:write`: mutate stored queries - `routes:read`: access stored routes and their definition - `routes:write`: compute and store routes, delete stored routes        These are the **predefined parent permission groups** (convenient unions of main groups):        - `collections`: includes `collections:read` - `data`: includes `data:read` and `data:write` - `tiles`: includes `tiles:read` - `styles`: includes `styles:read` and `styles:write` - `resources`: includes `resources:read` and `resources:write` - `search`: includes `search:read` and `search:write` - `routes`: includes `routes:read` and `routes:write`        These are the **predefined base permission groups** (convenient unions of main groups):        - `read`: includes `discover`, `collections:read`, `data:read`, `tiles:read`, `styles:read`, `resources:read`, `search:read` and `routes:read` - `write`: includes `data:write`, `styles:write`, `resources:write`, `search:write` and `routes:write`        **Custom permission groups** are defined in `groups`, they may contain permissions and/or     predefined permission groups.       The special **permission group `public`** defines the list of permissions and/or     predefined permission groups that every user possesses, if authenticated or not.       #### Data-specific permissions       The permissions groups and permissions described above will permit access to any API and     collection. To restrict the access to specific APIs or collections, a suffix can be added to     permission groups and permissions, for example `read::daraa` or     `data:getItems::daraa:AeronauticSrf`.       #### Scopes       *OAuth2 Scopes* are an optional additional authorization layer. They are typically used     when access to an API is granted to a third-party application on behalf of a user. Scopes     then allow to limit which of the users permissions should be granted to the application. The     application would request the scopes it needs and the user would be presented a consent form     where he can choose the scopes he wishes to grant.       Scopes are disabled by default and can be enabled by setting the `scopes` option. The     value is a list of the permission group types that should be used as scopes. That allows to     set the granularity of scopes, since presenting too many scopes in a consent form might be     overwhelming and all the enabled scopes have to actually exist in the identity provider.       For example setting `scopes` to `[BASIC]` would enable the scopes `read` and `write`. When     a user then grants the `write` scope to an application, that does not automatically mean the     application is allowed to write anything. What the application can write is still defined by     the users permissions. But not granting the `write` scope is an easy way to prohibit any     write access, even if the user has such permissions.       #### Authentication and authorization       To support authenticated users, a bearer token has to be included in the `Authorization`     header in requests to the API. Validation and evaluation of these tokens has to be configured     in the [global configuration](../application/20-configuration/README.md).       To determine if a user is authorized to perform the requested operation, the following     steps are executed:        1. If the operation is covered by the `public` group, authorization is granted, even if no token or an invalid token were provided. (Then jump to 6.) 2. If no token or an invalid token (wrong signature or expired) are provided, authorization is rejected. 3. If `audience` is non-empty and does not intersect the audience claim of the provided token, authorization is rejected. 4. If `scopes` is non-empty and the scope claim of the provided token does not contain at least one permission group that covers    the requested operation, authorization is rejected. 5. If the permissions claim of the provided token does not contain at least one permission, predefined permission group or custom    permission group that covers the requested operation, authorization is rejected. 6. If `policies` is enabled and the PDP returns `Deny`, authorization is rejected.",
       "type": "object",
       "properties": {
         "enabled": {
@@ -852,17 +908,54 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
             }
           ]
         },
-        "publicScopes": {
-          "title": "publicScopes",
-          "description": "List of permissions that every user possesses, if authenticated or not.",
+        "groups": {
+          "title": "groups",
+          "description": "Definition of custom permission groups, the key is the group name, the value a list of     permissions and/or predefined permission groups. The group `public` defines the list of     permissions that every user possesses, if authenticated or not.",
+          "type": "object",
+          "additionalProperties": {
+            "allOf": [
+              {
+                "if": {
+                  "type": "array"
+                },
+                "then": {
+                  "items": {
+                    "type": [
+                      "string",
+                      "number",
+                      "boolean",
+                      "null"
+                    ]
+                  }
+                }
+              },
+              {
+                "if": {
+                  "type": "object"
+                },
+                "then": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "scopes": {
+          "title": "scopes",
+          "description": "If non-empty, *OAuth2 Scopes* are added to the OpenAPI definition. Then only tokens     that contain at least one scope that covers the requested operation are accepted. Scopes     reuse permissions groups, values are the types of permission groups that should be used:     `BASE` (e.g. `read`), `PARENT` (e.g. `data`), `MAIN` (e.g. `data:read`) and `CUSTOM`     (everything defined in `groups` besides `public`).",
           "allOf": [
             {
               "if": {
@@ -893,6 +986,46 @@
               }
             }
           ]
+        },
+        "audience": {
+          "title": "audience",
+          "description": "If non-empty, only tokens that contain at least one of the given values in the audience     claim are accepted.",
+          "allOf": [
+            {
+              "if": {
+                "type": "array"
+              },
+              "then": {
+                "items": {
+                  "type": [
+                    "string",
+                    "number",
+                    "boolean",
+                    "null"
+                  ]
+                }
+              }
+            },
+            {
+              "if": {
+                "type": "object"
+              },
+              "then": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              }
+            }
+          ]
+        },
+        "policies": {
+          "title": "policies",
+          "description": "Optional additional authorization layer using a *Policy Decision Point* defined in the     [global configuration](../application/20-configuration/40-auth.md), see     [Policies](#policies).",
+          "type": "object",
+          "$ref": "#/$defs/Policies"
         }
       },
       "additionalProperties": false
@@ -970,8 +1103,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -986,8 +1119,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1023,18 +1156,6 @@
           ],
           "const": "COLLECTIONS"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "COLLECTIONS"
-        },
         "caching": {
           "title": "caching",
           "description": "Sets fixed values for [HTTP Caching Headers](/services/README.md#caching) for the     resources.",
@@ -1049,8 +1170,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1089,8 +1210,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1105,8 +1226,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1132,18 +1253,6 @@
           ],
           "const": "QUERYABLES"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "QUERYABLES"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -1152,8 +1261,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1168,7 +1277,7 @@
         },
         "included": {
           "title": "included",
-          "description": "The list of properties that can be used in CQL2 filter expressions and/or for which     filtering query parameters are provided for a collection. Properties that are not of type     `OBJECT` or `OBJECT_ARRAY` are eligible as queryables unless `isQueryable` is set to     `false` for the property. The special value `*` includes all eligible properties as     queryables. By default, no property is queryable (this is for backwards compatibility, in     v4.0 the default behaviour will change to all eligible properties).",
+          "description": "The list of properties that can be used in CQL2 filter expressions and/or for which     filtering query parameters are provided for a collection. Properties that are not of type     `OBJECT` or `OBJECT_ARRAY` are eligible as queryables unless `isQueryable` is set to     `false` for the property. The special value `*` includes all eligible properties as     queryables. By default, no property is queryable.",
           "allOf": [
             {
               "if": {
@@ -1252,8 +1361,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1268,8 +1377,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1295,18 +1404,6 @@
           ],
           "const": "COMMON"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "COMMON"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -1315,8 +1412,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1372,18 +1469,6 @@
           ],
           "const": "CRS"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "CRS"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -1392,8 +1477,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1432,8 +1517,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1478,9 +1563,47 @@
             "null"
           ]
         },
-        "reduceStringFormat": {
-          "title": "reduceStringFormat",
-          "description": "Reduces an object to a string using the same syntax as `stringFormat` but with     additional replacements for objects property names.",
+        "objectReduceFormat": {
+          "title": "objectReduceFormat",
+          "description": "Reduces an object to a string using the same syntax as `stringFormat` but with     additional replacements for the object property names.",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "objectReduceSelect": {
+          "title": "objectReduceSelect",
+          "description": "Reduces an object to one of its properties, the value is the desired property name.",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "objectRemoveSelect": {
+          "title": "objectRemoveSelect",
+          "description": "Removes an object, if the property with the name in the value is `null`.",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "objectMapFormat": {
+          "title": "objectMapFormat",
+          "description": "Maps an object to another object, the value is map where the keys are the new property     names. The values use the same syntax as `stringFormat` but with additional replacements     for the source object property names.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "arrayReduceFormat": {
+          "title": "arrayReduceFormat",
+          "description": "Reduces a value array to a string using the same syntax as `stringFormat` but with     additional replacements for the array indexes.",
           "type": [
             "string",
             "number",
@@ -1551,34 +1674,13 @@
               }
             }
           ]
-        },
-        "null": {
-          "title": "null",
-          "description": "*Deprecated* See `nullify`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        },
-        "asLink": {
-          "title": "asLink",
-          "description": "TODO",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ]
         }
       },
       "additionalProperties": false
     },
     "CityJsonConfiguration": {
       "title": "CityJsonConfiguration",
-      "description": "### Prerequisites       The module requires that the feature provider includes a type `building` that is mapped to     a CityJSON Building feature. Properties of the type `building` are mapped to CityJSON as     follows:        - `consistsOfBuildingPart`: The value must be an object with the same properties as `building`.   The object is encoded as a BuildingPart feature of the Building feature. - `address`: The value must be an array of address objects. The following attributes are mapped   to an Address object, all other properties are ignored:   - `multiPoint`: a  MULTI_POINT geometry representing the address location   - `ThoroughfareName`: a string   - `ThoroughfareNumber`: a string   - `LocalityName`: a string   - `PostalCode`: a string   - `AdministrativeArea`: a string   - `CountryName`: a string - `lod1Solid`: a closed MULTI_POLYGON geometry that represents the shell of the building at LoD 1. - `lod2Solid`: a closed MULTI_POLYGON geometry that represents the shell of the building at LoD 2. - `surfaces`: an array of semantic surface objects. The object must have a `surfaceType` and the   values must be one of the following: `CeilingSurface`, `ClosureSurface`, `Door`, `FloorSurface`,   `GroundSurface`, `InteriorWallSurface`, `OuterCeilingSurface`, `OuterFloorSurface`, `RoofSurface`,   `WallSurface`, or `Window`. The object should have a property with a POLYGON or MULTI_POLYGON   geometry that represents the surface geometry. - all other properties: The property will be mapped to a CityJSON attribute, except for `gml_id` properties.            The property of the `building` with the role `ID` will be used as the CityJSON id. Since     the embedded building parts do not have a property with a role `ID`, the building part     feature must have a unique property `id`, which will be used as the id of the CityJSON     building part.       The [example](#examples) includes a sample type definition for the building features in a     PostgreSQL feature provider based on the CityGML profile of the German surveying and mapping     authorities.",
+      "description": "### Prerequisites       The module requires that the feature provider includes a type `building` that is mapped to     a CityJSON Building feature. Properties of the type `building` are mapped to CityJSON as     follows:        - `consistsOfBuildingPart`: The value must be an object with the same properties as `building`.   The object is encoded as a BuildingPart feature of the Building feature. - `address`: The value must be an array of address objects. The following attributes are mapped   to an Address object, all other properties are ignored:   - `multiPoint`: a  MULTI_POINT geometry representing the address location   - `ThoroughfareName`: a string   - `ThoroughfareNumber`: a string   - `LocalityName`: a string   - `PostalCode`: a string   - `AdministrativeArea`: a string   - `CountryName`: a string - `lod1Solid`: a closed MULTI_POLYGON geometry that represents the shell of the building at LoD 1. - `lod2Solid`: a closed MULTI_POLYGON geometry that represents the shell of the building at LoD 2. - `surfaces`: an array of semantic surface objects. The object must have a `surfaceType` and the   values must be one of the following: `CeilingSurface`, `ClosureSurface`, `Door`, `FloorSurface`,   `GroundSurface`, `InteriorWallSurface`, `OuterCeilingSurface`, `OuterFloorSurface`, `RoofSurface`,   `WallSurface`, or `Window`. The object should have a property with a POLYGON or MULTI_POLYGON   geometry that represents the surface geometry. - all other properties: The property will be mapped to a CityJSON attribute, except for `gml_id` properties.            The property of the `building` with the role `ID` will be used as the CityJSON id. Since     the embedded building parts do not have a property with a role `ID`, the building part     feature will use the value of a property `id` as the id of the CityJSON building part,     otherwise a UUID will be generated. If `id` is provided, its values must be unique.       The [example](#examples) includes a sample type definition for the building features in a     PostgreSQL feature provider based on the CityGML profile of the German surveying and mapping     authorities.",
       "type": "object",
       "properties": {
         "buildingBlock": {
@@ -1592,18 +1694,6 @@
           ],
           "const": "CITY_JSON"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "CITY_JSON"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -1612,8 +1702,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1655,8 +1745,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1676,154 +1766,6 @@
       },
       "additionalProperties": false
     },
-    "FeaturesCollectionQueryables": {
-      "title": "FeaturesCollectionQueryables",
-      "description": "",
-      "type": "object",
-      "properties": {
-        "spatial": {
-          "title": "spatial",
-          "description": "",
-          "deprecated": true,
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "type": [
-                    "string",
-                    "number",
-                    "boolean",
-                    "null"
-                  ]
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean",
-                  "null"
-                ]
-              }
-            }
-          ]
-        },
-        "temporal": {
-          "title": "temporal",
-          "description": "",
-          "deprecated": true,
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "type": [
-                    "string",
-                    "number",
-                    "boolean",
-                    "null"
-                  ]
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean",
-                  "null"
-                ]
-              }
-            }
-          ]
-        },
-        "q": {
-          "title": "q",
-          "description": "",
-          "deprecated": true,
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "type": [
-                    "string",
-                    "number",
-                    "boolean",
-                    "null"
-                  ]
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean",
-                  "null"
-                ]
-              }
-            }
-          ]
-        },
-        "other": {
-          "title": "other",
-          "description": "",
-          "deprecated": true,
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "type": [
-                    "string",
-                    "number",
-                    "boolean",
-                    "null"
-                  ]
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean",
-                  "null"
-                ]
-              }
-            }
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
     "FeaturesCoreConfiguration": {
       "title": "FeaturesCoreConfiguration",
       "description": "",
@@ -1838,18 +1780,6 @@
             "boolean",
             "null"
           ],
-          "const": "FEATURES_CORE"
-        },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
           "const": "FEATURES_CORE"
         },
         "transformations": {
@@ -1893,8 +1823,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1973,8 +1903,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -1989,8 +1919,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2005,8 +1935,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2047,23 +1977,6 @@
             }
           ]
         },
-        "showsFeatureSelfLink": {
-          "title": "showsFeatureSelfLink",
-          "description": "Always add `self` link to features, even in the *Features* resource.",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        },
         "validateCoordinatesInQueries": {
           "title": "validateCoordinatesInQueries",
           "description": "Validate the coordinates of the bbox or filter parameters against the domain of validity of the  coordinate reference system",
@@ -2072,8 +1985,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2089,13 +2002,6 @@
             "boolean",
             "null"
           ]
-        },
-        "queryables": {
-          "title": "queryables",
-          "description": "*Deprecated* Use [Module Feature Collections -     Queryables](collections_-_queryables.md). Controls which of the attributes in queries can     be used for filtering data. A distinction is made between spatial (`spatial`), temporal     (`temporal`) and \"regular\" (`q`, `other`) attributes. The attributes under `spatial` must     be of type `GEOMETRY` in the provider schema, the attributes under `temporal` of type     `DATETIME` or `DATE`. The searchable attributes are each listed by their name in an array.     The queryables can be used in filter expressions ([building block \"filter\"](filter.md)).     The primary spatial and temporal attributes (see provider configuration) can be used for     selection via the [parameters     `bbox`](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_bbox) and [parameters     `datetime`](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameter_datetime),     respectively. The remaining attributes are defined as [additional parameters for the     respective feature     collections](https://docs.ogc.org/is/17-069r4/17-069r4.html#_parameters_for_filtering_on_feature_properties)     (\"*\" can be used as wildcard). In this way a selection of objects is already possible     without additional building blocks. The attributes under `q` are also taken into account in     the free text search in the query parameter with the same name.",
-          "type": "object",
-          "deprecated": true,
-          "$ref": "#/$defs/FeaturesCollectionQueryables"
         },
         "coordinatePrecision": {
           "title": "coordinatePrecision",
@@ -2122,18 +2028,6 @@
             "boolean",
             "null"
           ],
-          "const": "GEO_JSON"
-        },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
           "const": "GEO_JSON"
         },
         "transformations": {
@@ -2171,63 +2065,13 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
             }
           ]
-        },
-        "nestedObjectStrategy": {
-          "title": "nestedObjectStrategy",
-          "description": "*Deprecated* Use the [`flatten`     transformation](../../providers/details/transformations.md) instead.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        },
-        "multiplicityStrategy": {
-          "title": "multiplicityStrategy",
-          "description": "*Deprecated* Use the [`flatten`     transformation](../../providers/details/transformations.md) instead.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        },
-        "useFormattedJsonOutput": {
-          "title": "useFormattedJsonOutput",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        },
-        "separator": {
-          "title": "separator",
-          "description": "*Deprecated* Use the [`flatten`     transformation](../../providers/details/transformations.md) instead.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
         }
       },
       "additionalProperties": false
@@ -2274,18 +2118,6 @@
           ],
           "const": "GML"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "GML"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -2294,8 +2126,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2347,8 +2179,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2435,8 +2267,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2506,18 +2338,6 @@
           ],
           "const": "FEATURES_HTML"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "FEATURES_HTML"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -2526,24 +2346,13 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
             }
           ]
-        },
-        "layout": {
-          "title": "layout",
-          "description": "*Deprecated* Superseded by `mapPosition` and the [`flattern`     transformation](../../providers/details/transformations.md).",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
         },
         "mapPosition": {
           "title": "mapPosition",
@@ -2564,17 +2373,6 @@
             "boolean",
             "null"
           ]
-        },
-        "itemLabelFormat": {
-          "title": "itemLabelFormat",
-          "description": "*Deprecated* See `featureTitleTemplate`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
         },
         "transformations": {
           "title": "transformations",
@@ -2631,8 +2429,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2681,8 +2479,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2697,8 +2495,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2713,8 +2511,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2740,18 +2538,6 @@
           ],
           "const": "FOUNDATION"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "FOUNDATION"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -2760,8 +2546,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2776,8 +2562,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2792,8 +2578,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2828,6 +2614,22 @@
             "number",
             "boolean",
             "null"
+          ]
+        },
+        "includeSpecificationInformation": {
+          "title": "includeSpecificationInformation",
+          "description": "Controls whether information (name, link, maturity) about the specification of an API     component, e.g., an operation or query parameter, is included in the API definition. It is     recommended to enable this option, if the API includes building blocks that are not marked     as `stable`.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
           ]
         }
       },
@@ -2944,8 +2746,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -2965,7 +2767,7 @@
     },
     "HtmlConfiguration": {
       "title": "HtmlConfiguration",
-      "description": "### Custom Templates       The HTML encoding is implemented using [Mustache templates](https://mustache.github.io/).     Custom templates are supported, they have to reside in the data directory under the relative     path `templates/html/{templateName}.mustache`, where `{templateName}` equals the name of a     default template (see [source code on     GitHub](https://github.com/search?q\u003drepo%3Ainteractive-instruments%2Fldproxy+extension%3Amustache\u0026type\u003dCode)).",
+      "description": "### Customization       The HTML encoding is implemented using [Mustache templates](https://mustache.github.io/)     which can be overridden by the user. Any template may be overridden but doing so for     non-empty templates is strongly discouraged since it will most certainly lead to issues on     updates.       There are predefined empty templates prefixed with `custom-` that should cover most use     cases:        - `custom-head.mustache`: add something to the `\u003chead\u003e` element, e.g. CSS styles - `custom-body-start.mustache`: add something at the start of the `\u003cbody\u003e` element - `custom-body-end.mustache`: add something at the end of the `\u003cbody\u003e` element - `custom-navbar-start.mustache`: add something at the left side of the navbar - `custom-navbar-end.mustache`: add something at the right side of the navbar - `custom-footer-start.mustache`: add something at the start of the footer - `custom-footer-end.mustache`: add something at the end of footer - `custom-footer-url.mustache`: add a link to the list at the right of the footer            These templates have to reside in the data directory either under the relative path     `templates/html/{templateName}.mustache` if you are still using the old layout (deprecated,     will stop working in v4) or under `resources/html/templates/{templateName}.mustache` with the     new layout.       #### Custom assets       It is also possible to publish any custom files, e.g. CSS files that can then be included     in `custom-head.mustache`. The files have to reside in the data directory either under the     relative path `store/resources/html/assets/` if you are still using the old layout     (deprecated, will stop working in v4) or under `resources/html/assets/` with the new layout.       For example the CSS file `resources/html/assets/my.css` could be included in     `custom-head.mustache` with `\u003clink href\u003d\"{{urlPrefix}}/custom/assets/my.css\" rel\u003d\"stylesheet\" \u003e`.       ### Login Provider       For APIs with [restricted access](../README.md#access-control) using an [identity     provider](../../application/20-configuration/40-auth.md) with login capabilities, the     `loginProvider` option can be set to enable automatic redirects to the login form of the     identity provider for restricted HTML pages. The logged-in user will also be shown on all     HTML pages along with a logout button.        ::: warning   This functionality uses cookies to retain the login information when     navigating between HTML pages. The cookies are neither processed nor passed on to any third     party.       In regard to the European GDPR and the German TTDSG we would deem these cookies as     technically required. That means if you publish an API with this functionality, you would be     required to mention these cookies in the privacy policy.  :::6        ::: info   If the identity provider uses `https` (which it should), this feature only works     if the API is also published using `https`. The only exception is accessing an API on     `localhost`.  :::",
       "type": "object",
       "properties": {
         "buildingBlock": {
@@ -2979,18 +2781,6 @@
           ],
           "const": "HTML"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "HTML"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -2999,8 +2789,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3015,8 +2805,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3031,30 +2821,13 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
             }
           ]
-        },
-        "microdataEnabled": {
-          "title": "microdataEnabled",
-          "description": "*Deprecated* See `schemaOrgEnabled`.",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
         },
         "collectionDescriptionsInOverview": {
           "title": "collectionDescriptionsInOverview",
@@ -3064,8 +2837,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3080,8 +2853,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3096,8 +2869,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3174,53 +2947,19 @@
             "null"
           ]
         },
-        "leafletUrl": {
-          "title": "leafletUrl",
-          "description": "*Deprecated* See `basemapUrl`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        },
-        "leafletAttribution": {
-          "title": "leafletAttribution",
-          "description": "*Deprecated* See `basemapAttribution`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        },
-        "openLayersUrl": {
-          "title": "openLayersUrl",
-          "description": "*Deprecated* See `basemapUrl`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        },
-        "openLayersAttribution": {
-          "title": "openLayersAttribution",
-          "description": "*Deprecated* See `basemapAttribution`",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        },
         "footerText": {
           "title": "footerText",
           "description": "Additional text shown in footer of every site.",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "loginProvider": {
+          "title": "loginProvider",
+          "description": "Option to enable automatic redirects to the login form of an identity provider. The     value is the id of a provider with login capabilities in the [global     configuration](../../application/20-configuration/40-auth.md). Also see [Login     Provider](#login-provider).",
           "type": [
             "string",
             "number",
@@ -3271,18 +3010,6 @@
           ],
           "const": "JSON"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "JSON"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -3291,8 +3018,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3318,18 +3045,6 @@
           ],
           "const": "OAS30"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "OAS30"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -3338,8 +3053,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3365,18 +3080,6 @@
           ],
           "const": "TILE_MATRIX_SETS"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "TILE_MATRIX_SETS"
-        },
         "caching": {
           "title": "caching",
           "description": "Sets fixed values for [HTTP Caching Headers](/services/README.md#caching) for the     resources.",
@@ -3391,8 +3094,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -3436,760 +3139,9 @@
       },
       "additionalProperties": false
     },
-    "MinMax": {
-      "title": "MinMax",
-      "description": "",
-      "type": "object",
-      "properties": {
-        "min": {
-          "title": "min",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "max": {
-          "title": "max",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "default": {
-          "title": "default",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "SeedingOptions": {
-      "title": "SeedingOptions",
-      "description": "### Seeding       Controls how and when [caches](#cache) are computed.",
-      "type": "object",
-      "properties": {
-        "runOnStartup": {
-          "title": "runOnStartup",
-          "description": "If disabled the seeding will not be run when the API starts.",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "runPeriodic": {
-          "title": "runPeriodic",
-          "description": "A crontab pattern to run the seeding periodically. There will only ever be one seeding     in progress, so if the next run is scheduled before the last one finished, it will be     skipped.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ]
-        },
-        "purge": {
-          "title": "purge",
-          "description": "If enabled the tile cache will be purged before the seeding starts.",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "maxThreads": {
-          "title": "maxThreads",
-          "description": "The maximum number of threads the seeding is allowed to use. The actual number of     threads used depends on the number of available background task threads when the seeding is     about to start. If you want to allow more than thread, first check if sufficient background     task threads are configured. Take into account that the seeding for multiple APIs will     compete for the available background task threads.",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "LevelFilter": {
-      "title": "LevelFilter",
-      "description": "",
-      "type": "object",
-      "properties": {
-        "min": {
-          "title": "min",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "max": {
-          "title": "max",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "filter": {
-          "title": "filter",
-          "description": "",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "LevelTransformation": {
-      "title": "LevelTransformation",
-      "description": "",
-      "type": "object",
-      "properties": {
-        "min": {
-          "title": "min",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "max": {
-          "title": "max",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "merge": {
-          "title": "merge",
-          "description": "",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "groupBy": {
-          "title": "groupBy",
-          "description": "",
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "type": [
-                    "string",
-                    "number",
-                    "boolean",
-                    "null"
-                  ]
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean",
-                  "null"
-                ]
-              }
-            }
-          ]
-        },
-        "properties": {
-          "title": "properties",
-          "description": "",
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "type": [
-                    "string",
-                    "number",
-                    "boolean",
-                    "null"
-                  ]
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean",
-                  "null"
-                ]
-              }
-            }
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "TileProviderFeatures": {
-      "title": "TileProviderFeatures",
-      "description": "In this tile provider, the tiles in Mapbox Vector Tiles format are derived from the     features provided by the API in the area of the tile.",
-      "type": "object",
-      "properties": {
-        "type": {
-          "title": "type",
-          "description": "Fixed value, identifies the tile provider type.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "const": "FEATURES"
-        },
-        "tileEncodings": {
-          "title": "tileEncodings",
-          "description": "Controls which formats should be supported for the tiles. Currently only Mapbox Vector     Tiles (\"MVT\") is available.",
-          "deprecated": true,
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "type": [
-                    "string",
-                    "number",
-                    "boolean",
-                    "null"
-                  ]
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean",
-                  "null"
-                ]
-              }
-            }
-          ]
-        },
-        "zoomLevels": {
-          "title": "zoomLevels",
-          "description": "Controls the zoom levels available for each active tiling scheme as well as which zoom     level to use as default.",
-          "type": "object",
-          "deprecated": true,
-          "additionalProperties": {
-            "$ref": "#/$defs/MinMax"
-          }
-        },
-        "zoomLevelsCache": {
-          "title": "zoomLevelsCache",
-          "description": "Zoom levels for which tiles are cached.",
-          "type": "object",
-          "deprecated": true,
-          "additionalProperties": {
-            "$ref": "#/$defs/MinMax"
-          }
-        },
-        "seedingOptions": {
-          "title": "seedingOptions",
-          "description": "Controls how and when tiles are precomputed, see [Seeding options](#seeding-options).",
-          "type": "object",
-          "deprecated": true,
-          "$ref": "#/$defs/SeedingOptions"
-        },
-        "seeding": {
-          "title": "seeding",
-          "description": "Zoom levels per enabled tile encoding for which the tile cache should be seeded on     startup.",
-          "type": "object",
-          "deprecated": true,
-          "additionalProperties": {
-            "$ref": "#/$defs/MinMax"
-          }
-        },
-        "filters": {
-          "title": "filters",
-          "description": "Filters to select a subset of feature for certain zoom levels using a CQL filter     expression, see example below.",
-          "type": "object",
-          "deprecated": true,
-          "additionalProperties": {
-            "allOf": [
-              {
-                "if": {
-                  "type": "array"
-                },
-                "then": {
-                  "items": {
-                    "$ref": "#/$defs/LevelFilter"
-                  }
-                }
-              },
-              {
-                "if": {
-                  "type": "object"
-                },
-                "then": {
-                  "$ref": "#/$defs/LevelFilter"
-                }
-              }
-            ]
-          }
-        },
-        "rules": {
-          "title": "rules",
-          "description": "Rules to postprocess the selected features for a certain zoom level. Supported     operations are: selecting a subset of feature properties (`properties`), spatial merging of     features that intersect (`merge`), with the option to restrict the operations to features     with matching attributes (`groupBy`). See the example below. For `merge`, the resulting     object will only obtain properties that are identical for all merged features.",
-          "type": "object",
-          "deprecated": true,
-          "additionalProperties": {
-            "allOf": [
-              {
-                "if": {
-                  "type": "array"
-                },
-                "then": {
-                  "items": {
-                    "$ref": "#/$defs/LevelTransformation"
-                  }
-                }
-              },
-              {
-                "if": {
-                  "type": "object"
-                },
-                "then": {
-                  "$ref": "#/$defs/LevelTransformation"
-                }
-              }
-            ]
-          }
-        },
-        "center": {
-          "title": "center",
-          "description": "Longitude and latitude that a map with the tiles should be centered on by default.",
-          "deprecated": true,
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "oneOf": [
-                    {
-                      "type": "number"
-                    },
-                    {
-                      "type": "string",
-                      "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "oneOf": [
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "string",
-                    "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "limit": {
-          "title": "limit",
-          "description": "Maximum number of features contained in a single tile per query.",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        },
-        "singleCollectionEnabled": {
-          "title": "singleCollectionEnabled",
-          "description": "Enable vector tiles for each *Feature Collection*. Every tile contains a layer with the     feature from the collection.",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        },
-        "multiCollectionEnabled": {
-          "title": "multiCollectionEnabled",
-          "description": "Enable vector tiles for the whole dataset. Every tile contains one layer per collection     with the features of that collection.",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        },
-        "ignoreInvalidGeometries": {
-          "title": "ignoreInvalidGeometries",
-          "description": "Ignore features with invalid geometries. Before ignoring a feature, an attempt is made     to transform the geometry to a valid geometry. The topology of geometries might be invalid     in the data source or in some cases the quantization of coordinates to integers might     render it invalid.",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        },
-        "minimumSizeInPixel": {
-          "title": "minimumSizeInPixel",
-          "description": "Features with line geometries shorter that the given value are excluded from tiles.     Features with surface geometries smaller than the square of the given value are excluded     from the tiles. The value `0.5` corresponds to half a \"pixel\" in the used coordinate     reference system.",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        }
-      },
-      "additionalProperties": false
-    },
-    "TileProviderMbtiles": {
-      "title": "TileProviderMbtiles",
-      "description": "With this tile provider, the tiles are provided via an [MBTiles     file](https://github.com/mapbox/mbtiles-spec). The tile format and all other properties of     the tileset resource are derived from the contents of the MBTiles file. Only the     \"WebMercatorQuad\" tiling scheme is supported.",
-      "type": "object",
-      "properties": {
-        "type": {
-          "title": "type",
-          "description": "Fixed value, identifies the tile provider type.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "const": "MBTILES"
-        },
-        "filename": {
-          "title": "filename",
-          "description": "Filename of the MBTiles file in the `api-resources/tiles/{apiId}` directory.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        },
-        "tileMatrixSetId": {
-          "title": "tileMatrixSetId",
-          "description": "Tiling scheme used in the MBTiles file.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        }
-      },
-      "additionalProperties": false
-    },
-    "TileProviderTileServer": {
-      "title": "TileProviderTileServer",
-      "description": "With this tile provider, the tiles are obtained from [TileServer-GL     instance](https://github.com/maptiler/tileserver-gl). Only the \"WebMercatorQuad\" tile scheme     is supported.       In the current version, this provider is only supported in the [Map Tiles](map_tiles.md)     module. Only bitmap tile formats are supported. Seeding or caching are not supported.       This tile provider is experimental and its configuration options may change in future     versions.",
-      "type": "object",
-      "properties": {
-        "type": {
-          "title": "type",
-          "description": "Fixed value, identifies the tile provider type.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "const": "TILESERVER"
-        },
-        "urlTemplate": {
-          "title": "urlTemplate",
-          "description": "URL template for accessing tiles. Parameters to use are `{tileMatrix}`, `{tileRow}`,     `{tileCol}` and `{fileExtension}`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        },
-        "urlTemplateSingleCollection": {
-          "title": "urlTemplateSingleCollection",
-          "description": "URL template for accessing tiles for a collection.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        },
-        "tileEncodings": {
-          "title": "tileEncodings",
-          "description": "List of tile formats to be supported, allowed are `PNG`, `WebP` and `JPEG`.",
-          "deprecated": true,
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "type": [
-                    "string",
-                    "number",
-                    "boolean",
-                    "null"
-                  ]
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean",
-                  "null"
-                ]
-              }
-            }
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "TileProvider": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "enum": [
-            "FEATURES",
-            "MBTILES",
-            "TILESERVER"
-          ]
-        }
-      },
-      "required": [
-        "type"
-      ],
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "FEATURES"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/TileProviderFeatures"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "MBTILES"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/TileProviderMbtiles"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "TILESERVER"
-              }
-            },
-            "required": [
-              "type"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/TileProviderTileServer"
-          }
-        }
-      ]
-    },
     "TilesConfiguration": {
       "title": "TilesConfiguration",
-      "description": "### Prerequisites       The building block *Tile Matrix Sets* must be enabled. If that building block is not     configured, it is automatically enabled if *Tiles* is enabled.       ### Storage       The tile cache is located in the data directory under the relative path     `cache/tiles/{apiId}`. If the data for an API or tile configuration has been changed, then     the cache directory for the API should be deleted so that the cache is rebuilt with the     updated data or rules.",
+      "description": "### Prerequisites       The building block *Tile Matrix Sets* must be enabled. If that building block is not     configured, it is automatically enabled if *Tiles* is enabled.       ### Storage       The tile cache is located in the data directory under the relative path     `cache/tiles/{apiId}` (old) or in the [Store (new)](../../application/20-configuration/10-store-new.md) as resource with path       `tiles/{apiId}`.       If the data for an API or tile configuration has been changed, then     the cache directory for the API should be deleted so that the cache is rebuilt with the     updated data or rules.",
       "type": "object",
       "properties": {
         "buildingBlock": {
@@ -4203,18 +3155,6 @@
           ],
           "const": "TILES"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "TILES"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -4223,8 +3163,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -4266,8 +3206,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -4282,14 +3222,17 @@
         },
         "tileProvider": {
           "title": "tileProvider",
-          "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)* Specifies the data source for the     tiles, see [Tile provider objects](#tile-provider).",
-          "type": "object",
-          "deprecated": true,
-          "$ref": "#/$defs/TileProvider"
+          "description": "Specifies the data source for the tiles, see [Tile     Providers](../../providers/tile/README.md).",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
         },
         "tileProviderId": {
           "title": "tileProviderId",
-          "description": "*Deprecated (will be renamed to `tileProvider` in v4.0)* Specifies the data source for     the tiles, see [Tile Providers](../../providers/tile/README.md).",
+          "description": "*Deprecated* See `tileProvider`.",
           "type": [
             "string",
             "number",
@@ -4307,17 +3250,6 @@
             "boolean",
             "null"
           ]
-        },
-        "tileLayer": {
-          "title": "tileLayer",
-          "description": "*Deprecated* See `tileProviderTileset`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
         },
         "tileSetEncodings": {
           "title": "tileSetEncodings",
@@ -4353,17 +3285,6 @@
             }
           ]
         },
-        "cache": {
-          "title": "cache",
-          "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities) `FILES` stores each tile as a file in     the file system. `MBTILES` stores the tiles in an MBTiles file (one MBTiles file per     tileset).",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
-        },
         "mapClientType": {
           "title": "mapClientType",
           "description": "Selection of the map client to be used in the HTML output. The default is MapLibre GL     JS, only the \"WebMercatorQuad\" tiling scheme is supported. Alternatively \u0027OPEN_LAYERS\u0027 is     supported as well (OpenLayers). The support of Open Layers only makes sense if other of the     predefined tiling schemes should be supported in the HTML output. With `OPEN_LAYERS` no     styles are supported.",
@@ -4392,302 +3313,13 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
             }
           ]
-        },
-        "tileEncodings": {
-          "title": "tileEncodings",
-          "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)* List of tile formats to be supported,     in general `MVT` (Mapbox Vector Tiles), `PNG`, `WebP` and `JPEG` are allowed. The actually     supported formats depend on the [Tile Provider](../../providers/tile/README.md).",
-          "deprecated": true,
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "type": [
-                    "string",
-                    "number",
-                    "boolean",
-                    "null"
-                  ]
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean",
-                  "null"
-                ]
-              }
-            }
-          ]
-        },
-        "center": {
-          "title": "center",
-          "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)*",
-          "deprecated": true,
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "oneOf": [
-                    {
-                      "type": "number"
-                    },
-                    {
-                      "type": "string",
-                      "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "oneOf": [
-                  {
-                    "type": "number"
-                  },
-                  {
-                    "type": "string",
-                    "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "zoomLevels": {
-          "title": "zoomLevels",
-          "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)* Controls the zoom levels available for     each active tiling scheme as well as which zoom level to use as default.",
-          "type": "object",
-          "deprecated": true,
-          "additionalProperties": {
-            "$ref": "#/$defs/MinMax"
-          }
-        },
-        "collectionTiles": {
-          "title": "collectionTiles",
-          "description": "Enable vector tiles for each *Feature Collection*. Every tile contains a layer with the     feature from the collection.",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "singleCollectionEnabled": {
-          "title": "singleCollectionEnabled",
-          "description": "*Deprecated* See `collectionTiles`.",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        },
-        "datasetTiles": {
-          "title": "datasetTiles",
-          "description": "Enable vector tiles for the whole dataset. Every tile contains one layer per collection     with the features of that collection.",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "multiCollectionEnabled": {
-          "title": "multiCollectionEnabled",
-          "description": "*Deprecated* See `datasetTiles`.",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        },
-        "zoomLevelsCache": {
-          "title": "zoomLevelsCache",
-          "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)*",
-          "type": "object",
-          "deprecated": true,
-          "additionalProperties": {
-            "$ref": "#/$defs/MinMax"
-          }
-        },
-        "seeding": {
-          "title": "seeding",
-          "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)*",
-          "type": "object",
-          "deprecated": true,
-          "additionalProperties": {
-            "$ref": "#/$defs/MinMax"
-          }
-        },
-        "seedingOptions": {
-          "title": "seedingOptions",
-          "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)*",
-          "type": "object",
-          "deprecated": true,
-          "$ref": "#/$defs/SeedingOptions"
-        },
-        "limit": {
-          "title": "limit",
-          "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)*",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        },
-        "ignoreInvalidGeometries": {
-          "title": "ignoreInvalidGeometries",
-          "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)*",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        },
-        "filters": {
-          "title": "filters",
-          "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)*",
-          "type": "object",
-          "deprecated": true,
-          "additionalProperties": {
-            "allOf": [
-              {
-                "if": {
-                  "type": "array"
-                },
-                "then": {
-                  "items": {
-                    "$ref": "#/$defs/LevelFilter"
-                  }
-                }
-              },
-              {
-                "if": {
-                  "type": "object"
-                },
-                "then": {
-                  "$ref": "#/$defs/LevelFilter"
-                }
-              }
-            ]
-          }
-        },
-        "rules": {
-          "title": "rules",
-          "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)*",
-          "type": "object",
-          "deprecated": true,
-          "additionalProperties": {
-            "allOf": [
-              {
-                "if": {
-                  "type": "array"
-                },
-                "then": {
-                  "items": {
-                    "$ref": "#/$defs/LevelTransformation"
-                  }
-                }
-              },
-              {
-                "if": {
-                  "type": "object"
-                },
-                "then": {
-                  "$ref": "#/$defs/LevelTransformation"
-                }
-              }
-            ]
-          }
-        },
-        "minimumSizeInPixel": {
-          "title": "minimumSizeInPixel",
-          "description": "*Deprecated (from v4.0 on you have to use [Tile     Provider](../../providers/tile/README.md) entities)*",
-          "oneOf": [
-            {
-              "type": "number"
-            },
-            {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
         }
       },
       "additionalProperties": false
@@ -4708,18 +3340,6 @@
           ],
           "const": "XML"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "XML"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -4728,8 +3348,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -4755,18 +3375,6 @@
           ],
           "const": "SCHEMA"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "SCHEMA"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -4775,8 +3383,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -4788,40 +3396,6 @@
           "description": "Sets fixed values for [HTTP Caching Headers](/services/README.md#caching) for the     resources.",
           "type": "object",
           "$ref": "#/$defs/Caching"
-        },
-        "versions": {
-          "title": "versions",
-          "description": "List of enabled JSON Schema versions. Supported are 2020-12 (`V202012`), 2019-09     (`V201909`) and 07 (`V7`).",
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "type": [
-                    "string",
-                    "number",
-                    "boolean",
-                    "null"
-                  ]
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean",
-                  "null"
-                ]
-              }
-            }
-          ]
         }
       },
       "additionalProperties": false
@@ -4833,28 +3407,13 @@
       "properties": {
         "buildingBlock": {
           "title": "buildingBlock",
-          "description": "Always `CRUD` or (*deprecated*) `TRANSACTIONAL`.",
+          "description": "Always `CRUD`.",
           "type": [
             "string",
             "number",
             "boolean",
             "null"
           ],
-          "enum": [
-            "CRUD",
-            "TRANSACTIONS"
-          ]
-        },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
           "enum": [
             "CRUD",
             "TRANSACTIONS"
@@ -4868,8 +3427,40 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "optimisticLockingLastModified": {
+          "title": "optimisticLockingLastModified",
+          "description": "Option to enable support for conditional processing of PUT, PATCH, and DELETE requests,     based on the time when the feature was last updated. Such requests must include an     `If-Unmodified-Since` header, otherwise they will be rejected. A feature will only be     changed, if the feature was not changed since the timestamp in the header (or if no last     modification time is known for the feature).       The setting is ignored, if `optimisticLockingETag` is enabled.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "optimisticLockingETag": {
+          "title": "optimisticLockingETag",
+          "description": "Option to enable support for conditional processing of PUT, PATCH, and DELETE requests,     based on a strong Entity Tag (ETag) of the feature. Such requests must include an     `If-Match` header, otherwise they will be rejected. A feature will only be changed, if the     feature matches the Etag(s) in the header.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -4943,18 +3534,6 @@
           ],
           "const": "GLTF"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "GLTF"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -4963,8 +3542,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5006,8 +3585,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5022,8 +3601,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5038,8 +3617,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5054,8 +3633,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5078,8 +3657,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5094,8 +3673,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5121,18 +3700,6 @@
           ],
           "const": "JSON_FG"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "JSON_FG"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -5141,8 +3708,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5178,14 +3745,14 @@
         },
         "describedby": {
           "title": "describedby",
-          "description": "*Partially Deprecated* For schemas specific to the feature type, use `schemaCollection`     and `schemaFeature`. Enables that links to the generic JSON-FG and GeoJSON JSON Schema     documents tare added to the JSON-FG response document. The links have the link relation     type \"describedby\". The schemas can be used to validate the JSON document.",
+          "description": "*Partially Deprecated* For schemas specific to the feature type, use `schemaCollection`     and `schemaFeature`. Enables that links to the generic JSON-FG and GeoJSON JSON Schema     documents are added to the JSON-FG response document. The links have the link relation type     \"describedby\". The schemas can be used to validate the JSON document.",
           "oneOf": [
             {
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5220,8 +3787,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5236,8 +3803,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5246,7 +3813,7 @@
         },
         "featureType": {
           "title": "featureType",
-          "description": "Features are often categorized by type. Typically, all features of the same type have     the same schema and the same properties.       Many GIS clients depend on knowledge about the feature type when processing feature     data. For example, when associating a style to a feature in order to render that feature on     a map.       This option adds a \"featureType\" member with the specified values. If a single value is     specified, then a string is added, otherwise an array of strings.       A value can include a template `{{type}}`, which will be replaced with the value of the     feature property with `role: TYPE` in the provider schema of the feature type of the     collection. The property must be of type `STRING`.",
+          "description": "Features are often categorized by type. Typically, all features of the same type have     the same schema and the same properties.       Many GIS clients depend on knowledge about the feature type when processing feature     data. For example, when associating a style to a feature in order to render that feature on     a map.       This option adds a \"featureType\" member with the specified values. If a single value is     specified, then a string is added, otherwise an array of strings.       A value can include a template `{{type}}`, which will be replaced with the value of the     feature property with `role: TYPE` in the provider schema of the feature type of the     collection. The property must be of type `STRING`.       If the feature type in the provider schema includes an `objectType` value, the value     will be used as the default. Otherwise, the default is an empty array.",
           "allOf": [
             {
               "if": {
@@ -5278,6 +3845,22 @@
             }
           ]
         },
+        "useCuries": {
+          "title": "useCuries",
+          "description": "If `true`, values in \"conformsTo\" and \"coordRefSys\" will be Safe CURIEs, not HTTP URIs.     For example, `[EPSG:25832]` instead of `http://www.opengis.net/def/crs/EPSG/0/25832`.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "links": {
           "title": "links",
           "description": "Adds the specified links to the `links` array of features. All values of the array must     be a valid link object with `href` and `rel`.",
@@ -5304,7 +3887,7 @@
         },
         "includeInGeoJson": {
           "title": "includeInGeoJson",
-          "description": "The option allows selected JSON-FG extensions to be included in the GeoJSON encoding as     well. Allowed values are: `describedby`, `featureType`, `time`, `place`, `coordRefSys`,     `links`.",
+          "description": "The option allows selected JSON-FG extensions to be included in the GeoJSON encoding as     well. Allowed values are: `describedby`, `featureType`, `featureSchema`, `time`, `place`,     `coordRefSys`, `links`. `conformsTo` is only used in JSON-FG responses.",
           "allOf": [
             {
               "if": {
@@ -5355,18 +3938,6 @@
           ],
           "const": "SEARCH"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "SEARCH"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -5375,8 +3946,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5397,8 +3968,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5413,8 +3984,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5429,8 +4000,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5456,18 +4027,6 @@
           ],
           "const": "FILTER"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "FILTER"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -5476,8 +4035,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5503,18 +4062,6 @@
           ],
           "const": "GEOMETRY_SIMPLIFICATION"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "GEOMETRY_SIMPLIFICATION"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -5523,8 +4070,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5550,18 +4097,6 @@
           ],
           "const": "PROJECTIONS"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "PROJECTIONS"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -5570,8 +4105,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5604,8 +4139,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5655,8 +4190,8 @@
                       "type": "number"
                     },
                     {
-                      "type": "string",
-                      "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+                      "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+                      "type": "string"
                     },
                     {
                       "type": "null"
@@ -5675,8 +4210,8 @@
                     "type": "number"
                   },
                   {
-                    "type": "string",
-                    "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+                    "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+                    "type": "string"
                   },
                   {
                     "type": "null"
@@ -5701,8 +4236,8 @@
                       "type": "number"
                     },
                     {
-                      "type": "string",
-                      "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+                      "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+                      "type": "string"
                     },
                     {
                       "type": "null"
@@ -5721,8 +4256,8 @@
                     "type": "number"
                   },
                   {
-                    "type": "string",
-                    "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+                    "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+                    "type": "string"
                   },
                   {
                     "type": "null"
@@ -5747,8 +4282,8 @@
                       "type": "number"
                     },
                     {
-                      "type": "string",
-                      "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+                      "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+                      "type": "string"
                     },
                     {
                       "type": "null"
@@ -5767,8 +4302,8 @@
                     "type": "number"
                   },
                   {
-                    "type": "string",
-                    "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+                    "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+                    "type": "string"
                   },
                   {
                     "type": "null"
@@ -5786,8 +4321,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5810,8 +4345,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5843,18 +4378,6 @@
           ],
           "const": "ROUTING"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "ROUTING"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -5863,8 +4386,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5895,8 +4418,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5911,8 +4434,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5927,8 +4450,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5943,8 +4466,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -5959,8 +4482,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6031,8 +4554,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6064,18 +4587,6 @@
           ],
           "const": "SORTING"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "SORTING"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -6084,52 +4595,17 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
             }
           ]
         },
-        "sortables": {
-          "title": "sortables",
-          "description": "*Deprecated* Superseded by `included`. Controls which of the attributes in queries can     be used for sorting data. Only direct attributes of the data types `STRING`, `DATE`,     `DATETIME`, `INTEGER` and `FLOAT` are allowed (no attributes from arrays or embedded     objects).",
-          "deprecated": true,
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "type": [
-                    "string",
-                    "number",
-                    "boolean",
-                    "null"
-                  ]
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "type": [
-                  "string",
-                  "number",
-                  "boolean",
-                  "null"
-                ]
-              }
-            }
-          ]
-        },
         "included": {
           "title": "included",
-          "description": "Controls which of the attributes in queries can be used for sorting data. Only direct     attributes of the data types `STRING`, `DATE`, `DATETIME`, `INTEGER` and `FLOAT` are     eligible as sortables (that is, no attributes from arrays or embedded objects) unless     `isSortable` is set to `false` for the property. The special value `*` includes all     eligible properties as sortables. By default, no property is sortable (this is for     backwards compatibility, in v4.0 the default behaviour will change to all eligible     properties).",
+          "description": "Controls which of the attributes in queries can be used for sorting data. Only direct     attributes of the data types `STRING`, `DATE`, `DATETIME`, `INTEGER` and `FLOAT` are     eligible as sortables (that is, no attributes from arrays or embedded objects) unless     `isSortable` is set to `false` for the property. The special value `*` includes all     eligible properties as sortables. By default, no property is sortable.",
           "allOf": [
             {
               "if": {
@@ -6210,7 +4686,7 @@
     },
     "StylesConfiguration": {
       "title": "StylesConfiguration",
-      "description": "### Storage       The stylesheets, style metadata and style information all reside as files in the data     directory:        - Stylesheets reside under the relative path `styles/{apiId}/{styleId}.{ext}`. The URIs (Sprites,     Glyphs, Source.url, Source.tiles) used in Mapbox styles links might contain `{serviceUrl}`.     The file extension `{ext}` must have the following value depending on the style encoding:   - Mapbox Style: `mbs`   - OGC SLD 1.0: `sld10`   - OGC SLD 1.1: `sld11`   - QGIS QML: `qml`   - ArcGIS Desktop: `lyr`   - ArcGIS Pro: `lyrx`   - 3D Tiles Styling: `3dtiles` - Style metadata reside under the relative path `styles/{apiId}/{styleId}.metadata`. Links     might be templates (by setting `templated` to `true`) containing `{serviceUrl}`. - Style information reside under the relative path `style-infos/{apiId}/{collectionId}.json`. Links     might be templates (by setting `templated` to `true`) containing `{serviceUrl}` and     `{collectionId}`.       ### Layer Control       The layer control dialog in the webmap is activated via the `webmapWithLayerControl`     option (see \u0027Options\u0027 below).       The dialog can be configured in the MapLibre style metadata (member     `ldproxy:layerControl`). On the top level there are the following JSON members:        - `onlyLegend` (Boolean, default: false): With `true` only the groups and layers with the symbols are displayed without the possibility to deactivate layers. - `opened` (Boolean, default: false): If `true` is set, the layer selection dialog will be displayed open when the map is loaded. - `entries` (default: one merge group per source layer in the vector tiles): The configuration of the groups and layers as described below.            In `entries` the following items allowed:        - The `id` of a MapLibre layer in the style (string). The layer is displayed in the dialog with the `id` as name. The symbol of the layer is created without specifying attributes or a particular zoom layer. - A layer object. `id` is the `id` of the MapLibre layer in the style (string, mandatory). `label` is the name of the layer in the dialog (string, default: `id`). `zoom` is the zoom level to use when creating symbols (number, default: none). `properties` are attributes (object, default `{}`) to be used during symbol generation. - A group object. `type` is always \"group\". `id` is an `id` of the group (string, mandatory). `label` is the name of the group in the dialog (string, default: `id`). With `onlyLegend` the possibility to disable layers can be disabled for the group (Boolean, default: `false`). `entries` can contain layers (objects or string), groups or merge groups (array, default: `[]`). - A radio group object. It may only occur on the top level of entries. Only exactly one entry can be selected from the group, e.g. for the selection of a basemap. `type` is always \"radio-group\". `id`, `label` have the same effect as for normal groups. `entries` can only contain layers (objects or string) (array, default: `[]`). - A merge group object. `type` is always \"merge-group\". A merge group is a group where `entries` may only contain layers (objects or string) (array, default: `[]`); these entries are not displayed as subentries in the dialog, but a symbol is created from all layers together. Instead of specifying `entries`, `source-layer` (string, default: none) can be specified alternatively; in this case, all layers with this source layer become entries.            For an example, see below.",
+      "description": "### Storage        - MapLibre stylesheets reside under the relative path `styles/{apiId}/{styleId}.mbs` in      the data directory (old) or in the [Store (new)](../../application/20-configuration/10-store-new.md) as values with type      `maplibre-styles` and path `{apiId}/{styleId}`. In the latter case the extension `mbs` is      still supported, but preferably stylesheets are stored as plain YAML or JSON files. The URIs (Sprites,     Glyphs, Source.url, Source.tiles) used in MapLibre styles links might contain `{serviceUrl}`. - 3d Tiles stylesheets reside under the relative path `styles/{apiId}/{styleId}.3dtiles` in      the data directory (old) or in the [Store (new)](../../application/20-configuration/10-store-new.md) as values with type      `3dtiles-styles` and path `{apiId}/{styleId}`. In the latter case the extension `3dtiles`      is still supported, but preferably stylesheets are stored as plain YAML or JSON files. - Other stylesheets reside under the relative path `styles/{apiId}/{styleId}.{ext}` in      the data directory (old) or in the [Store (new)](../../application/20-configuration/10-store-new.md) as resources with type      `other-styles` and path `{apiId}/{styleId}.{ext}`.     The file extension `{ext}` must have the following value depending on the style encoding:   - OGC SLD 1.0: `sld10`   - OGC SLD 1.1: `sld11`   - QGIS QML: `qml`   - ArcGIS Desktop: `lyr`   - ArcGIS Pro: `lyrx` - Style metadata reside under the relative path `styles/{apiId}/{styleId}.metadata` in       the data directory (old) or in the [Store (new)](../../application/20-configuration/10-store-new.md) as resources with type       `other-styles` and path `{apiId}/{styleId}.metadata`. Links     might be templates (by setting `templated` to `true`) containing `{serviceUrl}`.     *Deprecated, the support for style metadata will be removed in v4.*       ### Layer Control       The layer control dialog in the webmap is activated via the `webmapWithLayerControl`     option (see \u0027Options\u0027 below).       The dialog can be configured in the MapLibre style metadata (member     `ldproxy:layerControl`). On the top level there are the following JSON members:        - `onlyLegend` (Boolean, default: false): With `true` only the groups and layers with the symbols are displayed without the possibility to deactivate layers. - `opened` (Boolean, default: false): If `true` is set, the layer selection dialog will be displayed open when the map is loaded. - `entries` (default: one merge group per source layer in the vector tiles): The configuration of the groups and layers as described below.            In `entries` the following items allowed:        - The `id` of a MapLibre layer in the style (string). The layer is displayed in the dialog with the `id` as name. The symbol of the layer is created without specifying attributes or a particular zoom layer. - A layer object. `id` is the `id` of the MapLibre layer in the style (string, mandatory). `label` is the name of the layer in the dialog (string, default: `id`). `zoom` is the zoom level to use when creating symbols (number, default: none). `properties` are attributes (object, default `{}`) to be used during symbol generation. - A group object. `type` is always \"group\". `id` is an `id` of the group (string, mandatory). `label` is the name of the group in the dialog (string, default: `id`). With `onlyLegend` the possibility to disable layers can be disabled for the group (Boolean, default: `false`). `entries` can contain layers (objects or string), groups or merge groups (array, default: `[]`). - A radio group object. It may only occur on the top level of entries. Only exactly one entry can be selected from the group, e.g. for the selection of a basemap. `type` is always \"radio-group\". `id`, `label` have the same effect as for normal groups. `entries` can only contain layers (objects or string) (array, default: `[]`). - A merge group object. `type` is always \"merge-group\". A merge group is a group where `entries` may only contain layers (objects or string) (array, default: `[]`); these entries are not displayed as subentries in the dialog, but a symbol is created from all layers together. Instead of specifying `entries`, `source-layer` (string, default: none) can be specified alternatively; in this case, all layers with this source layer become entries.            For an example, see below.",
       "type": "object",
       "properties": {
         "buildingBlock": {
@@ -6224,18 +4700,6 @@
           ],
           "const": "STYLES"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "STYLES"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -6244,8 +4708,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6300,8 +4764,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6316,8 +4780,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6332,58 +4796,13 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
             }
           ]
-        },
-        "resourcesEnabled": {
-          "title": "resourcesEnabled",
-          "description": "*Deprecated* See `enabled` in [Modul Resources](resources.md).",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        },
-        "resourceManagerEnabled": {
-          "title": "resourceManagerEnabled",
-          "description": "*Deprecated* See `managerEnabled` in [Modul Resources](resources.md).",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "deprecated": true
-        },
-        "defaultStyle": {
-          "title": "defaultStyle",
-          "description": "*Deprecated* See `defaultStyle` in [Modul HTML](html.md).",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true
         },
         "deriveCollectionStyles": {
           "title": "deriveCollectionStyles",
@@ -6393,8 +4812,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6409,8 +4828,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6425,8 +4844,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6441,8 +4860,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6468,18 +4887,6 @@
           ],
           "const": "TEXT_SEARCH"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "TEXT_SEARCH"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -6488,8 +4895,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6533,6 +4940,72 @@
       },
       "additionalProperties": false
     },
+    "SeedingOptions": {
+      "title": "SeedingOptions",
+      "description": "### Seeding       Controls how and when [caches](#cache) are computed.",
+      "type": "object",
+      "properties": {
+        "runOnStartup": {
+          "title": "runOnStartup",
+          "description": "If disabled the seeding will not be run when the API starts.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "runPeriodic": {
+          "title": "runPeriodic",
+          "description": "A crontab pattern to run the seeding periodically. There will only ever be one seeding     in progress, so if the next run is scheduled before the last one finished, it will be     skipped.",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "purge": {
+          "title": "purge",
+          "description": "If enabled the tile cache will be purged before the seeding starts.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "maxThreads": {
+          "title": "maxThreads",
+          "description": "The maximum number of threads the seeding is allowed to use. The actual number of     threads used depends on the number of available background task threads when the seeding is     about to start. If you want to allow more than thread, first check if sufficient background     task threads are configured. Take into account that the seeding for multiple APIs will     compete for the available background task threads.",
+          "oneOf": [
+            {
+              "type": "number"
+            },
+            {
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
     "Tiles3dConfiguration": {
       "title": "Tiles3dConfiguration",
       "description": "### Prerequisites       The module requires that the feature provider includes a type `building`. The requirements     for the type are the same as in the configuration of the [CityJSON     encoding](features_-_cityjson.html#configuration).",
@@ -6549,18 +5022,6 @@
           ],
           "const": "TILES3D"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "TILES3D"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -6569,8 +5030,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6585,8 +5046,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6601,8 +5062,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6685,8 +5146,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6701,8 +5162,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6723,8 +5184,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6769,8 +5230,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6806,18 +5267,6 @@
           ],
           "const": "CSV"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "CSV"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -6826,8 +5275,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6869,8 +5318,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6896,18 +5345,6 @@
           ],
           "const": "FEATURES_EXTENSIONS"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "FEATURES_EXTENSIONS"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -6916,24 +5353,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "postOnItems": {
-          "title": "postOnItems",
-          "description": "Enables support for the POST HTTP method on the \"Features\" resource.",
-          "oneOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6948,8 +5369,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -6975,18 +5396,6 @@
           ],
           "const": "FLATGEOBUF"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "FLATGEOBUF"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -6995,8 +5404,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -7038,8 +5447,8 @@
               "type": "number"
             },
             {
-              "type": "string",
-              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?"
+              "pattern": "(0|-?[1-9][0-9]*)(\\.[0-9]*)?",
+              "type": "string"
             },
             {
               "type": "null"
@@ -7065,18 +5474,6 @@
           ],
           "const": "GEO_JSON_LD"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "GEO_JSON_LD"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -7085,8 +5482,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -7176,18 +5573,6 @@
           ],
           "const": "RESOURCES"
         },
-        "extensionType": {
-          "title": "extensionType",
-          "description": "*Deprecated* See `buildingBlock`.",
-          "type": [
-            "string",
-            "number",
-            "boolean",
-            "null"
-          ],
-          "deprecated": true,
-          "const": "RESOURCES"
-        },
         "enabled": {
           "title": "enabled",
           "description": "Enable the building block?",
@@ -7196,8 +5581,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -7218,8 +5603,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -7231,101 +5616,49 @@
     },
     "ExtensionConfiguration": {
       "type": "object",
-      "properties": {},
-      "required": [],
-      "anyOf": [
-        {
-          "required": [
-            "buildingBlock"
-          ],
-          "properties": {
-            "buildingBlock": {
-              "enum": [
-                "COLLECTIONS",
-                "QUERYABLES",
-                "COMMON",
-                "CRS",
-                "CITY_JSON",
-                "FEATURES_CORE",
-                "GEO_JSON",
-                "GML",
-                "FEATURES_HTML",
-                "FOUNDATION",
-                "HTML",
-                "JSON",
-                "OAS30",
-                "TILE_MATRIX_SETS",
-                "TILES",
-                "XML",
-                "SCHEMA",
-                "CRUD",
-                "TRANSACTIONS",
-                "GLTF",
-                "JSON_FG",
-                "SEARCH",
-                "FILTER",
-                "GEOMETRY_SIMPLIFICATION",
-                "PROJECTIONS",
-                "ROUTING",
-                "SORTING",
-                "STYLES",
-                "TEXT_SEARCH",
-                "TILES3D",
-                "CSV",
-                "FEATURES_EXTENSIONS",
-                "FLATGEOBUF",
-                "GEO_JSON_LD",
-                "RESOURCES"
-              ]
-            }
-          }
-        },
-        {
-          "required": [
-            "extensionType"
-          ],
-          "properties": {
-            "extensionType": {
-              "enum": [
-                "COLLECTIONS",
-                "QUERYABLES",
-                "COMMON",
-                "CRS",
-                "CITY_JSON",
-                "FEATURES_CORE",
-                "GEO_JSON",
-                "GML",
-                "FEATURES_HTML",
-                "FOUNDATION",
-                "HTML",
-                "JSON",
-                "OAS30",
-                "TILE_MATRIX_SETS",
-                "TILES",
-                "XML",
-                "SCHEMA",
-                "CRUD",
-                "TRANSACTIONS",
-                "GLTF",
-                "JSON_FG",
-                "SEARCH",
-                "FILTER",
-                "GEOMETRY_SIMPLIFICATION",
-                "PROJECTIONS",
-                "ROUTING",
-                "SORTING",
-                "STYLES",
-                "TEXT_SEARCH",
-                "TILES3D",
-                "CSV",
-                "FEATURES_EXTENSIONS",
-                "FLATGEOBUF",
-                "GEO_JSON_LD",
-                "RESOURCES"
-              ]
-            }
-          }
+      "properties": {
+        "buildingBlock": {
+          "enum": [
+            "COLLECTIONS",
+            "QUERYABLES",
+            "COMMON",
+            "CRS",
+            "CITY_JSON",
+            "FEATURES_CORE",
+            "GEO_JSON",
+            "GML",
+            "FEATURES_HTML",
+            "FOUNDATION",
+            "HTML",
+            "JSON",
+            "OAS30",
+            "TILE_MATRIX_SETS",
+            "TILES",
+            "XML",
+            "SCHEMA",
+            "CRUD",
+            "TRANSACTIONS",
+            "GLTF",
+            "JSON_FG",
+            "SEARCH",
+            "FILTER",
+            "GEOMETRY_SIMPLIFICATION",
+            "PROJECTIONS",
+            "ROUTING",
+            "SORTING",
+            "STYLES",
+            "TEXT_SEARCH",
+            "TILES3D",
+            "CSV",
+            "FEATURES_EXTENSIONS",
+            "FLATGEOBUF",
+            "GEO_JSON_LD",
+            "RESOURCES"
+          ]
         }
+      },
+      "required": [
+        "buildingBlock"
       ],
       "allOf": [
         {
@@ -7346,42 +5679,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "COLLECTIONS"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/CollectionsConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "QUERYABLES"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/QueryablesConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "QUERYABLES"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -7406,42 +5709,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "COMMON"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/CommonConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "CRS"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/CrsConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "CRS"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -7466,42 +5739,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "CITY_JSON"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/CityJsonConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "FEATURES_CORE"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/FeaturesCoreConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "FEATURES_CORE"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -7526,42 +5769,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "GEO_JSON"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/GeoJsonConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "GML"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/GmlConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "GML"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -7586,42 +5799,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "FEATURES_HTML"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/FeaturesHtmlConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "FOUNDATION"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/FoundationConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "FOUNDATION"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -7646,42 +5829,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "HTML"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/HtmlConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "JSON"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/JsonConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "JSON"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -7706,42 +5859,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "OAS30"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/Oas30Configuration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "TILE_MATRIX_SETS"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/TileMatrixSetsConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "TILE_MATRIX_SETS"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -7766,42 +5889,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "TILES"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/TilesConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "XML"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/XmlConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "XML"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -7826,42 +5919,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "SCHEMA"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/SchemaConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "CRUD"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/CrudConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "CRUD"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -7886,42 +5949,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "TRANSACTIONS"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/CrudConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "GLTF"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/GltfConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "GLTF"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -7946,42 +5979,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "JSON_FG"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/JsonFgConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "SEARCH"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/SearchConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "SEARCH"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -8006,42 +6009,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "FILTER"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/FilterConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "GEOMETRY_SIMPLIFICATION"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/GeometrySimplificationConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "GEOMETRY_SIMPLIFICATION"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -8066,42 +6039,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "PROJECTIONS"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/ProjectionsConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "ROUTING"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/RoutingConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "ROUTING"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -8126,42 +6069,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "SORTING"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/SortingConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "STYLES"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/StylesConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "STYLES"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -8186,42 +6099,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "TEXT_SEARCH"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/TextSearchConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "TILES3D"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/Tiles3dConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "TILES3D"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -8246,42 +6129,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "CSV"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/CsvConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "FEATURES_EXTENSIONS"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/FeaturesExtensionsConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "FEATURES_EXTENSIONS"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -8306,21 +6159,6 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "FLATGEOBUF"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/FlatgeobufConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "GEO_JSON_LD"
               }
@@ -8336,42 +6174,12 @@
         {
           "if": {
             "properties": {
-              "extensionType": {
-                "const": "GEO_JSON_LD"
-              }
-            },
-            "required": [
-              "extensionType"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/GeoJsonLdConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "buildingBlock": {
                 "const": "RESOURCES"
               }
             },
             "required": [
               "buildingBlock"
-            ]
-          },
-          "then": {
-            "$ref": "#/$defs/ResourcesConfiguration"
-          }
-        },
-        {
-          "if": {
-            "properties": {
-              "extensionType": {
-                "const": "RESOURCES"
-              }
-            },
-            "required": [
-              "extensionType"
             ]
           },
           "then": {
@@ -8423,8 +6231,8 @@
               "type": "boolean"
             },
             {
-              "type": "string",
-              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF"
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
             },
             {
               "type": "null"
@@ -8474,31 +6282,6 @@
         "api": {
           "title": "api",
           "description": "[Building Blocks](#building-blocks) configuration.",
-          "allOf": [
-            {
-              "if": {
-                "type": "array"
-              },
-              "then": {
-                "items": {
-                  "$ref": "#/$defs/ExtensionConfiguration"
-                }
-              }
-            },
-            {
-              "if": {
-                "type": "object"
-              },
-              "then": {
-                "$ref": "#/$defs/ExtensionConfiguration"
-              }
-            }
-          ]
-        },
-        "capabilities": {
-          "title": "capabilities",
-          "description": "*Deprecated* See `api`.",
-          "deprecated": true,
           "allOf": [
             {
               "if": {

@@ -24,10 +24,10 @@ import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.xtraplatform.base.domain.ETag;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-import de.ii.xtraplatform.web.domain.ETag;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -92,7 +92,7 @@ public interface QueriesHandlerSchema extends QueriesHandler<Query> {
                     .build());
 
     JsonSchemaDocument schema =
-        getJsonSchema(featureSchema, apiData, collectionData, schemaUri, outputFormat.getVersion());
+        getJsonSchema(featureSchema, apiData, collectionData, schemaUri, VERSION.V202012);
 
     Date lastModified = getLastModified(queryInput);
     EntityTag etag =

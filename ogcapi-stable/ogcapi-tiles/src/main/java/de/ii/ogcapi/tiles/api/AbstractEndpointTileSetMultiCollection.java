@@ -26,6 +26,7 @@ import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSet.Builder;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import java.util.List;
 import java.util.Optional;
@@ -34,11 +35,15 @@ import javax.ws.rs.core.Response;
 public abstract class AbstractEndpointTileSetMultiCollection extends Endpoint {
 
   private final TilesQueriesHandler queryHandler;
+  protected final TilesProviders tilesProviders;
 
   public AbstractEndpointTileSetMultiCollection(
-      ExtensionRegistry extensionRegistry, TilesQueriesHandler queryHandler) {
+      ExtensionRegistry extensionRegistry,
+      TilesQueriesHandler queryHandler,
+      TilesProviders tilesProviders) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
+    this.tilesProviders = tilesProviders;
   }
 
   @Override
@@ -54,7 +59,7 @@ public abstract class AbstractEndpointTileSetMultiCollection extends Endpoint {
     return apiData
         .getExtension(TilesConfiguration.class)
         .filter(TilesConfiguration::isEnabled)
-        .filter(cfg -> cfg.hasDatasetTiles(null, apiData))
+        .filter(cfg -> cfg.hasDatasetTiles(tilesProviders, apiData))
         .isPresent();
   }
 

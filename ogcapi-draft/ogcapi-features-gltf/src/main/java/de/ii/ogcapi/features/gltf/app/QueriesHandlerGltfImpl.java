@@ -28,12 +28,13 @@ import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.xtraplatform.base.domain.ETag;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
-import de.ii.xtraplatform.web.domain.ETag;
+import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Map;
@@ -54,15 +55,14 @@ public class QueriesHandlerGltfImpl implements QueriesHandlerGltf {
   private final I18n i18n;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
   private final Metadata3dSchemaCacheImpl schemaCache;
-  private final EntityRegistry entityRegistry;
+  private final Values<Codelist> codelistStore;
   private final FeatureSchemaCache featureSchemaCache;
 
   @Inject
-  public QueriesHandlerGltfImpl(
-      I18n i18n, FeaturesCoreProviders providers, EntityRegistry entityRegistry) {
+  public QueriesHandlerGltfImpl(I18n i18n, FeaturesCoreProviders providers, ValueStore valueStore) {
     this.i18n = i18n;
     this.providers = providers;
-    this.entityRegistry = entityRegistry;
+    this.codelistStore = valueStore.forType(Codelist.class);
     this.queryHandlers =
         ImmutableMap.of(
             Query.SCHEMA, QueryHandler.with(QueryInputGltfSchema.class, this::getSchemaResponse));
@@ -122,11 +122,7 @@ public class QueriesHandlerGltfImpl implements QueriesHandlerGltf {
             configuration);
 
     GltfSchema schema =
-        schemaCache.getSchema(
-            featureSchema,
-            apiData,
-            collectionId,
-            entityRegistry.getEntitiesForType(Codelist.class));
+        schemaCache.getSchema(featureSchema, apiData, collectionId, codelistStore.asMap());
 
     Date lastModified = getLastModified(queryInput);
     EntityTag etag =

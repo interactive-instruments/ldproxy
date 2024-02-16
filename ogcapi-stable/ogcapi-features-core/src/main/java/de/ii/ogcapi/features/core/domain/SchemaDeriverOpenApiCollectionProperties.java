@@ -15,6 +15,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 public class SchemaDeriverOpenApiCollectionProperties extends SchemaDeriverOpenApi {
@@ -24,7 +25,7 @@ public class SchemaDeriverOpenApiCollectionProperties extends SchemaDeriverOpenA
   public SchemaDeriverOpenApiCollectionProperties(
       String label,
       Optional<String> description,
-      List<Codelist> codelists,
+      Map<String, Codelist> codelists,
       List<String> properties) {
     super(label, description, codelists);
     this.properties = properties;
@@ -56,8 +57,10 @@ public class SchemaDeriverOpenApiCollectionProperties extends SchemaDeriverOpenA
   @Override
   protected Schema<?> deriveValueSchema(FeatureSchema schema) {
     Schema<?> schema2 = super.deriveValueSchema(schema);
-    if (!(schema2 instanceof ArraySchema) && schema.getName().contains("[].")) {
-      schema2 = withArrayWrapper(schema2);
+    if (Objects.nonNull(schema2)
+        && !(schema2 instanceof ArraySchema)
+        && schema.getName().contains("[].")) {
+      schema2 = withArrayWrapper(schema2, false);
     }
     return schema2;
   }

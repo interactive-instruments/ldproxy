@@ -21,6 +21,4 @@ public interface StyleMetadataFormatExtension extends GenericFormatExtension {
       OgcApiDataV2 apiData,
       Optional<String> collectionId,
       ApiRequestContext requestContext);
-
-  StyleMetadata parse(byte[] content, boolean strict, boolean inStore);
 }

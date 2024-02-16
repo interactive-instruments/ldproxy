@@ -1,11 +1,7 @@
+when:
+  event: pull_request
 
-clone: 
-  git:
-    image: woodpeckerci/plugin-git
-    when:
-      event: pull_request
-
-pipeline:
+steps:
 
   code:
     image: eclipse-temurin:11
@@ -14,11 +10,9 @@ pipeline:
     commands:
       - ./gradlew check docsVuepress -Pbranch=$CI_COMMIT_BRANCH -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
-    when:
-      event: pull_request
 
   docs:
-    image: woodpeckerci/plugin-surge-preview:next
+    image: woodpeckerci/plugin-surge-preview:1.2.2
     settings:
       path: build/markdown/docs/.vuepress/dist/
       surge_token: 
@@ -27,6 +21,3 @@ pipeline:
       forge_url: https://github.com
       forge_repo_token: 
         from_secret: github_token
-    secrets: [ github_token, surge_token ]
-    when:
-      event: pull_request

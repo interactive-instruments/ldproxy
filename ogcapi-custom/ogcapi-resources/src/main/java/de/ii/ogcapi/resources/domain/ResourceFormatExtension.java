@@ -11,7 +11,6 @@ import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import javax.ws.rs.core.Response;
 
 public interface ResourceFormatExtension extends FormatExtension {
@@ -34,10 +33,6 @@ public interface ResourceFormatExtension extends FormatExtension {
 
   @Override
   default boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return FormatExtension.super.isEnabledForApi(apiData)
-        || apiData
-            .getExtension(StylesConfiguration.class)
-            .map(StylesConfiguration::isResourcesEnabled)
-            .orElse(false);
+    return FormatExtension.super.isEnabledForApi(apiData);
   }
 }

@@ -386,12 +386,8 @@ public abstract class TileSetsView extends OgcApiView {
       Multimap<String, List<String>> layers) {
     return new ImmutableMapClient.Builder()
         .type(type)
-        .backgroundUrl(
-            Optional.ofNullable(htmlConfig.getLeafletUrl())
-                .or(() -> Optional.ofNullable(htmlConfig.getBasemapUrl())))
-        .attribution(
-            Optional.ofNullable(htmlConfig.getLeafletAttribution())
-                .or(() -> Optional.ofNullable(htmlConfig.getBasemapAttribution())))
+        .backgroundUrl(Optional.ofNullable(htmlConfig.getBasemapUrl()))
+        .attribution(Optional.ofNullable(htmlConfig.getBasemapAttribution()))
         .data(
             new ImmutableSource.Builder()
                 .type(isVector() ? TYPE.vector : TYPE.raster)

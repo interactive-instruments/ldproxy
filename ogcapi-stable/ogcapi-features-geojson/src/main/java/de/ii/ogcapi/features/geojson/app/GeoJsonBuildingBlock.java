@@ -8,7 +8,6 @@
 package de.ii.ogcapi.features.geojson.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration.Builder;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -53,12 +52,6 @@ public class GeoJsonBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
-    return new Builder()
-        .enabled(true)
-        .nestedObjectStrategy(GeoJsonConfiguration.NESTED_OBJECTS.NEST)
-        .multiplicityStrategy(GeoJsonConfiguration.MULTIPLICITY.ARRAY)
-        .useFormattedJsonOutput(false)
-        .separator(".")
-        .build();
+    return new Builder().enabled(true).build();
   }
 }

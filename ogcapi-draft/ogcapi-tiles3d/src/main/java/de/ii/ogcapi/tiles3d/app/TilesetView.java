@@ -75,8 +75,7 @@ public abstract class TilesetView extends OgcApiView {
         .type(Type.CESIUM)
         .backgroundUrl(
             Objects.nonNull(htmlConfig())
-                ? Optional.ofNullable(htmlConfig().getLeafletUrl())
-                    .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl()))
+                ? Optional.ofNullable(htmlConfig().getBasemapUrl())
                     .map(
                         url ->
                             url.replace("{z}", "{TileMatrix}")

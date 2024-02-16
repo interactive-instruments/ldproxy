@@ -47,10 +47,12 @@ import org.immutables.value.Value;
  *     the content negotiation. The supported languages depend on the affected resource and the
  *     configuration. Support for multilingualism is currently limited. There are four possible
  *     sources for linguistic texts:
- *     <p>* Static texts: For example link labels or static texts in HTML represenations. Currently
- *     the languages English (`en`) and German (`de`) are supported. * Texts contained in the data:
- *     Currently not supported. * Texts set in the configuration: Currently not supported. * Error
- *     messages: These are always in english, the messages are currently hard-coded.
+ *     <p><code>
+ * - Static texts: For example link labels or static texts in HTML representations. Currently, the languages English (`en`) and German (`de`) are supported.
+ * - Texts contained in the data: Currently not supported.
+ * - Texts set in the configuration: Currently not supported.
+ * - Error messages: These are always in english, the messages are currently hard-coded.
+ *     </code>
  * @langDe Bei Operationen, die eine Antwort zurückliefern, wird die verwendete Sprache bei
  *     linguistischen Texten nach den Standard-HTTP-Regeln standardmäßig über Content-Negotiation
  *     und den `Accept-Language`-Header ermittelt.
@@ -58,16 +60,14 @@ import org.immutables.value.Value;
  *     GET-Operationen zusätzlich den Query-Parameter `lang`. Über diesen Parameter kann die Sprache
  *     auch direkt ausgewählt werden. Wenn kein Wert angegeben wird, gelten die
  *     Standard-HTTP-Regeln, wie oben beschrieben. Die erlaubten Werte hängen von der Ressource und
- *     von der API-Konfiguration ab. Die Unterstüzung für Mehrsprachigkeit ist derzeit begrenzt. Es
+ *     von der API-Konfiguration ab. Die Unterstützung für Mehrsprachigkeit ist derzeit begrenzt. Es
  *     gibt vier Arten von Quellen für Texte:
- *     <p>* Texte zu festen Elementen der API: Diese werden von ldproxy erzeugt, z.B. die Texte der
- *     Titel von Links oder feste Textbausteine in der HTML-Ausgabe. Derzeit werden die Sprachen
- *     "Deutsch" (de) und "Englisch" (en) unterstützt. * Texte aus Attributen in den Daten: Hier
- *     gibt es noch keine Unterstützung, wie die Rückgabe bei mehrsprachigen Daten in Abhängigkeit
- *     von der Ausgabesprache gesteuert werden kann. * Texte aus der API-Konfiguration, insbesondere
- *     zum Datenschema: Hier gibt es noch keine Unterstützung, wie die Rückgabe bei mehrsprachigen
- *     Daten in Abhängigkeit von der Ausgabesprache gesteuert werden kann. * Fehlermeldungen der
- *     API: Diese sind immer in Englisch, die Meldungen sind aktuell Bestandteil des Codes.
+ *     <p><code>
+ * - Texte zu festen Elementen der API: Diese werden von ldproxy erzeugt, z.B. die Texte der Titel von Links oder feste Textbausteine in der HTML-Ausgabe. Derzeit werden die Sprachen "Deutsch" (de) und "Englisch" (en) unterstützt.
+ * - Texte aus Attributen in den Daten: Hier gibt es noch keine Unterstützung, wie die Rückgabe bei mehrsprachigen Daten in Abhängigkeit von der Ausgabesprache gesteuert werden kann.
+ * - Texte aus der API-Konfiguration, insbesondere zum Datenschema: Hier gibt es noch keine Unterstützung, wie die Rückgabe bei mehrsprachigen Daten in Abhängigkeit von der Ausgabesprache gesteuert werden kann.
+ * - Fehlermeldungen der API: Diese sind immer in Englisch, die Meldungen sind aktuell Bestandteil des Codes.
+ *     </code>
  */
 @Value.Immutable
 public interface ApiResponse {

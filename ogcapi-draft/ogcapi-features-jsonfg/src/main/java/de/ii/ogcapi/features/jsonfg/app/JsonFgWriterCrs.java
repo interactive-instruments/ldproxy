@@ -30,6 +30,7 @@ public class JsonFgWriterCrs implements GeoJsonWriter {
 
   Map<String, Boolean> collectionMap;
   boolean isEnabled;
+  boolean useCuries;
 
   @Inject
   JsonFgWriterCrs() {}
@@ -50,6 +51,13 @@ public class JsonFgWriterCrs implements GeoJsonWriter {
       throws IOException {
     collectionMap = getCollectionMap(context.encoding());
     isEnabled = collectionMap.values().stream().anyMatch(enabled -> enabled);
+    useCuries =
+        context
+            .encoding()
+            .getApiData()
+            .getExtension(JsonFgConfiguration.class, context.encoding().getCollectionId())
+            .map(cfg -> Objects.equals(cfg.getUseCuries(), Boolean.TRUE))
+            .orElse(false);
 
     if (isEnabled && context.encoding().isFeatureCollection()) {
       writeCrs(context.encoding().getJson(), context.encoding().getTargetCrs());
@@ -74,7 +82,7 @@ public class JsonFgWriterCrs implements GeoJsonWriter {
   }
 
   private void writeCrs(JsonGenerator json, EpsgCrs crs) throws IOException {
-    json.writeStringField(JSON_KEY, crs.toUriString());
+    json.writeStringField(JSON_KEY, useCuries ? crs.toSafeCurie() : crs.toUriString());
   }
 
   private Map<String, Boolean> getCollectionMap(

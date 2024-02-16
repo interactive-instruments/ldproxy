@@ -11,8 +11,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Sets;
 import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -88,7 +86,7 @@ import org.immutables.value.Value;
  *     <p>#### Authentication and authorization
  *     <p>To support authenticated users, a bearer token has to be included in the `Authorization`
  *     header in requests to the API. Validation and evaluation of these tokens has to be configured
- *     in the [global configuration](../application/70-reference.md).
+ *     in the [global configuration](../application/20-configuration/README.md).
  *     <p>To determine if a user is authorized to perform the requested operation, the following
  *     steps are executed:
  *     <p><code>
@@ -174,8 +172,8 @@ import org.immutables.value.Value;
  *     <p>#### Authentifizierung and Autorisierung
  *     <p>Um authentifizierte Benutzer zu unterstützen, muss ein Bearer-Token im
  *     `Authorization`-Header in Anfragen an die API inkludiert werden. Die Validierung und
- *     Auswertung dieser Tokens muss in der [globalen Konfiguration](../application/70-reference.md)
- *     konfiguriert werden.
+ *     Auswertung dieser Tokens muss in der [globalen
+ *     Konfiguration](../application/20-configuration/README.md) konfiguriert werden.
  *     <p>Um zu bestimmen ob ein Benutzer autorisiert ist die angefragte Operation auszuführen,
  *     werden die folgenden Schritte durchgeführt:
  *     <p><code>
@@ -205,10 +203,10 @@ public interface ApiSecurity {
 
     /**
      * @langEn Enable an additional authorization layer using a *Policy Decision Point* defined in
-     *     the [global configuration](../application/70-reference.md).
+     *     the [global configuration](../application/20-configuration/README.md).
      * @langDe Aktiviert einen zusätzlichen Autorisierungs-Layer mittels eines *Policy Decision
-     *     Point*, der in der [globalen Konfiguration](../application/70-reference.md) definiert
-     *     wird.
+     *     Point*, der in der [globalen Konfiguration](../application/20-configuration/README.md)
+     *     definiert wird.
      * @default false
      * @since v3.5
      */
@@ -289,17 +287,6 @@ public interface ApiSecurity {
   Boolean getEnabled();
 
   /**
-   * @langEn *Deprecated, see `groups'.* List of permissions that every user possesses, if
-   *     authenticated or not.
-   * @langDe *Deprecated, siehe `groups'.* Liste der Berechtigungen, die jeder Benutzer besitzt, ob
-   *     angemeldet oder nicht.
-   * @default [read]
-   * @since v3.3
-   */
-  @Deprecated(since = "3.5")
-  Set<String> getPublicScopes();
-
-  /**
    * @langEn Definition of custom permission groups, the key is the group name, the value a list of
    *     permissions and/or predefined permission groups. The group `public` defines the list of
    *     permissions that every user possesses, if authenticated or not.
@@ -341,10 +328,11 @@ public interface ApiSecurity {
 
   /**
    * @langEn Optional additional authorization layer using a *Policy Decision Point* defined in the
-   *     [global configuration](../application/65-auth.md), see [Policies](#policies).
-   * @langDe Optionaler zusätzlicher Autorisierungs-Layer mittels eines *Policy Decision Point*, der
-   *     in der [globalen Konfiguration](../application/65-auth.md) definiert wird, siehe
+   *     [global configuration](../application/20-configuration/40-auth.md), see
    *     [Policies](#policies).
+   * @langDe Optionaler zusätzlicher Autorisierungs-Layer mittels eines *Policy Decision Point*, der
+   *     in der [globalen Konfiguration](../application/20-configuration/40-auth.md) definiert wird,
+   *     siehe [Policies](#policies).
    * @default null
    * @since v3.5
    */
@@ -354,24 +342,6 @@ public interface ApiSecurity {
   @Value.Derived
   default boolean isEnabled() {
     return !Objects.equals(getEnabled(), false);
-  }
-
-  @Value.Check
-  default ApiSecurity backwardsCompatibility() {
-    if (!getPublicScopes().isEmpty()) {
-      Map<String, Set<String>> groups = new LinkedHashMap<>(getGroups());
-      Set<String> groupPublic =
-          new LinkedHashSet<>(getGroups().getOrDefault(GROUP_PUBLIC, Set.of()));
-      groupPublic.addAll(getPublicScopes());
-      groups.put(GROUP_PUBLIC, groupPublic);
-
-      return new ImmutableApiSecurity.Builder()
-          .from(this)
-          .groups(groups)
-          .publicScopes(Set.of())
-          .build();
-    }
-    return this;
   }
 
   default boolean isRestricted(Set<String> permissions) {

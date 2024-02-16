@@ -15,7 +15,10 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion.VersionFlag;
 import com.networknt.schema.ValidationMessage;
+import de.ii.ogcapi.features.search.domain.QueryExpression;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
+import de.ii.xtraplatform.base.app.StoreImpl;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration.Builder;
@@ -24,14 +27,12 @@ import de.ii.xtraplatform.base.domain.ImmutableStoreSourceFsV3;
 import de.ii.xtraplatform.base.domain.Jackson;
 import de.ii.xtraplatform.base.domain.JacksonProvider;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
-import de.ii.xtraplatform.base.domain.StoreSource;
-import de.ii.xtraplatform.base.domain.StoreSourceDefault;
+import de.ii.xtraplatform.base.domain.StoreSource.Content;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.codelists.domain.CodelistData;
 import de.ii.xtraplatform.entities.app.EntityDataDefaultsStoreImpl;
 import de.ii.xtraplatform.entities.app.EntityDataStoreImpl;
 import de.ii.xtraplatform.entities.app.EventStoreDefault;
-import de.ii.xtraplatform.entities.app.ValueEncodingJackson;
 import de.ii.xtraplatform.entities.domain.EntityData;
 import de.ii.xtraplatform.entities.domain.EntityDataBuilder;
 import de.ii.xtraplatform.entities.domain.EntityDataDefaultsStore;
@@ -41,25 +42,27 @@ import de.ii.xtraplatform.entities.domain.EntityFactory;
 import de.ii.xtraplatform.entities.domain.EventStore;
 import de.ii.xtraplatform.entities.domain.EventStoreDriver;
 import de.ii.xtraplatform.entities.domain.EventStoreSubscriber;
-import de.ii.xtraplatform.entities.domain.Identifier;
 import de.ii.xtraplatform.entities.domain.ReplayEvent;
-import de.ii.xtraplatform.entities.domain.ValueEncoding.FORMAT;
 import de.ii.xtraplatform.entities.infra.EventStoreDriverFs;
 import de.ii.xtraplatform.features.domain.ProviderData;
 import de.ii.xtraplatform.features.sql.app.FeatureProviderSql;
 import de.ii.xtraplatform.features.sql.domain.FeatureProviderSqlData;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
-import de.ii.xtraplatform.store.app.StoreImpl;
 import de.ii.xtraplatform.streams.domain.Event;
+import de.ii.xtraplatform.values.api.ValueEncodingJackson;
+import de.ii.xtraplatform.values.domain.Identifier;
+import de.ii.xtraplatform.values.domain.StoredValue;
+import de.ii.xtraplatform.values.domain.ValueEncoding.FORMAT;
+import de.ii.xtraplatform.values.domain.annotations.FromValueStore;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -87,6 +90,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
   private final RequiredIncludes requiredIncludes;
   private final de.ii.xtraplatform.entities.domain.EntityFactories entityFactories;
   private final Map<String, JsonSchema> entitySchemas;
+  private final Map<String, String> rawSchemas;
   private final List<Identifier> entityIdentifiers;
   private final EventSubscriptionsSync eventSubscriptions;
 
@@ -149,8 +153,10 @@ class LdproxyCfgImpl implements LdproxyCfg {
           }
         });
     AppContext appContext = new AppContextCfg();
+    ResourceStore mockResourceStore = new MockResourceStore(dataDirectory);
     OgcApiExtensionRegistry extensionRegistry = new OgcApiExtensionRegistry(appContext);
-    Set<EntityFactory> factories = EntityFactories.factories(extensionRegistry);
+    Set<EntityFactory> factories =
+        EntityFactories.factories(appContext, extensionRegistry, mockResourceStore);
     this.entityFactories = new EntityFactoriesImpl(() -> factories);
     this.entityDataDefaultsStore =
         new EntityDataDefaultsStoreImpl(appContext, eventStore, jackson, () -> factories);
@@ -161,9 +167,11 @@ class LdproxyCfgImpl implements LdproxyCfg {
             jackson,
             () -> factories,
             entityDataDefaultsStore,
-            new MockBlobStore(),
+            mockResourceStore,
+            new MockValueStore(),
             noDefaults);
     this.entitySchemas = new HashMap<>();
+    this.rawSchemas = new HashMap<>();
     this.migrations = Migrations.create(entityDataStore);
   }
 
@@ -181,11 +189,13 @@ class LdproxyCfgImpl implements LdproxyCfg {
 
   @Override
   public Path getEntitiesPath() {
-    StoreSource storeSource = storeConfiguration.getSources(dataDirectory).get(0);
+    return dataDirectory
+        .resolve(Content.ENTITIES.getPrefix())
+        .resolve(Content.INSTANCES.getPrefix());
+  }
 
-    return storeSource instanceof StoreSourceDefault
-        ? dataDirectory.resolve("entities/instances")
-        : dataDirectory.resolve("store/entities");
+  public Path getValuesPath() {
+    return dataDirectory.resolve(Content.VALUES.getPrefix());
   }
 
   @Override
@@ -251,10 +261,15 @@ class LdproxyCfgImpl implements LdproxyCfg {
           Resources.getResource(
               LdproxyCfgImpl.class, String.format("/json-schema/entities/%s.json", entityType));
 
-      JsonSchema schema = factory.getSchema(Resources.asByteSource(schemaResource).openStream());
+      String rawSchema =
+          new String(
+              Resources.asByteSource(schemaResource).openStream().readAllBytes(),
+              StandardCharsets.UTF_8);
+      JsonSchema schema = factory.getSchema(rawSchema);
       schema.initializeValidators();
 
       this.entitySchemas.put(entityType, schema);
+      this.rawSchemas.put("entities/" + entityType, rawSchema);
     }
   }
 
@@ -279,7 +294,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
 
   @Override
   public <T extends EntityData> void writeEntity(T data, Path... patches) throws IOException {
-    Path path = getPath(data);
+    Path path = getEntityPath(data);
     Identifier identifier = Identifier.from(data.getId(), getType(data));
 
     T patched = applyPatch(identifier, data, patches);
@@ -298,9 +313,19 @@ class LdproxyCfgImpl implements LdproxyCfg {
       throws IOException {
     writeEntity(data);
 
-    Path path = getPath(data);
+    Path path = getEntityPath(data);
 
     Files.copy(path, outputStream);
+  }
+
+  @Override
+  public <T extends StoredValue> void writeValue(T data, String name, String... path)
+      throws IOException {
+    FORMAT format = getFormat(data);
+    Path valuePath = getValuePath(data, format, name, path);
+    valuePath.getParent().toFile().mkdirs();
+    // TODO: other formats
+    objectMapper.writeValue(valuePath.toFile(), data);
   }
 
   @Override
@@ -349,15 +374,22 @@ class LdproxyCfgImpl implements LdproxyCfg {
     }
   }
 
-  private <T extends EntityData> Path getPath(T data) {
-    return dataDirectory.resolve(
-        Paths.get("store", "entities", getType(data), data.getId() + ".yml"));
+  @Override
+  public <T extends EntityData> Path getEntityPath(T data) {
+    return getEntitiesPath().resolve(Path.of(getType(data), FORMAT.YML.apply(data.getId())));
+  }
+
+  public <T extends StoredValue> Path getValuePath(
+      T data, FORMAT format, String name, String... path) {
+    return getValuesPath().resolve(Path.of(getType(data), path)).resolve(format.apply(name));
+  }
+
+  @Override
+  public Map<String, String> getRawSchemas() {
+    return rawSchemas;
   }
 
   private static <T extends EntityData> String getType(T data) {
-    if (data instanceof CodelistData) {
-      return Codelist.ENTITY_TYPE;
-    }
     if (data instanceof ProviderData) {
       return ProviderData.ENTITY_TYPE;
     }
@@ -367,8 +399,31 @@ class LdproxyCfgImpl implements LdproxyCfg {
     return null;
   }
 
+  private static <T extends StoredValue> String getType(T data) {
+    /*System.out.println("ANN " + data.getClass().getAnnotation(FromValueStore.class));
+    return Optional.ofNullable(data.getClass().getAnnotation(FromValueStore.class))
+        .map(FromValueStore::type)
+        .orElse(null);*/
+    if (data instanceof Codelist) {
+      return "codelists";
+    }
+    if (data instanceof QueryExpression) {
+      return "queries";
+    }
+    if (data instanceof MbStyleStylesheet) {
+      return "maplibre-styles";
+    }
+    return null;
+  }
+
+  private static <T extends StoredValue> FORMAT getFormat(T data) {
+    return Optional.ofNullable(data.getClass().getAnnotation(FromValueStore.class))
+        .map(FromValueStore::defaultFormat)
+        .orElse(FORMAT.YML);
+  }
+
   private static <T extends EntityData> String getSubType(T data) {
-    if (data instanceof CodelistData) {
+    if (data instanceof Codelist) {
       return null;
     }
     if (data instanceof FeatureProviderSqlData) {

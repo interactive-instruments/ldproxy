@@ -49,6 +49,8 @@ public interface Layout {
 
     Map<String, Long> entities() throws IOException;
 
+    Map<String, Long> values() throws IOException;
+
     Map<String, Long> resources() throws IOException;
   }
 

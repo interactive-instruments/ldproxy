@@ -1,12 +1,22 @@
 
 maturity = 'CANDIDATE'
+maintenance = 'FULL'
+description = 'Publish styles.'
+descriptionDe = 'Veröffentlichung von Styles.'
 
 dependencies {
-    embeddedExport (group: 'com.github.java-json-tools', name: 'json-patch', version: '1.13') {
-        exclude module: 'jackson-core'
-        exclude module: 'jackson-databind'
-        exclude module: 'jsr305'
-    }
+    provided 'de.interactive_instruments:xtraplatform-auth'
+    provided 'de.interactive_instruments:xtraplatform-blobs'
+    provided 'de.interactive_instruments:xtraplatform-web'
+    provided 'de.interactive_instruments:xtraplatform-codelists'
+    provided 'de.interactive_instruments:xtraplatform-crs'
+    provided 'de.interactive_instruments:xtraplatform-features'
+    provided 'de.interactive_instruments:ogcapi-collections'
+    provided 'de.interactive_instruments:ogcapi-common'
+    provided 'de.interactive_instruments:ogcapi-features-core'
+    provided 'de.interactive_instruments:ogcapi-features-html'
+    provided 'de.interactive_instruments:ogcapi-html'
+    provided 'de.interactive_instruments:ogcapi-tiles'
 
     testImplementation(testFixtures(group: 'de.interactive_instruments', name: 'ogcapi-foundation'))
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'

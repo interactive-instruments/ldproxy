@@ -1,17 +1,11 @@
-clone: 
-  git:
-    image: woodpeckerci/plugin-git
-    when:
-      event: [ push ]
-      branch: [ master, maintenance-* ]
+when:
+  event: [ push ]
+  branch: [ master, maintenance-* ]
 
-pipeline:
+steps:
   dtrack:
     image: eclipse-temurin:11
     commands:
       - ./gradlew publishSbom -PdtrackApiUrl=https://dtrack.ldproxy.net/api/v1/bom -PdtrackApiKey=$DTRACK_API_KEY
     secrets: [ dtrack_api_key ]
-    when:
-      event: [ push ]
-      branch: [ master, maintenance-* ]
 

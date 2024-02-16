@@ -148,12 +148,8 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
   @Value.Derived
   public MapClient mapClient() {
     return new ImmutableMapClient.Builder()
-        .backgroundUrl(
-            Optional.ofNullable(htmlConfig().getLeafletUrl())
-                .or(() -> Optional.ofNullable(htmlConfig().getBasemapUrl())))
-        .attribution(
-            Optional.ofNullable(htmlConfig().getLeafletAttribution())
-                .or(() -> Optional.ofNullable(htmlConfig().getBasemapAttribution())))
+        .backgroundUrl(Optional.ofNullable(htmlConfig().getBasemapUrl()))
+        .attribution(Optional.ofNullable(htmlConfig().getBasemapAttribution()))
         .bounds(Optional.ofNullable(this.getBbox()))
         .drawBounds(true)
         .isInteractive(false)
@@ -213,16 +209,17 @@ public abstract class OgcApiLandingPageView extends OgcApiDatasetView {
     return rawLinks().stream().filter(link -> Objects.equals(link.getRel(), "ldp-map")).findFirst();
   }
 
-  public Optional<Link> getApiDefinition() {
+  public List<Link> getApiDefinition() {
     return rawLinks().stream()
         .filter(link -> Objects.equals(link.getRel(), "service-desc"))
-        .findFirst();
+        .filter(link -> link.getHref().endsWith("f=json"))
+        .collect(Collectors.toUnmodifiableList());
   }
 
-  public Optional<Link> getApiDocumentation() {
+  public List<Link> getApiDocumentation() {
     return rawLinks().stream()
         .filter(link -> Objects.equals(link.getRel(), "service-doc"))
-        .findFirst();
+        .collect(Collectors.toUnmodifiableList());
   }
 
   public Optional<ExternalDocumentation> getExternalDocs() {

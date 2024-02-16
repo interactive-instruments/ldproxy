@@ -30,13 +30,14 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import io.dropwizard.auth.Auth;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
@@ -45,8 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -72,7 +71,7 @@ import javax.ws.rs.core.Response;
 public class EndpointFeatures extends EndpointFeaturesDefinition
     implements PolicyAttributeFeaturesGetter {
 
-  private final EntityRegistry entityRegistry;
+  private final Values<Codelist> codelistStore;
   private final FeaturesQuery ogcApiFeaturesQuery;
   private final FeaturesCoreQueriesHandler queryHandler;
   private final FeaturesCoreValidation featuresCoreValidator;
@@ -80,13 +79,13 @@ public class EndpointFeatures extends EndpointFeaturesDefinition
   @Inject
   public EndpointFeatures(
       ExtensionRegistry extensionRegistry,
-      EntityRegistry entityRegistry,
+      ValueStore valueStore,
       FeaturesCoreProviders providers,
       FeaturesQuery ogcApiFeaturesQuery,
       FeaturesCoreQueriesHandler queryHandler,
       FeaturesCoreValidation featuresCoreValidator) {
     super(extensionRegistry, providers);
-    this.entityRegistry = entityRegistry;
+    this.codelistStore = valueStore.forType(Codelist.class);
     this.ogcApiFeaturesQuery = ogcApiFeaturesQuery;
     this.queryHandler = queryHandler;
     this.featuresCoreValidator = featuresCoreValidator;
@@ -188,17 +187,13 @@ public class EndpointFeatures extends EndpointFeaturesDefinition
       }
     }
 
-    Set<String> codelists =
-        entityRegistry.getEntitiesForType(Codelist.class).stream()
-            .map(Codelist::getId)
-            .collect(Collectors.toUnmodifiableSet());
     for (Map.Entry<String, FeaturesCoreConfiguration> entry : coreConfigs.entrySet()) {
       String collectionId = entry.getKey();
       for (Map.Entry<String, List<PropertyTransformation>> entry2 :
           entry.getValue().getTransformations().entrySet()) {
         String property = entry2.getKey();
         for (PropertyTransformation transformation : entry2.getValue()) {
-          builder = transformation.validate(builder, collectionId, property, codelists);
+          builder = transformation.validate(builder, collectionId, property, codelistStore.ids());
         }
       }
     }
@@ -268,7 +263,6 @@ public class EndpointFeatures extends EndpointFeaturesDefinition
                             api.getId(), collectionId)));
 
     int defaultPageSize = coreConfiguration.getDefaultPageSize();
-    boolean showsFeatureSelfLink = coreConfiguration.getShowsFeatureSelfLink();
 
     QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
     Optional<Profile> profile =
@@ -293,7 +287,6 @@ public class EndpointFeatures extends EndpointFeaturesDefinition
             .featureProvider(providers.getFeatureProviderOrThrow(api.getData(), collectionData))
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .defaultPageSize(Optional.of(defaultPageSize))
-            .showsFeatureSelfLink(showsFeatureSelfLink)
             .build();
 
     return queryHandler.handle(

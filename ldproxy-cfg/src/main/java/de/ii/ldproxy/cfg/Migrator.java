@@ -7,8 +7,8 @@
  */
 package de.ii.ldproxy.cfg;
 
-import de.ii.xtraplatform.store.domain.Migration;
-import de.ii.xtraplatform.store.domain.Migration.MigrationContext;
+import de.ii.xtraplatform.base.domain.Migration;
+import de.ii.xtraplatform.base.domain.Migration.MigrationContext;
 import java.util.List;
 
 public interface Migrator<T extends MigrationContext, U, V extends Migration<T, U>> {

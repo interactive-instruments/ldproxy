@@ -8,13 +8,21 @@
 package de.ii.ogcapi.styles.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.xtraplatform.values.domain.StoredValue;
+import de.ii.xtraplatform.values.domain.ValueBuilder;
+import de.ii.xtraplatform.values.domain.ValueEncoding.FORMAT;
+import de.ii.xtraplatform.values.domain.annotations.FromValueStore;
+import de.ii.xtraplatform.values.domain.annotations.FromValueStore.FormatAlias;
 import java.util.Map;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Style(jdkOnly = true, deepImmutablesDetection = true)
-@JsonDeserialize(as = ImmutableTiles3dStylesheet.class)
-public abstract class Tiles3dStylesheet {
+@Value.Style(jdkOnly = true, builder = "new", deepImmutablesDetection = true)
+@FromValueStore(
+    type = "3dtiles-styles",
+    formatAliases = {@FormatAlias(extension = "3dtiles", format = FORMAT.JSON)})
+@JsonDeserialize(builder = ImmutableTiles3dStylesheet.Builder.class)
+public abstract class Tiles3dStylesheet implements StoredValue {
 
   public static final String SCHEMA_REF = "#/components/schemas/3dTilesStylesheet";
 
@@ -37,4 +45,6 @@ public abstract class Tiles3dStylesheet {
   public abstract Map<String, Object> getExtensions();
 
   public abstract Map<String, Object> getExtras();
+
+  abstract static class Builder implements ValueBuilder<Tiles3dStylesheet> {}
 }

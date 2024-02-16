@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.styles.domain;
 
-import com.github.fge.jsonpatch.mergepatch.JsonMergePatch;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -206,16 +205,6 @@ public interface StyleRepository {
       Optional<String> collectionId,
       String styleId,
       ApiRequestContext requestContext);
-
-  Optional<JsonMergePatch> getStyleMetadataPatch(
-      OgcApiDataV2 apiData, Optional<String> collectionId, String styleId);
-
-  byte[] updateStyleMetadataPatch(
-      OgcApiDataV2 apiData,
-      Optional<String> collectionId,
-      String styleId,
-      byte[] additionalPatch,
-      boolean strict);
 
   /**
    * validate the style configuration during startup

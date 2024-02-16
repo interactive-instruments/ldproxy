@@ -37,7 +37,6 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
@@ -45,6 +44,8 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.io.IOException;
@@ -57,8 +58,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -83,7 +82,7 @@ public class FeaturesFormatGeoJson
           .build();
 
   private final FeaturesCoreProviders providers;
-  private final EntityRegistry entityRegistry;
+  private final Values<Codelist> codelistStore;
   private final FeaturesCoreValidation featuresCoreValidator;
   private final SchemaGeneratorOpenApi schemaGeneratorFeature;
   private final SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection;
@@ -92,13 +91,13 @@ public class FeaturesFormatGeoJson
   @Inject
   public FeaturesFormatGeoJson(
       FeaturesCoreProviders providers,
-      EntityRegistry entityRegistry,
+      ValueStore valueStore,
       FeaturesCoreValidation featuresCoreValidator,
       SchemaGeneratorOpenApi schemaGeneratorFeature,
       SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
       GeoJsonWriterRegistry geoJsonWriterRegistry) {
     this.providers = providers;
-    this.entityRegistry = entityRegistry;
+    this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;
     this.schemaGeneratorFeature = schemaGeneratorFeature;
     this.schemaGeneratorFeatureCollection = schemaGeneratorFeatureCollection;
@@ -177,33 +176,6 @@ public class FeaturesFormatGeoJson
             .filter(Objects::nonNull)
             .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
 
-    for (Map.Entry<String, GeoJsonConfiguration> entry : geoJsonConfigurationMap.entrySet()) {
-      String collectionId = entry.getKey();
-      GeoJsonConfiguration config = entry.getValue();
-
-      if (config.getNestedObjectStrategy() == GeoJsonConfiguration.NESTED_OBJECTS.FLATTEN
-          && config.getMultiplicityStrategy() != GeoJsonConfiguration.MULTIPLICITY.SUFFIX) {
-        builder.addStrictErrors(
-            MessageFormat.format(
-                "The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.",
-                collectionId, config.getMultiplicityStrategy()));
-      } else if (config.getNestedObjectStrategy() == GeoJsonConfiguration.NESTED_OBJECTS.NEST
-          && config.getMultiplicityStrategy() != GeoJsonConfiguration.MULTIPLICITY.ARRAY) {
-        builder.addStrictErrors(
-            MessageFormat.format(
-                "The GeoJSON Nested Object Strategy ''FLATTEN'' in collection ''{0}'' cannot be combined with the Multiplicity Strategy ''{1}''.",
-                collectionId, config.getMultiplicityStrategy()));
-      }
-
-      List<String> separators = ImmutableList.of(".", "_", ":", "/");
-      if (!separators.contains(config.getSeparator())) {
-        builder.addStrictErrors(
-            MessageFormat.format(
-                "The separator ''{0}'' in collection ''{1}'' is invalid, it must be one of {2}.",
-                config.getSeparator(), collectionId, separators));
-      }
-    }
-
     Map<String, Collection<String>> keyMap =
         geoJsonConfigurationMap.entrySet().stream()
             .map(
@@ -222,17 +194,13 @@ public class FeaturesFormatGeoJson
       }
     }
 
-    Set<String> codelists =
-        entityRegistry.getEntitiesForType(Codelist.class).stream()
-            .map(Codelist::getId)
-            .collect(Collectors.toUnmodifiableSet());
     for (Map.Entry<String, GeoJsonConfiguration> entry : geoJsonConfigurationMap.entrySet()) {
       String collectionId = entry.getKey();
       for (Map.Entry<String, List<PropertyTransformation>> entry2 :
           entry.getValue().getTransformations().entrySet()) {
         String property = entry2.getKey();
         for (PropertyTransformation transformation : entry2.getValue()) {
-          builder = transformation.validate(builder, collectionId, property, codelists);
+          builder = transformation.validate(builder, collectionId, property, codelistStore.ids());
         }
       }
     }
@@ -313,15 +281,7 @@ public class FeaturesFormatGeoJson
                     .get(transformationContext.getCollectionId())
                     .getExtension(GeoJsonConfiguration.class)
                     .get())
-            .prettify(
-                transformationContext.getPrettify()
-                    || (transformationContext
-                        .getApiData()
-                        .getCollections()
-                        .get(transformationContext.getCollectionId())
-                        .getExtension(GeoJsonConfiguration.class)
-                        .get()
-                        .getUseFormattedJsonOutput()))
+            .prettify(transformationContext.getPrettify())
             .build();
 
     return Optional.of(new FeatureEncoderGeoJson(transformationContextGeoJson, geoJsonWriters));

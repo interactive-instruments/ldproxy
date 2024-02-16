@@ -43,8 +43,8 @@ import org.immutables.value.Value;
  *     </code>
  *     <p>The property of the `building` with the role `ID` will be used as the CityJSON id. Since
  *     the embedded building parts do not have a property with a role `ID`, the building part
- *     feature must have a unique property `id`, which will be used as the id of the CityJSON
- *     building part.
+ *     feature will use the value of a property `id` as the id of the CityJSON building part,
+ *     otherwise a UUID will be generated. If `id` is provided, its values must be unique.
  *     <p>The [example](#examples) includes a sample type definition for the building features in a
  *     PostgreSQL feature provider based on the CityGML profile of the German surveying and mapping
  *     authorities.
@@ -74,9 +74,9 @@ import org.immutables.value.Value;
  * - alle anderen Eigenschaften: Die Eigenschaft wird auf ein CityJSON-Attribut abgebildet, mit Ausnahme der Eigenschaft "gml_id".
  *     </code>
  *     <p>Die Eigenschaft des `building`-Typs mit der Rolle `ID` wird als CityJSON-ID verwendet. Da
- *     die eingebetteten Gebäudeteile keine Eigenschaft mit der Rolle `ID` haben, muss das
- *     Gebäudeteil eine eindeutige Eigenschaft `id` haben, die als Id des CityJSON-Gebäudeteils
- *     verwendet wird.
+ *     die eingebetteten Gebäudeteile keine Eigenschaft mit der Rolle `ID` haben, wird - sofern
+ *     vorhanden - der Wert einer Eigenschaft `id` als Id des CityJSON-Gebäudeteils verwendet;
+ *     ansonsten wird eine UUID generiert. Die Werte der Eigenschaft `id` müssen eindeutig sein.
  *     <p>Das [Beispiel](#beispiele) enthält eine Typdefinition für Gebäudeobjekte in einem
  *     PostgreSQL-Feature-Provider auf Grundlage des CityGML-Profils der deutschen
  *     Vermessungsverwaltung.

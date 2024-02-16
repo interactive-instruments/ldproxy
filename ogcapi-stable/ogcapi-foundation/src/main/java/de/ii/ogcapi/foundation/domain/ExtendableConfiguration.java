@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,7 +18,6 @@ import org.immutables.value.Value;
 
 public interface ExtendableConfiguration {
 
-  @JsonAlias("capabilities")
   List<ExtensionConfiguration> getExtensions();
 
   default <T extends ExtensionConfiguration> Optional<T> getExtension(Class<T> clazz) {

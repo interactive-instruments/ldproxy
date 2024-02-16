@@ -19,7 +19,6 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
-import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -40,11 +39,7 @@ public class ResourcesOnLandingPage implements LandingPageExtension {
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return LandingPageExtension.super.isEnabledForApi(apiData)
-        || apiData
-            .getExtension(StylesConfiguration.class)
-            .map(StylesConfiguration::isResourcesEnabled)
-            .orElse(false);
+    return LandingPageExtension.super.isEnabledForApi(apiData);
   }
 
   @Override

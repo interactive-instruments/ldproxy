@@ -19,10 +19,9 @@ import javax.inject.Singleton;
 
 /**
  * @title Features - Search
- * @langEn The building block *Features - Search* adds support for fetching features from multiple
- *     collections as well as for stored queries.
- * @langDe Das Modul *Search* unterstützt den Abruf von Features aus mehreren Collections sowie für
- *     gespeicherte Abfragen.
+ * @langEn Support for fetching features from multiple collections as well as for stored queries.
+ * @langDe Unterstützung für den Abruf von Features aus mehreren Collections sowie für gespeicherte
+ *     Abfragen.
  * @scopeEn This building block supports searching for features from one or more collections. That
  *     is, it supports query expressions that cannot be expressed, or cannot be conveniently
  *     expressed, using the filtering mechanisms available through the building blocks *Features*
@@ -179,8 +178,6 @@ public class SearchBuildingBlock implements ApiBuildingBlock {
           ExternalDocumentation.of(
               "https://docs.ogc.org/per/22-024r2.html",
               "Testbed-18: Filtering Service and Rule Set Engineering Report (PREDRAFT)"));
-
-  public static final String STORE_RESOURCE_TYPE = "queries";
   public static final String QUERY_ID_PATTERN = "[\\w\\-]+";
 
   @Inject

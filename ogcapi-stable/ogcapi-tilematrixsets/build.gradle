@@ -1,7 +1,14 @@
 
 maturity = 'MATURE'
+maintenance = 'FULL'
+description = 'Provides definitions of the Tile Matrix Sets used in the API.'
+descriptionDe = 'Stellt die in der API verwendeten Kachelschemas bereit.'
 
 dependencies {
+    provided 'de.interactive_instruments:xtraplatform-auth'
+    provided 'de.interactive_instruments:xtraplatform-crs'
+    provided 'de.interactive_instruments:xtraplatform-features'
+    provided 'de.interactive_instruments:xtraplatform-tiles'
     provided project(":ogcapi-foundation")
     provided project(":ogcapi-common")
     provided project(":ogcapi-html")

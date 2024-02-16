@@ -13,6 +13,7 @@ import de.ii.ogcapi.features.geojson.domain.FeatureEncoderGeoJson
 import de.ii.xtraplatform.features.domain.FeatureSchema
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema
 import de.ii.xtraplatform.features.domain.SchemaBase
+import de.ii.xtraplatform.features.domain.SchemaMapping
 import spock.lang.Ignore
 import spock.lang.Shared
 import spock.lang.Specification
@@ -22,14 +23,18 @@ import java.util.stream.IntStream
 
 class GeoJsonWriterPropertiesSpec extends Specification {
 
-    @Shared FeatureSchema propertyMapping = new ImmutableFeatureSchema.Builder().name("p1").build()
+    @Shared
+    FeatureSchema propertyMapping = new ImmutableFeatureSchema.Builder().name("p1").build()
 
-    @Shared FeatureSchema propertyMapping2 = new ImmutableFeatureSchema.Builder().name("p2")
+    @Shared
+    FeatureSchema propertyMapping2 = new ImmutableFeatureSchema.Builder().name("p2")
             .type(SchemaBase.Type.INTEGER)
             .build()
 
-    @Shared String value1 = "val1"
-    @Shared String value2 = "2"
+    @Shared
+    String value1 = "val1"
+    @Shared
+    String value2 = "2"
 
     def "GeoJson writer properties middleware, value types (String)"() {
         given:
@@ -42,15 +47,16 @@ class GeoJsonWriterPropertiesSpec extends Specification {
                 "}"
 
         when:
-        runTransformer(outputStream, ImmutableList.of(propertyMapping, propertyMapping2),
-                ImmutableList.of(ImmutableList.of(), ImmutableList.of()), ImmutableList.of(value1, value2))
+        runTransformer(outputStream, ["p1": propertyMapping, "p2": propertyMapping2],
+                [[], []], [value1, value2])
         String actual = GeoJsonWriterSetupUtil.asString(outputStream)
 
         then:
         actual == expected
     }
 
-    @Ignore //TODO
+    @Ignore
+    //TODO
     def "GeoJson writer properties middleware, strategy is nested, one level depth"() {
         given:
         FeatureSchema mapping1 = new ImmutableFeatureSchema.Builder().name("foto.bemerkung")
@@ -82,7 +88,8 @@ class GeoJsonWriterPropertiesSpec extends Specification {
         actual == expected
     }
 
-    @Ignore //TODO
+    @Ignore
+    //TODO
     def "GeoJson writer properties middleware, strategy is nested, one level depth with multiplicity"() {
         given:
         // multiple object
@@ -135,7 +142,8 @@ class GeoJsonWriterPropertiesSpec extends Specification {
         actual == expected
     }
 
-    @Ignore //TODO
+    @Ignore
+    //TODO
     def "GeoJson writer properties middleware, strategy is nested, two level depth with multiplicity"() {
         given:
         // multiple object
@@ -190,12 +198,20 @@ class GeoJsonWriterPropertiesSpec extends Specification {
         actual == expected
     }
 
-    private static void runTransformer(ByteArrayOutputStream outputStream, List<FeatureSchema> mappings,
+    private static void runTransformer(ByteArrayOutputStream outputStream, Map<String, FeatureSchema> mappings,
                                        List<List<Integer>> multiplicities,
                                        List<String> values) throws IOException, URISyntaxException {
         outputStream.reset()
         EncodingAwareContextGeoJson context = GeoJsonWriterSetupUtil.createTransformationContext(outputStream, true)
         FeatureEncoderGeoJson encoder = new FeatureEncoderGeoJson(context.encoding(), ImmutableList.of(new GeoJsonWriterProperties()));
+        FeatureSchema featureSchema = new ImmutableFeatureSchema.Builder().name("test")
+                .type(SchemaBase.Type.OBJECT)
+                .putAllPropertyMap(mappings)
+                .build();
+
+        context.setIsUseTargetPaths(true)
+                .setType("test")
+                .setMappings(Map.of("test", SchemaMapping.of(featureSchema)))
 
         context.encoding().getJson()
                 .writeStartObject()
@@ -204,7 +220,7 @@ class GeoJsonWriterPropertiesSpec extends Specification {
         encoder.onFeatureStart(context)
 
         for (int i = 0; i < mappings.size(); i++) {
-            context.setCustomSchema(mappings.get(i))
+            context.pathTracker().track(featureSchema.getProperties().get(i).getFullPath())
             context.setIndexes(multiplicities.get(i))
             context.setValue(values.get(i))
             encoder.onValue(context)
@@ -217,11 +233,11 @@ class GeoJsonWriterPropertiesSpec extends Specification {
         encoder.onEnd(context)
     }
 
-    private static void runTransformer(ByteArrayOutputStream outputStream, List<FeatureSchema> mappings,
+    private static void runTransformer(ByteArrayOutputStream outputStream, Map<String, FeatureSchema> mappings,
                                        List<List<Integer>> multiplicities) throws IOException, URISyntaxException {
         String value = "xyz"
         runTransformer(outputStream, mappings, multiplicities, IntStream.range(0, mappings.size())
-                .mapToObj{i -> value}
+                .mapToObj { i -> value }
                 .collect(Collectors.toList()))
     }
 }

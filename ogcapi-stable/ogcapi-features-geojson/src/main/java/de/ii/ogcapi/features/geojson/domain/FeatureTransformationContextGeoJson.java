@@ -80,12 +80,6 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
     return json;
   }
 
-  @Value.Default
-  @Override
-  public boolean getPrettify() {
-    return Boolean.TRUE.equals(getGeoJsonConfig().getUseFormattedJsonOutput());
-  }
-
   // TODO: to state
   private TokenBuffer tokenBuffer;
 

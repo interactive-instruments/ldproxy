@@ -39,7 +39,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
       Optional<String> schemaUri,
       String label,
       Optional<String> description,
-      List<Codelist> codelists,
+      Map<String, Codelist> codelists,
       boolean useCodelistKeys) {
     super(codelists);
     this.version = version;
@@ -316,7 +316,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
       JsonSchema schema,
       SchemaConstraints constraints,
       FeatureSchema property,
-      List<Codelist> codelists) {
+      Map<String, Codelist> codelists) {
     if (schema instanceof JsonSchemaArray) {
       return new ImmutableJsonSchemaArray.Builder()
           .from(schema)
@@ -352,18 +352,16 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
                   .build();
     } else if (constraints.getCodelist().isPresent()) {
       Optional<Codelist> codelist =
-          codelists.stream()
-              .filter(cl -> cl.getId().equals(constraints.getCodelist().get()))
-              .findAny();
-      if (codelist.isPresent() && !codelist.get().getData().getFallback().isPresent()) {
+          Optional.ofNullable(codelists.get(constraints.getCodelist().get()));
+      if (codelist.isPresent() && !codelist.get().getFallback().isPresent()) {
         boolean string =
             property.isArray()
                 ? property.getValueType().orElse(SchemaBase.Type.UNKNOWN) != SchemaBase.Type.INTEGER
                 : property.getType() != SchemaBase.Type.INTEGER;
         Collection<String> values =
             useCodelistKeys
-                ? codelist.get().getData().getEntries().keySet()
-                : codelist.get().getData().getEntries().values();
+                ? codelist.get().getEntries().keySet()
+                : codelist.get().getEntries().values();
         result =
             string
                 ? new ImmutableJsonSchemaString.Builder().from(result).enums(values).build()
@@ -422,7 +420,61 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
   }
 
   @Override
-  protected JsonSchema withArrayWrapper(JsonSchema schema) {
+  protected JsonSchema withArrayWrapper(JsonSchema schema, boolean moveTitleAndDescription) {
+    if (moveTitleAndDescription
+        && (schema.getTitle().isPresent() || schema.getDescription().isPresent())) {
+      JsonSchema itemSchema = schema;
+      if (schema instanceof JsonSchemaString) {
+        itemSchema =
+            new ImmutableJsonSchemaString.Builder()
+                .from(schema)
+                .title(Optional.empty())
+                .description(Optional.empty())
+                .build();
+      } else if (schema instanceof JsonSchemaInteger) {
+        itemSchema =
+            new ImmutableJsonSchemaInteger.Builder()
+                .from(schema)
+                .title(Optional.empty())
+                .description(Optional.empty())
+                .build();
+      } else if (schema instanceof JsonSchemaBoolean) {
+        itemSchema =
+            new ImmutableJsonSchemaBoolean.Builder()
+                .from(schema)
+                .title(Optional.empty())
+                .description(Optional.empty())
+                .build();
+      } else if (schema instanceof JsonSchemaNumber) {
+        itemSchema =
+            new ImmutableJsonSchemaNumber.Builder()
+                .from(schema)
+                .title(Optional.empty())
+                .description(Optional.empty())
+                .build();
+      } else if (schema instanceof JsonSchemaObject) {
+        itemSchema =
+            new ImmutableJsonSchemaObject.Builder()
+                .from(schema)
+                .title(Optional.empty())
+                .description(Optional.empty())
+                .build();
+      } else if (schema instanceof JsonSchemaRef) {
+        itemSchema =
+            new ImmutableJsonSchemaRef.Builder()
+                .from(schema)
+                .title(Optional.empty())
+                .description(Optional.empty())
+                .build();
+      }
+      return new ImmutableJsonSchemaArray.Builder()
+          .name(schema.getName())
+          .title(schema.getTitle())
+          .description(schema.getDescription())
+          .items(itemSchema)
+          .build();
+    }
+
     return new ImmutableJsonSchemaArray.Builder().name(schema.getName()).items(schema).build();
   }
 

@@ -18,6 +18,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
+import de.ii.xtraplatform.base.domain.ETag;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.cql.domain.In;
@@ -27,9 +28,8 @@ import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.FeatureSchemaBase;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
-import de.ii.xtraplatform.web.domain.ETag;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -78,7 +78,7 @@ public class FeaturesQueryImpl implements FeaturesQuery {
       QueryParameterSet queryParameterSet,
       String featureId,
       Optional<ETag.Type> withEtag,
-      FeatureSchemaBase.Scope withScope) {
+      SchemaBase.Scope withScope) {
     final ImmutableFeatureQuery.Builder queryBuilder =
         ImmutableFeatureQuery.builder()
             .type(

@@ -17,9 +17,7 @@ import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
-import de.ii.ogcapi.features.core.domain.ImmutableProfileTransformations;
 import de.ii.ogcapi.features.core.domain.Profile;
-import de.ii.ogcapi.features.core.domain.ProfileTransformations;
 import de.ii.ogcapi.features.gml.domain.GmlConfiguration;
 import de.ii.ogcapi.features.gml.domain.GmlConfiguration.Conformance;
 import de.ii.ogcapi.features.gml.domain.GmlWriter;
@@ -36,18 +34,16 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
-import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
-import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.WithConnectionInfo;
-import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.features.gml.domain.ConnectionInfoWfsHttp;
+import de.ii.xtraplatform.values.domain.ValueStore;
+import de.ii.xtraplatform.values.domain.Values;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.Collection;
@@ -155,18 +151,18 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
       "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2";
 
   private final FeaturesCoreProviders providers;
-  private final EntityRegistry entityRegistry;
+  private final Values<Codelist> codelistStore;
   private final FeaturesCoreValidation featuresCoreValidator;
   private final GmlWriterRegistry gmlWriterRegistry;
 
   @Inject
   public FeaturesFormatGml(
       FeaturesCoreProviders providers,
-      EntityRegistry entityRegistry,
+      ValueStore valueStore,
       FeaturesCoreValidation featuresCoreValidator,
       GmlWriterRegistry gmlWriterRegistry) {
     this.providers = providers;
-    this.entityRegistry = entityRegistry;
+    this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;
     this.gmlWriterRegistry = gmlWriterRegistry;
   }
@@ -255,41 +251,6 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
   }
 
   @Override
-  public Optional<PropertyTransformations> getPropertyTransformations(
-      FeatureTypeConfigurationOgcApi collectionData,
-      Optional<FeatureSchema> schema,
-      Optional<Profile> profile) {
-    if (profile.isEmpty() || schema.isEmpty()) {
-      return getPropertyTransformations(collectionData);
-    }
-
-    ImmutableProfileTransformations.Builder builder = new ImmutableProfileTransformations.Builder();
-    schema
-        .map(SchemaBase::getAllNestedProperties)
-        .ifPresent(
-            properties ->
-                properties.stream()
-                    .filter(SchemaBase::isFeatureRef)
-                    .forEach(
-                        property ->
-                            FeatureFormatExtension.getTemplate(property)
-                                .ifPresent(
-                                    template ->
-                                        builder.putTransformations(
-                                            property.getFullPathAsString(),
-                                            ImmutableList.of(
-                                                new ImmutablePropertyTransformation.Builder()
-                                                    .stringFormat(template)
-                                                    .build())))));
-
-    ProfileTransformations profileTransformations = builder.build();
-    return Optional.of(
-        getPropertyTransformations(collectionData)
-            .map(pts -> pts.mergeInto(profileTransformations))
-            .orElse(profileTransformations));
-  }
-
-  @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
 
     // no additional operational checks for now, only validation; we can stop, if no validation is
@@ -337,17 +298,13 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
       }
     }
 
-    Set<String> codelists =
-        entityRegistry.getEntitiesForType(Codelist.class).stream()
-            .map(Codelist::getId)
-            .collect(Collectors.toUnmodifiableSet());
     for (Map.Entry<String, GmlConfiguration> entry : gmlConfigurationMap.entrySet()) {
       String collectionId = entry.getKey();
       for (Map.Entry<String, List<PropertyTransformation>> entry2 :
           entry.getValue().getTransformations().entrySet()) {
         String property = entry2.getKey();
         for (PropertyTransformation transformation : entry2.getValue()) {
-          builder = transformation.validate(builder, collectionId, property, codelists);
+          builder = transformation.validate(builder, collectionId, property, codelistStore.ids());
         }
       }
     }
@@ -423,6 +380,7 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
             .featureMemberElementName(Optional.ofNullable(config.getFeatureMemberElementName()))
             .supportsStandardResponseParameters(
                 Objects.requireNonNullElse(config.getSupportsStandardResponseParameters(), false))
+            .gmlIdOnGeometries(Objects.requireNonNullElse(config.getGmlIdOnGeometries(), false))
             .xmlAttributes(config.getXmlAttributes())
             .gmlIdPrefix(Optional.ofNullable(config.getGmlIdPrefix()))
             .build();

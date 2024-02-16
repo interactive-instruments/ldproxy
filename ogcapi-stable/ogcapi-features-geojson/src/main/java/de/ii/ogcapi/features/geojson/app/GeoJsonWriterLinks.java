@@ -79,16 +79,7 @@ public class GeoJsonWriterLinks implements GeoJsonWriter {
               .getCollections()
               .get(context.encoding().getCollectionId())
               .getExtension(FeaturesCoreConfiguration.class)
-              .map(
-                  cfg -> {
-                    boolean addSelf = cfg.getShowsFeatureSelfLink();
-                    if (!addSelf) return cfg.getEmbeddedFeatureLinkRels();
-
-                    return ImmutableSet.<String>builder()
-                        .addAll(cfg.getEmbeddedFeatureLinkRels())
-                        .add("self")
-                        .build();
-                  })
+              .map(FeaturesCoreConfiguration::getEmbeddedFeatureLinkRels)
               .orElse(ImmutableSet.of());
     }
 

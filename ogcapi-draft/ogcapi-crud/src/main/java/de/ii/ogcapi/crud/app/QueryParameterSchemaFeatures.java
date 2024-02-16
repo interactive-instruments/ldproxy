@@ -21,8 +21,8 @@ import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
-import de.ii.xtraplatform.features.domain.FeatureSchemaBase.Scope;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.features.domain.SchemaBase.Scope;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Map;
 import java.util.Optional;
@@ -65,14 +65,14 @@ public class QueryParameterSchemaFeatures extends ApiExtensionCache
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
     if ("receivables".equals(value)) {
-      return Scope.MUTATIONS;
+      return Scope.RECEIVABLE;
     }
     return null;
   }
 
   @Override
   public void applyTo(
-      Builder queryBuilder,
+      ImmutableFeatureQuery.Builder queryBuilder,
       QueryParameterSet parameters,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData) {

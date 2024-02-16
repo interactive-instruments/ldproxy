@@ -1,2 +1,10 @@
 
 maturity = 'CANDIDATE'
+maintenance = 'LOW'
+description = 'Simplification of geometries with Douglas Peucker.'
+descriptionDe = 'Vereinfachung von Geometrien mit Douglas-Peucker.'
+
+dependencies {
+    provided 'de.interactive_instruments:xtraplatform-features'
+    provided 'de.interactive_instruments:ogcapi-features-core'
+}

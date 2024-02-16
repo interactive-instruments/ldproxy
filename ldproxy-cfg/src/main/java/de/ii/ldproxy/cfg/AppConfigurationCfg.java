@@ -14,6 +14,7 @@ import de.ii.xtraplatform.base.domain.ImmutableAuthConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
 import de.ii.xtraplatform.base.domain.LoggingConfiguration;
 import de.ii.xtraplatform.base.domain.ManagerConfiguration;
+import de.ii.xtraplatform.base.domain.MetricsConfiguration;
 import de.ii.xtraplatform.base.domain.ProjConfiguration;
 import de.ii.xtraplatform.base.domain.ServerConfiguration;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
@@ -33,6 +34,11 @@ class AppConfigurationCfg extends AppConfiguration {
 
   @Override
   public HttpClientConfiguration getHttpClient() {
+    return new HttpClientConfiguration();
+  }
+
+  @Override
+  public MetricsConfiguration getMetricsFactory() {
     return null;
   }
 

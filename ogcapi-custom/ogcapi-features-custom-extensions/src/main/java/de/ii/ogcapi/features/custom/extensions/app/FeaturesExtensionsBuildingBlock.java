@@ -65,7 +65,6 @@ import javax.inject.Singleton;
  * @ref:cfg {@link de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration}
  * @ref:cfgProperties {@link
  *     de.ii.ogcapi.features.custom.extensions.domain.ImmutableFeaturesExtensionsConfiguration}
- * @ref:endpoints {@link de.ii.ogcapi.features.custom.extensions.infra.EndpointPostOnItems}
  * @ref:pathParameters {@link de.ii.ogcapi.features.core.domain.PathParameterCollectionIdFeatures}
  * @ref:queryParameters {@link de.ii.ogcapi.features.custom.extensions.app.QueryParameterIntersects}
  */
@@ -82,6 +81,6 @@ public class FeaturesExtensionsBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
-    return new Builder().enabled(false).postOnItems(false).intersectsParameter(false).build();
+    return new Builder().enabled(false).intersectsParameter(false).build();
   }
 }

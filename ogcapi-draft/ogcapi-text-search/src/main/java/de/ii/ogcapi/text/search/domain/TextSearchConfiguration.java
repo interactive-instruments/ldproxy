@@ -9,7 +9,6 @@ package de.ii.ogcapi.text.search.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
-import de.ii.ogcapi.text.search.domain.ImmutableTextSearchConfiguration.Builder;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import java.util.List;
 import org.immutables.value.Value;
