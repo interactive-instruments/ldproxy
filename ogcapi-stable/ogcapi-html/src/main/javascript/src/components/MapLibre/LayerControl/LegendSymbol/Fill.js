@@ -1,16 +1,23 @@
 export default function Fill(props) {
   const { image, expr, layer } = props;
-  const dataUrl = image(expr(layer, "paint", "fill-pattern"));
-
-  const style = {
+  const { url: dataUrl } = image(expr(layer, "paint", "fill-pattern"));
+  const baseStyle = {
     width: "100%",
     height: "100%",
-    backgroundImage: dataUrl ? `url(${dataUrl})` : null,
-    backgroundColor: expr(layer, "paint", "fill-color"),
     opacity: expr(layer, "paint", "fill-opacity"),
+  };
+  const style = dataUrl
+  ? {
+    ...baseStyle,
+    backgroundImage: `url(${dataUrl})`,
+    backgroundPosition: "top left",
+  }
+  : {
+    ...baseStyle,
+    backgroundColor: expr(layer, "paint", "fill-color"),
     backgroundSize: "66% 66%",
     backgroundPosition: "center",
-  };
+   };
 
   return {
     element: "div",
