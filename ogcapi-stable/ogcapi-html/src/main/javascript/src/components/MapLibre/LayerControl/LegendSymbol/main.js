@@ -5,12 +5,12 @@ import Symbol from "./Symbol";
 import { exprHandler } from "./util";
 
 function extractPartOfImage(img, { x, y, width, height, pixelRatio }) {
-  const dpi = pixelRatio;
+  const dpi = 1/pixelRatio;
   const el = document.createElement("canvas");
   el.width = width * dpi;
   el.height = height * dpi;
   const ctx = el.getContext("2d");
-  ctx.drawImage(img, x * dpi, y * dpi, width * dpi, height * dpi, 0, 0, width * dpi, height * dpi);
+  ctx.drawImage(img, x, y, width, height, 0, 0, width * dpi, height * dpi);
   return { url: el.toDataURL(), dimensions: { width: width * dpi, height: height * dpi } };
 }
 
@@ -31,7 +31,7 @@ export default function LegendSymbol({ sprite, zoom, layer, properties }) {
         return extractPartOfImage(sprite.image, dimensions);
       }
     }
-    return null;
+    return {};
   };
 
   if (handler) {
