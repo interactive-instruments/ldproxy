@@ -343,13 +343,13 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
     TileResult result = tileProvider.getTile(tileQuery);
 
     if (!result.isAvailable()) {
-      if (result.isOutsideLimits()) {
+      if (result.isOutsideLimits() || tileProvider.tilesMayBeUnavailable()) {
         throw result.getError().map(NotFoundException::new).orElseGet(NotFoundException::new);
       } else {
         throw result
             .getError()
             .map(IllegalStateException::new)
-            .orElseGet(IllegalStateException::new);
+            .orElseThrow(IllegalStateException::new);
       }
     }
 
