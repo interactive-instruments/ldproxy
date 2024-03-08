@@ -13,10 +13,13 @@ import de.ii.ogcapi.crs.domain.ImmutableCrsConfiguration.Builder;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
@@ -24,6 +27,7 @@ import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -54,7 +58,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class CrsBuildingBlock implements ApiBuildingBlock {
+public class CrsBuildingBlock implements ApiBuildingBlock, ApiExtensionHealth {
 
   public static final Optional<SpecificationMaturity> MATURITY =
       Optional.of(SpecificationMaturity.STABLE_OGC);
@@ -142,5 +146,10 @@ public class CrsBuildingBlock implements ApiBuildingBlock {
     }
 
     return ValidationResult.of();
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(crsTransformerFactory);
   }
 }
