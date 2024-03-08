@@ -53,6 +53,7 @@ import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.ServiceUnavailableException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Form;
@@ -126,6 +127,10 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
 
     OgcApiDataV2 apiData = api.getData();
     EndpointExtension ogcApiEndpoint = findEndpoint(apiData, entrypoint, subPath, method);
+
+    if (!api.isAvailable(ogcApiEndpoint, true)) {
+      throw new ServiceUnavailableException();
+    }
 
     // determine the feature collection, if this is a collection resource or sub-resource
     Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData =

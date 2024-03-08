@@ -10,17 +10,22 @@ package de.ii.ogcapi.foundation.app;
 import com.google.common.collect.ImmutableList;
 import dagger.assisted.Assisted;
 import dagger.assisted.AssistedInject;
+import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
 import de.ii.ogcapi.foundation.domain.ApiExtension;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ChangingItemCount;
 import de.ii.ogcapi.foundation.domain.ChangingLastModified;
 import de.ii.ogcapi.foundation.domain.ChangingSpatialExtent;
 import de.ii.ogcapi.foundation.domain.ChangingTemporalExtent;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.TemporalExtent;
+import de.ii.xtraplatform.base.domain.AppContext;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -37,8 +42,11 @@ import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import java.net.URI;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -57,21 +65,31 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
   private final CrsTransformerFactory crsTransformerFactory;
   private final ExtensionRegistry extensionRegistry;
   private final ServicesContext servicesContext;
+  private final boolean asyncStartup;
+
+  // private final de.ii.xtraplatform.cache.domain.Cache cache;
 
   @AssistedInject
   public OgcApiEntity(
       CrsTransformerFactory crsTransformerFactory,
       ExtensionRegistry extensionRegistry,
       ServicesContext servicesContext,
+      AppContext appContext,
+      VolatileRegistry volatileRegistry,
+      // de.ii.xtraplatform.cache.domain.Cache cache,
       @Assisted OgcApiDataV2 data) {
-    super(data);
+    super(data, volatileRegistry);
     this.crsTransformerFactory = crsTransformerFactory;
     this.extensionRegistry = extensionRegistry;
     this.servicesContext = servicesContext;
+    this.asyncStartup = appContext.getConfiguration().getModules().isStartupAsync();
+    // TODO: with(prefix)
+    // this.cache = cache;
   }
 
   @Override
   protected boolean onStartup() throws InterruptedException {
+    onVolatileStart();
 
     // validate the API, the behaviour depends on the validation option for the API:
     // NONE: no validation
@@ -83,6 +101,11 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
     OgcApiDataV2 apiData = getData();
     MODE apiValidation = apiData.getApiValidation();
 
+    if (isAsyncStartup() && apiValidation != MODE.NONE) {
+      LOGGER.warn("API validation is skipped for startup mode ASYNC.");
+      apiValidation = MODE.NONE;
+    }
+
     if (apiValidation != MODE.NONE && LOGGER.isInfoEnabled()) {
       LOGGER.info("Validating service '{}'.", apiData.getId());
     }
@@ -92,18 +115,52 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
             .sorted(Comparator.comparingInt(ApiExtension::getStartupPriority))
             .collect(Collectors.toList());
 
+    Map<String, List<String>> ext = new LinkedHashMap<>();
+
     for (ApiExtension extension : extensions) {
       if (extension.isEnabledForApi(apiData)) {
-        ValidationResult result = extension.onStartup(this, apiValidation);
-        isSuccess = isSuccess && result.isSuccess();
-        result.getErrors().forEach(LOGGER::error);
-        result
-            .getStrictErrors()
-            .forEach(result.getMode() == MODE.STRICT ? LOGGER::error : LOGGER::warn);
-        result.getWarnings().forEach(LOGGER::warn);
+        String bbid =
+            ExtensionConfiguration.getBuildingBlockIdentifier(
+                extension.getBuildingBlockConfigurationType());
+        if (!ext.containsKey(bbid)) {
+          ext.put(bbid, new ArrayList<>());
+        }
+        ext.get(bbid).add(extension.getClass().getSimpleName());
+
+        if (extension instanceof ApiBuildingBlock) {
+          addCapability(ApiExtensionHealth.getCapability(extension));
+        }
+        if (extension instanceof ApiExtensionHealth) {
+          ((ApiExtensionHealth) extension).register(this, this::addSubcomponent);
+        }
+
+        if (isAsyncStartup()) {
+          if (extension instanceof ApiExtensionHealth) {
+            ((ApiExtensionHealth) extension).initWhenAvailable(this);
+          } else {
+            extension.onStartup(this, apiValidation);
+          }
+        } else {
+          ValidationResult result = extension.onStartup(this, apiValidation);
+          isSuccess = isSuccess && result.isSuccess();
+
+          result.getErrors().forEach(LOGGER::error);
+          result
+              .getStrictErrors()
+              .forEach(result.getMode() == MODE.STRICT ? LOGGER::error : LOGGER::warn);
+          result.getWarnings().forEach(LOGGER::warn);
+        }
       }
+      // TODO
       checkForStartupCancel();
     }
+
+    ext.keySet().stream()
+        .sorted()
+        .forEach(
+            bbid -> {
+              ext.get(bbid).forEach(comp -> LOGGER.debug("  APIEXT {} {}", bbid, comp));
+            });
 
     if (!isSuccess && LOGGER.isErrorEnabled()) {
       LOGGER.error(
@@ -112,6 +169,26 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
     }
 
     return isSuccess;
+  }
+
+  @Override
+  protected State reconcileStateNoComponents(String capability) {
+    return State.AVAILABLE;
+  }
+
+  @Override
+  public boolean isAvailable(ApiExtension extension, boolean checkBuildingBlock) {
+    if (checkBuildingBlock) {
+      String capability = ApiExtensionHealth.getCapability(extension);
+      return hasCapability(capability) && isAvailable(capability);
+    }
+
+    if (extension instanceof ApiExtensionHealth) {
+      String componentKey = ((ApiExtensionHealth) extension).getComponentKey();
+      return hasComponent(componentKey) && getComponent(componentKey).isAvailable();
+    }
+
+    return true;
   }
 
   @Override
@@ -268,6 +345,16 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
   public URI getUri() {
     return servicesContext.getUri().resolve(String.join("/", getData().getSubPath()));
   }
+
+  @Override
+  public boolean isAsyncStartup() {
+    return asyncStartup;
+  }
+
+  /*@Override
+  public Cache getCache() {
+    return cache;
+  }*/
 
   private Optional<BoundingBox> transformSpatialExtent(
       BoundingBox spatialExtent, EpsgCrs targetCrs) {

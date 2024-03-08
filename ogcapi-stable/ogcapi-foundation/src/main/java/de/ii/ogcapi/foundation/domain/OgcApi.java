@@ -20,6 +20,8 @@ public interface OgcApi extends Service {
   @Override
   OgcApiDataV2 getData();
 
+  boolean isAvailable(ApiExtension extension, boolean checkBuildingBlock);
+
   <T extends FormatExtension> Optional<T> getOutputFormat(
       Class<T> extensionType, ApiMediaType mediaType, Optional<String> collectionId);
 
@@ -164,4 +166,8 @@ public interface OgcApi extends Service {
   }
 
   URI getUri();
+
+  boolean isAsyncStartup();
+
+  // de.ii.xtraplatform.cache.domain.Cache getCache();
 }

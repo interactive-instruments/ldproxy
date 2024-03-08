@@ -33,6 +33,8 @@ import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -70,6 +72,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
+import javax.ws.rs.ServiceUnavailableException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
@@ -80,7 +83,8 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
-public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandler {
+public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
+    implements FeaturesCoreQueriesHandler {
 
   private static final Logger LOGGER =
       LoggerFactory.getLogger(FeaturesCoreQueriesHandlerImpl.class);
@@ -92,7 +96,11 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
 
   @Inject
   public FeaturesCoreQueriesHandlerImpl(
-      I18n i18n, CrsTransformerFactory crsTransformerFactory, ValueStore valueStore) {
+      I18n i18n,
+      CrsTransformerFactory crsTransformerFactory,
+      ValueStore valueStore,
+      VolatileRegistry volatileRegistry) {
+    super(FeaturesCoreQueriesHandler.class.getSimpleName(), volatileRegistry, true);
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
     this.codelistStore = valueStore.forType(Codelist.class);
@@ -101,6 +109,12 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
         ImmutableMap.of(
             Query.FEATURES, QueryHandler.with(QueryInputFeatures.class, this::getItemsResponse),
             Query.FEATURE, QueryHandler.with(QueryInputFeature.class, this::getItemResponse));
+
+    onVolatileStart();
+
+    addSubcomponent(crsTransformerFactory);
+
+    onVolatileStarted();
   }
 
   @Override
@@ -241,8 +255,8 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
 
     EpsgCrs sourceCrs = null;
     EpsgCrs targetCrs = query.getCrs().orElse(defaultCrs);
-    if (featureProvider.supportsCrs()) {
-      sourceCrs = featureProvider.crs().getNativeCrs();
+    if (featureProvider.crs().isAvailable()) {
+      sourceCrs = featureProvider.crs().get().getNativeCrs();
       crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
     }
 
@@ -316,9 +330,11 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
     Map<String, PropertyTransformations> propertyTransformations = ImmutableMap.of();
 
     if (outputFormat.canPassThroughFeatures()
-        && featureProvider.supportsPassThrough()
-        && outputFormat.getMediaType().matches(featureProvider.passThrough().getMediaType())) {
-      featureStream = featureProvider.passThrough().getFeatureStreamPassThrough(query);
+        && featureProvider.passThrough().isAvailable()
+        && outputFormat
+            .getMediaType()
+            .matches(featureProvider.passThrough().get().getMediaType())) {
+      featureStream = featureProvider.passThrough().get().getFeatureStreamPassThrough(query);
       ImmutableFeatureTransformationContextGeneric transformationContextGeneric =
           transformationContext.outputStream(new OutputStreamToByteConsumer()).build();
       encoder =
@@ -327,7 +343,10 @@ public class FeaturesCoreQueriesHandlerImpl implements FeaturesCoreQueriesHandle
                   transformationContextGeneric, requestContext.getLanguage())
               .get();
     } else if (outputFormat.canEncodeFeatures()) {
-      featureStream = featureProvider.queries().getFeatureStream(query);
+      if (!featureProvider.queries().isAvailable()) {
+        throw new ServiceUnavailableException();
+      }
+      featureStream = featureProvider.queries().get().getFeatureStream(query);
 
       ImmutableFeatureTransformationContextGeneric transformationContextGeneric =
           transformationContext.outputStream(new OutputStreamToByteConsumer()).build();

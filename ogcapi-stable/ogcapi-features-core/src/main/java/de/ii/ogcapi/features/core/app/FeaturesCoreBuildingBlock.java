@@ -27,6 +27,7 @@ import de.ii.ogcapi.features.core.domain.JsonSchemaRef;
 import de.ii.ogcapi.features.core.domain.JsonSchemaString;
 import de.ii.ogcapi.features.core.domain.WithChangeListeners;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.CollectionExtent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -36,6 +37,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TemporalExtent;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -45,6 +47,7 @@ import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.DatasetChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
+import de.ii.xtraplatform.features.domain.FeatureExtents;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import io.swagger.v3.oas.models.media.ComposedSchema;
@@ -52,6 +55,7 @@ import io.swagger.v3.oas.models.media.Schema;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.slf4j.Logger;
@@ -160,7 +164,8 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class FeaturesCoreBuildingBlock implements ApiBuildingBlock, WithChangeListeners {
+public class FeaturesCoreBuildingBlock
+    implements ApiBuildingBlock, WithChangeListeners, ApiExtensionHealth {
 
   public static final Optional<SpecificationMaturity> MATURITY =
       Optional.of(SpecificationMaturity.STABLE_OGC);
@@ -280,15 +285,15 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock, WithChangeLi
         .or(() -> computeInterval(apiData, collectionId))
         .ifPresent(interval -> api.updateTemporalExtent(collectionId, interval));
 
-    final Optional<FeatureProvider2> provider =
-        providers.getFeatureProvider(apiData, collectionData);
-    if (provider.map(FeatureProvider2::supportsQueries).orElse(false)) {
+    final Optional<FeatureQueries> featureQueries =
+        providers.getFeatureProvider(apiData, collectionData, FeatureProvider2::queries);
+    if (featureQueries.isPresent()) {
       final String featureTypeId =
           collectionData
               .getExtension(FeaturesCoreConfiguration.class)
               .map(cfg -> cfg.getFeatureType().orElse(collectionId))
               .orElse(collectionId);
-      final long count = ((FeatureQueries) provider.get()).getFeatureCount(featureTypeId);
+      final long count = featureQueries.get().getFeatureCount(featureTypeId);
       api.updateItemCount(collectionId, count);
       if (LOGGER.isDebugEnabled()) {
         LOGGER.debug("Number of items in collection '{}': {}", collectionId, count);
@@ -356,17 +361,16 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock, WithChangeLi
   private Optional<BoundingBox> computeBbox(OgcApiDataV2 apiData, String collectionId) {
 
     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-    Optional<FeatureProvider2> featureProvider =
-        providers.getFeatureProvider(apiData, collectionData);
+    Optional<FeatureExtents> featureExtents =
+        providers.getFeatureProvider(apiData, collectionData, FeatureProvider2::extents);
 
-    if (featureProvider.map(FeatureProvider2::supportsExtents).orElse(false)) {
+    if (featureExtents.isPresent()) {
       String featureType =
           collectionData
               .getExtension(FeaturesCoreConfiguration.class)
               .flatMap(FeaturesCoreConfiguration::getFeatureType)
               .orElse(collectionId);
-      Optional<BoundingBox> spatialExtent =
-          featureProvider.get().extents().getSpatialExtent(featureType);
+      Optional<BoundingBox> spatialExtent = featureExtents.get().getSpatialExtent(featureType);
       if (spatialExtent.isPresent()) {
 
         BoundingBox boundingBox = spatialExtent.get();
@@ -398,18 +402,23 @@ public class FeaturesCoreBuildingBlock implements ApiBuildingBlock, WithChangeLi
 
   private Optional<TemporalExtent> computeInterval(OgcApiDataV2 apiData, String collectionId) {
     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-    Optional<FeatureProvider2> featureProvider =
-        providers.getFeatureProvider(apiData, collectionData);
+    Optional<FeatureExtents> featureExtents =
+        providers.getFeatureProvider(apiData, collectionData, FeatureProvider2::extents);
 
-    if (featureProvider.map(FeatureProvider2::supportsExtents).orElse(false)) {
+    if (featureExtents.isPresent()) {
       String featureType =
           collectionData
               .getExtension(FeaturesCoreConfiguration.class)
               .flatMap(FeaturesCoreConfiguration::getFeatureType)
               .orElse(collectionId);
 
-      return featureProvider.get().extents().getTemporalExtent(featureType).map(TemporalExtent::of);
+      return featureExtents.get().getTemporalExtent(featureType).map(TemporalExtent::of);
     }
     return Optional.empty();
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(crsTransformerFactory, providers.getFeatureProviderOrThrow(apiData));
   }
 }

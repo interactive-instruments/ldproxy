@@ -16,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.FormatNotSupportedException;
 import de.ii.xtraplatform.base.domain.LogContext;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileUnavailableException;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import java.util.Objects;
 import java.util.Optional;
@@ -23,11 +24,13 @@ import java.util.concurrent.ThreadLocalRandom;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.ServiceUnavailableException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 import org.glassfish.jersey.message.internal.MessageBodyProviderNotFoundException;
@@ -106,6 +109,8 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
     } else if (exception instanceof IllegalArgumentException) {
       return processException(
           exceptionFormat, msgCause.isEmpty() ? msg : String.format("%s: %s", msg, msgCause));
+    } else if (exception instanceof VolatileUnavailableException) {
+      return serviceUnavailable(exceptionFormat);
     }
     return serverError(exception, exceptionFormat);
   }
@@ -142,6 +147,21 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
                     String.format(
                         "There was an error processing your request, it has been logged. Error ID: %016x",
                         id))))
+        .build();
+  }
+
+  // TODO: detail message
+  // TODO: maybe add a Retry-After HTTP header?
+  private Response serviceUnavailable(ExceptionFormatExtension exceptionFormat) {
+    final Response.Status responseStatus = Status.SERVICE_UNAVAILABLE;
+    return Response.status(responseStatus)
+        .type(exceptionFormat.getMediaType().type())
+        .entity(
+            exceptionFormat.getExceptionEntity(
+                new ApiErrorMessage(
+                    responseStatus.getStatusCode(),
+                    responseStatus.getReasonPhrase(),
+                    "TODO: generic message")))
         .build();
   }
 
@@ -206,6 +226,8 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
                   new ApiErrorMessage(
                       response.getStatus(), response.getStatusInfo().getReasonPhrase(), msg)))
           .build();
+    } else if (exception instanceof ServiceUnavailableException) {
+      return serviceUnavailable(exceptionFormat);
     }
 
     // family.equals(Response.Status.Family.SERVER_ERROR)
