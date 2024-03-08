@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.core.domain;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.base.domain.resiliency.OptionalVolatileCapability;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import java.util.AbstractMap;
@@ -36,12 +37,20 @@ public interface FeaturesCoreProviders {
 
   Optional<FeatureProvider2> getFeatureProvider(OgcApiDataV2 apiData);
 
+  <T> Optional<T> getFeatureProvider(
+      OgcApiDataV2 apiData, Function<FeatureProvider2, OptionalVolatileCapability<T>> capability);
+
   FeatureProvider2 getFeatureProviderOrThrow(OgcApiDataV2 apiData);
 
   boolean hasFeatureProvider(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
 
   Optional<FeatureProvider2> getFeatureProvider(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
+
+  <T> Optional<T> getFeatureProvider(
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi featureType,
+      Function<FeatureProvider2, OptionalVolatileCapability<T>> capability);
 
   FeatureProvider2 getFeatureProviderOrThrow(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
@@ -77,4 +86,9 @@ public interface FeaturesCoreProviders {
         .filter(Objects::nonNull)
         .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
   }
+
+  <T> T getFeatureProviderOrThrow(
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi featureType,
+      Function<FeatureProvider2, OptionalVolatileCapability<T>> capability);
 }

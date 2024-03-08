@@ -164,6 +164,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
             extensionRegistry.getExtensionsForType(TileSetFormatExtension.class).stream()
                 .filter(FormatExtension::isEnabledByDefault)
                 .map(format -> format.getMediaType().label())
+                .sorted()
                 .collect(ImmutableList.toImmutableList()))
         .style("DEFAULT")
         .build();

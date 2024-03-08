@@ -170,7 +170,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
   }
 
   private static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
-    if (!featureProvider.supportsQueries()) {
+    if (!featureProvider.multiQueries().isSupported()) {
       throw new IllegalStateException("Feature provider does not support queries.");
     }
   }
@@ -750,8 +750,8 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
     OgcApi api = requestContext.getApi();
     EpsgCrs sourceCrs = null;
     Optional<CrsTransformer> crsTransformer = Optional.empty();
-    if (featureProvider.supportsCrs()) {
-      sourceCrs = featureProvider.crs().getNativeCrs();
+    if (featureProvider.crs().isAvailable()) {
+      sourceCrs = featureProvider.crs().get().getNativeCrs();
       crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
     }
 
@@ -798,7 +798,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
     Map<String, PropertyTransformations> propertyTransformations;
 
     if (outputFormat.canEncodeFeatures()) {
-      featureStream = featureProvider.multiQueries().getFeatureStream(query);
+      featureStream = featureProvider.multiQueries().get().getFeatureStream(query);
 
       ImmutableFeatureTransformationContextGeneric transformationContextGeneric =
           transformationContext.outputStream(new OutputStreamToByteConsumer()).build();

@@ -82,7 +82,8 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     FeatureTransactions.MutationResult result =
         queryInput
             .getFeatureProvider()
-            .transactions()
+            .mutations()
+            .get()
             .createFeatures(queryInput.getFeatureType(), featureTokenSource, crs);
 
     result.getError().ifPresent(FeatureStream::processStreamError);
@@ -134,7 +135,8 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     FeatureTransactions.MutationResult result =
         queryInput
             .getFeatureProvider()
-            .transactions()
+            .mutations()
+            .get()
             .updateFeature(
                 queryInput.getFeatureType(),
                 queryInput.getFeatureId(),
@@ -187,7 +189,8 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     FeatureTransactions.MutationResult result =
         queryInput
             .getFeatureProvider()
-            .transactions()
+            .mutations()
+            .get()
             .updateFeature(
                 queryInput.getFeatureType(), queryInput.getFeatureId(), mergedSource, crs, true);
 
@@ -227,7 +230,8 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     FeatureTransactions.MutationResult result =
         queryInput
             .getFeatureProvider()
-            .transactions()
+            .mutations()
+            .get()
             .deleteFeature(queryInput.getCollectionId(), queryInput.getFeatureId());
 
     result.getError().ifPresent(FeatureStream::processStreamError);

@@ -240,7 +240,7 @@ public class EndpointRoutesGet extends Endpoint {
   }
 
   private static void ensureFeatureProviderSupportsRouting(FeatureProvider2 featureProvider) {
-    if (!featureProvider.supportsQueries()) {
+    if (!featureProvider.queries().isSupported()) {
       throw new IllegalStateException("Feature provider does not support queries.");
     }
     featureProvider

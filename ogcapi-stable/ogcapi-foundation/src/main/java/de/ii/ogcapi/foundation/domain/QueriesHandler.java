@@ -46,7 +46,7 @@ public interface QueriesHandler<T extends QueryIdentifier> {
   }
 
   static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
-    if (!featureProvider.supportsQueries()) {
+    if (!featureProvider.queries().isSupported()) {
       throw new IllegalStateException("Feature provider does not support queries.");
     }
   }

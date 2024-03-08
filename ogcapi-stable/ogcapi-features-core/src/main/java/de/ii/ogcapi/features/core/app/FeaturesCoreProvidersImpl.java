@@ -14,9 +14,11 @@ import de.ii.ogcapi.foundation.domain.ExtendableConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.base.domain.resiliency.OptionalVolatileCapability;
 import de.ii.xtraplatform.entities.domain.EntityRegistry;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
 import java.util.Optional;
+import java.util.function.Function;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -47,6 +49,15 @@ public class FeaturesCoreProvidersImpl implements FeaturesCoreProviders {
   }
 
   @Override
+  public <T> Optional<T> getFeatureProvider(
+      OgcApiDataV2 apiData, Function<FeatureProvider2, OptionalVolatileCapability<T>> capability) {
+    return getFeatureProvider(apiData)
+        .map(capability)
+        .filter(OptionalVolatileCapability::isAvailable)
+        .map(OptionalVolatileCapability::get);
+  }
+
+  @Override
   public FeatureProvider2 getFeatureProviderOrThrow(OgcApiDataV2 apiData) {
     return getFeatureProvider(apiData)
         .orElseThrow(() -> new IllegalStateException("No feature provider found."));
@@ -65,9 +76,28 @@ public class FeaturesCoreProvidersImpl implements FeaturesCoreProviders {
   }
 
   @Override
+  public <T> Optional<T> getFeatureProvider(
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi featureType,
+      Function<FeatureProvider2, OptionalVolatileCapability<T>> capability) {
+    return getFeatureProvider(apiData, featureType)
+        .map(capability)
+        .filter(OptionalVolatileCapability::isAvailable)
+        .map(OptionalVolatileCapability::get);
+  }
+
+  @Override
   public FeatureProvider2 getFeatureProviderOrThrow(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
     return getOptionalFeatureProvider(featureType).orElse(getFeatureProviderOrThrow(apiData));
+  }
+
+  @Override
+  public <T> T getFeatureProviderOrThrow(
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi featureType,
+      Function<FeatureProvider2, OptionalVolatileCapability<T>> capability) {
+    return capability.apply(getFeatureProviderOrThrow(apiData, featureType)).get();
   }
 
   private Optional<FeatureProvider2> getOptionalFeatureProvider(

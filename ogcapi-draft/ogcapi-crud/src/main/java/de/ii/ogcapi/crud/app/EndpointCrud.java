@@ -42,6 +42,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.base.domain.ETag.Type;
+import de.ii.xtraplatform.base.domain.resiliency.OptionalCapability;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider2;
@@ -62,7 +63,6 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.HeaderParam;
-import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
@@ -117,8 +117,9 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     return super.isEnabledForApi(apiData)
         && providers
             .getFeatureProvider(apiData)
-            .map(FeatureProvider2::supportsTransactions)
-            .orElse(false);
+            .map(FeatureProvider2::mutations)
+            .filter(OptionalCapability::isSupported)
+            .isPresent();
   }
 
   @Override
@@ -126,8 +127,9 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     return super.isEnabledForApi(apiData, collectionId)
         && providers
             .getFeatureProvider(apiData, apiData.getCollections().get(collectionId))
-            .map(FeatureProvider2::supportsTransactions)
-            .orElse(false);
+            .map(FeatureProvider2::mutations)
+            .filter(OptionalCapability::isSupported)
+            .isPresent();
   }
 
   @Override
@@ -346,8 +348,6 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     FeatureProvider2 featureProvider =
         providers.getFeatureProviderOrThrow(api.getData(), collectionData);
 
-    checkTransactional(featureProvider);
-
     FeaturesCoreConfiguration coreConfiguration =
         collectionData
             .getExtension(FeaturesCoreConfiguration.class)
@@ -401,8 +401,6 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
 
     FeatureProvider2 featureProvider =
         providers.getFeatureProviderOrThrow(api.getData(), collectionData);
-
-    checkTransactional(featureProvider);
 
     FeaturesCoreConfiguration coreConfiguration =
         collectionData
@@ -470,8 +468,6 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     FeatureProvider2 featureProvider =
         providers.getFeatureProviderOrThrow(api.getData(), collectionData);
 
-    checkTransactional(featureProvider);
-
     FeaturesCoreConfiguration coreConfiguration =
         collectionData
             .getExtension(FeaturesCoreConfiguration.class)
@@ -534,8 +530,6 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     FeatureProvider2 featureProvider =
         providers.getFeatureProviderOrThrow(
             api.getData(), api.getData().getCollections().get(collectionId));
-
-    checkTransactional(featureProvider);
 
     FeaturesCoreConfiguration coreConfiguration =
         collectionData
@@ -601,12 +595,6 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
         && Objects.isNull(ifUnmodifiedSince)) {
       throw new BadRequestException(
           "Requests to change a feature for this collection must include an 'If-Unmodified-Since' header.");
-    }
-  }
-
-  private static void checkTransactional(FeatureProvider2 featureProvider) {
-    if (!featureProvider.supportsTransactions()) {
-      throw new NotAllowedException("GET");
     }
   }
 

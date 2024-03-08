@@ -104,9 +104,7 @@ public class QueryParameterFilter extends ApiExtensionCache
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
     return super.isEnabledForApi(apiData)
         && providers
-            .getFeatureProvider(apiData)
-            .filter(FeatureProvider2::supportsQueries)
-            .map(FeatureProvider2::queries)
+            .getFeatureProvider(apiData, FeatureProvider2::queries)
             .map(FeatureQueries::supportsCql2)
             .orElse(false);
   }
@@ -221,7 +219,7 @@ public class QueryParameterFilter extends ApiExtensionCache
         .getFeatureProvider(apiData)
         .ifPresent(
             provider -> {
-              if (provider.supportsQueries() && provider.queries().supportsCql2()) {
+              if (provider.queries().isSupported() && provider.queries().get().supportsCql2()) {
                 builder.add(
                     "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/filter",
                     "http://www.opengis.net/spec/cql2/0.0/conf/basic-cql2",
@@ -234,7 +232,7 @@ public class QueryParameterFilter extends ApiExtensionCache
                     "http://www.opengis.net/spec/cql2/0.0/conf/property-property",
                     "http://www.opengis.net/spec/cql2/0.0/conf/cql2-text",
                     "http://www.opengis.net/spec/cql2/0.0/conf/cql2-json");
-                if (provider.queries().supportsAccenti())
+                if (provider.queries().get().supportsAccenti())
                   builder.add(
                       "http://www.opengis.net/spec/cql2/0.0/conf/accent-insensitive-comparison");
               }

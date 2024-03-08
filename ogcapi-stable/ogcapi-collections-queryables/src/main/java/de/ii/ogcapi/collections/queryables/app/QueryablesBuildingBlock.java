@@ -138,7 +138,7 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
 
     // check that the feature provider supports queries
     FeatureProvider2 provider = providers.getFeatureProviderOrThrow(api.getData());
-    if (!provider.supportsQueries()) {
+    if (!provider.queries().isSupported()) {
       builder.addErrors(
           MessageFormat.format(
               "Queryables is enabled, but the feature provider of the API ''{0}'' does not support queries.",

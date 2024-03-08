@@ -74,9 +74,7 @@ public class QueryParameterFilterCrs extends ApiExtensionCache
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
     return super.isEnabledForApi(apiData)
         && providers
-            .getFeatureProvider(apiData)
-            .filter(FeatureProvider2::supportsQueries)
-            .map(FeatureProvider2::queries)
+            .getFeatureProvider(apiData, FeatureProvider2::queries)
             .map(FeatureQueries::supportsCql2)
             .orElse(false);
   }

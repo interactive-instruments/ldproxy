@@ -17,6 +17,7 @@ import de.ii.ogcapi.foundation.domain.ApiExtension
 import de.ii.ogcapi.foundation.domain.ApiMediaType
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent
 import de.ii.ogcapi.foundation.domain.ApiRequestContext
+import de.ii.ogcapi.foundation.domain.AppContextTest
 import de.ii.ogcapi.foundation.domain.ConformanceClass
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType
@@ -126,7 +127,7 @@ class LandingPageSpec extends Specification {
     }
 
     static def createDatasetEntity() {
-        def entity = new OgcApiEntity(null, createExtensionRegistry(), () -> "", datasetData)
+        def entity = new OgcApiEntity(null, createExtensionRegistry(), () -> "", new AppContextTest(), null, datasetData)
         return entity
     }
 

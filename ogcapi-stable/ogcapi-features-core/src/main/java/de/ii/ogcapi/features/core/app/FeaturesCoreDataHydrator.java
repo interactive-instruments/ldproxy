@@ -200,8 +200,8 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
               .build();
     }
 
-    if (!data.getMetadata().isPresent() && featureProvider.supportsMetadata()) {
-      Optional<Metadata> providerMetadata = featureProvider.metadata().getMetadata();
+    if (!data.getMetadata().isPresent() && featureProvider.metadata().isAvailable()) {
+      Optional<Metadata> providerMetadata = featureProvider.metadata().get().getMetadata();
       if (providerMetadata.isPresent()) {
         Optional<String> license =
             providerMetadata.flatMap(Metadata::getAccessConstraints).isPresent()

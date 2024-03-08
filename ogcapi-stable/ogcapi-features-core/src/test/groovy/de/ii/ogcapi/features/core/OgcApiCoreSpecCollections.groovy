@@ -330,7 +330,7 @@ class OgcApiCoreSpecCollections extends Specification {
     }
 
     static def createOgcApiApiEntity(ExtensionRegistry registry, OgcApiDataV2 datasetData) {
-        def entity = new OgcApiEntity(null, registry, () -> "", datasetData)
+        def entity = new OgcApiEntity(null, registry, () -> "", new AppContextTest(), null, datasetData)
         entity.updateSpatialExtent("featureType1", BoundingBox.of(-180, -90, 180, 90, OgcCrs.CRS84))
         entity.updateTemporalExtent("featureType1", TemporalExtent.of(Long.MIN_VALUE, Long.MAX_VALUE))
         entity.updateItemCount("featureType1", 0)

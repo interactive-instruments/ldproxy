@@ -166,7 +166,7 @@ class StoreMigrator implements Migrator<StoreMigrationContext, StoreSourceFs, St
 
   public ResourceStore store(StoreSourceFs source) {
     ResourceStoreImpl blobStore =
-        new ResourceStoreImpl(new MigrationStore(source), () -> blobStoreDrivers);
+        new ResourceStoreImpl(new MigrationStore(source), null, () -> blobStoreDrivers);
     blobStore.onStart();
 
     return blobStore;

@@ -83,11 +83,11 @@ public class CrsSupportImpl implements CrsSupport {
             ? providers.getFeatureProviderOrThrow(apiData, featureTypeConfiguration.get())
             : providers.getFeatureProviderOrThrow(apiData);
 
-    if (!provider.supportsCrs()) {
+    if (!provider.crs().isSupported()) {
       throw new IllegalStateException("Provider has no CRS support.");
     }
 
-    return provider.crs().getNativeCrs();
+    return provider.crs().get().getNativeCrs();
   }
 
   private EpsgCrs getDefaultCrs(

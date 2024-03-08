@@ -222,8 +222,8 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
 
     EpsgCrs sourceCrs = null;
     EpsgCrs targetCrs = query.getCrs().orElse(queryInput.getDefaultCrs());
-    if (featureProvider.supportsCrs()) {
-      sourceCrs = featureProvider.crs().getNativeCrs();
+    if (featureProvider.crs().isAvailable()) {
+      sourceCrs = featureProvider.crs().get().getNativeCrs();
       crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
     }
 
@@ -286,7 +286,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
               requestContext.getMediaType().type()));
     }
 
-    FeatureStream featureStream = featureProvider.queries().getFeatureStream(query);
+    FeatureStream featureStream = featureProvider.queries().get().getFeatureStream(query);
 
     StreamingOutput streamingOutput = stream(featureStream, encoder.get());
 

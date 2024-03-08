@@ -5,23 +5,25 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ldproxy.cfg;
+package de.ii.ogcapi.foundation.domain;
 
 import de.ii.xtraplatform.base.domain.AppConfiguration;
 import de.ii.xtraplatform.base.domain.AuthConfiguration;
 import de.ii.xtraplatform.base.domain.BackgroundTasksConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableAuthConfiguration;
+import de.ii.xtraplatform.base.domain.ImmutableModulesConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
 import de.ii.xtraplatform.base.domain.LoggingConfiguration;
 import de.ii.xtraplatform.base.domain.ManagerConfiguration;
 import de.ii.xtraplatform.base.domain.MetricsConfiguration;
 import de.ii.xtraplatform.base.domain.ModulesConfiguration;
+import de.ii.xtraplatform.base.domain.ModulesConfiguration.Startup;
 import de.ii.xtraplatform.base.domain.ProjConfiguration;
 import de.ii.xtraplatform.base.domain.ServerConfiguration;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
 import io.dropwizard.client.HttpClientConfiguration;
 
-class AppConfigurationCfg extends AppConfiguration {
+public class AppConfigurationTest extends AppConfiguration {
 
   @Override
   public ServerConfiguration getServerFactory() {
@@ -60,7 +62,7 @@ class AppConfigurationCfg extends AppConfiguration {
 
   @Override
   public ModulesConfiguration getModules() {
-    return null;
+    return new ImmutableModulesConfiguration.Builder().startup(Startup.SYNC).build();
   }
 
   @Override
