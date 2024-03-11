@@ -1,5 +1,29 @@
 # Changelog
 
+## v3.6.3 (11/03/2024)
+#### Fixed bugs
+
+-  Tiles: various seeding issues [#1177](https://github.com/interactive-instruments/ldproxy/issues/1177)
+-  CRUD: inserting (Multi)Polygons may fail [#1176](https://github.com/interactive-instruments/ldproxy/issues/1176)
+-  using additional store source as tile cache may fail [#1175](https://github.com/interactive-instruments/ldproxy/issues/1175)
+-  CRUD: inserting geometries with schema type `ANY` fails [#1167](https://github.com/interactive-instruments/ldproxy/issues/1167)
+-  legend icon for `fill-pattern` does not work [#1165](https://github.com/interactive-instruments/ldproxy/issues/1165)
+
+---
+
+## v3.6.2 (09/02/2024)
+#### Fixed bugs
+
+-  CRUD: PUT/PATCH hangs after multiple requests [#1164](https://github.com/interactive-instruments/ldproxy/issues/1164)
+-  avoid unnecessary generation of endpoint definitions [#1161](https://github.com/interactive-instruments/ldproxy/issues/1161)
+-  rename transformation does not support objects [#1160](https://github.com/interactive-instruments/ldproxy/issues/1160)
+-  bounding box returning 502 error for large polygon datasets [#1157](https://github.com/interactive-instruments/ldproxy/issues/1157)
+-  tiles: various seeding issues [#1155](https://github.com/interactive-instruments/ldproxy/issues/1155)
+-  concat/coalesce: additional cases do not work as expected [#1154](https://github.com/interactive-instruments/ldproxy/issues/1154)
+-  datetime queries fails [#1099](https://github.com/interactive-instruments/ldproxy/issues/1099)
+
+---
+
 ## v3.6.1 (12/01/2024)
 
 #### Improvements
