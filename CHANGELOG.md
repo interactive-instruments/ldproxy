@@ -1,5 +1,16 @@
 # Changelog
 
+## v3.6.3 (11/03/2024)
+#### Fixed bugs
+
+-  Tiles: various seeding issues [#1177](https://github.com/interactive-instruments/ldproxy/issues/1177)
+-  CRUD: inserting (Multi)Polygons may fail [#1176](https://github.com/interactive-instruments/ldproxy/issues/1176)
+-  using additional store source as tile cache may fail [#1175](https://github.com/interactive-instruments/ldproxy/issues/1175)
+-  CRUD: inserting geometries with schema type `ANY` fails [#1167](https://github.com/interactive-instruments/ldproxy/issues/1167)
+-  legend icon for `fill-pattern` does not work [#1165](https://github.com/interactive-instruments/ldproxy/issues/1165)
+
+---
+
 ## v3.6.1 (12/01/2024)
 
 #### Improvements
