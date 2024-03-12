@@ -14,11 +14,9 @@ import de.ii.xtraplatform.base.domain.ImmutableAuthConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableModulesConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
 import de.ii.xtraplatform.base.domain.LoggingConfiguration;
-import de.ii.xtraplatform.base.domain.ManagerConfiguration;
 import de.ii.xtraplatform.base.domain.MetricsConfiguration;
 import de.ii.xtraplatform.base.domain.ModulesConfiguration;
 import de.ii.xtraplatform.base.domain.ModulesConfiguration.Startup;
-import de.ii.xtraplatform.base.domain.ProjConfiguration;
 import de.ii.xtraplatform.base.domain.ServerConfiguration;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
 import io.dropwizard.client.HttpClientConfiguration;
@@ -56,22 +54,12 @@ public class AppConfigurationTest extends AppConfiguration {
   }
 
   @Override
-  public ManagerConfiguration getManager() {
-    return null;
-  }
-
-  @Override
   public ModulesConfiguration getModules() {
     return new ImmutableModulesConfiguration.Builder().startup(Startup.SYNC).build();
   }
 
   @Override
   public BackgroundTasksConfiguration getBackgroundTasks() {
-    return null;
-  }
-
-  @Override
-  public ProjConfiguration getProj() {
     return null;
   }
 }

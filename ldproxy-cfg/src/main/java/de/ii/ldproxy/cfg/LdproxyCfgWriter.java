@@ -23,7 +23,7 @@ public interface LdproxyCfgWriter {
    * @return the new {@link LdproxyCfgWriter}
    */
   static LdproxyCfgWriter create(Path store) {
-    return new LdproxyCfgImpl(store, true, false);
+    return new LdproxyCfgImpl(store, true);
   }
 
   /**

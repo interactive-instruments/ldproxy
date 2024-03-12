@@ -22,8 +22,6 @@ import de.ii.xtraplatform.base.app.StoreImpl;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration.Builder;
-import de.ii.xtraplatform.base.domain.ImmutableStoreSourceDefault;
-import de.ii.xtraplatform.base.domain.ImmutableStoreSourceFsV3;
 import de.ii.xtraplatform.base.domain.Jackson;
 import de.ii.xtraplatform.base.domain.JacksonProvider;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
@@ -96,21 +94,6 @@ class LdproxyCfgImpl implements LdproxyCfg {
 
   public LdproxyCfgImpl(Path dataDirectory) {
     this(dataDirectory, false);
-  }
-
-  public LdproxyCfgImpl(Path dataDirectory, boolean noDefaults, boolean layoutV3) {
-    this(
-        dataDirectory,
-        layoutV3
-            ? new ImmutableStoreConfiguration.Builder()
-                .addSources(
-                    new ImmutableStoreSourceFsV3.Builder().src(dataDirectory.toString()).build())
-                .build()
-            : new ImmutableStoreConfiguration.Builder()
-                .addSources(
-                    new ImmutableStoreSourceDefault.Builder().src(dataDirectory.toString()).build())
-                .build(),
-        noDefaults);
   }
 
   public LdproxyCfgImpl(Path dataDirectory, boolean noDefaults) {

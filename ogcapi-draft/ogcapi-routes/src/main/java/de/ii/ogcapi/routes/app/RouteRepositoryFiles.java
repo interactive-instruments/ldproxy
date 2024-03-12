@@ -85,7 +85,7 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
     mapper.configure(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY, true);
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     this.isStoreLayoutV3 =
-        appContext.getConfiguration().getStore().getSources(appContext.getDataDir()).stream()
+        appContext.getConfiguration().getStore().getSources().stream()
             .anyMatch(
                 source ->
                     source.getContent() == Content.VALUES
@@ -163,9 +163,7 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
           MessageFormat.format("The route ''{0}'' does not exist in this API.", routeId));
     }
 
-    return Objects.requireNonNullElseGet(
-        routeDefinitionsStore.get(routeId, apiData.getId()),
-        () -> routeDefinitionsStore.get(toOldDefinitionId(routeId), apiData.getId()));
+    return routeDefinitionsStore.get(routeId, apiData.getId());
   }
 
   @Override
@@ -177,8 +175,7 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
         routeId -> {
           if (!routesStore.has(routeId, apiData.getId()))
             builder.addStrictErrors("Route Repository: Route '{}' is not available.", routeId);
-          if (!routeDefinitionsStore.has(routeId, apiData.getId())
-              && !routeDefinitionsStore.has(toOldDefinitionId(routeId), apiData.getId()))
+          if (!routeDefinitionsStore.has(routeId, apiData.getId()))
             builder.addStrictErrors(
                 "Route Repository: The definition of route '{}' is not available.", routeId);
         });
@@ -200,9 +197,6 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
   public Date getLastModified(OgcApiDataV2 apiData, String routeId) {
     if (routeDefinitionsStore.has(routeId, apiData.getId())) {
       return LastModified.from(routeDefinitionsStore.lastModified(routeId, apiData.getId()));
-    } else if (routeDefinitionsStore.has(toOldDefinitionId(routeId), apiData.getId())) {
-      return LastModified.from(
-          routeDefinitionsStore.lastModified(toOldDefinitionId(routeId), apiData.getId()));
     }
 
     return null;
@@ -236,8 +230,7 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
               .from(routeDefinition)
               .links(routeDefinitionLinks)
               .build();
-      String definitionId = isStoreLayoutV3 ? toOldDefinitionId(routeId) : routeId;
-      routeDefinitionsStore.put(definitionId, definition, apiData.getId()).join();
+      routeDefinitionsStore.put(routeId, definition, apiData.getId()).join();
     } catch (CompletionException e) {
       deleteRoute(apiData, routeId);
       if (e.getCause() instanceof IOException) {
@@ -252,17 +245,11 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
     try {
       routesStore.delete(routeId, apiData.getId()).join();
       routeDefinitionsStore.delete(routeId, apiData.getId()).join();
-      routeDefinitionsStore.delete(toOldDefinitionId(routeId), apiData.getId()).join();
     } catch (CompletionException e) {
       if (e.getCause() instanceof IOException) {
         throw (IOException) e.getCause();
       }
       throw e;
     }
-  }
-
-  @Deprecated(since = "3.6", forRemoval = true)
-  private String toOldDefinitionId(String routeId) {
-    return routeId + ".definition";
   }
 }

@@ -191,13 +191,8 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                     .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
             .build();
 
-    if (data.isAuto() && data.isAutoPersist()) {
-      data =
-          new ImmutableOgcApiDataV2.Builder()
-              .from(data)
-              .auto(Optional.empty())
-              .autoPersist(Optional.empty())
-              .build();
+    if (data.isAuto()) {
+      data = new ImmutableOgcApiDataV2.Builder().from(data).auto(Optional.empty()).build();
     }
 
     if (!data.getMetadata().isPresent() && featureProvider.metadata().isAvailable()) {

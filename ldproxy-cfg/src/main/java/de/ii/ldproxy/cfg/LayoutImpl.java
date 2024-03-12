@@ -8,13 +8,9 @@
 package de.ii.ldproxy.cfg;
 
 import de.ii.xtraplatform.base.domain.ImmutableStoreSourceDefault;
-import de.ii.xtraplatform.base.domain.ImmutableStoreSourceFsV3;
 import de.ii.xtraplatform.base.domain.StoreSource;
 import de.ii.xtraplatform.base.domain.StoreSource.Content;
 import de.ii.xtraplatform.base.domain.StoreSourceFs;
-import de.ii.xtraplatform.base.domain.StoreSourceFsV3;
-import de.ii.xtraplatform.base.domain.StoreSourceHttpV3;
-import de.ii.xtraplatform.blobs.app.StoreMigrationV4;
 import de.ii.xtraplatform.blobs.domain.BlobSource;
 import de.ii.xtraplatform.blobs.domain.StoreMigration;
 import de.ii.xtraplatform.blobs.infra.BlobSourceFs;
@@ -31,20 +27,8 @@ import java.util.stream.Stream;
 class LayoutImpl implements Layout {
 
   static Optional<StoreSourceFs> detectSource(Path dataDirectory) {
-    StoreSourceFs v3 = new ImmutableStoreSourceFsV3.Builder().src(dataDirectory.toString()).build();
     StoreSourceFs v4 =
         new ImmutableStoreSourceDefault.Builder().src(dataDirectory.toString()).build();
-
-    if (dataDirectory.resolve("store/entities").toFile().isDirectory()) {
-      return Optional.of(v3);
-    } else if (dataDirectory.resolve("entities/instances").toFile().isDirectory()) {
-      return Optional.of(v4);
-    } else if (dataDirectory.resolve("api-resources").toFile().isDirectory()) {
-      return Optional.of(v3);
-    } else if (dataDirectory.resolve("resources").toFile().isDirectory()) {
-      return Optional.of(v4);
-    }
-    // TODO: parse cfg.yml
 
     return Optional.of(v4);
   }
@@ -62,9 +46,6 @@ class LayoutImpl implements Layout {
   }
 
   private Version detect() {
-    if (source instanceof StoreSourceFsV3 || source instanceof StoreSourceHttpV3) {
-      return Version.V3;
-    }
     return Version.V4;
   }
 
@@ -86,7 +67,7 @@ class LayoutImpl implements Layout {
 
   @Override
   public List<StoreMigration> migrations() {
-    return List.of(new StoreMigrationV4(source, () -> blobSource));
+    return List.of();
   }
 
   class InfoImpl implements Layout.Info {
