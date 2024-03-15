@@ -112,7 +112,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
     EventStore eventStore =
         new EventStoreDefault(
             new StoreImpl(dataDirectory, storeConfiguration), storeDriver, eventSubscriptions);
-    ((EventStoreDefault) eventStore).onStart();
+    ((EventStoreDefault) eventStore).onStart(false).toCompletableFuture().join();
     this.entityIdentifiers = new ArrayList<>();
     eventStore.subscribe(
         new EventStoreSubscriber() {
@@ -258,8 +258,11 @@ class LdproxyCfgImpl implements LdproxyCfg {
 
   @Override
   public void initStore() {
-    ((EntityDataDefaultsStoreImpl) entityDataDefaultsStore).onStart();
-    ((EntityDataStoreImpl) entityDataStore).onStart();
+    ((EntityDataDefaultsStoreImpl) entityDataDefaultsStore)
+        .onStart(false)
+        .toCompletableFuture()
+        .join();
+    ((EntityDataStoreImpl) entityDataStore).onStart(false).toCompletableFuture().join();
   }
 
   @Override
