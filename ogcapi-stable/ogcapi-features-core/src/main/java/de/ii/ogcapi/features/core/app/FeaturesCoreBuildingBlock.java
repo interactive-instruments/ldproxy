@@ -48,7 +48,7 @@ import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.DatasetChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureExtents;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -217,7 +217,7 @@ public class FeaturesCoreBuildingBlock
 
     providers
         .getFeatureProvider(apiData)
-        .ifPresent(provider -> updateChangeListeners(provider.getChangeHandler(), api));
+        .ifPresent(provider -> updateChangeListeners(provider.changes(), api));
 
     // register schemas that cannot be derived automatically
     // TODO Setting a schema here has no effect since onStartup is executed *after* the
@@ -260,7 +260,7 @@ public class FeaturesCoreBuildingBlock
   public void onShutdown(OgcApi api) {
     providers
         .getFeatureProvider(api.getData())
-        .ifPresent(provider -> removeChangeListeners(provider.getChangeHandler(), api));
+        .ifPresent(provider -> removeChangeListeners(provider.changes(), api));
 
     ApiBuildingBlock.super.onShutdown(api);
   }
@@ -286,7 +286,7 @@ public class FeaturesCoreBuildingBlock
         .ifPresent(interval -> api.updateTemporalExtent(collectionId, interval));
 
     final Optional<FeatureQueries> featureQueries =
-        providers.getFeatureProvider(apiData, collectionData, FeatureProvider2::queries);
+        providers.getFeatureProvider(apiData, collectionData, FeatureProvider::queries);
     if (featureQueries.isPresent()) {
       final String featureTypeId =
           collectionData
@@ -362,7 +362,7 @@ public class FeaturesCoreBuildingBlock
 
     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
     Optional<FeatureExtents> featureExtents =
-        providers.getFeatureProvider(apiData, collectionData, FeatureProvider2::extents);
+        providers.getFeatureProvider(apiData, collectionData, FeatureProvider::extents);
 
     if (featureExtents.isPresent()) {
       String featureType =
@@ -403,7 +403,7 @@ public class FeaturesCoreBuildingBlock
   private Optional<TemporalExtent> computeInterval(OgcApiDataV2 apiData, String collectionId) {
     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
     Optional<FeatureExtents> featureExtents =
-        providers.getFeatureProvider(apiData, collectionData, FeatureProvider2::extents);
+        providers.getFeatureProvider(apiData, collectionData, FeatureProvider::extents);
 
     if (featureExtents.isPresent()) {
       String featureType =

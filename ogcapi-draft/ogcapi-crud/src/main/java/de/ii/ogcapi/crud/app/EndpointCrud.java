@@ -45,7 +45,7 @@ import de.ii.xtraplatform.base.domain.ETag.Type;
 import de.ii.xtraplatform.base.domain.resiliency.OptionalCapability;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.SchemaBase;
@@ -117,7 +117,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     return super.isEnabledForApi(apiData)
         && providers
             .getFeatureProvider(apiData)
-            .map(FeatureProvider2::mutations)
+            .map(FeatureProvider::mutations)
             .filter(OptionalCapability::isSupported)
             .isPresent();
   }
@@ -127,7 +127,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     return super.isEnabledForApi(apiData, collectionId)
         && providers
             .getFeatureProvider(apiData, apiData.getCollections().get(collectionId))
-            .map(FeatureProvider2::mutations)
+            .map(FeatureProvider::mutations)
             .filter(OptionalCapability::isSupported)
             .isPresent();
   }
@@ -345,7 +345,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     FeatureTypeConfigurationOgcApi collectionData =
         api.getData().getCollections().get(collectionId);
 
-    FeatureProvider2 featureProvider =
+    FeatureProvider featureProvider =
         providers.getFeatureProviderOrThrow(api.getData(), collectionData);
 
     FeaturesCoreConfiguration coreConfiguration =
@@ -399,7 +399,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
         collectionData.getExtension(CrudConfiguration.class);
     checkHeader(crudConfiguration, ifMatch, ifUnmodifiedSince);
 
-    FeatureProvider2 featureProvider =
+    FeatureProvider featureProvider =
         providers.getFeatureProviderOrThrow(api.getData(), collectionData);
 
     FeaturesCoreConfiguration coreConfiguration =
@@ -465,7 +465,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
         collectionData.getExtension(CrudConfiguration.class);
     checkHeader(crudConfiguration, ifMatch, ifUnmodifiedSince);
 
-    FeatureProvider2 featureProvider =
+    FeatureProvider featureProvider =
         providers.getFeatureProviderOrThrow(api.getData(), collectionData);
 
     FeaturesCoreConfiguration coreConfiguration =
@@ -527,7 +527,7 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
         collectionData.getExtension(CrudConfiguration.class);
     checkHeader(crudConfiguration, ifMatch, ifUnmodifiedSince);
 
-    FeatureProvider2 featureProvider =
+    FeatureProvider featureProvider =
         providers.getFeatureProviderOrThrow(
             api.getData(), api.getData().getCollections().get(collectionId));
 

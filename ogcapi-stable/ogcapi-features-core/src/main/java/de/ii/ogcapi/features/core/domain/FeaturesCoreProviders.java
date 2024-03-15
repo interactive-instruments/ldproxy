@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.resiliency.OptionalVolatileCapability;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import java.util.AbstractMap;
 import java.util.Map;
@@ -35,24 +35,24 @@ public interface FeaturesCoreProviders {
 
   boolean hasFeatureProvider(OgcApiDataV2 apiData);
 
-  Optional<FeatureProvider2> getFeatureProvider(OgcApiDataV2 apiData);
+  Optional<FeatureProvider> getFeatureProvider(OgcApiDataV2 apiData);
 
   <T> Optional<T> getFeatureProvider(
-      OgcApiDataV2 apiData, Function<FeatureProvider2, OptionalVolatileCapability<T>> capability);
+      OgcApiDataV2 apiData, Function<FeatureProvider, OptionalVolatileCapability<T>> capability);
 
-  FeatureProvider2 getFeatureProviderOrThrow(OgcApiDataV2 apiData);
+  FeatureProvider getFeatureProviderOrThrow(OgcApiDataV2 apiData);
 
   boolean hasFeatureProvider(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
 
-  Optional<FeatureProvider2> getFeatureProvider(
+  Optional<FeatureProvider> getFeatureProvider(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
 
   <T> Optional<T> getFeatureProvider(
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi featureType,
-      Function<FeatureProvider2, OptionalVolatileCapability<T>> capability);
+      Function<FeatureProvider, OptionalVolatileCapability<T>> capability);
 
-  FeatureProvider2 getFeatureProviderOrThrow(
+  FeatureProvider getFeatureProviderOrThrow(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType);
 
   default Optional<FeatureSchema> getFeatureSchema(
@@ -62,8 +62,8 @@ public interface FeaturesCoreProviders {
             .getExtension(FeaturesCoreConfiguration.class)
             .flatMap(FeaturesCoreConfiguration::getFeatureType)
             .orElse(featureType.getId());
-    Optional<FeatureProvider2> featureProvider = getFeatureProvider(apiData, featureType);
-    return featureProvider.map(provider -> provider.getData().getTypes().get(featureTypeId));
+    Optional<FeatureProvider> featureProvider = getFeatureProvider(apiData, featureType);
+    return featureProvider.flatMap(provider -> provider.info().getSchema(featureTypeId));
   }
 
   default Map<String, FeatureSchema> getFeatureSchemas(OgcApiDataV2 apiData) {
@@ -76,9 +76,9 @@ public interface FeaturesCoreProviders {
                       .getExtension(FeaturesCoreConfiguration.class)
                       .map(cfg -> cfg.getFeatureType().orElse(featureType.getId()))
                       .orElse(featureType.getId());
-              Optional<FeatureProvider2> featureProvider = getFeatureProvider(apiData, featureType);
+              Optional<FeatureProvider> featureProvider = getFeatureProvider(apiData, featureType);
               Optional<FeatureSchema> schema =
-                  featureProvider.map(provider -> provider.getData().getTypes().get(featureTypeId));
+                  featureProvider.flatMap(provider -> provider.info().getSchema(featureTypeId));
               if (schema.isEmpty()) return null;
 
               return new AbstractMap.SimpleImmutableEntry<>(featureType.getId(), schema.get());
@@ -90,5 +90,5 @@ public interface FeaturesCoreProviders {
   <T> T getFeatureProviderOrThrow(
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi featureType,
-      Function<FeatureProvider2, OptionalVolatileCapability<T>> capability);
+      Function<FeatureProvider, OptionalVolatileCapability<T>> capability);
 }

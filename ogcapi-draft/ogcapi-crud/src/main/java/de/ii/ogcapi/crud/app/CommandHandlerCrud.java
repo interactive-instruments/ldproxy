@@ -11,7 +11,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.QueryInputFe
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import java.io.InputStream;
 import java.util.Optional;
 import javax.ws.rs.core.Response;
@@ -38,7 +38,7 @@ public interface CommandHandlerCrud {
 
     EpsgCrs getDefaultCrs();
 
-    FeatureProvider2 getFeatureProvider();
+    FeatureProvider getFeatureProvider();
 
     InputStream getRequestBody();
   }

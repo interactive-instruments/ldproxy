@@ -15,7 +15,7 @@ import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import java.util.Map;
 import java.util.Optional;
@@ -47,7 +47,7 @@ public interface FeaturesCoreQueriesHandler
 
     Optional<Profile> getProfile();
 
-    FeatureProvider2 getFeatureProvider();
+    FeatureProvider getFeatureProvider();
 
     EpsgCrs getDefaultCrs();
 
@@ -74,7 +74,7 @@ public interface FeaturesCoreQueriesHandler
 
     Optional<Profile> getProfile();
 
-    FeatureProvider2 getFeatureProvider();
+    FeatureProvider getFeatureProvider();
 
     EpsgCrs getDefaultCrs();
 

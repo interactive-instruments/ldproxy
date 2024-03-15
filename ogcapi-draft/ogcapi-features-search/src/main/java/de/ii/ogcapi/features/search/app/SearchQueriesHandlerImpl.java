@@ -59,7 +59,7 @@ import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.features.domain.FeatureStream.Result;
@@ -169,7 +169,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
     }
   }
 
-  private static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
+  private static void ensureFeatureProviderSupportsQueries(FeatureProvider featureProvider) {
     if (!featureProvider.multiQueries().isSupported()) {
       throw new IllegalStateException("Feature provider does not support queries.");
     }
@@ -501,7 +501,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
 
   private Response executeQuery(QueryInputQuery queryInput, ApiRequestContext requestContext) {
 
-    FeatureProvider2 featureProvider = queryInput.getFeatureProvider();
+    FeatureProvider featureProvider = queryInput.getFeatureProvider();
     ensureFeatureProviderSupportsQueries(featureProvider);
 
     EntityTag etag = null;
@@ -741,7 +741,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       MultiFeatureQuery query,
       boolean allLinksAreLocal,
       List<String> collectionIds,
-      FeatureProvider2 featureProvider,
+      FeatureProvider featureProvider,
       FeatureFormatExtension outputFormat,
       Optional<Profile> profile,
       EpsgCrs defaultCrs,
@@ -759,10 +759,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
         query.getQueries().stream()
             .collect(
                 Collectors.toUnmodifiableMap(
-                    TypeQuery::getType,
-                    q ->
-                        Optional.ofNullable(
-                            featureProvider.getData().getTypes().get(q.getType()))));
+                    TypeQuery::getType, q -> featureProvider.info().getSchema(q.getType())));
 
     Map<String, List<String>> fields =
         query.getQueries().stream()
@@ -830,7 +827,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       MultiFeatureQuery query,
       OgcApiDataV2 apiData,
       List<String> collectionIds,
-      FeatureProvider2 featureProvider,
+      FeatureProvider featureProvider,
       FeatureFormatExtension outputFormat,
       Optional<Profile> profile,
       String serviceUrl) {
@@ -842,8 +839,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                 n -> {
                   String collectionId = collectionIds.get(n);
                   Optional<FeatureSchema> schema =
-                      Optional.ofNullable(
-                          featureProvider.getData().getTypes().get(getFeatureTypeId(query, n)));
+                      featureProvider.info().getSchema(getFeatureTypeId(query, n));
                   PropertyTransformations pt =
                       outputFormat
                           .getPropertyTransformations(

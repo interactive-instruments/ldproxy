@@ -10,7 +10,7 @@ package de.ii.ogcapi.foundation.domain;
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -45,7 +45,7 @@ public interface QueriesHandler<T extends QueryIdentifier> {
     }
   }
 
-  static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
+  static void ensureFeatureProviderSupportsQueries(FeatureProvider featureProvider) {
     if (!featureProvider.queries().isSupported()) {
       throw new IllegalStateException("Feature provider does not support queries.");
     }

@@ -15,7 +15,7 @@ import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -71,7 +71,7 @@ public abstract class Tile {
   /**
    * @return the feature provider for the features in the tile
    */
-  public abstract Optional<FeatureProvider2> getFeatureProvider();
+  public abstract Optional<FeatureProvider> getFeatureProvider();
 
   /**
    * @return the output format to generate the tile

@@ -102,7 +102,7 @@ public class CrsBuildingBlock implements ApiBuildingBlock, ApiExtensionHealth {
     EpsgCrs providerCrs =
         featuresCoreProviders
             .getFeatureProvider(api.getData())
-            .flatMap(featureProvider2 -> featureProvider2.getData().getNativeCrs())
+            .flatMap(featureProvider2 -> featureProvider2.info().getCrs())
             .orElse(OgcCrs.CRS84);
 
     EpsgCrs lastCrs = null;

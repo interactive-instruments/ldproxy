@@ -40,7 +40,7 @@ import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureStream;
@@ -236,7 +236,7 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
       QueryInput queryInput,
       FeatureQuery query,
       Optional<Profile> requestedProfile,
-      FeatureProvider2 featureProvider,
+      FeatureProvider featureProvider,
       String canonicalUri,
       FeatureFormatExtension outputFormat,
       boolean onlyHitsIfMore,
@@ -294,8 +294,7 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
             .map(cfg -> cfg.getFeatureType().orElse(collectionId))
             .orElse(collectionId);
 
-    Optional<FeatureSchema> schema =
-        Optional.ofNullable(featureProvider.getData().getTypes().get(featureTypeId));
+    Optional<FeatureSchema> schema = featureProvider.info().getSchema(featureTypeId);
     ImmutableFeatureTransformationContextGeneric.Builder transformationContext =
         new ImmutableFeatureTransformationContextGeneric.Builder()
             .api(api)

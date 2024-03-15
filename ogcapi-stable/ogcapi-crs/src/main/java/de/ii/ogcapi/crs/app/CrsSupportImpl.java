@@ -20,7 +20,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -86,7 +86,7 @@ public class CrsSupportImpl implements CrsSupport, ApiExtensionHealth {
   @Override
   public EpsgCrs getStorageCrs(
       OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration) {
-    FeatureProvider2 provider =
+    FeatureProvider provider =
         featureTypeConfiguration.isPresent()
             ? providers.getFeatureProviderOrThrow(apiData, featureTypeConfiguration.get())
             : providers.getFeatureProviderOrThrow(apiData);

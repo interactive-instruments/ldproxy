@@ -16,7 +16,8 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.resiliency.OptionalVolatileCapability;
 import de.ii.xtraplatform.entities.domain.EntityRegistry;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
+import de.ii.xtraplatform.features.domain.FeatureProviderEntity;
 import java.util.Optional;
 import java.util.function.Function;
 import javax.inject.Inject;
@@ -39,18 +40,21 @@ public class FeaturesCoreProvidersImpl implements FeaturesCoreProviders {
   }
 
   @Override
-  public Optional<FeatureProvider2> getFeatureProvider(OgcApiDataV2 apiData) {
-    Optional<FeatureProvider2> optionalFeatureProvider = getOptionalFeatureProvider(apiData);
+  public Optional<FeatureProvider> getFeatureProvider(OgcApiDataV2 apiData) {
+    Optional<FeatureProvider> optionalFeatureProvider = getOptionalFeatureProvider(apiData);
 
     if (!optionalFeatureProvider.isPresent()) {
-      optionalFeatureProvider = entityRegistry.getEntity(FeatureProvider2.class, apiData.getId());
+      optionalFeatureProvider =
+          entityRegistry
+              .getEntity(FeatureProviderEntity.class, apiData.getId())
+              .map(FeatureProvider.class::cast);
     }
     return optionalFeatureProvider;
   }
 
   @Override
   public <T> Optional<T> getFeatureProvider(
-      OgcApiDataV2 apiData, Function<FeatureProvider2, OptionalVolatileCapability<T>> capability) {
+      OgcApiDataV2 apiData, Function<FeatureProvider, OptionalVolatileCapability<T>> capability) {
     return getFeatureProvider(apiData)
         .map(capability)
         .filter(OptionalVolatileCapability::isAvailable)
@@ -58,7 +62,7 @@ public class FeaturesCoreProvidersImpl implements FeaturesCoreProviders {
   }
 
   @Override
-  public FeatureProvider2 getFeatureProviderOrThrow(OgcApiDataV2 apiData) {
+  public FeatureProvider getFeatureProviderOrThrow(OgcApiDataV2 apiData) {
     return getFeatureProvider(apiData)
         .orElseThrow(() -> new IllegalStateException("No feature provider found."));
   }
@@ -70,7 +74,7 @@ public class FeaturesCoreProvidersImpl implements FeaturesCoreProviders {
   }
 
   @Override
-  public Optional<FeatureProvider2> getFeatureProvider(
+  public Optional<FeatureProvider> getFeatureProvider(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
     return getOptionalFeatureProvider(featureType).or(() -> getFeatureProvider(apiData));
   }
@@ -79,7 +83,7 @@ public class FeaturesCoreProvidersImpl implements FeaturesCoreProviders {
   public <T> Optional<T> getFeatureProvider(
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi featureType,
-      Function<FeatureProvider2, OptionalVolatileCapability<T>> capability) {
+      Function<FeatureProvider, OptionalVolatileCapability<T>> capability) {
     return getFeatureProvider(apiData, featureType)
         .map(capability)
         .filter(OptionalVolatileCapability::isAvailable)
@@ -87,7 +91,7 @@ public class FeaturesCoreProvidersImpl implements FeaturesCoreProviders {
   }
 
   @Override
-  public FeatureProvider2 getFeatureProviderOrThrow(
+  public FeatureProvider getFeatureProviderOrThrow(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
     return getOptionalFeatureProvider(featureType).orElse(getFeatureProviderOrThrow(apiData));
   }
@@ -96,16 +100,17 @@ public class FeaturesCoreProvidersImpl implements FeaturesCoreProviders {
   public <T> T getFeatureProviderOrThrow(
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi featureType,
-      Function<FeatureProvider2, OptionalVolatileCapability<T>> capability) {
+      Function<FeatureProvider, OptionalVolatileCapability<T>> capability) {
     return capability.apply(getFeatureProviderOrThrow(apiData, featureType)).get();
   }
 
-  private Optional<FeatureProvider2> getOptionalFeatureProvider(
+  private Optional<FeatureProvider> getOptionalFeatureProvider(
       ExtendableConfiguration extendableConfiguration) {
+    // return Optional.empty();
     return extendableConfiguration
         .getExtension(FeaturesCoreConfiguration.class)
         .filter(ExtensionConfiguration::isEnabled)
         .flatMap(FeaturesCoreConfiguration::getFeatureProvider)
-        .flatMap(id -> entityRegistry.getEntity(FeatureProvider2.class, id));
+        .flatMap(id -> entityRegistry.getEntity(FeatureProviderEntity.class, id));
   }
 }

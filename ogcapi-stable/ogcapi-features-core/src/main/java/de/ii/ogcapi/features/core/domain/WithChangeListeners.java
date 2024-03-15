@@ -10,8 +10,8 @@ package de.ii.ogcapi.features.core.domain;
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.xtraplatform.features.domain.DatasetChangeListener;
-import de.ii.xtraplatform.features.domain.FeatureChangeHandler;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
+import de.ii.xtraplatform.features.domain.FeatureChanges;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -26,7 +26,7 @@ public interface WithChangeListeners {
 
   FeatureChangeListener onFeatureChange(OgcApi api);
 
-  default void updateChangeListeners(FeatureChangeHandler changeHandler, OgcApi api) {
+  default void updateChangeListeners(FeatureChanges changeHandler, OgcApi api) {
     if (datasetChangeListeners.containsKey(api.getId())) {
       changeHandler.removeListener(datasetChangeListeners.get(api.getId()));
     }
@@ -44,7 +44,7 @@ public interface WithChangeListeners {
     featureChangeListeners.put(api.getId(), featureChangeListener);
   }
 
-  default void removeChangeListeners(FeatureChangeHandler changeHandler, OgcApi api) {
+  default void removeChangeListeners(FeatureChanges changeHandler, OgcApi api) {
     if (datasetChangeListeners.containsKey(api.getId())) {
       changeHandler.removeListener(datasetChangeListeners.get(api.getId()));
       datasetChangeListeners.remove(api.getId());

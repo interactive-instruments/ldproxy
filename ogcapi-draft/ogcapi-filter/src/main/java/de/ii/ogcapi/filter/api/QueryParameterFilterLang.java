@@ -24,7 +24,7 @@ import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.xtraplatform.cql.domain.Cql;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -72,7 +72,7 @@ public class QueryParameterFilterLang extends ApiExtensionCache
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
     return super.isEnabledForApi(apiData)
         && providers
-            .getFeatureProvider(apiData, FeatureProvider2::queries)
+            .getFeatureProvider(apiData, FeatureProvider::queries)
             .map(FeatureQueries::supportsCql2)
             .orElse(false);
   }

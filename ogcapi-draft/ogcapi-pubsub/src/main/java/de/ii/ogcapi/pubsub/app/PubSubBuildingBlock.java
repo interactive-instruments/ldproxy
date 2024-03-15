@@ -51,7 +51,7 @@ import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.DatasetChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureChange.Action;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import java.io.IOException;
@@ -221,7 +221,7 @@ public class PubSubBuildingBlock implements ApiBuildingBlock, WithChangeListener
 
     providers
         .getFeatureProvider(api.getData())
-        .ifPresent(provider -> updateChangeListeners(provider.getChangeHandler(), api));
+        .ifPresent(provider -> updateChangeListeners(provider.changes(), api));
 
     String publisher =
         api.getData()
@@ -294,7 +294,7 @@ public class PubSubBuildingBlock implements ApiBuildingBlock, WithChangeListener
   public void onShutdown(OgcApi api) {
     providers
         .getFeatureProvider(api.getData())
-        .ifPresent(provider -> removeChangeListeners(provider.getChangeHandler(), api));
+        .ifPresent(provider -> removeChangeListeners(provider.changes(), api));
 
     ApiBuildingBlock.super.onShutdown(api);
   }
@@ -514,7 +514,7 @@ public class PubSubBuildingBlock implements ApiBuildingBlock, WithChangeListener
   }
 
   private ObjectNode getCurrentFeature(
-      OgcApi api, FeatureProvider2 provider, String collectionId, String featureId) {
+      OgcApi api, FeatureProvider provider, String collectionId, String featureId) {
     try {
       if (formats == null) {
         formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class);

@@ -36,7 +36,8 @@ import de.ii.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ogcapi.routes.domain.RoutingFlag;
 import de.ii.xtraplatform.auth.domain.User;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
+import de.ii.xtraplatform.features.domain.FeatureProviderEntity;
 import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
 import io.dropwizard.auth.Auth;
 import java.util.AbstractMap;
@@ -166,13 +167,11 @@ public class EndpointRoutesGet extends Endpoint {
 
     OgcApiDataV2 apiData = api.getData();
 
-    FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(api.getData());
+    FeatureProvider featureProvider = providers.getFeatureProviderOrThrow(api.getData());
     ensureFeatureProviderSupportsRouting(featureProvider);
 
     Map<String, String> preferences =
-        featureProvider
-            .getData()
-            .getExtension(RoutesConfiguration.class)
+        getProviderRoutingCfg(featureProvider)
             .map(RoutesConfiguration::getPreferences)
             .map(
                 map ->
@@ -186,9 +185,7 @@ public class EndpointRoutesGet extends Endpoint {
             .orElse(ImmutableMap.of());
 
     Map<String, String> modes =
-        featureProvider
-            .getData()
-            .getExtension(RoutesConfiguration.class)
+        getProviderRoutingCfg(featureProvider)
             .map(RoutesConfiguration::getModes)
             .map(
                 map ->
@@ -239,13 +236,20 @@ public class EndpointRoutesGet extends Endpoint {
     return queryHandler.handle(QueryHandlerRoutes.Query.GET_ROUTES, queryInput, requestContext);
   }
 
-  private static void ensureFeatureProviderSupportsRouting(FeatureProvider2 featureProvider) {
+  public static void ensureFeatureProviderSupportsRouting(FeatureProvider featureProvider) {
     if (!featureProvider.queries().isSupported()) {
       throw new IllegalStateException("Feature provider does not support queries.");
     }
-    featureProvider
+    ((FeatureProviderEntity) featureProvider)
         .getData()
         .getExtension(RoutesConfiguration.class)
         .orElseThrow(() -> new IllegalStateException("Feature provider does not support routing."));
+  }
+
+  public static Optional<RoutesConfiguration> getProviderRoutingCfg(
+      FeatureProvider featureProvider) {
+    return ((FeatureProviderEntity) featureProvider)
+        .getData()
+        .getExtension(RoutesConfiguration.class);
   }
 }

@@ -63,7 +63,7 @@ import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
 import io.dropwizard.auth.Auth;
@@ -222,10 +222,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
     Optional<RoutingConfiguration> config = apiData.getExtension(RoutingConfiguration.class);
     Optional<RoutesConfiguration> routesConfig =
-        providers
-            .getFeatureProviderOrThrow(apiData)
-            .getData()
-            .getExtension(RoutesConfiguration.class);
+        EndpointRoutesGet.getProviderRoutingCfg(providers.getFeatureProviderOrThrow(apiData));
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("routes")
@@ -337,8 +334,8 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
 
     OgcApiDataV2 apiData = api.getData();
 
-    FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(api.getData());
-    ensureFeatureProviderSupportsRouting(featureProvider);
+    FeatureProvider featureProvider = providers.getFeatureProviderOrThrow(api.getData());
+    EndpointRoutesGet.ensureFeatureProviderSupportsRouting(featureProvider);
 
     String featureTypeId =
         api.getData()
@@ -426,15 +423,5 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
                 Optional.ofNullable(elevationProfileSimplificationTolerance))
             .build();
     return queryHandler.handle(QueryHandlerRoutes.Query.COMPUTE_ROUTE, queryInput, requestContext);
-  }
-
-  private static void ensureFeatureProviderSupportsRouting(FeatureProvider2 featureProvider) {
-    if (!featureProvider.queries().isSupported()) {
-      throw new IllegalStateException("Feature provider does not support queries.");
-    }
-    featureProvider
-        .getData()
-        .getExtension(RoutesConfiguration.class)
-        .orElseThrow(() -> new IllegalStateException("Feature provider does not support routing."));
   }
 }

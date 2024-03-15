@@ -21,7 +21,7 @@ import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureChange;
 import de.ii.xtraplatform.features.domain.FeatureChange.Action;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.features.domain.FeatureTokenSource;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
@@ -299,7 +299,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
   }
 
   private void handleChange(
-      FeatureProvider2 featureProvider,
+      FeatureProvider featureProvider,
       String collectionId,
       List<String> ids,
       Optional<BoundingBox> oldBbox,
@@ -320,7 +320,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     if (LOGGER.isTraceEnabled()) {
       LOGGER.trace("Feature Change: {}", change);
     }
-    featureProvider.getChangeHandler().handle(change);
+    featureProvider.changes().handle(change);
   }
 
   private static Optional<BoundingBox> parseBboxHeader(Response response) {

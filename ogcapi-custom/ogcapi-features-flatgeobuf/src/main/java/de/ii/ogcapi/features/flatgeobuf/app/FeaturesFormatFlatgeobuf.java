@@ -29,8 +29,8 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
+import de.ii.xtraplatform.features.domain.FeatureInfo;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
@@ -123,8 +123,8 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
             ? transformationContext.getCrsTransformer().get().getTargetCrs()
             : providers
                 .getFeatureProvider(apiData, collectionData)
-                .map(FeatureProvider2::getData)
-                .flatMap(FeatureProviderDataV2::getNativeCrs)
+                .map(FeatureProvider::info)
+                .flatMap(FeatureInfo::getCrs)
                 .orElse(EpsgCrs.of(4326, EpsgCrs.Force.LON_LAT));
     FlatgeobufConfiguration configuration =
         collectionData.getExtension(FlatgeobufConfiguration.class).orElseThrow();

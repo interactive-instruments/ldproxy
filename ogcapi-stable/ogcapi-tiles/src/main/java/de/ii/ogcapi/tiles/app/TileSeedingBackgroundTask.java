@@ -116,7 +116,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     providers
         .getFeatureProvider(api.getData())
-        .ifPresent(provider -> updateChangeListeners(provider.getChangeHandler(), api));
+        .ifPresent(provider -> updateChangeListeners(provider.changes(), api));
 
     return ValidationResult.of();
   }
@@ -125,7 +125,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
   public void onShutdown(OgcApi api) {
     providers
         .getFeatureProvider(api.getData())
-        .ifPresent(provider -> removeChangeListeners(provider.getChangeHandler(), api));
+        .ifPresent(provider -> removeChangeListeners(provider.changes(), api));
 
     OgcApiBackgroundTask.super.onShutdown(api);
   }
