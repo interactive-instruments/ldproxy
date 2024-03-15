@@ -9,10 +9,8 @@ package de.ii.ogcapi.tiles.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
@@ -26,13 +24,13 @@ import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.entities.domain.EntityFactories;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
-import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
-import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
+import de.ii.xtraplatform.tiles.domain.TileProvider;
 import de.ii.xtraplatform.tiles.domain.TileProviderData;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
@@ -115,7 +113,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class TilesBuildingBlock implements ApiBuildingBlock {
+public class TilesBuildingBlock implements ApiBuildingBlock, ApiExtensionHealth {
 
   public static final Optional<SpecificationMaturity> MATURITY =
       Optional.of(SpecificationMaturity.STABLE_OGC);
@@ -124,33 +122,18 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
           ExternalDocumentation.of(
               "https://docs.ogc.org/is/20-057/20-057.html", "OGC API - Tiles - Part 1: Core"));
   private static final Logger LOGGER = LoggerFactory.getLogger(TilesBuildingBlock.class);
-  public static final int LIMIT_DEFAULT = 100000;
-  public static final double MINIMUM_SIZE_IN_PIXEL = 0.5;
   public static final String DATASET_TILES = "__all__";
-  private static final String TILES_DIR_NAME = "tiles";
 
   private final ExtensionRegistry extensionRegistry;
-  private final FeaturesCoreProviders providers;
-  private final FeaturesQuery queryParser;
-  private final SchemaInfo schemaInfo;
-  private final TileMatrixSetRepository tileMatrixSetRepository;
   private final TilesProviders tilesProviders;
   private final EntityFactories entityFactories;
 
   @Inject
   public TilesBuildingBlock(
       ExtensionRegistry extensionRegistry,
-      FeaturesQuery queryParser,
-      FeaturesCoreProviders providers,
-      SchemaInfo schemaInfo,
-      TileMatrixSetRepository tileMatrixSetRepository,
       TilesProviders tilesProviders,
       EntityFactories entityFactories) {
     this.extensionRegistry = extensionRegistry;
-    this.queryParser = queryParser;
-    this.providers = providers;
-    this.schemaInfo = schemaInfo;
-    this.tileMatrixSetRepository = tileMatrixSetRepository;
     this.tilesProviders = tilesProviders;
     this.entityFactories = entityFactories;
   }
@@ -266,13 +249,6 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
       String collectionId = entry.getKey();
       TilesConfiguration config = entry.getValue();
 
-      Optional<FeatureSchema> schema =
-          providers.getFeatureSchema(apiData, apiData.getCollections().get(collectionId));
-      List<String> featureProperties =
-          schema.isPresent()
-              ? schemaInfo.getPropertyNames(schema.get(), false, false)
-              : ImmutableList.of();
-
       List<String> formatLabels =
           extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
               .filter(formatExtension -> formatExtension.isEnabledForApi(apiData))
@@ -314,5 +290,16 @@ public class TilesBuildingBlock implements ApiBuildingBlock {
     }
 
     return builder.build();
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    Optional<TileProvider> tileProvider = tilesProviders.getTileProvider(apiData);
+
+    if (tileProvider.isPresent()) {
+      return Set.of(tileProvider.get());
+    }
+
+    return Set.of();
   }
 }

@@ -12,6 +12,7 @@ import static de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler.GR
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.Endpoint;
@@ -30,9 +31,10 @@ import de.ii.ogcapi.tilematrixsets.domain.ImmutableQueryInputTileMatrixSet;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetFormatExtension;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler;
-import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -52,22 +54,18 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointTileMatrixSet extends Endpoint {
+public class EndpointTileMatrixSet extends Endpoint implements ApiExtensionHealth {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileMatrixSet.class);
   private static final List<String> TAGS = ImmutableList.of("Discover and fetch tiling schemes");
 
   private final TileMatrixSetsQueriesHandler queryHandler;
-  private final TileMatrixSetRepository tileMatrixSetRepository;
 
   @Inject
   EndpointTileMatrixSet(
-      ExtensionRegistry extensionRegistry,
-      TileMatrixSetsQueriesHandler queryHandler,
-      TileMatrixSetRepository tileMatrixSetRepository) {
+      ExtensionRegistry extensionRegistry, TileMatrixSetsQueriesHandler queryHandler) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
-    this.tileMatrixSetRepository = tileMatrixSetRepository;
   }
 
   @Override
@@ -163,5 +161,10 @@ public class EndpointTileMatrixSet extends Endpoint {
 
     return queryHandler.handle(
         TileMatrixSetsQueriesHandler.Query.TILE_MATRIX_SET, queryInput, requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler);
   }
 }

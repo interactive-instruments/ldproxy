@@ -28,7 +28,7 @@ public interface ApiExtensionHealth extends ApiExtension {
 
   Logger LOGGER = LoggerFactory.getLogger(ApiExtensionHealth.class);
 
-  Map<String, ApiHealthVolatile> VOLATILES = new ConcurrentHashMap<>();
+  Map<String, Volatile2> VOLATILES = new ConcurrentHashMap<>();
   Map<String, String> STARTUP_STATE = new ConcurrentHashMap<>();
 
   default boolean isStarted(OgcApiDataV2 apiData) {
@@ -72,6 +72,10 @@ public interface ApiExtensionHealth extends ApiExtension {
         ignore -> {
           Set<Volatile2> volatiles = getVolatiles(apiData);
 
+          if (volatiles.isEmpty()) {
+            return Volatile2.available(getGlobalComponent(this, apiData.getId()));
+          }
+
           LOGGER.debug("REGISTER {} {}", volatiles.size(), this.getClass().getSimpleName());
 
           ApiHealthVolatile composed =
@@ -86,7 +90,7 @@ public interface ApiExtensionHealth extends ApiExtension {
   Set<Volatile2> getVolatiles(OgcApiDataV2 apiData);
 
   default void register(OgcApi api, TriConsumer<String, Volatile2, String> addSubcomponent) {
-    ApiHealthVolatile composed = (ApiHealthVolatile) getComposedVolatile(api.getData());
+    Volatile2 composed = getComposedVolatile(api.getData());
 
     addSubcomponent.accept(getComponent(this), composed, getCapability(this));
   }
@@ -100,8 +104,10 @@ public interface ApiExtensionHealth extends ApiExtension {
           ValidationResult result = onStartup(api, MODE.NONE);
 
           if (!result.getErrors().isEmpty()) {
-            ApiHealthVolatile composed = (ApiHealthVolatile) getComposedVolatile(api.getData());
-            composed.setErrors(result.getErrors());
+            Volatile2 composed = getComposedVolatile(api.getData());
+            if (composed instanceof ApiHealthVolatile) {
+              ((ApiHealthVolatile) composed).setErrors(result.getErrors());
+            }
           }
         });
   }
