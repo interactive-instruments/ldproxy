@@ -10,9 +10,10 @@ package de.ii.ogcapi.tiles.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
 import de.ii.ogcapi.foundation.domain.OgcApi;
-import de.ii.ogcapi.tiles.domain.TilesProviders;
+import de.ii.ogcapi.tiles.domain.TilesProvidersCache;
 import de.ii.xtraplatform.base.domain.AppConfiguration;
 import de.ii.xtraplatform.base.domain.LogContext;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.entities.domain.EntityRegistry;
@@ -46,22 +47,27 @@ public class PurgeTileCacheTask extends Task implements DropwizardPlugin {
 
   private final EntityRegistry entityRegistry;
   private final TileMatrixSetRepository tileMatrixSetRepository;
-  private final TilesProviders tilesProviders;
+  private final TilesProvidersCache tileCache;
+  private final VolatileRegistry volatileRegistry;
 
   @Inject
   protected PurgeTileCacheTask(
       EntityRegistry entityRegistry,
       TileMatrixSetRepository tileMatrixSetRepository,
-      TilesProviders tilesProviders) {
+      TilesProvidersCache tileCache,
+      VolatileRegistry volatileRegistry) {
     super("purge-tile-cache");
     this.entityRegistry = entityRegistry;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
-    this.tilesProviders = tilesProviders;
+    this.tileCache = tileCache;
+    this.volatileRegistry = volatileRegistry;
   }
 
   @Override
   public void init(AppConfiguration configuration, Environment environment) {
-    environment.admin().addTask(this);
+    volatileRegistry
+        .onAvailable(tileMatrixSetRepository, tileCache)
+        .thenRun(() -> environment.admin().addTask(this));
   }
 
   @Override
@@ -125,7 +131,7 @@ public class PurgeTileCacheTask extends Task implements DropwizardPlugin {
 
     try (MDC.MDCCloseable closeable =
         LogContext.putCloseable(LogContext.CONTEXT.SERVICE, apiId.get())) {
-      tilesProviders.deleteTiles(ogcApi.get(), collectionId, tileMatrixSetId, boundingBox);
+      tileCache.deleteTiles(ogcApi.get(), collectionId, tileMatrixSetId, boundingBox);
     }
   }
 

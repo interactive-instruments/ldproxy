@@ -48,6 +48,8 @@ import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.base.domain.ETag;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
@@ -93,7 +95,8 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
-public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
+public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
+    implements TilesQueriesHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TilesQueriesHandlerImpl.class);
 
@@ -103,7 +106,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
   private final Values<Codelist> codelistStore;
   private final ExtensionRegistry extensionRegistry;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
-  private final FeaturesCoreProviders providers;
   private final TilesProviders tilesProviders;
   private final TileMatrixSetRepository tileMatrixSetRepository;
 
@@ -114,15 +116,15 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       ValueStore valueStore,
       ExtensionRegistry extensionRegistry,
       TileMatrixSetLimitsGenerator limitsGenerator,
-      FeaturesCoreProviders providers,
       TilesProviders tilesProviders,
-      TileMatrixSetRepository tileMatrixSetRepository) {
+      TileMatrixSetRepository tileMatrixSetRepository,
+      VolatileRegistry volatileRegistry) {
+    super(TilesQueriesHandler.class.getSimpleName(), volatileRegistry, true);
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
     this.codelistStore = valueStore.forType(Codelist.class);
     this.extensionRegistry = extensionRegistry;
     this.limitsGenerator = limitsGenerator;
-    this.providers = providers;
     this.tilesProviders = tilesProviders;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
 
@@ -136,6 +138,14 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 QueryHandler.with(QueryInputTileSet.class, this::getTileSetResponse))
             .put(Query.TILE, QueryHandler.with(QueryInputTile.class, this::getTileResponse))
             .build();
+
+    onVolatileStart();
+
+    addSubcomponent(crsTransformerFactory);
+    addSubcomponent(codelistStore);
+    addSubcomponent(tileMatrixSetRepository);
+
+    onVolatileStarted();
   }
 
   @Override

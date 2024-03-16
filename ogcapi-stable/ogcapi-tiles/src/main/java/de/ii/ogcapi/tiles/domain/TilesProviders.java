@@ -10,9 +10,7 @@ package de.ii.ogcapi.tiles.domain;
 import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
 
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.tiles.domain.TileProvider;
 import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
 import java.util.Optional;
@@ -100,10 +98,4 @@ public interface TilesProviders {
         ? getTilesetMetadataOrThrow(apiData, collectionData.get())
         : getTilesetMetadataOrThrow(apiData);
   }
-
-  void deleteTiles(
-      OgcApi api,
-      Optional<String> collectionId,
-      Optional<String> tileMatrixSetId,
-      Optional<BoundingBox> boundingBox);
 }

@@ -21,6 +21,8 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
+import de.ii.ogcapi.tiles.domain.TilesProvidersCache;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
@@ -59,16 +61,22 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
   private final ExtensionRegistry extensionRegistry;
   private final FeaturesCoreProviders providers;
   private final TilesProviders tilesProviders;
+  private final TilesProvidersCache tilesProvidersCache;
+  private final VolatileRegistry volatileRegistry;
   private Consumer<OgcApi> trigger;
 
   @Inject
   public TileSeedingBackgroundTask(
       ExtensionRegistry extensionRegistry,
       FeaturesCoreProviders providers,
-      TilesProviders tilesProviders) {
+      TilesProviders tilesProviders,
+      TilesProvidersCache tilesProvidersCache,
+      VolatileRegistry volatileRegistry) {
     this.extensionRegistry = extensionRegistry;
     this.providers = providers;
     this.tilesProviders = tilesProviders;
+    this.tilesProvidersCache = tilesProvidersCache;
+    this.volatileRegistry = volatileRegistry;
   }
 
   @Override
@@ -185,6 +193,11 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
    */
   @Override
   public void run(OgcApi api, TaskContext taskContext) {
+    volatileRegistry
+        .onAvailable(tilesProvidersCache, tilesProviders.getTileProviderOrThrow(api.getData()))
+        .toCompletableFuture()
+        .join();
+
     boolean reseed = shouldPurge(api);
     List<TileFormatExtension> outputFormats =
         extensionRegistry.getExtensionsForType(TileFormatExtension.class);
@@ -288,7 +301,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
         String collectionId = FeaturesCoreConfiguration.getCollectionId(api.getData(), featureType);
 
         try {
-          tilesProviders.deleteTiles(
+          tilesProvidersCache.deleteTiles(
               api, Optional.of(collectionId), Optional.empty(), Optional.empty());
         } catch (Exception e) {
           if (LOGGER.isErrorEnabled()) {
@@ -351,7 +364,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
 
   private void deleteTiles(OgcApi api, String collectionId, BoundingBox bbox) {
     try {
-      tilesProviders.deleteTiles(
+      tilesProvidersCache.deleteTiles(
           api, Optional.of(collectionId), Optional.empty(), Optional.of(bbox));
     } catch (Exception e) {
       if (LOGGER.isErrorEnabled()) {
