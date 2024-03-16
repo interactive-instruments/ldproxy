@@ -1496,11 +1496,10 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
   }
 
   /**
-   * @langEn Option to validate styles when using POST and PUT by setting the query parameter
-   *     `validate`. For details see conformance class *Validation of styles*.
-   * @langDe Steuert, ob bei POST und PUT von Styles die Validierung der Styles über den
-   *     Query-Parameter `validate` unterstützt werden soll. Siehe die Konformitätsklasse
-   *     "Validation of styles".
+   * @langEn Option to validate styles when using POST and PUT by setting the header `Prefer`. For
+   *     details see conformance class *Validation of styles*.
+   * @langDe Steuert, ob bei POST und PUT von Styles die Validierung der Styles über den Header
+   *     `Prefer` unterstützt werden soll. Siehe die Konformitätsklasse "Validation of styles".
    * @default false
    */
   @Nullable

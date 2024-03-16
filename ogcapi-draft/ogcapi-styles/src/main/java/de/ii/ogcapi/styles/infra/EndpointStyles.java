@@ -12,6 +12,7 @@ import static de.ii.ogcapi.styles.domain.QueriesHandlerStyles.GROUP_STYLES_READ;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
@@ -29,8 +30,10 @@ import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyles;
 import de.ii.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesFormatExtension;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -38,8 +41,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @title Styles
@@ -53,9 +54,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointStyles extends Endpoint implements ConformanceClass {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyles.class);
+public class EndpointStyles extends Endpoint implements ConformanceClass, ApiExtensionHealth {
 
   private static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
@@ -134,5 +133,10 @@ public class EndpointStyles extends Endpoint implements ConformanceClass {
         new ImmutableQueryInputStyles.Builder().from(getGenericQueryInput(api.getData())).build();
 
     return queryHandler.handle(QueriesHandlerStyles.Query.STYLES, queryInput, requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler);
   }
 }

@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.common.domain.QueryParameterDryRun;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
@@ -38,10 +39,12 @@ import de.ii.ogcapi.styles.domain.manager.ImmutableQueryInputStyleCreateReplace;
 import de.ii.ogcapi.styles.domain.manager.ImmutableQueryInputStyleDelete;
 import de.ii.ogcapi.styles.domain.manager.QueriesHandlerStylesManager;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -54,8 +57,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @title Styles, Style
@@ -66,9 +67,9 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointStylesManager extends Endpoint implements ConformanceClass {
+public class EndpointStylesManager extends Endpoint
+    implements ConformanceClass, ApiExtensionHealth {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStylesManager.class);
   private static final List<String> TAGS = ImmutableList.of("Create, update and delete styles");
 
   private final QueriesHandlerStylesManager queryHandler;
@@ -320,5 +321,10 @@ public class EndpointStylesManager extends Endpoint implements ConformanceClass 
         ((QueryParameterDryRun) parameter).applyTo(builder, queryParameterSet);
       }
     }
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler);
   }
 }

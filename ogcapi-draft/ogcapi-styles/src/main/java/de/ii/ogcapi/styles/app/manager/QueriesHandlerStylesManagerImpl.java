@@ -10,8 +10,6 @@ package de.ii.ogcapi.styles.app.manager;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
-import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
@@ -21,6 +19,8 @@ import de.ii.ogcapi.styles.domain.StyleRepository;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
 import de.ii.ogcapi.styles.domain.manager.QueriesHandlerStylesManager;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,18 +35,16 @@ import javax.ws.rs.core.Response;
 
 @Singleton
 @AutoBind
-public class QueriesHandlerStylesManagerImpl implements QueriesHandlerStylesManager {
+public class QueriesHandlerStylesManagerImpl extends AbstractVolatileComposed
+    implements QueriesHandlerStylesManager {
 
-  private final I18n i18n;
   private final StyleRepository styleRepository;
-  private final ExtensionRegistry extensionRegistry;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
   @Inject
   public QueriesHandlerStylesManagerImpl(
-      ExtensionRegistry extensionRegistry, I18n i18n, StyleRepository styleRepository) {
-    this.extensionRegistry = extensionRegistry;
-    this.i18n = i18n;
+      StyleRepository styleRepository, VolatileRegistry volatileRegistry) {
+    super(QueriesHandlerStylesManager.class.getSimpleName(), volatileRegistry, true);
     this.styleRepository = styleRepository;
     this.queryHandlers =
         ImmutableMap.of(
@@ -55,6 +53,12 @@ public class QueriesHandlerStylesManagerImpl implements QueriesHandlerStylesMana
             Query.REPLACE_STYLE,
                 QueryHandler.with(QueryInputStyleCreateReplace.class, this::createOrReplaceStyle),
             Query.DELETE_STYLE, QueryHandler.with(QueryInputStyleDelete.class, this::deleteStyle));
+
+    onVolatileStart();
+
+    addSubcomponent(styleRepository);
+
+    onVolatileStarted();
   }
 
   @Override

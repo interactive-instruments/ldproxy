@@ -12,7 +12,6 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
-import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
 import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
@@ -31,6 +30,8 @@ import de.ii.ogcapi.styles.domain.Styles;
 import de.ii.ogcapi.styles.domain.StylesFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
 import de.ii.xtraplatform.base.domain.ETag;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -47,17 +48,17 @@ import javax.ws.rs.core.Response;
 
 @Singleton
 @AutoBind
-public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
+public class QueriesHandlerStylesImpl extends AbstractVolatileComposed
+    implements QueriesHandlerStyles {
 
   private final I18n i18n;
   private final StyleRepository styleRepository;
-  private final ExtensionRegistry extensionRegistry;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
   @Inject
   public QueriesHandlerStylesImpl(
-      ExtensionRegistry extensionRegistry, I18n i18n, StyleRepository styleRepository) {
-    this.extensionRegistry = extensionRegistry;
+      I18n i18n, StyleRepository styleRepository, VolatileRegistry volatileRegistry) {
+    super(QueriesHandlerStyles.class.getSimpleName(), volatileRegistry, true);
     this.i18n = i18n;
     this.styleRepository = styleRepository;
     this.queryHandlers =
@@ -66,6 +67,12 @@ public class QueriesHandlerStylesImpl implements QueriesHandlerStyles {
             Query.STYLE, QueryHandler.with(QueryInputStyle.class, this::getStyleResponse),
             Query.STYLE_METADATA,
                 QueryHandler.with(QueryInputStyle.class, this::getStyleMetadataResponse));
+
+    onVolatileStart();
+
+    addSubcomponent(styleRepository);
+
+    onVolatileStarted();
   }
 
   @Override
