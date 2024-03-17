@@ -30,7 +30,6 @@ import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
-import de.ii.xtraplatform.tiles.domain.TileProvider;
 import de.ii.xtraplatform.tiles.domain.TileProviderData;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
@@ -294,12 +293,6 @@ public class TilesBuildingBlock implements ApiBuildingBlock, ApiExtensionHealth 
 
   @Override
   public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
-    Optional<TileProvider> tileProvider = tilesProviders.getTileProvider(apiData);
-
-    if (tileProvider.isPresent()) {
-      return Set.of(tileProvider.get());
-    }
-
-    return Set.of();
+    return Set.of(tilesProviders.getTileProviderOrThrow(apiData));
   }
 }
