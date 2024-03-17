@@ -14,13 +14,15 @@ import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.foundation.domain.WithDryRun;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider;
 import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
 
-public interface SearchQueriesHandler extends QueriesHandler<SearchQueriesHandler.Query> {
+public interface SearchQueriesHandler
+    extends QueriesHandler<SearchQueriesHandler.Query>, Volatile2 {
 
   String GROUP_SEARCH = "search";
   PermissionGroup GROUP_SEARCH_READ =

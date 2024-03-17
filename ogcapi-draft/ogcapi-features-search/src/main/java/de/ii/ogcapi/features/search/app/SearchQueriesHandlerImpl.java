@@ -48,6 +48,8 @@ import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.base.domain.ETag;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
@@ -106,7 +108,8 @@ import javax.ws.rs.core.StreamingOutput;
 @Singleton
 @AutoBind
 @SuppressWarnings({"PMD.GodClass", "PMD.CouplingBetweenObjects"})
-public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
+public class SearchQueriesHandlerImpl extends AbstractVolatileComposed
+    implements SearchQueriesHandler {
 
   public static final String MEDIA_TYPE_NOT_SUPPORTED =
       "The requested media type ''{0}'' is not supported, the following media types are available: {1}";
@@ -131,7 +134,9 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       CrsInfo crsInfo,
       Cql cql,
       StoredQueryRepository repository,
-      SchemaValidator schemaValidator) {
+      SchemaValidator schemaValidator,
+      VolatileRegistry volatileRegistry) {
+    super(SearchQueriesHandler.class.getSimpleName(), volatileRegistry, true);
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
     this.extensionRegistry = extensionRegistry;
@@ -155,6 +160,15 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                 QueryHandler.with(QueryInputStoredQueryCreateReplace.class, this::writeStoredQuery),
             Query.DELETE,
                 QueryHandler.with(QueryInputStoredQueryDelete.class, this::deleteStoredQuery));
+
+    onVolatileStart();
+
+    addSubcomponent(crsTransformerFactory);
+    addSubcomponent(codelistStore);
+    addSubcomponent(crsInfo);
+    addSubcomponent(repository);
+
+    onVolatileStarted();
   }
 
   @Override

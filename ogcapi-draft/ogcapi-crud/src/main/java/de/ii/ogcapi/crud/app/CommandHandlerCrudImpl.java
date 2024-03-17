@@ -17,6 +17,8 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureChange;
@@ -54,7 +56,7 @@ import org.threeten.extra.Interval;
 
 @Singleton
 @AutoBind
-public class CommandHandlerCrudImpl implements CommandHandlerCrud {
+public class CommandHandlerCrudImpl extends AbstractVolatileComposed implements CommandHandlerCrud {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CommandHandlerCrudImpl.class);
 
@@ -64,9 +66,18 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
   @Inject
   public CommandHandlerCrudImpl(
-      FeaturesCoreQueriesHandler queriesHandler, ExtensionRegistry extensionRegistry) {
+      FeaturesCoreQueriesHandler queriesHandler,
+      ExtensionRegistry extensionRegistry,
+      VolatileRegistry volatileRegistry) {
+    super(CommandHandlerCrud.class.getSimpleName(), volatileRegistry, true);
     this.queriesHandler = queriesHandler;
     this.extensionRegistry = extensionRegistry;
+
+    onVolatileStart();
+
+    addSubcomponent(queriesHandler);
+
+    onVolatileStarted();
   }
 
   @Override

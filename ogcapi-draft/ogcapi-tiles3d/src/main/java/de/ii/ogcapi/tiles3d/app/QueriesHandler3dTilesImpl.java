@@ -40,6 +40,8 @@ import de.ii.ogcapi.tiles3d.domain.TileResourceDescriptor;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.ogcapi.tiles3d.domain.Tileset;
 import de.ii.xtraplatform.base.domain.ETag;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -60,7 +62,8 @@ import javax.ws.rs.core.Response;
 
 @Singleton
 @AutoBind
-public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
+public class QueriesHandler3dTilesImpl extends AbstractVolatileComposed
+    implements QueriesHandler3dTiles {
 
   private final I18n i18n;
   private final FeaturesCoreQueriesHandler queriesHandlerFeatures;
@@ -71,7 +74,9 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
   public QueriesHandler3dTilesImpl(
       I18n i18n,
       FeaturesCoreQueriesHandler queriesHandlerFeatures,
-      TileResourceCache tileResourceCache) {
+      TileResourceCache tileResourceCache,
+      VolatileRegistry volatileRegistry) {
+    super(QueriesHandler3dTiles.class.getSimpleName(), volatileRegistry, true);
     this.i18n = i18n;
     this.queriesHandlerFeatures = queriesHandlerFeatures;
     this.tileResourceCache = tileResourceCache;
@@ -83,6 +88,13 @@ public class QueriesHandler3dTilesImpl implements QueriesHandler3dTiles {
             QueryHandler.with(QueryInputContent.class, this::getContentResponse),
             Query.SUBTREE,
             QueryHandler.with(QueryInputSubtree.class, this::getSubtreeResponse));
+
+    onVolatileStart();
+
+    addSubcomponent(queriesHandlerFeatures);
+    addSubcomponent(tileResourceCache);
+
+    onVolatileStarted();
   }
 
   @Override

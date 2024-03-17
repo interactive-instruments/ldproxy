@@ -17,6 +17,7 @@ import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -41,6 +42,7 @@ import de.ii.ogcapi.tiles3d.domain.TileResourceDescriptor;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.base.domain.LogContext;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.cql.domain.Cql;
 import io.dropwizard.auth.Auth;
 import java.io.ByteArrayOutputStream;
@@ -51,6 +53,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -73,7 +76,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class Endpoint3dTilesContent extends EndpointSubCollection {
+public class Endpoint3dTilesContent extends EndpointSubCollection implements ApiExtensionHealth {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Endpoint3dTilesContent.class);
 
@@ -281,5 +284,14 @@ public class Endpoint3dTilesContent extends EndpointSubCollection {
     }
 
     return response;
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(
+        queryHandler,
+        queriesHandlerFeatures,
+        tileResourceCache,
+        providers.getFeatureProviderOrThrow(apiData));
   }
 }

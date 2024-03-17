@@ -16,6 +16,7 @@ import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -36,6 +37,7 @@ import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles.Query;
 import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles.QueryInputSubtree;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql.Format;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
@@ -47,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -70,7 +73,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class Endpoint3dTilesSubtree extends EndpointSubCollection {
+public class Endpoint3dTilesSubtree extends EndpointSubCollection implements ApiExtensionHealth {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Endpoint3dTilesSubtree.class);
 
@@ -241,5 +244,10 @@ public class Endpoint3dTilesSubtree extends EndpointSubCollection {
             .build();
 
     return queryHandler.handle(Query.SUBTREE, queryInput, requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler, providers.getFeatureProviderOrThrow(apiData));
   }
 }

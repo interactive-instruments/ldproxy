@@ -29,6 +29,7 @@ import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeature;
 import de.ii.ogcapi.features.core.domain.WithChangeListeners;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -44,6 +45,7 @@ import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.base.domain.LogContext.MARKER;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.cql.domain.In;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
@@ -186,7 +188,8 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class PubSubBuildingBlock implements ApiBuildingBlock, WithChangeListeners {
+public class PubSubBuildingBlock
+    implements ApiBuildingBlock, ApiExtensionHealth, WithChangeListeners {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PubSubBuildingBlock.class);
 
@@ -620,5 +623,10 @@ public class PubSubBuildingBlock implements ApiBuildingBlock, WithChangeListener
       }
     }
     return null;
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queriesHandler, providers.getFeatureProviderOrThrow(apiData));
   }
 }

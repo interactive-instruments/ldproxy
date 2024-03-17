@@ -21,6 +21,7 @@ import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -58,6 +59,7 @@ import de.ii.ogcapi.routes.domain.RouteRepository;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ogcapi.routes.domain.WaypointsValue;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
@@ -73,6 +75,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -95,7 +98,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
+public class EndpointRoutesPost extends Endpoint implements ConformanceClass, ApiExtensionHealth {
 
   public static final ApiMediaType REQUEST_MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
@@ -423,5 +426,14 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
                 Optional.ofNullable(elevationProfileSimplificationTolerance))
             .build();
     return queryHandler.handle(QueryHandlerRoutes.Query.COMPUTE_ROUTE, queryInput, requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(
+        queryHandler,
+        ogcApiFeaturesQuery,
+        routeRepository,
+        providers.getFeatureProviderOrThrow(apiData));
   }
 }

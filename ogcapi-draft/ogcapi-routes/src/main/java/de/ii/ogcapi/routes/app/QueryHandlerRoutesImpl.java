@@ -41,6 +41,8 @@ import de.ii.ogcapi.routes.domain.RoutingFlag;
 import de.ii.ogcapi.routes.infra.EndpointRoutesGet;
 import de.ii.xtraplatform.base.domain.ETag;
 import de.ii.xtraplatform.base.domain.LogContext;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.cql.domain.Geometry;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
@@ -83,7 +85,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 @Singleton
 @AutoBind
-public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
+public class QueryHandlerRoutesImpl extends AbstractVolatileComposed implements QueryHandlerRoutes {
 
   private final I18n i18n;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
@@ -100,7 +102,9 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
       CrsInfo crsInfo,
       ValueStore valueStore,
       CrsSupport crsSupport,
-      RouteRepository routeRepository) {
+      RouteRepository routeRepository,
+      VolatileRegistry volatileRegistry) {
+    super(QueryHandlerRoutes.class.getSimpleName(), volatileRegistry, true);
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
     this.crsInfo = crsInfo;
@@ -117,6 +121,15 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             Query.GET_ROUTE_DEFINITION,
                 QueryHandler.with(QueryInputRoute.class, this::getRouteDefinition),
             Query.DELETE_ROUTE, QueryHandler.with(QueryInputRoute.class, this::deleteRoute));
+
+    onVolatileStart();
+
+    addSubcomponent(crsTransformerFactory);
+    addSubcomponent(crsInfo);
+    addSubcomponent(codelistStore);
+    addSubcomponent(routeRepository);
+
+    onVolatileStarted();
   }
 
   @Override

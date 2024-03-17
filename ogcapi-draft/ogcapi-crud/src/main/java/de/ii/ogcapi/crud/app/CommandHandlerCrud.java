@@ -10,6 +10,7 @@ package de.ii.ogcapi.crud.app;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler.QueryInputFeature;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider;
 import java.io.InputStream;
@@ -17,7 +18,7 @@ import java.util.Optional;
 import javax.ws.rs.core.Response;
 import org.immutables.value.Value;
 
-public interface CommandHandlerCrud {
+public interface CommandHandlerCrud extends Volatile2 {
 
   Response postItemsResponse(QueryInputFeatureCreate queryInput, ApiRequestContext requestContext);
 

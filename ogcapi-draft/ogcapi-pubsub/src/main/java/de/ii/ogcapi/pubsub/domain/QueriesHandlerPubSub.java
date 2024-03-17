@@ -9,8 +9,10 @@ package de.ii.ogcapi.pubsub.domain;
 
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 
-public interface QueriesHandlerPubSub extends QueriesHandler<QueriesHandlerPubSub.Query> {
+public interface QueriesHandlerPubSub
+    extends QueriesHandler<QueriesHandlerPubSub.Query>, Volatile2 {
 
   enum Query implements QueryIdentifier {
     ASYNC_API_DEFINITION
