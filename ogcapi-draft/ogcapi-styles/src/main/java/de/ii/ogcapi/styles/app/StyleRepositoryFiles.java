@@ -64,7 +64,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
@@ -120,11 +119,10 @@ public class StyleRepositoryFiles extends AbstractVolatile
   @Override
   public CompletionStage<Void> onStart(boolean isStartupAsync) {
     onVolatileStart();
-    volatileRegistry.onAvailable(stylesStore).toCompletableFuture().join();
-    volatileRegistry.onAvailable(mbStylesStore).toCompletableFuture().join();
-    volatileRegistry.onAvailable(tiles3dStylesStore).toCompletableFuture().join();
-    setState(State.AVAILABLE);
-    return CompletableFuture.completedFuture(null);
+
+    return volatileRegistry
+        .onAvailable(stylesStore, mbStylesStore, tiles3dStylesStore)
+        .thenRun(() -> setState(State.AVAILABLE));
   }
 
   public Stream<StylesFormatExtension> getStylesFormatStream(
