@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.cfg;
 
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry.ChangeHandler;
 import de.ii.xtraplatform.blobs.domain.Blob;
 import de.ii.xtraplatform.blobs.domain.ResourceStore;
@@ -90,5 +91,10 @@ class MockResourceStore implements ResourceStore {
   @Override
   public Runnable onStateChange(ChangeHandler handler, boolean initialCall) {
     return () -> {};
+  }
+
+  @Override
+  public VolatileRegistry getVolatileRegistry() {
+    return null;
   }
 }

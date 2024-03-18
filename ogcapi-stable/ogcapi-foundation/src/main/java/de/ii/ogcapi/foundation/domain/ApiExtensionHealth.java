@@ -20,13 +20,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.function.TriConsumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @AutoMultiBind
 public interface ApiExtensionHealth extends ApiExtension {
-
-  Logger LOGGER = LoggerFactory.getLogger(ApiExtensionHealth.class);
 
   Map<String, Volatile2> VOLATILES = new ConcurrentHashMap<>();
   Map<String, String> STARTUP_STATE = new ConcurrentHashMap<>();
@@ -54,11 +50,9 @@ public interface ApiExtensionHealth extends ApiExtension {
     getComposedVolatile(apiData)
         .onStateChange(
             (from, to) -> {
-              LOGGER.debug("WHEN AVAILABLE2 {} {}", from, to);
               if (to == State.AVAILABLE && !isStarted(apiData)) {
                 init.run();
                 didStart(apiData);
-                LOGGER.debug("WHEN AVAILABLE4");
               }
             },
             true);
@@ -75,8 +69,6 @@ public interface ApiExtensionHealth extends ApiExtension {
           if (volatiles.isEmpty()) {
             return Volatile2.available(getGlobalComponent(this, apiData.getId()));
           }
-
-          LOGGER.debug("REGISTER {} {}", volatiles.size(), this.getClass().getSimpleName());
 
           ApiHealthVolatile composed =
               new ApiHealthVolatile(getGlobalComponent(this, apiData.getId()), volatiles, Set.of());
@@ -96,11 +88,9 @@ public interface ApiExtensionHealth extends ApiExtension {
   }
 
   default void initWhenAvailable(OgcApi api) {
-    LOGGER.debug("WHEN AVAILABLE1");
     whenAvailable(
         api,
         () -> {
-          LOGGER.debug("WHEN AVAILABLE3");
           ValidationResult result = onStartup(api, MODE.NONE);
 
           if (!result.getErrors().isEmpty()) {
@@ -142,7 +132,10 @@ public interface ApiExtensionHealth extends ApiExtension {
               .filter(v -> v instanceof VolatileRegistered)
               .map(v -> ((VolatileRegistered) v).getVolatileRegistry())
               .findFirst()
-              .orElseThrow(),
+              .orElseThrow(
+                  () ->
+                      new IllegalStateException(
+                          String.format("No VolatileRegistered found for %s", uniqueKey))),
           false);
       this.volatiles = volatiles;
       this.errors = errors;
