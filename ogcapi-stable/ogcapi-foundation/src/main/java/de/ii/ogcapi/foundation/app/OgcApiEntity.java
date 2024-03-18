@@ -18,7 +18,6 @@ import de.ii.ogcapi.foundation.domain.ChangingItemCount;
 import de.ii.ogcapi.foundation.domain.ChangingLastModified;
 import de.ii.ogcapi.foundation.domain.ChangingSpatialExtent;
 import de.ii.ogcapi.foundation.domain.ChangingTemporalExtent;
-import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -42,11 +41,8 @@ import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import java.net.URI;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -115,18 +111,8 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
             .sorted(Comparator.comparingInt(ApiExtension::getStartupPriority))
             .collect(Collectors.toList());
 
-    Map<String, List<String>> ext = new LinkedHashMap<>();
-
     for (ApiExtension extension : extensions) {
       if (extension.isEnabledForApi(apiData)) {
-        String bbid =
-            ExtensionConfiguration.getBuildingBlockIdentifier(
-                extension.getBuildingBlockConfigurationType());
-        if (!ext.containsKey(bbid)) {
-          ext.put(bbid, new ArrayList<>());
-        }
-        ext.get(bbid).add(extension.getClass().getSimpleName());
-
         if (extension instanceof ApiBuildingBlock) {
           addCapability(ApiExtensionHealth.getCapability(extension));
         }
@@ -154,13 +140,6 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
       // TODO
       checkForStartupCancel();
     }
-
-    ext.keySet().stream()
-        .sorted()
-        .forEach(
-            bbid -> {
-              ext.get(bbid).forEach(comp -> LOGGER.debug("  APIEXT {} {}", bbid, comp));
-            });
 
     if (!isSuccess && LOGGER.isErrorEnabled()) {
       LOGGER.error(

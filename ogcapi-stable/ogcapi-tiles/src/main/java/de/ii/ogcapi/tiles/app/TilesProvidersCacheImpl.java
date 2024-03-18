@@ -52,7 +52,7 @@ public class TilesProvidersCacheImpl extends AbstractVolatileComposed
       TileMatrixSetLimitsGenerator limitsGenerator,
       TileMatrixSetRepository tileMatrixSetRepository,
       VolatileRegistry volatileRegistry) {
-    super(volatileRegistry);
+    super(volatileRegistry, true);
     this.tilesProviders = tilesProviders;
     this.limitsGenerator = limitsGenerator;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
