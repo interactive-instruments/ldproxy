@@ -8,6 +8,7 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
 import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.base.domain.resiliency.Volatile2.State;
@@ -90,16 +91,17 @@ public interface ApiExtensionHealth extends ApiExtension {
   default void initWhenAvailable(OgcApi api) {
     whenAvailable(
         api,
-        () -> {
-          ValidationResult result = onStartup(api, MODE.NONE);
+        LogContext.withMdc(
+            () -> {
+              ValidationResult result = onStartup(api, MODE.NONE);
 
-          if (!result.getErrors().isEmpty()) {
-            Volatile2 composed = getComposedVolatile(api.getData());
-            if (composed instanceof ApiHealthVolatile) {
-              ((ApiHealthVolatile) composed).setErrors(result.getErrors());
-            }
-          }
-        });
+              if (!result.getErrors().isEmpty()) {
+                Volatile2 composed = getComposedVolatile(api.getData());
+                if (composed instanceof ApiHealthVolatile) {
+                  ((ApiHealthVolatile) composed).setErrors(result.getErrors());
+                }
+              }
+            }));
   }
 
   default String getComponentKey() {

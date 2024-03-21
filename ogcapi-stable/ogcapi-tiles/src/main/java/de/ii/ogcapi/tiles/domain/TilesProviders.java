@@ -28,11 +28,11 @@ public interface TilesProviders {
   de.ii.xtraplatform.tiles.domain.TileProvider getTileProviderOrThrow(OgcApiDataV2 apiData);
 
   default Optional<TilesetMetadata> getTilesetMetadata(OgcApiDataV2 apiData) {
-    TileProvider provider = getTileProviderOrThrow(apiData);
+    Optional<TileProvider> optionalProvider = getTileProvider(apiData);
     return apiData
         .getExtension(TilesConfiguration.class)
         .map(cfg -> Optional.ofNullable(cfg.getTileProviderTileset()).orElse(DATASET_TILES))
-        .flatMap(provider::metadata);
+        .flatMap(tilesetId -> optionalProvider.flatMap(provider -> provider.metadata(tilesetId)));
   }
 
   default TilesetMetadata getTilesetMetadataOrThrow(OgcApiDataV2 apiData) {
@@ -50,12 +50,12 @@ public interface TilesProviders {
 
   default Optional<TilesetMetadata> getTilesetMetadata(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData) {
-    TileProvider provider = getTileProviderOrThrow(apiData, collectionData);
+    Optional<TileProvider> optionalProvider = getTileProvider(apiData, collectionData);
     return collectionData
         .getExtension(TilesConfiguration.class)
         .map(
             cfg -> Optional.ofNullable(cfg.getTileProviderTileset()).orElse(collectionData.getId()))
-        .flatMap(provider::metadata);
+        .flatMap(tilesetId -> optionalProvider.flatMap(provider -> provider.metadata(tilesetId)));
   }
 
   default TilesetMetadata getTilesetMetadataOrThrow(
