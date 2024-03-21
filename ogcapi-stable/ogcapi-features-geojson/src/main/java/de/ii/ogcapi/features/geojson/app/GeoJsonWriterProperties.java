@@ -168,16 +168,20 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   }
 
   protected boolean shouldSkipProperty(EncodingAwareContextGeoJson context) {
-    return !hasMappingAndValue(context) || (context.schema().get().isId() || context.inGeometry());
+    return !hasMapping(context) || (context.schema().get().isId() || context.inGeometry());
   }
 
-  protected boolean hasMappingAndValue(EncodingAwareContextGeoJson context) {
-    return context.schema().filter(FeatureSchema::isValue).isPresent()
-        && Objects.nonNull(context.value());
+  protected boolean hasMapping(EncodingAwareContextGeoJson context) {
+    return context.schema().filter(FeatureSchema::isValue).isPresent();
   }
 
   // TODO: centralize value type mappings (either as transformer or as part of context)
   private void writeValue(JsonGenerator json, String value, Type type) throws IOException {
+    if (Objects.isNull(value)) {
+      json.writeNull();
+      return;
+    }
+
     switch (type) {
       case BOOLEAN:
         // TODO: normalize in decoder
