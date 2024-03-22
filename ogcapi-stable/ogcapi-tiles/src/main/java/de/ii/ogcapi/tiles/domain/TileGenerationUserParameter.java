@@ -12,7 +12,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
 import de.ii.xtraplatform.tiles.domain.TileGenerationSchema;
-import de.ii.xtraplatform.tiles.domain.TileProvider;
 import java.util.Optional;
 
 @AutoMultiBind
@@ -32,7 +31,7 @@ public interface TileGenerationUserParameter {
     Optional<de.ii.xtraplatform.tiles.domain.TileProvider> tileProvider =
         tilesProviders
             .getTileProvider(apiData)
-            .filter(de.ii.xtraplatform.tiles.domain.TileProvider::supportsGeneration);
+            .filter(provider -> provider.generator().isSupported());
 
     return config.isPresent() && tileProvider.isPresent();
   }
@@ -48,7 +47,7 @@ public interface TileGenerationUserParameter {
     Optional<de.ii.xtraplatform.tiles.domain.TileProvider> tileProvider =
         tilesProviders
             .getTileProvider(apiData, apiData.getCollectionData(collectionId))
-            .filter(TileProvider::supportsGeneration);
+            .filter(provider -> provider.generator().isSupported());
 
     return config.isPresent() && tileProvider.isPresent();
   }

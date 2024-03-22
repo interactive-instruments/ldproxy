@@ -22,6 +22,7 @@ import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.tiles.domain.MinMax;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
+import de.ii.xtraplatform.tiles.domain.TileProvider;
 import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
@@ -173,7 +174,8 @@ public class TilesProvidersCacheImpl extends AbstractVolatileComposed
       }
 
       tilesProviders
-          .getTileProviderOrThrow(apiData, collectionId.flatMap(apiData::getCollectionData))
+          .getTileProviderOrThrow(
+              apiData, collectionId.flatMap(apiData::getCollectionData), TileProvider::seeding)
           .deleteFromCache(collectionId.orElse(DATASET_TILES), tileMatrixSet, limits);
     }
   }

@@ -52,12 +52,6 @@ public class TilesProvidersImpl implements TilesProviders {
   }
 
   @Override
-  public TileProvider getTileProviderOrThrow(OgcApiDataV2 apiData) {
-    return getTileProvider(apiData)
-        .orElseThrow(() -> new IllegalStateException("No tile provider found."));
-  }
-
-  @Override
   public boolean hasTileProvider(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData) {
     return getTileProvider(apiData, collectionData).isPresent();

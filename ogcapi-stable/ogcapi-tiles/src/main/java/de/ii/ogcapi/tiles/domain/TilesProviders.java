@@ -11,9 +11,12 @@ import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
 
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.base.domain.resiliency.OptionalVolatileCapability;
+import de.ii.xtraplatform.tiles.domain.TileAccess;
 import de.ii.xtraplatform.tiles.domain.TileProvider;
 import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
 import java.util.Optional;
+import java.util.function.Function;
 
 public interface TilesProviders {
 
@@ -23,16 +26,37 @@ public interface TilesProviders {
 
   boolean hasTileProvider(OgcApiDataV2 apiData);
 
-  Optional<de.ii.xtraplatform.tiles.domain.TileProvider> getTileProvider(OgcApiDataV2 apiData);
+  Optional<TileProvider> getTileProvider(OgcApiDataV2 apiData);
 
-  de.ii.xtraplatform.tiles.domain.TileProvider getTileProviderOrThrow(OgcApiDataV2 apiData);
+  default <T> Optional<T> getTileProvider(
+      OgcApiDataV2 apiData, Function<TileProvider, OptionalVolatileCapability<T>> capability) {
+    return getTileProvider(apiData)
+        .map(capability)
+        .filter(OptionalVolatileCapability::isAvailable)
+        .map(OptionalVolatileCapability::get);
+  }
+
+  default TileProvider getTileProviderOrThrow(OgcApiDataV2 apiData) {
+    return getTileProvider(apiData)
+        .orElseThrow(() -> new IllegalStateException("No tile provider found."));
+  }
+
+  default <T> T getTileProviderOrThrow(
+      OgcApiDataV2 apiData, Function<TileProvider, OptionalVolatileCapability<T>> capability) {
+    return getTileProvider(apiData, capability)
+        .orElseThrow(() -> new IllegalStateException("No tile provider found."));
+  }
 
   default Optional<TilesetMetadata> getTilesetMetadata(OgcApiDataV2 apiData) {
-    Optional<TileProvider> optionalProvider = getTileProvider(apiData);
+    Optional<TileAccess> optionalProvider =
+        getTileProvider(apiData)
+            .filter(provider -> provider.access().isAvailable())
+            .map(provider -> provider.access().get());
     return apiData
         .getExtension(TilesConfiguration.class)
         .map(cfg -> Optional.ofNullable(cfg.getTileProviderTileset()).orElse(DATASET_TILES))
-        .flatMap(tilesetId -> optionalProvider.flatMap(provider -> provider.metadata(tilesetId)));
+        .flatMap(
+            tilesetId -> optionalProvider.flatMap(provider -> provider.getMetadata(tilesetId)));
   }
 
   default TilesetMetadata getTilesetMetadataOrThrow(OgcApiDataV2 apiData) {
@@ -42,20 +66,42 @@ public interface TilesProviders {
 
   boolean hasTileProvider(OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData);
 
-  Optional<de.ii.xtraplatform.tiles.domain.TileProvider> getTileProvider(
+  Optional<TileProvider> getTileProvider(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData);
 
-  de.ii.xtraplatform.tiles.domain.TileProvider getTileProviderOrThrow(
+  default <T> Optional<T> getTileProvider(
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData,
+      Function<TileProvider, OptionalVolatileCapability<T>> capability) {
+    return getTileProvider(apiData, collectionData)
+        .map(capability)
+        .filter(OptionalVolatileCapability::isAvailable)
+        .map(OptionalVolatileCapability::get);
+  }
+
+  TileProvider getTileProviderOrThrow(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData);
+
+  default <T> T getTileProviderOrThrow(
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData,
+      Function<TileProvider, OptionalVolatileCapability<T>> capability) {
+    return getTileProvider(apiData, collectionData, capability)
+        .orElseThrow(() -> new IllegalStateException("No tile provider found."));
+  }
 
   default Optional<TilesetMetadata> getTilesetMetadata(
       OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData) {
-    Optional<TileProvider> optionalProvider = getTileProvider(apiData, collectionData);
+    Optional<TileAccess> optionalProvider =
+        getTileProvider(apiData, collectionData)
+            .filter(provider -> provider.access().isAvailable())
+            .map(provider -> provider.access().get());
     return collectionData
         .getExtension(TilesConfiguration.class)
         .map(
             cfg -> Optional.ofNullable(cfg.getTileProviderTileset()).orElse(collectionData.getId()))
-        .flatMap(tilesetId -> optionalProvider.flatMap(provider -> provider.metadata(tilesetId)));
+        .flatMap(
+            tilesetId -> optionalProvider.flatMap(provider -> provider.getMetadata(tilesetId)));
   }
 
   default TilesetMetadata getTilesetMetadataOrThrow(
@@ -71,18 +117,27 @@ public interface TilesProviders {
         : hasTileProvider(apiData);
   }
 
-  default Optional<de.ii.xtraplatform.tiles.domain.TileProvider> getTileProvider(
+  default Optional<TileProvider> getTileProvider(
       OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> collectionData) {
     return collectionData.isPresent()
         ? getTileProvider(apiData, collectionData.get())
         : getTileProvider(apiData);
   }
 
-  default de.ii.xtraplatform.tiles.domain.TileProvider getTileProviderOrThrow(
+  default TileProvider getTileProviderOrThrow(
       OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> collectionData) {
     return collectionData.isPresent()
         ? getTileProviderOrThrow(apiData, collectionData.get())
         : getTileProviderOrThrow(apiData);
+  }
+
+  default <T> T getTileProviderOrThrow(
+      OgcApiDataV2 apiData,
+      Optional<FeatureTypeConfigurationOgcApi> collectionData,
+      Function<TileProvider, OptionalVolatileCapability<T>> capability) {
+    return collectionData.isPresent()
+        ? getTileProviderOrThrow(apiData, collectionData.get(), capability)
+        : getTileProviderOrThrow(apiData, capability);
   }
 
   default Optional<TilesetMetadata> getTilesetMetadata(

@@ -50,6 +50,7 @@ import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.base.domain.ETag;
 import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
 import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileUnavailableException;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
@@ -61,6 +62,7 @@ import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransien
 import de.ii.xtraplatform.tiles.domain.ImmutableTileQuery;
 import de.ii.xtraplatform.tiles.domain.ImmutableTilesBoundingBox;
 import de.ii.xtraplatform.tiles.domain.MinMax;
+import de.ii.xtraplatform.tiles.domain.TileAccess;
 import de.ii.xtraplatform.tiles.domain.TileGenerationParametersTransient;
 import de.ii.xtraplatform.tiles.domain.TileGenerationSchema;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
@@ -348,12 +350,18 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                 .getCollectionId()
                 .flatMap(id -> requestContext.getApi().getData().getCollectionData(id)));
 
+    if (!tileProvider.access().isAvailable()) {
+      throw new VolatileUnavailableException("Tile provider not available");
+    }
+
+    TileAccess tileAccess = tileProvider.access().get();
+
     TileQuery tileQuery = getTileQuery(queryInput, requestContext, tileProvider);
 
-    TileResult result = tileProvider.getTile(tileQuery);
+    TileResult result = tileAccess.getTile(tileQuery);
 
     if (!result.isAvailable()) {
-      if (result.isOutsideLimits() || tileProvider.tilesMayBeUnavailable()) {
+      if (result.isOutsideLimits() || tileAccess.tilesMayBeUnavailable()) {
         throw result.getError().map(NotFoundException::new).orElseGet(NotFoundException::new);
       } else {
         throw result
@@ -435,8 +443,8 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                                 requestContext.getApiUri()))));
 
     Optional<TileGenerationSchema> generationSchema =
-        tileProvider.supportsGeneration()
-            ? Optional.of(tileProvider.generator().getGenerationSchema(tileset))
+        tileProvider.generator().isAvailable()
+            ? Optional.of(tileProvider.generator().get().getGenerationSchema(tileset))
             : Optional.empty();
     ImmutableTileGenerationParametersTransient.Builder userParametersBuilder =
         new ImmutableTileGenerationParametersTransient.Builder();
