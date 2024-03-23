@@ -74,6 +74,7 @@ import javax.inject.Singleton;
  *     <p>The conformance classes *Functions* and *Arithmetic Expressions* are not supported.
  *     <p>The operator `IN` requires a property on the left side and literals on the right side.
  *     <p>Only `booleanLiteral` may be used from `booleanExpression` in a `scalarExpression`.
+ *     <p>The Unicode characters "\x10000" to "\x10FFFF" are not supported.
  * @limitationsDe Je nach Feature-Provider werden einige Funktionen von CQL2 möglicherweise nicht
  *     unterstützt. Insbesondere werden in GeoPackage Feature-Providern Queryables in einer
  *     JSON-Spalte, die Arrays sind, nicht unterstützt. In PostgreSQL/PostGIS-Feature-Anbietern wird
@@ -83,6 +84,7 @@ import javax.inject.Singleton;
  *     werden.
  *     <p>Der Operator `IN` erfordert eine Eigenschaft auf der linken Seite und Literale auf der
  *     rechten Seite.
+ *     <p>Die Unicode-Zeichen "\x10000" bis "\x10FFFF" werden nicht unterstützt.
  * @ref:cfg {@link de.ii.ogcapi.filter.domain.FilterConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.filter.domain.ImmutableFilterConfiguration}
  * @ref:queryParameters {@link de.ii.ogcapi.filter.api.QueryParameterFilter}, {@link
