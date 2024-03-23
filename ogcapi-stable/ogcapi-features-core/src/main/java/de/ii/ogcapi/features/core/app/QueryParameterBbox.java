@@ -27,7 +27,7 @@ import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.xtraplatform.cql.domain.BooleanValue2;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
-import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
+import de.ii.xtraplatform.cql.domain.Geometry.Bbox;
 import de.ii.xtraplatform.cql.domain.IsNull;
 import de.ii.xtraplatform.cql.domain.Or;
 import de.ii.xtraplatform.cql.domain.Property;
@@ -153,14 +153,6 @@ public class QueryParameterBbox extends ApiExtensionCache
               values.get(0), values.get(1), values.get(2), values.get(3)));
     }
 
-    Envelope envelope =
-        Envelope.of(
-            bboxCoordinates.get(0),
-            bboxCoordinates.get(1),
-            bboxCoordinates.get(2),
-            bboxCoordinates.get(3),
-            bboxCrs);
-
     // We are using the spatial extent of the data to avoid
     // coordinate transformation errors when a bbox parameter
     // is completely outside of the domain of a projected CRS
@@ -175,12 +167,12 @@ public class QueryParameterBbox extends ApiExtensionCache
     Optional<BoundingBox> maxSpatialExtent =
         api.getSpatialExtent(collectionData.getId(), bboxCrs)
             .map(
-                bbox ->
+                bbox2 ->
                     new ImmutableBoundingBox.Builder()
-                        .xmin(bbox.getXmin() - buffer)
-                        .xmax(bbox.getXmax() + buffer)
-                        .ymin(bbox.getYmin() - buffer)
-                        .ymax(bbox.getYmax() + buffer)
+                        .xmin(bbox2.getXmin() - buffer)
+                        .xmax(bbox2.getXmax() + buffer)
+                        .ymin(bbox2.getYmin() - buffer)
+                        .ymax(bbox2.getYmax() + buffer)
                         .epsgCrs(bboxCrs)
                         .build());
 
@@ -212,6 +204,14 @@ public class QueryParameterBbox extends ApiExtensionCache
 
     Property property = Property.of(primaryGeometry.get().getFullPathAsString());
 
+    Bbox bbox =
+        Bbox.of(
+            bboxCoordinates.get(0),
+            bboxCoordinates.get(1),
+            bboxCoordinates.get(2),
+            bboxCoordinates.get(3),
+            bboxCrs);
+
     Cql2Expression cql2Expression =
         primaryGeometry.map(SchemaBase::isRequired).orElse(false)
                 || !providers
@@ -219,8 +219,8 @@ public class QueryParameterBbox extends ApiExtensionCache
                     .filter(provider -> provider instanceof FeatureQueries)
                     .map(provider -> ((FeatureQueries) provider).supportsIsNull())
                     .orElse(false)
-            ? SIntersects.of(property, SpatialLiteral.of(envelope))
-            : Or.of(SIntersects.of(property, SpatialLiteral.of(envelope)), IsNull.of(property));
+            ? SIntersects.of(property, SpatialLiteral.of(bbox))
+            : Or.of(SIntersects.of(property, SpatialLiteral.of(bbox)), IsNull.of(property));
 
     if (collectionData
         .getExtension(FeaturesCoreConfiguration.class)

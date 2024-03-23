@@ -15,7 +15,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.cql.domain.BooleanValue2;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
-import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
+import de.ii.xtraplatform.cql.domain.Geometry.Bbox;
 import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.SIntersects;
 import de.ii.xtraplatform.cql.domain.SpatialLiteral;
@@ -131,7 +131,7 @@ public abstract class TileResourceDescriptor {
                         (Cql2Expression)
                             SIntersects.of(
                                 Property.of(property.getFullPathAsString()),
-                                SpatialLiteral.of(Envelope.of(computeBbox()))))
+                                SpatialLiteral.of(Bbox.of(computeBbox()))))
                 .orElse(BooleanValue2.of(false)))
         .build();
   }

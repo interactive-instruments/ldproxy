@@ -65,7 +65,7 @@ class FilterParameterSpecification extends Specification {
     @Shared
     def collection = getRequest(restClient, API_PATH_DARAA + "/collections/" + AERONAUTIC_CRV, null)
     @Shared
-    def envelopeCollection = "ENVELOPE(" + String.join(",", collection.responseData.extent.spatial.bbox[0].stream().map(n -> String.valueOf(n)).toList()) + ")"
+    def envelopeCollection = "BBOX(" + String.join(",", collection.responseData.extent.spatial.bbox[0].stream().map(n -> String.valueOf(n)).toList()) + ")"
     @Shared
     def idPnt = allCulturePntFeatures.responseData.features[0].id
     @Shared
@@ -81,7 +81,7 @@ class FilterParameterSpecification extends Specification {
     @Shared
     def delta = 0.02
     @Shared
-    def envelopeCrv = "ENVELOPE(" + String.join(",", String.valueOf(lonCrv-delta), String.valueOf(latCrv-delta), String.valueOf(lonCrv+delta), String.valueOf(latCrv+delta)) + ")"
+    def envelopeCrv = "BBOX(" + String.join(",", String.valueOf(lonCrv-delta), String.valueOf(latCrv-delta), String.valueOf(lonCrv+delta), String.valueOf(latCrv+delta)) + ")"
     @Shared
     def polygonCrv = "POLYGON((" + String.join(",",
             String.valueOf(lonCrv-delta)+" "+String.valueOf(latCrv),
@@ -96,7 +96,7 @@ class FilterParameterSpecification extends Specification {
     @Shared
     def epsg4326 = "http://www.opengis.net/def/crs/EPSG/0/4326"
     @Shared
-    def envelopeCrv4326 = "ENVELOPE(" + String.join(",", String.valueOf(latCrv-delta), String.valueOf(lonCrv-delta), String.valueOf(latCrv+delta), String.valueOf(lonCrv+delta)) + ")"
+    def envelopeCrv4326 = "BBOX(" + String.join(",", String.valueOf(latCrv-delta), String.valueOf(lonCrv-delta), String.valueOf(latCrv+delta), String.valueOf(lonCrv+delta)) + ")"
     @Shared
     def polygonCrv4326 = "POLYGON((" + String.join(",",
             String.valueOf(latCrv)+" "+String.valueOf(lonCrv-delta),

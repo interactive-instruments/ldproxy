@@ -32,7 +32,7 @@ import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles.QueryInputSubtree;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
-import de.ii.xtraplatform.cql.domain.Geometry.Envelope;
+import de.ii.xtraplatform.cql.domain.Geometry.Bbox;
 import de.ii.xtraplatform.cql.domain.Property;
 import de.ii.xtraplatform.cql.domain.SIntersects;
 import de.ii.xtraplatform.cql.domain.SpatialLiteral;
@@ -454,12 +454,11 @@ public interface Subtree {
       QueryInputSubtree queryInput,
       BoundingBox bbox,
       Optional<Cql2Expression> additionalFilter) {
-    Envelope envelope =
-        Envelope.of(
-            bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), bbox.getEpsgCrs());
+    Bbox bbox2 =
+        Bbox.of(bbox.getXmin(), bbox.getYmin(), bbox.getXmax(), bbox.getYmax(), bbox.getEpsgCrs());
 
     Cql2Expression filter =
-        SIntersects.of(Property.of(queryInput.getGeometryProperty()), SpatialLiteral.of(envelope));
+        SIntersects.of(Property.of(queryInput.getGeometryProperty()), SpatialLiteral.of(bbox2));
 
     if (additionalFilter.isPresent()) {
       filter = And.of(filter, additionalFilter.get());
