@@ -46,7 +46,7 @@ import javax.inject.Singleton;
  *     Language](https://docs.ogc.org/DRAFTS/19-079r2.html) as well as the conformance classes
  *     *Basic CQL2*, *Advanced Comparison Operators*, *Case-insensitive Comparisons*,
  *     *Accent-insensitive Comparisons*, *Basic Spatial Functions*, *Basic Spatial Functions with
- *     additional Spatial Data Types*, *Spatial Functions*, *Temporal Functions*, *Array Functions*,
+ *     additional Spatial Literals*, *Spatial Functions*, *Temporal Functions*, *Array Functions*,
  *     *Property-Property Comparisons*, *CQL2 Text encoding*, and *CQL2 JSON encoding* from the
  *     draft specification [Common Query Language (CQL2](https://docs.ogc.org/DRAFTS/21-065r1.html).
  *     The implementation is subject to change in the course of the development and approval process
@@ -59,7 +59,7 @@ import javax.inject.Singleton;
  *     Query Language](https://docs.ogc.org/DRAFTS/19-079r2.html) sowie die Konformitätsklassen
  *     *Basic CQL2*, *Advanced Comparison Operators*, *Case-insensitive Comparisons*,
  *     *Accent-insensitive Comparisons*, *Basic Spatial Functions*, *Basic Spatial Functions with
- *     additional Spatial Data Types*, *Spatial Functions*, *Temporal Functions*, *Array Functions*,
+ *     additional Spatial Literals*, *Spatial Functions*, *Temporal Functions*, *Array Functions*,
  *     *Property-Property Comparisons*, *CQL2 Text encoding*, und *CQL2 JSON encoding* aus dem
  *     Entwurf der Spezifikation [Common Query Language
  *     (CQL2](https://docs.ogc.org/DRAFTS/21-065r1.html). Die Implementierung wird sich im Zuge der
