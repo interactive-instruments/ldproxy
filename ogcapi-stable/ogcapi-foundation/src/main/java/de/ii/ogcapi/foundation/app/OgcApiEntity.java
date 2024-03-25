@@ -25,6 +25,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.TemporalExtent;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
+import de.ii.xtraplatform.cache.domain.Cache;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
@@ -63,7 +64,7 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
   private final ServicesContext servicesContext;
   private final boolean asyncStartup;
 
-  // private final de.ii.xtraplatform.cache.domain.Cache cache;
+  private final Cache cache;
 
   @AssistedInject
   public OgcApiEntity(
@@ -72,15 +73,14 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
       ServicesContext servicesContext,
       AppContext appContext,
       VolatileRegistry volatileRegistry,
-      // de.ii.xtraplatform.cache.domain.Cache cache,
+      Cache cache,
       @Assisted OgcApiDataV2 data) {
     super(data, volatileRegistry);
     this.crsTransformerFactory = crsTransformerFactory;
     this.extensionRegistry = extensionRegistry;
     this.servicesContext = servicesContext;
     this.asyncStartup = appContext.getConfiguration().getModules().isStartupAsync();
-    // TODO: with(prefix)
-    // this.cache = cache;
+    this.cache = cache.withPrefix(getEntityType(), getId());
   }
 
   @Override
@@ -330,10 +330,10 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
     return asyncStartup;
   }
 
-  /*@Override
+  @Override
   public Cache getCache() {
     return cache;
-  }*/
+  }
 
   private Optional<BoundingBox> transformSpatialExtent(
       BoundingBox spatialExtent, EpsgCrs targetCrs) {

@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import de.ii.xtraplatform.cache.domain.Cache;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.services.domain.Service;
@@ -169,5 +170,5 @@ public interface OgcApi extends Service {
 
   boolean isAsyncStartup();
 
-  // de.ii.xtraplatform.cache.domain.Cache getCache();
+  Cache getCache();
 }

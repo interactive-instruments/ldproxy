@@ -32,7 +32,7 @@ class JsonFgWriterSetupUtil {
                 .crsTransformer(Optional.ofNullable(crsTransformer))
                 .defaultCrs(OgcCrs.CRS84)
                 .mediaType(FeaturesFormatJsonFg.MEDIA_TYPE)
-                .api(new OgcApiEntity(null, null, null, new AppContextTest(), null, null))
+                .api(new OgcApiEntity(null, null, null, new AppContextTest(), null, new CacheTest(), null))
                 .apiData(new ImmutableOgcApiDataV2.Builder()
                         .id("s")
                         .serviceType("OGC_API")

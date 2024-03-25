@@ -30,6 +30,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
+import de.ii.xtraplatform.cache.domain.Cache;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.entities.domain.AbstractEntityFactory;
 import de.ii.xtraplatform.entities.domain.AutoEntity;
@@ -82,7 +83,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
       ExtensionRegistry extensionRegistry,
       ServicesContext servicesContext,
       VolatileRegistry volatileRegistry,
-      // de.ii.xtraplatform.cache.domain.Cache cache,
+      Cache cache,
       OgcApiFactoryAssisted ogcApiFactoryAssisted) {
     super(ogcApiFactoryAssisted);
     this.extensionRegistry = extensionRegistry;

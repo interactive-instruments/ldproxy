@@ -470,8 +470,10 @@ public interface OgcApiDataV2 extends ServiceData, ExtendableConfiguration {
   default OgcApiDataV2 mergeBuildingBlocks() {
     List<ExtensionConfiguration> distinctExtensions = getMergedExtensions();
 
-    // remove duplicates
-    if (getExtensions().size() > distinctExtensions.size()) {
+    // remove duplicates, stable order
+    if (!Objects.equals(
+        ExtendableConfiguration.discriminators(getExtensions()),
+        ExtendableConfiguration.discriminators(distinctExtensions))) {
       return new ImmutableOgcApiDataV2.Builder().from(this).extensions(distinctExtensions).build();
     }
 
