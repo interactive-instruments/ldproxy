@@ -32,7 +32,7 @@ public interface ApiExtensionHealth extends ApiExtension {
     String key = getClass() + apiData.getId();
     boolean started =
         STARTUP_STATE.containsKey(key)
-            && Objects.equals(STARTUP_STATE.get(key), apiData.getPreHash().orElse(""));
+            && Objects.equals(STARTUP_STATE.get(key), apiData.getStableHash());
 
     if (!started) {
       getComposedVolatile(apiData);
@@ -43,7 +43,7 @@ public interface ApiExtensionHealth extends ApiExtension {
 
   default void didStart(OgcApiDataV2 apiData) {
     String key = getClass() + apiData.getId();
-    STARTUP_STATE.put(key, apiData.getPreHash().orElse("NONE"));
+    STARTUP_STATE.put(key, apiData.getStableHash());
   }
 
   default void whenAvailable(OgcApi api, Runnable init) {
