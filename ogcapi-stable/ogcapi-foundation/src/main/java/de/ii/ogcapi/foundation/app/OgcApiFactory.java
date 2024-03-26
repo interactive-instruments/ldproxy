@@ -220,7 +220,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
         if (buildingBlocks.containsKey(cfg.getClass())) {
           configs.add(buildingBlocks.get(cfg.getClass()).hydrateConfiguration(cfg));
         } else {
-          LOGGER.error("Building block not found: {}", cfg.getBuildingBlock());
+          LOGGER.error("Building block not supported: {}", cfg.getBuildingBlock());
         }
       }
       hydrated = new ImmutableOgcApiDataV2.Builder().from(hydrated).extensions(configs).build();
