@@ -11,7 +11,13 @@ import { addPopup, addPopupProps } from "./popup";
 
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
-const setStyleGeoJson = (map, styleUrl, removeZoomLevelConstraints) => {
+const setStyleGeoJson = (
+  map,
+  maplibre,
+  styleUrl,
+  removeZoomLevelConstraints,
+  popup
+) => {
   // eslint-disable-next-line no-undef
   fetch(styleUrl)
     .then((response) => response.json())
@@ -59,6 +65,16 @@ const setStyleGeoJson = (map, styleUrl, removeZoomLevelConstraints) => {
       delete dataStyle.terrain;
 
       map.setStyle(dataStyle, { diff: false });
+
+      if (popup === "HOVER_ID") {
+        addPopup(
+          map,
+          maplibre,
+          dataStyle.layers
+            .filter((layer) => isDataLayer(layer) === true)
+            .map((layer) => layer.id)
+        );
+      }
     });
 };
 
@@ -172,7 +188,7 @@ const addData = (
     }
 
     if (styleUrl) {
-      setStyleGeoJson(map, styleUrl, removeZoomLevelConstraints);
+      setStyleGeoJson(map, maplibre, styleUrl, removeZoomLevelConstraints, popup);
     } else {
       const defaultLayers = geoJsonLayers(defaultStyle);
 
