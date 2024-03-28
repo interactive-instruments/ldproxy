@@ -16,6 +16,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeature.Builder;
 import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -26,6 +27,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.base.domain.ETag.Type;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
@@ -33,6 +35,7 @@ import de.ii.xtraplatform.features.domain.SchemaBase.Scope;
 import io.dropwizard.auth.Auth;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -54,7 +57,7 @@ import javax.ws.rs.core.Response;
 @Singleton
 @AutoBind
 public class EndpointFeature extends EndpointFeaturesDefinition
-    implements PolicyAttributeFeatureGetter {
+    implements PolicyAttributeFeatureGetter, ApiExtensionHealth {
 
   private final FeaturesQuery ogcApiFeaturesQuery;
   private final FeaturesCoreQueriesHandler queryHandler;
@@ -156,5 +159,10 @@ public class EndpointFeature extends EndpointFeaturesDefinition
 
     return queryHandler.handle(
         FeaturesCoreQueriesHandler.Query.FEATURE, queryInputBuilder.build(), requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(ogcApiFeaturesQuery, queryHandler, providers.getFeatureProviderOrThrow(apiData));
   }
 }

@@ -90,8 +90,7 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
             .add(new TileMatrixSetsBuildingBlock())
             .add(
                 new TilesBuildingBlock(
-                    this, null, null, null, null, null,
-                    null)) // TODO: TileFormatWithQuerySupportExtension,
+                    this, null, null)) // TODO: TileFormatWithQuerySupportExtension,
             // TileSetFormatExtension
             .add(new Tiles3dBuildingBlock())
             .add(new XmlBuildingBlock())

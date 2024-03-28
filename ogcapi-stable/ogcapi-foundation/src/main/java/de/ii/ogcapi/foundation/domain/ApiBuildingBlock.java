@@ -274,11 +274,6 @@ import de.ii.xtraplatform.docs.DocVar;
 public interface ApiBuildingBlock extends ApiExtension {
 
   @Override
-  default boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return true;
-  }
-
-  @Override
   default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return getDefaultConfiguration().getClass();
   }

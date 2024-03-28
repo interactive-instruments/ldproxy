@@ -13,6 +13,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.Endpoint;
@@ -30,10 +31,10 @@ import de.ii.ogcapi.tilematrixsets.domain.ImmutableQueryInputTileMatrixSets;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsFormatExtension;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler;
-import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
-import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -52,22 +53,18 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointTileMatrixSets extends Endpoint {
+public class EndpointTileMatrixSets extends Endpoint implements ApiExtensionHealth {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointTileMatrixSets.class);
   private static final List<String> TAGS = ImmutableList.of("Discover and fetch tiling schemes");
 
   private final TileMatrixSetsQueriesHandler queryHandler;
-  private final TileMatrixSetRepository tileMatrixSetRepository;
 
   @Inject
   EndpointTileMatrixSets(
-      ExtensionRegistry extensionRegistry,
-      TileMatrixSetsQueriesHandler queryHandler,
-      TileMatrixSetRepository tileMatrixSetRepository) {
+      ExtensionRegistry extensionRegistry, TileMatrixSetsQueriesHandler queryHandler) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
-    this.tileMatrixSetRepository = tileMatrixSetRepository;
   }
 
   @Override
@@ -140,27 +137,28 @@ public class EndpointTileMatrixSets extends Endpoint {
     if (!isEnabledForApi(api.getData()))
       throw new NotFoundException("Tile matrix sets are not available in this API.");
 
-    ImmutableSet<TileMatrixSet> tmsSet =
+    ImmutableSet<String> tmsSet =
         getPathParameters(extensionRegistry, api.getData(), "/tileMatrixSets/{tileMatrixSetId}")
             .stream()
             .filter(param -> param.getName().equalsIgnoreCase("tileMatrixSetId"))
             .findFirst()
             .map(
                 param ->
-                    param.getValues(api.getData()).stream()
-                        .map(tileMatrixSetRepository::get)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .collect(ImmutableSet.toImmutableSet()))
+                    param.getValues(api.getData()).stream().collect(ImmutableSet.toImmutableSet()))
             .orElse(ImmutableSet.of());
 
     TileMatrixSetsQueriesHandler.QueryInputTileMatrixSets queryInput =
         new ImmutableQueryInputTileMatrixSets.Builder()
             .from(getGenericQueryInput(api.getData()))
-            .tileMatrixSets(tmsSet)
+            .tileMatrixSetIds(tmsSet)
             .build();
 
     return queryHandler.handle(
         TileMatrixSetsQueriesHandler.Query.TILE_MATRIX_SETS, queryInput, requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler);
   }
 }

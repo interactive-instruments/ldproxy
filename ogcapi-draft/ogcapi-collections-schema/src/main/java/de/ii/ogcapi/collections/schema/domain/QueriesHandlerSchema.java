@@ -25,6 +25,7 @@ import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.base.domain.ETag;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
@@ -40,7 +41,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.immutables.value.Value;
 
-public interface QueriesHandlerSchema extends QueriesHandler<Query> {
+public interface QueriesHandlerSchema extends QueriesHandler<Query>, Volatile2 {
 
   enum Query implements QueryIdentifier {
     SCHEMA

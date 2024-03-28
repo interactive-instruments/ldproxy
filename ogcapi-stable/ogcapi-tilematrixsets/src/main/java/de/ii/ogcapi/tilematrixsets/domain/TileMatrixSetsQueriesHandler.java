@@ -13,13 +13,13 @@ import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
-import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import java.util.List;
 import java.util.Map;
 import org.immutables.value.Value;
 
 public interface TileMatrixSetsQueriesHandler
-    extends QueriesHandler<TileMatrixSetsQueriesHandler.Query> {
+    extends QueriesHandler<TileMatrixSetsQueriesHandler.Query>, Volatile2 {
 
   String GROUP_TILES = "tiles";
   PermissionGroup GROUP_TILES_READ = PermissionGroup.of(Base.READ, GROUP_TILES, "access tiles");
@@ -35,7 +35,7 @@ public interface TileMatrixSetsQueriesHandler
   @Value.Immutable
   interface QueryInputTileMatrixSets extends QueryInput {
 
-    List<TileMatrixSet> getTileMatrixSets();
+    List<String> getTileMatrixSetIds();
   }
 
   @Value.Immutable

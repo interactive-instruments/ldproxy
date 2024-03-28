@@ -20,10 +20,14 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileUnavailableException;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.values.domain.ValueStore;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -31,22 +35,39 @@ import javax.ws.rs.core.Response;
 
 @Singleton
 @AutoBind
-public class QueriesHandlerSchemaFeatures implements QueriesHandlerSchema {
+public class QueriesHandlerSchemaFeatures extends AbstractVolatileComposed
+    implements QueriesHandlerSchema {
 
   private final FeaturesCoreProviders providers;
   private final I18n i18n;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
-  private final JsonSchemaCache schemaCache;
+  private JsonSchemaCache schemaCache;
 
   @Inject
   public QueriesHandlerSchemaFeatures(
-      I18n i18n, FeaturesCoreProviders providers, ValueStore valueStore) {
+      I18n i18n,
+      FeaturesCoreProviders providers,
+      ValueStore valueStore,
+      VolatileRegistry volatileRegistry) {
+    super(QueriesHandlerSchema.class.getSimpleName(), volatileRegistry, true);
     this.i18n = i18n;
     this.providers = providers;
     this.queryHandlers =
         ImmutableMap.of(
             Query.SCHEMA, QueryHandler.with(QueryInputSchema.class, this::getSchemaResponse));
-    this.schemaCache = new SchemaCacheFeatures(valueStore.forType(Codelist.class)::asMap);
+
+    onVolatileStart();
+
+    addSubcomponent(valueStore);
+
+    volatileRegistry
+        .onAvailable(valueStore)
+        .thenRun(
+            () ->
+                this.schemaCache =
+                    new SchemaCacheFeatures(valueStore.forType(Codelist.class)::asMap));
+
+    onVolatileStarted();
   }
 
   @Override
@@ -67,6 +88,10 @@ public class QueriesHandlerSchemaFeatures implements QueriesHandlerSchema {
       FeatureTypeConfigurationOgcApi collectionData,
       Optional<String> schemaUri,
       VERSION version) {
+    if (Objects.isNull(schemaCache)) {
+      throw new VolatileUnavailableException("JsonSchemaCache not available");
+    }
+
     return schemaCache.getSchema(featureSchema, apiData, collectionData, schemaUri, version);
   }
 }

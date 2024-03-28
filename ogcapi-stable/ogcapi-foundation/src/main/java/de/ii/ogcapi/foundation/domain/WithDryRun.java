@@ -9,5 +9,7 @@ package de.ii.ogcapi.foundation.domain;
 
 public interface WithDryRun {
 
-  boolean getDryRun();
+  default boolean getDryRun() {
+    return false;
+  }
 }

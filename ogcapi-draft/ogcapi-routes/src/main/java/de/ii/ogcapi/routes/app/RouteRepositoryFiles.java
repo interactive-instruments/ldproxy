@@ -31,7 +31,8 @@ import de.ii.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutesLinksGenerator;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
-import de.ii.xtraplatform.base.domain.StoreSource.Content;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatile;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.values.domain.Identifier;
 import de.ii.xtraplatform.values.domain.KeyValueStore;
@@ -42,9 +43,9 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -54,7 +55,8 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
-public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
+public class RouteRepositoryFiles extends AbstractVolatile
+    implements RouteRepository, AppLifeCycle {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RouteRepositoryFiles.class);
 
@@ -65,14 +67,15 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
   private final DefaultLinksGenerator defaultLinkGenerator;
   private final RoutesLinksGenerator routesLinkGenerator;
   private final ObjectMapper mapper;
-  private final boolean isStoreLayoutV3;
 
   @Inject
   public RouteRepositoryFiles(
       AppContext appContext,
       ValueStore valueStore,
       ExtensionRegistry extensionRegistry,
-      I18n i18n) {
+      I18n i18n,
+      VolatileRegistry volatileRegistry) {
+    super(volatileRegistry, "app/routes");
     this.routesStore = valueStore.forTypeWritable(Route.class);
     this.routeDefinitionsStore = valueStore.forTypeWritable(RouteDefinition.class);
     this.i18n = i18n;
@@ -84,12 +87,15 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
     mapper.registerModule(new GuavaModule());
     mapper.configure(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY, true);
     mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    this.isStoreLayoutV3 =
-        appContext.getConfiguration().getStore().getSources(appContext.getDataDir()).stream()
-            .anyMatch(
-                source ->
-                    source.getContent() == Content.VALUES
-                        && Objects.equals(source.getPrefix().orElse(""), "routes/definitions"));
+  }
+
+  @Override
+  public CompletionStage<Void> onStart(boolean isStartupAsync) {
+    onVolatileStart();
+
+    return volatileRegistry
+        .onAvailable(routesStore, routeDefinitionsStore)
+        .thenRun(() -> setState(State.AVAILABLE));
   }
 
   @Override
@@ -163,9 +169,7 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
           MessageFormat.format("The route ''{0}'' does not exist in this API.", routeId));
     }
 
-    return Objects.requireNonNullElseGet(
-        routeDefinitionsStore.get(routeId, apiData.getId()),
-        () -> routeDefinitionsStore.get(toOldDefinitionId(routeId), apiData.getId()));
+    return routeDefinitionsStore.get(routeId, apiData.getId());
   }
 
   @Override
@@ -177,8 +181,7 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
         routeId -> {
           if (!routesStore.has(routeId, apiData.getId()))
             builder.addStrictErrors("Route Repository: Route '{}' is not available.", routeId);
-          if (!routeDefinitionsStore.has(routeId, apiData.getId())
-              && !routeDefinitionsStore.has(toOldDefinitionId(routeId), apiData.getId()))
+          if (!routeDefinitionsStore.has(routeId, apiData.getId()))
             builder.addStrictErrors(
                 "Route Repository: The definition of route '{}' is not available.", routeId);
         });
@@ -200,9 +203,6 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
   public Date getLastModified(OgcApiDataV2 apiData, String routeId) {
     if (routeDefinitionsStore.has(routeId, apiData.getId())) {
       return LastModified.from(routeDefinitionsStore.lastModified(routeId, apiData.getId()));
-    } else if (routeDefinitionsStore.has(toOldDefinitionId(routeId), apiData.getId())) {
-      return LastModified.from(
-          routeDefinitionsStore.lastModified(toOldDefinitionId(routeId), apiData.getId()));
     }
 
     return null;
@@ -236,8 +236,7 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
               .from(routeDefinition)
               .links(routeDefinitionLinks)
               .build();
-      String definitionId = isStoreLayoutV3 ? toOldDefinitionId(routeId) : routeId;
-      routeDefinitionsStore.put(definitionId, definition, apiData.getId()).join();
+      routeDefinitionsStore.put(routeId, definition, apiData.getId()).join();
     } catch (CompletionException e) {
       deleteRoute(apiData, routeId);
       if (e.getCause() instanceof IOException) {
@@ -252,17 +251,11 @@ public class RouteRepositoryFiles implements RouteRepository, AppLifeCycle {
     try {
       routesStore.delete(routeId, apiData.getId()).join();
       routeDefinitionsStore.delete(routeId, apiData.getId()).join();
-      routeDefinitionsStore.delete(toOldDefinitionId(routeId), apiData.getId()).join();
     } catch (CompletionException e) {
       if (e.getCause() instanceof IOException) {
         throw (IOException) e.getCause();
       }
       throw e;
     }
-  }
-
-  @Deprecated(since = "3.6", forRemoval = true)
-  private String toOldDefinitionId(String routeId) {
-    return routeId + ".definition";
   }
 }

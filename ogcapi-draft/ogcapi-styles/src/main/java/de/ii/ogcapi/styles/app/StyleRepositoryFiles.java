@@ -42,6 +42,8 @@ import de.ii.ogcapi.styles.domain.Tiles3dStylesheet;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
 import de.ii.xtraplatform.base.domain.LogContext;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatile;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
@@ -63,6 +65,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
@@ -75,7 +78,8 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
-public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
+public class StyleRepositoryFiles extends AbstractVolatile
+    implements StyleRepository, AppLifeCycle {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StyleRepositoryFiles.class);
 
@@ -88,6 +92,7 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
   private final URI servicesUri;
   private final FeaturesCoreProviders providers;
   private final Values<Codelist> codelistStore;
+  private final VolatileRegistry volatileRegistry;
 
   @Inject
   public StyleRepositoryFiles(
@@ -96,7 +101,9 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
       ExtensionRegistry extensionRegistry,
       I18n i18n,
       FeaturesCoreProviders providers,
-      ValueStore valueStore) {
+      ValueStore valueStore,
+      VolatileRegistry volatileRegistry) {
+    super(volatileRegistry, "app/styles");
     this.stylesStore = blobStore.with(StylesBuildingBlock.STORE_RESOURCE_TYPE);
     this.mbStylesStore = valueStore.forTypeWritable(MbStyleStylesheet.class);
     this.tiles3dStylesStore = valueStore.forTypeWritable(Tiles3dStylesheet.class);
@@ -105,7 +112,17 @@ public class StyleRepositoryFiles implements StyleRepository, AppLifeCycle {
     this.servicesUri = servicesContext.getUri();
     this.providers = providers;
     this.codelistStore = valueStore.forType(Codelist.class);
+    this.volatileRegistry = volatileRegistry;
     this.defaultLinkGenerator = new DefaultLinksGenerator();
+  }
+
+  @Override
+  public CompletionStage<Void> onStart(boolean isStartupAsync) {
+    onVolatileStart();
+
+    return volatileRegistry
+        .onAvailable(stylesStore, mbStylesStore, tiles3dStylesStore)
+        .thenRun(() -> setState(State.AVAILABLE));
   }
 
   public Stream<StylesFormatExtension> getStylesFormatStream(

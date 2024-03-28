@@ -29,6 +29,8 @@ import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.base.domain.ETag;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
@@ -49,7 +51,7 @@ import javax.ws.rs.core.Response;
 
 @Singleton
 @AutoBind
-public class QueriesHandlerGltfImpl implements QueriesHandlerGltf {
+public class QueriesHandlerGltfImpl extends AbstractVolatileComposed implements QueriesHandlerGltf {
 
   private final FeaturesCoreProviders providers;
   private final I18n i18n;
@@ -59,7 +61,12 @@ public class QueriesHandlerGltfImpl implements QueriesHandlerGltf {
   private final FeatureSchemaCache featureSchemaCache;
 
   @Inject
-  public QueriesHandlerGltfImpl(I18n i18n, FeaturesCoreProviders providers, ValueStore valueStore) {
+  public QueriesHandlerGltfImpl(
+      I18n i18n,
+      FeaturesCoreProviders providers,
+      ValueStore valueStore,
+      VolatileRegistry volatileRegistry) {
+    super(QueriesHandlerGltf.class.getSimpleName(), volatileRegistry, true);
     this.i18n = i18n;
     this.providers = providers;
     this.codelistStore = valueStore.forType(Codelist.class);
@@ -68,6 +75,12 @@ public class QueriesHandlerGltfImpl implements QueriesHandlerGltf {
             Query.SCHEMA, QueryHandler.with(QueryInputGltfSchema.class, this::getSchemaResponse));
     this.featureSchemaCache = new SchemaCacheSfFlat();
     this.schemaCache = new Metadata3dSchemaCacheImpl();
+
+    onVolatileStart();
+
+    addSubcomponent(codelistStore);
+
+    onVolatileStarted();
   }
 
   @Override

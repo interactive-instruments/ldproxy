@@ -35,8 +35,8 @@ import javax.ws.rs.core.Response;
 
 public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
 
-  private final TilesQueriesHandler queryHandler;
-  private final TilesProviders tilesProviders;
+  protected final TilesQueriesHandler queryHandler;
+  protected final TilesProviders tilesProviders;
 
   public AbstractEndpointTileSetsMultiCollection(
       ExtensionRegistry extensionRegistry,

@@ -24,6 +24,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
@@ -42,9 +43,11 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.auth.domain.User;
 import de.ii.xtraplatform.base.domain.ETag.Type;
+import de.ii.xtraplatform.base.domain.resiliency.OptionalCapability;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.features.domain.SchemaBase;
@@ -54,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -62,7 +66,6 @@ import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.HeaderParam;
-import javax.ws.rs.NotAllowedException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
@@ -83,7 +86,8 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointCrud extends EndpointSubCollection implements ConformanceClass {
+public class EndpointCrud extends EndpointSubCollection
+    implements ConformanceClass, ApiExtensionHealth {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointCrud.class);
   private static final List<String> TAGS = ImmutableList.of("Mutate data");
@@ -117,8 +121,9 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     return super.isEnabledForApi(apiData)
         && providers
             .getFeatureProvider(apiData)
-            .map(FeatureProvider2::supportsTransactions)
-            .orElse(false);
+            .map(FeatureProvider::mutations)
+            .filter(OptionalCapability::isSupported)
+            .isPresent();
   }
 
   @Override
@@ -126,8 +131,9 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     return super.isEnabledForApi(apiData, collectionId)
         && providers
             .getFeatureProvider(apiData, apiData.getCollections().get(collectionId))
-            .map(FeatureProvider2::supportsTransactions)
-            .orElse(false);
+            .map(FeatureProvider::mutations)
+            .filter(OptionalCapability::isSupported)
+            .isPresent();
   }
 
   @Override
@@ -343,10 +349,8 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     FeatureTypeConfigurationOgcApi collectionData =
         api.getData().getCollections().get(collectionId);
 
-    FeatureProvider2 featureProvider =
+    FeatureProvider featureProvider =
         providers.getFeatureProviderOrThrow(api.getData(), collectionData);
-
-    checkTransactional(featureProvider);
 
     FeaturesCoreConfiguration coreConfiguration =
         collectionData
@@ -399,10 +403,8 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
         collectionData.getExtension(CrudConfiguration.class);
     checkHeader(crudConfiguration, ifMatch, ifUnmodifiedSince);
 
-    FeatureProvider2 featureProvider =
+    FeatureProvider featureProvider =
         providers.getFeatureProviderOrThrow(api.getData(), collectionData);
-
-    checkTransactional(featureProvider);
 
     FeaturesCoreConfiguration coreConfiguration =
         collectionData
@@ -467,10 +469,8 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
         collectionData.getExtension(CrudConfiguration.class);
     checkHeader(crudConfiguration, ifMatch, ifUnmodifiedSince);
 
-    FeatureProvider2 featureProvider =
+    FeatureProvider featureProvider =
         providers.getFeatureProviderOrThrow(api.getData(), collectionData);
-
-    checkTransactional(featureProvider);
 
     FeaturesCoreConfiguration coreConfiguration =
         collectionData
@@ -531,11 +531,9 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
         collectionData.getExtension(CrudConfiguration.class);
     checkHeader(crudConfiguration, ifMatch, ifUnmodifiedSince);
 
-    FeatureProvider2 featureProvider =
+    FeatureProvider featureProvider =
         providers.getFeatureProviderOrThrow(
             api.getData(), api.getData().getCollections().get(collectionId));
-
-    checkTransactional(featureProvider);
 
     FeaturesCoreConfiguration coreConfiguration =
         collectionData
@@ -604,12 +602,6 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
     }
   }
 
-  private static void checkTransactional(FeatureProvider2 featureProvider) {
-    if (!featureProvider.supportsTransactions()) {
-      throw new NotAllowedException("GET");
-    }
-  }
-
   private ImmutableFeatureQuery.Builder processCoordinatePrecision(
       ImmutableFeatureQuery.Builder queryBuilder, Map<String, Integer> coordinatePrecision) {
     // check, if we need to add a precision value; for this we need the target CRS,
@@ -623,5 +615,11 @@ public class EndpointCrud extends EndpointSubCollection implements ConformanceCl
       }
     }
     return queryBuilder;
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(
+        commandHandler, crsInfo, queryParser, providers.getFeatureProviderOrThrow(apiData));
   }
 }

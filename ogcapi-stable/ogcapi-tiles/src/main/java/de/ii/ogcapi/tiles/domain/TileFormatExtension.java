@@ -25,31 +25,27 @@ public abstract class TileFormatExtension implements FormatExtension {
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
     return apiData
-        .getExtension(TilesConfiguration.class)
-        .filter(TilesConfiguration::isEnabled)
-        .filter(cfg -> cfg.hasDatasetTiles(tilesProviders, apiData))
-        .filter(
-            config ->
-                tilesProviders
-                    .getTilesetMetadataOrThrow(apiData)
-                    .getEncodings()
-                    .contains(this.getMediaType().label()))
-        .isPresent();
+            .getExtension(TilesConfiguration.class)
+            .filter(TilesConfiguration::isEnabled)
+            .filter(cfg -> cfg.hasDatasetTiles(tilesProviders, apiData))
+            .isPresent()
+        && tilesProviders
+            .getTilesetMetadata(apiData)
+            .filter(metadata -> metadata.getEncodings().contains(this.getMediaType().label()))
+            .isPresent();
   }
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
     return apiData
-        .getExtension(TilesConfiguration.class, collectionId)
-        .filter(TilesConfiguration::isEnabled)
-        .filter(cfg -> cfg.hasCollectionTiles(tilesProviders, apiData, collectionId))
-        .filter(
-            config ->
-                tilesProviders
-                    .getTilesetMetadataOrThrow(apiData, apiData.getCollectionData(collectionId))
-                    .getEncodings()
-                    .contains(this.getMediaType().label()))
-        .isPresent();
+            .getExtension(TilesConfiguration.class, collectionId)
+            .filter(TilesConfiguration::isEnabled)
+            .filter(cfg -> cfg.hasCollectionTiles(tilesProviders, apiData, collectionId))
+            .isPresent()
+        && tilesProviders
+            .getTilesetMetadata(apiData, apiData.getCollectionData(collectionId))
+            .filter(metadata -> metadata.getEncodings().contains(this.getMediaType().label()))
+            .isPresent();
   }
 
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {

@@ -10,21 +10,19 @@ package de.ii.ogcapi.features.core.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ogcapi.features.core.domain.SchemaInfo;
-import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.base.domain.ETag;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.cql.domain.In;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
-import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
@@ -42,31 +40,24 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
-public class FeaturesQueryImpl implements FeaturesQuery {
+public class FeaturesQueryImpl extends AbstractVolatileComposed implements FeaturesQuery {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesQueryImpl.class);
 
-  private final ExtensionRegistry extensionRegistry;
-  private final CrsTransformerFactory crsTransformerFactory;
   private final CrsInfo crsInfo;
-  private final SchemaInfo schemaInfo;
-  private final FeaturesCoreProviders providers;
   private final Cql cql;
 
   @Inject
-  public FeaturesQueryImpl(
-      ExtensionRegistry extensionRegistry,
-      CrsTransformerFactory crsTransformerFactory,
-      CrsInfo crsInfo,
-      SchemaInfo schemaInfo,
-      FeaturesCoreProviders providers,
-      Cql cql) {
-    this.extensionRegistry = extensionRegistry;
-    this.crsTransformerFactory = crsTransformerFactory;
+  public FeaturesQueryImpl(CrsInfo crsInfo, Cql cql, VolatileRegistry volatileRegistry) {
+    super(FeaturesQuery.class.getSimpleName(), volatileRegistry, true);
     this.crsInfo = crsInfo;
-    this.schemaInfo = schemaInfo;
-    this.providers = providers;
     this.cql = cql;
+
+    onVolatileStart();
+
+    addSubcomponent(crsInfo);
+
+    onVolatileStarted();
   }
 
   @Override

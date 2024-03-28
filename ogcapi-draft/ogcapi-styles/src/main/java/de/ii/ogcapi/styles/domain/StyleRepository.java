@@ -10,6 +10,7 @@ package de.ii.ogcapi.styles.domain;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import java.io.IOException;
 import java.util.Date;
@@ -18,7 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-public interface StyleRepository {
+public interface StyleRepository extends Volatile2 {
 
   /**
    * get a stream of all formats available for this style collection

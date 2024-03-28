@@ -17,6 +17,7 @@ import de.ii.xtraplatform.entities.domain.maptobuilder.Buildable;
 import de.ii.xtraplatform.entities.domain.maptobuilder.BuildableBuilder;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.immutables.value.Value;
 
@@ -120,8 +121,10 @@ public interface FeatureTypeConfigurationOgcApi
   default FeatureTypeConfigurationOgcApi mergeBuildingBlocks() {
     List<ExtensionConfiguration> distinctExtensions = getMergedExtensions(getExtensions());
 
-    // remove duplicates
-    if (getExtensions().size() > distinctExtensions.size()) {
+    // remove duplicates, stable order
+    if (!Objects.equals(
+        ExtendableConfiguration.discriminators(getExtensions()),
+        ExtendableConfiguration.discriminators(distinctExtensions))) {
       return new ImmutableFeatureTypeConfigurationOgcApi.Builder()
           .from(this)
           .extensions(distinctExtensions)

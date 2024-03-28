@@ -10,6 +10,7 @@ package de.ii.ogcapi.tiles.infra;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -22,7 +23,9 @@ import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import java.util.List;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -41,7 +44,7 @@ import javax.ws.rs.core.Response;
 @Singleton
 @AutoBind
 public class EndpointTileSetMultiCollection extends AbstractEndpointTileSetMultiCollection
-    implements ConformanceClass {
+    implements ConformanceClass, ApiExtensionHealth {
 
   private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
 
@@ -100,5 +103,10 @@ public class EndpointTileSetMultiCollection extends AbstractEndpointTileSetMulti
 
     return super.getTileSet(
         api.getData(), requestContext, "/tiles/{tileMatrixSetId}", tileMatrixSetId);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler, tilesProviders.getTileProviderOrThrow(apiData));
   }
 }

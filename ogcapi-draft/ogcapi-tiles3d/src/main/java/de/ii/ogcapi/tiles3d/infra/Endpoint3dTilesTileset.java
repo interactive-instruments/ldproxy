@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -35,10 +36,12 @@ import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles.Query;
 import de.ii.ogcapi.tiles3d.domain.QueriesHandler3dTiles.QueryInputTileset;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -60,7 +63,8 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class Endpoint3dTilesTileset extends EndpointSubCollection implements ConformanceClass {
+public class Endpoint3dTilesTileset extends EndpointSubCollection
+    implements ConformanceClass, ApiExtensionHealth {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Endpoint3dTilesTileset.class);
 
@@ -176,5 +180,10 @@ public class Endpoint3dTilesTileset extends EndpointSubCollection implements Con
             .build();
 
     return queryHandler.handle(Query.TILESET, queryInput, requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler);
   }
 }

@@ -10,9 +10,10 @@ package de.ii.ogcapi.features.gltf.domain;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import org.immutables.value.Value;
 
-public interface QueriesHandlerGltf extends QueriesHandler<QueriesHandlerGltf.Query> {
+public interface QueriesHandlerGltf extends QueriesHandler<QueriesHandlerGltf.Query>, Volatile2 {
 
   enum Query implements QueryIdentifier {
     SCHEMA

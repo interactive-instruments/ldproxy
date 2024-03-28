@@ -51,6 +51,8 @@ import de.ii.ogcapi.pubsub.domain.asyncapi.ImmutableAsyncApiSecurity;
 import de.ii.ogcapi.pubsub.domain.asyncapi.ImmutableAsyncApiServer;
 import de.ii.ogcapi.pubsub.domain.asyncapi.ImmutableAsyncApiServerBindingsMqtt;
 import de.ii.xtraplatform.base.domain.ETag;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase.Type;
@@ -74,7 +76,8 @@ import javax.ws.rs.core.Response;
 
 @Singleton
 @AutoBind
-public class QueriesHandlerPubSubImpl implements QueriesHandlerPubSub {
+public class QueriesHandlerPubSubImpl extends AbstractVolatileComposed
+    implements QueriesHandlerPubSub {
 
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
   private final Map<String, AsyncApi> asyncApiDefinitions;
@@ -82,7 +85,9 @@ public class QueriesHandlerPubSubImpl implements QueriesHandlerPubSub {
   private final Supplier<Map<String, Codelist>> codelistSupplier;
 
   @Inject
-  public QueriesHandlerPubSubImpl(FeaturesCoreProviders providers, ValueStore valueStore) {
+  public QueriesHandlerPubSubImpl(
+      FeaturesCoreProviders providers, ValueStore valueStore, VolatileRegistry volatileRegistry) {
+    super(QueriesHandlerPubSub.class.getSimpleName(), volatileRegistry, true);
     this.providers = providers;
     this.codelistSupplier = valueStore.forType(Codelist.class)::asMap;
     this.queryHandlers =
@@ -90,6 +95,12 @@ public class QueriesHandlerPubSubImpl implements QueriesHandlerPubSub {
             Query.ASYNC_API_DEFINITION,
             QueryHandler.with(QueryInputGeneric.class, this::getAsyncApiDefinitionResponse));
     this.asyncApiDefinitions = new HashMap<>();
+
+    onVolatileStart();
+
+    addSubcomponent(valueStore);
+
+    onVolatileStarted();
   }
 
   @Override

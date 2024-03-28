@@ -26,6 +26,7 @@ import de.ii.ogcapi.features.search.domain.SearchQueriesHandler.Query;
 import de.ii.ogcapi.features.search.domain.SearchQueriesHandler.QueryInputQuery;
 import de.ii.ogcapi.features.search.domain.StoredQueryRepository;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -38,12 +39,14 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -63,7 +66,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointStoredQuery extends EndpointRequiresFeatures {
+public class EndpointStoredQuery extends EndpointRequiresFeatures implements ApiExtensionHealth {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStoredQuery.class);
 
@@ -248,5 +251,10 @@ public class EndpointStoredQuery extends EndpointRequiresFeatures {
             .build();
 
     return queryHandler.handle(Query.QUERY, queryInput, requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler, repository, providers.getFeatureProviderOrThrow(apiData));
   }
 }

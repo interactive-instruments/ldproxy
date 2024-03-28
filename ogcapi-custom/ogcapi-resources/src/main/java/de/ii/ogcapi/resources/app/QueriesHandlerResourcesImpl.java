@@ -23,6 +23,8 @@ import de.ii.ogcapi.resources.domain.QueriesHandlerResources;
 import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
 import de.ii.xtraplatform.base.domain.ETag;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.blobs.domain.Blob;
 import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import de.ii.xtraplatform.web.domain.LastModified;
@@ -47,7 +49,8 @@ import javax.ws.rs.core.Response;
 
 @Singleton
 @AutoBind
-public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
+public class QueriesHandlerResourcesImpl extends AbstractVolatileComposed
+    implements QueriesHandlerResources {
 
   private final I18n i18n;
   private final ExtensionRegistry extensionRegistry;
@@ -56,7 +59,11 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
 
   @Inject
   public QueriesHandlerResourcesImpl(
-      ExtensionRegistry extensionRegistry, I18n i18n, ResourceStore blobStore) {
+      ExtensionRegistry extensionRegistry,
+      I18n i18n,
+      ResourceStore blobStore,
+      VolatileRegistry volatileRegistry) {
+    super(QueriesHandlerResources.class.getSimpleName(), volatileRegistry, true);
     this.extensionRegistry = extensionRegistry;
     this.i18n = i18n;
     this.resourcesStore = blobStore.with(ResourcesBuildingBlock.STORE_RESOURCE_TYPE);
@@ -65,6 +72,12 @@ public class QueriesHandlerResourcesImpl implements QueriesHandlerResources {
             Query.RESOURCES,
                 QueryHandler.with(QueryInputResources.class, this::getResourcesResponse),
             Query.RESOURCE, QueryHandler.with(QueryInputResource.class, this::getResourceResponse));
+
+    onVolatileStart();
+
+    addSubcomponent(resourcesStore);
+
+    onVolatileStarted();
   }
 
   @Override

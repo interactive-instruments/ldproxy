@@ -14,10 +14,13 @@ import de.ii.ogcapi.crs.domain.CrsConfiguration;
 import de.ii.ogcapi.crs.domain.CrsSupport;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
+import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -28,7 +31,7 @@ import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
-public class CrsSupportImpl implements CrsSupport {
+public class CrsSupportImpl implements CrsSupport, ApiExtensionHealth {
 
   private final FeaturesCoreProviders providers;
 
@@ -38,8 +41,13 @@ public class CrsSupportImpl implements CrsSupport {
   }
 
   @Override
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+    return CrsConfiguration.class;
+  }
+
+  @Override
   public boolean isEnabled(OgcApiDataV2 apiData) {
-    return apiData.getExtension(CrsConfiguration.class).filter(cfg -> cfg.isEnabled()).isPresent();
+    return isEnabledForApi(apiData);
   }
 
   @Override
@@ -78,16 +86,16 @@ public class CrsSupportImpl implements CrsSupport {
   @Override
   public EpsgCrs getStorageCrs(
       OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> featureTypeConfiguration) {
-    FeatureProvider2 provider =
+    FeatureProvider provider =
         featureTypeConfiguration.isPresent()
             ? providers.getFeatureProviderOrThrow(apiData, featureTypeConfiguration.get())
             : providers.getFeatureProviderOrThrow(apiData);
 
-    if (!provider.supportsCrs()) {
+    if (!provider.crs().isSupported()) {
       throw new IllegalStateException("Provider has no CRS support.");
     }
 
-    return provider.crs().getNativeCrs();
+    return provider.crs().get().getNativeCrs();
   }
 
   private EpsgCrs getDefaultCrs(
@@ -101,5 +109,10 @@ public class CrsSupportImpl implements CrsSupport {
         .getExtension(CrsConfiguration.class)
         .map(CrsConfiguration::getAdditionalCrs)
         .orElse(ImmutableSet.of());
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(providers.getFeatureProviderOrThrow(apiData).crs());
   }
 }

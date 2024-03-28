@@ -12,13 +12,13 @@ import static de.ii.ogcapi.styles.domain.QueriesHandlerStyles.GROUP_STYLES_READ;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.Endpoint;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -31,11 +31,13 @@ import de.ii.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleRepository;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -59,7 +61,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointStyle extends Endpoint {
+public class EndpointStyle extends Endpoint implements ApiExtensionHealth {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyle.class);
 
@@ -67,17 +69,14 @@ public class EndpointStyle extends Endpoint {
 
   private final StyleRepository styleRepository;
   private final QueriesHandlerStyles queryHandler;
-  private final I18n i18n;
 
   @Inject
   public EndpointStyle(
       ExtensionRegistry extensionRegistry,
       StyleRepository styleRepository,
-      I18n i18n,
       QueriesHandlerStyles queryHandler) {
     super(extensionRegistry);
     this.styleRepository = styleRepository;
-    this.i18n = i18n;
     this.queryHandler = queryHandler;
   }
 
@@ -122,10 +121,7 @@ public class EndpointStyle extends Endpoint {
     List<OgcApiQueryParameter> queryParameters =
         getQueryParameters(extensionRegistry, apiData, path);
     List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
-    if (!pathParameters.stream()
-        .filter(param -> param.getName().equals("styleId"))
-        .findAny()
-        .isPresent()) {
+    if (pathParameters.stream().noneMatch(param -> param.getName().equals("styleId"))) {
       LOGGER.error(
           "Path parameter 'styleId' missing for resource at path '"
               + path
@@ -189,5 +185,10 @@ public class EndpointStyle extends Endpoint {
             .build();
 
     return queryHandler.handle(QueriesHandlerStyles.Query.STYLE, queryInput, requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler, styleRepository);
   }
 }

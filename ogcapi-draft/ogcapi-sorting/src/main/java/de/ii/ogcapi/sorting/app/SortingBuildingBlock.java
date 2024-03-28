@@ -24,7 +24,7 @@ import de.ii.ogcapi.sorting.domain.SortingConfiguration;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.text.MessageFormat;
@@ -107,12 +107,12 @@ public class SortingBuildingBlock implements ApiBuildingBlock {
         ImmutableValidationResult.builder().mode(apiValidation);
 
     // check that the feature provider supports sorting
-    FeatureProvider2 provider = providers.getFeatureProviderOrThrow(api.getData());
+    FeatureProvider provider = providers.getFeatureProviderOrThrow(api.getData());
     if (!provider.supportsSorting()) {
       builder.addErrors(
           MessageFormat.format(
               "Sorting is enabled, but the feature provider of the API '{0}' does not support sorting.",
-              provider.getData().getId()));
+              provider.getId()));
     }
 
     // no additional operational checks for now, only validation; we can stop, if no validation is

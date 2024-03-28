@@ -37,6 +37,7 @@ import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
+import de.ii.xtraplatform.features.domain.FeatureProviderEntity;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.WithConnectionInfo;
@@ -327,10 +328,10 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
                 .namespaces(
                     ((ConnectionInfoWfsHttp)
                             ((WithConnectionInfo<?>)
-                                    providers
-                                        .getFeatureProviderOrThrow(
-                                            transformationContext.getApiData(),
-                                            transformationContext.getCollection().get())
+                                    ((FeatureProviderEntity)
+                                            providers.getFeatureProviderOrThrow(
+                                                transformationContext.getApiData(),
+                                                transformationContext.getCollection().get()))
                                         .getData())
                                 .getConnectionInfo())
                         .getNamespaces())

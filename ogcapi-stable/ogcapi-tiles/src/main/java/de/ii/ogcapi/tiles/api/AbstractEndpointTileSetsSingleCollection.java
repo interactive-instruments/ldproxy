@@ -43,8 +43,8 @@ public abstract class AbstractEndpointTileSetsSingleCollection extends EndpointS
   private static final Logger LOGGER =
       LoggerFactory.getLogger(AbstractEndpointTileSetsSingleCollection.class);
 
-  private final TilesQueriesHandler queryHandler;
-  private final TilesProviders tilesProviders;
+  protected final TilesQueriesHandler queryHandler;
+  protected final TilesProviders tilesProviders;
 
   public AbstractEndpointTileSetsSingleCollection(
       ExtensionRegistry extensionRegistry,

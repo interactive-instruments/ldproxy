@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -31,6 +32,7 @@ import de.ii.ogcapi.resources.app.ResourcesBuildingBlock;
 import de.ii.ogcapi.resources.domain.ResourceFormatExtension;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import io.dropwizard.auth.Auth;
 import java.io.IOException;
@@ -38,6 +40,7 @@ import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -63,7 +66,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointResourcesManager extends Endpoint {
+public class EndpointResourcesManager extends Endpoint implements ApiExtensionHealth {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResourcesManager.class);
   private static final List<String> TAGS =
@@ -223,5 +226,10 @@ public class EndpointResourcesManager extends Endpoint {
     }
 
     return Response.noContent().build();
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(resourcesStore);
   }
 }

@@ -21,6 +21,7 @@ import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -58,12 +59,13 @@ import de.ii.ogcapi.routes.domain.RouteRepository;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ogcapi.routes.domain.WaypointsValue;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
 import io.dropwizard.auth.Auth;
@@ -73,6 +75,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -95,7 +98,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
+public class EndpointRoutesPost extends Endpoint implements ConformanceClass, ApiExtensionHealth {
 
   public static final ApiMediaType REQUEST_MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
@@ -222,10 +225,7 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
     Optional<RoutingConfiguration> config = apiData.getExtension(RoutingConfiguration.class);
     Optional<RoutesConfiguration> routesConfig =
-        providers
-            .getFeatureProviderOrThrow(apiData)
-            .getData()
-            .getExtension(RoutesConfiguration.class);
+        EndpointRoutesGet.getProviderRoutingCfg(providers.getFeatureProviderOrThrow(apiData));
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("routes")
@@ -337,8 +337,8 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
 
     OgcApiDataV2 apiData = api.getData();
 
-    FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(api.getData());
-    ensureFeatureProviderSupportsRouting(featureProvider);
+    FeatureProvider featureProvider = providers.getFeatureProviderOrThrow(api.getData());
+    EndpointRoutesGet.ensureFeatureProviderSupportsRouting(featureProvider);
 
     String featureTypeId =
         api.getData()
@@ -428,13 +428,12 @@ public class EndpointRoutesPost extends Endpoint implements ConformanceClass {
     return queryHandler.handle(QueryHandlerRoutes.Query.COMPUTE_ROUTE, queryInput, requestContext);
   }
 
-  private static void ensureFeatureProviderSupportsRouting(FeatureProvider2 featureProvider) {
-    if (!featureProvider.supportsQueries()) {
-      throw new IllegalStateException("Feature provider does not support queries.");
-    }
-    featureProvider
-        .getData()
-        .getExtension(RoutesConfiguration.class)
-        .orElseThrow(() -> new IllegalStateException("Feature provider does not support routing."));
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(
+        queryHandler,
+        ogcApiFeaturesQuery,
+        routeRepository,
+        providers.getFeatureProviderOrThrow(apiData));
   }
 }

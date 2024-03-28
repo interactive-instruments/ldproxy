@@ -9,6 +9,7 @@ package de.ii.ogcapi.tiles3d.domain;
 
 import de.ii.ogcapi.foundation.domain.ApiExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
@@ -16,7 +17,7 @@ import java.util.Optional;
 // TODO upgrade to the new cache logic used by TILES
 
 /** Access to the cache for tile files. */
-public interface TileResourceCache extends ApiExtension {
+public interface TileResourceCache extends ApiExtension, Volatile2 {
 
   /**
    * check whether a tile resource is cached

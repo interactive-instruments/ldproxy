@@ -20,6 +20,7 @@ import de.ii.ogcapi.features.gltf.domain.QueriesHandlerGltf;
 import de.ii.ogcapi.features.gltf.domain.QueriesHandlerGltf.Query;
 import de.ii.ogcapi.features.gltf.domain.QueriesHandlerGltf.QueryInputGltfSchema;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -35,10 +36,12 @@ import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -66,7 +69,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointGltfSchema extends EndpointSubCollection {
+public class EndpointGltfSchema extends EndpointSubCollection implements ApiExtensionHealth {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointGltfSchema.class);
 
@@ -180,5 +183,10 @@ public class EndpointGltfSchema extends EndpointSubCollection {
             .build();
 
     return queryHandler.handle(Query.SCHEMA, queryInput, requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler);
   }
 }

@@ -33,8 +33,7 @@ import org.immutables.value.Value;
  *     <p>The building block *Tile Matrix Sets* must be enabled. If that building block is not
  *     configured, it is automatically enabled if *Tiles* is enabled.
  *     <p>### Storage
- *     <p>The tile cache is located in the data directory under the relative path
- *     `cache/tiles/{apiId}` (old) or in the [Store (new)](../../application/20-configuration/10-store-new.md) as resource with path
+ *     <p>The tile cache is located in the [Store](../../application/20-configuration/10-store-new.md) as resource with path
  *       `tiles/{apiId}`.
  *     <p>If the data for an API or tile configuration has been changed, then
  *     the cache directory for the API should be deleted so that the cache is rebuilt with the
@@ -43,7 +42,7 @@ import org.immutables.value.Value;
  *     <p>Das Modul *Tile Matrix Sets* muss aktiviert sein. Wenn dieses Modul nicht konfiguriert
  *     ist, wird es automatisch aktiviert, wenn *Tiles* aktiviert ist.
  *     <p>### Storage
- *     <p>Der Tile-Cache liegt im Datenverzeichnis unter dem relativen Pfad `cache/tiles/{apiId}` (alt) oder im [Store (neu)](../../application/20-configuration/10-store-new.md)
+ *     <p>Der Tile-Cache liegt im [Store](../../application/20-configuration/10-store-new.md)
  *       als Ressource mit dem Pfad `tiles/{apiId}`.
  *     <p>Wenn die Daten zu einer API oder Kachelkonfiguration geändert wurden, dann sollte das
  *     Cache-Verzeichnis für die API gelöscht werden, damit der Cache mit den aktualisierten Daten

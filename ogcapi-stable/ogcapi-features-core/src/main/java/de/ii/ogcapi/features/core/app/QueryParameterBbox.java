@@ -39,8 +39,8 @@ import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.ImmutableBoundingBox;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
-import de.ii.xtraplatform.features.domain.FeatureProviderDataV2;
+import de.ii.xtraplatform.features.domain.FeatureInfo;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
@@ -233,8 +233,8 @@ public class QueryParameterBbox extends ApiExtensionCache
           bboxCrs,
           providers
               .getFeatureProvider(api.getData(), collectionData)
-              .map(FeatureProvider2::getData)
-              .flatMap(FeatureProviderDataV2::getNativeCrs)
+              .map(FeatureProvider::info)
+              .flatMap(FeatureInfo::getCrs)
               .orElse(null));
     }
 

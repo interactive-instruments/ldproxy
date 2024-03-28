@@ -48,6 +48,9 @@ import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.base.domain.ETag;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileUnavailableException;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
@@ -59,6 +62,7 @@ import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransien
 import de.ii.xtraplatform.tiles.domain.ImmutableTileQuery;
 import de.ii.xtraplatform.tiles.domain.ImmutableTilesBoundingBox;
 import de.ii.xtraplatform.tiles.domain.MinMax;
+import de.ii.xtraplatform.tiles.domain.TileAccess;
 import de.ii.xtraplatform.tiles.domain.TileGenerationParametersTransient;
 import de.ii.xtraplatform.tiles.domain.TileGenerationSchema;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
@@ -93,7 +97,8 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
-public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
+public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
+    implements TilesQueriesHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TilesQueriesHandlerImpl.class);
 
@@ -103,7 +108,6 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
   private final Values<Codelist> codelistStore;
   private final ExtensionRegistry extensionRegistry;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
-  private final FeaturesCoreProviders providers;
   private final TilesProviders tilesProviders;
   private final TileMatrixSetRepository tileMatrixSetRepository;
 
@@ -114,15 +118,15 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
       ValueStore valueStore,
       ExtensionRegistry extensionRegistry,
       TileMatrixSetLimitsGenerator limitsGenerator,
-      FeaturesCoreProviders providers,
       TilesProviders tilesProviders,
-      TileMatrixSetRepository tileMatrixSetRepository) {
+      TileMatrixSetRepository tileMatrixSetRepository,
+      VolatileRegistry volatileRegistry) {
+    super(TilesQueriesHandler.class.getSimpleName(), volatileRegistry, true);
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
     this.codelistStore = valueStore.forType(Codelist.class);
     this.extensionRegistry = extensionRegistry;
     this.limitsGenerator = limitsGenerator;
-    this.providers = providers;
     this.tilesProviders = tilesProviders;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
 
@@ -136,6 +140,14 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 QueryHandler.with(QueryInputTileSet.class, this::getTileSetResponse))
             .put(Query.TILE, QueryHandler.with(QueryInputTile.class, this::getTileResponse))
             .build();
+
+    onVolatileStart();
+
+    addSubcomponent(crsTransformerFactory);
+    addSubcomponent(codelistStore);
+    addSubcomponent(tileMatrixSetRepository);
+
+    onVolatileStarted();
   }
 
   @Override
@@ -338,12 +350,18 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                 .getCollectionId()
                 .flatMap(id -> requestContext.getApi().getData().getCollectionData(id)));
 
+    if (!tileProvider.access().isAvailable()) {
+      throw new VolatileUnavailableException("Tile provider not available");
+    }
+
+    TileAccess tileAccess = tileProvider.access().get();
+
     TileQuery tileQuery = getTileQuery(queryInput, requestContext, tileProvider);
 
-    TileResult result = tileProvider.getTile(tileQuery);
+    TileResult result = tileAccess.getTile(tileQuery);
 
     if (!result.isAvailable()) {
-      if (result.isOutsideLimits() || tileProvider.tilesMayBeUnavailable()) {
+      if (result.isOutsideLimits() || tileAccess.tilesMayBeUnavailable()) {
         throw result.getError().map(NotFoundException::new).orElseGet(NotFoundException::new);
       } else {
         throw result
@@ -425,8 +443,8 @@ public class TilesQueriesHandlerImpl implements TilesQueriesHandler {
                                 requestContext.getApiUri()))));
 
     Optional<TileGenerationSchema> generationSchema =
-        tileProvider.supportsGeneration()
-            ? Optional.of(tileProvider.generator().getGenerationSchema(tileset))
+        tileProvider.generator().isAvailable()
+            ? Optional.of(tileProvider.generator().get().getGenerationSchema(tileset))
             : Optional.empty();
     ImmutableTileGenerationParametersTransient.Builder userParametersBuilder =
         new ImmutableTileGenerationParametersTransient.Builder();

@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.collections.domain.ImmutableOgcApiResourceData;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -31,9 +32,11 @@ import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyle;
 import de.ii.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -63,7 +66,8 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointStyleMetadataCollection extends EndpointSubCollection {
+public class EndpointStyleMetadataCollection extends EndpointSubCollection
+    implements ApiExtensionHealth {
 
   private static final Logger LOGGER =
       LoggerFactory.getLogger(EndpointStyleMetadataCollection.class);
@@ -194,5 +198,10 @@ public class EndpointStyleMetadataCollection extends EndpointSubCollection {
 
     return queryHandler.handle(
         QueriesHandlerStyles.Query.STYLE_METADATA, queryInput, requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler);
   }
 }

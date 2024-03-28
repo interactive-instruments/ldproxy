@@ -11,13 +11,15 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import java.net.URI;
 import java.util.List;
 import org.immutables.value.Value;
 
-public interface QueriesHandler3dTiles extends QueriesHandler<QueriesHandler3dTiles.Query> {
+public interface QueriesHandler3dTiles
+    extends QueriesHandler<QueriesHandler3dTiles.Query>, Volatile2 {
 
   enum Query implements QueryIdentifier {
     TILESET,
@@ -51,7 +53,7 @@ public interface QueriesHandler3dTiles extends QueriesHandler<QueriesHandler3dTi
   interface QueryInputSubtree extends QueryInput {
     OgcApi getApi();
 
-    FeatureProvider2 getFeatureProvider();
+    FeatureProvider getFeatureProvider();
 
     String getFeatureType();
 

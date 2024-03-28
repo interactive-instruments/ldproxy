@@ -10,13 +10,14 @@ package de.ii.ogcapi.routes.domain;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
 
-public interface RouteRepository {
+public interface RouteRepository extends Volatile2 {
   Stream<RoutesFormatExtension> getRoutesFormatStream(OgcApiDataV2 apiData);
 
   Stream<RouteFormatExtension> getRouteFormatStream(OgcApiDataV2 apiData);

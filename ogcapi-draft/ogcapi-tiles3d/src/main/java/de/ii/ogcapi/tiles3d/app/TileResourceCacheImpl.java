@@ -11,6 +11,9 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.tiles3d.domain.TileResourceCache;
 import de.ii.ogcapi.tiles3d.domain.TileResourceDescriptor;
+import de.ii.xtraplatform.base.domain.AppLifeCycle;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatile;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -18,6 +21,7 @@ import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.Comparator;
 import java.util.Optional;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -25,13 +29,24 @@ import javax.inject.Singleton;
 /** Access to the cache for tile files. */
 @Singleton
 @AutoBind
-public class TileResourceCacheImpl implements TileResourceCache {
+public class TileResourceCacheImpl extends AbstractVolatile
+    implements TileResourceCache, AppLifeCycle {
 
   private final ResourceStore cacheStore;
+  private final VolatileRegistry volatileRegistry;
 
   @Inject
-  public TileResourceCacheImpl(ResourceStore blobStore) {
+  public TileResourceCacheImpl(ResourceStore blobStore, VolatileRegistry volatileRegistry) {
+    super(volatileRegistry, true);
     this.cacheStore = blobStore.with(Tiles3dBuildingBlock.STORE_RESOURCE_TYPE);
+    this.volatileRegistry = volatileRegistry;
+  }
+
+  @Override
+  public CompletionStage<Void> onStart(boolean isStartupAsync) {
+    onVolatileStart();
+
+    return volatileRegistry.onAvailable(cacheStore).thenRun(() -> setState(State.AVAILABLE));
   }
 
   @Override

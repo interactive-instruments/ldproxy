@@ -29,6 +29,8 @@ import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsFormatExtension;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsLinksGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsQueriesHandler;
 import de.ii.xtraplatform.base.domain.ETag;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import java.net.URI;
@@ -49,7 +51,8 @@ import javax.ws.rs.core.Response;
 
 @Singleton
 @AutoBind
-public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHandler {
+public class TileMatrixSetsQueriesHandlerImpl extends AbstractVolatileComposed
+    implements TileMatrixSetsQueriesHandler {
 
   private final I18n i18n;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
@@ -60,7 +63,9 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
   public TileMatrixSetsQueriesHandlerImpl(
       I18n i18n,
       ExtensionRegistry extensionRegistry,
-      TileMatrixSetRepository tileMatrixSetRepository) {
+      TileMatrixSetRepository tileMatrixSetRepository,
+      VolatileRegistry volatileRegistry) {
+    super(TileMatrixSetsQueriesHandler.class.getSimpleName(), volatileRegistry, true);
     this.i18n = i18n;
     this.extensionRegistry = extensionRegistry;
     this.tileMatrixSetRepository = tileMatrixSetRepository;
@@ -71,6 +76,12 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
             QueryHandler.with(QueryInputTileMatrixSets.class, this::getTileMatrixSetsResponse),
             Query.TILE_MATRIX_SET,
             QueryHandler.with(QueryInputTileMatrixSet.class, this::getTileMatrixSetResponse));
+
+    onVolatileStart();
+
+    addSubcomponent(tileMatrixSetRepository);
+
+    onVolatileStarted();
   }
 
   @Override
@@ -110,7 +121,10 @@ public class TileMatrixSetsQueriesHandlerImpl implements TileMatrixSetsQueriesHa
     TileMatrixSets tileMatrixSets =
         ImmutableTileMatrixSets.builder()
             .tileMatrixSets(
-                queryInput.getTileMatrixSets().stream()
+                queryInput.getTileMatrixSetIds().stream()
+                    .map(tileMatrixSetRepository::get)
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
                     .map(
                         tileMatrixSet ->
                             ImmutableTileMatrixSetLinks.builder()

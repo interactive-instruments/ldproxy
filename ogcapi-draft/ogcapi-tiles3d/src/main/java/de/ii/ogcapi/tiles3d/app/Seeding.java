@@ -27,9 +27,10 @@ import de.ii.ogcapi.tiles3d.domain.TileResourceCache;
 import de.ii.ogcapi.tiles3d.domain.TileResourceDescriptor;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dConfiguration;
 import de.ii.xtraplatform.base.domain.LogContext;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql.Format;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.services.domain.ServicesContext;
 import de.ii.xtraplatform.services.domain.TaskContext;
@@ -69,6 +70,7 @@ public class Seeding implements OgcApiBackgroundTask {
   private final FeaturesCoreProviders providers;
   private final FeaturesCoreQueriesHandler queryHandlerFeatures;
   private final Cql cql;
+  private final VolatileRegistry volatileRegistry;
 
   @Inject
   public Seeding(
@@ -77,13 +79,15 @@ public class Seeding implements OgcApiBackgroundTask {
       ServicesContext servicesContext,
       FeaturesCoreProviders providers,
       FeaturesCoreQueriesHandler queryHandlerFeatures,
-      Cql cql) {
+      Cql cql,
+      VolatileRegistry volatileRegistry) {
     this.extensionRegistry = extensionRegistry;
     this.tileResourcesCache = tileResourcesCache;
     this.servicesUri = servicesContext.getUri();
     this.providers = providers;
     this.queryHandlerFeatures = queryHandlerFeatures;
     this.cql = cql;
+    this.volatileRegistry = volatileRegistry;
   }
 
   @Override
@@ -105,7 +109,7 @@ public class Seeding implements OgcApiBackgroundTask {
     // no vector tiles support for WFS backends
     return providers
         .getFeatureProvider(apiData)
-        .map(FeatureProvider2::supportsHighLoad)
+        .map(FeatureProvider::supportsHighLoad)
         .orElse(false);
   }
 
@@ -170,6 +174,14 @@ public class Seeding implements OgcApiBackgroundTask {
    */
   @Override
   public void run(OgcApi api, TaskContext taskContext) {
+    volatileRegistry
+        .onAvailable(
+            tileResourcesCache,
+            queryHandlerFeatures,
+            providers.getFeatureProviderOrThrow(api.getData()))
+        .toCompletableFuture()
+        .join();
+
     if (shouldPurge(api)) {
       purge(api, taskContext);
     }

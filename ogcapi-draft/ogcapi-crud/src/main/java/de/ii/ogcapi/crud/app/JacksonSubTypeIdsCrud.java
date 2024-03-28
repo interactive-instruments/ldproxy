@@ -33,8 +33,6 @@ public class JacksonSubTypeIdsCrud implements JacksonSubTypeIds {
             .superType(ExtensionConfiguration.class)
             .subType(CrudConfiguration.class)
             .id(ExtensionConfiguration.getBuildingBlockIdentifier(CrudConfiguration.class))
-            // DEPRECATED since 3.3.0
-            .addAliases("TRANSACTIONAL")
             .build());
   }
 }

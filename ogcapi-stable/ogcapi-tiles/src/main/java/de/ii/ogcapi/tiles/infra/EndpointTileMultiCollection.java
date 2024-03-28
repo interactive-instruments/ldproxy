@@ -10,6 +10,7 @@ package de.ii.ogcapi.tiles.infra;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.Endpoint;
@@ -25,11 +26,13 @@ import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -49,7 +52,7 @@ import javax.ws.rs.core.Response;
 @Singleton
 @AutoBind
 public class EndpointTileMultiCollection extends Endpoint
-    implements ConformanceClass, EndpointTileMixin {
+    implements ConformanceClass, EndpointTileMixin, ApiExtensionHealth {
 
   private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
 
@@ -142,5 +145,11 @@ public class EndpointTileMultiCollection extends Endpoint
             tileCol);
 
     return queryHandler.handle(TilesQueriesHandler.Query.TILE, queryInput, requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(
+        queryHandler, tileMatrixSetRepository, tilesProviders.getTileProviderOrThrow(apiData));
   }
 }

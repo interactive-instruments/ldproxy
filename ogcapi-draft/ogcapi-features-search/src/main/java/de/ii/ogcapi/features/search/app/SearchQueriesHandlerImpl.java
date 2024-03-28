@@ -48,6 +48,8 @@ import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.xtraplatform.base.domain.ETag;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.cql.domain.And;
 import de.ii.xtraplatform.cql.domain.Cql;
@@ -59,7 +61,7 @@ import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.features.domain.FeatureStream.Result;
@@ -106,7 +108,8 @@ import javax.ws.rs.core.StreamingOutput;
 @Singleton
 @AutoBind
 @SuppressWarnings({"PMD.GodClass", "PMD.CouplingBetweenObjects"})
-public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
+public class SearchQueriesHandlerImpl extends AbstractVolatileComposed
+    implements SearchQueriesHandler {
 
   public static final String MEDIA_TYPE_NOT_SUPPORTED =
       "The requested media type ''{0}'' is not supported, the following media types are available: {1}";
@@ -131,7 +134,9 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       CrsInfo crsInfo,
       Cql cql,
       StoredQueryRepository repository,
-      SchemaValidator schemaValidator) {
+      SchemaValidator schemaValidator,
+      VolatileRegistry volatileRegistry) {
+    super(SearchQueriesHandler.class.getSimpleName(), volatileRegistry, true);
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
     this.extensionRegistry = extensionRegistry;
@@ -155,6 +160,15 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                 QueryHandler.with(QueryInputStoredQueryCreateReplace.class, this::writeStoredQuery),
             Query.DELETE,
                 QueryHandler.with(QueryInputStoredQueryDelete.class, this::deleteStoredQuery));
+
+    onVolatileStart();
+
+    addSubcomponent(crsTransformerFactory);
+    addSubcomponent(codelistStore);
+    addSubcomponent(crsInfo);
+    addSubcomponent(repository);
+
+    onVolatileStarted();
   }
 
   @Override
@@ -169,8 +183,8 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
     }
   }
 
-  private static void ensureFeatureProviderSupportsQueries(FeatureProvider2 featureProvider) {
-    if (!featureProvider.supportsQueries()) {
+  private static void ensureFeatureProviderSupportsQueries(FeatureProvider featureProvider) {
+    if (!featureProvider.multiQueries().isSupported()) {
       throw new IllegalStateException("Feature provider does not support queries.");
     }
   }
@@ -501,7 +515,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
 
   private Response executeQuery(QueryInputQuery queryInput, ApiRequestContext requestContext) {
 
-    FeatureProvider2 featureProvider = queryInput.getFeatureProvider();
+    FeatureProvider featureProvider = queryInput.getFeatureProvider();
     ensureFeatureProviderSupportsQueries(featureProvider);
 
     EntityTag etag = null;
@@ -741,7 +755,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       MultiFeatureQuery query,
       boolean allLinksAreLocal,
       List<String> collectionIds,
-      FeatureProvider2 featureProvider,
+      FeatureProvider featureProvider,
       FeatureFormatExtension outputFormat,
       Optional<Profile> profile,
       EpsgCrs defaultCrs,
@@ -750,8 +764,8 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
     OgcApi api = requestContext.getApi();
     EpsgCrs sourceCrs = null;
     Optional<CrsTransformer> crsTransformer = Optional.empty();
-    if (featureProvider.supportsCrs()) {
-      sourceCrs = featureProvider.crs().getNativeCrs();
+    if (featureProvider.crs().isAvailable()) {
+      sourceCrs = featureProvider.crs().get().getNativeCrs();
       crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
     }
 
@@ -759,10 +773,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
         query.getQueries().stream()
             .collect(
                 Collectors.toUnmodifiableMap(
-                    TypeQuery::getType,
-                    q ->
-                        Optional.ofNullable(
-                            featureProvider.getData().getTypes().get(q.getType()))));
+                    TypeQuery::getType, q -> featureProvider.info().getSchema(q.getType())));
 
     Map<String, List<String>> fields =
         query.getQueries().stream()
@@ -798,7 +809,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
     Map<String, PropertyTransformations> propertyTransformations;
 
     if (outputFormat.canEncodeFeatures()) {
-      featureStream = featureProvider.multiQueries().getFeatureStream(query);
+      featureStream = featureProvider.multiQueries().get().getFeatureStream(query);
 
       ImmutableFeatureTransformationContextGeneric transformationContextGeneric =
           transformationContext.outputStream(new OutputStreamToByteConsumer()).build();
@@ -830,7 +841,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
       MultiFeatureQuery query,
       OgcApiDataV2 apiData,
       List<String> collectionIds,
-      FeatureProvider2 featureProvider,
+      FeatureProvider featureProvider,
       FeatureFormatExtension outputFormat,
       Optional<Profile> profile,
       String serviceUrl) {
@@ -842,8 +853,7 @@ public class SearchQueriesHandlerImpl implements SearchQueriesHandler {
                 n -> {
                   String collectionId = collectionIds.get(n);
                   Optional<FeatureSchema> schema =
-                      Optional.ofNullable(
-                          featureProvider.getData().getTypes().get(getFeatureTypeId(query, n)));
+                      featureProvider.info().getSchema(getFeatureTypeId(query, n));
                   PropertyTransformations pt =
                       outputFormat
                           .getPropertyTransformations(

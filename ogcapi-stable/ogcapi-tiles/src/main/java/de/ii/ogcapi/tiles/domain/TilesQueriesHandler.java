@@ -12,13 +12,14 @@ import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.tiles.domain.TileCoordinates;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
 
-public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.Query> {
+public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.Query>, Volatile2 {
 
   @Override
   Map<Query, QueryHandler<? extends QueryInput>> getQueryHandlers();

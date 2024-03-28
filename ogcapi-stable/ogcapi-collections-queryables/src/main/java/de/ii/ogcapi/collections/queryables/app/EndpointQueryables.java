@@ -21,6 +21,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputCollectionProperties;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -35,12 +36,14 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.values.domain.ValueStore;
 import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -68,13 +71,15 @@ import org.slf4j.LoggerFactory;
 @Singleton
 @AutoBind
 @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-public class EndpointQueryables extends EndpointSubCollection implements ConformanceClass {
+public class EndpointQueryables extends EndpointSubCollection
+    implements ConformanceClass, ApiExtensionHealth {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointQueryables.class);
 
   private static final List<String> TAGS = ImmutableList.of("Discover data collections");
 
   private final CollectionPropertiesQueriesHandler queryHandler;
+  private final FeaturesCoreProviders providers;
   private final JsonSchemaCache schemaCache;
 
   @Inject
@@ -85,6 +90,7 @@ public class EndpointQueryables extends EndpointSubCollection implements Conform
       FeaturesCoreProviders featuresCoreProviders) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
+    this.providers = featuresCoreProviders;
     this.schemaCache =
         new SchemaCacheQueryables(valueStore.forType(Codelist.class)::asMap, featuresCoreProviders);
   }
@@ -207,5 +213,10 @@ public class EndpointQueryables extends EndpointSubCollection implements Conform
 
     return queryHandler.handle(
         CollectionPropertiesQueriesHandler.Query.COLLECTION_PROPERTIES, queryInput, requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(providers.getFeatureProviderOrThrow(apiData));
   }
 }

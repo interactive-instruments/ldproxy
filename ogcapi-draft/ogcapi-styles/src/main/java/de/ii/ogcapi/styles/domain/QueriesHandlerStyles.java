@@ -12,10 +12,12 @@ import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import java.util.Optional;
 import org.immutables.value.Value;
 
-public interface QueriesHandlerStyles extends QueriesHandler<QueriesHandlerStyles.Query> {
+public interface QueriesHandlerStyles
+    extends QueriesHandler<QueriesHandlerStyles.Query>, Volatile2 {
 
   String GROUP_STYLES = "styles";
   PermissionGroup GROUP_STYLES_READ =

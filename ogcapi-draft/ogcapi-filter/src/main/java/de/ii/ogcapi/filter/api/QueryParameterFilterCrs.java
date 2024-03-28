@@ -27,7 +27,7 @@ import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
@@ -74,9 +74,7 @@ public class QueryParameterFilterCrs extends ApiExtensionCache
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
     return super.isEnabledForApi(apiData)
         && providers
-            .getFeatureProvider(apiData)
-            .filter(FeatureProvider2::supportsQueries)
-            .map(FeatureProvider2::queries)
+            .getFeatureProvider(apiData, FeatureProvider::queries)
             .map(FeatureQueries::supportsCql2)
             .orElse(false);
   }

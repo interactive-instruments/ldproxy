@@ -24,6 +24,7 @@ import de.ii.ogcapi.features.search.domain.SearchQueriesHandler;
 import de.ii.ogcapi.features.search.domain.SearchQueriesHandler.Query;
 import de.ii.ogcapi.features.search.domain.SearchQueriesHandler.QueryInputQuery;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
@@ -42,6 +43,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
@@ -54,6 +56,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -73,7 +76,8 @@ import javax.ws.rs.core.Response;
  */
 @Singleton
 @AutoBind
-public class EndpointAdHocQuery extends EndpointRequiresFeatures implements ConformanceClass {
+public class EndpointAdHocQuery extends EndpointRequiresFeatures
+    implements ConformanceClass, ApiExtensionHealth {
 
   private static final List<String> TAGS = ImmutableList.of("Discover and execute queries");
   private static final ApiMediaType REQUEST_MEDIA_TYPE =
@@ -298,5 +302,10 @@ public class EndpointAdHocQuery extends EndpointRequiresFeatures implements Conf
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     return ImmutableList.of(
         "http://www.opengis.net/spec/ogcapi-features-n/0.0/conf/ad-hoc-queries");
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler, providers.getFeatureProviderOrThrow(apiData));
   }
 }
