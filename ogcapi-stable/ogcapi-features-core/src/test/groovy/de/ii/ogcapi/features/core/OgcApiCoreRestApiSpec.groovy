@@ -24,7 +24,7 @@ import  java.time.format.DateTimeFormatter
 class OgcApiCoreRestApiSpec extends Specification {
 
     static final String SUT_URL = System.getenv('SUT_URL')
-    static final String SUT_PATH = "/rest/services/daraa"
+    static final String SUT_PATH = "/daraa"
     static final String SUT_COLLECTION = "agriculturesrf"
     static final String SUT_COLLECTION2 = "culturesrf"
     static final String SUT_ID = "1"
