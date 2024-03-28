@@ -259,6 +259,6 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
   private String getRequestPath(@SuppressWarnings("SameParameterValue") boolean queryParameters) {
     String s =
         queryParameters ? uriInfo.getRequestUri().toString() : uriInfo.getAbsolutePath().toString();
-    return s.substring(s.lastIndexOf("/rest/services") + 14);
+    return s.substring(s.indexOf("/", s.indexOf("//") + 1));
   }
 }
