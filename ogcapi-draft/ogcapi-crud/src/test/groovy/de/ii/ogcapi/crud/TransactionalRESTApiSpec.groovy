@@ -16,7 +16,7 @@ import spock.lang.Specification
 class TransactionalRESTApiSpec extends Specification{
 
     static String SUT_URL = System.getenv('SUT_URL')
-    static String SUT_PATH = "/rest/services/daraa"
+    static String SUT_PATH = "/daraa"
     static String SUT_COLLECTION = "aeronauticcrv"
     static String SUT_ID = "21"
 

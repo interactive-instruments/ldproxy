@@ -58,6 +58,12 @@ public class URICustomizer extends URIBuilder {
     return this;
   }
 
+  @Override
+  public URICustomizer setPathSegments(List<String> pathSegments) {
+    super.setPathSegments(pathSegments);
+    return this;
+  }
+
   public URICustomizer ensureParameter(final String parameter, final String value) {
     if (this.getQueryParams().stream()
         .noneMatch(nameValuePair -> nameValuePair.getName().equals(parameter))) {
@@ -82,6 +88,19 @@ public class URICustomizer extends URIBuilder {
     final List<String> pathSegments = getPathSegments();
 
     return pathSegments.isEmpty() ? null : pathSegments.get(pathSegments.size() - 1);
+  }
+
+  public URICustomizer prependPathSegments(final String... segments) {
+    return prependPathSegments(List.of(segments));
+  }
+
+  public URICustomizer prependPathSegments(final Iterable<String> segments) {
+    final List<String> pathSegments = getPathSegments();
+
+    this.setPathSegments(
+        new ImmutableList.Builder<String>().addAll(segments).addAll(pathSegments).build());
+
+    return this;
   }
 
   public URICustomizer ensureLastPathSegment(final String segment) {

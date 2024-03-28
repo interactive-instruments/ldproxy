@@ -142,7 +142,7 @@ INFO  [2021-12-18 07:29:39,089]                vineyards - Feature provider with
 INFO  [2021-12-18 07:29:39,400]                vineyards - Service with id 'vineyards' started successfully.  
 ```
 
-Congratulations, you are now ready to use the API, just open the [landing page](http://localhost:7080/rest/services/vineyards) or the [vineyards features](http://localhost:7080/rest/services/vineyards/collections/vineyards/items).
+Congratulations, you are now ready to use the API, just open the [landing page](http://localhost:7080/vineyards) or the [vineyards features](http://localhost:7080/vineyards/collections/vineyards/items).
 
 Have a look at the updated configuration files. They should like the following, first the providers file, the the services file.
 

@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import com.google.common.base.Splitter;
 import de.ii.xtraplatform.auth.domain.User;
 import java.net.URI;
 import java.nio.file.Path;
@@ -19,6 +20,8 @@ import javax.ws.rs.core.Request;
 import org.immutables.value.Value;
 
 public interface ApiRequestContext {
+
+  Splitter PATH_SPLITTER = Splitter.on('/').trimResults().omitEmptyStrings();
 
   URI getExternalUri();
 
@@ -45,6 +48,11 @@ public interface ApiRequestContext {
   @Value.Default
   default int getMaxResponseLinkHeaderSize() {
     return 2048;
+  }
+
+  @Value.Derived
+  default List<String> getExternalUriPath() {
+    return PATH_SPLITTER.splitToList(getExternalUri().getPath());
   }
 
   @Value.Derived

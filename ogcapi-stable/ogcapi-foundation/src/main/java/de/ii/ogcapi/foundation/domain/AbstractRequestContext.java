@@ -45,7 +45,7 @@ public abstract class AbstractRequestContext implements ApiRequestContext {
     URICustomizer uriCustomizer = new URICustomizer(getRequestUri());
 
     uriCustomizer.setScheme(getExternalUri().getScheme());
-    uriCustomizer.replaceInPath("/rest/services", getExternalUri().getPath());
+    uriCustomizer.prependPathSegments(getExternalUriPath());
 
     return uriCustomizer;
   }
@@ -57,8 +57,7 @@ public abstract class AbstractRequestContext implements ApiRequestContext {
 
     staticUrlPrefix =
         new URICustomizer(getRequestUri())
-            .cutPathAfterSegments("rest", "services")
-            .replaceInPath("/rest/services", getExternalUri().getPath())
+            .setPathSegments(getExternalUriPath())
             .ensureLastPathSegment(STATIC_PATH)
             .ensureNoTrailingSlash()
             .getPath();
