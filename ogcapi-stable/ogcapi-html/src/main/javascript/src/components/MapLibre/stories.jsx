@@ -15,7 +15,7 @@ Plain.args = {
   styleUrl: "https://demo.ldproxy.net/daraa/styles/topographic-with-basemap?f=mbs",
   // styleUrl: "https://demo.ldproxy.net/strassen/styles/default?f=mbs",
   // styleUrl:
-  // "http://localhost:7080/rest/services/daraa/styles/topographic-with-basemap-layercontrol?f=mbs",
+  // "http://localhost:7080/daraa/styles/topographic-with-basemap-layercontrol?f=mbs",
   /* layerGroupControl: [
     {
       id: "Abschnitte und Äste",
@@ -183,7 +183,7 @@ export const Items = Template.bind({});
 
 Items.args = {
     dataUrl:
-    "http://localhost:7080/rest/services/feuerwehr/v1/collections/governmentalservice/items?f=json",
+    "http://localhost:7080/feuerwehr/v1/collections/governmentalservice/items?f=json",
 };
 
 export const Extent = Template.bind({});
@@ -204,10 +204,10 @@ export const Tiles = Template.bind({});
 
 Tiles.args = {
     dataUrl:
-    "http://localhost:7080/rest/services/feuerwehr/v1/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt",
+    "http://localhost:7080/feuerwehr/v1/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt",
   dataType: "vector",
   dataLayers: { governmentalservice: ["points"] },
     // styleUrl:
-    //    'http://localhost:7080/rest/services/feuerwehr/v1/styles/default?f=mbs',
+    //    'http://localhost:7080/feuerwehr/v1/styles/default?f=mbs',
   popup: "CLICK_PROPERTIES",
 }; */

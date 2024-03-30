@@ -16,7 +16,7 @@ import spock.lang.Specification
 class StylesRepresentationRESTApiSpec extends Specification {
 
     static final String SUT_URL = System.getenv('SUT_URL')
-    static final String SUT_PATH = "/rest/services/daraa"
+    static final String SUT_PATH = "/daraa"
     static final String SUT_STYLE = "topographic"
 
     RESTClient restClient = new RESTClient(SUT_URL)
