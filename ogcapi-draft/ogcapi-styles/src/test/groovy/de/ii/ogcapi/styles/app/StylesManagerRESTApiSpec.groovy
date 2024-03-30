@@ -17,7 +17,7 @@ import spock.lang.Specification
 class StylesManagerRESTApiSpec extends Specification {
 
     static final String SUT_URL = System.getenv('SUT_URL')
-    static final String SUT_PATH = "/rest/services/daraa"
+    static final String SUT_PATH = "/daraa"
     static final String SUT_COLLECTION = "aeronauticcrv"
     static final String SUT_STYLE = "default"
 

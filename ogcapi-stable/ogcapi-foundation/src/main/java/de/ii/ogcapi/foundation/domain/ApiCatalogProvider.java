@@ -7,6 +7,9 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import static de.ii.ogcapi.foundation.domain.AbstractRequestContext.STATIC_PATH;
+import static de.ii.ogcapi.foundation.domain.ApiRequestContext.PATH_SPLITTER;
+
 import com.google.common.base.Splitter;
 import de.ii.ogcapi.foundation.domain.ImmutableApiCatalog.Builder;
 import de.ii.xtraplatform.entities.domain.EntityDataBuilder;
@@ -61,30 +64,19 @@ public abstract class ApiCatalogProvider implements ServiceListingProvider, ApiE
 
   public abstract ApiMediaType getApiMediaType();
 
-  private Optional<URI> getExternalUri() {
-    return Optional.of(servicesUri);
-  }
-
   private void customizeUri(final URICustomizer uriCustomizer) {
-    if (getExternalUri().isPresent()) {
-      uriCustomizer.setScheme(getExternalUri().get().getScheme());
-      uriCustomizer.replaceInPath("/rest/services", getExternalUri().get().getPath());
-      uriCustomizer.ensureNoTrailingSlash();
-    }
+    uriCustomizer.setScheme(servicesUri.getScheme());
+    uriCustomizer.prependPathSegments(PATH_SPLITTER.splitToList(servicesUri.getPath()));
+    uriCustomizer.ensureNoTrailingSlash();
   }
 
   private String getStaticUrlPrefix(final URICustomizer uriCustomizer) {
-    if (getExternalUri().isPresent()) {
-      return uriCustomizer
-          .copy()
-          .cutPathAfterSegments("rest", "services")
-          .replaceInPath("/rest/services", getExternalUri().get().getPath())
-          .ensureLastPathSegment("___static___")
-          .ensureNoTrailingSlash()
-          .getPath();
-    }
-
-    return "";
+    return uriCustomizer
+        .copy()
+        .setPathSegments(PATH_SPLITTER.splitToList(servicesUri.getPath()))
+        .ensureLastPathSegment(STATIC_PATH)
+        .ensureNoTrailingSlash()
+        .getPath();
   }
 
   private FoundationConfiguration getFoundationConfigurationDefaults() {
