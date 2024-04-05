@@ -335,18 +335,6 @@ public interface OgcApiDataV2 extends ServiceData, ExtendableConfiguration {
     }
   }
 
-  @JsonIgnore
-  @Value.Derived
-  @Override
-  default long getEntitySchemaVersion() {
-    return 2;
-  }
-
-  @Override
-  default Optional<String> getEntitySubType() {
-    return Optional.of(SERVICE_TYPE);
-  }
-
   /**
    * @langEn Always `OGC_API`.
    * @langDe Immer `OGC_API`.
