@@ -219,7 +219,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
       for (ExtensionConfiguration cfg : hydrated.getExtensions()) {
         if (buildingBlocks.containsKey(cfg.getClass())) {
           configs.add(buildingBlocks.get(cfg.getClass()).hydrateConfiguration(cfg));
-        } else {
+        } else if (cfg.isEnabled()) {
           LOGGER.error("Building block not supported: {}", cfg.getBuildingBlock());
         }
       }
