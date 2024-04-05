@@ -131,6 +131,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
     return isEnabledForApi(api.getData())
         && tilesProviders
             .getTileProvider(api.getData())
+            .filter(provider -> provider.seeding().isSupported())
             .map(provider -> provider.seeding().get().getOptions())
             .filter(SeedingOptions::shouldRunOnStartup)
             .isPresent();
@@ -143,6 +144,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
     }
     return tilesProviders
         .getTileProvider(api.getData())
+        .filter(provider -> provider.seeding().isSupported())
         .map(provider -> provider.seeding().get().getOptions())
         .flatMap(SeedingOptions::getCronExpression);
   }
@@ -151,6 +153,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
   public int getMaxPartials(OgcApi api) {
     return tilesProviders
         .getTileProvider(api.getData())
+        .filter(provider -> provider.seeding().isSupported())
         .map(provider -> provider.seeding().get().getOptions())
         .map(SeedingOptions::getEffectiveMaxThreads)
         .orElse(1);
@@ -164,6 +167,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
   private boolean shouldPurge(OgcApi api) {
     return tilesProviders
         .getTileProvider(api.getData())
+        .filter(provider -> provider.seeding().isSupported())
         .map(provider -> provider.seeding().get().getOptions())
         .filter(SeedingOptions::shouldPurge)
         .isPresent();
