@@ -147,6 +147,7 @@ public class StylesBuildingBlock implements ApiBuildingBlock {
             extensionRegistry.getExtensionsForType(StyleFormatExtension.class).stream()
                 .filter(FormatExtension::isEnabledByDefault)
                 .map(format -> format.getMediaType().label())
+                .sorted()
                 .collect(ImmutableList.toImmutableList()))
         .deriveCollectionStyles(false)
         .webmapWithPopup(true)

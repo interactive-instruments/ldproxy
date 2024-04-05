@@ -31,7 +31,8 @@ import org.immutables.value.Value;
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.CUSTOM,
     include = JsonTypeInfo.As.EXISTING_PROPERTY,
-    property = "buildingBlock")
+    property = "buildingBlock",
+    visible = true)
 @JsonTypeIdResolver(JacksonProvider.DynamicTypeIdResolver.class)
 @JsonPropertyOrder({"buildingBlock", "enabled"})
 public interface ExtensionConfiguration

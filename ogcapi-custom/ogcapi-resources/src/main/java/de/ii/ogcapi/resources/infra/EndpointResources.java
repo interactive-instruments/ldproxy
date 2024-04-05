@@ -12,13 +12,13 @@ import static de.ii.ogcapi.resources.domain.QueriesHandlerResources.GROUP_RESOUR
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.Endpoint;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -29,8 +29,10 @@ import de.ii.ogcapi.resources.domain.ImmutableQueryInputResources;
 import de.ii.ogcapi.resources.domain.QueriesHandlerResources;
 import de.ii.ogcapi.resources.domain.ResourcesConfiguration;
 import de.ii.ogcapi.resources.domain.ResourcesFormatExtension;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -52,21 +54,18 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointResources extends Endpoint {
+public class EndpointResources extends Endpoint implements ApiExtensionHealth {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointResources.class);
 
   private static final List<String> TAGS = ImmutableList.of("Discover and fetch other resources");
-
-  private final I18n i18n;
   private final QueriesHandlerResources queryHandler;
 
   @Inject
   public EndpointResources(
-      ExtensionRegistry extensionRegistry, I18n i18n, QueriesHandlerResources queryHandler) {
+      ExtensionRegistry extensionRegistry, QueriesHandlerResources queryHandler) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
-    this.i18n = i18n;
   }
 
   @Override
@@ -137,5 +136,10 @@ public class EndpointResources extends Endpoint {
         ImmutableQueryInputResources.builder().from(getGenericQueryInput(api.getData())).build();
 
     return queryHandler.handle(QueriesHandlerResources.Query.RESOURCES, queryInput, requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler);
   }
 }

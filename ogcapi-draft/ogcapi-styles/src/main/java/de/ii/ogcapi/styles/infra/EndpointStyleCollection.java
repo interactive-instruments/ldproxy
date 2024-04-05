@@ -13,6 +13,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -20,7 +21,6 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
-import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -33,12 +33,14 @@ import de.ii.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleRepository;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -61,7 +63,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointStyleCollection extends EndpointSubCollection {
+public class EndpointStyleCollection extends EndpointSubCollection implements ApiExtensionHealth {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyleCollection.class);
 
@@ -69,16 +71,13 @@ public class EndpointStyleCollection extends EndpointSubCollection {
 
   private final StyleRepository styleRepository;
   private final QueriesHandlerStyles queryHandler;
-  private final I18n i18n;
 
   @Inject
   public EndpointStyleCollection(
       ExtensionRegistry extensionRegistry,
-      I18n i18n,
       StyleRepository styleRepository,
       QueriesHandlerStyles queryHandler) {
     super(extensionRegistry);
-    this.i18n = i18n;
     this.styleRepository = styleRepository;
     this.queryHandler = queryHandler;
   }
@@ -209,5 +208,10 @@ public class EndpointStyleCollection extends EndpointSubCollection {
             .build();
 
     return queryHandler.handle(QueriesHandlerStyles.Query.STYLE, queryInput, requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler, styleRepository);
   }
 }

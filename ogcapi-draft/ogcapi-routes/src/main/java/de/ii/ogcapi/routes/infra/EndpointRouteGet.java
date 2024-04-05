@@ -12,6 +12,7 @@ import static de.ii.ogcapi.routes.domain.QueryHandlerRoutes.GROUP_ROUTES_READ;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
@@ -32,9 +33,11 @@ import de.ii.ogcapi.routes.domain.QueryHandlerRoutes;
 import de.ii.ogcapi.routes.domain.RouteFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -54,7 +57,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointRouteGet extends Endpoint implements ConformanceClass {
+public class EndpointRouteGet extends Endpoint implements ConformanceClass, ApiExtensionHealth {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointRouteGet.class);
 
@@ -165,5 +168,10 @@ public class EndpointRouteGet extends Endpoint implements ConformanceClass {
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     return ImmutableList.of(RoutingBuildingBlock.MANAGE_ROUTES);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler);
   }
 }

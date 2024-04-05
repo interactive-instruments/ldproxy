@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.foundation.domain;
 
+import de.ii.xtraplatform.cache.domain.Cache;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.services.domain.Service;
@@ -19,6 +20,8 @@ public interface OgcApi extends Service {
 
   @Override
   OgcApiDataV2 getData();
+
+  boolean isAvailable(ApiExtension extension, boolean checkBuildingBlock);
 
   <T extends FormatExtension> Optional<T> getOutputFormat(
       Class<T> extensionType, ApiMediaType mediaType, Optional<String> collectionId);
@@ -164,4 +167,8 @@ public interface OgcApi extends Service {
   }
 
   URI getUri();
+
+  boolean isAsyncStartup();
+
+  Cache getCache();
 }

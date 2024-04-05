@@ -16,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQueries;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import java.util.AbstractMap.SimpleImmutableEntry;
@@ -171,7 +172,7 @@ public interface QueryablesConfiguration extends ExtensionConfiguration, Caching
       FeatureSchema schema,
       FeaturesCoreProviders providers) {
     FeatureQueries featureQueries =
-        providers.getFeatureProviderOrThrow(apiData, collectionData).queries();
+        providers.getFeatureProviderOrThrow(apiData, collectionData, FeatureProvider::queries);
 
     return featureQueries.getQueryablesSchema(
         schema, getIncluded(), getExcluded(), getPathSeparator().toString());

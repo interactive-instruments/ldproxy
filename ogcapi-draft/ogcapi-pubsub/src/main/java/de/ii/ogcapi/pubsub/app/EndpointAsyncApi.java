@@ -12,6 +12,7 @@ import static de.ii.ogcapi.foundation.domain.ApiSecurity.GROUP_DISCOVER_READ;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.Endpoint;
@@ -28,9 +29,11 @@ import de.ii.ogcapi.pubsub.domain.AsyncApiDefinitionFormatExtension;
 import de.ii.ogcapi.pubsub.domain.QueriesHandlerPubSub;
 import de.ii.ogcapi.pubsub.domain.QueriesHandlerPubSub.Query;
 import de.ii.xtraplatform.auth.domain.User;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import io.dropwizard.auth.Auth;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -46,7 +49,7 @@ import javax.ws.rs.core.Response;
  */
 @Singleton
 @AutoBind
-public class EndpointAsyncApi extends Endpoint {
+public class EndpointAsyncApi extends Endpoint implements ApiExtensionHealth {
 
   private static final List<String> TAGS = ImmutableList.of("Capabilities");
 
@@ -111,5 +114,10 @@ public class EndpointAsyncApi extends Endpoint {
 
     return queryHandler.handle(
         Query.ASYNC_API_DEFINITION, getGenericQueryInput(api.getData()), ogcApiContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler);
   }
 }

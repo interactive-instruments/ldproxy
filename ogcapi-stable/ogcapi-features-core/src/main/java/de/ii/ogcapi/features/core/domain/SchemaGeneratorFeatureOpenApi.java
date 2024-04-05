@@ -75,7 +75,7 @@ public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
       FeatureSchema featureType =
           providers
               .getFeatureProvider(apiData, collectionData)
-              .map(provider -> provider.getData().getTypes().get(featureTypeId))
+              .flatMap(provider -> provider.info().getSchema(featureTypeId))
               .orElse(null);
       if (Objects.isNull(featureType))
         // Use an empty object schema as fallback, if we cannot get one from the provider

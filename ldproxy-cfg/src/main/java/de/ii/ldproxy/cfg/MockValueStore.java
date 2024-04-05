@@ -7,10 +7,12 @@
  */
 package de.ii.ldproxy.cfg;
 
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry.ChangeHandler;
 import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.StoredValue;
 import de.ii.xtraplatform.values.domain.ValueStore;
 import de.ii.xtraplatform.values.domain.Values;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class MockValueStore implements ValueStore {
@@ -28,5 +30,20 @@ public class MockValueStore implements ValueStore {
   @Override
   public CompletableFuture<Void> onReady() {
     return CompletableFuture.completedFuture(null);
+  }
+
+  @Override
+  public State getState() {
+    return null;
+  }
+
+  @Override
+  public Optional<String> getMessage() {
+    return Optional.empty();
+  }
+
+  @Override
+  public Runnable onStateChange(ChangeHandler handler, boolean initialCall) {
+    return null;
   }
 }

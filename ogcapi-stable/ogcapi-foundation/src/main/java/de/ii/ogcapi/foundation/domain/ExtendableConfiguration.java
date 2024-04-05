@@ -8,6 +8,7 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,12 @@ import java.util.stream.Collectors;
 import org.immutables.value.Value;
 
 public interface ExtendableConfiguration {
+
+  static List<String> discriminators(List<ExtensionConfiguration> extensions) {
+    return extensions.stream()
+        .map(ExtensionConfiguration::getBuildingBlock)
+        .collect(Collectors.toList());
+  }
 
   List<ExtensionConfiguration> getExtensions();
 
@@ -36,7 +43,9 @@ public interface ExtendableConfiguration {
   @Value.Derived
   @Value.Auxiliary
   default List<ExtensionConfiguration> getMergedExtensions() {
-    return getMergedExtensions(getExtensions());
+    return getMergedExtensions(getExtensions()).stream()
+        .sorted(Comparator.comparing(ExtensionConfiguration::getBuildingBlock))
+        .collect(Collectors.toList());
   }
 
   default List<ExtensionConfiguration> getMergedExtensions(

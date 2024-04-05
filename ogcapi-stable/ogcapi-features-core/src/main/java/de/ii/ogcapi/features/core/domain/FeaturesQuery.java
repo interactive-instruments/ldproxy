@@ -11,6 +11,7 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.xtraplatform.base.domain.ETag;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.cql.domain.Cql.Format;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
@@ -19,7 +20,7 @@ import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.util.Map;
 import java.util.Optional;
 
-public interface FeaturesQuery {
+public interface FeaturesQuery extends Volatile2 {
   FeatureQuery requestToFeatureQuery(
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,

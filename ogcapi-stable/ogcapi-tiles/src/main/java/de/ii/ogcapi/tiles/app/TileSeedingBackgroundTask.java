@@ -21,6 +21,8 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
+import de.ii.ogcapi.tiles.domain.TilesProvidersCache;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
@@ -31,13 +33,13 @@ import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParameters;
 import de.ii.xtraplatform.tiles.domain.SeedingOptions;
 import de.ii.xtraplatform.tiles.domain.TileGenerationParameters;
 import de.ii.xtraplatform.tiles.domain.TileProvider;
-import de.ii.xtraplatform.tiles.domain.TileSeeding;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -59,42 +61,35 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
   private final ExtensionRegistry extensionRegistry;
   private final FeaturesCoreProviders providers;
   private final TilesProviders tilesProviders;
+  private final TilesProvidersCache tilesProvidersCache;
+  private final VolatileRegistry volatileRegistry;
   private Consumer<OgcApi> trigger;
 
   @Inject
   public TileSeedingBackgroundTask(
       ExtensionRegistry extensionRegistry,
       FeaturesCoreProviders providers,
-      TilesProviders tilesProviders) {
+      TilesProviders tilesProviders,
+      TilesProvidersCache tilesProvidersCache,
+      VolatileRegistry volatileRegistry) {
     this.extensionRegistry = extensionRegistry;
     this.providers = providers;
     this.tilesProviders = tilesProviders;
+    this.tilesProvidersCache = tilesProvidersCache;
+    this.volatileRegistry = volatileRegistry;
   }
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    if (!apiData.getEnabled()) {
-      return false;
-    }
-    // no vector tiles support for WFS backends
-    if (!tilesProviders.getTileProvider(apiData).map(TileProvider::supportsSeeding).orElse(false)) {
-      return false;
-    }
-
-    // no formats available
-    if (extensionRegistry.getExtensionsForType(TileFormatExtension.class).isEmpty()) {
+    // check that we have a tile provider with seeding support
+    if (tilesProviders
+        .getTileProvider(apiData)
+        .map(provider -> provider.seeding().isSupported())
+        .isEmpty()) {
       return false;
     }
 
-    // check that we have a tile provider
-    if (tilesProviders.getTileProvider(apiData).isEmpty()) {
-      return false;
-    }
-
-    return apiData
-        .getExtension(TilesConfiguration.class)
-        .filter(TilesConfiguration::isEnabled)
-        .isPresent();
+    return OgcApiBackgroundTask.super.isEnabledForApi(apiData);
   }
 
   @Override
@@ -116,7 +111,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     providers
         .getFeatureProvider(api.getData())
-        .ifPresent(provider -> updateChangeListeners(provider.getChangeHandler(), api));
+        .ifPresent(provider -> updateChangeListeners(provider.changes(), api));
 
     return ValidationResult.of();
   }
@@ -125,18 +120,19 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
   public void onShutdown(OgcApi api) {
     providers
         .getFeatureProvider(api.getData())
-        .ifPresent(provider -> removeChangeListeners(provider.getChangeHandler(), api));
+        .ifPresent(provider -> removeChangeListeners(provider.changes(), api));
 
     OgcApiBackgroundTask.super.onShutdown(api);
   }
 
+  // TODO: seeding options without available
   @Override
   public boolean runOnStart(OgcApi api) {
     return isEnabledForApi(api.getData())
         && tilesProviders
             .getTileProvider(api.getData())
-            .map(TileProvider::seeding)
-            .map(TileSeeding::getOptions)
+            .filter(provider -> provider.seeding().isSupported())
+            .map(provider -> provider.seeding().get().getOptions())
             .filter(SeedingOptions::shouldRunOnStartup)
             .isPresent();
   }
@@ -148,8 +144,8 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
     }
     return tilesProviders
         .getTileProvider(api.getData())
-        .map(TileProvider::seeding)
-        .map(TileSeeding::getOptions)
+        .filter(provider -> provider.seeding().isSupported())
+        .map(provider -> provider.seeding().get().getOptions())
         .flatMap(SeedingOptions::getCronExpression);
   }
 
@@ -157,8 +153,8 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
   public int getMaxPartials(OgcApi api) {
     return tilesProviders
         .getTileProvider(api.getData())
-        .map(TileProvider::seeding)
-        .map(TileSeeding::getOptions)
+        .filter(provider -> provider.seeding().isSupported())
+        .map(provider -> provider.seeding().get().getOptions())
         .map(SeedingOptions::getEffectiveMaxThreads)
         .orElse(1);
   }
@@ -171,8 +167,8 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
   private boolean shouldPurge(OgcApi api) {
     return tilesProviders
         .getTileProvider(api.getData())
-        .map(TileProvider::seeding)
-        .map(TileSeeding::getOptions)
+        .filter(provider -> provider.seeding().isSupported())
+        .map(provider -> provider.seeding().get().getOptions())
         .filter(SeedingOptions::shouldPurge)
         .isPresent();
   }
@@ -185,9 +181,24 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
    */
   @Override
   public void run(OgcApi api, TaskContext taskContext) {
+    CompletableFuture<Void> waitForVolatiles =
+        volatileRegistry
+            .onAvailable(tilesProvidersCache, tilesProviders.getTileProviderOrThrow(api.getData()))
+            .toCompletableFuture();
+
+    if (!waitForVolatiles.isDone()) {
+      LOGGER.info("Tile cache seeding suspended");
+      waitForVolatiles.join();
+      LOGGER.info("Tile cache seeding resumed");
+    }
+
     boolean reseed = shouldPurge(api);
     List<TileFormatExtension> outputFormats =
         extensionRegistry.getExtensionsForType(TileFormatExtension.class);
+
+    if (outputFormats.isEmpty()) {
+      return;
+    }
 
     try {
       if (!taskContext.isStopped()) {
@@ -217,14 +228,14 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
 
     TileProvider tileProvider = tilesProviders.getTileProviderOrThrow(apiData);
 
-    if (!tileProvider.supportsSeeding()) {
+    if (!tileProvider.seeding().isAvailable() || !tileProvider.generator().isAvailable()) {
       LOGGER.debug("Tile provider '{}' does not support seeding", tileProvider.getId());
       return;
     }
 
     List<MediaType> formats =
         outputFormats.stream()
-            .filter(format -> tileProvider.generator().supports(format.getMediaType().type()))
+            .filter(format -> tileProvider.generator().get().supports(format.getMediaType().type()))
             .map(format -> format.getMediaType().type())
             .collect(Collectors.toList());
 
@@ -278,7 +289,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
               tilesets.put(tileset, generationParameters);
             });
 
-    tileProvider.seeding().seed(tilesets, formats, reseed, taskContext);
+    tileProvider.seeding().get().seed(tilesets, formats, reseed, taskContext);
   }
 
   @Override
@@ -288,7 +299,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
         String collectionId = FeaturesCoreConfiguration.getCollectionId(api.getData(), featureType);
 
         try {
-          tilesProviders.deleteTiles(
+          tilesProvidersCache.deleteTiles(
               api, Optional.of(collectionId), Optional.empty(), Optional.empty());
         } catch (Exception e) {
           if (LOGGER.isErrorEnabled()) {
@@ -351,7 +362,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
 
   private void deleteTiles(OgcApi api, String collectionId, BoundingBox bbox) {
     try {
-      tilesProviders.deleteTiles(
+      tilesProvidersCache.deleteTiles(
           api, Optional.of(collectionId), Optional.empty(), Optional.of(bbox));
     } catch (Exception e) {
       if (LOGGER.isErrorEnabled()) {

@@ -20,7 +20,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiDataHydratorExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.Metadata;
 import java.util.AbstractMap;
@@ -59,7 +59,7 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
 
   @Override
   public OgcApiDataV2 getHydratedData(OgcApiDataV2 apiData) {
-    FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
+    FeatureProvider featureProvider = providers.getFeatureProviderOrThrow(apiData);
 
     OgcApiDataV2 data = apiData;
     if (data.isAuto() && data.getCollections().isEmpty()) {
@@ -191,17 +191,12 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
                     .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue)))
             .build();
 
-    if (data.isAuto() && data.isAutoPersist()) {
-      data =
-          new ImmutableOgcApiDataV2.Builder()
-              .from(data)
-              .auto(Optional.empty())
-              .autoPersist(Optional.empty())
-              .build();
+    if (data.isAuto()) {
+      data = new ImmutableOgcApiDataV2.Builder().from(data).auto(Optional.empty()).build();
     }
 
-    if (!data.getMetadata().isPresent() && featureProvider.supportsMetadata()) {
-      Optional<Metadata> providerMetadata = featureProvider.metadata().getMetadata();
+    if (!data.getMetadata().isPresent() && featureProvider.metadata().isAvailable()) {
+      Optional<Metadata> providerMetadata = featureProvider.metadata().get().getMetadata();
       if (providerMetadata.isPresent()) {
         Optional<String> license =
             providerMetadata.flatMap(Metadata::getAccessConstraints).isPresent()
@@ -242,8 +237,8 @@ public class FeaturesCoreDataHydrator implements OgcApiDataHydratorExtension {
   }
 
   private Map<String, FeatureTypeConfigurationOgcApi> generateCollections(
-      FeatureProvider2 featureProvider) {
-    return featureProvider.getData().getTypes().values().stream()
+      FeatureProvider featureProvider) {
+    return featureProvider.info().getSchemas().stream()
         .map(
             type -> {
               ImmutableFeatureTypeConfigurationOgcApi collection =

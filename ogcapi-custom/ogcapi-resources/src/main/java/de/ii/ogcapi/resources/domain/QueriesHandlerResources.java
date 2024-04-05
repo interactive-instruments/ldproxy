@@ -12,9 +12,11 @@ import de.ii.ogcapi.foundation.domain.PermissionGroup.Base;
 import de.ii.ogcapi.foundation.domain.QueriesHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import org.immutables.value.Value;
 
-public interface QueriesHandlerResources extends QueriesHandler<QueriesHandlerResources.Query> {
+public interface QueriesHandlerResources
+    extends QueriesHandler<QueriesHandlerResources.Query>, Volatile2 {
 
   String GROUP_RESOURCES = "resources";
   PermissionGroup GROUP_RESOURCES_READ =

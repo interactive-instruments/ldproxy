@@ -22,8 +22,6 @@ import de.ii.xtraplatform.base.app.StoreImpl;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration.Builder;
-import de.ii.xtraplatform.base.domain.ImmutableStoreSourceDefault;
-import de.ii.xtraplatform.base.domain.ImmutableStoreSourceFsV3;
 import de.ii.xtraplatform.base.domain.Jackson;
 import de.ii.xtraplatform.base.domain.JacksonProvider;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
@@ -98,21 +96,6 @@ class LdproxyCfgImpl implements LdproxyCfg {
     this(dataDirectory, false);
   }
 
-  public LdproxyCfgImpl(Path dataDirectory, boolean noDefaults, boolean layoutV3) {
-    this(
-        dataDirectory,
-        layoutV3
-            ? new ImmutableStoreConfiguration.Builder()
-                .addSources(
-                    new ImmutableStoreSourceFsV3.Builder().src(dataDirectory.toString()).build())
-                .build()
-            : new ImmutableStoreConfiguration.Builder()
-                .addSources(
-                    new ImmutableStoreSourceDefault.Builder().src(dataDirectory.toString()).build())
-                .build(),
-        noDefaults);
-  }
-
   public LdproxyCfgImpl(Path dataDirectory, boolean noDefaults) {
     this(dataDirectory, detectStore(dataDirectory), noDefaults);
   }
@@ -129,7 +112,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
     EventStore eventStore =
         new EventStoreDefault(
             new StoreImpl(dataDirectory, storeConfiguration), storeDriver, eventSubscriptions);
-    ((EventStoreDefault) eventStore).onStart();
+    ((EventStoreDefault) eventStore).onStart(false).toCompletableFuture().join();
     this.entityIdentifiers = new ArrayList<>();
     eventStore.subscribe(
         new EventStoreSubscriber() {
@@ -275,8 +258,11 @@ class LdproxyCfgImpl implements LdproxyCfg {
 
   @Override
   public void initStore() {
-    ((EntityDataDefaultsStoreImpl) entityDataDefaultsStore).onStart();
-    ((EntityDataStoreImpl) entityDataStore).onStart();
+    ((EntityDataDefaultsStoreImpl) entityDataDefaultsStore)
+        .onStart(false)
+        .toCompletableFuture()
+        .join();
+    ((EntityDataStoreImpl) entityDataStore).onStart(false).toCompletableFuture().join();
   }
 
   @Override

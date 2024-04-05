@@ -27,6 +27,8 @@ import de.ii.xtraplatform.base.domain.LogContext;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -65,26 +67,27 @@ public class StyleFormatSld10 implements ConformanceClass, StyleFormatExtension,
   }
 
   @Override
-  public void onStart() {
-    Executors.newSingleThreadExecutor()
-        .submit(
-            () -> {
-              try {
-                SchemaFactory factory =
-                    SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-                Schema schema =
-                    factory.newSchema(
-                        Resources.getResource(StyleFormatSld10.class, "/schemas/sld10.xsd"));
+  public CompletionStage<Void> onStart(boolean isStartupAsync) {
+    if (isStartupAsync) {
+      init();
+    } else {
+      Executors.newSingleThreadExecutor().submit(this::init);
+    }
 
-                this.validator = Optional.ofNullable(schema.newValidator());
-              } catch (SAXException e) {
-                LOGGER.error(
-                    "StyleFormatSld10 initialization failed: Could not process SLD 1.0 XSD.");
-                if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
-                  LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
-                }
-              }
-            });
+    return CompletableFuture.completedFuture(null);
+  }
+
+  public void init() {
+    try {
+      SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+      Schema schema =
+          factory.newSchema(Resources.getResource(StyleFormatSld10.class, "/schemas/sld10.xsd"));
+
+      this.validator = Optional.ofNullable(schema.newValidator());
+    } catch (SAXException e) {
+      LogContext.error(
+          LOGGER, e, "StyleFormatSld10 initialization failed, could not process SLD 1.0 XSD");
+    }
   }
 
   @Override

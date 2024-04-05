@@ -45,15 +45,14 @@ import org.slf4j.LoggerFactory;
  * - `custom-footer-end.mustache`: add something at the end of footer
  * - `custom-footer-url.mustache`: add a link to the list at the right of the footer
  *     </code>
- *     <p>These templates have to reside in the data directory either under the relative path
- *     `templates/html/{templateName}.mustache` if you are still using the old layout (deprecated,
- *     will stop working in v4) or under `resources/html/templates/{templateName}.mustache` with the
- *     new layout.
+ *     <p>These templates have to reside in the
+ *     [Store](../../application/20-configuration/10-store-new.md) as resources with type
+ *     `html/templates`.
  *     <p>#### Custom assets
  *     <p>It is also possible to publish any custom files, e.g. CSS files that can then be included
- *     in `custom-head.mustache`. The files have to reside in the data directory either under the
- *     relative path `store/resources/html/assets/` if you are still using the old layout
- *     (deprecated, will stop working in v4) or under `resources/html/assets/` with the new layout.
+ *     in `custom-head.mustache`. The files have to reside in the
+ *     [Store](../../application/20-configuration/10-store-new.md) as resources with type
+ *     `html/assets`.
  *     <p>For example the CSS file `resources/html/assets/my.css` could be included in
  *     `custom-head.mustache` with `<link href="{{urlPrefix}}/custom/assets/my.css"
  *     rel="stylesheet">`.
@@ -89,16 +88,13 @@ import org.slf4j.LoggerFactory;
  * - `custom-footer-end.mustache`: etwas am Ende des Footers hinzufügen
  * - `custom-footer-url.mustache`: einen Link zur Liste auf der rechten Seite des Footers hinzufügen
  *     </code>
- *     <p>Diese Templates müssen als Dateien im Datenverzeichnis entweder unter dem relativen Pfad
- *     `templates/html/{templateName}.mustache` liegen, wenn noch das alte Layout verwendet wird
- *     (Deprecated, wird in v4 nicht mehr funktionieren), oder unter
- *     `resources/html/templates/{templateName}.mustache` mit dem neuen Layout.
+ *     <p>Diese Templates liegen im [Store](../../application/20-configuration/10-store-new.md) als
+ *     Ressourcen mit Typ `html/templates`.
  *     <p>#### Benutzerdefinierte Dateien
  *     <p>Es können auch beliebige Dateien veröffentlicht werden, z.B. CSS Dateien, die dann in
- *     `custom-head.mustache` eingebunden werden. Diese Dateien müssen im Datenverzeichnis entweder
- *     unter dem relativen Pfad `store/resources/html/assets/` liegen, wenn noch das alte Layout
- *     verwendet wird (Deprecated, wird in v4 nicht mehr funktionieren), oder unter
- *     `resources/html/assets/` mit dem neuen Layout.
+ *     `custom-head.mustache` eingebunden werden. Diese Dateien liegen im
+ *     [Store](../../application/20-configuration/10-store-new.md) als Ressourcen mit Typ
+ *     `html/assets`.
  *     <p>Zum Beispiel könnte die CSS-Datei `resources/html/assets/my.css` in `custom-head.mustache`
  *     eingebunden werden mit `<link href="{{urlPrefix}}/custom/assets/my.css" rel="stylesheet">`.
  *     <p>### Login Provider

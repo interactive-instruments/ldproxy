@@ -38,15 +38,18 @@ import de.ii.ogcapi.routes.domain.RoutesFormatExtension;
 import de.ii.ogcapi.routes.domain.RoutesLinksGenerator;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
 import de.ii.ogcapi.routes.domain.RoutingFlag;
+import de.ii.ogcapi.routes.infra.EndpointRoutesGet;
 import de.ii.xtraplatform.base.domain.ETag;
 import de.ii.xtraplatform.base.domain.LogContext;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.cql.domain.Geometry;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
@@ -82,7 +85,7 @@ import javax.ws.rs.core.StreamingOutput;
 
 @Singleton
 @AutoBind
-public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
+public class QueryHandlerRoutesImpl extends AbstractVolatileComposed implements QueryHandlerRoutes {
 
   private final I18n i18n;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
@@ -99,7 +102,9 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
       CrsInfo crsInfo,
       ValueStore valueStore,
       CrsSupport crsSupport,
-      RouteRepository routeRepository) {
+      RouteRepository routeRepository,
+      VolatileRegistry volatileRegistry) {
+    super(QueryHandlerRoutes.class.getSimpleName(), volatileRegistry, true);
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
     this.crsInfo = crsInfo;
@@ -116,6 +121,15 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             Query.GET_ROUTE_DEFINITION,
                 QueryHandler.with(QueryInputRoute.class, this::getRouteDefinition),
             Query.DELETE_ROUTE, QueryHandler.with(QueryInputRoute.class, this::deleteRoute));
+
+    onVolatileStart();
+
+    addSubcomponent(crsTransformerFactory);
+    addSubcomponent(crsInfo);
+    addSubcomponent(codelistStore);
+    addSubcomponent(routeRepository);
+
+    onVolatileStarted();
   }
 
   @Override
@@ -130,16 +144,14 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
     RouteDefinition routeDefinition = queryInput.getDefinition();
     String routeId = queryInput.getRouteId();
     FeatureQuery query = queryInput.getQuery();
-    FeatureProvider2 featureProvider = queryInput.getFeatureProvider();
+    FeatureProvider featureProvider = queryInput.getFeatureProvider();
     RoutingConfiguration config =
         apiData
             .getExtension(RoutingConfiguration.class)
             .orElseThrow(
                 () -> new IllegalStateException("No routing configuration found for the API."));
     RoutesConfiguration providerConfig =
-        featureProvider
-            .getData()
-            .getExtension(RoutesConfiguration.class)
+        EndpointRoutesGet.getProviderRoutingCfg(featureProvider)
             .orElseThrow(
                 () ->
                     new IllegalStateException(
@@ -222,8 +234,8 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
 
     EpsgCrs sourceCrs = null;
     EpsgCrs targetCrs = query.getCrs().orElse(queryInput.getDefaultCrs());
-    if (featureProvider.supportsCrs()) {
-      sourceCrs = featureProvider.crs().getNativeCrs();
+    if (featureProvider.crs().isAvailable()) {
+      sourceCrs = featureProvider.crs().get().getNativeCrs();
       crsTransformer = crsTransformerFactory.getTransformer(sourceCrs, targetCrs);
     }
 
@@ -249,8 +261,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
             .featureSchemas(
                 ImmutableMap.of(
                     "not_applicable",
-                    Optional.ofNullable(
-                        featureProvider.getData().getTypes().get(queryInput.getFeatureTypeId()))))
+                    featureProvider.info().getSchema(queryInput.getFeatureTypeId())))
             .ogcApiRequest(requestContext)
             .crsTransformer(crsTransformer)
             .codelists(codelistStore.asMap())
@@ -286,7 +297,7 @@ public class QueryHandlerRoutesImpl implements QueryHandlerRoutes {
               requestContext.getMediaType().type()));
     }
 
-    FeatureStream featureStream = featureProvider.queries().getFeatureStream(query);
+    FeatureStream featureStream = featureProvider.queries().get().getFeatureStream(query);
 
     StreamingOutput streamingOutput = stream(featureStream, encoder.get());
 

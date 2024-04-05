@@ -17,11 +17,13 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableRequestContext.Builder;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureChange;
 import de.ii.xtraplatform.features.domain.FeatureChange.Action;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureStream;
 import de.ii.xtraplatform.features.domain.FeatureTokenSource;
 import de.ii.xtraplatform.features.domain.FeatureTransactions;
@@ -54,7 +56,7 @@ import org.threeten.extra.Interval;
 
 @Singleton
 @AutoBind
-public class CommandHandlerCrudImpl implements CommandHandlerCrud {
+public class CommandHandlerCrudImpl extends AbstractVolatileComposed implements CommandHandlerCrud {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CommandHandlerCrudImpl.class);
 
@@ -64,9 +66,18 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
 
   @Inject
   public CommandHandlerCrudImpl(
-      FeaturesCoreQueriesHandler queriesHandler, ExtensionRegistry extensionRegistry) {
+      FeaturesCoreQueriesHandler queriesHandler,
+      ExtensionRegistry extensionRegistry,
+      VolatileRegistry volatileRegistry) {
+    super(CommandHandlerCrud.class.getSimpleName(), volatileRegistry, true);
     this.queriesHandler = queriesHandler;
     this.extensionRegistry = extensionRegistry;
+
+    onVolatileStart();
+
+    addSubcomponent(queriesHandler);
+
+    onVolatileStarted();
   }
 
   @Override
@@ -82,7 +93,8 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     FeatureTransactions.MutationResult result =
         queryInput
             .getFeatureProvider()
-            .transactions()
+            .mutations()
+            .get()
             .createFeatures(queryInput.getFeatureType(), featureTokenSource, crs);
 
     result.getError().ifPresent(FeatureStream::processStreamError);
@@ -134,7 +146,8 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     FeatureTransactions.MutationResult result =
         queryInput
             .getFeatureProvider()
-            .transactions()
+            .mutations()
+            .get()
             .updateFeature(
                 queryInput.getFeatureType(),
                 queryInput.getFeatureId(),
@@ -187,7 +200,8 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     FeatureTransactions.MutationResult result =
         queryInput
             .getFeatureProvider()
-            .transactions()
+            .mutations()
+            .get()
             .updateFeature(
                 queryInput.getFeatureType(), queryInput.getFeatureId(), mergedSource, crs, true);
 
@@ -227,7 +241,8 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     FeatureTransactions.MutationResult result =
         queryInput
             .getFeatureProvider()
-            .transactions()
+            .mutations()
+            .get()
             .deleteFeature(queryInput.getCollectionId(), queryInput.getFeatureId());
 
     result.getError().ifPresent(FeatureStream::processStreamError);
@@ -295,7 +310,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
   }
 
   private void handleChange(
-      FeatureProvider2 featureProvider,
+      FeatureProvider featureProvider,
       String collectionId,
       List<String> ids,
       Optional<BoundingBox> oldBbox,
@@ -316,7 +331,7 @@ public class CommandHandlerCrudImpl implements CommandHandlerCrud {
     if (LOGGER.isTraceEnabled()) {
       LOGGER.trace("Feature Change: {}", change);
     }
-    featureProvider.getChangeHandler().handle(change);
+    featureProvider.changes().handle(change);
   }
 
   private static Optional<BoundingBox> parseBboxHeader(Response response) {

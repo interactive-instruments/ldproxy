@@ -29,6 +29,7 @@ import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeature;
 import de.ii.ogcapi.features.core.domain.WithChangeListeners;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiBuildingBlock;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -44,6 +45,7 @@ import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.base.domain.LogContext.MARKER;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.cql.domain.In;
 import de.ii.xtraplatform.cql.domain.ScalarLiteral;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
@@ -51,7 +53,7 @@ import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.DatasetChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureChange.Action;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import java.io.IOException;
@@ -186,7 +188,8 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class PubSubBuildingBlock implements ApiBuildingBlock, WithChangeListeners {
+public class PubSubBuildingBlock
+    implements ApiBuildingBlock, ApiExtensionHealth, WithChangeListeners {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PubSubBuildingBlock.class);
 
@@ -221,7 +224,7 @@ public class PubSubBuildingBlock implements ApiBuildingBlock, WithChangeListener
 
     providers
         .getFeatureProvider(api.getData())
-        .ifPresent(provider -> updateChangeListeners(provider.getChangeHandler(), api));
+        .ifPresent(provider -> updateChangeListeners(provider.changes(), api));
 
     String publisher =
         api.getData()
@@ -294,7 +297,7 @@ public class PubSubBuildingBlock implements ApiBuildingBlock, WithChangeListener
   public void onShutdown(OgcApi api) {
     providers
         .getFeatureProvider(api.getData())
-        .ifPresent(provider -> removeChangeListeners(provider.getChangeHandler(), api));
+        .ifPresent(provider -> removeChangeListeners(provider.changes(), api));
 
     ApiBuildingBlock.super.onShutdown(api);
   }
@@ -514,7 +517,7 @@ public class PubSubBuildingBlock implements ApiBuildingBlock, WithChangeListener
   }
 
   private ObjectNode getCurrentFeature(
-      OgcApi api, FeatureProvider2 provider, String collectionId, String featureId) {
+      OgcApi api, FeatureProvider provider, String collectionId, String featureId) {
     try {
       if (formats == null) {
         formats = extensionRegistry.getExtensionsForType(FeatureFormatExtension.class);
@@ -620,5 +623,10 @@ public class PubSubBuildingBlock implements ApiBuildingBlock, WithChangeListener
       }
     }
     return null;
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queriesHandler, providers.getFeatureProviderOrThrow(apiData));
   }
 }

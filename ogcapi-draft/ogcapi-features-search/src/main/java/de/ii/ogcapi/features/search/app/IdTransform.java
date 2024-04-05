@@ -9,7 +9,7 @@ package de.ii.ogcapi.features.search.app;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
@@ -25,9 +25,8 @@ class IdTransform implements PropertyTransformations {
 
   private final Map<String, List<PropertyTransformation>> transformations;
 
-  IdTransform(FeatureProvider2 featureProvider, String featureTypeId, String collectionId) {
-    FeatureSchema schema =
-        Objects.requireNonNull(featureProvider.getData().getTypes().get(featureTypeId));
+  IdTransform(FeatureProvider featureProvider, String featureTypeId, String collectionId) {
+    FeatureSchema schema = featureProvider.info().getSchema(featureTypeId).get();
     String idProperty = Objects.requireNonNull(findIdProperty(schema));
     transformations =
         ImmutableMap.of(

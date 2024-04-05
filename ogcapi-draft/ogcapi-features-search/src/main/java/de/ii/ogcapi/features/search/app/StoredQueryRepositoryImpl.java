@@ -17,6 +17,8 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
+import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatile;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.ValueStore;
@@ -28,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
@@ -38,17 +41,30 @@ import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
-public class StoredQueryRepositoryImpl implements StoredQueryRepository, AppLifeCycle {
+public class StoredQueryRepositoryImpl extends AbstractVolatile
+    implements StoredQueryRepository, AppLifeCycle {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StoredQueryRepositoryImpl.class);
 
   private final ExtensionRegistry extensionRegistry;
   private final KeyValueStore<QueryExpression> queriesStore;
+  private final VolatileRegistry volatileRegistry;
 
   @Inject
-  public StoredQueryRepositoryImpl(ValueStore valueStore, ExtensionRegistry extensionRegistry) {
+  public StoredQueryRepositoryImpl(
+      ValueStore valueStore,
+      ExtensionRegistry extensionRegistry,
+      VolatileRegistry volatileRegistry) {
+    super(volatileRegistry, "app/storedqueries");
     this.extensionRegistry = extensionRegistry;
     this.queriesStore = valueStore.forTypeWritable(QueryExpression.class);
+    this.volatileRegistry = volatileRegistry;
+  }
+
+  @Override
+  public CompletionStage<Void> onStart(boolean isStartupAsync) {
+    onVolatileStart();
+    return volatileRegistry.onAvailable(queriesStore).thenRun(() -> setState(State.AVAILABLE));
   }
 
   @Override

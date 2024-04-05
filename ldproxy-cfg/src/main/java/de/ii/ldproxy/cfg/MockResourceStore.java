@@ -7,6 +7,8 @@
  */
 package de.ii.ldproxy.cfg;
 
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
+import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry.ChangeHandler;
 import de.ii.xtraplatform.blobs.domain.Blob;
 import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import java.io.IOException;
@@ -75,4 +77,24 @@ class MockResourceStore implements ResourceStore {
 
   @Override
   public void delete(Path path) throws IOException {}
+
+  @Override
+  public State getState() {
+    return State.AVAILABLE;
+  }
+
+  @Override
+  public Optional<String> getMessage() {
+    return Optional.empty();
+  }
+
+  @Override
+  public Runnable onStateChange(ChangeHandler handler, boolean initialCall) {
+    return () -> {};
+  }
+
+  @Override
+  public VolatileRegistry getVolatileRegistry() {
+    return null;
+  }
 }

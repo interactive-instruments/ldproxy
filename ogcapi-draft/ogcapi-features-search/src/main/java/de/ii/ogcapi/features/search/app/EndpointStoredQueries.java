@@ -18,6 +18,7 @@ import de.ii.ogcapi.features.search.domain.SearchQueriesHandler;
 import de.ii.ogcapi.features.search.domain.StoredQueriesFormat;
 import de.ii.ogcapi.features.search.domain.StoredQueryRepository;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
@@ -29,11 +30,13 @@ import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -49,7 +52,8 @@ import javax.ws.rs.core.Response;
  */
 @Singleton
 @AutoBind
-public class EndpointStoredQueries extends EndpointRequiresFeatures implements ConformanceClass {
+public class EndpointStoredQueries extends EndpointRequiresFeatures
+    implements ConformanceClass, ApiExtensionHealth {
 
   private static final List<String> TAGS = ImmutableList.of("Discover and execute queries");
 
@@ -154,5 +158,10 @@ public class EndpointStoredQueries extends EndpointRequiresFeatures implements C
 
     return queryHandler.handle(
         SearchQueriesHandler.Query.STORED_QUERIES, queryInput, requestContext);
+  }
+
+  @Override
+  public Set<Volatile2> getVolatiles(OgcApiDataV2 apiData) {
+    return Set.of(queryHandler, repository);
   }
 }

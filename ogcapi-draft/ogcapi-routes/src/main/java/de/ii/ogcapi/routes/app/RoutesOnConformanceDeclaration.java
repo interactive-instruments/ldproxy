@@ -20,10 +20,11 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.routes.domain.RoutingConfiguration;
+import de.ii.ogcapi.routes.infra.EndpointRoutesGet;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
-import de.ii.xtraplatform.features.domain.FeatureProvider2;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.routes.sql.domain.RoutesConfiguration;
 import java.util.List;
 import java.util.Locale;
@@ -60,13 +61,11 @@ public class RoutesOnConformanceDeclaration implements ConformanceDeclarationExt
 
     // check that there is at least one preference/mode and that the default preference/mode is one
     // of them
-    FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(api.getData());
+    FeatureProvider featureProvider = providers.getFeatureProviderOrThrow(api.getData());
 
     List<String> preferences =
         List.copyOf(
-            featureProvider
-                .getData()
-                .getExtension(RoutesConfiguration.class)
+            EndpointRoutesGet.getProviderRoutingCfg(featureProvider)
                 .map(RoutesConfiguration::getPreferences)
                 .map(Map::keySet)
                 .orElse(ImmutableSet.of()));
@@ -88,9 +87,7 @@ public class RoutesOnConformanceDeclaration implements ConformanceDeclarationExt
 
     List<String> modes =
         List.copyOf(
-            featureProvider
-                .getData()
-                .getExtension(RoutesConfiguration.class)
+            EndpointRoutesGet.getProviderRoutingCfg(featureProvider)
                 .map(RoutesConfiguration::getModes)
                 .map(Map::keySet)
                 .orElse(ImmutableSet.of()));
@@ -111,16 +108,12 @@ public class RoutesOnConformanceDeclaration implements ConformanceDeclarationExt
             () -> builder.addErrors("Routing: No default mode has been configured."));
     modes.forEach(
         mode -> {
-          if (!featureProvider
-              .getData()
-              .getExtension(RoutesConfiguration.class)
+          if (!EndpointRoutesGet.getProviderRoutingCfg(featureProvider)
               .map(RoutesConfiguration::getFromToQuery)
               .map(q -> q.containsKey(mode))
               .orElse(false))
             builder.addErrors("Routing: No 'fromToQuery' is specified for mode '{}'.", mode);
-          if (!featureProvider
-              .getData()
-              .getExtension(RoutesConfiguration.class)
+          if (!EndpointRoutesGet.getProviderRoutingCfg(featureProvider)
               .map(RoutesConfiguration::getEdgesQuery)
               .map(q -> q.containsKey(mode))
               .orElse(false))
@@ -143,21 +136,17 @@ public class RoutesOnConformanceDeclaration implements ConformanceDeclarationExt
       return builder;
     }
 
-    FeatureProvider2 featureProvider = providers.getFeatureProviderOrThrow(apiData);
+    FeatureProvider featureProvider = providers.getFeatureProviderOrThrow(apiData);
 
     List<String> preferences =
         List.copyOf(
-            featureProvider
-                .getData()
-                .getExtension(RoutesConfiguration.class)
+            EndpointRoutesGet.getProviderRoutingCfg(featureProvider)
                 .map(RoutesConfiguration::getPreferences)
                 .map(Map::keySet)
                 .orElse(ImmutableSet.of()));
     List<String> modes =
         List.copyOf(
-            featureProvider
-                .getData()
-                .getExtension(RoutesConfiguration.class)
+            EndpointRoutesGet.getProviderRoutingCfg(featureProvider)
                 .map(RoutesConfiguration::getModes)
                 .map(Map::keySet)
                 .orElse(ImmutableSet.of()));
