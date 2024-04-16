@@ -83,7 +83,7 @@ public class EndpointJsonLdContext extends EndpointSubCollection {
 
     ContextFormatExtension format =
         extensionRegistry.getExtensionsForType(ContextFormatExtension.class).stream()
-            .filter(f -> f.isEnabledForApi(api.getData()))
+            .filter(f -> f.isEnabledForApi(api.getData(), collectionId))
             .filter(f -> f.getMediaType().matches(apiRequestContext.getMediaType().type()))
             .findFirst()
             .orElseThrow(
