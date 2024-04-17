@@ -301,6 +301,19 @@ class LdproxyCfgImpl implements LdproxyCfg {
   }
 
   @Override
+  public Set<ValidationMessage> validateEntity(String entityCfg, String entityType)
+      throws IOException {
+    if (!entitySchemas.containsKey(entityType)) {
+      throw new IllegalStateException();
+    }
+    // System.out.println("VALIDATE " + entityPath);
+
+    JsonNode jsonNode = objectMapper.readTree(entityCfg);
+
+    return entitySchemas.get(entityType).validate(jsonNode);
+  }
+
+  @Override
   public <T extends EntityData> void writeEntity(T data, Path... patches) throws IOException {
     Path path = getEntityPath(data);
     Identifier identifier = Identifier.from(data.getId(), getType(data));
