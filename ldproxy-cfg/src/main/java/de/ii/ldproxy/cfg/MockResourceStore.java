@@ -8,6 +8,7 @@
 package de.ii.ldproxy.cfg;
 
 import de.ii.xtraplatform.blobs.domain.Blob;
+import de.ii.xtraplatform.blobs.domain.BlobWriterReader;
 import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
-class MockResourceStore implements ResourceStore {
+class MockResourceStore implements ResourceStore, BlobWriterReader {
   private final Path dataDirectory;
 
   public MockResourceStore(Path dataDirectory) {
@@ -75,4 +76,36 @@ class MockResourceStore implements ResourceStore {
 
   @Override
   public void delete(Path path) throws IOException {}
+
+  @Override
+  public boolean has(Path path, boolean writable) throws IOException {
+    return false;
+  }
+
+  @Override
+  public Optional<InputStream> content(Path path, boolean writable) throws IOException {
+    return Optional.empty();
+  }
+
+  @Override
+  public Optional<Blob> get(Path path, boolean writable) throws IOException {
+    return Optional.empty();
+  }
+
+  @Override
+  public long size(Path path, boolean writable) throws IOException {
+    return 0;
+  }
+
+  @Override
+  public long lastModified(Path path, boolean writable) throws IOException {
+    return 0;
+  }
+
+  @Override
+  public Stream<Path> walk(
+      Path path, int maxDepth, BiPredicate<Path, PathAttributes> matcher, boolean writable)
+      throws IOException {
+    return null;
+  }
 }
