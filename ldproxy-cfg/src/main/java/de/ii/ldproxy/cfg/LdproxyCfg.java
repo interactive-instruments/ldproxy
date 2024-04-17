@@ -52,6 +52,10 @@ public interface LdproxyCfg extends LdproxyCfgWriter {
 
   List<Identifier> getEntityIdentifiers();
 
+  List<Identifier> getDefaultIdentifiers();
+
+  List<Identifier> getOverrideIdentifiers();
+
   void ignoreEventsFor(String type, Identifier identifier);
 
   Migrations migrations();
