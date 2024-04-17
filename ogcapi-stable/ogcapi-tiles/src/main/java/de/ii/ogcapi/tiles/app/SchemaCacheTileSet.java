@@ -7,7 +7,6 @@
  */
 package de.ii.ogcapi.tiles.app;
 
-import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
@@ -16,9 +15,6 @@ import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
-import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -41,12 +37,6 @@ class SchemaCacheTileSet extends JsonSchemaCache {
       Optional<String> schemaUri,
       VERSION version) {
 
-    WithTransformationsApplied schemaFlattener =
-        new WithTransformationsApplied(
-            ImmutableMap.of(
-                PropertyTransformations.WILDCARD,
-                new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
-
     SchemaDeriverFeatures schemaDeriverFeatures =
         new SchemaDeriverFeatures(
             version,
@@ -55,6 +45,6 @@ class SchemaCacheTileSet extends JsonSchemaCache {
             Optional.empty(),
             codelistSupplier.get());
 
-    return (JsonSchemaDocument) schema.accept(schemaFlattener).accept(schemaDeriverFeatures);
+    return (JsonSchemaDocument) schema.accept(schemaDeriverFeatures);
   }
 }
