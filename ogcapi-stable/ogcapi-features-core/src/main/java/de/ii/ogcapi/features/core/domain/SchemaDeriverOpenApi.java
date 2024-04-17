@@ -135,9 +135,13 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
   }
 
   @Override
-  protected Schema<?> getSchemaForGeometry(FeatureSchema schema, Optional<String> role) {
+  protected Schema<?> getSchemaForGeometry(
+      SimpleFeatureGeometry geometryType,
+      Optional<String> title,
+      Optional<String> description,
+      Optional<String> role) {
     Schema<?> oapiSchema;
-    switch (schema.getGeometryType().orElse(SimpleFeatureGeometry.ANY)) {
+    switch (geometryType) {
       case POINT:
         oapiSchema =
             new Schema<>()
@@ -186,6 +190,8 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
         oapiSchema = null;
         break;
     }
+    // NOTE OpenAPI 3.0 does not expect other members next to '$ref',
+    // so title and description are not added
     return oapiSchema;
   }
 
