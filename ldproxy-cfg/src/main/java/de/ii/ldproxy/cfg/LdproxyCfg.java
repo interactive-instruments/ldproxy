@@ -62,6 +62,8 @@ public interface LdproxyCfg extends LdproxyCfgWriter {
 
   Set<ValidationMessage> validateEntity(Path entityPath, String entityType) throws IOException;
 
+  Set<ValidationMessage> validateEntity(String entityCfg, String entityType) throws IOException;
+
   <T extends EntityData> Path getEntityPath(T data);
 
   Map<String, String> getRawSchemas();
