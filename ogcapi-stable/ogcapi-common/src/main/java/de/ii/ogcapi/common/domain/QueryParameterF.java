@@ -96,7 +96,11 @@ public abstract class QueryParameterF extends ApiExtensionCache
     }
 
     return extensionRegistry.getExtensionsForType(getFormatClass()).stream()
-        .filter(f -> f.isEnabledForApi(api.getData()))
+        .filter(
+            f ->
+                optionalCollectionData
+                    .map(collectionData -> f.isEnabledForApi(api.getData(), collectionData.getId()))
+                    .orElse(f.isEnabledForApi(api.getData())))
         .map(FormatExtension::getMediaType)
         .filter(mt -> Objects.equals(mt.parameter(), value))
         .findFirst()

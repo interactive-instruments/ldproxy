@@ -77,7 +77,7 @@ public class FeaturesFormatCityJsonSeq extends FeaturesFormatCityJsonBase {
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-    return super.isEnabledForApi(apiData)
+    return super.isEnabledForApi(apiData, collectionId)
         && apiData
             .getExtension(CityJsonConfiguration.class, collectionId)
             .flatMap(CityJsonConfiguration::getTextSequences)
