@@ -1,9 +1,9 @@
 export default function Line(props) {
   const { layer, image, expr } = props;
-  const linePatternDataUrl = image(expr(layer, "paint", "line-pattern"));
+  const { url: dataUrl } = image(expr(layer, "paint", "line-pattern"));
 
   const style = {
-    stroke: linePatternDataUrl ? `url(#img1)` : expr(layer, "paint", "line-color"),
+    stroke: dataUrl ? `url(#img1)` : expr(layer, "paint", "line-color"),
     strokeWidth: Math.max(2, Math.min(expr(layer, "paint", "line-width"), 8)),
     strokeOpacity: expr(layer, "paint", "line-opacity"),
     strokeDasharray: expr(layer, "paint", "line-dasharray"),
@@ -43,13 +43,13 @@ export default function Line(props) {
               patternUnits: "userSpaceOnUse",
               patternTransform: `translate(${-(sw / 2)} ${-(sw / 2)}) rotate(45)`,
             },
-            children: linePatternDataUrl
+            children: dataUrl
               ? [
                   {
                     element: "image",
                     attributes: {
                       key: "img",
-                      xlinkHref: linePatternDataUrl,
+                      xlinkHref: dataUrl,
                       x: 0,
                       y: 0,
                       width: style.strokeWidth,
