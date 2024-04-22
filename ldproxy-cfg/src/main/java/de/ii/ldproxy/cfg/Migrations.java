@@ -9,6 +9,7 @@ package de.ii.ldproxy.cfg;
 
 import de.ii.ogcapi.resources.app.StylesMigrationV4;
 import de.ii.ogcapi.text.search.app.QueryablesMigrationV4;
+import de.ii.ogcapi.tiles.app.TileMatrixSetsMigrationV4;
 import de.ii.ogcapi.tiles.domain.TilesMigrationV4;
 import de.ii.xtraplatform.entities.domain.EntityDataStore;
 import de.ii.xtraplatform.entities.domain.EntityMigration;
@@ -23,6 +24,7 @@ public interface Migrations {
     return () ->
         List.of(
             new TilesMigrationV4(context),
+            new TileMatrixSetsMigrationV4(context),
             new QueryablesMigrationV4(context),
             new StylesMigrationV4(context));
   }
