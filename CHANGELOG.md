@@ -1,5 +1,22 @@
 # Changelog
 
+## v3.6.4 (22/04/2024)
+#### Improvements
+
+-  support non-unique sort keys [#1211](https://github.com/interactive-instruments/ldproxy/issues/1211)
+
+#### Fixed bugs
+
+-  Tile set metadata: feature schema is flattened twice [#1208](https://github.com/interactive-instruments/ldproxy/issues/1208)
+-  Projections: properties in objects are now ignored [#1207](https://github.com/interactive-instruments/ldproxy/issues/1207)
+-  Text Search: building block cannot be enabled [#1202](https://github.com/interactive-instruments/ldproxy/issues/1202)
+-  parameter `f` does not work, if a format is disabled in the API and only enabled for a collection  [#1198](https://github.com/interactive-instruments/ldproxy/issues/1198)
+-  legend icon for `line` does not match style [#1196](https://github.com/interactive-instruments/ldproxy/issues/1196)
+-  title and description not taking effect for geometry properties [#1195](https://github.com/interactive-instruments/ldproxy/issues/1195)
+-  issue with SQL query generation, incorrect mapping of filters [#1193](https://github.com/interactive-instruments/ldproxy/issues/1193)
+
+---
+
 ## v3.6.3 (11/03/2024)
 #### Fixed bugs
 
