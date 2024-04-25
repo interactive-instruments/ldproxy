@@ -24,6 +24,7 @@ import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -346,6 +347,18 @@ public interface FeaturesCoreConfiguration
   @Override
   default Builder getBuilder() {
     return new ImmutableFeaturesCoreConfiguration.Builder().from(this);
+  }
+
+  @Value.Check
+  default FeaturesCoreConfiguration upgrade() {
+    if (Objects.equals(getShowsFeatureSelfLink(), true)) {
+      return new ImmutableFeaturesCoreConfiguration.Builder()
+          .from(this)
+          .showsFeatureSelfLink(null)
+          .addEmbeddedFeatureLinkRels("self")
+          .build();
+    }
+    return this;
   }
 
   @Override

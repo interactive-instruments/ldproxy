@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.ii.ogcapi.foundation.domain.ApiCatalogEntry;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.html.domain.ImmutableHtmlConfiguration.Builder;
 import de.ii.ogcapi.html.domain.MapClient.Type;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
@@ -371,6 +372,33 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
   @Override
   default Builder getBuilder() {
     return new ImmutableHtmlConfiguration.Builder();
+  }
+
+  @Value.Check
+  default HtmlConfiguration upgrade() {
+    if (Objects.nonNull(getLeafletUrl())
+        || Objects.nonNull(getLeafletAttribution())
+        || Objects.nonNull(getOpenLayersUrl())
+        || Objects.nonNull(getOpenLayersAttribution())) {
+      ImmutableHtmlConfiguration.Builder builder =
+          new ImmutableHtmlConfiguration.Builder()
+              .from(this)
+              .leafletUrl(null)
+              .leafletAttribution(null)
+              .openLayersUrl(null)
+              .openLayersAttribution(null);
+
+      if (Objects.isNull(getBasemapUrl())) {
+        builder.basemapUrl(Objects.requireNonNullElse(getLeafletUrl(), getOpenLayersUrl()));
+      }
+      if (Objects.isNull(getBasemapAttribution())) {
+        builder.basemapUrl(
+            Objects.requireNonNullElse(getLeafletAttribution(), getOpenLayersAttribution()));
+      }
+
+      return builder.build();
+    }
+    return this;
   }
 
   default String getStyle(

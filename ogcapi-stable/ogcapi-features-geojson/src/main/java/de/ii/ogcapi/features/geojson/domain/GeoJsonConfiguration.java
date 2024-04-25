@@ -257,6 +257,10 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
 
       return new ImmutableGeoJsonConfiguration.Builder()
           .from(this)
+          .nestedObjectStrategy(null)
+          .multiplicityStrategy(null)
+          .separator(null)
+          .useFormattedJsonOutput(null)
           .transformations(transformations)
           .build();
     }
