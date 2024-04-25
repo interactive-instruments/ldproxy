@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ogcapi.features.core.domain.ImmutableFeaturesCoreConfiguration.Builder;
 import de.ii.ogcapi.foundation.domain.CachingConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -351,12 +352,15 @@ public interface FeaturesCoreConfiguration
 
   @Value.Check
   default FeaturesCoreConfiguration upgrade() {
-    if (Objects.equals(getShowsFeatureSelfLink(), true)) {
-      return new ImmutableFeaturesCoreConfiguration.Builder()
-          .from(this)
-          .showsFeatureSelfLink(null)
-          .addEmbeddedFeatureLinkRels("self")
-          .build();
+    if (Objects.nonNull(getShowsFeatureSelfLink())) {
+      ImmutableFeaturesCoreConfiguration.Builder builder =
+          new ImmutableFeaturesCoreConfiguration.Builder().from(this).showsFeatureSelfLink(null);
+
+      if (Objects.equals(getShowsFeatureSelfLink(), true)) {
+        builder.addEmbeddedFeatureLinkRels("self");
+      }
+
+      return builder.build();
     }
     return this;
   }
