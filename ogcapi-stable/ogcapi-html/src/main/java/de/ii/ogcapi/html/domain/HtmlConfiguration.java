@@ -392,7 +392,7 @@ public interface HtmlConfiguration extends ExtensionConfiguration {
         builder.basemapUrl(Objects.requireNonNullElse(getLeafletUrl(), getOpenLayersUrl()));
       }
       if (Objects.isNull(getBasemapAttribution())) {
-        builder.basemapUrl(
+        builder.basemapAttribution(
             Objects.requireNonNullElse(getLeafletAttribution(), getOpenLayersAttribution()));
       }
 
