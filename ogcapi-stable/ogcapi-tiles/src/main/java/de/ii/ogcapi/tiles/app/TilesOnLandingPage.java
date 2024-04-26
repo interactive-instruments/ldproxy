@@ -71,24 +71,28 @@ public class TilesOnLandingPage implements LandingPageExtension {
       Optional<Locale> language) {
 
     if (isEnabledForApi(api.getData())) {
-      Optional<DataType> dataType =
+      boolean hasVectorTiles =
           extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
-              .filter(
+              .anyMatch(
                   format ->
-                      format.isApplicable(
-                          api.getData(),
-                          "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-              .filter(format -> format.isEnabledForApi(api.getData()))
-              .map(TileFormatExtension::getDataType)
-              .findAny();
-      if (dataType.isEmpty())
+                      format.getDataType() == DataType.vector
+                          && format.isEnabledForApi(api.getData()));
+      boolean hasMapTiles =
+          extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
+              .anyMatch(
+                  format ->
+                      format.getDataType() == DataType.map
+                          && format.isEnabledForApi(api.getData()));
+
+      if (!hasVectorTiles && !hasMapTiles) {
         // no tile format is enabled
         return landingPageBuilder;
+      }
 
       final TilesLinkGenerator tilesLinkGenerator = new TilesLinkGenerator();
       List<Link> links =
           tilesLinkGenerator.generateLandingPageLinks(
-              uriCustomizer, dataType.get(), i18n, language);
+              uriCustomizer, hasVectorTiles, hasMapTiles, i18n, language);
       landingPageBuilder.addAllLinks(links);
     }
     return landingPageBuilder;

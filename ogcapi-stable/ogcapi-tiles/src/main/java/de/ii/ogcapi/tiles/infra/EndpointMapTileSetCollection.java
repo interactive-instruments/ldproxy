@@ -15,10 +15,11 @@ import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tiles.api.AbstractEndpointTileSetSingleCollection;
+import de.ii.ogcapi.tiles.api.AbstractEndpointTileSetCollection;
 import de.ii.ogcapi.tiles.api.EndpointTileMixin;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
@@ -26,6 +27,8 @@ import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -36,25 +39,37 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 /**
- * @title Collection Tileset
- * @path collections/{collectionId}/tiles/{tileMatrixSetId}
- * @langEn Access collection tileset
- * @langDe Zugriff auf einen Kachelsatz einer Feature Collection
+ * @title Collection Map Tileset
+ * @path collections/{collectionId}/map/tiles/{tileMatrixSetId}
+ * @langEn Access collection map tileset
+ * @langDe Zugriff auf einen Rasterkachelsatz einer Feature Collection
  * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetFormatExtension}
  */
 @Singleton
 @AutoBind
-public class EndpointTileSetSingleCollection extends AbstractEndpointTileSetSingleCollection
+public class EndpointMapTileSetCollection extends AbstractEndpointTileSetCollection
     implements ConformanceClass, ApiExtensionHealth {
 
-  private static final List<String> TAGS = ImmutableList.of("Access single-layer tiles");
+  private static final List<String> TAGS = ImmutableList.of("Access map tiles");
 
   @Inject
-  EndpointTileSetSingleCollection(
+  EndpointMapTileSetCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
       TilesProviders tilesProviders) {
     super(extensionRegistry, queryHandler, tilesProviders);
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
+    return Objects.nonNull(collectionData)
+        && collectionData.getEnabled()
+        && collectionData
+            .getExtension(TilesConfiguration.class)
+            .filter(TilesConfiguration::isEnabled)
+            .filter(cfg -> cfg.hasCollectionMapTiles(tilesProviders, apiData, collectionId))
+            .isPresent();
   }
 
   @Override
@@ -86,12 +101,9 @@ public class EndpointTileSetSingleCollection extends AbstractEndpointTileSetSing
         "collections",
         ApiEndpointDefinition.SORT_PRIORITY_TILE_SET_COLLECTION,
         "/collections/{collectionId}",
-        "/tiles/{tileMatrixSetId}",
+        "/map/tiles/{tileMatrixSetId}",
         getOperationId(
-            "getTileSet",
-            EndpointTileMixin.COLLECTION_ID_PLACEHOLDER,
-            "collection",
-            EndpointTileMixin.DATA_TYPE_PLACEHOLDER),
+            "getTileSet", EndpointTileMixin.COLLECTION_ID_PLACEHOLDER, "collection", "map"),
         TAGS);
   }
 
@@ -100,7 +112,7 @@ public class EndpointTileSetSingleCollection extends AbstractEndpointTileSetSing
    *
    * @return a tilejson file
    */
-  @Path("/{collectionId}/tiles/{tileMatrixSetId}")
+  @Path("/{collectionId}/map/tiles/{tileMatrixSetId}")
   @GET
   public Response getTileSet(
       @Context OgcApi api,
@@ -111,8 +123,9 @@ public class EndpointTileSetSingleCollection extends AbstractEndpointTileSetSing
     return super.getTileSet(
         api.getData(),
         requestContext,
-        "/collections/{collectionId}/tiles/{tileMatrixSetId}",
+        "/collections/{collectionId}/map/tiles/{tileMatrixSetId}",
         collectionId,
+        Optional.empty(),
         tileMatrixSetId);
   }
 

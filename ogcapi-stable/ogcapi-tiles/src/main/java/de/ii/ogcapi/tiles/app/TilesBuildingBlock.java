@@ -24,6 +24,12 @@ import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
+import de.ii.ogcapi.tiles.infra.EndpointVectorTileCollection;
+import de.ii.ogcapi.tiles.infra.EndpointVectorTileDataset;
+import de.ii.ogcapi.tiles.infra.EndpointVectorTileSetCollection;
+import de.ii.ogcapi.tiles.infra.EndpointVectorTileSetDataset;
+import de.ii.ogcapi.tiles.infra.EndpointVectorTileSetsCollection;
+import de.ii.ogcapi.tiles.infra.EndpointVectorTileSetsDataset;
 import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.entities.domain.EntityFactories;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
@@ -31,6 +37,7 @@ import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.tiles.domain.TileProviderData;
+import de.ii.xtraplatform.tiles.domain.TilesFormat;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.List;
@@ -91,12 +98,9 @@ import org.slf4j.LoggerFactory;
  *     2.0](https://docs.ogc.org/is/17-083r4/17-083r4.html).
  * @ref:cfg {@link de.ii.ogcapi.tiles.domain.TilesConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration}
- * @ref:endpoints {@link de.ii.ogcapi.tiles.infra.EndpointTileSetsMultiCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileSetMultiCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileSetsSingleCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileSetSingleCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileSingleCollection}
+ * @ref:endpoints {@link EndpointVectorTileSetsDataset}, {@link EndpointVectorTileSetDataset},
+ *     {@link EndpointVectorTileDataset}, {@link EndpointVectorTileSetsCollection}, {@link
+ *     EndpointVectorTileSetCollection}, {@link EndpointVectorTileCollection}
  * @ref:queryParameters {@link de.ii.ogcapi.tiles.domain.QueryParameterCollections}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterDatetimeTile}, {@link
  *     de.ii.ogcapi.tiles.domain.QueryParameterFTile}, {@link
@@ -253,7 +257,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock, ApiExtensionHealth 
               .filter(formatExtension -> formatExtension.isEnabledForApi(apiData))
               .map(format -> format.getMediaType().label())
               .collect(Collectors.toUnmodifiableList());
-      Set<String> tileEncodings =
+      Set<TilesFormat> tileEncodings =
           tilesProviders
               .getTilesetMetadataOrThrow(apiData, apiData.getCollectionData(collectionId))
               .getEncodings();
@@ -263,8 +267,8 @@ public class TilesBuildingBlock implements ApiBuildingBlock, ApiExtensionHealth 
                 "No tile encoding has been specified in the TILES module configuration of collection ''{0}''.",
                 collectionId));
       } else {
-        for (String encoding : tileEncodings) {
-          if (!formatLabels.contains(encoding)) {
+        for (TilesFormat encoding : tileEncodings) {
+          if (!formatLabels.contains(encoding.name())) {
             builder.addStrictErrors(
                 MessageFormat.format(
                     "The tile encoding ''{0}'' is specified in the TILES module configuration of collection ''{1}'', but the format does not exist.",

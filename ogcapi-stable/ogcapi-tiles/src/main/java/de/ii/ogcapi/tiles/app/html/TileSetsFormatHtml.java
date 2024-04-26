@@ -20,6 +20,7 @@ import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.ogcapi.html.domain.NavigationDTO;
+import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
@@ -71,10 +72,18 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
 
   @Override
   public Object getTileSetsEntity(
-      TileSets tiles, Optional<String> collectionId, OgcApi api, ApiRequestContext requestContext) {
+      TileSets tiles,
+      DataType dataType,
+      Optional<String> collectionId,
+      OgcApi api,
+      ApiRequestContext requestContext) {
     String rootTitle = i18n.get("root", requestContext.getLanguage());
     String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
-    String tilesTitle = i18n.get("tilesTitle", requestContext.getLanguage());
+    String title =
+        dataType == DataType.vector
+            ? i18n.get("tilesTitle", requestContext.getLanguage())
+            : i18n.get("mapTilesTitle", requestContext.getLanguage());
+    int diff = dataType == DataType.vector ? 0 : 1;
 
     URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
     final List<NavigationDTO> breadCrumbs =
@@ -85,20 +94,21 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
                         rootTitle,
                         resourceUri
                             .copy()
-                            .removeLastPathSegments(api.getData().getSubPath().size() + 3)
+                            .removeLastPathSegments(api.getData().getSubPath().size() + 3 + diff)
                             .toString()))
                 .add(
                     new NavigationDTO(
                         api.getData().getLabel(),
-                        resourceUri.copy().removeLastPathSegments(3).toString()))
+                        resourceUri.copy().removeLastPathSegments(3 + diff).toString()))
                 .add(
                     new NavigationDTO(
-                        collectionsTitle, resourceUri.copy().removeLastPathSegments(2).toString()))
+                        collectionsTitle,
+                        resourceUri.copy().removeLastPathSegments(2 + diff).toString()))
                 .add(
                     new NavigationDTO(
                         api.getData().getCollections().get(collectionId.get()).getLabel(),
-                        resourceUri.copy().removeLastPathSegments(1).toString()))
-                .add(new NavigationDTO(tilesTitle))
+                        resourceUri.copy().removeLastPathSegments(1 + diff).toString()))
+                .add(new NavigationDTO(title))
                 .build()
             : new ImmutableList.Builder<NavigationDTO>()
                 .add(
@@ -106,13 +116,13 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
                         rootTitle,
                         resourceUri
                             .copy()
-                            .removeLastPathSegments(api.getData().getSubPath().size() + 1)
+                            .removeLastPathSegments(api.getData().getSubPath().size() + 1 + diff)
                             .toString()))
                 .add(
                     new NavigationDTO(
                         api.getData().getLabel(),
-                        resourceUri.copy().removeLastPathSegments(1).toString()))
-                .add(new NavigationDTO(tilesTitle))
+                        resourceUri.copy().removeLastPathSegments(1 + diff).toString()))
+                .add(new NavigationDTO(title))
                 .build();
 
     Optional<HtmlConfiguration> htmlConfig =

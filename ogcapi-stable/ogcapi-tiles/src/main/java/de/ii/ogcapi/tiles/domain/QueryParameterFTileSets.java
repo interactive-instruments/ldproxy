@@ -41,8 +41,7 @@ public class QueryParameterFTileSets extends QueryParameterF {
 
   @Override
   protected boolean matchesPath(String definitionPath) {
-    return (definitionPath.equals("/tiles")
-        || definitionPath.equals("/collections/{collectionId}/tiles"));
+    return definitionPath.endsWith("/tiles");
   }
 
   @Override

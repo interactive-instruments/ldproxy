@@ -88,8 +88,10 @@ public class QueryParameterCollections extends ApiExtensionCache
         () ->
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
-                && definitionPath.equals(
-                    "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
+                && (definitionPath.equals(
+                        "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
+                    || definitionPath.equals(
+                        "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
   }
 
   private final Map<Integer, Schema<?>> schemaMap = new ConcurrentHashMap<>();

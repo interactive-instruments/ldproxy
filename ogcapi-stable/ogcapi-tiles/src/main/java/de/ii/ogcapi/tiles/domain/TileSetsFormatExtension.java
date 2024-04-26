@@ -11,11 +11,16 @@ import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.common.domain.GenericFormatExtension;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import java.util.Optional;
 
 @AutoMultiBind
 public interface TileSetsFormatExtension extends GenericFormatExtension {
 
   Object getTileSetsEntity(
-      TileSets tiles, Optional<String> collectionId, OgcApi api, ApiRequestContext requestContext);
+      TileSets tiles,
+      DataType dataType,
+      Optional<String> collectionId,
+      OgcApi api,
+      ApiRequestContext requestContext);
 }

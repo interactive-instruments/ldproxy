@@ -268,7 +268,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
 
     apiData
         .getExtension(TilesConfiguration.class)
-        .filter(cfg -> cfg.hasDatasetTiles(tilesProviders, apiData))
+        .filter(cfg -> cfg.hasDatasetVectorTiles(tilesProviders, apiData))
         .map(cfg -> Objects.requireNonNullElse(cfg.getTileProviderTileset(), DATASET_TILES))
         .filter(tileset -> !tilesets.containsKey(tileset))
         .ifPresent(

@@ -42,7 +42,9 @@ public class QueryParameterFTileSet extends QueryParameterF {
   @Override
   protected boolean matchesPath(String definitionPath) {
     return (definitionPath.equals("/tiles/{tileMatrixSetId}")
-        || definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}"));
+        || definitionPath.equals("/collections/{collectionId}/tiles/{tileMatrixSetId}")
+        || definitionPath.equals("/map/tiles/{tileMatrixSetId}")
+        || definitionPath.equals("/collections/{collectionId}/map/tiles/{tileMatrixSetId}"));
   }
 
   @Override

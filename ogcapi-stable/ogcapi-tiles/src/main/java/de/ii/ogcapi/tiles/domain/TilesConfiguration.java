@@ -10,7 +10,6 @@ package de.ii.ogcapi.tiles.domain;
 import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
 import de.ii.ogcapi.features.core.domain.SfFlatConfiguration;
@@ -21,9 +20,12 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import de.ii.xtraplatform.tiles.domain.TileAccess;
+import de.ii.xtraplatform.tiles.domain.TileProvider;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -402,39 +404,65 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
 
   default boolean hasCollectionTiles(
       TilesProviders providers, OgcApiDataV2 apiData, String collectionId) {
-    if (Objects.nonNull(providers)
-        && providers.hasTileProvider(apiData, apiData.getCollectionData(collectionId))) {
-      return providers
-          .getTileProvider(apiData, apiData.getCollectionData(collectionId))
-          .map(
-              tileProvider ->
-                  tileProvider
-                      .getData()
-                      .getTilesets()
-                      .containsKey(
-                          Objects.requireNonNullElse(getTileProviderTileset(), collectionId)))
-          .orElse(false);
-    }
-    return false;
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData, apiData.getCollectionData(collectionId)),
+            collectionId,
+            (tileset, tileAccess) -> true);
   }
 
-  @Value.Auxiliary
-  @Value.Derived
-  @JsonIgnore
+  default boolean hasCollectionVectorTiles(
+      TilesProviders providers, OgcApiDataV2 apiData, String collectionId) {
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData, apiData.getCollectionData(collectionId)),
+            collectionId,
+            (tileset, tileAccess) -> tileAccess.tilesetHasVectorTiles(tileset));
+  }
+
+  default boolean hasCollectionMapTiles(
+      TilesProviders providers, OgcApiDataV2 apiData, String collectionId) {
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData, apiData.getCollectionData(collectionId)),
+            collectionId,
+            (tileset, tileAccess) -> tileAccess.tilesetHasMapTiles(tileset));
+  }
+
   default boolean hasDatasetTiles(TilesProviders providers, OgcApiDataV2 apiData) {
-    if (Objects.nonNull(providers) && providers.hasTileProvider(apiData)) {
-      return providers
-          .getTileProvider(apiData)
-          .map(
-              tileProvider ->
-                  tileProvider
-                      .getData()
-                      .getTilesets()
-                      .containsKey(
-                          Objects.requireNonNullElse(getTileProviderTileset(), DATASET_TILES)))
-          .orElse(false);
-    }
-    return false;
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData), DATASET_TILES, (tileset, tileAccess) -> true);
+  }
+
+  default boolean hasDatasetVectorTiles(TilesProviders providers, OgcApiDataV2 apiData) {
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData),
+            DATASET_TILES,
+            (tileset, tileAccess) -> tileAccess.tilesetHasVectorTiles(tileset));
+  }
+
+  default boolean hasDatasetMapTiles(TilesProviders providers, OgcApiDataV2 apiData) {
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData),
+            DATASET_TILES,
+            (tileset, tileAccess) -> tileAccess.tilesetHasMapTiles(tileset));
+  }
+
+  default boolean hasTiles(
+      Optional<TileProvider> provider,
+      String tilesetDefault,
+      BiFunction<String, TileAccess, Boolean> testForTileType) {
+    String tileset = Objects.requireNonNullElse(getTileProviderTileset(), tilesetDefault);
+    return provider
+        .filter(tileProvider -> tileProvider.getData().getTilesets().containsKey(tileset))
+        .filter(
+            tileProvider ->
+                tileProvider instanceof TileAccess
+                    && testForTileType.apply(tileset, (TileAccess) tileProvider))
+        .isPresent();
   }
 
   abstract class Builder extends ExtensionConfiguration.Builder {}

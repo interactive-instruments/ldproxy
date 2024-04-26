@@ -70,25 +70,35 @@ public class TilesOnCollection implements CollectionExtension {
             cfg ->
                 cfg.hasCollectionTiles(
                     tilesProviders, api.getData(), featureTypeConfiguration.getId()))) {
-      Optional<DataType> dataType =
+
+      boolean hasVectorTiles =
           extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
-              .filter(
+              .anyMatch(
                   format ->
-                      format.isApplicable(
-                          api.getData(),
-                          featureTypeConfiguration.getId(),
-                          "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-              .filter(
-                  format -> format.isEnabledForApi(api.getData(), featureTypeConfiguration.getId()))
-              .map(TileFormatExtension::getDataType)
-              .findAny();
-      if (dataType.isEmpty())
+                      format.getDataType() == DataType.vector
+                          && format.isEnabledForApi(
+                              api.getData(), featureTypeConfiguration.getId()));
+      boolean hasMapTiles =
+          extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
+              .anyMatch(
+                  format ->
+                      format.getDataType() == DataType.map
+                          && format.isEnabledForApi(
+                              api.getData(), featureTypeConfiguration.getId()));
+
+      if (!hasVectorTiles && !hasMapTiles) {
         // no tile format is enabled
         return collection;
+      }
 
       collection.addAllLinks(
           tilesLinkGenerator.generateCollectionLinks(
-              uriCustomizer, featureTypeConfiguration.getId(), dataType.get(), i18n, language));
+              uriCustomizer,
+              featureTypeConfiguration.getId(),
+              hasVectorTiles,
+              hasMapTiles,
+              i18n,
+              language));
     }
 
     return collection;

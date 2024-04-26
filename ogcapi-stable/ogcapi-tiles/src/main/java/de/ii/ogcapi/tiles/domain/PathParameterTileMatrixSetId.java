@@ -147,7 +147,9 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
     return isEnabledForApi(apiData)
         && (definitionPath.startsWith("/collections/{collectionId}/tiles/{tileMatrixSetId}")
-            || definitionPath.startsWith("/tiles/{tileMatrixSetId}"));
+            || definitionPath.startsWith("/tiles/{tileMatrixSetId}")
+            || definitionPath.startsWith("/collections/{collectionId}/map/tiles/{tileMatrixSetId}")
+            || definitionPath.startsWith("/map/tiles/{tileMatrixSetId}"));
   }
 
   @Override

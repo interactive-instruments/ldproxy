@@ -25,19 +25,18 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSet.Builder;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
-import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import java.util.List;
 import java.util.Optional;
 import javax.ws.rs.core.Response;
 
-public abstract class AbstractEndpointTileSetMultiCollection extends Endpoint {
+public abstract class AbstractEndpointTileSetDataset extends Endpoint {
 
   protected final TilesQueriesHandler queryHandler;
   protected final TilesProviders tilesProviders;
 
-  public AbstractEndpointTileSetMultiCollection(
+  public AbstractEndpointTileSetDataset(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
       TilesProviders tilesProviders) {
@@ -54,21 +53,12 @@ public abstract class AbstractEndpointTileSetMultiCollection extends Endpoint {
     return formats;
   }
 
-  @Override
-  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return apiData
-        .getExtension(TilesConfiguration.class)
-        .filter(TilesConfiguration::isEnabled)
-        .filter(cfg -> cfg.hasDatasetTiles(tilesProviders, apiData))
-        .isPresent();
-  }
-
   protected ApiEndpointDefinition computeDefinition(
       OgcApiDataV2 apiData,
       String apiEntrypoint,
       int sortPriority,
       String path,
-      String dataType,
+      String operationId,
       List<String> tags) {
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
@@ -93,7 +83,7 @@ public abstract class AbstractEndpointTileSetMultiCollection extends Endpoint {
             operationSummary,
             operationDescription,
             Optional.empty(),
-            getOperationId("getTileSet", "dataset", dataType),
+            operationId,
             GROUP_TILES_READ,
             tags,
             TilesBuildingBlock.MATURITY,
@@ -108,6 +98,7 @@ public abstract class AbstractEndpointTileSetMultiCollection extends Endpoint {
       OgcApiDataV2 apiData,
       ApiRequestContext requestContext,
       String definitionPath,
+      Optional<String> styleId,
       String tileMatrixSetId) {
     checkPathParameter(
         extensionRegistry, apiData, definitionPath, "tileMatrixSetId", tileMatrixSetId);
@@ -115,6 +106,7 @@ public abstract class AbstractEndpointTileSetMultiCollection extends Endpoint {
     TilesQueriesHandler.QueryInputTileSet queryInput =
         new Builder()
             .from(getGenericQueryInput(apiData))
+            .styleId(styleId)
             .tileMatrixSetId(tileMatrixSetId)
             .path(definitionPath)
             .build();

@@ -15,15 +15,17 @@ import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tiles.api.AbstractEndpointTileSetsSingleCollection;
-import de.ii.ogcapi.tiles.api.EndpointTileMixin;
+import de.ii.ogcapi.tiles.api.AbstractEndpointTileSetsDataset;
+import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -32,28 +34,23 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
- * @title Collection Tilesets
- * @path collections/{collectionId}/tiles
- * @langEn Access collection tilesets
- * @langDe Zugriff auf Kachelsätze einer Feature Collection
+ * @title Dataset Map Tilesets
+ * @path styles/{styleId}/map/tiles
+ * @langEn Access dataset map tilesets in a specific style.
+ * @langDe Zugriff auf die Rasterkachelsätze zum Datensatz in einem bestimmten Style.
  * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetsFormatExtension}
  */
 @Singleton
 @AutoBind
-public class EndpointTileSetsSingleCollection extends AbstractEndpointTileSetsSingleCollection
+public class EndpointStyledMapTileSetsDataset extends AbstractEndpointTileSetsDataset
     implements ConformanceClass, ApiExtensionHealth {
 
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(EndpointTileSetsSingleCollection.class);
-
-  private static final List<String> TAGS = ImmutableList.of("Access single-layer tiles");
+  private static final List<String> TAGS = ImmutableList.of("Access map tiles");
 
   @Inject
-  EndpointTileSetsSingleCollection(
+  EndpointStyledMapTileSetsDataset(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
       TilesProviders tilesProviders) {
@@ -61,10 +58,20 @@ public class EndpointTileSetsSingleCollection extends AbstractEndpointTileSetsSi
   }
 
   @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return false // TODO
+        && apiData
+            .getExtension(TilesConfiguration.class)
+            .filter(TilesConfiguration::isEnabled)
+            .filter(cfg -> cfg.hasDatasetMapTiles(tilesProviders, apiData))
+            .isPresent();
+  }
+
+  @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     return ImmutableList.of(
         "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/tilesets-list",
-        "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/geodata-tilesets");
+        "http://www.opengis.net/spec/ogcapi-tiles-1/1.0/conf/dataset-tilesets");
   }
 
   @Override
@@ -73,34 +80,31 @@ public class EndpointTileSetsSingleCollection extends AbstractEndpointTileSetsSi
   }
 
   @Override
+  public List<? extends FormatExtension> getResourceFormats() {
+    if (formats == null)
+      formats = extensionRegistry.getExtensionsForType(TileSetsFormatExtension.class);
+    return formats;
+  }
+
+  @Override
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
     return computeDefinition(
         apiData,
-        "collections",
-        ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS_COLLECTION,
-        "/collections/{collectionId}",
-        "/tiles",
-        getOperationId(
-            "getTileSetsList",
-            EndpointTileMixin.COLLECTION_ID_PLACEHOLDER,
-            "collection",
-            EndpointTileMixin.DATA_TYPE_PLACEHOLDER),
+        "styles",
+        ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS,
+        "/styles/{styleId}/map/tiles",
+        getOperationId("getTileSets", "dataset", "style", "map"),
         TAGS);
   }
 
-  /**
-   * retrieve all available tile matrix sets from the collection
-   *
-   * @return all tile matrix sets from the collection in a json array
-   */
-  @Path("/{collectionId}/tiles")
   @GET
+  @Path("/{styleId}/map/tiles")
   public Response getTileSets(
       @Context OgcApi api,
       @Context ApiRequestContext requestContext,
-      @PathParam("collectionId") String collectionId) {
+      @PathParam("styleId") String styleId) {
     return super.getTileSets(
-        api.getData(), requestContext, "/collections/{collectionId}/tiles", collectionId, false);
+        api.getData(), requestContext, "/styles/{styleId}/map/tiles", Optional.empty(), false);
   }
 
   @Override

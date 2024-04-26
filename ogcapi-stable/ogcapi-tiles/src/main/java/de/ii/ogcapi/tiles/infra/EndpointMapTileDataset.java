@@ -43,18 +43,18 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 /**
- * @title Dataset Tiles
- * @path tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
- * @langEn Access tiles of a dataset.
- * @langDe Zugriff auf Kacheln eines Datensatzes.
- * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
+ * @title Dataset Map Tiles
+ * @path map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
+ * @langEn Access map tiles of a dataset.
+ * @langDe Zugriff auf Rasterkacheln eines Datensatzes.
+ * @ref:formats {@link de.ii.ogcapi.tiles.domain.MapTileFormatExtension}
  */
 @Singleton
 @AutoBind
-public class EndpointTileMultiCollection extends Endpoint
+public class EndpointMapTileDataset extends Endpoint
     implements ConformanceClass, EndpointTileMixin, ApiExtensionHealth {
 
-  private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
+  private static final List<String> TAGS = ImmutableList.of("Access map tiles");
 
   private final TilesQueriesHandler queryHandler;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
@@ -62,7 +62,7 @@ public class EndpointTileMultiCollection extends Endpoint
   private final TilesProviders tilesProviders;
 
   @Inject
-  EndpointTileMultiCollection(
+  EndpointMapTileDataset(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
       TileMatrixSetLimitsGenerator limitsGenerator,
@@ -80,7 +80,7 @@ public class EndpointTileMultiCollection extends Endpoint
     return apiData
         .getExtension(TilesConfiguration.class)
         .filter(TilesConfiguration::isEnabled)
-        .filter(cfg -> cfg.hasDatasetTiles(tilesProviders, apiData))
+        .filter(cfg -> cfg.hasDatasetMapTiles(tilesProviders, apiData))
         .isPresent();
   }
 
@@ -108,17 +108,14 @@ public class EndpointTileMultiCollection extends Endpoint
         this,
         apiData,
         tilesProviders,
-        "tiles",
+        "map",
         ApiEndpointDefinition.SORT_PRIORITY_TILE,
-        "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
-        getOperationId(
-            "getTile",
-            "dataset",
-            tilesProviders.getTilesetMetadataOrThrow(apiData).isVector() ? "vector" : "map"),
+        "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+        getOperationId("getTile", "dataset", "map"),
         TAGS);
   }
 
-  @Path("/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
+  @Path("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
   @GET
   public Response getTile(
       @Context OgcApi api,
@@ -137,7 +134,8 @@ public class EndpointTileMultiCollection extends Endpoint
             api,
             tilesProviders,
             requestContext,
-            "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+            "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+            Optional.empty(),
             Optional.empty(),
             tileMatrixSetId,
             tileMatrix,

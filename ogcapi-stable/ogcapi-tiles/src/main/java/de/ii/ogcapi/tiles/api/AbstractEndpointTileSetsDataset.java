@@ -24,7 +24,6 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSets.Builder;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
-import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
@@ -33,27 +32,18 @@ import java.util.Optional;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
-public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
+public abstract class AbstractEndpointTileSetsDataset extends Endpoint {
 
   protected final TilesQueriesHandler queryHandler;
   protected final TilesProviders tilesProviders;
 
-  public AbstractEndpointTileSetsMultiCollection(
+  public AbstractEndpointTileSetsDataset(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
       TilesProviders tilesProviders) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
     this.tilesProviders = tilesProviders;
-  }
-
-  @Override
-  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return apiData
-        .getExtension(TilesConfiguration.class)
-        .filter(TilesConfiguration::isEnabled)
-        .filter(cfg -> cfg.hasDatasetTiles(tilesProviders, apiData))
-        .isPresent();
   }
 
   @Override
@@ -68,7 +58,7 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
       String apiEntrypoint,
       int sortPriority,
       String path,
-      String dataType,
+      String operationId,
       List<String> tags) {
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
@@ -93,7 +83,7 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
             operationSummary,
             operationDescription,
             Optional.empty(),
-            getOperationId("getTileSetsList", "dataset", dataType),
+            operationId,
             GROUP_TILES_READ,
             tags,
             TilesBuildingBlock.MATURITY,
@@ -108,6 +98,7 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
       OgcApiDataV2 apiData,
       ApiRequestContext requestContext,
       String definitionPath,
+      Optional<String> styleId,
       boolean onlyWebMercatorQuad) {
 
     if (!isEnabledForApi(apiData))
@@ -120,6 +111,7 @@ public abstract class AbstractEndpointTileSetsMultiCollection extends Endpoint {
             .from(getGenericQueryInput(apiData))
             .tileMatrixSetIds(tilesetMetadata.getTileMatrixSets())
             .path(definitionPath)
+            .styleId(styleId)
             .onlyWebMercatorQuad(onlyWebMercatorQuad)
             .tileEncodings(tilesetMetadata.getEncodings())
             .build();

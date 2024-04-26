@@ -70,6 +70,7 @@ import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import de.ii.xtraplatform.tiles.domain.TileProvider;
 import de.ii.xtraplatform.tiles.domain.TileQuery;
 import de.ii.xtraplatform.tiles.domain.TileResult;
+import de.ii.xtraplatform.tiles.domain.TilesFormat;
 import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
 import de.ii.xtraplatform.tiles.domain.WithCenter.LonLat;
 import de.ii.xtraplatform.values.domain.ValueStore;
@@ -190,7 +191,10 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
             // the first one will always used in the HTML representation
             .sorted(
                 Comparator.comparing(
-                    format -> queryInput.getTileEncodings().indexOf(format.getMediaType().label())))
+                    format ->
+                        queryInput
+                            .getTileEncodings()
+                            .indexOf(TilesFormat.of(format.getMediaType().label()))))
             .collect(Collectors.toUnmodifiableList());
 
     Optional<DataType> dataType =
@@ -264,7 +268,14 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
             null,
             HeaderContentDisposition.of(
                 String.format("tilesets.%s", outputFormat.getMediaType().fileExtension())))
-        .entity(outputFormat.getTileSetsEntity(tileSets, collectionId, api, requestContext))
+        .entity(
+            outputFormat.getTileSetsEntity(
+                tileSets,
+                dataType.orElse(
+                    queryInput.getPath().contains("/map/") ? DataType.map : DataType.vector),
+                collectionId,
+                api,
+                requestContext))
         .build();
   }
 

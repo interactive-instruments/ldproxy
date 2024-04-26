@@ -77,10 +77,8 @@ public class QueryParameterLimitTile extends ApiExtensionCache
         () ->
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
-                && (definitionPath.equals(
-                        "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
-                    || definitionPath.equals(
-                        "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
+                && definitionPath.equals(
+                    "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
   }
 
   @Override
@@ -95,8 +93,8 @@ public class QueryParameterLimitTile extends ApiExtensionCache
         () ->
             isEnabledForApi(apiData, collectionId)
                 && method == HttpMethods.GET
-                && definitionPath.endsWith(
-                    "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
+                && definitionPath.equals(
+                    "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
   }
 
   private final ConcurrentMap<Integer, Map<String, Schema<?>>> schemaMap =

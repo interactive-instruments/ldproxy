@@ -8,6 +8,7 @@
 package de.ii.ogcapi.tiles.app;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.I18n;
@@ -15,7 +16,6 @@ import de.ii.ogcapi.foundation.domain.ImmutableLink;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -32,23 +32,46 @@ public class TilesLinkGenerator extends DefaultLinksGenerator {
    * @return a List with links
    */
   public List<Link> generateLandingPageLinks(
-      URICustomizer uriBuilder, DataType dataType, I18n i18n, Optional<Locale> language) {
+      URICustomizer uriBuilder,
+      boolean hasVectorTiles,
+      boolean hasMapTiles,
+      I18n i18n,
+      Optional<Locale> language) {
 
-    return ImmutableList.<Link>builder()
-        .add(
-            new ImmutableLink.Builder()
-                .href(
-                    uriBuilder
-                        .copy()
-                        .removeLastPathSegment("collections")
-                        .ensureNoTrailingSlash()
-                        .ensureLastPathSegment("tiles")
-                        .removeParameters("f")
-                        .toString())
-                .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-" + dataType.toString())
-                .title(i18n.get("tilesLink", language))
-                .build())
-        .build();
+    Builder<Link> builder = ImmutableList.<Link>builder();
+    if (hasVectorTiles) {
+      builder.add(
+          new ImmutableLink.Builder()
+              .href(
+                  uriBuilder
+                      .copy()
+                      .removeLastPathSegment("collections")
+                      .ensureNoTrailingSlash()
+                      .ensureLastPathSegment("tiles")
+                      .removeParameters("f")
+                      .toString())
+              .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-vector")
+              .title(i18n.get("tilesLink", language))
+              .build());
+    }
+
+    if (hasMapTiles) {
+      builder.add(
+          new ImmutableLink.Builder()
+              .href(
+                  uriBuilder
+                      .copy()
+                      .removeLastPathSegment("collections")
+                      .ensureNoTrailingSlash()
+                      .ensureLastPathSegments("map", "tiles")
+                      .removeParameters("f")
+                      .toString())
+              .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-map")
+              .title(i18n.get("mapTilesLink", language))
+              .build());
+    }
+
+    return builder.build();
   }
 
   /**
@@ -213,24 +236,45 @@ public class TilesLinkGenerator extends DefaultLinksGenerator {
   public List<Link> generateCollectionLinks(
       URICustomizer uriBuilder,
       String collectionId,
-      DataType dataType,
+      boolean hasVectorTiles,
+      boolean hasMapTiles,
       I18n i18n,
       Optional<Locale> language) {
 
-    return ImmutableList.<Link>builder()
-        .add(
-            new ImmutableLink.Builder()
-                .href(
-                    uriBuilder
-                        .copy()
-                        .ensureNoTrailingSlash()
-                        .ensureLastPathSegment(collectionId)
-                        .ensureLastPathSegments("tiles")
-                        .removeParameters("f")
-                        .toString())
-                .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-" + dataType.toString())
-                .title(i18n.get("tilesLink", language))
-                .build())
-        .build();
+    Builder<Link> builder = ImmutableList.<Link>builder();
+
+    if (hasVectorTiles) {
+      builder.add(
+          new ImmutableLink.Builder()
+              .href(
+                  uriBuilder
+                      .copy()
+                      .ensureNoTrailingSlash()
+                      .ensureLastPathSegment(collectionId)
+                      .ensureLastPathSegment("tiles")
+                      .removeParameters("f")
+                      .toString())
+              .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-vector")
+              .title(i18n.get("tilesLink", language))
+              .build());
+    }
+
+    if (hasMapTiles) {
+      builder.add(
+          new ImmutableLink.Builder()
+              .href(
+                  uriBuilder
+                      .copy()
+                      .ensureNoTrailingSlash()
+                      .ensureLastPathSegment(collectionId)
+                      .ensureLastPathSegments("map", "tiles")
+                      .removeParameters("f")
+                      .toString())
+              .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-map")
+              .title(i18n.get("mapTilesLink", language))
+              .build());
+    }
+
+    return builder.build();
   }
 }

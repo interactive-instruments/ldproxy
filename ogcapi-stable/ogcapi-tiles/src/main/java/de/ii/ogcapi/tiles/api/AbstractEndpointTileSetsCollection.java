@@ -19,16 +19,17 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
-import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceAuxiliary;
+import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
-import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSet.Builder;
-import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
+import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSets.Builder;
+import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
+import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,38 +38,21 @@ import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSubCollection {
+public abstract class AbstractEndpointTileSetsCollection extends EndpointSubCollection {
 
   private static final Logger LOGGER =
-      LoggerFactory.getLogger(AbstractEndpointTileSetSingleCollection.class);
+      LoggerFactory.getLogger(AbstractEndpointTileSetsCollection.class);
 
   protected final TilesQueriesHandler queryHandler;
   protected final TilesProviders tilesProviders;
 
-  public AbstractEndpointTileSetSingleCollection(
+  public AbstractEndpointTileSetsCollection(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
       TilesProviders tilesProviders) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
     this.tilesProviders = tilesProviders;
-  }
-
-  @Override
-  public List<? extends FormatExtension> getResourceFormats() {
-    if (formats == null) {
-      formats = extensionRegistry.getExtensionsForType(TileSetFormatExtension.class);
-    }
-    return formats;
-  }
-
-  @Override
-  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return apiData
-            .getExtension(TilesConfiguration.class)
-            .filter(TilesConfiguration::isEnabled)
-            .isPresent()
-        && super.isEnabledForApi(apiData);
   }
 
   @Override
@@ -79,6 +63,13 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
         .filter(TilesConfiguration::isEnabled)
         .filter(cfg -> cfg.hasCollectionTiles(tilesProviders, apiData, collectionId))
         .isPresent();
+  }
+
+  @Override
+  public List<? extends FormatExtension> getResourceFormats() {
+    if (formats == null)
+      formats = extensionRegistry.getExtensionsForType(TileSetsFormatExtension.class);
+    return formats;
   }
 
   protected ApiEndpointDefinition computeDefinition(
@@ -112,14 +103,16 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
       for (String collectionId : collectionIds) {
         List<OgcApiQueryParameter> queryParameters =
             getQueryParameters(extensionRegistry, apiData, path, collectionId);
-        String operationSummary = "retrieve information about a tile set";
+        String operationSummary = "retrieve a list of the available tile sets";
         Optional<String> operationDescription =
-            Optional.of("This operation fetches information about a tile set.");
+            Optional.of(
+                "This operation fetches the list of tile sets available for this collection.");
         String resourcePath = path.replace("{collectionId}", collectionId);
-        ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
-            new ImmutableOgcApiResourceAuxiliary.Builder()
+        ImmutableOgcApiResourceSet.Builder resourceBuilder =
+            new ImmutableOgcApiResourceSet.Builder()
                 .path(resourcePath)
-                .pathParameters(pathParameters);
+                .pathParameters(pathParameters)
+                .subResourceType("Tile Set");
         Map<MediaType, ApiMediaTypeContent> responseContent = getResponseContent(apiData);
         String operationId =
             EndpointTileMixin.getOperationId(
@@ -148,25 +141,30 @@ public abstract class AbstractEndpointTileSetSingleCollection extends EndpointSu
     return definitionBuilder.build();
   }
 
-  protected Response getTileSet(
+  protected Response getTileSets(
       OgcApiDataV2 apiData,
       ApiRequestContext requestContext,
       String definitionPath,
       String collectionId,
-      String tileMatrixSetId) {
+      Optional<String> styleId,
+      boolean onlyWebMercatorQuad) {
 
     checkPathParameter(extensionRegistry, apiData, definitionPath, "collectionId", collectionId);
-    checkPathParameter(
-        extensionRegistry, apiData, definitionPath, "tileMatrixSetId", tileMatrixSetId);
 
-    TilesQueriesHandler.QueryInputTileSet queryInput =
+    TilesetMetadata tilesetMetadata =
+        tilesProviders.getTilesetMetadataOrThrow(apiData, apiData.getCollectionData(collectionId));
+
+    TilesQueriesHandler.QueryInputTileSets queryInput =
         new Builder()
             .from(getGenericQueryInput(apiData))
             .collectionId(collectionId)
-            .tileMatrixSetId(tileMatrixSetId)
+            .styleId(styleId)
+            .tileMatrixSetIds(tilesetMetadata.getTileMatrixSets())
             .path(definitionPath)
+            .onlyWebMercatorQuad(onlyWebMercatorQuad)
+            .tileEncodings(tilesetMetadata.getEncodings())
             .build();
 
-    return queryHandler.handle(TilesQueriesHandler.Query.TILE_SET, queryInput, requestContext);
+    return queryHandler.handle(TilesQueriesHandler.Query.TILE_SETS, queryInput, requestContext);
   }
 }

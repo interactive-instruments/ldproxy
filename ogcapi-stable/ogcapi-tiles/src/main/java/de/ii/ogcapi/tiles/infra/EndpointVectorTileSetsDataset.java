@@ -18,13 +18,14 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tiles.api.AbstractEndpointTileSetsMultiCollection;
+import de.ii.ogcapi.tiles.api.AbstractEndpointTileSetsDataset;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -33,25 +34,34 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 /**
- * @title Dataset Tilesets
+ * @title Dataset Vector Tilesets
  * @path tiles
- * @langEn Access dataset tilesets
- * @langDe Zugriff auf die Kachelsätze zum Datensatz
+ * @langEn Access dataset vector tilesets
+ * @langDe Zugriff auf die Vektor-Kachelsätze zum Datensatz
  * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileSetsFormatExtension}
  */
 @Singleton
 @AutoBind
-public class EndpointTileSetsMultiCollection extends AbstractEndpointTileSetsMultiCollection
+public class EndpointVectorTileSetsDataset extends AbstractEndpointTileSetsDataset
     implements ConformanceClass, ApiExtensionHealth {
 
-  private static final List<String> TAGS = ImmutableList.of("Access multi-layer tiles");
+  private static final List<String> TAGS = ImmutableList.of("Access vector tiles");
 
   @Inject
-  EndpointTileSetsMultiCollection(
+  EndpointVectorTileSetsDataset(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
       TilesProviders tilesProviders) {
     super(extensionRegistry, queryHandler, tilesProviders);
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(TilesConfiguration.class)
+        .filter(TilesConfiguration::isEnabled)
+        .filter(cfg -> cfg.hasDatasetVectorTiles(tilesProviders, apiData))
+        .isPresent();
   }
 
   @Override
@@ -76,17 +86,12 @@ public class EndpointTileSetsMultiCollection extends AbstractEndpointTileSetsMul
   @Override
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
     return computeDefinition(
-        apiData,
-        "tiles",
-        ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS,
-        "/tiles",
-        tilesProviders.getTilesetMetadataOrThrow(apiData).isVector() ? "vector" : "map",
-        TAGS);
+        apiData, "tiles", ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS, "/tiles", "vector", TAGS);
   }
 
   @GET
   public Response getTileSets(@Context OgcApi api, @Context ApiRequestContext requestContext) {
-    return super.getTileSets(api.getData(), requestContext, "/tiles", false);
+    return super.getTileSets(api.getData(), requestContext, "/tiles", Optional.empty(), false);
   }
 
   @Override

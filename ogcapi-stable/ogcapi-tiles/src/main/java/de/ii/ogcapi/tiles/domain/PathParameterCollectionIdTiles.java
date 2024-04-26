@@ -81,7 +81,8 @@ public class PathParameterCollectionIdTiles extends AbstractPathParameterCollect
 
   @Override
   public boolean matchesPath(String definitionPath) {
-    return definitionPath.startsWith("/collections/{collectionId}/tiles");
+    return definitionPath.startsWith("/collections/{collectionId}/tiles")
+        || definitionPath.startsWith("/collections/{collectionId}/map/tiles");
   }
 
   @Override

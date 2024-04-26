@@ -68,10 +68,8 @@ public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
         () ->
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
-                && (definitionPath.equals(
-                        "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
-                    || definitionPath.equals(
-                        "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
+                && definitionPath.endsWith(
+                    "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
   }
 
   @Override

@@ -52,7 +52,6 @@ public interface EndpointTileMixin {
 
   Logger LOGGER = LoggerFactory.getLogger(EndpointTileMixin.class);
   String COLLECTION_ID_PLACEHOLDER = "__collectionId__";
-  String DATA_TYPE_PLACEHOLDER = "__dataType__";
 
   default ApiEndpointDefinition computeDefinitionSingle(
       ExtensionRegistry extensionRegistry,
@@ -185,6 +184,7 @@ public interface EndpointTileMixin {
       ApiRequestContext requestContext,
       String definitionPath,
       Optional<String> collectionId,
+      Optional<String> styleId,
       String tileMatrixSetId,
       String tileLevel,
       String tileRow,
@@ -267,6 +267,7 @@ public interface EndpointTileMixin {
     return new ImmutableQueryInputTile.Builder()
         .from(endpoint.getGenericQueryInput(apiData))
         .collectionId(collectionId)
+        .styleId(styleId)
         .outputFormat(outputFormat)
         .tileMatrixSet(tileMatrixSet)
         .level(level)
@@ -280,18 +281,6 @@ public interface EndpointTileMixin {
       String id, String collectionId, OgcApiDataV2 apiData, TilesProviders tilesProviders) {
     return collectionId.startsWith("{")
         ? id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER + ".", "")
-            .replace(
-                EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
-                tilesProviders.getTilesetMetadata(apiData).filter(md -> !md.isVector()).isPresent()
-                    ? "map"
-                    : "vector")
-        : id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER, collectionId)
-            .replace(
-                EndpointTileMixin.DATA_TYPE_PLACEHOLDER,
-                tilesProviders
-                        .getTilesetMetadataOrThrow(apiData, apiData.getCollectionData(collectionId))
-                        .isVector()
-                    ? "vector"
-                    : "map");
+        : id.replace(EndpointTileMixin.COLLECTION_ID_PLACEHOLDER, collectionId);
   }
 }

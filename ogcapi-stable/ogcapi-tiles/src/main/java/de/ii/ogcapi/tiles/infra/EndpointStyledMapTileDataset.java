@@ -9,12 +9,11 @@ package de.ii.ogcapi.tiles.infra;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.collections.domain.EndpointSubCollection;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
-import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
+import de.ii.ogcapi.foundation.domain.Endpoint;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
@@ -32,11 +31,8 @@ import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -44,22 +40,21 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
- * @title Collection tiles
- * @path collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
- * @langEn Access tiles of a collection.
- * @langDe Zugriff auf Kacheln einer Feature Collection.
- * @ref:formats {@link de.ii.ogcapi.tiles.domain.TileFormatExtension}
+ * @title Dataset Map Tiles
+ * @path styles/{styleId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}
+ * @langEn Access map tiles of a dataset in a specific style.
+ * @langDe Zugriff auf Rasterkacheln eines Datensatzes in einem bestimmten Style.
+ * @ref:formats {@link de.ii.ogcapi.tiles.domain.MapTileFormatExtension}
  */
 @Singleton
 @AutoBind
-public class EndpointTileSingleCollection extends EndpointSubCollection
+public class EndpointStyledMapTileDataset extends Endpoint
     implements ConformanceClass, EndpointTileMixin, ApiExtensionHealth {
 
-  private static final List<String> TAGS = ImmutableList.of("Access single-layer tiles");
+  private static final List<String> TAGS = ImmutableList.of("Access map tiles");
 
   private final TilesQueriesHandler queryHandler;
   private final TileMatrixSetLimitsGenerator limitsGenerator;
@@ -67,7 +62,7 @@ public class EndpointTileSingleCollection extends EndpointSubCollection
   private final TilesProviders tilesProviders;
 
   @Inject
-  EndpointTileSingleCollection(
+  EndpointStyledMapTileDataset(
       ExtensionRegistry extensionRegistry,
       TilesQueriesHandler queryHandler,
       TileMatrixSetLimitsGenerator limitsGenerator,
@@ -81,12 +76,13 @@ public class EndpointTileSingleCollection extends EndpointSubCollection
   }
 
   @Override
-  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-    return apiData
-        .getExtension(TilesConfiguration.class, collectionId)
-        .filter(TilesConfiguration::isEnabled)
-        .filter(cfg -> cfg.hasCollectionTiles(tilesProviders, apiData, collectionId))
-        .isPresent();
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return false // TODO
+        && apiData
+            .getExtension(TilesConfiguration.class)
+            .filter(TilesConfiguration::isEnabled)
+            .filter(cfg -> cfg.hasDatasetMapTiles(tilesProviders, apiData))
+            .isPresent();
   }
 
   @Override
@@ -108,42 +104,23 @@ public class EndpointTileSingleCollection extends EndpointSubCollection
 
   @Override
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
-    return computeDefinitionSingle(
+    return computeDefinitionMulti(
         extensionRegistry,
         this,
         apiData,
         tilesProviders,
-        "collections",
-        ApiEndpointDefinition.SORT_PRIORITY_TILE_COLLECTION,
-        "/collections/{collectionId}",
-        "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
-        getOperationId(
-            "getTile",
-            EndpointTileMixin.COLLECTION_ID_PLACEHOLDER,
-            "collection",
-            EndpointTileMixin.DATA_TYPE_PLACEHOLDER),
+        "styles",
+        ApiEndpointDefinition.SORT_PRIORITY_TILE,
+        "/styles/{styleId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+        getOperationId("getTile", "dataset", "style", "map"),
         TAGS);
   }
 
-  @Override
-  public Map<MediaType, ApiMediaTypeContent> getResponseContent(OgcApiDataV2 apiData) {
-    return getResourceFormats().stream()
-        .filter(
-            inputFormatExtension ->
-                apiData.getCollections().keySet().stream()
-                    .anyMatch(
-                        collectionId ->
-                            inputFormatExtension.isEnabledForApi(apiData, collectionId)))
-        .map(FormatExtension::getContent)
-        .filter(Objects::nonNull)
-        .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
-  }
-
-  @Path("/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
+  @Path("/{styleId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
   @GET
   public Response getTile(
       @Context OgcApi api,
-      @PathParam("collectionId") String collectionId,
+      @PathParam("styleId") String styleId,
       @PathParam("tileMatrixSetId") String tileMatrixSetId,
       @PathParam("tileMatrix") String tileMatrix,
       @PathParam("tileRow") String tileRow,
@@ -159,8 +136,9 @@ public class EndpointTileSingleCollection extends EndpointSubCollection
             api,
             tilesProviders,
             requestContext,
-            "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
-            Optional.of(collectionId),
+            "/styles/{styleId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
+            Optional.empty(),
+            Optional.of(styleId),
             tileMatrixSetId,
             tileMatrix,
             tileRow,
