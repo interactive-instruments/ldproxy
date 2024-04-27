@@ -146,7 +146,9 @@ public class TilesLinkGenerator extends DefaultLinksGenerator {
                             + format.getMediaType().parameter())
                     .rel("item")
                     .type(format.getMediaType().type().toString())
-                    .title(i18n.get("tileLinkTemplate" + format.getMediaType().label(), language))
+                    .title(
+                        i18n.get("tileLinkTemplate" + format.getMediaType().label(), language)
+                            .replace("{{tileMatrixSetId}}", tileMatrixSetId))
                     .templated(true)
                     .build()));
 
