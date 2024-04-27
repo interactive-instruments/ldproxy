@@ -347,7 +347,7 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
             null,
             HeaderContentDisposition.of(
                 String.format(
-                    "%s.%s",
+                    "tileset.%s.%s",
                     tileset.getTileMatrixSetId(), outputFormat.getMediaType().fileExtension())))
         .entity(outputFormat.getTileSetEntity(tileset, apiData, collectionId, requestContext))
         .build();
