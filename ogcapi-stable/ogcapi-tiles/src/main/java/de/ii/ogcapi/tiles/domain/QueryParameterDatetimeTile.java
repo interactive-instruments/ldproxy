@@ -68,13 +68,18 @@ public class QueryParameterDatetimeTile extends AbstractQueryParameterDatetime
         () ->
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
-                && definitionPath.endsWith(
-                    "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
+                && definitionPath.equals(
+                    "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
   }
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
     return isEnabledForApi(apiData, tilesProviders);
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return isEnabledForApi(apiData, collectionId, tilesProviders);
   }
 
   @Override

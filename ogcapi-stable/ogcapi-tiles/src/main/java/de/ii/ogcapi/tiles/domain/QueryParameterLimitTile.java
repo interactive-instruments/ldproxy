@@ -78,22 +78,6 @@ public class QueryParameterLimitTile extends ApiExtensionCache
             isEnabledForApi(apiData)
                 && method == HttpMethods.GET
                 && definitionPath.equals(
-                    "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
-  }
-
-  @Override
-  public boolean isApplicable(
-      OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName()
-            + apiData.hashCode()
-            + definitionPath
-            + collectionId
-            + method.name(),
-        () ->
-            isEnabledForApi(apiData, collectionId)
-                && method == HttpMethods.GET
-                && definitionPath.equals(
                     "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
   }
 
