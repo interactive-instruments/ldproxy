@@ -89,7 +89,9 @@ public abstract class Endpoint implements EndpointExtension {
   // temporarily removed "final" until a better solution has been implemented
   @Override
   public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-    if (!isEnabledForApi(apiData)) {
+    if (!isEnabledForApi(apiData)
+        || (this instanceof ApiExtensionHealth
+            && !((ApiExtensionHealth) this).getComposedVolatile(apiData).isAvailable())) {
       return EndpointExtension.super.getDefinition(apiData);
     }
 
