@@ -21,10 +21,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.function.TriConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AutoMultiBind
 public interface ApiExtensionHealth extends ApiExtension {
 
+  Logger LOGGER = LoggerFactory.getLogger(ApiExtensionHealth.class);
   Map<String, Volatile2> VOLATILES = new ConcurrentHashMap<>();
   Map<String, String> STARTUP_STATE = new ConcurrentHashMap<>();
 
@@ -99,6 +102,12 @@ public interface ApiExtensionHealth extends ApiExtension {
                 Volatile2 composed = getComposedVolatile(api.getData());
                 if (composed instanceof ApiHealthVolatile) {
                   ((ApiHealthVolatile) composed).setErrors(result.getErrors());
+                  if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(
+                        "Errors in '{}.onStartup()', the module will be unavailable: {}",
+                        this.getClass().getSimpleName(),
+                        String.join("; ", result.getErrors()));
+                  }
                 }
               }
             }));
