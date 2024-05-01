@@ -29,6 +29,7 @@ import de.ii.xtraplatform.cql.domain.Cql;
 import de.ii.xtraplatform.cql.domain.Cql.Format;
 import de.ii.xtraplatform.cql.domain.Cql2Expression;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.web.domain.Http;
 import de.ii.xtraplatform.web.domain.HttpClient;
 import io.swagger.v3.oas.models.media.Schema;
@@ -157,8 +158,11 @@ public class QueryParameterIntersects extends ApiExtensionCache
     }
 
     String property = primaryGeometry.get().getFullPathAsString();
-    return cql.read(
-        String.format("S_INTERSECTS(%s,%s) OR %s IS NULL", property, wkt, property), Format.TEXT);
+    String isNull =
+        primaryGeometry.map(SchemaBase::isRequired).orElse(false)
+            ? ""
+            : String.format(" OR \"%s\" IS NULL", property);
+    return cql.read(String.format("S_INTERSECTS(\"%s\",%s)%s", property, wkt, isNull), Format.TEXT);
   }
 
   @Override
