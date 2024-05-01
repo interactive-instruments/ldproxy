@@ -8,6 +8,7 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.google.common.collect.ImmutableMap;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
@@ -69,6 +70,9 @@ public abstract class Endpoint implements EndpointExtension {
       if (Objects.isNull(message)) {
         message =
             exception.getClass().getSimpleName() + " at " + exception.getStackTrace()[0].toString();
+      }
+      if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+        LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", exception);
       }
       builder.addErrors(message);
     }

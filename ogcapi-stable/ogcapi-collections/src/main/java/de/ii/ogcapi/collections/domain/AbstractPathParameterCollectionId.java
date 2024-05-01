@@ -15,10 +15,10 @@ import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,14 +30,14 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
 
   public static final String COLLECTION_ID_PATTERN = "[\\w\\-]+";
 
-  protected final Map<Integer, Boolean> apiExplodeMap;
-  protected final Map<Integer, List<String>> apiCollectionMap;
+  protected final ConcurrentMap<Integer, Boolean> apiExplodeMap;
+  protected final ConcurrentMap<Integer, List<String>> apiCollectionMap;
   protected final SchemaValidator schemaValidator;
 
   public AbstractPathParameterCollectionId(SchemaValidator schemaValidator) {
     this.schemaValidator = schemaValidator;
-    this.apiCollectionMap = new HashMap<>();
-    this.apiExplodeMap = new HashMap<>();
+    this.apiCollectionMap = new ConcurrentHashMap<>();
+    this.apiExplodeMap = new ConcurrentHashMap<>();
   }
 
   public abstract boolean matchesPath(String definitionPath);
