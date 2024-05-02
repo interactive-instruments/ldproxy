@@ -14,7 +14,6 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
@@ -67,13 +66,6 @@ public interface TileMatrixSetsConfiguration extends ExtensionConfiguration, Cac
     MBTILES,
     NONE
   }
-
-  /**
-   * @default Tiles.enabled()
-   */
-  @Nullable
-  @Override
-  Boolean getEnabled();
 
   /**
    * @langEn The list of pre-defined tile matrix sets that are published via this API.
