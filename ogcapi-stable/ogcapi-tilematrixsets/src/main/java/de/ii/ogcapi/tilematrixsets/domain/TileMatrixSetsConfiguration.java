@@ -31,7 +31,7 @@ import org.immutables.value.Value;
  *     werden.
  * @examplesEn The JSON representation of the pre-defined tiling schemes are available on
  *     [GitHub](https://github.com/interactive-instruments/xtraplatform-spatial/tree/master/xtraplatform-tiles/src/main/resources/tilematrixsets).
- *     <p>An configuration for an API that provides tiles in three tiling schemas could be the following:
+ *     <p>A configuration for an API that provides tiles in three tiling schemas could be the following:
  *     <p><code>
  * ```yaml
  * - buildingBlock: TILE_MATRIX_SETS
@@ -45,7 +45,6 @@ import org.immutables.value.Value;
  * @examplesDe Die vordefinierten Kachelschemas in JSON sind auf
  *     [GitHub](https://github.com/interactive-instruments/xtraplatform-spatial/tree/master/xtraplatform-tiles/src/main/resources/tilematrixsets)
  *     verfügbar.
- *     <p>Die Liste der Kachelschemas muss nicht explizit konfiguriert werden, die Liste wird aus der Konfiguration des im TILES-Baustein verwendeten Tile Providers abgeleitet.
  *     <p>Eine Konfiguration für eine API, die Kacheln in drei Kachelschemas bereitstellt, könnte wie folgt aussehen:
  *     <p><code>
  * ```yaml
