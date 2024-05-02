@@ -8,6 +8,7 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.google.common.collect.ImmutableMap;
+import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
@@ -70,6 +71,9 @@ public abstract class Endpoint implements EndpointExtension {
         message =
             exception.getClass().getSimpleName() + " at " + exception.getStackTrace()[0].toString();
       }
+      if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
+        LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", exception);
+      }
       builder.addErrors(message);
     }
 
@@ -89,7 +93,9 @@ public abstract class Endpoint implements EndpointExtension {
   // temporarily removed "final" until a better solution has been implemented
   @Override
   public ApiEndpointDefinition getDefinition(OgcApiDataV2 apiData) {
-    if (!isEnabledForApi(apiData)) {
+    if (!isEnabledForApi(apiData)
+        || (this instanceof ApiExtensionHealth
+            && !((ApiExtensionHealth) this).getComposedVolatile(apiData).isAvailable())) {
       return EndpointExtension.super.getDefinition(apiData);
     }
 
