@@ -43,8 +43,6 @@ import javax.inject.Singleton;
  *     </code>
  * @scopeDe Dieses Modul stellt Informationen über die von der API unterstützten Kachelungsschemas
  *     bereit.
- *     <p>Derzeit muss dieses Modul nicht konfiguriert werden. Die Konfiguration wird von der
- *     Konfiguration der im TILES-Baustein verwendeten Tile Provider abgeleitet.
  *     <p>Als vorkonfigurierte Kachelschemas stehen zur Verfügung:
  *     <p><code>
  * - [WebMercatorQuad](http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad)
