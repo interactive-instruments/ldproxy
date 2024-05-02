@@ -110,7 +110,7 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
       return processException(
           exceptionFormat, msgCause.isEmpty() ? msg : String.format("%s: %s", msg, msgCause));
     } else if (exception instanceof VolatileUnavailableException) {
-      return serviceUnavailable(exceptionFormat);
+      return serviceUnavailable(exceptionFormat, exception.getMessage());
     }
     return serverError(exception, exceptionFormat);
   }
@@ -152,16 +152,14 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
 
   // TODO: detail message
   // TODO: maybe add a Retry-After HTTP header?
-  private Response serviceUnavailable(ExceptionFormatExtension exceptionFormat) {
+  private Response serviceUnavailable(ExceptionFormatExtension exceptionFormat, String message) {
     final Response.Status responseStatus = Status.SERVICE_UNAVAILABLE;
     return Response.status(responseStatus)
         .type(exceptionFormat.getMediaType().type())
         .entity(
             exceptionFormat.getExceptionEntity(
                 new ApiErrorMessage(
-                    responseStatus.getStatusCode(),
-                    responseStatus.getReasonPhrase(),
-                    "TODO: generic message")))
+                    responseStatus.getStatusCode(), responseStatus.getReasonPhrase(), message)))
         .build();
   }
 
@@ -227,7 +225,7 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
                       response.getStatus(), response.getStatusInfo().getReasonPhrase(), msg)))
           .build();
     } else if (exception instanceof ServiceUnavailableException) {
-      return serviceUnavailable(exceptionFormat);
+      return serviceUnavailable(exceptionFormat, exception.getMessage());
     }
 
     // family.equals(Response.Status.Family.SERVER_ERROR)

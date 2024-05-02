@@ -343,7 +343,8 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
               .get();
     } else if (outputFormat.canEncodeFeatures()) {
       if (!featureProvider.queries().isAvailable()) {
-        throw new ServiceUnavailableException();
+        throw new ServiceUnavailableException(
+            "The API currently cannot access features. Please try again later.");
       }
       featureStream = featureProvider.queries().get().getFeatureStream(query);
 
