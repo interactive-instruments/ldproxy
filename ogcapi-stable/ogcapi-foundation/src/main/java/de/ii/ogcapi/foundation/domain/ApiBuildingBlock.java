@@ -46,8 +46,8 @@ import de.ii.xtraplatform.docs.DocVar;
  * @langDe # Bausteine
  *     <p>Die API-Funktionalität ist in Bausteine aufgeteilt, die sich an den [OGC API Standards und
  *     weiteren Spezifikationen](../../references/specifications.md) orientieren.
- *     <p>Ein Baustein kapselt zusammengehörige Operationen, Query-Parameter, Pfadparameter, Header,
- *     Formate, usw. Aktuell ist jeder Baustein in einem eigenen
+ *     <p>Ein Baustein kapselt zusammengehörende Operationen, Query-Parameter, Pfadparameter,
+ *     Header, Formate, usw. Aktuell ist jeder Baustein in einem eigenen
  *     [Modul](../../references/modules.md) umgesetzt.
  *     <p>Die Bausteine sind klassifiziert nach:
  *     <p><code>
@@ -85,7 +85,7 @@ import de.ii.xtraplatform.docs.DocVar;
                 value = @DocStep(type = Step.TAG, params = "[{@title}]({@docFile:name})"),
                 header = {
                   @DocI18n(language = "en", value = "Building Block"),
-                  @DocI18n(language = "de", value = "Modul")
+                  @DocI18n(language = "de", value = "Baustein")
                 }),
             @DocColumn(
                 value =
