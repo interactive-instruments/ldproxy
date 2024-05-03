@@ -16,5 +16,5 @@ Die Software zeichnet sich durch folgende Eigenschaften aus:
 
 Um eine Vorstellung davon zu bekommen, wie die APIs aussehen, werfen Sie einen Blick auf die [Demo APIs](https://demo.ldproxy.net).
 
-Weitere Informationen über die unterstützten Spezifikationen und Technologien finden Sie [hier](advanced/specifications.md).
+Weitere Informationen über die unterstützten Spezifikationen und Technologien finden Sie [hier](references/specifications.md).
 

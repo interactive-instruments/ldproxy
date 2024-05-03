@@ -80,8 +80,8 @@ import javax.inject.Singleton;
  * - Parameters may also be provided in a member "parameters" in the query expression and
  *     referenced using "$ref".
  *     </code>
- * @scopeDe Dieses Modul unterstützt die Suche nach Features aus einer oder mehreren Collections.
- *     Das heißt, es unterstützt Abfragen, die mit den Filtermechanismen, die durch die Module
+ * @scopeDe Dieser Baustein unterstützt die Suche nach Features aus einer oder mehreren Collections.
+ *     Das heißt, es unterstützt Abfragen, die mit den Filtermechanismen, die durch die Bausteine
  *     *Features* und *Filter* zur Verfügung stehen, nicht oder nicht bequem ausgedrückt werden
  *     können.
  *     <p>Beispiele für die Arten von Abfragen:
@@ -99,10 +99,10 @@ import javax.inject.Singleton;
  *     <p>Für jede Abfrage:
  *     <p><code>
  * - Der Wert von "collection" ist ein Array mit einem Element, dem Identifikator der abzufragenden Feature Collection.
- * - Der Wert von "filter" ist ein CQL2 JSON-Filterausdruck. Siehe das [Filter-Modul](filter.md).
+ * - Der Wert von "filter" ist ein CQL2 JSON-Filterausdruck. Siehe den [Filter-Baustein](filter.md).
  * - Der Wert von "filterCrs" ist die URI des Koordinatenreferenzsystems der Koordinaten in einem "filter". Der Standardwert ist "http://www.opengis.net/def/crs/OGC/1.3/CRS84" (WGS 84, Longitude/Latitude).
- * - Der Wert von "properties" ist ein Array mit den Namen der Eigenschaften, die in die Antwort aufgenommen werden sollen. Siehe das [Projections-Modul](projections.md).
- * - Der Wert von "sortby" wird zum Sortieren der Merkmale in der Antwort verwendet. Siehe das [Sorting-Modul](sorting.md).
+ * - Der Wert von "properties" ist ein Array mit den Namen der Eigenschaften, die in die Antwort aufgenommen werden sollen. Siehe den [Projections-Baustein](projections.md).
+ * - Der Wert von "sortby" wird zum Sortieren der Merkmale in der Antwort verwendet. Siehe den [Sorting-Baustein](sorting.md).
  *     </code>
  *     <p>Für mehrere Abfragen:
  *     <p><code>
@@ -122,7 +122,7 @@ import javax.inject.Singleton;
  * @conformanceEn This building block implements the OGC API Features extensions specified in the
  *     OGC Testbed-18 Filtering Service and Rule Set Engineering Report (to be published). The
  *     implementation will change as the draft will evolve during the standardization process.
- * @conformanceDe Dieses Modul implementiert die OGC-API-Features-Erweiterungen, die in dem OGC
+ * @conformanceDe Dieser Baustein implementiert die OGC-API-Features-Erweiterungen, die in dem OGC
  *     Testbed-18 Filtering Service and Rule Set Engineering Report spezifiziert sind (wird noch
  *     veröffentlicht). Die Implementierung wird sich im Zuge der weiteren Standardisierung der
  *     Spezifikation noch ändern.

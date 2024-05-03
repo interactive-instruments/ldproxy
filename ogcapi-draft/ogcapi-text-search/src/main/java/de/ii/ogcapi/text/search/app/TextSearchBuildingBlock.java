@@ -24,7 +24,7 @@ import javax.inject.Singleton;
  * @conformanceEn *Text Search* implements requirements of the section "Parameter q" of the [draft
  *     OGC API - Records - Part 1:
  *     Core](https://docs.ogc.org/DRAFTS/20-004.html#core-query-parameters-q).
- * @conformanceDe Das Modul implementiert die Anforderungen des Abschnitts "Parameter q" des
+ * @conformanceDe Der Baustein implementiert die Anforderungen des Abschnitts "Parameter q" des
  *     [Entwurfs von OGC API - Records - Part 1:
  *     Core](https://docs.ogc.org/DRAFTS/20-004.html#core-query-parameters-q).
  * @ref:cfg {@link de.ii.ogcapi.text.search.domain.TextSearchConfiguration}

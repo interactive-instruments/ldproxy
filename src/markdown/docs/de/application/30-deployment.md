@@ -17,10 +17,10 @@ Dies beschreibt das Layout des Datenverzeichnisses bis `v3.5`. Es wird ab `v4.0`
 Das Datenverzeichnis enthält normalerweise die folgenden Dateien und Verzeichnisse:
 
 - `cfg.yml`: Die [Konfigurationsdatei für globale Einstellungen](20-configuration/README.md).
-- `api-resources`: Ein Repository von Ressourcen oder Sub-Ressourcen, auf die über die API zugegriffen werden kann und die entweder vom Administrator oder über die API geändert werden können. Beispiele sind Stile, Kartensymbole, JSON-LD Kontexte, etc. Weitere Einzelheiten finden Sie in der Datei [API-Module](../services/building-blocks/README.md). Wenn ein Modul nicht aktiviert ist oder war, dann fehlen auch die entsprechenden Verzeichnisse.
-- `cache`: Der Cache für Ressourcen, die von ldproxy aus Leistungsgründen zwischengespeichert werden. Derzeit sind dies nur die Vector Tiles für das [Modul "Tiles"](../services/building-blocks/tiles.md).
+- `api-resources`: Ein Repository von Ressourcen oder Sub-Ressourcen, auf die über die API zugegriffen werden kann und die entweder vom Administrator oder über die API geändert werden können. Beispiele sind Stile, Kartensymbole, JSON-LD Kontexte, etc. Weitere Einzelheiten finden Sie in der Datei [API-Bausteine](../services/building-blocks/README.md). Wenn ein Baustein nicht aktiviert ist oder war, dann fehlen auch die entsprechenden Verzeichnisse.
+- `cache`: Der Cache für Ressourcen, die von ldproxy aus Leistungsgründen zwischengespeichert werden. Derzeit sind dies nur die Vector Tiles für den [Baustein "Tiles"](../services/building-blocks/tiles.md).
 - `Logs`: Die Log-Dateien gemäß den Einstellungen in `cfg.yml`.
-- `store`: Die [ldproxy-Konfigurationsdateien](20-configuration/00-store.md).
+- `store`: Die [ldproxy-Konfigurationsdateien](20-configuration/10-store-new.md).
 - `templates`: Mustache-Vorlagen für die HTML-Seiten, die die Standardvorlagen von ldproxy überschreiben.
 - `tmp`: Ein Verzeichnis für temporäre Daten. Der Inhalt kann bei Bedarf gelöscht werden, wenn ldproxy gestoppt wird. Es enthält z.B. den Cache der OSGi-Bundles.
 

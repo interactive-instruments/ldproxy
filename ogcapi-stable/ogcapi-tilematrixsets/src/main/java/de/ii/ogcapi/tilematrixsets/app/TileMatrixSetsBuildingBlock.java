@@ -41,8 +41,8 @@ import javax.inject.Singleton;
  * - [EU_25832](https://demo.ldproxy.net/strassen/tileMatrixSets/EU_25832) (Tiling scheme using ETRS89/UTM32N covering Europe)
  * - [gdi_de_25832](https://demo.ldproxy.net/strassen/tileMatrixSets/gdi_de_25832) (GDI-DE tiling scheme using ETRS89/UTM32N covering Germany)
  *     </code>
- * @scopeDe Dieses Modul stellt Informationen über die von der API unterstützten Kachelungsschemas
- *     bereit.
+ * @scopeDe Dieser Baustein stellt Informationen über die von der API unterstützten
+ *     Kachelungsschemas bereit.
  *     <p>Als vorkonfigurierte Kachelschemas stehen zur Verfügung:
  *     <p><code>
  * - [WebMercatorQuad](http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad)
@@ -56,7 +56,7 @@ import javax.inject.Singleton;
  * @conformanceEn This building block implements the conformance classes "TileMatrixSet", and
  *     "JSONTileMatrixSet" of the [OGC Two Dimensional Tile Matrix Set and Tile Set Metadata 2.0
  *     Standard](https://docs.ogc.org/is/17-083r4/17-083r4.html).
- * @conformanceDe Das Modul implementiert die Konformitätsklassen "TileMatrixSet" und
+ * @conformanceDe Der Baustein implementiert die Konformitätsklassen "TileMatrixSet" und
  *     "JSONTileMatrixSet" des Standards [OGC Two Dimensional Tile Matrix Set and Tile Set Metadata
  *     2.0](https://docs.ogc.org/is/17-083r4/17-083r4.html).
  * @ref:cfg {@link de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration}
@@ -97,7 +97,8 @@ public class TileMatrixSetsBuildingBlock implements ApiBuildingBlock, Conformanc
   @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     // since building block / capability components are currently always enabled,
-    // we need to test, if the TILE MATRIX SETS module is enabled for the API and stop, if not
+    // we need to test, if the TILE MATRIX SETS building block is enabled for the API and stop, if
+    // not
     OgcApiDataV2 apiData = api.getData();
     if (!apiData
         .getExtension(TileMatrixSetsConfiguration.class)

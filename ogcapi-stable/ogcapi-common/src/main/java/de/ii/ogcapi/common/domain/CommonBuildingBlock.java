@@ -24,14 +24,14 @@ import javax.inject.Singleton;
  *     - Features - Part 1: Core 1.0.1](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_core) for
  *     the three mentioned resources.
  *     <p>::: info The conformance class has been split into three building blocks in ldproxy, since
- *     other OGC API standards reuse parts. The modules "Common Core" and "Feature Collections"
- *     reflect this. :::
+ *     other OGC API standards reuse parts. The building blocks "Common Core" and "Feature
+ *     Collections" reflect this. :::
  *     <p>
  * @conformanceDe *Common Core* implementiert alle Vorgaben der Konformitätsklasse *Core* von [OGC
  *     API - Features - Part 1: Core 1.0.1](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_core)
  *     für die drei genannten Ressourcen.
- *     <p>::: info Die Konformitätsklasse wurde in ldproxy auf drei Module aufgeteilt, da auch
- *     andere OGC API Standards bestimmte Teile wiederverwenden. Die Module "Common Core" und
+ *     <p>::: info Die Konformitätsklasse wurde in ldproxy auf drei Bausteine aufgeteilt, da auch
+ *     andere OGC API Standards bestimmte Teile wiederverwenden. Die Bausteine "Common Core" und
  *     "Feature Collections" bilden dies ab. :::
  *     <p>
  * @ref:cfg {@link de.ii.ogcapi.common.domain.CommonConfiguration}

@@ -17,9 +17,9 @@ import org.immutables.value.Value;
 /**
  * @buildingBlock CITY_JSON
  * @langEn ### Prerequisites
- *     <p>The module requires that the feature provider includes a type `building` that is mapped to
- *     a CityJSON Building feature. Properties of the type `building` are mapped to CityJSON as
- *     follows:
+ *     <p>The building block requires that the feature provider includes a type `building` that is
+ *     mapped to a CityJSON Building feature. Properties of the type `building` are mapped to
+ *     CityJSON as follows:
  *     <p><code>
  * - `consistsOfBuildingPart`: The value must be an object with the same properties as `building`.
  *   The object is encoded as a BuildingPart feature of the Building feature.
@@ -49,9 +49,9 @@ import org.immutables.value.Value;
  *     PostgreSQL feature provider based on the CityGML profile of the German surveying and mapping
  *     authorities.
  * @langDe ### Voraussetzungen
- *     <p>Das Modul erfordert, dass der Feature-Provider einen Typ `building` enthält, der auf ein
- *     CityJSON-Building-Feature abgebildet wird. Eigenschaften des Typs `building` werden wie folgt
- *     auf CityJSON abgebildet:
+ *     <p>Der Baustein erfordert, dass der Feature-Provider einen Typ `building` enthält, der auf
+ *     ein CityJSON-Building-Feature abgebildet wird. Eigenschaften des Typs `building` werden wie
+ *     folgt auf CityJSON abgebildet:
  *     <p><code>
  * - `consistsOfBuildingPart`: Der Wert muss ein Objekt mit denselben Eigenschaften wie bei `building` sein.
  *   Das Objekt wird als ein BuildingPart-Feature zu dem Gebäude kodiert.

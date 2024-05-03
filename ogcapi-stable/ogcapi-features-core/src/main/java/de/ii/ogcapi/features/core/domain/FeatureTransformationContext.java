@@ -158,7 +158,7 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
         getApiData().getCollections().get(collectionIds.stream().findFirst().orElse(null)));
   }
 
-  // TODO: to geometry simplification module
+  // TODO: to geometry simplification building block
   @Value.Default
   default double getMaxAllowableOffset() {
     return 0;

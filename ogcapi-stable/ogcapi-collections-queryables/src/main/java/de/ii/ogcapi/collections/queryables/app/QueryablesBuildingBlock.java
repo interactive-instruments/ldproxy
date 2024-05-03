@@ -68,8 +68,8 @@ import javax.inject.Singleton;
  * @conformanceEn *Feature Collections - Queryables* implements all requirements and recommendations
  *     of chapter 6 ("Queryables") of the [draft OGC API - Features - Part 3:
  *     Filtering](https://docs.ogc.org/DRAFTS/19-079r2.html#queryables).
- * @conformanceDe Das Modul implementiert die Vorgaben und Empfehlungen aus Kapitel 6 ("Queryables")
- *     des [Entwurfs von OGC API - Features - Part 3:
+ * @conformanceDe Der Baustein implementiert die Vorgaben und Empfehlungen aus Kapitel 6
+ *     ("Queryables") des [Entwurfs von OGC API - Features - Part 3:
  *     Filtering](https://docs.ogc.org/DRAFTS/19-079r2.html#queryables).
  * @limitationsEn The draft of OGC API - Features - Part 3 does not specify how a queryable that is
  *     a feature reference which has more variables than the local feature id should be handled. If

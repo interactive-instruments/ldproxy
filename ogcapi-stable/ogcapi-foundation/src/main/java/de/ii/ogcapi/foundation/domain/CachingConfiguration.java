@@ -18,14 +18,14 @@ import javax.annotation.Nullable;
  *     file. It can be overridden via a configuration setting (see below).
  * - `ETag`: The tag is
  *     determined - if possible - from the representation of the resource to be returned.
- * - `Cache-Control`: The header is only set if it has been configured for the module's resources
+ * - `Cache-Control`: The header is only set if it has been configured for the building block's resources
  *     (see below).
- * - `Expires`: The header is set only if it has been configured for the module's
+ * - `Expires`: The header is set only if it has been configured for the building block's
  *     resources (see below).
  *     </code>
- *     <p>In any module that provides resources and does not just implement query parameters or
- *     output formats, there is a `caching` configuration option whose value is an object with the
- *     following optional entries.
+ *     <p>In any building block that provides resources and does not just implement query parameters
+ *     or output formats, there is a `caching` configuration option whose value is an object with
+ *     the following optional entries.
  * @langDe Die folgenden HTTP-Header für HTTP-Caching werden in Antworten gesetzt - soweit diese für
  *     die jeweilige Ressource bestimmt werden können:
  *     <p><code>
@@ -35,11 +35,11 @@ import javax.annotation.Nullable;
  * - `ETag`: Der Tag wird - sofern möglich - aus der zurückzugebenden Repräsentation der Ressource
  *     bestimmt.
  * - `Cache-Control`: Der Header wird nur gesetzt, wenn er für die Ressourcen des
- *     Moduls konfiguriert wurde (siehe unten).
+ *     Bausteins konfiguriert wurde (siehe unten).
  * - `Expires`: Der Header wird nur gesetzt, wenn er
- *     für die Ressourcen des Moduls konfiguriert wurde (siehe unten).
+ *     für die Ressourcen des Bausteins konfiguriert wurde (siehe unten).
  *     </code>
- *     <p>In jedem Modul, das Ressourcen bereitstellt und nicht nur Query-Parameter oder
+ *     <p>In jedem Baustein, das Ressourcen bereitstellt und nicht nur Query-Parameter oder
  *     Ausgabeformate realisiert, ist eine Konfigurationsoption `caching`, deren Wert ein Objekt mit
  *     den folgenden, optionalen Einträgen ist.
  * @since v3.1

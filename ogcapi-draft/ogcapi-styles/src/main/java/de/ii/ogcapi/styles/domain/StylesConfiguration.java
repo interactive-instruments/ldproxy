@@ -1527,12 +1527,13 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
    *     collection level should be derived from the styles in the parent style collection. The
    *     prerequisite is that the name of the `source` in the stylesheet corresponds to `{apiId}`
    *     and the name of the `source-layer` corresponds to `{collectionId}`. If a style is to be
-   *     used for displaying features in the FEATURES_HTML module, the option should be enabled.
+   *     used for displaying features in the FEATURES_HTML building block, the option should be
+   *     enabled.
    * @langDe Nur wirksam bei Styles im Format Mapbox Style. Steuert, ob die Styles auf der Ebene der
    *     Collections aus den Styles aus der übergeordneten Style-Collection abgeleitet werden
    *     sollen. Voraussetzung ist, dass der Name der `source` im Stylesheet der `{apiId}`
    *     entspricht und der Name der `source-layer` der `{collectionId}`. Sofern ein Style für die
-   *     Darstellung von Features im Modul FEATURES_HTML verwendet werden soll, sollte die Option
+   *     Darstellung von Features im Baustein FEATURES_HTML verwendet werden soll, sollte die Option
    *     aktiviert sein.
    * @default false
    */

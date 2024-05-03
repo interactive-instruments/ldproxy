@@ -60,7 +60,7 @@ public interface ExtensionConfiguration
 
   /**
    * @langEn Enable the building block?
-   * @langDe Soll das Modul aktiviert werden?
+   * @langDe Soll der Baustein aktiviert werden?
    * @default false
    */
   @Nullable

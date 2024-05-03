@@ -34,7 +34,7 @@ import javax.inject.Singleton;
  *     Features - Part 1: Core 1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_geojson) for
  *     the resources *Landing Page*, *Conformance Declaration*, *Feature Collections*, and *Feature
  *     Collection*.
- * @conformanceDe Das Modul implementiert für die Ressourcen *Landing Page*, *Conformance
+ * @conformanceDe Der Baustein implementiert für die Ressourcen *Landing Page*, *Conformance
  *     Declaration*, *Feature Collections* und *Feature Collection* alle Vorgaben der
  *     Konformitätsklasse "HTML" von [OGC API - Features - Part 1: Core
  *     1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html.0#rc_geojson).

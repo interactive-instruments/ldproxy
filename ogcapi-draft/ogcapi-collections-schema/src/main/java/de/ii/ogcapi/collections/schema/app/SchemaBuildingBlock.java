@@ -28,7 +28,7 @@ import javax.inject.Singleton;
  *     wird JSON Schema 2020-12, 2019-09 und 07 unterstützt.
  * @conformanceEn *Feature Collections - Schema* is based on the [OGC API - Features - Part 5:
  *     Schemas](https://docs.ogc.org/DRAFTS/23-058.html).
- * @conformanceDe Das Modul basiert auf dem [Entwurf für OGC API - Features - Part 5:
+ * @conformanceDe Der Baustein basiert auf dem [Entwurf für OGC API - Features - Part 5:
  *     Schemas](https://docs.ogc.org/DRAFTS/23-058.html).
  * @ref:cfg {@link de.ii.ogcapi.collections.schema.domain.SchemaConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.collections.schema.domain.ImmutableSchemaConfiguration}

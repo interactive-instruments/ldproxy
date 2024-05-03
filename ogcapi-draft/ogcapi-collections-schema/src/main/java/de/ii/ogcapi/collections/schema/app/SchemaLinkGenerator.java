@@ -23,7 +23,7 @@ public class SchemaLinkGenerator {
    * generates the links on the page /{apiId}/collections/{collectionId}
    *
    * @param uriBuilder the URI, split in host, path and query
-   * @param i18n module to get linguistic text
+   * @param i18n component to get linguistic text
    * @param language the requested language (optional)
    * @return a list with links
    */

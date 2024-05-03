@@ -21,9 +21,12 @@ import de.ii.xtraplatform.docs.DocVar;
 
 /**
  * @langEn # Building Blocks
- *     <p>The OGC API functionality is split up into modules based on [OGC API standards and other
- *     specifications](../../references/specifications.md).
- *     <p>The modules are classified according to:
+ *     <p>The OGC API functionality is split up into building blocks based on [OGC API standards and
+ *     other specifications](../../references/specifications.md).
+ *     <p>A building block encapsulates related operations, query parameters, path parameters,
+ *     headers, formats, etc. Each building bock is currently implemented in a dedicated
+ *     [module](../../references/modules.md).
+ *     <p>The building blocks are classified according to:
  *     <p><code>
  * - The state of the **specification**
  *   - **stable**: related to approved standards or drafts in the final voting stage
@@ -40,15 +43,18 @@ import de.ii.xtraplatform.docs.DocVar;
  *     </code>
  *     <p>## Overview
  *     <p>{@docTable:overview}
- * @langDe # Module
- *     <p>Die API-Funktionalität ist in Module aufgeteilt, die sich an den [OGC API Standards und
+ * @langDe # Bausteine
+ *     <p>Die API-Funktionalität ist in Bausteine aufgeteilt, die sich an den [OGC API Standards und
  *     weiteren Spezifikationen](../../references/specifications.md) orientieren.
- *     <p>Die Module sind klassifiziert nach:
+ *     <p>Ein Baustein kapselt zusammengehörige Operationen, Query-Parameter, Pfadparameter, Header,
+ *     Formate, usw. Aktuell ist jeder Baustein in einem eigenen
+ *     [Modul](../../references/modules.md) umgesetzt.
+ *     <p>Die Bausteine sind klassifiziert nach:
  *     <p><code>
  * - Dem Status der **Spezifikation**
  *   - **stable**: zugehörig zu einem verabschiedeten Standard oder einen Entwurf, der sich in der
  *     Schlussabstimmung befindet
- *   - **draft**: zugehörig zu Spezifikationsentwürfen in früheren Stadien (bei diesen Modulen
+ *   - **draft**: zugehörig zu Spezifikationsentwürfen in früheren Stadien (bei diesen Bausteinen
  *     gibt es i.d.R. noch Abweichungen vom erwarteten Verhalten oder von der in den aktuellen
  *     Entwürfen beschriebenen Spezifikation)
  *   - **custom**: nicht zugehörig zu einem Standard oder Entwurf

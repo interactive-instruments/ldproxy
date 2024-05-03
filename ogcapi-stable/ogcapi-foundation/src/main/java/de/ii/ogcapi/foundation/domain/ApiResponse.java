@@ -56,7 +56,7 @@ import org.immutables.value.Value;
  * @langDe Bei Operationen, die eine Antwort zurückliefern, wird die verwendete Sprache bei
  *     linguistischen Texten nach den Standard-HTTP-Regeln standardmäßig über Content-Negotiation
  *     und den `Accept-Language`-Header ermittelt.
- *     <p>Sofern die entsprechende Option im Modul "Common Core" aktiviert ist, unterstützen alle
+ *     <p>Sofern die entsprechende Option im Baustein "Common Core" aktiviert ist, unterstützen alle
  *     GET-Operationen zusätzlich den Query-Parameter `lang`. Über diesen Parameter kann die Sprache
  *     auch direkt ausgewählt werden. Wenn kein Wert angegeben wird, gelten die
  *     Standard-HTTP-Regeln, wie oben beschrieben. Die erlaubten Werte hängen von der Ressource und

@@ -35,22 +35,22 @@ import javax.inject.Singleton;
  * @title CRS
  * @langEn Additional coordinate reference systems.
  * @langDe Zusätzliche Koordinatenreferenzsysteme.
- * @scopeEn The module *CRS* provides support for additional coordinate reference systems apart from
- *     the default [CRS84](http://www.opengis.net/def/crs/OGC/1.3/CRS84) (WGS 84).
+ * @scopeEn The building block *CRS* provides support for additional coordinate reference systems
+ *     apart from the default [CRS84](http://www.opengis.net/def/crs/OGC/1.3/CRS84) (WGS 84).
  *     <p>All transformations between two coordinate reference systems are handled by *PROJ*. If
  *     multiple transformations are available, *PROJ* decides which one to use.
- * @scopeDe Das Modul *CRS* ergänzt die Unterstützung für weitere Koordinatenreferenzsysteme neben
- *     dem Standard-Koordinatenreferenzsystem [CRS84](http://www.opengis.net/def/crs/OGC/1.3/CRS84)
- *     (WGS 84).
+ * @scopeDe Der Baustein *CRS* ergänzt die Unterstützung für weitere Koordinatenreferenzsysteme
+ *     neben dem Standard-Koordinatenreferenzsystem
+ *     [CRS84](http://www.opengis.net/def/crs/OGC/1.3/CRS84) (WGS 84).
  *     <p>Alle Koordinatentransformationen zwischen zwei Koordinatenreferenzsystemen erfolgen mit
  *     *PROJ*. *PROJ* entscheidet, welche Transformation verwendet wird, sofern mehrere verfügbar
  *     sind.
  * @conformanceEn *CRS* implements all requirements of conformance class *Coordinate Reference
  *     System by Reference* of [OGC API - Features - Part 2: Coordinate Reference System by *
  *     Reference 1.0.1](https://docs.ogc.org/is/18-058r1/18-058r1.html).
- * @conformanceDe Das Modul implementiert alle Vorgaben der Konformitätsklasse "Coordinate Reference
- *     System by Reference" von [OGC API - Features - Part 2: Coordinate Reference System by
- *     Reference 1.0.1](https://docs.ogc.org/is/18-058r1/18-058r1.html).
+ * @conformanceDe Der Baustein implementiert alle Vorgaben der Konformitätsklasse "Coordinate
+ *     Reference System by Reference" von [OGC API - Features - Part 2: Coordinate Reference System
+ *     by Reference 1.0.1](https://docs.ogc.org/is/18-058r1/18-058r1.html).
  * @ref:cfg {@link de.ii.ogcapi.crs.domain.CrsConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.crs.domain.ImmutableCrsConfiguration}
  * @ref:queryParameters {@link de.ii.ogcapi.crs.app.QueryParameterCrsFeatures}, {@link

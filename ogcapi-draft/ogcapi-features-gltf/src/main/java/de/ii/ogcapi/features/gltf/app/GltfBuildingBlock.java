@@ -30,11 +30,11 @@ import javax.inject.Singleton;
  *     and
  *     [EXT_structural_metadata](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata).
  *     The properties are stored in binary tables.
- * @scopeDe Das Modul *Features - glTF* unterstützt glTF 2.0 als Kodierung für Features. Unterstützt
- *     werden die Objektarten `Building` und `BuildingPart`. Das Modul *Features - glTF* bietet
- *     Unterstützung für glTF 2.0 als Feature-Kodierung. Unterstützt werden die CityGML-Objektarten
- *     `Building` und `BuildingPart`.
- *     <p>Dieses Modul unterstützt die glTF 2.0 Erweiterung
+ * @scopeDe Der Baustein *Features - glTF* unterstützt glTF 2.0 als Kodierung für Features.
+ *     Unterstützt werden die Objektarten `Building` und `BuildingPart`. Der Baustein *Features -
+ *     glTF* bietet Unterstützung für glTF 2.0 als Feature-Kodierung. Unterstützt werden die
+ *     CityGML-Objektarten `Building` und `BuildingPart`.
+ *     <p>Dieser Baustein unterstützt die glTF 2.0 Erweiterung
  *     [KHR_mesh_quantization](https://github.com/KhronosGroup/glTF/tree/main/extensions/2.0/Khronos/KHR_mesh_quantization)
  *     für eine kompakte Kodierung von Vertices und Normalen. Die Verwendung dieser Erweiterung wird
  *     empfohlen und ist standardmäßig aktiviert.

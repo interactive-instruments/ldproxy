@@ -23,9 +23,9 @@ import javax.inject.Singleton;
  * @title Features - CityJSON
  * @langEn Encode CityGML building features (LoD1, LoD2) as CityJSON.
  * @langDe Kodierung von CityGML Gebäuden (LoD1, LoD2) als CityJSON.
- * @scopeEn The module *Features CityJSON* adds support for CityJSON 1.0 and 1.1 as a feature
- *     encoding. Supported are the feature types `Building` and `BuildingPart`.
- * @scopeDe Das Modul *Features CityJSON* unterstützt CityJSON 1.0 und 1.1 als Kodierung für
+ * @scopeEn The building block *Features CityJSON* adds support for CityJSON 1.0 and 1.1 as a
+ *     feature encoding. Supported are the feature types `Building` and `BuildingPart`.
+ * @scopeDe Der Baustein *Features CityJSON* unterstützt CityJSON 1.0 und 1.1 als Kodierung für
  *     Features. Unterstützt werden die Objektarten `Building` und `BuildingPart`.
  * @conformanceEn *Features - CityJSON* implements support for [CityJSON
  *     1.0](https://www.cityjson.org/specs/1.0.3/) and [CityJSON

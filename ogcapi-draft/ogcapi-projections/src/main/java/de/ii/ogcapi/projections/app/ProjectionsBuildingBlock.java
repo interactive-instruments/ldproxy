@@ -24,8 +24,8 @@ import javax.inject.Singleton;
  * @conformanceEn *Projections* is based on the [OGC API Features proposal for a new part 'Property
  *     Selection'](https://github.com/opengeospatial/ogcapi-features/tree/master/proposals/property-selection)
  *     and [ongoing discussions](https://github.com/opengeospatial/ogcapi-features/projects/12).
- * @conformanceDe Das Modul basiert auf dem [Vorschlag für einen neuen Teil 'Property Selection' von
- *     OGC API
+ * @conformanceDe Der Baustein basiert auf dem [Vorschlag für einen neuen Teil 'Property Selection'
+ *     von OGC API
  *     Features](https://github.com/opengeospatial/ogcapi-features/tree/master/proposals/property-selection)
  *     und [laufenden Diskussionen](https://github.com/opengeospatial/ogcapi-features/projects/12).
  * @ref:cfg {@link de.ii.ogcapi.projections.app.ProjectionsConfiguration}

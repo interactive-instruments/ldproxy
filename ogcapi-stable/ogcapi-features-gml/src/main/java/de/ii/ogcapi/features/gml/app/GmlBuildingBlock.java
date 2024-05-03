@@ -26,8 +26,8 @@ import javax.inject.Singleton;
  *     <p>For a SQL feature provider, the features are mapped to GML object and property elements
  *     based on the provider schema. A number of configuration options exist to control how the
  *     features are mapped to XML.
- *     <p>All configuration options of this module except `gmlSfLevel` are only applicable for
- *     collections with a SQL feature provider. For collections with a WFS feature provider, all
+ *     <p>All configuration options of this building block except `gmlSfLevel` are only applicable
+ *     for collections with a SQL feature provider. For collections with a WFS feature provider, all
  *     other configuration options are ignored.
  *     <p>The following descriptions all apply only to collections with a SQL feature provider:
  *     <p><code>
@@ -51,7 +51,7 @@ import javax.inject.Singleton;
  *     <p>Bei einem SQL-Feature-Provider werden die Features auf der Grundlage des Provider-Schemas
  *     auf GML-Objekt- und Eigenschaftselemente abgebildet. Es gibt eine Reihe von
  *     Konfigurationsoptionen, um zu steuern, wie die Merkmale auf XML abgebildet werden.
- *     <p>Alle Konfigurationsoptionen dieses Moduls mit Ausnahme von "gmlSfLevel" sind nur für
+ *     <p>Alle Konfigurationsoptionen dieses Bausteins mit Ausnahme von "gmlSfLevel" sind nur für
  *     Collections mit einem SQL-Feature-Provider anwendbar. Für Collections mit einem
  *     WFS-Feature-Provider werden alle anderen Konfigurationsoptionen ignoriert.
  *     <p>Die folgenden Beschreibungen gelten alle nur für Collections mit einem
