@@ -110,7 +110,7 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
       return processException(
           exceptionFormat, msgCause.isEmpty() ? msg : String.format("%s: %s", msg, msgCause));
     } else if (exception instanceof VolatileUnavailableException) {
-      return serviceUnavailable(exceptionFormat, exception.getMessage());
+      return serviceUnavailable(exceptionFormat, null);
     }
     return serverError(exception, exceptionFormat);
   }
