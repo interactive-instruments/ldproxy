@@ -14,7 +14,6 @@ import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 /**
@@ -31,9 +30,7 @@ import org.immutables.value.Value;
  *     werden.
  * @examplesEn The JSON representation of the pre-defined tiling schemes are available on
  *     [GitHub](https://github.com/interactive-instruments/xtraplatform-spatial/tree/master/xtraplatform-tiles/src/main/resources/tilematrixsets).
- *     <p>This building block does not need to be configured and the configuration is derived
- *     from the configuration of the tile providers used in the TILES building block.
- *     <p>An explicit configuration for an API that provides tiles in three tiling schemas could be the following:
+ *     <p>A configuration for an API that provides tiles in three tiling schemas could be the following:
  *     <p><code>
  * ```yaml
  * - buildingBlock: TILE_MATRIX_SETS
@@ -47,8 +44,7 @@ import org.immutables.value.Value;
  * @examplesDe Die vordefinierten Kachelschemas in JSON sind auf
  *     [GitHub](https://github.com/interactive-instruments/xtraplatform-spatial/tree/master/xtraplatform-tiles/src/main/resources/tilematrixsets)
  *     verfügbar.
- *     <p>Dieses Modul muss nicht konfiguriert werden, die Konfiguration wird aus der Konfiguration des im TILES-Baustein verwendeten Tile Providers abgeleitet.
- *     <p>Eine explizite Konfiguration für eine API, die Kacheln in drei Kachelschemas bereitstellt, könnte wie folgt aussehen:
+ *     <p>Eine Konfiguration für eine API, die Kacheln in drei Kachelschemas bereitstellt, könnte wie folgt aussehen:
  *     <p><code>
  * ```yaml
  * - buildingBlock: TILE_MATRIX_SETS
@@ -72,19 +68,9 @@ public interface TileMatrixSetsConfiguration extends ExtensionConfiguration, Cac
   }
 
   /**
-   * @default Tiles.enabled()
-   */
-  @Nullable
-  @Override
-  Boolean getEnabled();
-
-  /**
-   * @langEn The list of pre-defined tile matrix sets that are included in the API. All tile matrix
-   *     sets used by a tile provider of the API are automatically added to the list.
-   * @langDe Die Liste der vordefinierten Kachelschemas, die in der API enthalten sind. Alle
-   *     Kachelschemas, die von einem Tile Provider der API verwendet werden, werden automatisch
-   *     hinzugefügt.
-   * @default []
+   * @langEn The list of pre-defined tile matrix sets that are published via this API.
+   * @langDe Die Liste der vordefinierten Kachelschemas, die über die API veröffentlicht werden.
+   * @default [ "WebMercatorQuad" ]
    */
   List<String> getIncludePredefined();
 
