@@ -160,7 +160,7 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
         .entity(
             exceptionFormat.getExceptionEntity(
                 new ApiErrorMessage(
-                    responseStatus.getStatusCode(), responseStatus.getReasonPhrase(), message)))
+                    responseStatus.getStatusCode(), responseStatus.getReasonPhrase(), msg)))
         .build();
   }
 
