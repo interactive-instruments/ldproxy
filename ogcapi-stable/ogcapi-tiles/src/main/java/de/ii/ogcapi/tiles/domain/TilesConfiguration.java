@@ -32,8 +32,7 @@ import org.immutables.value.Value;
 /**
  * @buildingBlock TILES
  * @langEn ### Prerequisites
- *     <p>The building block *Tile Matrix Sets* must be enabled. If that building block is not
- *     configured, it is automatically enabled if *Tiles* is enabled.
+ *     <p>The building block *Tile Matrix Sets* must be enabled
  *     <p>### Storage
  *     <p>The tile cache is located in the [Store](../../application/20-configuration/10-store-new.md) as resource with path
  *       `tiles/{apiId}`.
@@ -41,8 +40,7 @@ import org.immutables.value.Value;
  *     the cache directory for the API should be deleted so that the cache is rebuilt with the
  *     updated data or rules.
  * @langDe ### Voraussetzungen
- *     <p>Das Modul *Tile Matrix Sets* muss aktiviert sein. Wenn dieses Modul nicht konfiguriert
- *     ist, wird es automatisch aktiviert, wenn *Tiles* aktiviert ist.
+ *     <p>Der Baustein *Tile Matrix Sets* muss aktiviert sein.
  *     <p>### Storage
  *     <p>Der Tile-Cache liegt im [Store](../../application/20-configuration/10-store-new.md)
  *       als Ressource mit dem Pfad `tiles/{apiId}`.
@@ -289,7 +287,7 @@ import org.immutables.value.Value;
  * ```
  *     <p>Beispielkonfiguration für die API [Earth at Night](https://demo.ldproxy.net/earthatnight),
  *     die einen MBTiles-Tile-Provider hat.
- *     <p>In der API muss das TILES-Modul aktiviert werden und das Tileset im Provider referenziert
+ *     <p>In der API muss der TILES-Baustein aktiviert werden und das Tileset im Provider referenziert
  *     werden:
  *     <p><code>
  * ```yaml
@@ -371,16 +369,16 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
 
   /**
    * @langEn A style in the style repository to be used in maps with tiles by default. With
-   *     `DEFAULT` the `defaultStyle` from [module HTML](html.md) is used. If the map client is
-   *     MapLibre, the style must be available in the Mapbox format. If the style is set to `NONE`,
-   *     a simple wireframe style will be used with OpenStreetMap as a basemap. If the map client is
-   *     Open Layers, the setting is ignored.
+   *     `DEFAULT` the `defaultStyle` from the [HTML building block](html.md) is used. If the map
+   *     client is MapLibre, the style must be available in the Mapbox format. If the style is set
+   *     to `NONE`, a simple wireframe style will be used with OpenStreetMap as a basemap. If the
+   *     map client is Open Layers, the setting is ignored.
    * @langDe Ein Style im Style-Repository, der standardmäßig in Karten mit den Tiles verwendet
-   *     werden soll. Bei `DEFAULT` wird der `defaultStyle` aus [Modul HTML](html.md) verwendet.
-   *     Handelt es sich bei dem Kartenclient um MapLibre, muss der Style im Mapbox-Format verfügbar
-   *     sein. Wenn der Style auf `NONE` gesetzt ist, wird ein einfacher Wireframe Style mit
-   *     OpenStreetMap als Basiskarte verwendet. Handelt es sich bei dem Kartenclient um Open
-   *     Layers, wird die Angabe ignoriert.
+   *     werden soll. Bei `DEFAULT` wird der `defaultStyle` aus dem [HTML-Baustein](html.md)
+   *     verwendet. Handelt es sich bei dem Kartenclient um MapLibre, muss der Style im
+   *     Mapbox-Format verfügbar sein. Wenn der Style auf `NONE` gesetzt ist, wird ein einfacher
+   *     Wireframe Style mit OpenStreetMap als Basiskarte verwendet. Handelt es sich bei dem
+   *     Kartenclient um Open Layers, wird die Angabe ignoriert.
    * @default DEFAULT
    */
   @Nullable

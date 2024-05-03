@@ -21,7 +21,7 @@ import javax.inject.Singleton;
  * @title Features - Custom Extensions
  * @langEn Filter by geometry intersection.
  * @langDe Filterung durch Geometrie-Überschneidung.
- * @scopeEn The module adds support for the following query parameter:
+ * @scopeEn The building block adds support for the following query parameter:
  *     <p><code>
  * - `intersects`: if the parameter is specified, the features are
  *     additionally selected by the geometry specified as value and only features whose primary
@@ -29,7 +29,7 @@ import javax.inject.Singleton;
  *     WKT geometry or a URL for a GeoJSON object with a geometry. In case of a FeatureCollection
  *     the first geometry is used.
  *     </code>
- * @scopeDe Das Modul ergänzt die Unterstützung für den folgenden Query-Parameter:
+ * @scopeDe Der Baustein ergänzt die Unterstützung für den folgenden Query-Parameter:
  *     <p><code>
  * - `intersects`: Ist der Parameter angegeben, werden die Features
  *     zusätzlich nach der als Wert angegeben Geometrie selektiert und es werden nur Features

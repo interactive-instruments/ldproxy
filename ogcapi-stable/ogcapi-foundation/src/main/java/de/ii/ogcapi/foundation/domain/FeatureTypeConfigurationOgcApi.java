@@ -98,7 +98,7 @@ public interface FeatureTypeConfigurationOgcApi
 
   /**
    * @langEn [Building Blocks](#building-blocks) configuration.
-   * @langDe [Module](#module) konfigurieren.
+   * @langDe [Bausteine](#bausteine) konfigurieren.
    * @default []
    */
   @JsonProperty("api")

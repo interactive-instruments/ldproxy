@@ -68,7 +68,7 @@ import org.slf4j.LoggerFactory;
  *     <p>For tiles that are derived from feature data, only Mapbox Vector Tiles are supported as a
  *     file format.
  *     <p>All tiles of an API are sourced from a single tile provider.
- * @scopeDe Dieses Modul unterstützt Kacheln, die aus Features abgeleitet sind, oder Kacheln, die
+ * @scopeDe Dieser Baustein unterstützt Kacheln, die aus Features abgeleitet sind, oder Kacheln, die
  *     von einer externen Quelle bereitgestellt werden.
  *     <p>Die unterstützten Kachelformate sind:
  *     <p><code>
@@ -81,14 +81,14 @@ import org.slf4j.LoggerFactory;
  *     <p>Für Kacheln, die aus Features abgeleitet werden, wird nur Mapbox Vector Tiles als
  *     Kachelformat unterstützt.
  *     <p>Alle Kacheln einer API kommen vom selben Tile-Provider.
- * @conformanceEn The module implements the conformance classes "Core", "TileSet", "TileSets List",
- *     "Dataset TileSets", "GeoData TileSets", "Collections Selection", "DateTime", "OpenAPI
+ * @conformanceEn The building block implements the conformance classes "Core", "TileSet", "TileSets
+ *     List", "Dataset TileSets", "GeoData TileSets", "Collections Selection", "DateTime", "OpenAPI
  *     Specification 3.0 API definition", "Mapbox Vector Tiles", "PNG", "JPEG", and "TIFF" of the
  *     [OGC API - Tiles - Part 1: Core 1.0 Standard](https://docs.ogc.org/is/20-057/20-057.html) and
  *     the conformance classes "TileSetMetadata", "TileMatrixSetLimits", and
  *     "JSONTileMatrixSetLimits" of the [OGC Two Dimensional Tile Matrix Set and Tile Set Metadata
  *     2.0 Standard](https://docs.ogc.org/is/17-083r4/17-083r4.html).
- * @conformanceDe Das Modul implementiert die Konformitätsklassen "Core", "TileSet", "TileSets
+ * @conformanceDe Der Baustein implementiert die Konformitätsklassen "Core", "TileSet", "TileSets
  *     List", * "Dataset TileSets", "GeoData TileSets", "Collections Selection", "DateTime",
  *     "OpenAPI * Specification 3.0 API definition", "Mapbox Vector Tiles", "PNG", "JPEG" und "TIFF"
  *     des Standards [OGC API - Tiles - Part 1: Core
@@ -181,7 +181,8 @@ public class TilesBuildingBlock implements ApiBuildingBlock, ApiExtensionHealth 
   @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     // since building block / capability components are currently always enabled,
-    // we need to test, if the TILES and TILE MATRIX SETS module are enabled for the API and stop,
+    // we need to test, if the TILES and TILE MATRIX SETS building blocks are enabled for the API
+    // and stop,
     // if not
     OgcApiDataV2 apiData = api.getData();
 

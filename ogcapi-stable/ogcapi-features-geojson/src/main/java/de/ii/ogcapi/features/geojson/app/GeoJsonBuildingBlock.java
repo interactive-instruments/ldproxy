@@ -29,8 +29,8 @@ import javax.inject.Singleton;
  *     [OGC API - Features - Part 1: Core
  *     1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_geojson) for the two mentioned
  *     resources.
- * @conformanceDe Das Modul implementiert für die Ressourcen Features und Feature alle Vorgaben der
- *     Konformitätsklasse "GeoJSON" von [OGC API - Features - Part 1: Core
+ * @conformanceDe Der Baustein implementiert für die Ressourcen Features und Feature alle Vorgaben
+ *     der Konformitätsklasse "GeoJSON" von [OGC API - Features - Part 1: Core
  *     1.0](https://docs.ogc.org/is/17-069r4/17-069r4.html#rc_geojson).
  * @ref:cfg {@link de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.features.geojson.domain.ImmutableGeoJsonConfiguration}

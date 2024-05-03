@@ -45,14 +45,14 @@ import org.immutables.value.Value;
  *     configuration.
  *     <p>### Response language
  *     <p>For operations that return a response, the language for linguistic texts is chosen using
- *     standard HTTP content negiotiation with `Accept-Language` headers.
+ *     standard HTTP content negotiation with `Accept-Language` headers.
  *     <p>If enabled in [Common Core](building-blocks/common_core.md), GET operations additionally
- *     support the query parameter `lang`, which allows to explicitely choose the language and
+ *     support the query parameter `lang`, which allows to explicitly choose the language and
  *     override the result of the content negotiation. The supported languages depend on the
  *     affected resource and the configuration. Support for multilingualism is currently limited.
  *     There are four possible sources for linguistic texts:
  *     <p><code>
- * - Static texts: For example link labels or static texts in HTML represenations. Currently the languages English (`en`) and German (`de`) are supported.
+ * - Static texts: For example link labels or static texts in HTML representations. Currently the languages English (`en`) and German (`de`) are supported.
  * - Texts contained in the data: Currently not supported.
  * - Texts set in the configuration: Currently not supported.
  * - Error messages: These are always in english, the messages are currently hard-coded.
@@ -79,7 +79,7 @@ import org.immutables.value.Value;
  *     <p>Bei Operationen, die eine Antwort zurückliefern, wird die verwendete Sprache bei
  *     linguistischen Texten nach den Standard-HTTP-Regeln standardmäßig über Content-Negotiation
  *     und den `Accept-Language`-Header ermittelt.
- *     <p>Sofern die entsprechende Option im Modul "Common Core" aktiviert ist, unterstützen alle
+ *     <p>Sofern die entsprechende Option im Baustein "Common Core" aktiviert ist, unterstützen alle
  *     GET-Operationen zusätzlich den Query-Parameter `lang`. Über diesen Parameter kann die Sprache
  *     auch direkt ausgewählt werden. Wenn kein Wert angegeben wird, gelten die
  *     Standard-HTTP-Regeln, wie oben beschrieben. Die erlaubten Werte hängen von der Ressource und
@@ -97,12 +97,12 @@ import org.immutables.value.Value;
  *     Ressource `collections` dann ist die URI der Ressource
  *     `https://example.com/pfad/zu/apis/{apiId}/collections`.
  * @langEn ## Configuration
- *     <p>Details regarding the API modules can be found [here](building-blocks/README.md), see
- *     `api` in the table below.
+ *     <p>Details regarding the API building blocks can be found [here](building-blocks/README.md),
+ *     see `api` in the table below.
  *     <p>{@docTable:properties}
  * @langDe ## Konfiguration
- *     <p>Informationen zu den einzelnen API-Modulen finden Sie [hier](building-blocks/README.md),
- *     siehe `api` in der nachfolgenden Tabelle.
+ *     <p>Informationen zu den einzelnen API-Bausteinen finden Sie
+ *     [hier](building-blocks/README.md), siehe `api` in der nachfolgenden Tabelle.
  *     <p>{@docTable:properties}
  * @langEn ### Collection
  *     <p>Every collection corresponds to a feature type defined in the feature provider (only
@@ -124,12 +124,12 @@ import org.immutables.value.Value;
  * - Optional deployment overrides in the `overrides` directory.
  * </code>
  *     <p>
- * @langDe ### Module
- *     <p>Ein Array dieser Modul-Konfigurationen steht auf der Ebene der gesamten API und für jede
- *     Collection zur Verfügung. Die jeweils gültige Konfiguration ergibt sich aus der
+ * @langDe ### Bausteine
+ *     <p>Ein Array dieser Baustein-Konfigurationen steht auf der Ebene der gesamten API und für
+ *     jede Collection zur Verfügung. Die jeweils gültige Konfiguration ergibt sich aus der
  *     Priorisierung:
  *     <p><code>
- * - Ist nichts angegeben, dann gelten die im ldproxy-Code vordefinierten Standardwerte. Diese sind bei den jeweiligen [Modulen](building-blocks/README.md) spezifiziert.
+ * - Ist nichts angegeben, dann gelten die im ldproxy-Code vordefinierten Standardwerte. Diese sind bei den jeweiligen [Bausteinen](building-blocks/README.md) spezifiziert.
  * - Diese systemseitigen Standardwerte können von den Angaben im Verzeichnis `defaults` überschrieben werden.
  * - Diese deploymentweiten Standardwerte können von den Angaben in der API-Definition auf Ebene der API überschrieben werden.
  * - Diese API-weiten Standardwerte können bei den Collection-Ressourcen und untergeordneten Ressourcen von den Angaben in der API-Definition auf Ebene der Collection überschrieben werden.
@@ -429,7 +429,7 @@ public interface OgcApiDataV2 extends ServiceData, ExtendableConfiguration {
 
   /**
    * @langEn [API Building Blocks](#building-blocks) configuration.
-   * @langDe [Module](#module) der API konfigurieren.
+   * @langDe [API-Bausteine](#bausteine) der API konfigurieren.
    * @default []
    */
   @JsonProperty("api")

@@ -19,8 +19,8 @@ public interface Caching {
   /**
    * @langEn For the resources in the building block, the `Last-Modified` header is set to the
    *     configured value. The value overrides any modification time determined from the resource.
-   * @langDe Für die Ressourcen in dem Modul wird der `Last-Modified` Header auf den konfigurierten
-   *     Wert gesetzt. Der Wert überschreibt einen ggf. aus der Ressource bestimmten
+   * @langDe Für die Ressourcen in dem Baustein wird der `Last-Modified` Header auf den
+   *     konfigurierten Wert gesetzt. Der Wert überschreibt einen ggf. aus der Ressource bestimmten
    *     Änderungszeitpunkt.
    * @default null
    * @since v3.1
@@ -31,8 +31,8 @@ public interface Caching {
   /**
    * @langEn For the resources in the building block, the `Expires` header is set to the configured
    *     value.
-   * @langDe Für die Ressourcen in dem Modul wird der `Expires` Header auf den konfigurierten Wert
-   *     gesetzt.
+   * @langDe Für die Ressourcen in dem Baustein wird der `Expires` Header auf den konfigurierten
+   *     Wert gesetzt.
    * @default null
    * @since v3.1
    */
@@ -43,9 +43,9 @@ public interface Caching {
    * @langEn For the resources in the building block, the `Cache-Control` header is set to the
    *     configured value. Exception are the *Features* and *Feature* resources, where
    *     `cacheControlItems` is to be used.
-   * @langDe Für die Ressourcen in dem Modul wird der `Cache-Control` Header auf den konfigurierten
-   *     Wert gesetzt. Ausnahme sind die *Features* und *Feature* Ressourcen, bei denen
-   *     `cacheControlItems` zu verwenden ist.
+   * @langDe Für die Ressourcen in dem Baustein wird der `Cache-Control` Header auf den
+   *     konfigurierten Wert gesetzt. Ausnahme sind die *Features* und *Feature* Ressourcen, bei
+   *     denen `cacheControlItems` zu verwenden ist.
    * @default null
    * @since v3.1
    */

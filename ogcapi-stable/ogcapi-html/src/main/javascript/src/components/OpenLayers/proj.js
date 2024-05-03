@@ -8,6 +8,10 @@ export const setupProjections = () => {
     "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
   );
   proj4.defs(
+    "EPSG:25833",
+    "+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
+  );
+  proj4.defs(
     "EPSG:3395",
     "+proj=merc +lon_0=0 +k=1 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
   );
@@ -16,6 +20,9 @@ export const setupProjections = () => {
 
   get("EPSG:25832").setExtent([
     -46133.17, 5048875.268576, 1206211.101424, 6301219.54,
+  ]);
+  get("EPSG:25833").setExtent([
+    -464849.38, 5057815.86857567, 787494.89142433, 6310160.14,
   ]);
   get("EPSG:3395").setExtent([
     -20037508.342789244, -20037508.342789244, 20037508.342789244,

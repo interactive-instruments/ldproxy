@@ -21,8 +21,8 @@ import javax.inject.Singleton;
  * @title Filter
  * @langEn Filter features with CQL2 expressions.
  * @langDe Features mit CQL2-Ausdrücken filtern.
- * @scopeEn This module provides query parameters to filter features using CQL2 (in Text or JSON
- *     encoding).
+ * @scopeEn This building block provides query parameters to filter features using CQL2 (in Text or
+ *     JSON encoding).
  *     <p>In addition to the standard functions specified in CQL2, the following custom functions
  *     are supported, too: <code>
  * - `UPPER(String): String` returns the string in upper case.
@@ -31,7 +31,7 @@ import javax.inject.Singleton;
  * - `DIAMETER2D(Geometry): Double` returns the diameter of a geometry with 2D coordinates.
  * - `DIAMETER3D(Geometry): Double` returns the diameter of a geometry with 3D coordinates.
  *     </code>
- * @scopeDe Dieses Modul bietet Abfrageparameter zum Filtern von Features mit CQL2 (in Text- oder
+ * @scopeDe Dieser Baustein bietet Abfrageparameter zum Filtern von Features mit CQL2 (in Text- oder
  *     JSON-Kodierung).
  *     <p>Zusätzlich zu den in CQL2 spezifizierten Standardfunktionen werden auch die folgenden
  *     benutzerdefinierten Funktionen unterstützt: <code>
@@ -41,8 +41,8 @@ import javax.inject.Singleton;
  * - `DIAMETER2D(Geometry): Double` gibt den Durchmesser einer Geometrie mit 2D-Koordinaten zurück.
  * - `DIAMETER3D(Geometry): Double` gibt den Durchmesser einer Geometrie mit 3D-Koordinaten zurück.
  *     </code>
- * @conformanceEn This module implements requirements of the conformance classes *Filter* and
- *     *Features Filter* from the draft specification [OGC API - Features - Part 3: Common Query
+ * @conformanceEn This building block implements requirements of the conformance classes *Filter*
+ *     and *Features Filter* from the draft specification [OGC API - Features - Part 3: Common Query
  *     Language](https://docs.ogc.org/DRAFTS/19-079r2.html) as well as the conformance classes
  *     *Basic CQL2*, *Advanced Comparison Operators*, *Case-insensitive Comparisons*,
  *     *Accent-insensitive Comparisons*, *Basic Spatial Functions*, *Basic Spatial Functions with
@@ -54,8 +54,8 @@ import javax.inject.Singleton;
  *     <p>The publication of queryables is controlled via [Feature Collections -
  *     Queryables](feature_collections_-_queryables.md) and is a prerequisite for clients to be able
  *     to determine the queryable feature properties.
- * @conformanceDe Dieses Modul implementiert die Anforderungen der Konformitätsklassen *Filter* und
- *     *Features Filter* aus dem Entwurf der Spezifikation [OGC API - Features - Part 3: Common
+ * @conformanceDe Dieser Baustein implementiert die Anforderungen der Konformitätsklassen *Filter*
+ *     und *Features Filter* aus dem Entwurf der Spezifikation [OGC API - Features - Part 3: Common
  *     Query Language](https://docs.ogc.org/DRAFTS/19-079r2.html) sowie die Konformitätsklassen
  *     *Basic CQL2*, *Advanced Comparison Operators*, *Case-insensitive Comparisons*,
  *     *Accent-insensitive Comparisons*, *Basic Spatial Functions*, *Basic Spatial Functions with

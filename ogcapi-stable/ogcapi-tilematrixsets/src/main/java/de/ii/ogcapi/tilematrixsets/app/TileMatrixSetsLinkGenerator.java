@@ -24,7 +24,7 @@ public class TileMatrixSetsLinkGenerator extends DefaultLinksGenerator {
    * generates the Links on the landing page /{apiId}/
    *
    * @param uriBuilder the URI, split in host, path and query
-   * @param i18n module to get linguistic text
+   * @param i18n component to get linguistic text
    * @param language the requested language (optional)
    * @return a List with links
    */
@@ -53,7 +53,7 @@ public class TileMatrixSetsLinkGenerator extends DefaultLinksGenerator {
    *
    * @param uriBuilder the URI, split in host, path and query
    * @param tileMatrixSetId the id of the tiling Scheme
-   * @param i18n module to get linguistic text
+   * @param i18n component to get linguistic text
    * @param language the requested language (optional)
    * @return a list with links
    */

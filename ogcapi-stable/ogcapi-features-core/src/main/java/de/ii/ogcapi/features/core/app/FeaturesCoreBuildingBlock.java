@@ -108,8 +108,8 @@ import org.slf4j.LoggerFactory;
  *     Koordinatenreferenzsystem WGS 84 mit der Achsenreihenfolge Längengrad/Breitengrad dargestellt
  *     werden. Die Selektion von Features kann anhand grundlegender Filterkriterien erfolgen.
  *     Zusätzliche Fähigkeiten, die weitergehende Anforderungen erfüllen, werden in zusätzlichen
- *     Modulen bereitgestellt.
- *     <p>Die Formate (Kodierungen), die die API unterstützt, werden durch zusätzliche Module
+ *     Bausteinen bereitgestellt.
+ *     <p>Die Formate (Kodierungen), die die API unterstützt, werden durch zusätzliche Bausteine
  *     aktiviert. Standardmäßig sind GeoJSON und HTML kodiert.
  *     <p>Die Antworten werden seitenweise zurückgeliefert. Das heißt, wenn mehr Features als die
  *     Seitengröße verfügbar sind, wird ein Link zur nächsten Seite mit den nächsten Features
@@ -127,8 +127,8 @@ import org.slf4j.LoggerFactory;
  *     der Constraint `required: true` gesetzt werden. Dies beschleunigt Abfragen mit dem
  *     `bbox`-Parameter, besonders bei größeren Datensätzen.
  *     <p>Das Koordinatenreferenzsystem der Werte ist WGS 84 Längen-/Breitengrad, es sei denn, im
- *     Parameter `bbox-crs` (siehe Modul [CRS](crs.md)) wird ein anderes Koordinatenreferenzsystem
- *     angegeben.
+ *     Parameter `bbox-crs` (siehe den [CRS-Baustein](crs.md)) wird ein anderes
+ *     Koordinatenreferenzsystem angegeben.
  *     <p>Für Angaben als Längen-/Breitengrad sind die Werte in den meisten Fällen die Folge von
  *     minimaler Länge, minimaler Breite, maximale Länge und maximale Breite. In den Fällen, in
  *     denen die Geometrie über den Antimeridian verläuft, ist der erste Wert (westlichster Rand)

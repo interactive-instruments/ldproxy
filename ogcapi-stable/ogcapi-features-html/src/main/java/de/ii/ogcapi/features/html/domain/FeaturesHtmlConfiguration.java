@@ -193,18 +193,18 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   /**
    * @langEn An optional style in the style repository to use for the map in the HTML representation
    *     of a feature or feature collection. The style should render all data. If set to `DEFAULT`,
-   *     the `defaultStyle` configured in the [HTML configuration](html.md) is used. If the map
+   *     the `defaultStyle` configured in the [HTML building block](html.md) is used. If the map
    *     client is MapLibre, the style must be available in the Mapbox format. If the style is set
    *     to `NONE`, a simple wireframe style will be used with OpenStreetMap as a basemap. If the
    *     map client is Cesium, the style must be available in the 3D Tiles format. If the style is
    *     set to `NONE`, the standard 3D Tiles styling is used.
    * @langDe Ein Style im Style-Repository, der standardmäßig in Karten mit den Features verwendet
    *     werden soll. Der Style sollte alle Daten abdecken. Bei `DEFAULT` wird der `defaultStyle`
-   *     aus [Modul HTML](html.md) verwendet. Handelt es sich bei dem Kartenclient um MapLibre, muss
-   *     der Style im Mapbox-Format verfügbar sein. Wenn der Style auf `NONE` gesetzt ist, wird ein
-   *     einfacher Wireframe Style mit OpenStreetMap als Basiskarte verwendet. Handelt es sich bei
-   *     dem Kartenclient um Cesium, muss der Style im 3D-Tiles-Format verfügbar sein. Ist der Style
-   *     auf `NONE` gesetzt, wird das Standard 3D Tiles Styling verwendet.
+   *     aus dem [HTML-Baustein](html.md) verwendet. Handelt es sich bei dem Kartenclient um
+   *     MapLibre, muss der Style im Mapbox-Format verfügbar sein. Wenn der Style auf `NONE` gesetzt
+   *     ist, wird ein einfacher Wireframe Style mit OpenStreetMap als Basiskarte verwendet. Handelt
+   *     es sich bei dem Kartenclient um Cesium, muss der Style im 3D-Tiles-Format verfügbar sein.
+   *     Ist der Style auf `NONE` gesetzt, wird das Standard 3D Tiles Styling verwendet.
    * @default `DEFAULT`
    */
   @Nullable
@@ -240,10 +240,10 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
 
   /**
    * @langEn This option can be used to set a custom maximum value for the `limit` parameter for the
-   *     HTML output. If no value is specified, the value from the Features Core module applies.
-   *     When using CesiumJS as a map client, a value of 100 is recommended.
+   *     HTML output. If no value is specified, the value from the Features Core building block
+   *     applies. When using CesiumJS as a map client, a value of 100 is recommended.
    * @langDe Mit dieser Option kann für die HTML-Ausgabe ein eigener Maximalwert für den Parameter
-   *     `limit` gesetzt werden. Sofern kein Wert angegeben ist, so gilt der Wert aus dem Modul
+   *     `limit` gesetzt werden. Sofern kein Wert angegeben ist, so gilt der Wert aus dem Baustein
    *     "Features Core". Bei der Verwendung von CesiumJS als Map-Client wird ein Wert von 100
    *     empfohlen.
    * @default null

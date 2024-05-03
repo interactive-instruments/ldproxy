@@ -19,11 +19,11 @@ import org.immutables.value.Value;
 /**
  * @buildingBlock GLTF
  * @langEn ### Prerequisites
- *     <p>The module requires that the feature provider includes a type `building`. The requirements
- *     for the type are the same as in the configuration of the [CityJSON
+ *     <p>Theis building block requires that the feature provider includes a type `building`. The
+ *     requirements for the type are the same as in the configuration of the [CityJSON
  *     encoding](features_-_cityjson.html#configuration).
  * @langDe ### Voraussetzungen
- *     <p>Das Modul erfordert, dass der Feature Provider einen Typ "building" enthält. Die
+ *     <p>Dieser Baustein erfordert, dass der Feature Provider einen Typ "building" enthält. Die
  *     Anforderungen an den Typ sind dieselben wie in der Konfiguration der
  *     [CityJSON-Kodierung](features_-_cityjson.html#konfiguration).
  * @examplesAll <code>

@@ -30,9 +30,9 @@ import javax.inject.Singleton;
  *     level of the tile hierarchy a building will be represented. Each building should be included
  *     on exactly one level.
  *     <p>The 3D Tiles can be inspected in a web browser using an integrated Cesium client.
- * @scopeDe Das Modul *3D Tiles* fügt Unterstützung für 3D Tiles 1.1 für Feature Collections hinzu,
- *     die von ldproxy unter Verwendung des Bausteins [Features - glTF](features_-_gltf.md) kodiert
- *     werden können.
+ * @scopeDe Der Baustein *3D Tiles* fügt Unterstützung für 3D Tiles 1.1 für Feature Collections
+ *     hinzu, die von ldproxy unter Verwendung des Bausteins [Features - glTF](features_-_gltf.md)
+ *     kodiert werden können.
  *     <p>Dieser Baustein unterstützt glTF als Kachelformat und implizite Quadtree-Kachelung.
  *     Subtrees werden aus Gründen der Kompaktheit im Binärformat kodiert.
  *     <p>Die 3D-Kacheln können in einem Webbrowser mit Hilfe eines integrierten Cesium-Clients

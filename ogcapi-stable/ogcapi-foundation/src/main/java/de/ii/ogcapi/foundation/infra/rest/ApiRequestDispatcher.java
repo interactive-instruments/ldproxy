@@ -129,7 +129,8 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
     EndpointExtension ogcApiEndpoint = findEndpoint(apiData, entrypoint, subPath, method);
 
     if (!api.isAvailable(ogcApiEndpoint, true)) {
-      throw new ServiceUnavailableException();
+      throw new ServiceUnavailableException(
+          "The requested resource is currently not available. Please try again later.");
     }
 
     // determine the feature collection, if this is a collection resource or sub-resource

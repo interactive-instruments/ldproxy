@@ -40,8 +40,8 @@ public class SchemaValidatorImpl implements SchemaValidator {
     try {
       version = SpecVersionDetector.detect(schemaNode);
     } catch (Exception e) {
-      // use 2019-09 as the fallback version
-      version = SpecVersion.VersionFlag.V201909;
+      // use 2020-12 as the fallback version
+      version = SpecVersion.VersionFlag.V202012;
     }
     return validate(schemaNode, jsonNode, version);
   }

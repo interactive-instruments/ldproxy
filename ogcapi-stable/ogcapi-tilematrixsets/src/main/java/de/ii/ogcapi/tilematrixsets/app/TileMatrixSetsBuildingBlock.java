@@ -31,34 +31,32 @@ import javax.inject.Singleton;
  * @langEn Provides definitions of the Tile Matrix Sets used in the API.
  * @langDe Stellt die in der API verwendeten Kachelschemas bereit.
  * @scopeEn This building block provides information about the tiling schemes supported by the API.
- *     <p>Currently this building block does not need to be configured. The configuration is derived
- *     from the configuration of the tile providers used in the TILES building block.
  *     <p>The following preconfigured tiling schemes are available:
  *     <p><code>
  * - [WebMercatorQuad](http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad)
  * - [WorldCRS84Quad](http://www.opengis.net/def/tilematrixset/OGC/1.0/WorldCRS84Quad)
  * - [WorldMercatorWGS84Quad](http://www.opengis.net/def/tilematrixset/OGC/1.0/WorldMercatorWGS84Quad)
  * - [AdV_25832](https://demo.ldproxy.net/strassen/tileMatrixSets/AdV_25832) (AdV tiling scheme using ETRS89/UTM32N covering Germany)
+ * - [AdV_25833](https://github.com/interactive-instruments/xtraplatform-spatial/blob/master/xtraplatform-tiles/src/main/resources/tilematrixsets/AdV_25833.json) (AdV tiling scheme using ETRS89/UTM33N covering Germany)
  * - [EU_25832](https://demo.ldproxy.net/strassen/tileMatrixSets/EU_25832) (Tiling scheme using ETRS89/UTM32N covering Europe)
  * - [gdi_de_25832](https://demo.ldproxy.net/strassen/tileMatrixSets/gdi_de_25832) (GDI-DE tiling scheme using ETRS89/UTM32N covering Germany)
  *     </code>
- * @scopeEn Dieses Modul stellt Informationen über die von der API unterstützten Kachelungsschemas
- *     bereit.
- *     <p>Derzeit muss dieses Modul nicht konfiguriert werden. Die Konfiguration wird von der
- *     Konfiguration der im TILES-Baustein verwendeten Tile Provider abgeleitet.
+ * @scopeDe Dieser Baustein stellt Informationen über die von der API unterstützten
+ *     Kachelungsschemas bereit.
  *     <p>Als vorkonfigurierte Kachelschemas stehen zur Verfügung:
  *     <p><code>
  * - [WebMercatorQuad](http://www.opengis.net/def/tilematrixset/OGC/1.0/WebMercatorQuad)
  * - [WorldCRS84Quad](http://www.opengis.net/def/tilematrixset/OGC/1.0/WorldCRS84Quad)
  * - [WorldMercatorWGS84Quad](http://www.opengis.net/def/tilematrixset/OGC/1.0/WorldMercatorWGS84Quad)
  * - [AdV_25832](https://demo.ldproxy.net/strassen/tileMatrixSets/AdV_25832) (Kachelschema der AdV für Deutschland in ETRS89/UTM32N)
+ * - [AdV_25833](https://github.com/interactive-instruments/xtraplatform-spatial/blob/master/xtraplatform-tiles/src/main/resources/tilematrixsets/AdV_25833.json) (Kachelschema der AdV für Deutschland in ETRS89/UTM33N)
  * - [EU_25832](https://demo.ldproxy.net/strassen/tileMatrixSets/EU_25832) (Kachelschema des BKG, basierend auf AdV_25832, erweitert auf Europa)
  * - [gdi_de_25832](https://demo.ldproxy.net/strassen/tileMatrixSets/gdi_de_25832) (von der GDI-DE empfohlenes Kachelschema in ETRS89/UTM32N)
  *     </code>
  * @conformanceEn This building block implements the conformance classes "TileMatrixSet", and
  *     "JSONTileMatrixSet" of the [OGC Two Dimensional Tile Matrix Set and Tile Set Metadata 2.0
  *     Standard](https://docs.ogc.org/is/17-083r4/17-083r4.html).
- * @conformanceDe Das Modul implementiert die Konformitätsklassen "TileMatrixSet" und
+ * @conformanceDe Der Baustein implementiert die Konformitätsklassen "TileMatrixSet" und
  *     "JSONTileMatrixSet" des Standards [OGC Two Dimensional Tile Matrix Set and Tile Set Metadata
  *     2.0](https://docs.ogc.org/is/17-083r4/17-083r4.html).
  * @ref:cfg {@link de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetsConfiguration}
@@ -99,7 +97,8 @@ public class TileMatrixSetsBuildingBlock implements ApiBuildingBlock, Conformanc
   @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
     // since building block / capability components are currently always enabled,
-    // we need to test, if the TILE MATRIX SETS module is enabled for the API and stop, if not
+    // we need to test, if the TILE MATRIX SETS building block is enabled for the API and stop, if
+    // not
     OgcApiDataV2 apiData = api.getData();
     if (!apiData
         .getExtension(TileMatrixSetsConfiguration.class)
