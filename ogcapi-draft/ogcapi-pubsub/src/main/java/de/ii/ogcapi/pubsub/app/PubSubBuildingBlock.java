@@ -165,8 +165,8 @@ import org.slf4j.LoggerFactory;
  *     <p>Siehe die Veröffentlichung `{wigos_station_identifier}/{observed_property}` im
  *     [Beispiel](#beispiele).
  * @limitationsEn This building block is an initial version that was developed during OGC Testbed
- *     19. Additional development and testing is required to ensure the module supports a sufficient
- *     range of use cases.
+ *     19. Additional development and testing is required to ensure the building block supports a
+ *     sufficient range of use cases.
  *     <p>Currently only MQTT 3.1.1 is supported.
  * @limitationsDe Bei diesem Baustein handelt es sich um eine erste Version, die im Rahmen von OGC
  *     Testbed 19 entwickelt wurde. Weitere Entwicklungen und Tests sind erforderlich, um

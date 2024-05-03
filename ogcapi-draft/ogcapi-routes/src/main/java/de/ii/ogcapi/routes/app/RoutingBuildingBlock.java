@@ -29,7 +29,7 @@ import javax.inject.Singleton;
  *     provider](../../providers/feature/extensions/routing.html); that is, am PostgreSQL feature
  *     provider with the extensions PostGIS and pgRouting.
  *     <p>An option to store and manage routes that have been computed can be enabled, too.
- * @scopeDe Dieses Modul berechnet Routen mit Hilfe eines
+ * @scopeDe Dieser Baustein berechnet Routen mit Hilfe eines
  *     [Routing-Providers](../../providers/feature/extensions/routing.html), d.h. eines
  *     PostgreSQL-SQL-Feature-Providers mit den Erweiterungen PostGIS und pgRouting.
  *     <p>Eine Option zur Speicherung und Verwaltung der berechneten Routen wird ebenfalls
@@ -39,11 +39,11 @@ import javax.inject.Singleton;
  *     the [draft OGC API - Routes - Part 1: Core](https://docs.ogc.org/DRAFTS/21-000.html) and the
  *     conformance class "Route Exchange Model" of the [draft OGC Route Exchange
  *     Model](https://docs.ogc.org/DRAFTS/21-001.html).
- * @conformanceDe Das Modul implementiert die Konformitätsklassen "Core", "Manage Routes", "Modes",
- *     "Intermediate Waypoints", "Height Restrictions", "Weight Restrictions" und "Obstacles" des
- *     [Entwurfs von OGC API - Routes - Part 1: Core](https://docs.ogc.org/DRAFTS/21-000.html) sowie
- *     die Konformitätsklasse "Route Exchange Model" des [Entwurfs OGC Route Exchange
- *     Model](https://docs.ogc.org/DRAFTS/21-001.html).
+ * @conformanceDe Der Baustein implementiert die Konformitätsklassen "Core", "Manage Routes",
+ *     "Modes", "Intermediate Waypoints", "Height Restrictions", "Weight Restrictions" und
+ *     "Obstacles" des [Entwurfs von OGC API - Routes - Part 1:
+ *     Core](https://docs.ogc.org/DRAFTS/21-000.html) sowie die Konformitätsklasse "Route Exchange
+ *     Model" des [Entwurfs OGC Route Exchange Model](https://docs.ogc.org/DRAFTS/21-001.html).
  * @ref:cfg {@link de.ii.ogcapi.routes.domain.RoutingConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.routes.domain.ImmutableRoutingConfiguration}
  * @ref:endpoints {@link de.ii.ogcapi.routes.infra.EndpointRouteDefinition}, {@link

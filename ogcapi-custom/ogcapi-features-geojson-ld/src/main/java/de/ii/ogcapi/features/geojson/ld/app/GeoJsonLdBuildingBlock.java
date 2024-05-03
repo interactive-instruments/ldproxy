@@ -21,7 +21,8 @@ import javax.inject.Singleton;
  * @title Features - GeoJSON-LD
  * @langEn Encode features as GeoJSON-LD.
  * @langDe Kodierung von Features als GeoJSON-LD.
- * @scopeEn Das Modul *Features - GeoJSON-LD* ergänzt die GeoJSON-Ausgabe um die folgenden Angaben:
+ * @scopeEn The building block *Features - GeoJSON-LD* adds the following information to the GeoJSON
+ *     output:
  *     <p><code>
  * - A JSON-LD context to be referenced from the GeoJSON outputs of the Features and Feature resources. The context can be external or provided via the API. For this, in the ldproxy data directory, the context must be located under the relative path `json-ld-contexts/{apiId}/{collectionId}.jsonld`. Instead of `{collectionId}.jsonld` another file name can be configured via `contextFileName`. The context must contain at least the following entries:
  * - `"@version": 1.1`
@@ -34,7 +35,8 @@ import javax.inject.Singleton;
  * - In addition to the "type" property, which is fixed to "Feature" in GeoJSON, "@type" is added as another property with the values specified in the configuration.
  * - In addition to the "id" property, "@id" is added as another property based on the value from "id" and the URI template specified in the configuration. Dabei wird `{{serviceUrl}}` durch die Landing-Page-URI der API, `{{collectionId}}` durch die Collection-ID und `{{featureId}}` durch den Wert von "id" ersetzt.
  * </code>
- * @scopeDe Das Modul *Features - GeoJSON-LD* ergänzt die GeoJSON-Ausgabe um die folgenden Angaben:
+ * @scopeDe Der Baustein *Features - GeoJSON-LD* ergänzt die GeoJSON-Ausgabe um die folgenden
+ *     Angaben:
  *     <p><code>
  * - Einen JSON-LD-Context, auf den aus den GeoJSON-Ausgaben der Ressourcen Features und
  *     Feature verwiesen wird. Der Context kann extern liegen oder über die API bereitgestellt

@@ -28,14 +28,15 @@ import javax.inject.Singleton;
  *     unterstützt, die aus einer einzigen Tabelle stammen und automatisch inkrementierende
  *     Primärschlüssel verwenden. Siehe auch [Ticket
  *     #411](https://github.com/interactive-instruments/ldproxy/issues/411).
- * @conformanceEn The module is based on the specifications of the conformance classes
+ * @conformanceEn The building block is based on the specifications of the conformance classes
  *     "Create/Replace/Delete" and "Features" from the [Draft OGC API - Features - Part 4: Create,
  *     Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002.html). The implementation will
  *     change as the draft will evolve during the standardization process.
- * @conformanceDe Das Modul basiert auf den Vorgaben der Konformitätsklassen "Create/Replace/Delete"
- *     und "Features" aus dem [Entwurf von OGC API - Features - Part 4: Create, Replace, Update and
- *     Delete](https://docs.ogc.org/DRAFTS/20-002.html). Die Implementierung wird sich im Zuge der
- *     weiteren Standardisierung der Spezifikation noch ändern.
+ * @conformanceDe Der Baustein basiert auf den Vorgaben der Konformitätsklassen
+ *     "Create/Replace/Delete" und "Features" aus dem [Entwurf von OGC API - Features - Part 4:
+ *     Create, Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002.html). Die
+ *     Implementierung wird sich im Zuge der weiteren Standardisierung der Spezifikation noch
+ *     ändern.
  * @ref:cfg {@link de.ii.ogcapi.crud.app.CrudConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.crud.app.ImmutableCrudConfiguration}
  * @ref:endpoints {@link de.ii.ogcapi.crud.app.EndpointCrud}

@@ -16,8 +16,8 @@ import org.immutables.value.Value;
 
 /**
  * @buildingBlock FOUNDATION
- * @langEn Provides base functionality for all other modules and therefore cannot be disabled.
- * @langDe Stellt Basis-Funktionalität für alle anderen Module bereit und kann daher nicht deaktiviert werden.
+ * @langEn Provides base functionality for all other building blocks and therefore cannot be disabled.
+ * @langDe Stellt Basis-Funktionalität für alle anderen Bausteine bereit und kann daher nicht deaktiviert werden.
  * @examplesEn The schema of the API Catalog resource:
  *     <p><code>
  * ```yaml
@@ -172,7 +172,7 @@ public interface FoundationConfiguration extends ExtensionConfiguration {
    *     as `stable`.
    * @langDe Steuert, ob Informationen (Name, Link, Reifegrad) über die Spezifikation einer
    *     API-Komponente, z.B. eine Operation oder ein Query-Parameter, in die API-Definition
-   *     aufgenommen werden. Es wird empfohlen, diese Option zu aktivieren, wenn die API Module
+   *     aufgenommen werden. Es wird empfohlen, diese Option zu aktivieren, wenn die API Bausteine
    *     enthält, die nicht als `stable` gekennzeichnet sind.
    * @default false
    */

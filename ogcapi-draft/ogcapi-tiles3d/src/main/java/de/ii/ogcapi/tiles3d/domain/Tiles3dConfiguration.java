@@ -24,11 +24,11 @@ import org.immutables.value.Value;
 /**
  * @buildingBlock TILES3D
  * @langEn ### Prerequisites
- *     <p>The module requires that the feature provider includes a type `building`. The requirements
- *     for the type are the same as in the configuration of the [CityJSON
+ *     <p>The building block requires that the feature provider includes a type `building`. The
+ *     requirements for the type are the same as in the configuration of the [CityJSON
  *     encoding](features_-_cityjson.html#configuration).
  * @langDe ### Voraussetzungen
- *     <p>Das Modul erfordert, dass der Feature Provider einen Typ "building" enthält. Die
+ *     <p>Der Baustein erfordert, dass der Feature Provider einen Typ "building" enthält. Die
  *     Anforderungen an den Typ sind dieselben wie in der Konfiguration der
  *     [CityJSON-Kodierung](features_-_cityjson.html#konfiguration).
  * @examplesAll <code>
@@ -163,10 +163,10 @@ public interface Tiles3dConfiguration extends ExtensionConfiguration {
   Integer getSubtreeLevels();
 
   /**
-   * @langEn Controls how and when tiles are precomputed, see [Seeding options in the Tiles building
-   *     block](tiles.md#seeding-options).
+   * @langEn Controls how and when tiles are precomputed, see [Seeding options in the tile provider
+   *     "Features"](../../providers/tile/10-features.md#seeding).
    * @langDe Steuert wie und wann Kacheln vorberechnet werden, siehe [Optionen für das Seeding im
-   *     Modul Tiles](tiles.md#seeding-options).
+   *     Tile-Provider "Features"](../../providers/tile/10-features.md#seeding).
    * @default {}
    * @since v3.4
    */
@@ -238,13 +238,13 @@ public interface Tiles3dConfiguration extends ExtensionConfiguration {
 
   /**
    * @langEn A style in the style repository of the collection to be used in maps with 3D Tiles.
-   *     With `DEFAULT` the `defaultStyle` from [module HTML](html.md) is used. With `NONE` the
-   *     default 3D Tiles style is used. The style must be available in the 3D Tiles Styling format.
-   *     If no style is found, 'NONE' is used.
+   *     With `DEFAULT` the `defaultStyle` from the [HTML building block](html.md) is used. With
+   *     `NONE` the default 3D Tiles style is used. The style must be available in the 3D Tiles
+   *     Styling format. If no style is found, 'NONE' is used.
    * @langDe Ein Style im Style-Repository der Collection, der in Karten mit den 3D Tiles verwendet
-   *     werden soll. Bei `DEFAULT` wird der `defaultStyle` aus [Modul HTML](html.md) verwendet. Bei
-   *     `NONE` wird der Standard-Style von 3D Tiles verwendet. Der Style muss im Format 3D Tiles
-   *     Styling verfügbar sein. Wird kein Style gefunden, wird `NONE` verwendet.
+   *     werden soll. Bei `DEFAULT` wird der `defaultStyle` aus dem [HTML-Baustein](html.md)
+   *     verwendet. Bei `NONE` wird der Standard-Style von 3D Tiles verwendet. Der Style muss im
+   *     Format 3D Tiles Styling verfügbar sein. Wird kein Style gefunden, wird `NONE` verwendet.
    * @default DEFAULT
    */
   @Nullable

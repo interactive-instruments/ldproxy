@@ -27,7 +27,7 @@ import javax.inject.Singleton;
  *     <p>::: info Additional links for a specific *Collection* can be defined in the configuration
  *     of the collection. :::
  *     <p>
- * @scopeDe Das Modul *Feature Collections* ist für jede API mit einem Feature-Provider zu
+ * @scopeDe Der Baustein *Feature Collections* ist für jede API mit einem Feature-Provider zu
  *     aktivieren. Es stellt die Ressourcen *Collections* und *Collection* bereit. Derzeit sind
  *     Feature Collections die einzige unterstützte Art von Collections.
  *     <p>::: info Zusätzliche Links zu einer bestimmten Feature Collection einzelnen können bei der

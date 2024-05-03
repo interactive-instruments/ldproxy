@@ -58,12 +58,12 @@ import javax.inject.Singleton;
  *     Features und 3D Tiles zu rendern, wenn Cesium als Kartenclient verwendet wird. Siehe
  *     `defaultStyle` in [HTML](html.md), und `style` in [Features HTML](features_-_html.md) und
  *     [Tiles](tiles.md).
- * @conformanceEn This module implements requirements of the conformance classes *Core*, *Manage
- *     Styles*, *Validation of styles*, *Resources*, *Manage resources*, *Mapbox Style*, *OGC SLD
- *     1.0*, *OGC SLD 1.1*, *HTML* and *Style information* from the draft specification [OGC API -
- *     Styles](https://docs.ogc.org/DRAFTS/20-009.html). The implementation is subject to change in
- *     the course of the development and approval process of the draft.
- * @conformanceDe Das Modul basiert auf den Vorgaben der Konformitätsklassen *Core*, *Manage
+ * @conformanceEn This building block implements requirements of the conformance classes *Core*,
+ *     *Manage Styles*, *Validation of styles*, *Resources*, *Manage resources*, *Mapbox Style*,
+ *     *OGC SLD 1.0*, *OGC SLD 1.1*, *HTML* and *Style information* from the draft specification
+ *     [OGC API - Styles](https://docs.ogc.org/DRAFTS/20-009.html). The implementation is subject to
+ *     change in the course of the development and approval process of the draft.
+ * @conformanceDe Der Baustein basiert auf den Vorgaben der Konformitätsklassen *Core*, *Manage
  *     styles*, *Validation of styles*, *Mapbox Style*, *OGC SLD 1.0* und *OGC SLD 1.1* aus dem
  *     [Entwurf von OGC API - Styles](https://docs.ogc.org/DRAFTS/20-009.html). Die Implementierung
  *     wird sich im Zuge der weiteren Standardisierung der Spezifikation noch ändern.
