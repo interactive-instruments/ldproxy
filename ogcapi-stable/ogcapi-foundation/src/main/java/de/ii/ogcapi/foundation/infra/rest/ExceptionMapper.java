@@ -154,6 +154,7 @@ public class ExceptionMapper extends LoggingExceptionMapper<Throwable> {
   // TODO: maybe add a Retry-After HTTP header?
   private Response serviceUnavailable(ExceptionFormatExtension exceptionFormat, String message) {
     final Response.Status responseStatus = Status.SERVICE_UNAVAILABLE;
+    final String msg = Objects.requireNonNullElse(message, "The requested resource is currently not available. Please try again later.");
     return Response.status(responseStatus)
         .type(exceptionFormat.getMediaType().type())
         .entity(
