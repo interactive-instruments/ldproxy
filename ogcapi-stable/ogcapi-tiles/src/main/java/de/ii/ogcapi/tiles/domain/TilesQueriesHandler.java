@@ -12,6 +12,7 @@ import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
+import de.ii.ogcapi.tiles.domain.TilesConfiguration.WmtsScope;
 import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.tiles.domain.TileCoordinates;
 import de.ii.xtraplatform.tiles.domain.TilesFormat;
@@ -29,6 +30,7 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     TILE_SETS,
     TILE_SET,
     TILE,
+    WMTS
   }
 
   @Value.Immutable
@@ -69,5 +71,11 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     String getTileMatrixSetId();
 
     String getPath();
+  }
+
+  @Value.Immutable
+  interface QueryInputWmts extends QueryInput {
+
+    WmtsScope getScope();
   }
 }

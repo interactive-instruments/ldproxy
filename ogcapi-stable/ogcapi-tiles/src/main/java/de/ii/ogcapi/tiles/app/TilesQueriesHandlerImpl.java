@@ -12,11 +12,13 @@ import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Range;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
+import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -32,11 +34,22 @@ import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetOgcApi;
+import de.ii.ogcapi.tiles.domain.ImmutableOwsOnlineResource;
+import de.ii.ogcapi.tiles.domain.ImmutableOwsServiceIdentification;
+import de.ii.ogcapi.tiles.domain.ImmutableOwsServiceProvider;
 import de.ii.ogcapi.tiles.domain.ImmutableTileLayer;
 import de.ii.ogcapi.tiles.domain.ImmutableTilePoint;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSet;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSets;
-import de.ii.ogcapi.tiles.domain.ImmutableTileSets.Builder;
+import de.ii.ogcapi.tiles.domain.ImmutableWmtsContents;
+import de.ii.ogcapi.tiles.domain.ImmutableWmtsLayer;
+import de.ii.ogcapi.tiles.domain.ImmutableWmtsResourceURL;
+import de.ii.ogcapi.tiles.domain.ImmutableWmtsServiceMetadata;
+import de.ii.ogcapi.tiles.domain.ImmutableWmtsStyle;
+import de.ii.ogcapi.tiles.domain.ImmutableWmtsTileMatrix;
+import de.ii.ogcapi.tiles.domain.ImmutableWmtsTileMatrixSet;
+import de.ii.ogcapi.tiles.domain.ImmutableWmtsTileMatrixSetLink;
+import de.ii.ogcapi.tiles.domain.ImmutableWmtsWGS84BoundingBox;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
 import de.ii.ogcapi.tiles.domain.TileSet;
@@ -45,8 +58,12 @@ import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesConfiguration.WmtsScope;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
+import de.ii.ogcapi.tiles.domain.WmtsCapabilitiesFormatExtension;
+import de.ii.ogcapi.tiles.domain.WmtsLayer;
+import de.ii.ogcapi.tiles.domain.WmtsServiceMetadata;
 import de.ii.xtraplatform.base.domain.ETag;
 import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
 import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
@@ -80,11 +97,14 @@ import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
@@ -93,15 +113,11 @@ import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Singleton
 @AutoBind
 public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
     implements TilesQueriesHandler {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(TilesQueriesHandlerImpl.class);
 
   private final I18n i18n;
   private final CrsTransformerFactory crsTransformerFactory;
@@ -140,6 +156,7 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                 Query.TILE_SET,
                 QueryHandler.with(QueryInputTileSet.class, this::getTileSetResponse))
             .put(Query.TILE, QueryHandler.with(QueryInputTile.class, this::getTileResponse))
+            .put(Query.WMTS, QueryHandler.with(QueryInputWmts.class, this::getWmtsCapabilities))
             .build();
 
     onVolatileStart();
@@ -209,7 +226,7 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
             i18n,
             requestContext.getLanguage());
 
-    Builder builder =
+    ImmutableTileSets.Builder builder =
         ImmutableTileSets.builder()
             .title(featureType.isPresent() ? featureType.get().getLabel() : apiData.getLabel())
             .description(
@@ -412,6 +429,255 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                     queryInput.getOutputFormat().getMediaType().fileExtension())))
         .entity(result.getContent().get())
         .build();
+  }
+
+  private Response getWmtsCapabilities(
+      QueryInputWmts queryInput, ApiRequestContext requestContext) {
+    OgcApi api = requestContext.getApi();
+    OgcApiDataV2 apiData = api.getData();
+
+    WmtsCapabilitiesFormatExtension outputFormat =
+        api.getOutputFormat(
+                WmtsCapabilitiesFormatExtension.class,
+                requestContext.getMediaType(),
+                Optional.empty())
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type ''{0}'' is not supported for this resource.",
+                            requestContext.getMediaType())));
+
+    Optional<ApiMetadata> md = apiData.getMetadata();
+    Set<String> tmsIds = new HashSet<>();
+
+    ImmutableWmtsServiceMetadata.Builder builder =
+        ImmutableWmtsServiceMetadata.builder()
+            .serviceMetadataURL(
+                ImmutableOwsOnlineResource.builder()
+                    .href(String.format("%s%s", api.getUri(), "/wmts/1.0.0/WMTSCapabilities.xml"))
+                    .build())
+            .serviceIdentification(
+                ImmutableOwsServiceIdentification.builder()
+                    .title(apiData.getLabel())
+                    .getAbstract(apiData.getDescription())
+                    .addAllKeywords(md.map(ApiMetadata::getKeywords).orElse(ImmutableList.of()))
+                    .accessConstraints(
+                        md.flatMap(ApiMetadata::getLicenseName)
+                            .map(s -> String.format("License: %s", s)))
+                    .build());
+    md.flatMap(ApiMetadata::getPublisherName)
+        .ifPresent(
+            publisher -> {
+              ImmutableOwsServiceProvider.Builder providerBuilder =
+                  ImmutableOwsServiceProvider.builder().providerName(publisher);
+              md.flatMap(ApiMetadata::getPublisherUrl)
+                  .ifPresent(
+                      url ->
+                          providerBuilder.providerSite(
+                              ImmutableOwsOnlineResource.builder().href(url).build()));
+              builder.serviceProvider(providerBuilder.build());
+            });
+
+    ImmutableWmtsContents.Builder contentsBuilder = ImmutableWmtsContents.builder();
+
+    WmtsScope scope = queryInput.getScope();
+    if (scope != WmtsScope.COLLECTIONS
+        && scope != WmtsScope.COLLECTIONS_MAP
+        && scope != WmtsScope.COLLECTIONS_VECTOR) {
+      tilesProviders
+          .getTilesetMetadata(apiData)
+          .ifPresent(
+              tilesetMetadata -> {
+                String title = apiData.getLabel();
+                Optional<String> abstract_ = apiData.getDescription();
+                String identifier = apiData.getId();
+                getLayer(
+                        tilesetMetadata,
+                        scope,
+                        title,
+                        abstract_,
+                        identifier,
+                        api,
+                        Optional.empty(),
+                        tmsIds)
+                    .ifPresent(contentsBuilder::addLayers);
+              });
+    }
+
+    if (scope != WmtsScope.DATASET
+        && scope != WmtsScope.DATASET_MAP
+        && scope != WmtsScope.DATASET_VECTOR) {
+      apiData
+          .getCollections()
+          .values()
+          .forEach(
+              collectionData -> {
+                tilesProviders
+                    .getTilesetMetadata(apiData, collectionData)
+                    .ifPresent(
+                        tilesetMetadata -> {
+                          String title = collectionData.getLabel();
+                          Optional<String> abstract_ = collectionData.getDescription();
+                          String identifier = collectionData.getId();
+                          getLayer(
+                                  tilesetMetadata,
+                                  scope,
+                                  title,
+                                  abstract_,
+                                  identifier,
+                                  api,
+                                  Optional.of(collectionData),
+                                  tmsIds)
+                              .ifPresent(contentsBuilder::addLayers);
+                        });
+              });
+    }
+
+    tmsIds.stream()
+        .sorted()
+        .forEach(
+            tmsId -> {
+              TileMatrixSet tmsObject = getTileMatrixSetById(tmsId);
+              ImmutableWmtsTileMatrixSet.Builder tmsBuilder =
+                  ImmutableWmtsTileMatrixSet.builder()
+                      .identifier(tmsId)
+                      .supportedCRS(tmsObject.getCrs().toUriString());
+              tmsObject
+                  .getWellKnownScaleSet()
+                  .ifPresent(wkss -> tmsBuilder.wellKnownScaleSet(wkss.toString()));
+              tmsObject
+                  .getTileMatrices(tmsObject.getMinLevel(), tmsObject.getMaxLevel())
+                  .forEach(
+                      tm ->
+                          tmsBuilder.addTileMatrix(
+                              ImmutableWmtsTileMatrix.builder()
+                                  .identifier(tm.getId())
+                                  .scaleDenominator(tm.getScaleDenominator().doubleValue())
+                                  .topLeftCornerValues(tm.getPointOfOrigin())
+                                  .tileWidth(tm.getTileWidth())
+                                  .tileHeight(tm.getTileHeight())
+                                  .matrixWidth(tm.getMatrixWidth())
+                                  .matrixHeight(tm.getMatrixHeight())
+                                  .build()));
+
+              contentsBuilder.addTileMatrixSets(tmsBuilder.build());
+            });
+
+    builder.contents(contentsBuilder.build());
+
+    WmtsServiceMetadata capabilities = builder.build();
+
+    Date lastModified = getLastModified(queryInput);
+    EntityTag etag =
+        ETag.from(capabilities, WmtsServiceMetadata.FUNNEL, outputFormat.getMediaType().label());
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, etag);
+    if (Objects.nonNull(response)) return response.build();
+
+    return prepareSuccessResponse(
+            requestContext,
+            null,
+            HeaderCaching.of(lastModified, etag, queryInput),
+            null,
+            HeaderContentDisposition.of(
+                String.format("WMTSCapabilities.%s", outputFormat.getMediaType().fileExtension())))
+        .entity(outputFormat.getEntity(capabilities, api, requestContext))
+        .build();
+  }
+
+  private Optional<WmtsLayer> getLayer(
+      TilesetMetadata tilesetMetadata,
+      WmtsScope scope,
+      String title,
+      Optional<String> abstract_,
+      String identifier,
+      OgcApi api,
+      Optional<FeatureTypeConfigurationOgcApi> collectionData,
+      Set<String> tmsIds) {
+    Set<TilesFormat> formats =
+        tilesetMetadata.getEncodings().stream()
+            .filter(
+                f ->
+                    scope == WmtsScope.ALL
+                        || (scope == WmtsScope.DATASET_VECTOR
+                            && collectionData.isEmpty()
+                            && f.isVector())
+                        || (scope == WmtsScope.COLLECTIONS_VECTOR
+                            && collectionData.isPresent()
+                            && f.isVector())
+                        || (scope == WmtsScope.VECTOR && f.isVector())
+                        || (scope == WmtsScope.DATASET_MAP
+                            && collectionData.isEmpty()
+                            && f.isRaster())
+                        || (scope == WmtsScope.COLLECTIONS_MAP
+                            && collectionData.isPresent()
+                            && f.isRaster())
+                        || (scope == WmtsScope.MAP && f.isRaster())
+                        || (scope == WmtsScope.DATASET && collectionData.isEmpty())
+                        || (scope == WmtsScope.COLLECTIONS && collectionData.isPresent()))
+            .collect(Collectors.toSet());
+
+    if (formats.isEmpty()) {
+      return Optional.empty();
+    }
+
+    ImmutableWmtsLayer.Builder layerBuilder =
+        ImmutableWmtsLayer.builder()
+            .title(title)
+            .getAbstract(abstract_)
+            .identifier(identifier)
+            // TODO support styles
+            .addStyle(ImmutableWmtsStyle.builder().identifier("default").build());
+    api.getSpatialExtent(collectionData.map(FeatureTypeConfigurationOgcApi::getId))
+        .ifPresent(
+            bbox ->
+                layerBuilder.wGS84BoundingBox(
+                    ImmutableWmtsWGS84BoundingBox.builder()
+                        .addLowerCornerValues(bbox.getXmin(), bbox.getYmin())
+                        .addUpperCornerValues(bbox.getXmax(), bbox.getYmax())
+                        .build()));
+
+    formats.stream()
+        .sorted(Comparator.comparing(TilesFormat::name))
+        .forEach(
+            f -> {
+              layerBuilder.addFormats(f.asMediaType().toString());
+              String template =
+                  String.format(
+                      "%s%s%s/tiles/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?f=%s",
+                      api.getUri(),
+                      collectionData
+                          .map(cd -> String.format("/collections/%s", cd.getId()))
+                          .orElse(""),
+                      f == TilesFormat.MVT ? "" : "/map",
+                      f.asFString());
+              layerBuilder.addResourceURL(
+                  ImmutableWmtsResourceURL.builder()
+                      .format(f.asMediaType().toString())
+                      .template(template)
+                      .resourceType("tile")
+                      .build());
+            });
+
+    Set<String> tms = tilesetMetadata.getTileMatrixSets();
+    Map<String, Range<Integer>> tmsRanges = tilesetMetadata.getTmsRanges();
+    tms.forEach(
+        tmsId -> {
+          TileMatrixSet tmsObject = getTileMatrixSetById(tmsId);
+          ImmutableWmtsTileMatrixSetLink.Builder tmsLinkBuilder =
+              ImmutableWmtsTileMatrixSetLink.builder().tileMatrixSet(tmsId);
+          Range<Integer> range = tmsRanges.get(tmsId);
+          IntStream.range(range.lowerEndpoint(), range.upperEndpoint())
+              .forEachOrdered(
+                  i ->
+                      tmsLinkBuilder.addTileMatrixSetLimits(
+                          limitsGenerator.getTileMatrixSetLimits(
+                              api, tmsObject, i, Optional.empty())));
+          layerBuilder.addTileMatrixSetLink(tmsLinkBuilder.build());
+          tmsIds.add(tmsId);
+        });
+
+    return Optional.of(layerBuilder.build());
   }
 
   private TileQuery getTileQuery(

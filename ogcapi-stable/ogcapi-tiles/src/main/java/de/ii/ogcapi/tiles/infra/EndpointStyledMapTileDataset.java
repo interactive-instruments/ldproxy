@@ -29,6 +29,8 @@ import de.ii.ogcapi.tiles.domain.TilesQueriesHandler;
 import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
+import de.ii.xtraplatform.tiles.domain.TileProvider;
+import de.ii.xtraplatform.tiles.domain.TileProviderFeaturesData;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -77,7 +79,15 @@ public class EndpointStyledMapTileDataset extends Endpoint
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return false // TODO
+    boolean hasStyles =
+        tilesProviders
+            .getTileProvider(apiData)
+            .map(TileProvider::getData)
+            .filter(data -> data instanceof TileProviderFeaturesData)
+            .map(data -> (TileProviderFeaturesData) data)
+            .map(data -> /* TODO map to dataset styles */ ImmutableList.of())
+            .isPresent();
+    return hasStyles
         && apiData
             .getExtension(TilesConfiguration.class)
             .filter(TilesConfiguration::isEnabled)

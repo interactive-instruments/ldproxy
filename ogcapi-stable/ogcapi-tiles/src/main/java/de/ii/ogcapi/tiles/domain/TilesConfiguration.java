@@ -316,6 +316,19 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
 public interface TilesConfiguration extends SfFlatConfiguration, CachingConfiguration {
 
+  enum WmtsScope {
+    NONE,
+    DATASET_VECTOR,
+    DATASET_MAP,
+    DATASET,
+    COLLECTIONS_VECTOR,
+    COLLECTIONS_MAP,
+    COLLECTIONS,
+    VECTOR,
+    MAP,
+    ALL
+  }
+
   /**
    * @langEn Specifies the data source for the tiles, see [Tile
    *     Providers](../../providers/tile/README.md).
@@ -399,6 +412,22 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
    */
   @Nullable
   Boolean getRemoveZoomLevelConstraints();
+
+  /**
+   * @langEn Adds support for OGC WMTS 1.0.0 (HTTP RESTful binding) for tilesets. `NONE` disables
+   *     support, `ALL` adds all dataset and collection tilesets. `DATASET` publishes all dataset
+   *     tilesets, `DATASET_VECTOR` all dataset vector tilesets, `DATASET_MAP` all dataset map
+   *     tilesets, `VECTOR` all vector tilesets, and `MAP` all map tilesets.
+   * @langDe Ergänzt Unterstützung für OGC WMTS 1.0.0 (HTTP RESTful) für Kachelsätze. Bei `NONE`
+   *     wird WMTS nicht unterstützt, bei `ALL` werden alle Kachelsätze veröffentlicht. `DATASET`
+   *     veröffentlicht alle Kachelsätze zum Datensatz (d.h., keine Kachelsätze von einzelnen
+   *     Feature Collections), `DATASET_VECTOR` alle Vektor-Kachelsätze zum Datensatz, `DATASET_MAP`
+   *     alle Raster-Kachelsätze zum Datensatz, `VECTOR` alle Vektor-Kachelsätze und `MAP` alle
+   *     Raster-Kachelsätze.
+   * @default NONE
+   */
+  @Nullable
+  WmtsScope getWmts();
 
   default boolean hasCollectionTiles(
       TilesProviders providers, OgcApiDataV2 apiData, String collectionId) {

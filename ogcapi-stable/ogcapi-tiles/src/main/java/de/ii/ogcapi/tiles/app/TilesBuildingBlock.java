@@ -23,6 +23,7 @@ import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration.Builder;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesConfiguration.WmtsScope;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.infra.EndpointVectorTileCollection;
 import de.ii.ogcapi.tiles.infra.EndpointVectorTileDataset;
@@ -153,6 +154,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock, ApiExtensionHealth 
                 .sorted()
                 .collect(ImmutableList.toImmutableList()))
         .style("DEFAULT")
+        .wmts(WmtsScope.NONE)
         .build();
   }
 
