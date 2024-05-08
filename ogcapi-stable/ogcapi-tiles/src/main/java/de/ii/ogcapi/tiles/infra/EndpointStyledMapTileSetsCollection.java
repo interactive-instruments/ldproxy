@@ -93,7 +93,7 @@ public class EndpointStyledMapTileSetsCollection extends AbstractEndpointTileSet
     return computeDefinition(
         apiData,
         "collections",
-        ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS_COLLECTION,
+        ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_SETS_COLLECTION,
         "/collections/{collectionId}",
         "/styles/{styleId}/map/tiles",
         getOperationId(

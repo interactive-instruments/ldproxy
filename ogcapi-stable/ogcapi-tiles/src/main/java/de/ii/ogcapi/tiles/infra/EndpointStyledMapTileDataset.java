@@ -120,7 +120,7 @@ public class EndpointStyledMapTileDataset extends Endpoint
         apiData,
         tilesProviders,
         "styles",
-        ApiEndpointDefinition.SORT_PRIORITY_TILE,
+        ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE,
         "/styles/{styleId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
         getOperationId("getTile", "dataset", "style", "map"),
         TAGS);

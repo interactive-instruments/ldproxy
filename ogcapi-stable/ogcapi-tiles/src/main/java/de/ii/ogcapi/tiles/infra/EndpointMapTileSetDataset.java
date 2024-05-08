@@ -93,7 +93,7 @@ public class EndpointMapTileSetDataset extends AbstractEndpointTileSetDataset
     return computeDefinition(
         apiData,
         "map",
-        ApiEndpointDefinition.SORT_PRIORITY_TILE_SET,
+        ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_SET,
         "/map/tiles/{tileMatrixSetId}",
         getOperationId("getTileSet", "dataset", "map"),
         TAGS);

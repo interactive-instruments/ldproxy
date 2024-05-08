@@ -91,7 +91,7 @@ public class EndpointMapTileSetsCollection extends AbstractEndpointTileSetsColle
     return computeDefinition(
         apiData,
         "collections",
-        ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS_COLLECTION,
+        ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_SETS_COLLECTION,
         "/collections/{collectionId}",
         "/map/tiles",
         getOperationId(

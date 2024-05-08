@@ -120,7 +120,7 @@ public class EndpointStyledMapTileCollection extends EndpointSubCollection
         apiData,
         tilesProviders,
         "collections",
-        ApiEndpointDefinition.SORT_PRIORITY_TILE_COLLECTION,
+        ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_COLLECTION,
         "/collections/{collectionId}",
         "/styles/{styleId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
         getOperationId(

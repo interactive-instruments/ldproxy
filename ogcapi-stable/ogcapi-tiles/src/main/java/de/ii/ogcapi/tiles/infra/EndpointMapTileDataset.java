@@ -109,7 +109,7 @@ public class EndpointMapTileDataset extends Endpoint
         apiData,
         tilesProviders,
         "map",
-        ApiEndpointDefinition.SORT_PRIORITY_TILE,
+        ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE,
         "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}",
         getOperationId("getTile", "dataset", "map"),
         TAGS);

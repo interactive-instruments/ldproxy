@@ -94,7 +94,7 @@ public class EndpointStyledMapTileSetDataset extends AbstractEndpointTileSetData
     return computeDefinition(
         apiData,
         "styles",
-        ApiEndpointDefinition.SORT_PRIORITY_TILE_SET,
+        ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_SET,
         "/styles/{styleId}/map/tiles/{tileMatrixSetId}",
         getOperationId("getTileSet", "dataset", "style", "map"),
         TAGS);
