@@ -22,6 +22,7 @@ import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesConfiguration.WmtsScope;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import java.util.List;
 import java.util.Locale;
@@ -89,10 +90,17 @@ public class TilesOnLandingPage implements LandingPageExtension {
         return landingPageBuilder;
       }
 
+      boolean hasWmts =
+          api.getData()
+                  .getExtension(TilesConfiguration.class)
+                  .map(TilesConfiguration::getWmts)
+                  .orElse(WmtsScope.NONE)
+              != WmtsScope.NONE;
+
       final TilesLinkGenerator tilesLinkGenerator = new TilesLinkGenerator();
       List<Link> links =
           tilesLinkGenerator.generateLandingPageLinks(
-              uriCustomizer, hasVectorTiles, hasMapTiles, i18n, language);
+              uriCustomizer, hasVectorTiles, hasMapTiles, hasWmts, i18n, language);
       landingPageBuilder.addAllLinks(links);
     }
     return landingPageBuilder;

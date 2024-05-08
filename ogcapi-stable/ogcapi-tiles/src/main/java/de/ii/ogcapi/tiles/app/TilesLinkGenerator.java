@@ -35,6 +35,7 @@ public class TilesLinkGenerator extends DefaultLinksGenerator {
       URICustomizer uriBuilder,
       boolean hasVectorTiles,
       boolean hasMapTiles,
+      boolean hasWmts,
       I18n i18n,
       Optional<Locale> language) {
 
@@ -68,6 +69,22 @@ public class TilesLinkGenerator extends DefaultLinksGenerator {
                       .toString())
               .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-map")
               .title(i18n.get("mapTilesLink", language))
+              .build());
+    }
+
+    if (hasWmts) {
+      builder.add(
+          new ImmutableLink.Builder()
+              .href(
+                  uriBuilder
+                      .copy()
+                      .removeLastPathSegment("collections")
+                      .ensureNoTrailingSlash()
+                      .ensureLastPathSegments("wmts", "1.0.0", "WMTSCapabilities.xml")
+                      .clearParameters()
+                      .toString())
+              .rel("ldproxy:ogc-wmts-capabilities")
+              .title(i18n.get("wmtsLink", language))
               .build());
     }
 
