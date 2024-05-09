@@ -19,6 +19,7 @@ const OpenLayers = ({
   bounds,
   attribution,
   dataUrl,
+  dataType,
   tileMatrixSets,
 }) => {
   const [currentFeature, setCurrentFeature] = React.useState(null);
@@ -66,14 +67,30 @@ const OpenLayers = ({
           url={baseUrl}
           attributions={attribution}
         />
+        {dataType === "raster" &&
+        <RLayerTile
+          properties={{ label: "Vector tiles" }}
+          url={dataUrl}
+        >
+          <DynamicSource
+            tileMatrixSet={tms}
+            dataUrl={dataUrl}
+            dataType={dataType}
+            update={previousTileMatrixSet !== currentTileMatrixSet}
+          />
+        </RLayerTile>
+        }
+        {dataType === "vector" &&
         <RLayerVectorTile
           properties={{ label: "Vector tiles" }}
           url={dataUrl}
           format={new MVT()}
+          // eslint-disable-next-line react-hooks/rules-of-hooks
           onPointerEnter={useCallback(
             (e) => setCurrentFeature(e.target),
             [setCurrentFeature]
           )}
+          // eslint-disable-next-line react-hooks/rules-of-hooks
           onPointerLeave={useCallback(
             (e) => currentFeature === e.target && setCurrentFeature(null),
             [currentFeature, setCurrentFeature]
@@ -82,9 +99,11 @@ const OpenLayers = ({
           <DynamicSource
             tileMatrixSet={tms}
             dataUrl={dataUrl}
+            dataType={dataType}
             update={previousTileMatrixSet !== currentTileMatrixSet}
           />
         </RLayerVectorTile>
+        }
         <RControl.RZoom />
         <RControl.RAttribution collapsible={false} />
       </RMap>
@@ -110,6 +129,7 @@ OpenLayers.propTypes = {
   attribution: PropTypes.string,
   bounds: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)),
   dataUrl: PropTypes.string,
+  dataType: PropTypes.string,
   tileMatrixSets: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.string)),
 };
 
@@ -119,6 +139,7 @@ OpenLayers.defaultProps = {
     '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
   bounds: null,
   dataUrl: null,
+  dataType: null,
   tileMatrixSets: [],
 };
 
