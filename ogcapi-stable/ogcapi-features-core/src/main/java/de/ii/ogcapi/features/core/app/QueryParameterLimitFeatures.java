@@ -119,7 +119,8 @@ public class QueryParameterLimitFeatures extends ApiExtensionCache
   public String getDescription() {
     return "The optional limit parameter limits the number of items that are presented in the response document. "
         + "Only items are counted that are on the first level of the collection in the response document. "
-        + "Nested objects contained within the explicitly requested items are not counted.";
+        + "Nested objects contained within the explicitly requested items are not counted. "
+        + "If the value is higher than the maximum page size, the maximum page size is used instead of the parameter value.";
   }
 
   @Override

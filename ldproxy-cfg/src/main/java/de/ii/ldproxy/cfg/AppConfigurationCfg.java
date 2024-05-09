@@ -11,10 +11,12 @@ import de.ii.xtraplatform.base.domain.AppConfiguration;
 import de.ii.xtraplatform.base.domain.AuthConfiguration;
 import de.ii.xtraplatform.base.domain.BackgroundTasksConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableAuthConfiguration;
+import de.ii.xtraplatform.base.domain.ImmutableModulesConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
 import de.ii.xtraplatform.base.domain.LoggingConfiguration;
 import de.ii.xtraplatform.base.domain.MetricsConfiguration;
 import de.ii.xtraplatform.base.domain.ModulesConfiguration;
+import de.ii.xtraplatform.base.domain.ModulesConfiguration.Startup;
 import de.ii.xtraplatform.base.domain.ServerConfiguration;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
 import io.dropwizard.client.HttpClientConfiguration;
@@ -53,7 +55,7 @@ class AppConfigurationCfg extends AppConfiguration {
 
   @Override
   public ModulesConfiguration getModules() {
-    return null;
+    return new ImmutableModulesConfiguration.Builder().startup(Startup.SYNC).build();
   }
 
   @Override

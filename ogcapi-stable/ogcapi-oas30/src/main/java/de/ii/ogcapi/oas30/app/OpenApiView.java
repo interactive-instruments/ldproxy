@@ -26,6 +26,8 @@ public abstract class OpenApiView extends OgcApiView {
 
   public abstract Oidc oidc();
 
+  public abstract boolean showCommonExtensions();
+
   @Value.Derived
   public String baseUri() {
     return uriCustomizer().copy().setPath("").clearParameters().toString();

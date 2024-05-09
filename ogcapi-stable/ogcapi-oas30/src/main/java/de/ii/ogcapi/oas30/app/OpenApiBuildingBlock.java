@@ -47,6 +47,9 @@ public class OpenApiBuildingBlock implements ApiBuildingBlock {
 
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
-    return new ImmutableOas30Configuration.Builder().enabled(true).build();
+    return new ImmutableOas30Configuration.Builder()
+        .enabled(true)
+        .showSchemaConstraintsInHtml(false)
+        .build();
   }
 }

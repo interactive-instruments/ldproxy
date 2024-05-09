@@ -104,12 +104,19 @@ public class OpenApiHtml implements ApiDefinitionFormatExtension {
                         .build())
             .collect(Collectors.toList());
 
+    boolean showCommonExtensions =
+        apiData
+            .getExtension(Oas30Configuration.class)
+            .map(Oas30Configuration::isShowSchemaConstraintsInHtml)
+            .orElse(false);
+
     OpenApiView view =
         new ImmutableOpenApiView.Builder()
             .breadCrumbs(breadCrumbs)
             .rawLinks(links)
             .urlPrefix(apiRequestContext.getStaticUrlPrefix())
             .uriCustomizer(apiRequestContext.getUriCustomizer().copy())
+            .showCommonExtensions(showCommonExtensions)
             .oidc(oidc)
             .user(apiRequestContext.getUser())
             .build();
