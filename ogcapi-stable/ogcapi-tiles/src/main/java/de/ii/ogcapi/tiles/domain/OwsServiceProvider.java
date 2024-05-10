@@ -25,6 +25,9 @@ public interface OwsServiceProvider {
   @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "ProviderSite")
   Optional<OwsOnlineResource> getProviderSite();
 
+  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "ServiceContact")
+  OwsServiceContact getServiceContact();
+
   // TODO add more from OWS Common?
 
   @SuppressWarnings("UnstableApiUsage")
