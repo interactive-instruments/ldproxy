@@ -37,7 +37,7 @@ ldproxy supports the following formats that are supported by existing tools and 
   * [OpenAPI 3.0.3](http://spec.openapis.org/oas/v3.0.3) as JSON, YAML and HTML
 * Features
   * [GeoJSON](https://datatracker.ietf.org/doc/html/rfc7946)
-  * [JSON-FG 0.2.1](https://docs.ogc.org/DRAFTS/21-045.html)
+  * [JSON-FG 0.2.2](https://docs.ogc.org/DRAFTS/21-045.html)
   * HTML
   * [GML 3.2.2](https://portal.ogc.org/files/?artifact_id=74183&version=2)
   * [FlatGeobuf](https://flatgeobuf.org/)
