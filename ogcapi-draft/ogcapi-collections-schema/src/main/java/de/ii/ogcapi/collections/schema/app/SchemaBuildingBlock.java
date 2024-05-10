@@ -27,9 +27,9 @@ import javax.inject.Singleton;
  * @scopeDe Das Schema wird aus den Schema-Informationen im Feature-Provider abgeleitet. Aktuell
  *     wird JSON Schema 2020-12, 2019-09 und 07 unterstützt.
  * @conformanceEn *Feature Collections - Schema* is based on the [OGC API - Features - Part 5:
- *     Schemas](https://docs.ogc.org/DRAFTS/23-058.html).
+ *     Schemas](https://docs.ogc.org/DRAFTS/23-058r1.html).
  * @conformanceDe Der Baustein basiert auf dem [Entwurf für OGC API - Features - Part 5:
- *     Schemas](https://docs.ogc.org/DRAFTS/23-058.html).
+ *     Schemas](https://docs.ogc.org/DRAFTS/23-058r1.html).
  * @ref:cfg {@link de.ii.ogcapi.collections.schema.domain.SchemaConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.collections.schema.domain.ImmutableSchemaConfiguration}
  * @ref:endpoints {@link de.ii.ogcapi.collections.schema.infra.EndpointSchema},
@@ -46,7 +46,7 @@ public class SchemaBuildingBlock implements ApiBuildingBlock {
   public static final Optional<ExternalDocumentation> SPEC =
       Optional.of(
           ExternalDocumentation.of(
-              "https://docs.ogc.org/DRAFTS/23-058.html",
+              "https://docs.ogc.org/DRAFTS/23-058r1.html",
               "OGC API - Features - Part 5: Schemas (DRAFT)"));
 
   @Inject
