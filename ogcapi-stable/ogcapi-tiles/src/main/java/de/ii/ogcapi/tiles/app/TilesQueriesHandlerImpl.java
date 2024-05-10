@@ -35,6 +35,7 @@ import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetOgcApi;
 import de.ii.ogcapi.tiles.domain.ImmutableOwsOnlineResource;
+import de.ii.ogcapi.tiles.domain.ImmutableOwsServiceContact;
 import de.ii.ogcapi.tiles.domain.ImmutableOwsServiceIdentification;
 import de.ii.ogcapi.tiles.domain.ImmutableOwsServiceProvider;
 import de.ii.ogcapi.tiles.domain.ImmutableTileLayer;
@@ -476,6 +477,7 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                       url ->
                           providerBuilder.providerSite(
                               ImmutableOwsOnlineResource.builder().href(url).build()));
+              providerBuilder.serviceContact(ImmutableOwsServiceContact.builder().build());
               builder.serviceProvider(providerBuilder.build());
             });
 

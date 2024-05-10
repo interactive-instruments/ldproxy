@@ -16,7 +16,7 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonPropertyOrder({"providerName", "providerSite"})
+@JsonPropertyOrder({"providerName", "providerSite", "serviceContact"})
 public interface OwsServiceProvider {
 
   @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "ProviderName")

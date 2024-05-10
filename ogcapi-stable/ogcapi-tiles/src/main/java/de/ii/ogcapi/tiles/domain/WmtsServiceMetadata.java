@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.google.common.hash.Funnel;
@@ -16,17 +17,21 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
 @JacksonXmlRootElement(namespace = "http://www.opengis.net/wmts/1.0", localName = "Capabilities")
+@JsonPropertyOrder({"serviceIdentification", "serviceProvider", "contents", "serviceMetadataURL"})
 public interface WmtsServiceMetadata {
+
+  @JacksonXmlProperty(
+      isAttribute = true,
+      namespace = "http://www.w3.org/2001/XMLSchema-instance",
+      localName = "schemaLocation")
+  default String getSchemaLocation() {
+    return "http://www.opengis.net/wmts/1.0 http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd";
+  }
 
   @JacksonXmlProperty(isAttribute = true, localName = "version")
   default String getVersion() {
     return "1.0.0";
   }
-
-  @JacksonXmlProperty(
-      namespace = "http://www.opengis.net/wmts/1.0",
-      localName = "ServiceMetadataURL")
-  OwsOnlineResource getServiceMetadataURL();
 
   @JacksonXmlProperty(
       namespace = "http://www.opengis.net/ows/1.1",
@@ -38,6 +43,11 @@ public interface WmtsServiceMetadata {
 
   @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "Contents")
   Optional<WmtsContents> getContents();
+
+  @JacksonXmlProperty(
+      namespace = "http://www.opengis.net/wmts/1.0",
+      localName = "ServiceMetadataURL")
+  OwsOnlineResource getServiceMetadataURL();
 
   @SuppressWarnings("UnstableApiUsage")
   Funnel<WmtsServiceMetadata> FUNNEL =
