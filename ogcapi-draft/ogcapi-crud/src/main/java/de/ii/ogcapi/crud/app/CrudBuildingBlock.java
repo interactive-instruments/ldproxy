@@ -30,11 +30,11 @@ import javax.inject.Singleton;
  *     #411](https://github.com/interactive-instruments/ldproxy/issues/411).
  * @conformanceEn The building block is based on the specifications of the conformance classes
  *     "Create/Replace/Delete" and "Features" from the [Draft OGC API - Features - Part 4: Create,
- *     Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002.html). The implementation will
- *     change as the draft will evolve during the standardization process.
+ *     Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002r1.html). The implementation
+ *     will change as the draft will evolve during the standardization process.
  * @conformanceDe Der Baustein basiert auf den Vorgaben der Konformitätsklassen
  *     "Create/Replace/Delete" und "Features" aus dem [Entwurf von OGC API - Features - Part 4:
- *     Create, Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002.html). Die
+ *     Create, Replace, Update and Delete](https://docs.ogc.org/DRAFTS/20-002r1.html). Die
  *     Implementierung wird sich im Zuge der weiteren Standardisierung der Spezifikation noch
  *     ändern.
  * @ref:cfg {@link de.ii.ogcapi.crud.app.CrudConfiguration}
@@ -52,7 +52,7 @@ public class CrudBuildingBlock implements ApiBuildingBlock {
   public static final Optional<ExternalDocumentation> SPEC =
       Optional.of(
           ExternalDocumentation.of(
-              "https://docs.ogc.org/DRAFTS/20-002.html",
+              "https://docs.ogc.org/DRAFTS/20-002r1.html",
               "OGC API - Features - Part 4: Create, Replace, Update and Delete (DRAFT)"));
 
   @Inject
