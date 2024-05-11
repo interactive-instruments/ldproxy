@@ -18,11 +18,11 @@ import org.immutables.value.Value;
 public interface WmtsContents {
 
   @JacksonXmlElementWrapper(useWrapping = false)
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "Layer")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "Layer")
   List<WmtsLayer> getLayers();
 
   @JacksonXmlElementWrapper(useWrapping = false)
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "TileMatrixSet")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "TileMatrixSet")
   List<WmtsTileMatrixSet> getTileMatrixSets();
 
   @SuppressWarnings("UnstableApiUsage")

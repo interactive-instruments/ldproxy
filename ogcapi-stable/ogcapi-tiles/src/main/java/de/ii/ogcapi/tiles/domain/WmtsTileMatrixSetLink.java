@@ -19,13 +19,13 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 public interface WmtsTileMatrixSetLink {
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "TileMatrixSet")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "TileMatrixSet")
   String getTileMatrixSet();
 
   @JacksonXmlElementWrapper(
-      namespace = "http://www.opengis.net/wmts/1.0",
+      namespace = WmtsServiceMetadata.XMLNS,
       localName = "TileMatrixSetLimits")
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "TileMatrixLimits")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "TileMatrixLimits")
   List<TileMatrixSetLimits> getTileMatrixSetLimits();
 
   @SuppressWarnings("UnstableApiUsage")

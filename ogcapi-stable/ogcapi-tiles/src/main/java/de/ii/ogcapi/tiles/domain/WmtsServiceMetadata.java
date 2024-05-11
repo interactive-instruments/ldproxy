@@ -16,16 +16,19 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JacksonXmlRootElement(namespace = "http://www.opengis.net/wmts/1.0", localName = "Capabilities")
+@JacksonXmlRootElement(namespace = WmtsServiceMetadata.XMLNS, localName = "Capabilities")
 @JsonPropertyOrder({"serviceIdentification", "serviceProvider", "contents", "serviceMetadataURL"})
 public interface WmtsServiceMetadata {
 
-  @JacksonXmlProperty(
-      isAttribute = true,
-      namespace = "http://www.w3.org/2001/XMLSchema-instance",
-      localName = "schemaLocation")
+  String XMLNS = "http://www.opengis.net/wmts/1.0";
+  String XMLNS_OWS = "http://www.opengis.net/ows/1.1";
+  String XMLNS_XSI = "http://www.w3.org/2001/XMLSchema-instance";
+  String XMLNS_XLINK = "http://www.w3.org/1999/xlink";
+
+  @JacksonXmlProperty(isAttribute = true, namespace = XMLNS_XSI, localName = "schemaLocation")
   default String getSchemaLocation() {
-    return "http://www.opengis.net/wmts/1.0 http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd";
+    return String.format(
+        "%s %s", XMLNS, "http://schemas.opengis.net/wmts/1.0/wmtsGetCapabilities_response.xsd");
   }
 
   @JacksonXmlProperty(isAttribute = true, localName = "version")
@@ -34,19 +37,17 @@ public interface WmtsServiceMetadata {
   }
 
   @JacksonXmlProperty(
-      namespace = "http://www.opengis.net/ows/1.1",
+      namespace = WmtsServiceMetadata.XMLNS_OWS,
       localName = "ServiceIdentification")
   Optional<OwsServiceIdentification> getServiceIdentification();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "ServiceProvider")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "ServiceProvider")
   Optional<OwsServiceProvider> getServiceProvider();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "Contents")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "Contents")
   Optional<WmtsContents> getContents();
 
-  @JacksonXmlProperty(
-      namespace = "http://www.opengis.net/wmts/1.0",
-      localName = "ServiceMetadataURL")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "ServiceMetadataURL")
   OwsOnlineResource getServiceMetadataURL();
 
   @SuppressWarnings("UnstableApiUsage")

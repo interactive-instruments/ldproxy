@@ -27,7 +27,7 @@ import org.immutables.value.Value;
 public interface OwsOnlineResource {
 
   @JacksonXmlProperty(
-      namespace = "http://www.w3.org/1999/xlink",
+      namespace = WmtsServiceMetadata.XMLNS_XLINK,
       localName = "href",
       isAttribute = true)
   String getHref();

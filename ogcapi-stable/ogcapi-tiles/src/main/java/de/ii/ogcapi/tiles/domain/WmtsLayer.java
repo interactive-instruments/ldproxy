@@ -19,7 +19,7 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JacksonXmlRootElement(namespace = "http://www.opengis.net/wmts/1.0", localName = "Layer")
+@JacksonXmlRootElement(namespace = WmtsServiceMetadata.XMLNS, localName = "Layer")
 @JsonPropertyOrder({
   "title",
   "abstract",
@@ -33,38 +33,36 @@ import org.immutables.value.Value;
 })
 public interface WmtsLayer {
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Title")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Title")
   Optional<String> getTitle();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Abstract")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Abstract")
   Optional<String> getAbstract();
 
-  @JacksonXmlElementWrapper(namespace = "http://www.opengis.net/ows/1.1", localName = "Keywords")
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Keyword")
+  @JacksonXmlElementWrapper(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Keywords")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Keyword")
   List<String> getKeywords();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "WGS84BoundingBox")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "WGS84BoundingBox")
   Optional<WmtsWGS84BoundingBox> getWGS84BoundingBox();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Identifier")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Identifier")
   String getIdentifier();
 
   @JacksonXmlElementWrapper(useWrapping = false)
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "Style")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "Style")
   List<WmtsStyle> getStyle();
 
   @JacksonXmlElementWrapper(useWrapping = false)
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "Format")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "Format")
   List<String> getFormats();
 
   @JacksonXmlElementWrapper(useWrapping = false)
-  @JacksonXmlProperty(
-      namespace = "http://www.opengis.net/wmts/1.0",
-      localName = "TileMatrixSetLink")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "TileMatrixSetLink")
   List<WmtsTileMatrixSetLink> getTileMatrixSetLink();
 
   @JacksonXmlElementWrapper(useWrapping = false)
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "ResourceURL")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "ResourceURL")
   List<WmtsResourceURL> getResourceURL();
 
   @SuppressWarnings("UnstableApiUsage")

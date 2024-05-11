@@ -14,6 +14,7 @@ import com.fasterxml.jackson.dataformat.xml.JacksonXmlAnnotationIntrospector;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -23,6 +24,7 @@ import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.tiles.domain.WmtsCapabilitiesFormatExtension;
 import de.ii.ogcapi.tiles.domain.WmtsServiceMetadata;
 import de.ii.xtraplatform.tiles.domain.JacksonXmlAnnotation.XmlIgnore;
+import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.MediaType;
@@ -71,7 +73,18 @@ public class WmtsCapabilitiesXml implements WmtsCapabilitiesFormatExtension {
   public Object getEntity(
       WmtsServiceMetadata capabilities, OgcApi api, ApiRequestContext requestContext) {
     try {
-      XmlMapper mapper = new XmlMapper();
+      // QGIS requires "ows" as the namespace prefix, so we have to override the standard Jackson
+      // behavior
+      String defaultNamespace = "http://www.opengis.net/wmts/1.0";
+      Map<String, String> otherNamespaces =
+          ImmutableMap.of(
+              "xlink",
+              "http://www.w3.org/1999/xlink",
+              "ows",
+              "http://www.opengis.net/ows/1.1",
+              "xsi",
+              "http://www.w3.org/2001/XMLSchema-instance");
+      XmlMapper mapper = new XmlMapper(new NamespaceXmlFactory(defaultNamespace, otherNamespaces));
       mapper
           .registerModule(new Jdk8Module())
           .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)

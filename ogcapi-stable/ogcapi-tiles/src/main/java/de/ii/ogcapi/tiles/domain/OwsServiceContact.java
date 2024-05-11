@@ -19,8 +19,10 @@ import org.immutables.value.Value;
 @JsonPropertyOrder({"individualName"})
 public interface OwsServiceContact {
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "IndividualName")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "IndividualName")
   Optional<String> getIndividualName();
+
+  // TODO add more from OWS Common?
 
   @SuppressWarnings("UnstableApiUsage")
   Funnel<OwsServiceContact> FUNNEL =

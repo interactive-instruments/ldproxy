@@ -665,9 +665,9 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
     Map<String, Range<Integer>> tmsRanges = tilesetMetadata.getTmsRanges();
     tms.forEach(
         tmsId -> {
-          TileMatrixSet tmsObject = getTileMatrixSetById(tmsId);
           ImmutableWmtsTileMatrixSetLink.Builder tmsLinkBuilder =
               ImmutableWmtsTileMatrixSetLink.builder().tileMatrixSet(tmsId);
+          TileMatrixSet tmsObject = getTileMatrixSetById(tmsId);
           Range<Integer> range = tmsRanges.get(tmsId);
           IntStream.range(range.lowerEndpoint(), range.upperEndpoint())
               .forEachOrdered(

@@ -21,17 +21,17 @@ import org.immutables.value.Value;
 @JsonPropertyOrder({"title", "abstract", "keywords", "isDefault"})
 public interface WmtsStyle {
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Title")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Title")
   Optional<String> getTitle();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Abstract")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Abstract")
   Optional<String> getAbstract();
 
-  @JacksonXmlElementWrapper(namespace = "http://www.opengis.net/ows/1.1", localName = "Keywords")
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Keyword")
+  @JacksonXmlElementWrapper(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Keywords")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Keyword")
   List<String> getKeywords();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Identifier")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Identifier")
   String getIdentifier();
 
   @JacksonXmlProperty(isAttribute = true, localName = "isDefault")

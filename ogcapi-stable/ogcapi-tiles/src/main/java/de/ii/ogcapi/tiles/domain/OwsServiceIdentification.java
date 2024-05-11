@@ -29,32 +29,30 @@ import org.immutables.value.Value;
 })
 public interface OwsServiceIdentification {
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Title")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Title")
   Optional<String> getTitle();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Abstract")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Abstract")
   Optional<String> getAbstract();
 
-  @JacksonXmlElementWrapper(namespace = "http://www.opengis.net/ows/1.1", localName = "Keywords")
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Keyword")
+  @JacksonXmlElementWrapper(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Keywords")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Keyword")
   List<String> getKeywords();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "ServiceType")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "ServiceType")
   default String getServiceType() {
     return "OGC WMTS";
   }
 
-  @JacksonXmlProperty(
-      namespace = "http://www.opengis.net/ows/1.1",
-      localName = "ServiceTypeVersion")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "ServiceTypeVersion")
   default String getServiceTypeVersion() {
     return "1.0.0";
   }
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Fees")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Fees")
   Optional<String> getFees();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "AccessConstraints")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "AccessConstraints")
   Optional<String> getAccessConstraints();
 
   @SuppressWarnings("UnstableApiUsage")

@@ -19,29 +19,27 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 public interface WmtsTileMatrixSet {
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Title")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Title")
   Optional<String> getTitle();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Abstract")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Abstract")
   Optional<String> getAbstract();
 
-  @JacksonXmlElementWrapper(namespace = "http://www.opengis.net/ows/1.1", localName = "Keywords")
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Keyword")
+  @JacksonXmlElementWrapper(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Keywords")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Keyword")
   List<String> getKeywords();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Identifier")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Identifier")
   String getIdentifier();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "SupportedCRS")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "SupportedCRS")
   String getSupportedCRS();
 
-  @JacksonXmlProperty(
-      namespace = "http://www.opengis.net/wmts/1.0",
-      localName = "WellKnownScaleSet")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "WellKnownScaleSet")
   Optional<String> getWellKnownScaleSet();
 
   @JacksonXmlElementWrapper(useWrapping = false)
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "TileMatrix")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "TileMatrix")
   List<WmtsTileMatrix> getTileMatrix();
 
   @SuppressWarnings("UnstableApiUsage")

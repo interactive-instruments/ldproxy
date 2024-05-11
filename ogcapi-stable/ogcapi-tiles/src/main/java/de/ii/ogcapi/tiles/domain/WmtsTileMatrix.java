@@ -35,23 +35,23 @@ import org.immutables.value.Value;
 })
 public interface WmtsTileMatrix {
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Title")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Title")
   Optional<String> getTitle();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Abstract")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Abstract")
   Optional<String> getAbstract();
 
-  @JacksonXmlElementWrapper(namespace = "http://www.opengis.net/ows/1.1", localName = "Keywords")
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Keyword")
+  @JacksonXmlElementWrapper(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Keywords")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Keyword")
   List<String> getKeywords();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "Identifier")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Identifier")
   String getIdentifier();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "ScaleDenominator")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "ScaleDenominator")
   Double getScaleDenominator();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "TopLeftCorner")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "TopLeftCorner")
   @Value.Derived
   @Value.Auxiliary
   default String getTopLeftCorner() {
@@ -62,16 +62,16 @@ public interface WmtsTileMatrix {
   @XmlIgnore
   BigDecimal[] getTopLeftCornerValues();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "TileWidth")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "TileWidth")
   long getTileWidth();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "TileHeight")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "TileHeight")
   long getTileHeight();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "MatrixWidth")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "MatrixWidth")
   long getMatrixWidth();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/wmts/1.0", localName = "MatrixHeight")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "MatrixHeight")
   long getMatrixHeight();
 
   @SuppressWarnings("UnstableApiUsage")

@@ -17,7 +17,7 @@ import org.immutables.value.Value;
 @Value.Style(deepImmutablesDetection = true)
 public interface WmtsWGS84BoundingBox {
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "LowerCorner")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "LowerCorner")
   @Value.Derived
   @Value.Auxiliary
   default String getLowerCorner() {
@@ -28,7 +28,7 @@ public interface WmtsWGS84BoundingBox {
   @XmlIgnore
   List<Number> getLowerCornerValues();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "UpperCorner")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "UpperCorner")
   @Value.Derived
   @Value.Auxiliary
   default String getUpperCorner() {

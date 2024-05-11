@@ -19,16 +19,14 @@ import org.immutables.value.Value;
 @JsonPropertyOrder({"providerName", "providerSite", "serviceContact"})
 public interface OwsServiceProvider {
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "ProviderName")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "ProviderName")
   String getProviderName();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "ProviderSite")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "ProviderSite")
   Optional<OwsOnlineResource> getProviderSite();
 
-  @JacksonXmlProperty(namespace = "http://www.opengis.net/ows/1.1", localName = "ServiceContact")
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "ServiceContact")
   OwsServiceContact getServiceContact();
-
-  // TODO add more from OWS Common?
 
   @SuppressWarnings("UnstableApiUsage")
   Funnel<OwsServiceProvider> FUNNEL =
