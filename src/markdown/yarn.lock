@@ -3370,7 +3370,7 @@ __metadata:
     "@vuepress/theme-default": "npm:^2.0.0-rc.0"
     vuepress: "npm:^2.0.0-rc.0"
     vuepress-plugin-md-enhance: "npm:^2.0.0-rc.4"
-    vuepress-plugin-theme-extensions: "azahnen/vuepress-plugin-theme-extensions#7ef973c"
+    vuepress-plugin-theme-extensions: "azahnen/vuepress-plugin-theme-extensions#1a6e0da4540e2adf5ef8a6f6da0e0e455575beb6"
   languageName: unknown
   linkType: soft
 
@@ -3943,9 +3943,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vuepress-plugin-theme-extensions@azahnen/vuepress-plugin-theme-extensions#7ef973c":
+"vuepress-plugin-theme-extensions@azahnen/vuepress-plugin-theme-extensions#1a6e0da4540e2adf5ef8a6f6da0e0e455575beb6":
   version: 1.0.0
-  resolution: "vuepress-plugin-theme-extensions@https://github.com/azahnen/vuepress-plugin-theme-extensions.git#commit=7ef973cd86208c72d6f90354be0c220ea4922f9f"
+  resolution: "vuepress-plugin-theme-extensions@https://github.com/azahnen/vuepress-plugin-theme-extensions.git#commit=1a6e0da4540e2adf5ef8a6f6da0e0e455575beb6"
   dependencies:
     "@vuepress/plugin-active-header-links": "npm:2.0.0-rc.0"
     "@vuepress/plugin-toc": "npm:2.0.0-rc.0"
@@ -3954,7 +3954,7 @@ __metadata:
     "@vuepress/plugin-theme-data": 2.0.0-rc.0
     "@vuepress/theme-default": 2.0.0-rc.0
     "@vuepress/utils": 2.0.0-rc.0
-  checksum: a82ee3cd9bb0844c8067adc9ca2c71940d6f15952d5db77fd812ea0b4c6ce9028670a90036b2a057821551a8b6f740cb0f63c3067a6d21c31edfa68cf4324ecf
+  checksum: 40a9d40316adb9280cced21d9ac7ab824a559a521bffb0a9730dbb15e4e30dc1c0a15959ac59eb58968229a5d8dd1df34782ee2ce07c37cbae5f2a9f1ee15ccc
   languageName: node
   linkType: hard
 

@@ -9,8 +9,8 @@ node {
 
 ext {
     workingDir = new File(project.buildDir, 'markdown').absolutePath
-    cliVersion = 'main'
-    editorVersion = '0.9'
+    cliVersion = 'v3.0.0'
+    editorVersion = 'v1.0.0'
 }
 
 def docsDownload(List<String> files, File targetDir, Closure<?> process = null) {
@@ -51,8 +51,8 @@ tasks.register('docsAssembleEditor') {
         def baseUrl = "https://raw.githubusercontent.com/ldproxy/editor/${editorVersion}"
         def targetDir = new File(project.buildDir, 'tmp/tools/tools')
         def targetDirDe = new File(project.buildDir, 'tmp/tools/de/tools')
-        def files = ["${baseUrl}/README.md", "${baseUrl}/screenshot.png"]
-        def filesDe = ["${baseUrl}/README_DE.md", "${baseUrl}/screenshot.png"]
+        def files = ["${baseUrl}/README.md", "${baseUrl}/screenshot.png", "${baseUrl}/screenshot2.png"]
+        def filesDe = ["${baseUrl}/README_DE.md", "${baseUrl}/screenshot.png", "${baseUrl}/screenshot2.png"]
         def process = { f ->
             def name = f.path == "README_DE.md" ? "README.md" : f.path
             f.path = "editor/${name}"

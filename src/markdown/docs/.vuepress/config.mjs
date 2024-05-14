@@ -77,7 +77,8 @@ const sidebar = (lang) => {
 
 const navbar = (lang) => {
   const versions = {
-    "v3.x": "https://docs.ldproxy.net",
+    "v4.x": "https://docs.ldproxy.net",
+    "v3.x": "https://v3.docs.ldproxy.net",
     next: "https://next.docs.ldproxy.net",
   };
   const active = process.env.DOCS_VERSION;
