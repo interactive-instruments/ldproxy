@@ -645,8 +645,9 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
             f -> {
               layerBuilder.addFormats(f.asMediaType().toString());
               String template =
+                  // TODO this is a temporary fix
                   String.format(
-                      "%s%s%s/tiles/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}?f=%s",
+                      "%s%s%s/tiles/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.%s",
                       api.getUri(),
                       collectionData
                           .map(cd -> String.format("/collections/%s", cd.getId()))

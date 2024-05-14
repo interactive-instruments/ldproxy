@@ -123,6 +123,14 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
       @Auth Optional<User> optionalUser) {
 
     String subPath = ((UriRoutingContext) requestContext.getUriInfo()).getFinalMatchingGroup();
+
+    String ext = null;
+    if (entrypoint.equals("tiles") && subPath.matches(".*\\.[a-zA-Z]+$")) {
+      // TODO this is a temporary fix
+      ext = subPath.substring(subPath.lastIndexOf('.') + 1);
+      subPath = subPath.substring(0, subPath.lastIndexOf('.'));
+    }
+
     String method = requestContext.getMethod();
 
     OgcApiDataV2 apiData = api.getData();
@@ -160,7 +168,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
 
     // determine the query parameters of the request
     MultivaluedMap<String, String> actualParameters =
-        getActualQueryParameters(requestContext, body);
+        getActualQueryParameters(requestContext, body, Optional.ofNullable(ext));
 
     // Validate request
     ApiOperation apiOperation =
@@ -221,7 +229,7 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
   }
 
   private static MultivaluedMap<String, String> getActualQueryParameters(
-      ContainerRequestContext requestContext, Optional<byte[]> body) {
+      ContainerRequestContext requestContext, Optional<byte[]> body, Optional<String> ext) {
 
     if (requestContext.getMethod().equals("POST")
         && requestContext.getMediaType().equals(MediaType.APPLICATION_FORM_URLENCODED_TYPE)
@@ -240,6 +248,11 @@ public class ApiRequestDispatcher implements ServiceEndpoint {
       } catch (IOException e) {
         throw new IllegalStateException("Could not parse request body into a form.", e);
       }
+    } else if (ext.isPresent()) {
+      MultivaluedMap<String, String> params =
+          new MultivaluedHashMap<>(requestContext.getUriInfo().getQueryParameters());
+      params.putSingle("f", ext.get());
+      return params;
     }
     return requestContext.getUriInfo().getQueryParameters();
   }

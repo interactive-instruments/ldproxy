@@ -203,6 +203,12 @@ public interface EndpointTileMixin {
     endpoint.checkPathParameter(
         extensionRegistry, apiData, definitionPath, "tileMatrix", tileLevel);
     endpoint.checkPathParameter(extensionRegistry, apiData, definitionPath, "tileRow", tileRow);
+
+    if (tileCol.matches(".*\\.[a-zA-Z]+$")) {
+      // TODO this is a temporary fix
+      tileCol = tileRow.substring(0, tileCol.lastIndexOf('.'));
+    }
+
     endpoint.checkPathParameter(extensionRegistry, apiData, definitionPath, "tileCol", tileCol);
 
     int row;
