@@ -1,5 +1,50 @@
 # Changelog
 
+## v4.0.0 (14/05/2024)
+
+#### Breaking changes
+
+-  change API catalog path from `/rest/services` to `/` [#1190](https://github.com/interactive-instruments/ldproxy/issues/1190)
+-  configurable minimum maturity and maintenance levels [#1149](https://github.com/interactive-instruments/ldproxy/issues/1149)
+-  GeoJSON: remove "crs" member [#1124](https://github.com/interactive-instruments/ldproxy/issues/1124)
+-  remove the manager [#1116](https://github.com/interactive-instruments/ldproxy/issues/1116)
+-  remove support for custom style metadata [#1115](https://github.com/interactive-instruments/ldproxy/issues/1115)
+-  remove deprecated store layout [#1114](https://github.com/interactive-instruments/ldproxy/issues/1114)
+-  remove all deprecated options [#1113](https://github.com/interactive-instruments/ldproxy/issues/1113)
+
+#### Implemented enhancements
+
+-  document maximumPageSize in OpenAPI document [#1219](https://github.com/interactive-instruments/ldproxy/issues/1219)
+-  add AdV TileMatrixSet for ETRS89/UTM33N [#1216](https://github.com/interactive-instruments/ldproxy/issues/1216)
+-  GML: add option to include gml:id on geometries [#1152](https://github.com/interactive-instruments/ldproxy/issues/1152)
+-  add support for publishing feature changes via a MQTT broker (PubSub) [#1143](https://github.com/interactive-instruments/ldproxy/issues/1143)
+-  cloud native [#884](https://github.com/interactive-instruments/ldproxy/issues/884)
+-  add operations dashboard [#882](https://github.com/interactive-instruments/ldproxy/issues/882)
+-  add health checks for external dependencies [#881](https://github.com/interactive-instruments/ldproxy/issues/881)
+
+#### Improvements
+
+-  improve handling of `null` values [#1180](https://github.com/interactive-instruments/ldproxy/issues/1180)
+-  Features HTML: add popup with the feature ID on custom styles [#1153](https://github.com/interactive-instruments/ldproxy/issues/1153)
+-  support reloading of values [#1117](https://github.com/interactive-instruments/ldproxy/issues/1117)
+-  make entity startup async and event-driven [#880](https://github.com/interactive-instruments/ldproxy/issues/880)
+-  optimize startup performance [#814](https://github.com/interactive-instruments/ldproxy/issues/814)
+
+#### Fixed bugs
+
+-  parameter 'intersects': allow primary geometry property names that are CQL2 keywords  [#1212](https://github.com/interactive-instruments/ldproxy/issues/1212)
+
+#### Dependency updates
+
+-  upgrade SpatiaLite from 5.0.1 to 5.1.0 [#1188](https://github.com/interactive-instruments/ldproxy/issues/1188)
+-  upgrade PROJ from 9.3.0 to 9.3.1 [#1187](https://github.com/interactive-instruments/ldproxy/issues/1187)
+-  upgrade postgresql driver from 42.5.1 to 42.7.3 [#1186](https://github.com/interactive-instruments/ldproxy/issues/1186)
+-  upgrade sqlite-jdbc from 3.43.2.2 to 3.45.2.0 [#1185](https://github.com/interactive-instruments/ldproxy/issues/1185)
+-  upgrade swagger from 2.2.8 to 2.2.21 [#1184](https://github.com/interactive-instruments/ldproxy/issues/1184)
+-  upgrade dropwizard from 3.0.4 to 3.0.7 [#1183](https://github.com/interactive-instruments/ldproxy/issues/1183)
+
+---
+
 ## v3.6.4 (22/04/2024)
 #### Improvements
 
