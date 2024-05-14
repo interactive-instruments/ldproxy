@@ -6,7 +6,7 @@ steps:
   libs:
     image: eclipse-temurin:11
     environment:
-      - DOCS_VERSION=v3.x
+      - DOCS_VERSION=v4.x
     commands:
       - ./gradlew publish dockerContext docsVuepress -Prelease=true -PdeployUser=$SNAPSHOT_USER -PdeployPassword=$SNAPSHOT_PASS
     secrets: [ snapshot_user, snapshot_pass]
@@ -16,7 +16,7 @@ steps:
     environment:
       - XDG_CONFIG_HOME=/home/node
     commands:
-      - netlify deploy --prod --auth $NETLIFY_TOKEN --site 09d0be51-d517-4c96-a048-438ec3cf94e2 --message "$CI_COMMIT_MESSAGE" --dir $CI_WORKSPACE/build/markdown/docs/.vuepress/dist/
+      - netlify deploy --prod --auth $NETLIFY_TOKEN --site ef612b19-fbf8-469d-8c08-f98f0271806a --message "$CI_COMMIT_MESSAGE" --dir $CI_WORKSPACE/build/markdown/docs/.vuepress/dist/
     secrets: [ netlify_token]
 # TODO: does not work, only tags from master should trigger this
 # check https://woodpecker-ci.org/docs/usage/workflow-syntax#evaluate, does any of the CI_ vars contain the branch?

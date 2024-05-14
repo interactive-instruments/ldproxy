@@ -169,9 +169,9 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
 
   /**
    * @langEn Optional transformations for feature properties for HTML, see
-   *     [transformations](README.md#transformations).
+   *     [transformations](../../providers/details/transformations.md).
    * @langDe Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in der
-   *     HTML-Ausgabe [transformiert](README.md#transformations) werden.
+   *     HTML-Ausgabe [transformiert](../../providers/details/transformations.md) werden.
    * @default {}
    */
   @JsonSerialize(converter = IgnoreLinksWildcardSerializer.class)
