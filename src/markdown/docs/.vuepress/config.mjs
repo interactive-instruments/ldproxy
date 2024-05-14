@@ -56,14 +56,16 @@ const sidebar = (lang) => {
     group({ en: "Auxiliaries", de: "Zubehör" }[lang], prefix + "auxiliaries", {
       ignoreReadme: true,
     }),
-    group({ en: "Editor", de: "Editor" }[lang], prefix + "editor"),
-    group({ en: "CLI", de: "CLI" }[lang], prefix + "cli", {
+    group({ en: "Tools", de: "Tools" }[lang], prefix + "tools", {
       children: [
-        group({ en: "xtracfg", de: "xtracfg" }[lang], prefix + "cli/xtracfg", {
+        group({ en: "Editor", de: "Editor" }[lang], prefix + "tools/editor", {
+          headerReadme: true,
+        }),
+        group({ en: "xtracfg", de: "xtracfg" }[lang], prefix + "tools/xtracfg", {
           collapsible: true,
           headerReadme: true,
         }),
-        group({ en: "xtractl", de: "xtractl" }[lang], prefix + "cli/xtractl", {
+        group({ en: "xtractl", de: "xtractl" }[lang], prefix + "tools/xtractl", {
           collapsible: true,
           headerReadme: true,
         }),
@@ -74,7 +76,8 @@ const sidebar = (lang) => {
 
 const navbar = (lang) => {
   const versions = {
-    "v3.x": "https://docs.ldproxy.net",
+    "v4.x": "https://docs.ldproxy.net",
+    "v3.x": "https://v3.docs.ldproxy.net",
     next: "https://next.docs.ldproxy.net",
   };
   const active = process.env.DOCS_VERSION;
