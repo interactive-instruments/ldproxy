@@ -52,11 +52,17 @@ public interface LdproxyCfg extends LdproxyCfgWriter {
 
   List<Identifier> getEntityIdentifiers();
 
+  List<Identifier> getDefaultIdentifiers();
+
+  List<Identifier> getOverrideIdentifiers();
+
   void ignoreEventsFor(String type, Identifier identifier);
 
   Migrations migrations();
 
   Set<ValidationMessage> validateEntity(Path entityPath, String entityType) throws IOException;
+
+  Set<ValidationMessage> validateEntity(String entityCfg, String entityType) throws IOException;
 
   <T extends EntityData> Path getEntityPath(T data);
 

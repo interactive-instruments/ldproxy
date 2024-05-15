@@ -90,6 +90,8 @@ class LdproxyCfgImpl implements LdproxyCfg {
   private final Map<String, JsonSchema> entitySchemas;
   private final Map<String, String> rawSchemas;
   private final List<Identifier> entityIdentifiers;
+  private final List<Identifier> defaultIdentifiers;
+  private final List<Identifier> overrideIdentifiers;
   private final EventSubscriptionsSync eventSubscriptions;
 
   public LdproxyCfgImpl(Path dataDirectory) {
@@ -114,6 +116,8 @@ class LdproxyCfgImpl implements LdproxyCfg {
             new StoreImpl(dataDirectory, storeConfiguration), storeDriver, eventSubscriptions);
     ((EventStoreDefault) eventStore).onStart(false).toCompletableFuture().join();
     this.entityIdentifiers = new ArrayList<>();
+    this.defaultIdentifiers = new ArrayList<>();
+    this.overrideIdentifiers = new ArrayList<>();
     eventStore.subscribe(
         new EventStoreSubscriber() {
           @Override
@@ -128,9 +132,17 @@ class LdproxyCfgImpl implements LdproxyCfg {
           public void onEmit(Event event) {
             if (event instanceof ReplayEvent) {
               // System.out.println("EVENT " + ((ReplayEvent) event).asPath());
-              if (Objects.equals(((ReplayEvent) event).type(), EntityDataStore.EVENT_TYPE_ENTITIES)
-                  && Objects.equals(((ReplayEvent) event).format().toLowerCase(), "yml")) {
-                entityIdentifiers.add(((ReplayEvent) event).identifier());
+              if (Objects.equals(((ReplayEvent) event).format().toLowerCase(), "yml")) {
+                if (Objects.equals(
+                    ((ReplayEvent) event).type(), EntityDataStore.EVENT_TYPE_ENTITIES)) {
+                  entityIdentifiers.add(((ReplayEvent) event).identifier());
+                } else if (Objects.equals(
+                    ((ReplayEvent) event).type(), EntityDataDefaultsStore.EVENT_TYPE)) {
+                  defaultIdentifiers.add(((ReplayEvent) event).identifier());
+                } else if (Objects.equals(
+                    ((ReplayEvent) event).type(), EntityDataStore.EVENT_TYPE_OVERRIDES)) {
+                  overrideIdentifiers.add(((ReplayEvent) event).identifier());
+                }
               }
             }
           }
@@ -222,6 +234,16 @@ class LdproxyCfgImpl implements LdproxyCfg {
   }
 
   @Override
+  public List<Identifier> getDefaultIdentifiers() {
+    return defaultIdentifiers;
+  }
+
+  @Override
+  public List<Identifier> getOverrideIdentifiers() {
+    return overrideIdentifiers;
+  }
+
+  @Override
   public void ignoreEventsFor(String type, Identifier identifier) {
     eventSubscriptions.addIgnore(type, identifier);
   }
@@ -274,6 +296,19 @@ class LdproxyCfgImpl implements LdproxyCfg {
     // System.out.println("VALIDATE " + entityPath);
 
     JsonNode jsonNode = objectMapper.readTree(entityPath.toFile());
+
+    return entitySchemas.get(entityType).validate(jsonNode);
+  }
+
+  @Override
+  public Set<ValidationMessage> validateEntity(String entityCfg, String entityType)
+      throws IOException {
+    if (!entitySchemas.containsKey(entityType)) {
+      throw new IllegalStateException();
+    }
+    // System.out.println("VALIDATE " + entityPath);
+
+    JsonNode jsonNode = objectMapper.readTree(entityCfg);
 
     return entitySchemas.get(entityType).validate(jsonNode);
   }
