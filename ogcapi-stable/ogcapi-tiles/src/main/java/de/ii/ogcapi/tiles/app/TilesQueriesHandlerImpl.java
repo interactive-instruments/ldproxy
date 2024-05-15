@@ -544,7 +544,7 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
               ImmutableWmtsTileMatrixSet.Builder tmsBuilder =
                   ImmutableWmtsTileMatrixSet.builder()
                       .identifier(tmsId)
-                      .supportedCRS(tmsObject.getCrs().toUriString());
+                      .supportedCRS(tmsObject.getCrs().toSimpleString());
               tmsObject
                   .getWellKnownScaleSet()
                   .ifPresent(wkss -> tmsBuilder.wellKnownScaleSet(wkss.toString()));
