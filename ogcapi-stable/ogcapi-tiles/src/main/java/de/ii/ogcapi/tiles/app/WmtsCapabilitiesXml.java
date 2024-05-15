@@ -9,6 +9,7 @@ package de.ii.ogcapi.tiles.app;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.dataformat.xml.JacksonXmlAnnotationIntrospector;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -88,6 +89,7 @@ public class WmtsCapabilitiesXml implements WmtsCapabilitiesFormatExtension {
       mapper
           .registerModule(new Jdk8Module())
           .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+          .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
           .setAnnotationIntrospector(new XmlAnnotationIntrospector());
 
       return mapper.writeValueAsString(capabilities);
