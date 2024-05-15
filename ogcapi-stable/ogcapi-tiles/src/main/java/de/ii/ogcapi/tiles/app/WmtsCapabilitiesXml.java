@@ -8,8 +8,8 @@
 package de.ii.ogcapi.tiles.app;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.introspect.AnnotatedMember;
 import com.fasterxml.jackson.dataformat.xml.JacksonXmlAnnotationIntrospector;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
@@ -85,14 +85,14 @@ public class WmtsCapabilitiesXml implements WmtsCapabilitiesFormatExtension {
               "http://www.opengis.net/ows/1.1",
               "xsi",
               "http://www.w3.org/2001/XMLSchema-instance");
-      XmlMapper mapper = new XmlMapper(new NamespaceXmlFactory(defaultNamespace, otherNamespaces));
-      mapper
-          .registerModule(new Jdk8Module())
-          .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
-          .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
-          .setAnnotationIntrospector(new XmlAnnotationIntrospector());
 
-      return mapper.writeValueAsString(capabilities);
+      return XmlMapper.builder(new NamespaceXmlFactory(defaultNamespace, otherNamespaces))
+          .annotationIntrospector(new XmlAnnotationIntrospector())
+          .addModule(new Jdk8Module())
+          .enable(Feature.WRITE_BIGDECIMAL_AS_PLAIN)
+          .serializationInclusion(JsonInclude.Include.NON_EMPTY)
+          .build()
+          .writeValueAsString(capabilities);
     } catch (JsonProcessingException e) {
       throw new IllegalStateException(e);
     }

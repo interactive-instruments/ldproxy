@@ -49,7 +49,7 @@ public interface WmtsTileMatrix {
   String getIdentifier();
 
   @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "ScaleDenominator")
-  Double getScaleDenominator();
+  BigDecimal getScaleDenominator();
 
   @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS, localName = "TopLeftCorner")
   @Value.Derived
@@ -83,7 +83,7 @@ public interface WmtsTileMatrix {
             .sorted()
             .forEachOrdered(val -> into.putString(val, StandardCharsets.UTF_8));
         into.putString(from.getIdentifier(), StandardCharsets.UTF_8);
-        into.putDouble(from.getScaleDenominator());
+        into.putDouble(from.getScaleDenominator().doubleValue());
         into.putString(from.getTopLeftCorner(), StandardCharsets.UTF_8);
         into.putLong(from.getTileWidth());
         into.putLong(from.getTileHeight());

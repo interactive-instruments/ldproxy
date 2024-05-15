@@ -555,7 +555,7 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                           tmsBuilder.addTileMatrix(
                               ImmutableWmtsTileMatrix.builder()
                                   .identifier(tm.getId())
-                                  .scaleDenominator(tm.getScaleDenominator().doubleValue())
+                                  .scaleDenominator(tm.getScaleDenominator())
                                   .topLeftCornerValues(tm.getPointOfOrigin())
                                   .tileWidth(tm.getTileWidth())
                                   .tileHeight(tm.getTileHeight())
