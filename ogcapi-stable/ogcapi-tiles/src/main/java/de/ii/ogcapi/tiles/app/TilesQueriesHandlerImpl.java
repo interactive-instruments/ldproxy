@@ -645,15 +645,13 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
             f -> {
               layerBuilder.addFormats(f.asMediaType().toString());
               String template =
-                  // TODO this is a temporary fix
                   String.format(
                       "%s%s%s/tiles/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}",
                       api.getUri(),
                       collectionData
                           .map(cd -> String.format("/collections/%s", cd.getId()))
                           .orElse(""),
-                      f == TilesFormat.MVT ? "" : "/map" /*,
-                      f.asFString()*/);
+                      f == TilesFormat.MVT ? "" : "/map");
               layerBuilder.addResourceURL(
                   ImmutableWmtsResourceURL.builder()
                       .format(f.asMediaType().toString())
