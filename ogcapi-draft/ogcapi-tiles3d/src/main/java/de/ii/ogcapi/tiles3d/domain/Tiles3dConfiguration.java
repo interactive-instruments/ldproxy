@@ -38,17 +38,17 @@ import org.immutables.value.Value;
  *   maxLevel: 9
  *   firstLevelWithContent: 5
  *   contentFilters:
- *   - diameter3d(bbox)>200
- *   - diameter3d(bbox)<=200 and diameter3d(bbox)>100
- *   - diameter3d(bbox)<=100 and diameter3d(bbox)>40
- *   - diameter3d(bbox)<=40 and diameter3d(bbox)>18
- *   - diameter3d(bbox)<=18
+ *   - diameter3d("bbox")>200
+ *   - diameter3d("bbox")<=200 and diameter3d("bbox")>100
+ *   - diameter3d("bbox")<=100 and diameter3d("bbox")>40
+ *   - diameter3d("bbox")<=40 and diameter3d("bbox")>18
+ *   - diameter3d("bbox")<=18
  *   tileFilters:
  *   - true
- *   - diameter3d(bbox)<=200
- *   - diameter3d(bbox)<=100
- *   - diameter3d(bbox)<=40
- *   - diameter3d(bbox)<=18
+ *   - diameter3d("bbox")<=200
+ *   - diameter3d("bbox")<=100
+ *   - diameter3d("bbox")<=40
+ *   - diameter3d("bbox")<=18
  *   geometricErrorRoot: 8192
  *   clampToEllipsoid: true
  *   subtreeLevels: 3
