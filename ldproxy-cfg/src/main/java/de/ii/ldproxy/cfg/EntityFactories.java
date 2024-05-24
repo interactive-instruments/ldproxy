@@ -19,6 +19,10 @@ import de.ii.xtraplatform.entities.domain.PersistentEntity;
 import de.ii.xtraplatform.features.gml.app.FeatureProviderWfsFactory;
 import de.ii.xtraplatform.features.sql.app.FeatureProviderSqlFactory;
 import de.ii.xtraplatform.features.sql.app.SqlClientBasicFactorySimple;
+import de.ii.xtraplatform.features.sql.app.SqlDbmsAdaptersImpl;
+import de.ii.xtraplatform.features.sql.domain.SqlDbmsAdapters;
+import de.ii.xtraplatform.features.sql.infra.db.SqlDbmsAdapterGpkg;
+import de.ii.xtraplatform.features.sql.infra.db.SqlDbmsAdapterPgis;
 import de.ii.xtraplatform.tiles.app.TileProviderFeaturesFactory;
 import de.ii.xtraplatform.tiles.app.TileProviderHttpFactory;
 import de.ii.xtraplatform.tiles.app.TileProviderMbTilesFactory;
@@ -31,10 +35,17 @@ public interface EntityFactories {
 
   static Set<EntityFactory> factories(
       AppContext appContext, ExtensionRegistry extensionRegistry, ResourceStore mockResourceStore) {
+    SqlDbmsAdapters dbmsAdapters =
+        new SqlDbmsAdaptersImpl(
+            () ->
+                Set.of(
+                    new SqlDbmsAdapterGpkg(appContext, mockResourceStore, null),
+                    new SqlDbmsAdapterPgis(appContext)));
+
     return ImmutableSet.<EntityFactory>builder()
         .add(
             new FeatureProviderSqlFactory(
-                new SqlClientBasicFactorySimple(appContext, mockResourceStore)) {
+                dbmsAdapters, new SqlClientBasicFactorySimple(dbmsAdapters)) {
               @Override
               public CompletableFuture<PersistentEntity> createInstance(EntityData entityData) {
                 return CompletableFuture.completedFuture(null);
