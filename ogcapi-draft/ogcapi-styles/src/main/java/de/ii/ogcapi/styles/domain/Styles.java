@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.PageRepresentation;
+import de.ii.ogcapi.tiles.domain.StyleEntry;
 import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.List;

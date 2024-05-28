@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.domain;
+package de.ii.ogcapi.tiles.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -16,7 +16,8 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
-import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
+import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
 import io.swagger.v3.oas.models.media.Schema;
@@ -149,7 +150,10 @@ public class PathParameterTileMatrixSetId implements OgcApiPathParameter {
         && (definitionPath.startsWith("/collections/{collectionId}/tiles/{tileMatrixSetId}")
             || definitionPath.startsWith("/tiles/{tileMatrixSetId}")
             || definitionPath.startsWith("/collections/{collectionId}/map/tiles/{tileMatrixSetId}")
-            || definitionPath.startsWith("/map/tiles/{tileMatrixSetId}"));
+            || definitionPath.startsWith("/map/tiles/{tileMatrixSetId}")
+            || definitionPath.startsWith(
+                "/collections/{collectionId}/styles/{styleId}/map/tiles/{tileMatrixSetId}")
+            || definitionPath.startsWith("/styles/{styleId}/map/tiles/{tileMatrixSetId}"));
   }
 
   @Override

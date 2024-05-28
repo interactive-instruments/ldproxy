@@ -74,6 +74,7 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
   public Object getTileSetsEntity(
       TileSets tiles,
       DataType dataType,
+      boolean isStyled,
       Optional<String> collectionId,
       OgcApi api,
       ApiRequestContext requestContext) {
@@ -84,6 +85,9 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
             ? i18n.get("tilesTitle", requestContext.getLanguage())
             : i18n.get("mapTilesTitle", requestContext.getLanguage());
     int diff = dataType == DataType.vector ? 0 : 1;
+    if (isStyled) {
+      diff += 2;
+    }
 
     URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
     final List<NavigationDTO> breadCrumbs =

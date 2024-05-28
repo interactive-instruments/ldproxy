@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.domain;
+package de.ii.ogcapi.tiles.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -15,7 +15,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
-import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
+import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import io.swagger.v3.oas.models.media.IntegerSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
@@ -25,19 +25,19 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title tileRow
+ * @title tileCol
  * @endpoints Dataset Tile, Collection Tile
- * @langEn The row of the tile at the zoom level in the tiling scheme.
- * @langDe Die Zeile der Kachel auf der Zoomstufe im Kachelschema.
+ * @langEn The column of the tile at the zoom level in the tiling scheme.
+ * @langDe Die Spalte der Kachel auf der Zoomstufe im Kachelschema.
  */
 @Singleton
 @AutoBind
-public class PathParameterTileRow implements OgcApiPathParameter {
+public class PathParameterTileCol implements OgcApiPathParameter {
 
-  private final SchemaValidator schemaValidator;
+  protected final SchemaValidator schemaValidator;
 
   @Inject
-  PathParameterTileRow(SchemaValidator schemaValidator) {
+  PathParameterTileCol(SchemaValidator schemaValidator) {
     this.schemaValidator = schemaValidator;
   }
 
@@ -65,12 +65,12 @@ public class PathParameterTileRow implements OgcApiPathParameter {
 
   @Override
   public String getName() {
-    return "tileRow";
+    return "tileCol";
   }
 
   @Override
   public String getDescription() {
-    return "Row index of the tile on the selected zoom level. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Level, Row and Column in the Google Maps tiling scheme (WebMercatorQuad). "
+    return "Column index of the tile on the selected zoom level. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Level, Row and Column in the Google Maps tiling scheme (WebMercatorQuad). "
         + "Example: In the WebMercatorQuad tiling scheme Ireland is fully within the tile with the following values: Level 5, Row 10 and Col 15";
   }
 

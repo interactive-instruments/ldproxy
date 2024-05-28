@@ -38,6 +38,7 @@ import de.ii.ogcapi.tiles.domain.ImmutableOwsOnlineResource;
 import de.ii.ogcapi.tiles.domain.ImmutableOwsServiceContact;
 import de.ii.ogcapi.tiles.domain.ImmutableOwsServiceIdentification;
 import de.ii.ogcapi.tiles.domain.ImmutableOwsServiceProvider;
+import de.ii.ogcapi.tiles.domain.ImmutableStyleEntry;
 import de.ii.ogcapi.tiles.domain.ImmutableTileLayer;
 import de.ii.ogcapi.tiles.domain.ImmutableTilePoint;
 import de.ii.ogcapi.tiles.domain.ImmutableTileSet;
@@ -198,13 +199,16 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
         collectionId.map(s -> apiData.getCollections().get(s));
     List<String> tileMatrixSetIds = queryInput.getTileMatrixSetIds();
 
+    String tileDefinitionPath =
+        String.format("%s/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}", definitionPath);
+
     List<TileFormatExtension> tileFormats =
         extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
             .filter(
                 format ->
                     collectionId
-                        .map(s -> format.isApplicable(apiData, s, definitionPath))
-                        .orElseGet(() -> format.isApplicable(apiData, definitionPath)))
+                        .map(s -> format.isApplicable(apiData, s, tileDefinitionPath))
+                        .orElseGet(() -> format.isApplicable(apiData, tileDefinitionPath)))
             // sort formats in the order specified in the configuration for consistency;
             // the first one will always used in the HTML representation
             .sorted(
@@ -261,7 +265,8 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                                     collectionId,
                                     tileFormats,
                                     i18n,
-                                    requestContext.getLanguage())))
+                                    requestContext.getLanguage()),
+                                queryInput.getStyleId()))
                     .collect(Collectors.toUnmodifiableList())));
 
     TileSets tileSets = builder.build();
@@ -291,6 +296,7 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                 tileSets,
                 dataType.orElse(
                     queryInput.getPath().contains("/map/") ? DataType.map : DataType.vector),
+                queryInput.getStyleId().isPresent(),
                 collectionId,
                 api,
                 requestContext))
@@ -315,13 +321,15 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                             "The requested media type ''{0}'' is not supported for this resource.",
                             requestContext.getMediaType())));
 
+    String tileDefinitionPath =
+        String.format("%s/{tileMatrix}/{tileRow}/{tileCol}", definitionPath);
     List<TileFormatExtension> tileFormats =
         extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
             .filter(
                 format ->
                     collectionId
-                        .map(s -> format.isApplicable(apiData, s, definitionPath))
-                        .orElseGet(() -> format.isApplicable(apiData, definitionPath)))
+                        .map(s -> format.isApplicable(apiData, s, tileDefinitionPath))
+                        .orElseGet(() -> format.isApplicable(apiData, tileDefinitionPath)))
             .collect(Collectors.toUnmodifiableList());
 
     DataType dataType =
@@ -343,7 +351,13 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
             requestContext.getLanguage());
 
     TileSet tileset =
-        buildTileSet(api, getTileMatrixSetById(tileMatrixSetId), collectionId, dataType, links);
+        buildTileSet(
+            api,
+            getTileMatrixSetById(tileMatrixSetId),
+            collectionId,
+            dataType,
+            links,
+            queryInput.getStyleId());
 
     Date lastModified = getLastModified(queryInput);
     EntityTag etag =
@@ -487,23 +501,50 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
     if (scope != WmtsScope.COLLECTIONS
         && scope != WmtsScope.COLLECTIONS_MAP
         && scope != WmtsScope.COLLECTIONS_VECTOR) {
+
       tilesProviders
           .getTilesetMetadata(apiData)
           .ifPresent(
               tilesetMetadata -> {
-                String title = apiData.getLabel();
-                Optional<String> abstract_ = apiData.getDescription();
-                String identifier = apiData.getId();
                 getLayer(
                         tilesetMetadata,
                         scope,
-                        title,
-                        abstract_,
-                        identifier,
+                        apiData.getLabel(),
+                        apiData.getDescription(),
+                        apiData.getId(),
                         api,
                         Optional.empty(),
                         tmsIds)
                     .ifPresent(contentsBuilder::addLayers);
+
+                tilesProviders
+                    .getTileProvider(apiData)
+                    .filter(tileProvider -> tileProvider.access().isAvailable())
+                    .map(tileProvider -> tileProvider.access().get())
+                    .ifPresent(
+                        tileAccess ->
+                            tilesProviders
+                                .getTilesetId(apiData)
+                                .ifPresent(
+                                    tilesetId ->
+                                        tileAccess.getMapStyles(tilesetId).stream()
+                                            .map(
+                                                styleId ->
+                                                    tileAccess.getMetadata(tilesetId, styleId))
+                                            .forEach(
+                                                mdx ->
+                                                    mdx.flatMap(
+                                                            tilesetMetadata2 ->
+                                                                getLayer(
+                                                                    tilesetMetadata2,
+                                                                    scope,
+                                                                    apiData.getLabel(),
+                                                                    apiData.getDescription(),
+                                                                    apiData.getId(),
+                                                                    api,
+                                                                    Optional.empty(),
+                                                                    tmsIds))
+                                                        .ifPresent(contentsBuilder::addLayers))));
               });
     }
 
@@ -517,22 +558,47 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
               collectionData -> {
                 tilesProviders
                     .getTilesetMetadata(apiData, collectionData)
+                    .flatMap(
+                        tilesetMetadata ->
+                            getLayer(
+                                tilesetMetadata,
+                                scope,
+                                collectionData.getLabel(),
+                                collectionData.getDescription(),
+                                collectionData.getId(),
+                                api,
+                                Optional.of(collectionData),
+                                tmsIds))
+                    .ifPresent(contentsBuilder::addLayers);
+
+                tilesProviders
+                    .getTileProvider(apiData, collectionData)
+                    .filter(tileProvider -> tileProvider.access().isAvailable())
+                    .map(tileProvider -> tileProvider.access().get())
                     .ifPresent(
-                        tilesetMetadata -> {
-                          String title = collectionData.getLabel();
-                          Optional<String> abstract_ = collectionData.getDescription();
-                          String identifier = collectionData.getId();
-                          getLayer(
-                                  tilesetMetadata,
-                                  scope,
-                                  title,
-                                  abstract_,
-                                  identifier,
-                                  api,
-                                  Optional.of(collectionData),
-                                  tmsIds)
-                              .ifPresent(contentsBuilder::addLayers);
-                        });
+                        tileAccess ->
+                            tilesProviders
+                                .getTilesetId(collectionData)
+                                .ifPresent(
+                                    tilesetId ->
+                                        tileAccess.getMapStyles(tilesetId).stream()
+                                            .map(
+                                                styleId ->
+                                                    tileAccess.getMetadata(tilesetId, styleId))
+                                            .forEach(
+                                                mdx ->
+                                                    mdx.flatMap(
+                                                            tilesetMetadata2 ->
+                                                                getLayer(
+                                                                    tilesetMetadata2,
+                                                                    scope,
+                                                                    collectionData.getLabel(),
+                                                                    collectionData.getDescription(),
+                                                                    collectionData.getId(),
+                                                                    api,
+                                                                    Optional.empty(),
+                                                                    tmsIds))
+                                                        .ifPresent(contentsBuilder::addLayers))));
               });
     }
 
@@ -625,12 +691,18 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
 
     ImmutableWmtsLayer.Builder layerBuilder =
         ImmutableWmtsLayer.builder()
-            .title(title)
+            .title(addStyleSuffixTitle(title, tilesetMetadata))
             .getAbstract(abstract_)
-            .identifier(identifier)
-            // TODO support styles
-            .addStyle(ImmutableWmtsStyle.builder().identifier("default").build());
-    api.getSpatialExtent(collectionData.map(FeatureTypeConfigurationOgcApi::getId))
+            .identifier(addStyleSuffixIdentifier(identifier, tilesetMetadata))
+            .addStyle(
+                ImmutableWmtsStyle.builder()
+                    .identifier(tilesetMetadata.getStyleId().orElse("default"))
+                    .build());
+
+    tilesetMetadata
+        .getBounds()
+        .or(() -> api.getSpatialExtent(collectionData.map(FeatureTypeConfigurationOgcApi::getId)))
+        .or(api::getSpatialExtent)
         .ifPresent(
             bbox ->
                 layerBuilder.wGS84BoundingBox(
@@ -646,11 +718,12 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
               layerBuilder.addFormats(f.asMediaType().toString());
               String template =
                   String.format(
-                      "%s%s%s/tiles/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}",
+                      "%s%s%s%s/tiles/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}",
                       api.getUri(),
                       collectionData
                           .map(cd -> String.format("/collections/%s", cd.getId()))
                           .orElse(""),
+                      tilesetMetadata.getStyleId().map(ignore -> "/styles/{Style}").orElse(""),
                       f == TilesFormat.MVT ? "" : "/map");
               layerBuilder.addResourceURL(
                   ImmutableWmtsResourceURL.builder()
@@ -681,22 +754,39 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
     return Optional.of(layerBuilder.build());
   }
 
+  private static String addStyleSuffixTitle(String title, TilesetMetadata tilesetMetadata) {
+    return String.format(
+        "%s%s",
+        title, tilesetMetadata.getStyleId().map(s -> String.format(" (Style: %s)", s)).orElse(""));
+  }
+
+  private static String addStyleSuffixIdentifier(String id, TilesetMetadata tilesetMetadata) {
+    return String.format(
+        "%s%s", id, tilesetMetadata.getStyleId().map(s -> String.format("_%s", s)).orElse(""));
+  }
+
   private TileQuery getTileQuery(
       QueryInputTile queryInput, ApiRequestContext requestContext, TileProvider tileProvider) {
     OgcApiDataV2 apiData = requestContext.getApi().getData();
     Optional<FeatureTypeConfigurationOgcApi> collectionData =
         queryInput.getCollectionId().flatMap(apiData::getCollectionData);
     TileFormatExtension outputFormat = queryInput.getOutputFormat();
+
+    String ts =
+        collectionData
+            .flatMap(tilesProviders::getTilesetId)
+            .orElse(tilesProviders.getTilesetId(apiData).orElse(DATASET_TILES));
     String tileset =
-        collectionData.isPresent()
-            ? collectionData
-                .flatMap(cd -> cd.getExtension(TilesConfiguration.class))
-                .flatMap(cfg -> Optional.ofNullable(cfg.getTileProviderTileset()))
-                .orElse(collectionData.get().getId())
-            : apiData
-                .getExtension(TilesConfiguration.class)
-                .flatMap(cfg -> Optional.ofNullable(cfg.getTileProviderTileset()))
-                .orElse(DATASET_TILES);
+        queryInput
+            .getStyleId()
+            .map(
+                style -> {
+                  if (tileProvider.access().isAvailable()) {
+                    return tileProvider.access().get().getMapStyleTileset(ts, style);
+                  }
+                  return ts;
+                })
+            .orElse(ts);
 
     ImmutableTileQuery.Builder tileQueryBuilder =
         ImmutableTileQuery.builder()
@@ -721,7 +811,7 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                                 requestContext.getApiUri()))));
 
     Optional<TileGenerationSchema> generationSchema =
-        tileProvider.generator().isAvailable()
+        tileProvider.generator().isAvailable() && queryInput.getStyleId().isEmpty()
             ? Optional.of(tileProvider.generator().get().getGenerationSchema(tileset))
             : Optional.empty();
     ImmutableTileGenerationParametersTransient.Builder userParametersBuilder =
@@ -763,11 +853,21 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
       TileMatrixSet tileMatrixSet,
       Optional<String> collectionId,
       TileSet.DataType dataType,
-      List<Link> links) {
+      List<Link> links,
+      Optional<String> styleId) {
     OgcApiDataV2 apiData = api.getData();
     Optional<TilesetMetadata> tilesetMetadata =
-        tilesProviders.getTilesetMetadata(
-            apiData, collectionId.flatMap(apiData::getCollectionData));
+        styleId
+            .map(
+                s ->
+                    tilesProviders
+                        .getRasterTilesetMetadata(
+                            apiData, collectionId.flatMap(apiData::getCollectionData))
+                        .get(s))
+            .or(
+                () ->
+                    tilesProviders.getTilesetMetadata(
+                        apiData, collectionId.flatMap(apiData::getCollectionData)));
     Optional<MinMax> levels =
         tilesetMetadata.flatMap(
             metadata -> Optional.ofNullable(metadata.getLevels().get(tileMatrixSet.getId())));
@@ -835,7 +935,9 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
       builder.centerPoint(builder2.build());
     }
 
-    if (tilesetMetadata.isPresent()) {
+    styleId.ifPresent(s -> builder.style(ImmutableStyleEntry.builder().id(s).build()));
+
+    if (tilesetMetadata.isPresent() && dataType == DataType.vector) {
       JsonSchemaCache schemaCache = new SchemaCacheTileSet(codelistStore::asMap);
 
       List<FeatureSchema> vectorSchemas = tilesetMetadata.get().getVectorSchemas();

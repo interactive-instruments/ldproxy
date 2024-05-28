@@ -76,15 +76,19 @@ public class TilesOnCollection implements CollectionExtension {
               .anyMatch(
                   format ->
                       format.getDataType() == DataType.vector
-                          && format.isEnabledForApi(
-                              api.getData(), featureTypeConfiguration.getId()));
+                          && format.isEnabledForApi(api.getData(), featureTypeConfiguration.getId())
+                          && format.isApplicable(
+                              api.getData(),
+                              "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
       boolean hasMapTiles =
           extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
               .anyMatch(
                   format ->
                       format.getDataType() == DataType.map
-                          && format.isEnabledForApi(
-                              api.getData(), featureTypeConfiguration.getId()));
+                          && format.isEnabledForApi(api.getData(), featureTypeConfiguration.getId())
+                          && format.isApplicable(
+                              api.getData(),
+                              "/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
 
       if (!hasVectorTiles && !hasMapTiles) {
         // no tile format is enabled

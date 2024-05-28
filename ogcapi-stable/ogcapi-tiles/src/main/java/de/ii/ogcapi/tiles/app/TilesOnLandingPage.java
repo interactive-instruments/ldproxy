@@ -77,13 +77,19 @@ public class TilesOnLandingPage implements LandingPageExtension {
               .anyMatch(
                   format ->
                       format.getDataType() == DataType.vector
-                          && format.isEnabledForApi(api.getData()));
+                          && format.isEnabledForApi(api.getData())
+                          && format.isApplicable(
+                              api.getData(),
+                              "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
       boolean hasMapTiles =
           extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
               .anyMatch(
                   format ->
                       format.getDataType() == DataType.map
-                          && format.isEnabledForApi(api.getData()));
+                          && format.isEnabledForApi(api.getData())
+                          && format.isApplicable(
+                              api.getData(),
+                              "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
 
       if (!hasVectorTiles && !hasMapTiles) {
         // no tile format is enabled

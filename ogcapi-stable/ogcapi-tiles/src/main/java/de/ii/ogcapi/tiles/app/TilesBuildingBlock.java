@@ -67,7 +67,8 @@ import org.slf4j.LoggerFactory;
  * - TIFF
  *     </code>
  *     <p>For tiles that are derived from feature data, only Mapbox Vector Tiles are supported as a
- *     file format.
+ *     file format plus PNG map tiles derived from these vector tiles using one or more MapLibre
+ *     styles.
  *     <p>All tiles of an API are sourced from a single tile provider.
  * @scopeDe Dieser Baustein unterstützt Kacheln, die aus Features abgeleitet sind, oder Kacheln, die
  *     von einer externen Quelle bereitgestellt werden.
@@ -80,7 +81,8 @@ import org.slf4j.LoggerFactory;
  * - TIFF
  *     </code>
  *     <p>Für Kacheln, die aus Features abgeleitet werden, wird nur Mapbox Vector Tiles als
- *     Kachelformat unterstützt.
+ *     Kachelformat unterstützt sowie PNG-Kartenkacheln, die aus diesen Vektorkacheln unter
+ *     Verwendung eines oder mehrerer MapLibre Styles abgeleitet wurden.
  *     <p>Alle Kacheln einer API kommen vom selben Tile-Provider.
  * @conformanceEn The building block implements the conformance classes "Core", "TileSet", "TileSets
  *     List", "Dataset TileSets", "GeoData TileSets", "Collections Selection", "DateTime", "OpenAPI
@@ -90,30 +92,22 @@ import org.slf4j.LoggerFactory;
  *     "JSONTileMatrixSetLimits" of the [OGC Two Dimensional Tile Matrix Set and Tile Set Metadata
  *     2.0 Standard](https://docs.ogc.org/is/17-083r4/17-083r4.html).
  * @conformanceDe Der Baustein implementiert die Konformitätsklassen "Core", "TileSet", "TileSets
- *     List", * "Dataset TileSets", "GeoData TileSets", "Collections Selection", "DateTime",
- *     "OpenAPI * Specification 3.0 API definition", "Mapbox Vector Tiles", "PNG", "JPEG" und "TIFF"
- *     des Standards [OGC API - Tiles - Part 1: Core
- *     1.0](https://docs.ogc.org/is/20-057/20-057.html) und die Konformitätsklassen
- *     "TileSetMetadata", "TileMatrixSetLimits" und "JSONTileMatrixSetLimits" des Standards [OGC Two
- *     * Dimensional Tile Matrix Set and Tile Set Metadata
- *     2.0](https://docs.ogc.org/is/17-083r4/17-083r4.html).
+ *     List", "Dataset TileSets", "GeoData TileSets", "Collections Selection", "DateTime", "OpenAPI
+ *     Specification 3.0 API definition", "Mapbox Vector Tiles", "PNG", "JPEG" und "TIFF" des
+ *     Standards [OGC API - Tiles - Part 1: Core 1.0](https://docs.ogc.org/is/20-057/20-057.html)
+ *     und die Konformitätsklassen "TileSetMetadata", "TileMatrixSetLimits" und
+ *     "JSONTileMatrixSetLimits" des Standards [OGC Two Dimensional Tile Matrix Set and Tile Set
+ *     Metadata 2.0](https://docs.ogc.org/is/17-083r4/17-083r4.html).
  * @ref:cfg {@link de.ii.ogcapi.tiles.domain.TilesConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration}
  * @ref:endpoints {@link EndpointVectorTileSetsDataset}, {@link EndpointVectorTileSetDataset},
  *     {@link EndpointVectorTileDataset}, {@link EndpointVectorTileSetsCollection}, {@link
  *     EndpointVectorTileSetCollection}, {@link EndpointVectorTileCollection}
- * @ref:queryParameters {@link de.ii.ogcapi.tiles.domain.QueryParameterCollections}, {@link
- *     de.ii.ogcapi.tiles.domain.QueryParameterDatetimeTile}, {@link
- *     de.ii.ogcapi.tiles.domain.QueryParameterFTile}, {@link
- *     de.ii.ogcapi.tiles.domain.QueryParameterFTileCollection}, {@link
- *     de.ii.ogcapi.tiles.domain.QueryParameterFTileSet}, {@link
- *     de.ii.ogcapi.tiles.domain.QueryParameterFTileSets}, {@link
- *     de.ii.ogcapi.tiles.domain.QueryParameterLimitTile}
- * @ref:pathParameters {@link de.ii.ogcapi.tiles.domain.PathParameterCollectionIdTiles}, {@link
- *     de.ii.ogcapi.tiles.domain.PathParameterTileMatrixSetId}, {@link
- *     de.ii.ogcapi.tiles.domain.PathParameterTileMatrix}, {@link
- *     de.ii.ogcapi.tiles.domain.PathParameterTileRow}, {@link
- *     de.ii.ogcapi.tiles.domain.PathParameterTileCol}
+ * @ref:queryParameters {@link QueryParameterCollections}, {@link QueryParameterDatetimeTile},
+ *     {@link QueryParameterFTile}, {@link QueryParameterFTileCollection}, {@link
+ *     QueryParameterFTileSet}, {@link QueryParameterFTileSets}, {@link QueryParameterLimitTile}
+ * @ref:pathParameters {@link PathParameterCollectionIdTiles}, {@link PathParameterTileMatrixSetId},
+ *     {@link PathParameterTileMatrix}, {@link PathParameterTileRow}, {@link PathParameterTileCol}
  */
 @Singleton
 @AutoBind

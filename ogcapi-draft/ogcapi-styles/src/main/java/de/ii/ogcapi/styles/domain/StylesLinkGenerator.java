@@ -151,8 +151,8 @@ public class StylesLinkGenerator {
    * generates the links for a style on the page /{serviceId}/styles
    *
    * @param uriBuilder the URI, split in host, path and query
-   * @param styleId the ids of the styles
-   * @return a list with links
+   * @param styleId the id of the style
+   * @return the link
    */
   public Link generateStyleMetadataLink(
       URICustomizer uriBuilder, String styleId, I18n i18n, Optional<Locale> language) {
@@ -167,6 +167,29 @@ public class StylesLinkGenerator {
                 .toString())
         .rel("describedby")
         .title(i18n.get("styleMetadataLink", language))
+        .build();
+  }
+
+  /**
+   * generates a link for a style on the page /{serviceId}/styles/{styleId}/map/tiles
+   *
+   * @param uriBuilder the URI, split in host, path and query
+   * @param styleId the id of the style
+   * @return the link
+   */
+  public Link generateMapTilesLink(
+      URICustomizer uriBuilder, String styleId, I18n i18n, Optional<Locale> language) {
+
+    return new ImmutableLink.Builder()
+        .href(
+            uriBuilder
+                .copy()
+                .ensureNoTrailingSlash()
+                .ensureLastPathSegments("styles", styleId, "map", "tiles")
+                .removeParameters("f")
+                .toString())
+        .rel("http://www.opengis.net/def/rel/ogc/1.0/tilesets-map")
+        .title(i18n.get("styledMapTilesLink", language))
         .build();
   }
 

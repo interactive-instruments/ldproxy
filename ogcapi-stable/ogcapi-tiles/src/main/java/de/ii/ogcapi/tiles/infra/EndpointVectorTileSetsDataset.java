@@ -86,7 +86,12 @@ public class EndpointVectorTileSetsDataset extends AbstractEndpointTileSetsDatas
   @Override
   protected ApiEndpointDefinition computeDefinition(OgcApiDataV2 apiData) {
     return computeDefinition(
-        apiData, "tiles", ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS, "/tiles", "vector", TAGS);
+        apiData,
+        "tiles",
+        ApiEndpointDefinition.SORT_PRIORITY_TILE_SETS,
+        "/tiles",
+        getOperationId("getTileSetsList", "dataset", "vector"),
+        TAGS);
   }
 
   @GET

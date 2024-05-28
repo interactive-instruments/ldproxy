@@ -27,12 +27,20 @@ public abstract class TileFormatExtension implements FormatExtension {
             .filter(TilesConfiguration::isEnabled)
             .filter(cfg -> cfg.hasDatasetTiles(tilesProviders, apiData))
             .isPresent()
-        && tilesProviders
-            .getTilesetMetadata(apiData)
-            .filter(
-                metadata ->
-                    metadata.getEncodings().contains(TilesFormat.of(this.getMediaType().label())))
-            .isPresent();
+        && (tilesProviders
+                .getTilesetMetadata(apiData)
+                .filter(
+                    metadata ->
+                        metadata
+                            .getEncodings()
+                            .contains(TilesFormat.of(this.getMediaType().label())))
+                .isPresent()
+            || tilesProviders.getRasterTilesetMetadata(apiData).values().stream()
+                .anyMatch(
+                    metadata ->
+                        metadata
+                            .getEncodings()
+                            .contains(TilesFormat.of(this.getMediaType().label()))));
   }
 
   @Override
@@ -42,12 +50,23 @@ public abstract class TileFormatExtension implements FormatExtension {
             .filter(TilesConfiguration::isEnabled)
             .filter(cfg -> cfg.hasCollectionTiles(tilesProviders, apiData, collectionId))
             .isPresent()
-        && tilesProviders
-            .getTilesetMetadata(apiData, apiData.getCollectionData(collectionId))
-            .filter(
-                metadata ->
-                    metadata.getEncodings().contains(TilesFormat.of(this.getMediaType().label())))
-            .isPresent();
+        && (tilesProviders
+                .getTilesetMetadata(apiData, apiData.getCollectionData(collectionId))
+                .filter(
+                    metadata ->
+                        metadata
+                            .getEncodings()
+                            .contains(TilesFormat.of(this.getMediaType().label())))
+                .isPresent()
+            || tilesProviders
+                .getRasterTilesetMetadata(apiData, apiData.getCollectionData(collectionId))
+                .values()
+                .stream()
+                .anyMatch(
+                    metadata ->
+                        metadata
+                            .getEncodings()
+                            .contains(TilesFormat.of(this.getMediaType().label()))));
   }
 
   public abstract String getExtension();

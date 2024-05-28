@@ -85,13 +85,12 @@ public class EndpointStyledMapTileCollection extends EndpointSubCollection
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
     FeatureTypeConfigurationOgcApi collectionData = apiData.getCollections().get(collectionId);
-    return false // TODO
-        && Objects.nonNull(collectionData)
+    return Objects.nonNull(collectionData)
         && collectionData.getEnabled()
         && collectionData
             .getExtension(TilesConfiguration.class)
             .filter(TilesConfiguration::isEnabled)
-            .filter(cfg -> cfg.hasCollectionMapTiles(tilesProviders, apiData, collectionId))
+            .filter(cfg -> cfg.hasCollectionStyledMapTiles(tilesProviders, apiData, collectionId))
             .isPresent();
   }
 

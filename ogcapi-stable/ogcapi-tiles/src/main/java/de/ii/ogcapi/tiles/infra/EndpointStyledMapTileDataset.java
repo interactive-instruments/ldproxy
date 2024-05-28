@@ -85,13 +85,13 @@ public class EndpointStyledMapTileDataset extends Endpoint
             .map(TileProvider::getData)
             .filter(data -> data instanceof TileProviderFeaturesData)
             .map(data -> (TileProviderFeaturesData) data)
-            .map(data -> /* TODO map to dataset styles */ ImmutableList.of())
-            .isPresent();
+            .map(data -> !data.getRasterTilesets().isEmpty())
+            .orElse(false);
     return hasStyles
         && apiData
             .getExtension(TilesConfiguration.class)
             .filter(TilesConfiguration::isEnabled)
-            .filter(cfg -> cfg.hasDatasetMapTiles(tilesProviders, apiData))
+            .filter(cfg -> cfg.hasDatasetStyledMapTiles(tilesProviders, apiData))
             .isPresent();
   }
 

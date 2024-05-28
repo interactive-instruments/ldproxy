@@ -59,12 +59,11 @@ public class EndpointStyledMapTileSetsDataset extends AbstractEndpointTileSetsDa
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return false // TODO
-        && apiData
-            .getExtension(TilesConfiguration.class)
-            .filter(TilesConfiguration::isEnabled)
-            .filter(cfg -> cfg.hasDatasetMapTiles(tilesProviders, apiData))
-            .isPresent();
+    return apiData
+        .getExtension(TilesConfiguration.class)
+        .filter(TilesConfiguration::isEnabled)
+        .filter(cfg -> cfg.hasDatasetStyledMapTiles(tilesProviders, apiData))
+        .isPresent();
   }
 
   @Override
@@ -93,7 +92,7 @@ public class EndpointStyledMapTileSetsDataset extends AbstractEndpointTileSetsDa
         "styles",
         ApiEndpointDefinition.SORT_PRIORITY_MAP_TILE_SETS,
         "/styles/{styleId}/map/tiles",
-        getOperationId("getTileSets", "dataset", "style", "map"),
+        getOperationId("getTileSetsList", "dataset", "style", "map"),
         TAGS);
   }
 
@@ -104,7 +103,7 @@ public class EndpointStyledMapTileSetsDataset extends AbstractEndpointTileSetsDa
       @Context ApiRequestContext requestContext,
       @PathParam("styleId") String styleId) {
     return super.getTileSets(
-        api.getData(), requestContext, "/styles/{styleId}/map/tiles", Optional.empty(), false);
+        api.getData(), requestContext, "/styles/{styleId}/map/tiles", Optional.of(styleId), false);
   }
 
   @Override

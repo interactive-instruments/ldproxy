@@ -95,7 +95,7 @@ public class EndpointVectorTileSetDataset extends AbstractEndpointTileSetDataset
         "tiles",
         ApiEndpointDefinition.SORT_PRIORITY_TILE_SET,
         "/tiles/{tileMatrixSetId}",
-        "vector",
+        getOperationId("getTileSet", "dataset", "vector"),
         TAGS);
   }
 

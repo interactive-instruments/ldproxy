@@ -20,6 +20,7 @@ public interface TileSetsFormatExtension extends GenericFormatExtension {
   Object getTileSetsEntity(
       TileSets tiles,
       DataType dataType,
+      boolean isStyled,
       Optional<String> collectionId,
       OgcApi api,
       ApiRequestContext requestContext);

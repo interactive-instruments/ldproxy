@@ -429,6 +429,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   @Nullable
   WmtsScope getWmts();
 
+  // TODO cache values so these are only computed once
   default boolean hasCollectionTiles(
       TilesProviders providers, OgcApiDataV2 apiData, String collectionId) {
     return Objects.nonNull(providers)
@@ -456,6 +457,15 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
             (tileset, tileAccess) -> tileAccess.tilesetHasMapTiles(tileset));
   }
 
+  default boolean hasCollectionStyledMapTiles(
+      TilesProviders providers, OgcApiDataV2 apiData, String collectionId) {
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData, apiData.getCollectionData(collectionId)),
+            collectionId,
+            (tileset, tileAccess) -> tileAccess.tilesetHasStyledMapTiles(tileset));
+  }
+
   default boolean hasDatasetTiles(TilesProviders providers, OgcApiDataV2 apiData) {
     return Objects.nonNull(providers)
         && hasTiles(
@@ -478,6 +488,14 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
             (tileset, tileAccess) -> tileAccess.tilesetHasMapTiles(tileset));
   }
 
+  default boolean hasDatasetStyledMapTiles(TilesProviders providers, OgcApiDataV2 apiData) {
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData),
+            DATASET_TILES,
+            (tileset, tileAccess) -> tileAccess.tilesetHasStyledMapTiles(tileset));
+  }
+
   default boolean hasTiles(
       Optional<TileProvider> provider,
       String tilesetDefault,
@@ -487,8 +505,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
         .filter(tileProvider -> tileProvider.getData().getTilesets().containsKey(tileset))
         .filter(
             tileProvider ->
-                tileProvider instanceof TileAccess
-                    && testForTileType.apply(tileset, (TileAccess) tileProvider))
+                tileProvider.access().isAvailable()
+                    && testForTileType.apply(tileset, tileProvider.access().get()))
         .isPresent();
   }
 

@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.domain;
+package de.ii.ogcapi.tiles.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
@@ -15,34 +15,41 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
-import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
+import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * @title tileMatrix
- * @endpoints Dataset Tile, Collection Tile
- * @langEn The zoom level of the tile in the tiling scheme.
- * @langDe Die Zoomstufe der Kachel im Kachelschema.
+ * @title styleId
+ * @endpoints Dataset Tilesets, Dataset Tileset, Dataset Tile, Collection Tilesets, Collection
+ *     Tileset, Collection Tile
+ * @langEn The local identifier of the resource.
+ * @langDe Der lokale Identifikator der Dateiressource.
  */
 @Singleton
 @AutoBind
-public class PathParameterTileMatrix implements OgcApiPathParameter {
+public class PathParameterStyleId implements OgcApiPathParameter {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(PathParameterStyleId.class);
+
+  public static final String STYLE_ID_PATTERN = "[^/]+";
 
   protected final SchemaValidator schemaValidator;
 
   @Inject
-  PathParameterTileMatrix(SchemaValidator schemaValidator) {
+  PathParameterStyleId(SchemaValidator schemaValidator) {
     this.schemaValidator = schemaValidator;
   }
 
   @Override
   public String getPattern() {
-    return "\\d+";
+    return STYLE_ID_PATTERN;
   }
 
   @Override
@@ -50,11 +57,9 @@ public class PathParameterTileMatrix implements OgcApiPathParameter {
     return ImmutableList.of();
   }
 
-  private final Schema<?> schema = new StringSchema().pattern(getPattern());
-
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {
-    return schema;
+    return new StringSchema().pattern(getPattern());
   }
 
   @Override
@@ -64,19 +69,19 @@ public class PathParameterTileMatrix implements OgcApiPathParameter {
 
   @Override
   public String getName() {
-    return "tileMatrix";
+    return "styleId";
   }
 
   @Override
   public String getDescription() {
-    return "Zoom level of the tile. See http://www.maptiler.org/google-maps-coordinates-tile-bounds-projection/ for more information about Level, Row and Column in the Google Maps tiling scheme (WebMercatorQuad). "
-        + "Example: In the WebMercatorQuad tiling scheme Ireland is fully within the tile with the following values: Level 5, Row 10 and Col 15";
+    return "The local identifier of a style, unique within the API.";
   }
 
   @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
     return isEnabledForApi(apiData)
-        && definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
+        && (definitionPath.startsWith("/collections/{collectionId}/styles/{styleId}/map/tiles")
+            || definitionPath.startsWith("/styles/{styleId}/map/tiles"));
   }
 
   @Override

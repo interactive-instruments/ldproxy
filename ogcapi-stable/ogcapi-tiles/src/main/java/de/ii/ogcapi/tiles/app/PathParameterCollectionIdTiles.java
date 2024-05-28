@@ -5,7 +5,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.tiles.domain;
+package de.ii.ogcapi.tiles.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.collections.domain.AbstractPathParameterCollectionId;
@@ -14,7 +14,8 @@ import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
-import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
+import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import java.util.List;
 import java.util.Optional;
@@ -82,7 +83,8 @@ public class PathParameterCollectionIdTiles extends AbstractPathParameterCollect
   @Override
   public boolean matchesPath(String definitionPath) {
     return definitionPath.startsWith("/collections/{collectionId}/tiles")
-        || definitionPath.startsWith("/collections/{collectionId}/map/tiles");
+        || definitionPath.startsWith("/collections/{collectionId}/map/tiles")
+        || definitionPath.startsWith("/collections/{collectionId}/styles/{styleId}/map/tiles");
   }
 
   @Override

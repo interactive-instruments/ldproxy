@@ -20,6 +20,7 @@ import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.Endpoint;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
+import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -39,7 +40,9 @@ import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.ServerErrorException;
@@ -98,7 +101,8 @@ public interface EndpointTileMixin {
             new ImmutableOgcApiResourceData.Builder()
                 .path(resourcePath)
                 .pathParameters(pathParameters);
-        Map<MediaType, ApiMediaTypeContent> responseContent = endpoint.getResponseContent(apiData);
+        Map<MediaType, ApiMediaTypeContent> responseContent =
+            getContent(endpoint, apiData, Optional.of(collectionId), path);
         String operationId =
             getOperationId(operationIdWithPlaceholders, collectionId, apiData, tilesProviders);
         ApiOperation.getResource(
@@ -152,6 +156,8 @@ public interface EndpointTileMixin {
                 + "The tile has one layer per collection with all selected features in the bounding box of the tile with the requested properties.");
     ImmutableOgcApiResourceData.Builder resourceBuilder =
         new ImmutableOgcApiResourceData.Builder().path(path).pathParameters(pathParameters);
+    Map<MediaType, ApiMediaTypeContent> responseContent =
+        getContent(endpoint, apiData, Optional.empty(), path);
     String operationId = getOperationId(operationIdWithPlaceholders, "", apiData, tilesProviders);
     ApiOperation.getResource(
             apiData,
@@ -159,7 +165,7 @@ public interface EndpointTileMixin {
             false,
             queryParameters,
             ImmutableList.of(),
-            endpoint.getResponseContent(apiData),
+            responseContent,
             operationSummary,
             operationDescription,
             Optional.empty(),
@@ -275,6 +281,37 @@ public interface EndpointTileMixin {
         .col(col)
         .parameters(requestContext.getQueryParameterSet())
         .build();
+  }
+
+  private static Map<MediaType, ApiMediaTypeContent> getContent(
+      Endpoint endpoint, OgcApiDataV2 apiData, Optional<String> optionalCollectionId, String path) {
+    return endpoint.getResourceFormats().stream()
+        .filter(
+            outputFormatExtension ->
+                optionalCollectionId
+                    .map(
+                        collectionId ->
+                            collectionId.equals("{collectionId}")
+                                ? apiData.getCollections().keySet().stream()
+                                    .anyMatch(
+                                        cid ->
+                                            outputFormatExtension.isEnabledForApi(apiData, cid)
+                                                && (!(outputFormatExtension
+                                                        instanceof TileFormatExtension)
+                                                    || ((TileFormatExtension) outputFormatExtension)
+                                                        .isApplicable(apiData, cid, path)))
+                                : outputFormatExtension.isEnabledForApi(apiData, collectionId)
+                                    && (!(outputFormatExtension instanceof TileFormatExtension)
+                                        || ((TileFormatExtension) outputFormatExtension)
+                                            .isApplicable(apiData, collectionId, path)))
+                    .orElse(
+                        outputFormatExtension.isEnabledForApi(apiData)
+                            && (!(outputFormatExtension instanceof TileFormatExtension)
+                                || ((TileFormatExtension) outputFormatExtension)
+                                    .isApplicable(apiData, path))))
+        .map(FormatExtension::getContent)
+        .filter(Objects::nonNull)
+        .collect(Collectors.toMap(c -> c.getOgcApiMediaType().type(), c -> c));
   }
 
   static String getOperationId(

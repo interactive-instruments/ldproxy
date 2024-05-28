@@ -9,14 +9,17 @@ package de.ii.ogcapi.tiles.domain;
 
 import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
 
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.resiliency.OptionalVolatileCapability;
 import de.ii.xtraplatform.tiles.domain.TileAccess;
 import de.ii.xtraplatform.tiles.domain.TileProvider;
 import de.ii.xtraplatform.tiles.domain.TilesetMetadata;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public interface TilesProviders {
 
@@ -52,11 +55,39 @@ public interface TilesProviders {
         getTileProvider(apiData)
             .filter(provider -> provider.access().isAvailable())
             .map(provider -> provider.access().get());
-    return apiData
-        .getExtension(TilesConfiguration.class)
-        .map(cfg -> Optional.ofNullable(cfg.getTileProviderTileset()).orElse(DATASET_TILES))
+    return getTilesetId(apiData)
         .flatMap(
             tilesetId -> optionalProvider.flatMap(provider -> provider.getMetadata(tilesetId)));
+  }
+
+  default Optional<String> getTilesetId(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(TilesConfiguration.class)
+        .map(cfg -> Optional.ofNullable(cfg.getTileProviderTileset()).orElse(DATASET_TILES));
+  }
+
+  default Map<String, TilesetMetadata> getRasterTilesetMetadata(OgcApiDataV2 apiData) {
+    Optional<TileAccess> optionalProvider =
+        getTileProvider(apiData)
+            .filter(provider -> provider.access().isAvailable())
+            .map(provider -> provider.access().get());
+    if (optionalProvider.isEmpty()) {
+      return ImmutableMap.of();
+    }
+
+    Optional<String> optionalTilesetId = getTilesetId(apiData);
+    if (optionalTilesetId.isEmpty()) {
+      return ImmutableMap.of();
+    }
+
+    return optionalProvider.get().getMapStyles(optionalTilesetId.get()).stream()
+        .collect(
+            Collectors.toMap(
+                styleId -> styleId,
+                styleId ->
+                    optionalProvider
+                        .flatMap(provider -> provider.getMetadata(optionalTilesetId.get(), styleId))
+                        .get()));
   }
 
   default TilesetMetadata getTilesetMetadataOrThrow(OgcApiDataV2 apiData) {
@@ -96,12 +127,42 @@ public interface TilesProviders {
         getTileProvider(apiData, collectionData)
             .filter(provider -> provider.access().isAvailable())
             .map(provider -> provider.access().get());
+    return getTilesetId(collectionData)
+        .flatMap(
+            tilesetId -> optionalProvider.flatMap(provider -> provider.getMetadata(tilesetId)));
+  }
+
+  default Optional<String> getTilesetId(FeatureTypeConfigurationOgcApi collectionData) {
     return collectionData
         .getExtension(TilesConfiguration.class)
         .map(
-            cfg -> Optional.ofNullable(cfg.getTileProviderTileset()).orElse(collectionData.getId()))
-        .flatMap(
-            tilesetId -> optionalProvider.flatMap(provider -> provider.getMetadata(tilesetId)));
+            cfg ->
+                Optional.ofNullable(cfg.getTileProviderTileset()).orElse(collectionData.getId()));
+  }
+
+  default Map<String, TilesetMetadata> getRasterTilesetMetadata(
+      OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi collectionData) {
+    Optional<TileAccess> optionalProvider =
+        getTileProvider(apiData, collectionData)
+            .filter(provider -> provider.access().isAvailable())
+            .map(provider -> provider.access().get());
+    if (optionalProvider.isEmpty()) {
+      return ImmutableMap.of();
+    }
+
+    Optional<String> optionalTilesetId = getTilesetId(collectionData);
+    if (optionalTilesetId.isEmpty()) {
+      return ImmutableMap.of();
+    }
+
+    return optionalProvider.get().getMapStyles(optionalTilesetId.get()).stream()
+        .collect(
+            Collectors.toMap(
+                styleId -> styleId,
+                styleId ->
+                    optionalProvider
+                        .flatMap(provider -> provider.getMetadata(optionalTilesetId.get(), styleId))
+                        .get()));
   }
 
   default TilesetMetadata getTilesetMetadataOrThrow(
@@ -145,6 +206,13 @@ public interface TilesProviders {
     return collectionData.isPresent()
         ? getTilesetMetadata(apiData, collectionData.get())
         : getTilesetMetadata(apiData);
+  }
+
+  default Map<String, TilesetMetadata> getRasterTilesetMetadata(
+      OgcApiDataV2 apiData, Optional<FeatureTypeConfigurationOgcApi> collectionData) {
+    return collectionData.isPresent()
+        ? getRasterTilesetMetadata(apiData, collectionData.get())
+        : getRasterTilesetMetadata(apiData);
   }
 
   default TilesetMetadata getTilesetMetadataOrThrow(

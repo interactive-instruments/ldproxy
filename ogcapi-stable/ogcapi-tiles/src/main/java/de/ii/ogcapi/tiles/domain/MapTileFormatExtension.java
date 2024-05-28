@@ -22,28 +22,41 @@ public abstract class MapTileFormatExtension extends TileFormatExtension {
 
   @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
+    if (definitionPath.equals(
+        "/styles/{styleId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")) {
+      return isEnabledForApi(apiData)
+          && !tilesProviders.getRasterTilesetMetadata(apiData).isEmpty();
+    }
+
     Set<TilesFormat> formats =
         tilesProviders
             .getTilesetMetadata(apiData)
             .map(TilesetMetadata::getEncodings)
             .orElse(ImmutableSet.of());
     return isEnabledForApi(apiData)
-        && (definitionPath.startsWith("/styles/{styleId}/map/tiles")
-            || definitionPath.startsWith("/map/tiles"))
+        && definitionPath.equals("/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
         && ((formats.isEmpty() && isEnabledByDefault())
             || formats.contains(TilesFormat.of(getMediaType().label())));
   }
 
   @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String collectionId, String definitionPath) {
+    if (definitionPath.equals(
+        "/collections/{collectionId}/styles/{styleId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")) {
+      return isEnabledForApi(apiData)
+          && !tilesProviders
+              .getRasterTilesetMetadata(apiData, apiData.getCollectionData(collectionId))
+              .isEmpty();
+    }
+
     Set<TilesFormat> formats =
         tilesProviders
             .getTilesetMetadata(apiData, apiData.getCollectionData(collectionId))
             .map(TilesetMetadata::getEncodings)
             .orElse(ImmutableSet.of());
     return isEnabledForApi(apiData, collectionId)
-        && (definitionPath.startsWith("/collections/{collectionId}/styles/{styleId}/map/tiles")
-            || definitionPath.startsWith("/collections/{collectionId}/map/tiles"))
+        && definitionPath.equals(
+            "/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
         && ((formats.isEmpty() && isEnabledByDefault())
             || formats.contains(TilesFormat.of(getMediaType().label())));
   }
