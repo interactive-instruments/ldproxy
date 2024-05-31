@@ -322,7 +322,11 @@ public class OgcApiEntity extends AbstractService<OgcApiDataV2> implements OgcAp
 
   @Override
   public URI getUri() {
-    return servicesContext.getUri().resolve(String.join("/", getData().getSubPath()));
+    return servicesContext
+        .getUri()
+        .resolve(
+            (servicesContext.getUri().toString().endsWith("/") ? "" : "/")
+                + String.join("/", getData().getSubPath()));
   }
 
   @Override
