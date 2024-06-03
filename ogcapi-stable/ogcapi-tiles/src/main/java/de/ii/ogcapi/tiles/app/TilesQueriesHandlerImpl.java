@@ -76,6 +76,7 @@ import de.ii.xtraplatform.crs.domain.CrsTransformationException;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileQuery;
@@ -99,7 +100,7 @@ import java.math.RoundingMode;
 import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -464,7 +465,7 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                             requestContext.getMediaType())));
 
     Optional<ApiMetadata> md = apiData.getMetadata();
-    Set<String> tmsIds = new HashSet<>();
+    Map<String, Range<Integer>> tmsIds = new HashMap<>();
 
     ImmutableWmtsServiceMetadata.Builder builder =
         ImmutableWmtsServiceMetadata.builder()
@@ -597,10 +598,12 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
               });
     }
 
-    tmsIds.stream()
-        .sorted()
+    tmsIds.entrySet().stream()
+        .sorted(Map.Entry.comparingByKey())
         .forEach(
-            tmsId -> {
+            entry -> {
+              String tmsId = entry.getKey();
+              Range<Integer> range = entry.getValue();
               TileMatrixSet tmsObject = getTileMatrixSetById(tmsId);
               ImmutableWmtsTileMatrixSet.Builder tmsBuilder =
                   ImmutableWmtsTileMatrixSet.builder()
@@ -610,7 +613,9 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                   .getWellKnownScaleSet()
                   .ifPresent(wkss -> tmsBuilder.wellKnownScaleSet(wkss.toString()));
               tmsObject
-                  .getTileMatrices(tmsObject.getMinLevel(), tmsObject.getMaxLevel())
+                  .getTileMatrices(
+                      Math.max(tmsObject.getMinLevel(), range.lowerEndpoint()),
+                      Math.min(tmsObject.getMaxLevel(), range.upperEndpoint()))
                   .forEach(
                       tm ->
                           tmsBuilder.addTileMatrix(
@@ -656,7 +661,7 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
       String identifier,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> collectionData,
-      Set<String> tmsIds) {
+      Map<String, Range<Integer>> tmsIds) {
     Set<TilesFormat> formats =
         tilesetMetadata.getEncodings().stream()
             .filter(
@@ -723,14 +728,26 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
               ImmutableWmtsTileMatrixSetLink.builder().tileMatrixSet(tmsId);
           TileMatrixSet tmsObject = getTileMatrixSetById(tmsId);
           Range<Integer> range = tmsRanges.get(tmsId);
-          IntStream.range(range.lowerEndpoint(), range.upperEndpoint())
+          IntStream.rangeClosed(range.lowerEndpoint(), range.upperEndpoint())
               .forEachOrdered(
                   i ->
                       tmsLinkBuilder.addTileMatrixSetLimits(
                           limitsGenerator.getTileMatrixSetLimits(
-                              api, tmsObject, i, Optional.empty())));
+                              api,
+                              tmsObject,
+                              i,
+                              collectionData.map(FeatureTypeConfiguration::getId))));
           layerBuilder.addTileMatrixSetLink(tmsLinkBuilder.build());
-          tmsIds.add(tmsId);
+          if (tmsIds.containsKey(tmsId)) {
+            tmsIds.computeIfPresent(
+                tmsId,
+                (id, range1) ->
+                    Range.closed(
+                        Math.min(range1.lowerEndpoint(), range.lowerEndpoint()),
+                        Math.max(range1.upperEndpoint(), range.upperEndpoint())));
+          } else {
+            tmsIds.put(tmsId, range);
+          }
         });
 
     return Optional.of(layerBuilder.build());
