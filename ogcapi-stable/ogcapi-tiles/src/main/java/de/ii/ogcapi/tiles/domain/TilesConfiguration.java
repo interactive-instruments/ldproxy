@@ -318,14 +318,8 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
 
   enum WmtsScope {
     NONE,
-    DATASET_VECTOR,
-    DATASET_MAP,
     DATASET,
-    COLLECTIONS_VECTOR,
-    COLLECTIONS_MAP,
     COLLECTIONS,
-    VECTOR,
-    MAP,
     ALL
   }
 
@@ -415,15 +409,13 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
 
   /**
    * @langEn Adds support for OGC WMTS 1.0.0 (HTTP RESTful binding) for tilesets. `NONE` disables
-   *     support, `ALL` adds all dataset and collection tilesets. `DATASET` publishes all dataset
-   *     tilesets, `DATASET_VECTOR` all dataset vector tilesets, `DATASET_MAP` all dataset map
-   *     tilesets, `VECTOR` all vector tilesets, and `MAP` all map tilesets.
+   *     support, `ALL` adds all dataset and collection raster tilesets. `DATASET` publishes all
+   *     dataset raster tilesets, `COLLECTION` all collection raster tilesets.
    * @langDe Ergänzt Unterstützung für OGC WMTS 1.0.0 (HTTP RESTful) für Kachelsätze. Bei `NONE`
-   *     wird WMTS nicht unterstützt, bei `ALL` werden alle Kachelsätze veröffentlicht. `DATASET`
-   *     veröffentlicht alle Kachelsätze zum Datensatz (d.h., keine Kachelsätze von einzelnen
-   *     Feature Collections), `DATASET_VECTOR` alle Vektor-Kachelsätze zum Datensatz, `DATASET_MAP`
-   *     alle Raster-Kachelsätze zum Datensatz, `VECTOR` alle Vektor-Kachelsätze und `MAP` alle
-   *     Raster-Kachelsätze.
+   *     wird WMTS nicht unterstützt, bei `ALL` werden alle Rasterkachelsätze veröffentlicht.
+   *     `DATASET` veröffentlicht alle Rasterkachelsätze zum Datensatz (d.h., keine Kachelsätze von
+   *     einzelnen Feature-Collections) und `COLLECTIONS` alle Rasterkachelsätze zu
+   *     Feature-Collections.
    * @default NONE
    */
   @Nullable

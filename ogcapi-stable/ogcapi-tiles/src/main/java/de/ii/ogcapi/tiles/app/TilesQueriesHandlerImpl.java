@@ -498,10 +498,7 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
     ImmutableWmtsContents.Builder contentsBuilder = ImmutableWmtsContents.builder();
 
     WmtsScope scope = queryInput.getScope();
-    if (scope != WmtsScope.COLLECTIONS
-        && scope != WmtsScope.COLLECTIONS_MAP
-        && scope != WmtsScope.COLLECTIONS_VECTOR) {
-
+    if (scope != WmtsScope.COLLECTIONS) {
       tilesProviders
           .getTilesetMetadata(apiData)
           .ifPresent(
@@ -548,9 +545,7 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
               });
     }
 
-    if (scope != WmtsScope.DATASET
-        && scope != WmtsScope.DATASET_MAP
-        && scope != WmtsScope.DATASET_VECTOR) {
+    if (scope != WmtsScope.DATASET) {
       apiData
           .getCollections()
           .values()
@@ -666,23 +661,10 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
         tilesetMetadata.getEncodings().stream()
             .filter(
                 f ->
-                    scope == WmtsScope.ALL
-                        || (scope == WmtsScope.DATASET_VECTOR
-                            && collectionData.isEmpty()
-                            && f.isVector())
-                        || (scope == WmtsScope.COLLECTIONS_VECTOR
-                            && collectionData.isPresent()
-                            && f.isVector())
-                        || (scope == WmtsScope.VECTOR && f.isVector())
-                        || (scope == WmtsScope.DATASET_MAP
-                            && collectionData.isEmpty()
-                            && f.isRaster())
-                        || (scope == WmtsScope.COLLECTIONS_MAP
-                            && collectionData.isPresent()
-                            && f.isRaster())
-                        || (scope == WmtsScope.MAP && f.isRaster())
-                        || (scope == WmtsScope.DATASET && collectionData.isEmpty())
-                        || (scope == WmtsScope.COLLECTIONS && collectionData.isPresent()))
+                    f.isRaster()
+                        && (scope == WmtsScope.ALL
+                            || (scope == WmtsScope.DATASET && collectionData.isEmpty())
+                            || (scope == WmtsScope.COLLECTIONS && collectionData.isPresent())))
             .collect(Collectors.toSet());
 
     if (formats.isEmpty()) {
