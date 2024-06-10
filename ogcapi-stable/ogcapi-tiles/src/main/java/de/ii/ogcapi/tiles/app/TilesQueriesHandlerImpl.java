@@ -297,7 +297,7 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                 tileSets,
                 dataType.orElse(
                     queryInput.getPath().contains("/map/") ? DataType.map : DataType.vector),
-                queryInput.getStyleId().isPresent(),
+                queryInput.getStyleId(),
                 collectionId,
                 api,
                 requestContext))

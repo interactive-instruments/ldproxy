@@ -67,7 +67,7 @@ public class TileSetsFormatJson implements TileSetsFormatExtension {
   public Object getTileSetsEntity(
       TileSets tiles,
       DataType dataType,
-      boolean isStyled,
+      Optional<String> styleId,
       Optional<String> collectionId,
       OgcApi api,
       ApiRequestContext requestContext) {

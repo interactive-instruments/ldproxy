@@ -74,60 +74,164 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
   public Object getTileSetsEntity(
       TileSets tiles,
       DataType dataType,
-      boolean isStyled,
+      Optional<String> styleId,
       Optional<String> collectionId,
       OgcApi api,
       ApiRequestContext requestContext) {
     String rootTitle = i18n.get("root", requestContext.getLanguage());
     String collectionsTitle = i18n.get("collectionsTitle", requestContext.getLanguage());
+    String stylesTitle = i18n.get("stylesTitle", requestContext.getLanguage());
     String title =
         dataType == DataType.vector
             ? i18n.get("tilesTitle", requestContext.getLanguage())
             : i18n.get("mapTilesTitle", requestContext.getLanguage());
     int diff = dataType == DataType.vector ? 0 : 1;
-    if (isStyled) {
-      diff += 2;
-    }
 
     URICustomizer resourceUri = requestContext.getUriCustomizer().copy().clearParameters();
     final List<NavigationDTO> breadCrumbs =
-        collectionId.isPresent()
-            ? new ImmutableList.Builder<NavigationDTO>()
-                .add(
-                    new NavigationDTO(
-                        rootTitle,
-                        resourceUri
-                            .copy()
-                            .removeLastPathSegments(api.getData().getSubPath().size() + 3 + diff)
-                            .toString()))
-                .add(
-                    new NavigationDTO(
-                        api.getData().getLabel(),
-                        resourceUri.copy().removeLastPathSegments(3 + diff).toString()))
-                .add(
-                    new NavigationDTO(
-                        collectionsTitle,
-                        resourceUri.copy().removeLastPathSegments(2 + diff).toString()))
-                .add(
-                    new NavigationDTO(
-                        api.getData().getCollections().get(collectionId.get()).getLabel(),
-                        resourceUri.copy().removeLastPathSegments(1 + diff).toString()))
-                .add(new NavigationDTO(title))
-                .build()
-            : new ImmutableList.Builder<NavigationDTO>()
-                .add(
-                    new NavigationDTO(
-                        rootTitle,
-                        resourceUri
-                            .copy()
-                            .removeLastPathSegments(api.getData().getSubPath().size() + 1 + diff)
-                            .toString()))
-                .add(
-                    new NavigationDTO(
-                        api.getData().getLabel(),
-                        resourceUri.copy().removeLastPathSegments(1 + diff).toString()))
-                .add(new NavigationDTO(title))
-                .build();
+        styleId
+            .map(
+                s ->
+                    (collectionId
+                        .map(
+                            string ->
+                                new ImmutableList.Builder<NavigationDTO>()
+                                    .add(
+                                        new NavigationDTO(
+                                            rootTitle,
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(
+                                                    api.getData().getSubPath().size() + 5 + diff)
+                                                .toString()))
+                                    .add(
+                                        new NavigationDTO(
+                                            api.getData().getLabel(),
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(5 + diff)
+                                                .toString()))
+                                    .add(
+                                        new NavigationDTO(
+                                            collectionsTitle,
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(4 + diff)
+                                                .toString()))
+                                    .add(
+                                        new NavigationDTO(
+                                            api.getData().getCollections().get(string).getLabel(),
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(3 + diff)
+                                                .toString()))
+                                    .add(
+                                        new NavigationDTO(
+                                            stylesTitle,
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(2 + diff)
+                                                .toString()))
+                                    .add(
+                                        new NavigationDTO(
+                                            s,
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(1 + diff)
+                                                .toString()))
+                                    .add(new NavigationDTO(title))
+                                    .build())
+                        .orElseGet(
+                            () ->
+                                new ImmutableList.Builder<NavigationDTO>()
+                                    .add(
+                                        new NavigationDTO(
+                                            rootTitle,
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(
+                                                    api.getData().getSubPath().size() + 3 + diff)
+                                                .toString()))
+                                    .add(
+                                        new NavigationDTO(
+                                            api.getData().getLabel(),
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(3 + diff)
+                                                .toString()))
+                                    .add(
+                                        new NavigationDTO(
+                                            stylesTitle,
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(2 + diff)
+                                                .toString()))
+                                    .add(
+                                        new NavigationDTO(
+                                            s,
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(1 + diff)
+                                                .toString()))
+                                    .add(new NavigationDTO(title))
+                                    .build())))
+            .orElseGet(
+                () ->
+                    (collectionId
+                        .map(
+                            value ->
+                                new ImmutableList.Builder<NavigationDTO>()
+                                    .add(
+                                        new NavigationDTO(
+                                            rootTitle,
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(
+                                                    api.getData().getSubPath().size() + 3 + diff)
+                                                .toString()))
+                                    .add(
+                                        new NavigationDTO(
+                                            api.getData().getLabel(),
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(3 + diff)
+                                                .toString()))
+                                    .add(
+                                        new NavigationDTO(
+                                            collectionsTitle,
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(2 + diff)
+                                                .toString()))
+                                    .add(
+                                        new NavigationDTO(
+                                            api.getData().getCollections().get(value).getLabel(),
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(1 + diff)
+                                                .toString()))
+                                    .add(new NavigationDTO(title))
+                                    .build())
+                        .orElseGet(
+                            () ->
+                                new ImmutableList.Builder<NavigationDTO>()
+                                    .add(
+                                        new NavigationDTO(
+                                            rootTitle,
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(
+                                                    api.getData().getSubPath().size() + 1 + diff)
+                                                .toString()))
+                                    .add(
+                                        new NavigationDTO(
+                                            api.getData().getLabel(),
+                                            resourceUri
+                                                .copy()
+                                                .removeLastPathSegments(1 + diff)
+                                                .toString()))
+                                    .add(new NavigationDTO(title))
+                                    .build())));
 
     Optional<HtmlConfiguration> htmlConfig =
         collectionId.isPresent()
