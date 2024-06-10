@@ -147,15 +147,17 @@ public class TileSetsFormatHtml implements TileSetsFormatExtension {
             .ensureLastPathSegments(api.getData().getSubPath().toArray(String[]::new))
             .toString();
     String styleUrl =
-        htmlConfig
-            .map(
-                cfg ->
-                    cfg.getStyle(
-                        tilesConfig.map(TilesConfiguration::getStyle),
-                        collectionId,
-                        serviceUrl,
-                        mapClientType))
-            .orElse(null);
+        tiles.getTilesets().stream().allMatch(t -> t.getDataType() == DataType.vector)
+            ? htmlConfig
+                .map(
+                    cfg ->
+                        cfg.getStyle(
+                            tilesConfig.map(TilesConfiguration::getStyle),
+                            collectionId,
+                            serviceUrl,
+                            mapClientType))
+                .orElse(null)
+            : null;
     boolean removeZoomLevelConstraints =
         tilesConfig.map(TilesConfiguration::getRemoveZoomLevelConstraints).orElse(false);
 
