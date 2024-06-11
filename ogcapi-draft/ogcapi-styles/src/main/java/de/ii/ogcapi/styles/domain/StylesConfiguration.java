@@ -1572,6 +1572,16 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
   @Nullable
   Boolean getLayerControlAllLayers();
 
+  /**
+   * @langEn Option to add the `bounds` property to the vector source in a MapLibre style based on
+   *     the bounding box of the dataset or collection.
+   * @langDe Option zum Hinzufügen der Eigenschaft `bounds` zur Vektorquelle in einem
+   *     MapLibre-Style, der auf der Bounding-Box des Datensatzes oder der Collection basiert.
+   * @default false
+   */
+  @Nullable
+  Boolean getAddBoundsToVectorSource();
+
   @Override
   default Builder getBuilder() {
     return new ImmutableStylesConfiguration.Builder();
