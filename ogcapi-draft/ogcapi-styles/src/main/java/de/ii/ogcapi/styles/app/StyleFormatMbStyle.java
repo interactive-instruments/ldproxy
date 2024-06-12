@@ -31,6 +31,7 @@ import de.ii.ogcapi.styles.domain.MbStyleLayer.LayerType;
 import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleLayer;
+import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.services.domain.ServicesContext;
@@ -144,7 +145,16 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         new URICustomizer(servicesUri)
             .ensureLastPathSegments(api.getData().getSubPath().toArray(String[]::new));
     String serviceUrl = uriCustomizer.toString();
-    return stylesheetContent.getMbStyle().map(mbs -> mbs.replaceParameters(serviceUrl));
+    Optional<MbStyleStylesheet> stylesheet =
+        stylesheetContent.getMbStyle().map(mbs -> mbs.replaceParameters(serviceUrl));
+    if (collectionId
+        .map(s -> api.getData().getExtension(StylesConfiguration.class, s))
+        .orElse(api.getData().getExtension(StylesConfiguration.class))
+        .filter(cfg -> Boolean.TRUE.equals(cfg.getAddBoundsToVectorSource()))
+        .isPresent()) {
+      return stylesheet.map(mbs -> mbs.addBounds(api.getSpatialExtent(collectionId)));
+    }
+    return stylesheet;
   }
 
   @Override
