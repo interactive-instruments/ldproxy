@@ -7,13 +7,10 @@
  */
 package de.ii.ogcapi.tiles.app;
 
-import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
-
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Range;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
@@ -772,9 +769,15 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
     TileFormatExtension outputFormat = queryInput.getOutputFormat();
 
     String ts =
-        collectionData
-            .flatMap(tilesProviders::getTilesetId)
-            .orElse(tilesProviders.getTilesetId(apiData).orElse(DATASET_TILES));
+        collectionData.isPresent()
+            ? collectionData
+                .flatMap(cd -> cd.getExtension(TilesConfiguration.class))
+                .map(cfg -> cfg.getCollectionTileset(collectionData.get().getId()))
+                .orElseThrow()
+            : apiData
+                .getExtension(TilesConfiguration.class)
+                .map(TilesConfiguration::getDatasetTileset)
+                .orElseThrow();
     String tileset =
         queryInput
             .getStyleId()
@@ -800,14 +803,8 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                 .getApi()
                 .getSpatialExtent(
                     queryInput.getCollectionId(), queryInput.getBoundingBox().getEpsgCrs()))
-        .propertyTransformations(
-            collectionData
-                .flatMap(cd -> cd.getExtension(FeaturesCoreConfiguration.class))
-                .map(
-                    pt ->
-                        pt.withSubstitutions(
-                            FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
-                                requestContext.getApiUri()))));
+        .substitutions(
+            FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(requestContext.getApiUri()));
 
     Optional<TileGenerationSchema> generationSchema =
         tileProvider.generator().isAvailable() && queryInput.getStyleId().isEmpty()

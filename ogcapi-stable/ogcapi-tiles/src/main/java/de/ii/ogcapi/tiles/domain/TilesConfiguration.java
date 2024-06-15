@@ -10,6 +10,7 @@ package de.ii.ogcapi.tiles.domain;
 import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.Lists;
 import de.ii.ogcapi.features.core.domain.SfFlatConfiguration;
@@ -427,7 +428,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
     return Objects.nonNull(providers)
         && hasTiles(
             providers.getTileProvider(apiData, apiData.getCollectionData(collectionId)),
-            collectionId,
+            getCollectionTileset(collectionId),
             (tileset, tileAccess) -> true);
   }
 
@@ -436,7 +437,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
     return Objects.nonNull(providers)
         && hasTiles(
             providers.getTileProvider(apiData, apiData.getCollectionData(collectionId)),
-            collectionId,
+            getCollectionTileset(collectionId),
             (tileset, tileAccess) -> tileAccess.tilesetHasVectorTiles(tileset));
   }
 
@@ -445,7 +446,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
     return Objects.nonNull(providers)
         && hasTiles(
             providers.getTileProvider(apiData, apiData.getCollectionData(collectionId)),
-            collectionId,
+            getCollectionTileset(collectionId),
             (tileset, tileAccess) -> tileAccess.tilesetHasMapTiles(tileset));
   }
 
@@ -454,21 +455,21 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
     return Objects.nonNull(providers)
         && hasTiles(
             providers.getTileProvider(apiData, apiData.getCollectionData(collectionId)),
-            collectionId,
+            getCollectionTileset(collectionId),
             (tileset, tileAccess) -> tileAccess.tilesetHasStyledMapTiles(tileset));
   }
 
   default boolean hasDatasetTiles(TilesProviders providers, OgcApiDataV2 apiData) {
     return Objects.nonNull(providers)
         && hasTiles(
-            providers.getTileProvider(apiData), DATASET_TILES, (tileset, tileAccess) -> true);
+            providers.getTileProvider(apiData), getDatasetTileset(), (tileset, tileAccess) -> true);
   }
 
   default boolean hasDatasetVectorTiles(TilesProviders providers, OgcApiDataV2 apiData) {
     return Objects.nonNull(providers)
         && hasTiles(
             providers.getTileProvider(apiData),
-            DATASET_TILES,
+            getDatasetTileset(),
             (tileset, tileAccess) -> tileAccess.tilesetHasVectorTiles(tileset));
   }
 
@@ -476,7 +477,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
     return Objects.nonNull(providers)
         && hasTiles(
             providers.getTileProvider(apiData),
-            DATASET_TILES,
+            getDatasetTileset(),
             (tileset, tileAccess) -> tileAccess.tilesetHasMapTiles(tileset));
   }
 
@@ -484,15 +485,14 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
     return Objects.nonNull(providers)
         && hasTiles(
             providers.getTileProvider(apiData),
-            DATASET_TILES,
+            getDatasetTileset(),
             (tileset, tileAccess) -> tileAccess.tilesetHasStyledMapTiles(tileset));
   }
 
   default boolean hasTiles(
       Optional<TileProvider> provider,
-      String tilesetDefault,
+      String tileset,
       BiFunction<String, TileAccess, Boolean> testForTileType) {
-    String tileset = Objects.requireNonNullElse(getTileProviderTileset(), tilesetDefault);
     return provider
         .filter(tileProvider -> tileProvider.getData().getTilesets().containsKey(tileset))
         .filter(
@@ -500,6 +500,21 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
                 tileProvider.access().isAvailable()
                     && testForTileType.apply(tileset, tileProvider.access().get()))
         .isPresent();
+  }
+
+  default String getCollectionTileset(String collectionId) {
+    if (Objects.isNull(getTileProviderTileset())
+        || DATASET_TILES.equals(getTileProviderTileset())) {
+      return collectionId;
+    }
+    return getTileProviderTileset();
+  }
+
+  @Value.Auxiliary
+  @Value.Derived
+  @JsonIgnore
+  default String getDatasetTileset() {
+    return Objects.requireNonNullElse(getTileProviderTileset(), DATASET_TILES);
   }
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
@@ -546,7 +561,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
                 collection ->
                     collection
                         .getExtension(TilesConfiguration.class)
-                        .map(TilesConfiguration::getTileProviderTileset)
+                        .map(tc -> tc.getCollectionTileset(collection.getId()))
                         .filter(tileset::equals)
                         .isPresent())
             .findFirst();

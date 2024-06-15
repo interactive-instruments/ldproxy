@@ -7,9 +7,6 @@
  */
 package de.ii.ogcapi.tiles.domain;
 
-import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
-
-import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.resiliency.OptionalVolatileCapability;
@@ -63,7 +60,7 @@ public interface TilesProviders {
   default Optional<String> getTilesetId(OgcApiDataV2 apiData) {
     return apiData
         .getExtension(TilesConfiguration.class)
-        .map(cfg -> Optional.ofNullable(cfg.getTileProviderTileset()).orElse(DATASET_TILES));
+        .map(TilesConfiguration::getDatasetTileset);
   }
 
   default Map<String, TilesetMetadata> getRasterTilesetMetadata(OgcApiDataV2 apiData) {
@@ -72,12 +69,12 @@ public interface TilesProviders {
             .filter(provider -> provider.access().isAvailable())
             .map(provider -> provider.access().get());
     if (optionalProvider.isEmpty()) {
-      return ImmutableMap.of();
+      return Map.of();
     }
 
     Optional<String> optionalTilesetId = getTilesetId(apiData);
     if (optionalTilesetId.isEmpty()) {
-      return ImmutableMap.of();
+      return Map.of();
     }
 
     return optionalProvider.get().getMapStyles(optionalTilesetId.get()).stream()
@@ -135,9 +132,7 @@ public interface TilesProviders {
   default Optional<String> getTilesetId(FeatureTypeConfigurationOgcApi collectionData) {
     return collectionData
         .getExtension(TilesConfiguration.class)
-        .map(
-            cfg ->
-                Optional.ofNullable(cfg.getTileProviderTileset()).orElse(collectionData.getId()));
+        .map(cfg -> cfg.getCollectionTileset(collectionData.getId()));
   }
 
   default Map<String, TilesetMetadata> getRasterTilesetMetadata(
@@ -147,12 +142,12 @@ public interface TilesProviders {
             .filter(provider -> provider.access().isAvailable())
             .map(provider -> provider.access().get());
     if (optionalProvider.isEmpty()) {
-      return ImmutableMap.of();
+      return Map.of();
     }
 
     Optional<String> optionalTilesetId = getTilesetId(collectionData);
     if (optionalTilesetId.isEmpty()) {
-      return ImmutableMap.of();
+      return Map.of();
     }
 
     return optionalProvider.get().getMapStyles(optionalTilesetId.get()).stream()
