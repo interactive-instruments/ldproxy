@@ -28,6 +28,7 @@ import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.jobs.domain.JobQueue;
 import de.ii.xtraplatform.jobs.domain.JobSet;
 import de.ii.xtraplatform.services.domain.TaskContext;
+import de.ii.xtraplatform.tiles.domain.Cache.Storage;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParameters;
 import de.ii.xtraplatform.tiles.domain.SeedingOptions;
 import de.ii.xtraplatform.tiles.domain.TileGenerationParameters;
@@ -36,11 +37,14 @@ import de.ii.xtraplatform.tiles.domain.TileProviderFeaturesData;
 import de.ii.xtraplatform.tiles.domain.TileSeedingJobSet;
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import org.slf4j.Logger;
@@ -299,10 +303,77 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
               }
             });
 
+    boolean perJob =
+        ((TileProviderFeaturesData) tileProvider.getData())
+            .getCaches().stream()
+                .anyMatch(cache -> cache.getSeeded() && cache.getStorage() == Storage.PER_JOB);
+
+    Map<String, List<String>> rasterForVectorTilesets =
+        tilesets.entrySet().stream()
+            .map(
+                entry ->
+                    Map.entry(
+                        entry.getKey(),
+                        tileProvider.access().get().getMapStyles(entry.getKey()).stream()
+                            .map(
+                                style ->
+                                    tileProvider
+                                        .access()
+                                        .get()
+                                        .getMapStyleTileset(entry.getKey(), style))
+                            .collect(Collectors.toList())))
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+
+    Map<String, List<String>> rasterForVectorCombinedTilesets =
+        combinedTilesets.entrySet().stream()
+            .map(
+                entry ->
+                    Map.entry(
+                        entry.getKey(),
+                        tileProvider.access().get().getMapStyles(entry.getKey()).stream()
+                            .map(
+                                style ->
+                                    tileProvider
+                                        .access()
+                                        .get()
+                                        .getMapStyleTileset(entry.getKey(), style))
+                            .collect(Collectors.toList())))
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+
     JobSet jobSet = TileSeedingJobSet.of(tileProvider.getId(), tilesets, reseed);
 
+    if (!perJob) {
+      Map<String, TileGenerationParameters> rasterTilesets =
+          tilesets.entrySet().stream()
+              .flatMap(
+                  ts ->
+                      rasterForVectorTilesets.get(ts.getKey()).stream()
+                          .map(rts -> Map.entry(rts, ts.getValue())))
+              .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+      if (!rasterTilesets.isEmpty()) {
+        jobSet = jobSet.with(TileSeedingJobSet.of(tileProvider.getId(), rasterTilesets, reseed));
+      }
+    }
+
     if (!combinedTilesets.isEmpty()) {
-      jobSet = jobSet.with(TileSeedingJobSet.of(tileProvider.getId(), combinedTilesets, reseed));
+      JobSet combinedJobSet = TileSeedingJobSet.of(tileProvider.getId(), combinedTilesets, reseed);
+
+      if (!perJob) {
+        Map<String, TileGenerationParameters> rasterCombinedTilesets =
+            combinedTilesets.entrySet().stream()
+                .flatMap(
+                    ts ->
+                        rasterForVectorCombinedTilesets.get(ts.getKey()).stream()
+                            .map(rts -> Map.entry(rts, ts.getValue())))
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+        if (!rasterCombinedTilesets.isEmpty()) {
+          combinedJobSet =
+              combinedJobSet.with(
+                  TileSeedingJobSet.of(tileProvider.getId(), rasterCombinedTilesets, reseed));
+        }
+      }
+
+      jobSet = jobSet.with(combinedJobSet);
     }
 
     jobQueue.push(jobSet);
