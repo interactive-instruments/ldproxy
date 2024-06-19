@@ -402,7 +402,7 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
     TileResult result = tileAccess.getTile(tileQuery);
 
     if (!result.isAvailable()) {
-      if (result.isOutsideLimits() || tileAccess.tilesMayBeUnavailable()) {
+      if (result.isOutsideLimits() || result.isNotFound() || tileAccess.tilesMayBeUnavailable()) {
         throw result.getError().map(NotFoundException::new).orElseGet(NotFoundException::new);
       } else {
         throw result
