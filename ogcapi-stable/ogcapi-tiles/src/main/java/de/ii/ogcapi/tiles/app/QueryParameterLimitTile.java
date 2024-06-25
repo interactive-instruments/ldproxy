@@ -159,6 +159,7 @@ public class QueryParameterLimitTile extends ApiExtensionCache
                           defaults ->
                               Optional.ofNullable(
                                   ((TileGenerationOptions) defaults).getFeatureLimit())))
+          .filter(limit -> limit != 100000)
           .orElse(null);
     }
 
