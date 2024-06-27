@@ -20,6 +20,7 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ImmutableOgcApiResourceSet;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.tiles.app.TilesBuildingBlock;
 import de.ii.ogcapi.tiles.domain.ImmutableQueryInputTileSets.Builder;
@@ -67,12 +68,16 @@ public abstract class AbstractEndpointTileSetsDataset extends Endpoint {
     HttpMethods method = HttpMethods.GET;
     List<OgcApiQueryParameter> queryParameters =
         getQueryParameters(extensionRegistry, apiData, path);
+    List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
     String operationSummary = "retrieve a list of the available tile sets";
     Optional<String> operationDescription =
         Optional.of(
             "This operation fetches the list of multi-layer tile sets supported by this API.");
     ImmutableOgcApiResourceSet.Builder resourceBuilderSet =
-        new ImmutableOgcApiResourceSet.Builder().path(path).subResourceType("Tile Set");
+        new ImmutableOgcApiResourceSet.Builder()
+            .path(path)
+            .pathParameters(pathParameters)
+            .subResourceType("Tile Set");
     ApiOperation.getResource(
             apiData,
             path,
