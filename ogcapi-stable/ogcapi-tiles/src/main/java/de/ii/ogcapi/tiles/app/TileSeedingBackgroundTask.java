@@ -342,34 +342,38 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
 
     JobSet jobSet = TileSeedingJobSet.of(tileProvider.getId(), tilesets, reseed);
 
-    if (!perJob) {
-      Map<String, TileGenerationParameters> rasterTilesets =
-          tilesets.entrySet().stream()
-              .flatMap(
-                  ts ->
-                      rasterForVectorTilesets.get(ts.getKey()).stream()
-                          .map(rts -> Map.entry(rts, ts.getValue())))
-              .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-      if (!rasterTilesets.isEmpty()) {
+    Map<String, TileGenerationParameters> rasterTilesets =
+        tilesets.entrySet().stream()
+            .flatMap(
+                ts ->
+                    rasterForVectorTilesets.get(ts.getKey()).stream()
+                        .map(rts -> Map.entry(rts, ts.getValue())))
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+    if (!rasterTilesets.isEmpty()) {
+      if (!perJob) {
         jobSet = jobSet.with(TileSeedingJobSet.of(tileProvider.getId(), rasterTilesets, reseed));
+      } else {
+        jobSet = TileSeedingJobSet.with(jobSet, rasterTilesets);
       }
     }
 
     if (!combinedTilesets.isEmpty()) {
       JobSet combinedJobSet = TileSeedingJobSet.of(tileProvider.getId(), combinedTilesets, reseed);
 
-      if (!perJob) {
-        Map<String, TileGenerationParameters> rasterCombinedTilesets =
-            combinedTilesets.entrySet().stream()
-                .flatMap(
-                    ts ->
-                        rasterForVectorCombinedTilesets.get(ts.getKey()).stream()
-                            .map(rts -> Map.entry(rts, ts.getValue())))
-                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-        if (!rasterCombinedTilesets.isEmpty()) {
+      Map<String, TileGenerationParameters> rasterCombinedTilesets =
+          combinedTilesets.entrySet().stream()
+              .flatMap(
+                  ts ->
+                      rasterForVectorCombinedTilesets.get(ts.getKey()).stream()
+                          .map(rts -> Map.entry(rts, ts.getValue())))
+              .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+      if (!rasterCombinedTilesets.isEmpty()) {
+        if (!perJob) {
           combinedJobSet =
               combinedJobSet.with(
                   TileSeedingJobSet.of(tileProvider.getId(), rasterCombinedTilesets, reseed));
+        } else {
+          combinedJobSet = TileSeedingJobSet.with(combinedJobSet, rasterCombinedTilesets);
         }
       }
 
