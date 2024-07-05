@@ -19,6 +19,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesProvidersCache;
+import de.ii.xtraplatform.base.domain.LogContext.MARKER;
 import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
@@ -213,6 +214,14 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
       // exceptions during seeding on shutdown are currently inevitable), but for other situations
       // we still add the error to the log
       if (!taskContext.isStopped()) {
+        if (LOGGER.isErrorEnabled()) {
+          LOGGER.error(
+              "An error occurred during seeding. Note that this may be a side-effect of a server shutdown.",
+              e);
+        }
+        if (LOGGER.isDebugEnabled(MARKER.STACKTRACE)) {
+          LOGGER.debug("Stacktrace", e);
+        }
         throw new RuntimeException(
             "An error occurred during seeding. Note that this may be a side-effect of a server shutdown.",
             e);

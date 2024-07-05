@@ -405,10 +405,16 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
       if (result.isOutsideLimits() || result.isNotFound() || tileAccess.tilesMayBeUnavailable()) {
         throw result.getError().map(NotFoundException::new).orElseGet(NotFoundException::new);
       } else {
-        throw result
-            .getError()
-            .map(IllegalStateException::new)
-            .orElseThrow(IllegalStateException::new);
+        throw new IllegalStateException(
+            String.format(
+                "Error retrieving tile %s/%s/%d/%d/%d.%s: %s",
+                tileQuery.getTileset(),
+                tileQuery.getTileMatrixSet().getId(),
+                tileQuery.getLevel(),
+                tileQuery.getRow(),
+                tileQuery.getCol(),
+                queryInput.getOutputFormat().getMediaType().fileExtension(),
+                result.getError().orElse("reason unknown")));
       }
     }
 
