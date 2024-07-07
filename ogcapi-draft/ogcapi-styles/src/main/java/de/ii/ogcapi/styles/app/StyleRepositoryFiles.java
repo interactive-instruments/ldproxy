@@ -810,6 +810,14 @@ public class StyleRepositoryFiles extends AbstractVolatile
                       requestContext.getLanguage()));
             });
 
+    if (tilesProviders
+        .getRasterTilesetMetadata(apiData, apiData.getCollectionData(collectionId).get())
+        .containsKey(styleId)) {
+      builder.addLinks(
+          stylesLinkGenerator.generateMapTilesLink(
+              requestContext.getUriCustomizer(), styleId, i18n, requestContext.getLanguage()));
+    }
+
     StyleEntry styleEntry =
         builder
             .addLinks(

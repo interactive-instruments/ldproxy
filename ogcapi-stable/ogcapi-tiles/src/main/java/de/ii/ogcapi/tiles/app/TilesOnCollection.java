@@ -79,6 +79,7 @@ public class TilesOnCollection implements CollectionExtension {
                           && format.isEnabledForApi(api.getData(), featureTypeConfiguration.getId())
                           && format.isApplicable(
                               api.getData(),
+                              featureTypeConfiguration.getId(),
                               "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
       boolean hasMapTiles =
           extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
@@ -88,6 +89,7 @@ public class TilesOnCollection implements CollectionExtension {
                           && format.isEnabledForApi(api.getData(), featureTypeConfiguration.getId())
                           && format.isApplicable(
                               api.getData(),
+                              featureTypeConfiguration.getId(),
                               "/collections/{collectionId}/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
 
       if (!hasVectorTiles && !hasMapTiles) {
