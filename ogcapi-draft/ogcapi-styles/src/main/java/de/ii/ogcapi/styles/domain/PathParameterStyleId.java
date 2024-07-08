@@ -80,7 +80,8 @@ public class PathParameterStyleId implements OgcApiPathParameter {
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
     return isEnabledForApi(apiData)
         && (definitionPath.endsWith("/styles/{styleId}")
-            || definitionPath.endsWith("/styles/{styleId}/metadata"));
+            || definitionPath.endsWith("/styles/{styleId}/metadata")
+            || definitionPath.endsWith("/styles/{styleId}/legend"));
   }
 
   @Override

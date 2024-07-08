@@ -54,13 +54,13 @@ public abstract class ApiEndpointDefinition {
   public static final int SORT_PRIORITY_STYLES = 2000;
   public static final int SORT_PRIORITY_STYLESHEET = 2010;
   public static final int SORT_PRIORITY_STYLE_METADATA = 2020;
+  public static final int SORT_PRIORITY_STYLE_LEGEND = 2025;
   public static final int SORT_PRIORITY_STYLES_MANAGER = 2030;
-  public static final int SORT_PRIORITY_STYLE_METADATA_MANAGER = 2040;
   public static final int SORT_PRIORITY_STYLES_COLLECTION = 2050;
   public static final int SORT_PRIORITY_STYLESHEET_COLLECTION = 2060;
   public static final int SORT_PRIORITY_STYLE_METADATA_COLLECTION = 2070;
+  public static final int SORT_PRIORITY_STYLE_LEGEND_COLLECTION = 2075;
   public static final int SORT_PRIORITY_STYLES_MANAGER_COLLECTION = 2080;
-  public static final int SORT_PRIORITY_STYLE_METADATA_MANAGER_COLLECTION = 2090;
   public static final int SORT_PRIORITY_RESOURCES = 2100;
   public static final int SORT_PRIORITY_RESOURCE = 2110;
   public static final int SORT_PRIORITY_RESOURCES_MANAGER = 2120;

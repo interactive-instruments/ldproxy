@@ -11,6 +11,7 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
+import de.ii.xtraplatform.blobs.domain.Blob;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
 import java.io.IOException;
 import java.util.Date;
@@ -206,6 +207,17 @@ public interface StyleRepository extends Volatile2 {
       Optional<String> collectionId,
       String styleId,
       ApiRequestContext requestContext);
+
+  /**
+   * fetches the legend of a style
+   *
+   * @param apiData information about the API
+   * @param collectionId the optional collection, or empty for a style collection at root level
+   * @param styleId the identifier of the style in the style collection
+   * @return the style legend, or throws an exception, if the style or legend is not available
+   */
+  Optional<Blob> getStyleLegend(
+      OgcApiDataV2 apiData, Optional<String> collectionId, String styleId);
 
   /**
    * validate the style configuration during startup

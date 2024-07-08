@@ -128,6 +128,7 @@ public class StylesBuildingBlock implements ApiBuildingBlock {
           ExternalDocumentation.of(
               "https://docs.ogc.org/DRAFTS/20-009.html", "OGC API - Styles (DRAFT)"));
   public static final String STORE_RESOURCE_TYPE = "other-styles";
+  public static final String STORE_RESOURCE_TYPE_LEGENDS = "legends";
 
   private final ExtensionRegistry extensionRegistry;
 
@@ -153,6 +154,7 @@ public class StylesBuildingBlock implements ApiBuildingBlock {
         .webmapWithPopup(true)
         .webmapWithLayerControl(false)
         .layerControlAllLayers(false)
+        .legendEnabled(false)
         .build();
   }
 }
