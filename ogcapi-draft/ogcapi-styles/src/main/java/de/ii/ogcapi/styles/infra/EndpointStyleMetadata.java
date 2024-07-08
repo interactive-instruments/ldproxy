@@ -153,11 +153,7 @@ public class EndpointStyleMetadata extends Endpoint implements ApiExtensionHealt
 
     OgcApiDataV2 apiData = api.getData();
     checkPathParameter(
-        extensionRegistry,
-        apiData,
-        "/collections/{collectionId}/styles/{styleId}/metadata",
-        "styleId",
-        styleId);
+        extensionRegistry, apiData, "/styles/{styleId}/metadata", "styleId", styleId);
 
     QueriesHandlerStyles.QueryInputStyle queryInput =
         new ImmutableQueryInputStyle.Builder()
