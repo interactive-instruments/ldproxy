@@ -42,28 +42,24 @@ import javax.inject.Singleton;
  * - `DIAMETER3D(Geometry): Double` gibt den Durchmesser einer Geometrie mit 3D-Koordinaten zurück.
  *     </code>
  * @conformanceEn This building block implements requirements of the conformance classes *Filter*
- *     and *Features Filter* from the draft specification [OGC API - Features - Part 3: Common Query
- *     Language](https://docs.ogc.org/DRAFTS/19-079r2.html) as well as the conformance classes
+ *     and *Features Filter* from the standard [OGC API - Features - Part 3:
+ *     Filtering](https://docs.ogc.org/is/19-079r2/19-079r2.html) as well as the conformance classes
  *     *Basic CQL2*, *Advanced Comparison Operators*, *Case-insensitive Comparisons*,
  *     *Accent-insensitive Comparisons*, *Basic Spatial Functions*, *Basic Spatial Functions with
  *     additional Spatial Literals*, *Spatial Functions*, *Temporal Functions*, *Array Functions*,
  *     *Property-Property Comparisons*, *CQL2 Text encoding*, and *CQL2 JSON encoding* from the
- *     draft specification [Common Query Language (CQL2](https://docs.ogc.org/DRAFTS/21-065r1.html).
- *     The implementation is subject to change in the course of the development and approval process
- *     of the draft.
+ *     standard [Common Query Language (CQL2](https://docs.ogc.org/is/21-065r1/21-065r1.html).
  *     <p>The publication of queryables is controlled via [Feature Collections -
  *     Queryables](feature_collections_-_queryables.md) and is a prerequisite for clients to be able
  *     to determine the queryable feature properties.
  * @conformanceDe Dieser Baustein implementiert die Anforderungen der Konformitätsklassen *Filter*
- *     und *Features Filter* aus dem Entwurf der Spezifikation [OGC API - Features - Part 3: Common
- *     Query Language](https://docs.ogc.org/DRAFTS/19-079r2.html) sowie die Konformitätsklassen
+ *     und *Features Filter* aus dem Standard [OGC API - Features - Part 3:
+ *     Filtering](https://docs.ogc.org/is/19-079r2/19-079r2.html) sowie die Konformitätsklassen
  *     *Basic CQL2*, *Advanced Comparison Operators*, *Case-insensitive Comparisons*,
  *     *Accent-insensitive Comparisons*, *Basic Spatial Functions*, *Basic Spatial Functions with
  *     additional Spatial Literals*, *Spatial Functions*, *Temporal Functions*, *Array Functions*,
  *     *Property-Property Comparisons*, *CQL2 Text encoding*, und *CQL2 JSON encoding* aus dem
- *     Entwurf der Spezifikation [Common Query Language
- *     (CQL2](https://docs.ogc.org/DRAFTS/21-065r1.html). Die Implementierung wird sich im Zuge der
- *     weiteren Standardisierung der Spezifikation noch ändern.
+ *     Standard [Common Query Language (CQL2](https://docs.ogc.org/is/21-065r1/21-065r1.html).
  *     <p>Die Veröffentlichung der Queryables wird über [Feature Collections -
  *     Queryables](feature_collections_-_queryables.md) gesteuert und ist Voraussetzung, damit
  *     Clients die abfragbaren Objekteigenschaften bestimmen können.
@@ -96,12 +92,12 @@ import javax.inject.Singleton;
 public class FilterBuildingBlock implements ApiBuildingBlock {
 
   public static final Optional<SpecificationMaturity> MATURITY =
-      Optional.of(SpecificationMaturity.DRAFT_OGC);
+      Optional.of(SpecificationMaturity.STABLE_OGC);
   public static final Optional<ExternalDocumentation> SPEC =
       Optional.of(
           ExternalDocumentation.of(
-              "https://docs.ogc.org/DRAFTS/19-079r2.html",
-              "OGC API - Features - Part 3: Filtering (DRAFT)"));
+              "https://docs.ogc.org/is/19-079r2/19-079r2.html",
+              "OGC API - Features - Part 3: Filtering"));
 
   @Inject
   public FilterBuildingBlock() {}

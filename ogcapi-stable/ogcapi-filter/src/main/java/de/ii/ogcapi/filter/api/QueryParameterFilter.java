@@ -117,8 +117,8 @@ public class QueryParameterFilter extends ApiExtensionCache
   @Override
   public String getDescription() {
     return "Filter features in the collection using the query expression in the parameter value. Filter expressions "
-        + "are written in the [Common Query Language (CQL2)](https://docs.ogc.org/DRAFTS/21-065r1.html), "
-        + "which is a candidate OGC standard. This API implements the draft version from May 2022.\n\n"
+        + "are written in the [Common Query Language (CQL2)](https://docs.ogc.org/is/21-065r1/21-065r1.html), "
+        + "which is an OGC Standard.\n\n"
         + "The recommended language for this query parameter is CQL2 Text (`filter-lang=cql2-text`).\n\n"
         + "CQL2 Text expressions are similar to SQL expressions and also support spatial, temporal and array predicates. "
         + "All property references must be queryables of the collection and must be declared in the Queryables sub-resource "
