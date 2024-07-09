@@ -105,11 +105,11 @@ import javax.inject.Singleton;
  * @ref:cfgProperties {@link de.ii.ogcapi.styles.domain.ImmutableStylesConfiguration}
  * @ref:endpoints {@link de.ii.ogcapi.styles.infra.EndpointStyles}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyle}, {@link
- *     de.ii.ogcapi.styles.infra.EndpointStyleMetadata}, {@link *
+ *     de.ii.ogcapi.styles.infra.EndpointStyleMetadata}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyleLegend}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStylesCollection}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyleCollection}, {@link
- *     de.ii.ogcapi.styles.infra.EndpointStyleMetadataCollection}, {@link *
+ *     de.ii.ogcapi.styles.infra.EndpointStyleMetadataCollection}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyleLegendCollection}, {@link
  *     de.ii.ogcapi.styles.infra.manager.EndpointStylesManager}, {@link
  *     de.ii.ogcapi.styles.infra.manager.EndpointStylesManagerCollection}
