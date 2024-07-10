@@ -29,7 +29,6 @@ import de.ii.xtraplatform.features.domain.FeatureChangeListener;
 import de.ii.xtraplatform.jobs.domain.JobQueue;
 import de.ii.xtraplatform.jobs.domain.JobSet;
 import de.ii.xtraplatform.services.domain.TaskContext;
-import de.ii.xtraplatform.tiles.domain.Cache.Storage;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParameters;
 import de.ii.xtraplatform.tiles.domain.SeedingOptions;
 import de.ii.xtraplatform.tiles.domain.TileGenerationParameters;
@@ -312,11 +311,6 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
               }
             });
 
-    boolean perJob =
-        ((TileProviderFeaturesData) tileProvider.getData())
-            .getCaches().stream()
-                .anyMatch(cache -> cache.getSeeded() && cache.getStorage() == Storage.PER_JOB);
-
     Map<String, List<String>> rasterForVectorTilesets =
         tilesets.entrySet().stream()
             .map(
@@ -359,11 +353,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
                         .map(rts -> Map.entry(rts, ts.getValue())))
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     if (!rasterTilesets.isEmpty()) {
-      if (!perJob) {
-        jobSet = jobSet.with(TileSeedingJobSet.of(tileProvider.getId(), rasterTilesets, reseed));
-      } else {
-        jobSet = TileSeedingJobSet.with(jobSet, rasterTilesets);
-      }
+      jobSet = jobSet.with(TileSeedingJobSet.of(tileProvider.getId(), rasterTilesets, reseed));
     }
 
     if (!combinedTilesets.isEmpty()) {
@@ -377,13 +367,9 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
                           .map(rts -> Map.entry(rts, ts.getValue())))
               .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
       if (!rasterCombinedTilesets.isEmpty()) {
-        if (!perJob) {
-          combinedJobSet =
-              combinedJobSet.with(
-                  TileSeedingJobSet.of(tileProvider.getId(), rasterCombinedTilesets, reseed));
-        } else {
-          combinedJobSet = TileSeedingJobSet.with(combinedJobSet, rasterCombinedTilesets);
-        }
+        combinedJobSet =
+            combinedJobSet.with(
+                TileSeedingJobSet.of(tileProvider.getId(), rasterCombinedTilesets, reseed));
       }
 
       jobSet = jobSet.with(combinedJobSet);
