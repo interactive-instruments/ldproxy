@@ -33,11 +33,14 @@ import javax.inject.Singleton;
 /**
  * @title skipGeometry
  * @endpoints Features, Feature
- * @langEn Use this option to suppress geometries in the response.
- * @langDe Verwenden Sie diese Option, um Geometrien in der Antwort zu unterdrücken.
+ * @langEn **Deprecated**, use `properties` or `exclude-properties` instead. Use this option to
+ *     suppress geometries in the response.
+ * @langDe **Deprecated**, verwenden Sie stattdessen `properties` oder `exclude-properties`.
+ *     Verwenden Sie diese Option, um Geometrien in der Antwort zu unterdrücken.
  */
 @Singleton
 @AutoBind
+@Deprecated(since = "4.2.0", forRemoval = true)
 public class QueryParameterSkipGeometry extends ApiExtensionCache
     implements OgcApiQueryParameter, FeatureQueryParameter, TypedQueryParameter<Boolean> {
 
