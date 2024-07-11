@@ -56,7 +56,6 @@ public class ObjectSchema extends io.swagger.v3.oas.models.media.ObjectSchema {
                         a.annotationType(), com.fasterxml.jackson.annotation.JsonAnyGetter.class));
   }
 
-  @SuppressWarnings("UnstableApiUsage")
   private void processMethod(Class<?> baseClazz, Method m, ClassSchemaCache classSchemaCache) {
     String name = getPropertyName(m);
     Type type = m.getGenericReturnType();
@@ -71,6 +70,18 @@ public class ObjectSchema extends io.swagger.v3.oas.models.media.ObjectSchema {
     if (type instanceof ParameterizedType) {
       this.addProperties(
           name, generateSchema((ParameterizedType) type, baseClazz, classSchemaCache));
+      boolean required = false;
+      for (Annotation a : m.getAnnotations()) {
+        if (Objects.equals(a.annotationType(), JsonProperty.class)) {
+          if (m.getAnnotation(JsonProperty.class).required()) {
+            required = true;
+            break;
+          }
+        }
+      }
+      if (required) {
+        this.addRequiredItem(name);
+      }
     } else {
       Class<?> returnType = m.getReturnType();
       if (LOGGER.isTraceEnabled()) {
