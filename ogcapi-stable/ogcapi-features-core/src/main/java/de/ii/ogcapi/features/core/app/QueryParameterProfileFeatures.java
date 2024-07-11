@@ -12,6 +12,7 @@ import de.ii.ogcapi.common.domain.QueryParameterProfile;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.Profile;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -51,7 +52,7 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterProfileFeatures extends QueryParameterProfile
-    implements TypedQueryParameter<Profile> {
+    implements TypedQueryParameter<Profile>, ConformanceClass {
 
   private final FeaturesCoreProviders providers;
 
@@ -138,5 +139,12 @@ public class QueryParameterProfileFeatures extends QueryParameterProfile
   @Override
   public Optional<SpecificationMaturity> getSpecificationMaturity() {
     return Optional.of(SpecificationMaturity.DRAFT_OGC);
+  }
+
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return List.of(
+        "http://www.opengis.net/spec/ogcapi-features-5/0.0/conf/profile-parameter",
+        "http://www.opengis.net/spec/ogcapi-features-5/0.0/conf/profile-references");
   }
 }
