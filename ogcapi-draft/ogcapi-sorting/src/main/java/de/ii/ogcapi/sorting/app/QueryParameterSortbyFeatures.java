@@ -11,7 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.ItemType;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
@@ -80,9 +80,13 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
 
-    // add feature-specific conformance class once we have a draft spec
+    if (isItemTypeUsed(apiData, ItemType.feature)) {
+      builder.add(
+          "http://www.opengis.net/spec/ogcapi-features-8/0.0/conf/sorting",
+          "http://www.opengis.net/spec/ogcapi-features-8/0.0/conf/features-sorting");
+    }
 
-    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record)) {
+    if (isItemTypeUsed(apiData, ItemType.record)) {
       builder.add("http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/sorting");
     }
 
