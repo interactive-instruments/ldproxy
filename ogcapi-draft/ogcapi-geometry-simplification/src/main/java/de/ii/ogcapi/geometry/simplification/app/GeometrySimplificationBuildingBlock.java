@@ -25,8 +25,8 @@ import javax.inject.Singleton;
  * @ref:cfgProperties {@link
  *     de.ii.ogcapi.geometry.simplification.app.ImmutableGeometrySimplificationConfiguration}
  * @ref:queryParameters {@link
- *     de.ii.ogcapi.geometry.simplification.app.QueryParameterMaxAllowableOffsetFeatures}, {@link *
- *     de.ii.ogcapi.geometry.simplification.app.QueryParameterZoomLevelFeatures}
+ *     de.ii.ogcapi.geometry.simplification.app.QueryParameterZoomLevelFeatures}, {@link
+ *     de.ii.ogcapi.geometry.simplification.app.QueryParameterMaxAllowableOffsetFeatures}
  */
 @Singleton
 @AutoBind
