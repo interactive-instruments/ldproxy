@@ -12,6 +12,7 @@ import com.google.common.base.Splitter;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -55,7 +56,8 @@ public class QueryParameterProperties extends ApiExtensionCache
     implements OgcApiQueryParameter,
         TypedQueryParameter<List<String>>,
         FeatureQueryParameter,
-        TileGenerationUserParameter {
+        TileGenerationUserParameter,
+        ConformanceClass {
 
   private final SchemaInfo schemaInfo;
   private final SchemaValidator schemaValidator;
@@ -180,5 +182,12 @@ public class QueryParameterProperties extends ApiExtensionCache
   @Override
   public Optional<ExternalDocumentation> getSpecificationRef() {
     return ProjectionsBuildingBlock.SPEC;
+  }
+
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return List.of(
+        "http://www.opengis.net/spec/ogcapi-features-6/0.0/conf/properties",
+        "http://www.opengis.net/spec/ogcapi-features-6/0.0/conf/properties-features");
   }
 }
