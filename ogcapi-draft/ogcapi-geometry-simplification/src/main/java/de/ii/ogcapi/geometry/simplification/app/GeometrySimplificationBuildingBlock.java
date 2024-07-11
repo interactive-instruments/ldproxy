@@ -25,6 +25,7 @@ import javax.inject.Singleton;
  * @ref:cfgProperties {@link
  *     de.ii.ogcapi.geometry.simplification.app.ImmutableGeometrySimplificationConfiguration}
  * @ref:queryParameters {@link
+ *     de.ii.ogcapi.geometry.simplification.app.QueryParameterZoomLevelFeatures}, {@link
  *     de.ii.ogcapi.geometry.simplification.app.QueryParameterMaxAllowableOffsetFeatures}
  */
 @Singleton
@@ -36,8 +37,8 @@ public class GeometrySimplificationBuildingBlock implements ApiBuildingBlock {
   public static final Optional<ExternalDocumentation> SPEC =
       Optional.of(
           ExternalDocumentation.of(
-              "https://github.com/opengeospatial/ogcapi-features/tree/master/proposals/geometry-simplification#readme",
-              "OGC API - Features - Part n: Geometry Simplification (PREDRAFT)"));
+              "https://docs.ogc.org/DRAFTS/24-020.html",
+              "OGC API - Features - Part 7: Geometry Simplification (DRAFT)"));
 
   @Inject
   public GeometrySimplificationBuildingBlock() {}
