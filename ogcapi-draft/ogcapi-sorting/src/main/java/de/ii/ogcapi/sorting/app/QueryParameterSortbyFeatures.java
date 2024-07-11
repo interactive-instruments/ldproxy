@@ -203,18 +203,16 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
                           .stream()
                           .collect(Collectors.toUnmodifiableList()))
               .orElse(ImmutableList.of());
-      schemaMap
-          .get(apiHashCode)
-          .put(
-              collectionId,
-              new ArraySchema()
-                  .items(
-                      new StringSchema()
-                          ._enum(
-                              sortables.stream()
-                                  .map(p -> ImmutableList.of(p, "+" + p, "-" + p))
-                                  .flatMap(Collection::stream)
-                                  .collect(Collectors.toUnmodifiableList()))));
+      List<String> enums =
+          sortables.stream()
+              .map(p -> ImmutableList.of(p, "+" + p, "-" + p))
+              .flatMap(Collection::stream)
+              .collect(Collectors.toUnmodifiableList());
+      StringSchema sortableSchema = new StringSchema();
+      if (!enums.isEmpty()) {
+        sortableSchema._enum(enums);
+      }
+      schemaMap.get(apiHashCode).put(collectionId, new ArraySchema().items(sortableSchema));
     }
     return schemaMap.get(apiHashCode).get(collectionId);
   }
