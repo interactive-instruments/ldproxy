@@ -21,7 +21,12 @@ import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
+import de.ii.xtraplatform.crs.domain.CrsInfo;
+import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
+import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
@@ -30,39 +35,47 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import org.kortforsyningen.proj.Units;
 
 /**
- * @title maxAllowableOffset
+ * @title zoom-level
  * @endpoints Features, Feature
- * @langEn All geometries are simplified using the [Douglas Peucker
- *     algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm).
- *     The value defines the maximum distance between original and simplified geometry ([Hausdorff
- *     distance](https://en.wikipedia.org/wiki/Hausdorff_distance)). The value has to use the unit
- *     of the given coordinate reference system (`CRS84` or the value of parameter `crs`).
- * @langDe Alle Geometrien werden mit dem
- *     [Douglas-Peucker-Algorithmus](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm)
- *     vereinfacht. Der Wert von `maxAllowableOffset` legt den maximalen Abstand zwischen der
- *     Originalgeometrie und der vereinfachten Geometrie fest
- *     ([Hausdorff-Abstand](https://en.wikipedia.org/wiki/Hausdorff_distance)). Der Wert ist in den
- *     Einheiten des Koordinatenreferenzsystems der Ausgabe (`CRS84` bzw. der Wert des Parameters
- *     Query-Parameters `crs`) angegeben.
+ * @langEn All geometries are simplified for the zoom level from the widely used tiling scheme in
+ *     web mapping (WebMercatorQuad). The map scale of zoom level 0 is roughly 1:560 million. The
+ *     scale doubles for every zoom level (e.g. zoom level 12 is 1:136495).
+ * @langDe Alle Geometrien werden für die Zoomstufe aus dem im Webmapping weit verbreiteten
+ *     Kachelschema (WebMercatorQuad) vereinfacht. Der Kartenmaßstab der Zoomstufe 0 beträgt etwa
+ *     1:560 Millionen. Der Maßstab verdoppelt sich für jede Zoomstufe (z.B. Zoomstufe 12 ist
+ *     1:136495).
  */
 @Singleton
 @AutoBind
-@Deprecated(since = "4.2.0", forRemoval = true)
-public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache
+public class QueryParameterZoomLevelFeatures extends ApiExtensionCache
     implements OgcApiQueryParameter, FeatureQueryParameter, TypedQueryParameter<Double> {
 
   private final SchemaValidator schemaValidator;
+  private final CrsInfo crsInfo;
+  private final Optional<TileMatrixSet> webMercatorQuad;
 
   @Inject
-  QueryParameterMaxAllowableOffsetFeatures(SchemaValidator schemaValidator) {
+  QueryParameterZoomLevelFeatures(
+      SchemaValidator schemaValidator,
+      CrsInfo crsInfo,
+      TileMatrixSetRepository tileMatrixSetRepository) {
     this.schemaValidator = schemaValidator;
+    this.crsInfo = crsInfo;
+    this.webMercatorQuad = tileMatrixSetRepository.get("WebMercatorQuad");
+  }
+
+  @Override
+  public int getPriority() {
+    // wait for parsed results of crs
+    return 2;
   }
 
   @Override
   public String getName() {
-    return "maxAllowableOffset";
+    return "zoom-level";
   }
 
   @Override
@@ -93,13 +106,29 @@ public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache
       QueryParameterSet parameters,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData) {
-    parameters.getValue(this).ifPresent(queryBuilder::maxAllowableOffset);
+    parameters
+        .getValue(this)
+        .ifPresent(
+            level -> {
+              double maxAllowableOffset = 559082264.028717 / 4096 / Math.pow(2, level);
+              EpsgCrs crs =
+                  parameters.getTypedValues().containsKey("crs")
+                      ? (EpsgCrs) parameters.getTypedValues().get("crs")
+                      : OgcCrs.CRS84;
+              if (crsInfo.getUnit(crs).equals(Units.DEGREE)) {
+                maxAllowableOffset /= 111319.5;
+              }
+              queryBuilder.maxAllowableOffset(maxAllowableOffset);
+
+              if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("Zoom level: {}; epsilon: {}", level, maxAllowableOffset);
+              }
+            });
   }
 
   @Override
   public String getDescription() {
-    return "This option can be used to specify the maxAllowableOffset to be used for simplifying the geometries in the response. "
-        + "The maxAllowableOffset is in the units of the response coordinate reference system.";
+    return "This option can be used to simplify geometries for the zoom level from the widely used tiling scheme in web mapping (WebMercatorQuad). The map scale of zoom level 0 is roughly 1:560 million. The scale doubles for every zoom level (e.g. zoom level 12 is 1:136495).";
   }
 
   @Override
@@ -113,7 +142,11 @@ public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache
                     || definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
   }
 
-  private final Schema<?> schema = new NumberSchema()._default(BigDecimal.valueOf(0)).example(0.05);
+  private final Schema<?> schema =
+      new NumberSchema()
+          .minimum(BigDecimal.valueOf(0))
+          .maximum(BigDecimal.valueOf(24))
+          .example(12.5);
 
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {
