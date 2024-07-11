@@ -40,8 +40,8 @@ public class TextSearchBuildingBlock implements ApiBuildingBlock {
   public static final Optional<ExternalDocumentation> SPEC =
       Optional.of(
           ExternalDocumentation.of(
-              "https://docs.ogc.org/DRAFTS/20-004.html",
-              "OGC API - Records - Part 1: Core (DRAFT)"));
+              "https://docs.ogc.org/DRAFTS/24-031.html",
+              "OGC API - Features - Part 9: Text Search (DRAFT)"));
 
   @Inject
   public TextSearchBuildingBlock() {}
