@@ -10,6 +10,7 @@ package de.ii.ogcapi.geometry.simplification.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -25,11 +26,10 @@ import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
-import de.ii.xtraplatform.tiles.domain.TileMatrixSet;
-import de.ii.xtraplatform.tiles.domain.TileMatrixSetRepository;
 import io.swagger.v3.oas.models.media.NumberSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -51,20 +51,18 @@ import org.kortforsyningen.proj.Units;
 @Singleton
 @AutoBind
 public class QueryParameterZoomLevelFeatures extends ApiExtensionCache
-    implements OgcApiQueryParameter, FeatureQueryParameter, TypedQueryParameter<Double> {
+    implements OgcApiQueryParameter,
+        FeatureQueryParameter,
+        TypedQueryParameter<Double>,
+        ConformanceClass {
 
   private final SchemaValidator schemaValidator;
   private final CrsInfo crsInfo;
-  private final Optional<TileMatrixSet> webMercatorQuad;
 
   @Inject
-  QueryParameterZoomLevelFeatures(
-      SchemaValidator schemaValidator,
-      CrsInfo crsInfo,
-      TileMatrixSetRepository tileMatrixSetRepository) {
+  QueryParameterZoomLevelFeatures(SchemaValidator schemaValidator, CrsInfo crsInfo) {
     this.schemaValidator = schemaValidator;
     this.crsInfo = crsInfo;
-    this.webMercatorQuad = tileMatrixSetRepository.get("WebMercatorQuad");
   }
 
   @Override
@@ -176,5 +174,12 @@ public class QueryParameterZoomLevelFeatures extends ApiExtensionCache
   @Override
   public Optional<ExternalDocumentation> getSpecificationRef() {
     return GeometrySimplificationBuildingBlock.SPEC;
+  }
+
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return List.of(
+        "http://www.opengis.net/spec/ogcapi-features-7/0.0/conf/zoom-level",
+        "http://www.opengis.net/spec/ogcapi-features-7/0.0/conf/zoom-level-features");
   }
 }
