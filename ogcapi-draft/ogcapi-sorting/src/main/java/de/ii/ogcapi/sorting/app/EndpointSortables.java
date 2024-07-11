@@ -23,6 +23,7 @@ import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
@@ -73,7 +74,7 @@ import org.slf4j.LoggerFactory;
 @Singleton
 @AutoBind
 @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-public class EndpointSortables extends EndpointSubCollection /* implements ConformanceClass */ {
+public class EndpointSortables extends EndpointSubCollection implements ConformanceClass {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointSortables.class);
 
@@ -92,12 +93,13 @@ public class EndpointSortables extends EndpointSubCollection /* implements Confo
     this.schemaCache = new SchemaCacheSortables(featuresCoreProviders);
   }
 
-  /* Wait for updates on Features Part n: Schemas
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-      return ImmutableList.of("http://www.opengis.net/spec/ogcapi-features-n/0.0/conf/queryables");
+    return List.of(
+        "http://www.opengis.net/spec/ogcapi-features-5/0.0/conf/schema",
+        "http://www.opengis.net/spec/ogcapi-features-5/0.0/conf/sortables",
+        "http://www.opengis.net/spec/ogcapi-features-8/0.0/conf/sortables");
   }
-  */
 
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
