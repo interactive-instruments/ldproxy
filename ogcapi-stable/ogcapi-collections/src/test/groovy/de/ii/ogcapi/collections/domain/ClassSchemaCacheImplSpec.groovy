@@ -42,8 +42,9 @@ class ClassSchemaCacheImplSpec extends Specification {
         schema.getProperties().get("description").getType() == "string"
         schema.getProperties().get("title").getType() == "string"
         schema.getProperties().get("links").getType() == "array"
+        schema.getRequired() == ["links"]
         Objects.nonNull(refSchemas)
-        refSchemas.keySet() == ImmutableSet.of("Extent", "ExternalDocumentation", "SpatialExtent", "TemporalExtent", "doubleArray", "StringArray", "doubleArrayArray", "StringArrayArray", "Link")
+        refSchemas.keySet() == ImmutableSet.of("Extent", "ExternalDocumentation", "SpatialExtent", "TemporalExtent", "doubleArray", "InstantArray", "doubleArrayArray", "InstantArrayArray", "Link")
         Objects.nonNull(extentSchema)
         extentSchema.getType() == "object"
         extentSchema.getProperties().get("spatial").get$ref() == "#/components/schemas/SpatialExtent"
@@ -62,6 +63,7 @@ class ClassSchemaCacheImplSpec extends Specification {
         then:
         Objects.nonNull(schema)
         schema.getType() == "object"
+        schema.getRequired() == ["conformsTo", "links"]
         schema.getProperties().get("conformsTo").getType() == "array"
         schema.getProperties().get("title").getType() == "string"
         schema.getProperties().get("description").getType() == "string"
@@ -84,9 +86,9 @@ class ClassSchemaCacheImplSpec extends Specification {
         ArraySchema collections = schema.getProperties().get("collections") as ArraySchema
         collections.getItems().get$ref() == "#/components/schemas/Collection"
         Objects.nonNull(refSchemas)
-        refSchemas.keySet() == ImmutableSet.of("Collection", "Link", "SpatialExtent", "StringArray", "Extent", "TemporalExtent", "StringArrayArray", "doubleArrayArray", "doubleArray")
+        refSchemas.keySet() == ImmutableSet.of("Collection", "Link", "SpatialExtent", "InstantArray", "Extent", "TemporalExtent", "InstantArrayArray", "doubleArrayArray", "doubleArray")
         Objects.nonNull(collectionSchema)
-        collectionSchema.getRequired() == ["id"]
+        collectionSchema.getRequired() == ["id", "links"]
     }
 
     def 'Test OgcApiCollection schema generation'() {
@@ -99,7 +101,7 @@ class ClassSchemaCacheImplSpec extends Specification {
         then:
         Objects.nonNull(schema)
         schema.getType() == "object"
-        schema.getRequired() == ["id"]
+        schema.getRequired() == ["id", "links"]
         schema.getProperties().get("extent").get$ref() == "#/components/schemas/Extent"
         schema.getProperties().get("crs").getType() == "array"
         schema.getProperties().get("storageCrs").getType() == "string"
@@ -110,7 +112,7 @@ class ClassSchemaCacheImplSpec extends Specification {
         schema.getProperties().get("title").getType() == "string"
         schema.getProperties().get("links").getType() == "array"
         Objects.nonNull(refSchemas)
-        refSchemas.keySet() == ImmutableSet.of("Extent", "SpatialExtent", "TemporalExtent", "doubleArray", "StringArray", "doubleArrayArray", "StringArrayArray", "Link")
+        refSchemas.keySet() == ImmutableSet.of("Extent", "SpatialExtent", "TemporalExtent", "doubleArray", "InstantArray", "doubleArrayArray", "InstantArrayArray", "Link")
         Objects.nonNull(extentSchema)
         extentSchema.getType() == "object"
         extentSchema.getProperties().get("spatial").get$ref() == "#/components/schemas/SpatialExtent"
