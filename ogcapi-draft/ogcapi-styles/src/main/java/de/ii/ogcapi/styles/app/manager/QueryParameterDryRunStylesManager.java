@@ -25,8 +25,7 @@ import javax.inject.Singleton;
 
 /**
  * @title dry-run
- * @endpoints Styles, Style, Style Metadata, Collection Styles, Collection Style, Collection Style
- *     Metadata
+ * @endpoints Styles, Style, Collection Styles, Collection Style
  * @langEn If set to 'true', the operation just validates the content without creating a new style
  *     or updating an existing style.
  * @langDe Bei `true` wird der Inhalt lediglich überprüft, ohne dass ein neuer Style erstellt oder

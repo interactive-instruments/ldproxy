@@ -148,10 +148,10 @@ public class StylesLinkGenerator {
   }
 
   /**
-   * generates the links for a style on the page /{serviceId}/styles
+   * generates the link for the style metadata on the page /{serviceId}/styles
    *
    * @param uriBuilder the URI, split in host, path and query
-   * @param styleId the ids of the styles
+   * @param styleId the id of the style
    * @return a list with links
    */
   public Link generateStyleMetadataLink(
@@ -167,6 +167,29 @@ public class StylesLinkGenerator {
                 .toString())
         .rel("describedby")
         .title(i18n.get("styleMetadataLink", language))
+        .build();
+  }
+
+  /**
+   * generates the link for a style legend on the page /{serviceId}/styles
+   *
+   * @param uriBuilder the URI, split in host, path and query
+   * @param styleId the id of the style
+   * @return a list with links
+   */
+  public Link generateStyleLegendLink(
+      URICustomizer uriBuilder, String styleId, I18n i18n, Optional<Locale> language) {
+
+    return new ImmutableLink.Builder()
+        .href(
+            uriBuilder
+                .copy()
+                .ensureNoTrailingSlash()
+                .ensureLastPathSegments("styles", styleId, "legend")
+                .removeParameters("f")
+                .toString())
+        .rel("http://www.opengis.net/def/rel/ogc/1.0/legend")
+        .title(i18n.get("styleLegendLink", language))
         .build();
   }
 

@@ -1572,6 +1572,14 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
   @Nullable
   Boolean getLayerControlAllLayers();
 
+  /**
+   * @langEn Option to support an endpoint to access the legend of a style.
+   * @langDe Option zur Unterstützung eines Endpunkts für den Zugriff auf die Legende eines Styles.
+   * @default false
+   */
+  @Nullable
+  Boolean getLegendEnabled();
+
   @Override
   default Builder getBuilder() {
     return new ImmutableStylesConfiguration.Builder();
