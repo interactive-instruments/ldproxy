@@ -28,7 +28,8 @@ public interface QueriesHandlerStyles
   enum Query implements QueryIdentifier {
     STYLES,
     STYLE,
-    STYLE_METADATA
+    STYLE_METADATA,
+    STYLE_LEGEND
   }
 
   @Value.Immutable
