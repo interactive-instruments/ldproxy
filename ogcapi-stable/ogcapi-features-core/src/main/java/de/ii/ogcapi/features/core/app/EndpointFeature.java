@@ -31,6 +31,7 @@ import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.SchemaBase.Scope;
 import io.dropwizard.auth.Auth;
 import java.util.Objects;
@@ -126,6 +127,12 @@ public class EndpointFeature extends EndpointFeaturesDefinition
                         != FeaturesCoreConfiguration.ItemType.unknown)
             .orElseThrow(() -> new NotFoundException("Features are not supported for this API."));
 
+    providers
+        .getFeatureSchema(api.getData(), collectionData)
+        .flatMap(SchemaBase::getIdProperty)
+        .filter(idProperty -> SchemaBase.Type.INTEGER.equals(idProperty.getType()))
+        .ifPresent(ignore -> checkFeatureIdIsInteger(featureId));
+
     QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
     Optional<Profile> profile =
         Optional.ofNullable(
@@ -159,6 +166,14 @@ public class EndpointFeature extends EndpointFeaturesDefinition
 
     return queryHandler.handle(
         FeaturesCoreQueriesHandler.Query.FEATURE, queryInputBuilder.build(), requestContext);
+  }
+
+  private void checkFeatureIdIsInteger(String featureId) {
+    try {
+      Integer.parseInt(featureId);
+    } catch (NumberFormatException e) {
+      throw new NotFoundException("The requested feature does not exist.");
+    }
   }
 
   @Override
