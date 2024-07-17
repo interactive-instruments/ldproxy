@@ -21,6 +21,7 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.app.SchemaCacheStyleLayer;
 import de.ii.ogcapi.styles.domain.MbStyleLayer.LayerType;
 import de.ii.xtraplatform.codelists.domain.Codelist;
+import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.values.domain.StoredValue;
 import de.ii.xtraplatform.values.domain.ValueBuilder;
@@ -249,6 +250,37 @@ public abstract class MbStyleStylesheet implements StoredValue {
       }
     }
     return builder.build();
+  }
+
+  @JsonIgnore
+  public MbStyleStylesheet addBounds(Optional<BoundingBox> optionalBbox) {
+    return optionalBbox
+        .flatMap(
+            bbox ->
+                this.getSources().entrySet().stream()
+                    .filter(
+                        entry ->
+                            entry.getValue() instanceof MbStyleVectorSource
+                                && ((MbStyleVectorSource) entry.getValue()).getBounds().isEmpty())
+                    .findFirst()
+                    .map(
+                        entry ->
+                            (MbStyleStylesheet)
+                                new ImmutableMbStyleStylesheet.Builder()
+                                    .from(this)
+                                    .putSources(
+                                        entry.getKey(),
+                                        ImmutableMbStyleVectorSource.builder()
+                                            .from((MbStyleVectorSource) entry.getValue())
+                                            .bounds(
+                                                ImmutableList.of(
+                                                    bbox.getXmin(),
+                                                    bbox.getYmin(),
+                                                    bbox.getXmax(),
+                                                    bbox.getYmax()))
+                                            .build())
+                                    .build()))
+        .orElse(this);
   }
 
   @JsonIgnore
