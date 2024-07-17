@@ -1577,7 +1577,7 @@ public interface StylesConfiguration extends ExtensionConfiguration, CachingConf
    *     the bounding box of the dataset or collection.
    * @langDe Option zum Hinzufügen der Eigenschaft `bounds` zur Vektorquelle in einem
    *     MapLibre-Style, der auf der Bounding-Box des Datensatzes oder der Collection basiert.
-   * @default false
+   * @default true
    */
   @Nullable
   Boolean getAddBoundsToVectorSource();

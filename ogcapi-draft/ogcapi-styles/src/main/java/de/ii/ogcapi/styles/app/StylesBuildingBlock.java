@@ -153,7 +153,7 @@ public class StylesBuildingBlock implements ApiBuildingBlock {
         .webmapWithPopup(true)
         .webmapWithLayerControl(false)
         .layerControlAllLayers(false)
-        .addBoundsToVectorSource(false)
+        .addBoundsToVectorSource(true)
         .build();
   }
 }
