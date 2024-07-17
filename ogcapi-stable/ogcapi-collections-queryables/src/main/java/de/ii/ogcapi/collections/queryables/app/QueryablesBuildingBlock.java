@@ -66,24 +66,24 @@ import javax.inject.Singleton;
  *     <p>Wenn die abfragbare Eigenschaft ein Wert ist, z.B. ein String oder ein Integer, die in
  *     einem Array verschachtelt ist, ist der Typ der abfragbaren Eigenschaft ein Array der Werte.
  * @conformanceEn *Feature Collections - Queryables* implements all requirements and recommendations
- *     of chapter 6 ("Queryables") of the [draft OGC API - Features - Part 3:
- *     Filtering](https://docs.ogc.org/DRAFTS/19-079r2.html#queryables).
+ *     of chapter 6 ("Queryables") of [OGC API - Features - Part 3:
+ *     Filtering](https://docs.ogc.org/is/19-079r2/19-079r2.html#queryables).
  * @conformanceDe Der Baustein implementiert die Vorgaben und Empfehlungen aus Kapitel 6
- *     ("Queryables") des [Entwurfs von OGC API - Features - Part 3:
- *     Filtering](https://docs.ogc.org/DRAFTS/19-079r2.html#queryables).
- * @limitationsEn The draft of OGC API - Features - Part 3 does not specify how a queryable that is
- *     a feature reference which has more variables than the local feature id should be handled. If
- *     such a property is a queryable, the current implementation uses the local feature id as the
- *     value of the queryable. That is, such queryables are only useful, if the local feature ids
- *     are globally unique. As such, the current approach is a temporary solution that may still
- *     change in the future, if the behavior is specified in a standard.
- * @limitationsDe Der Entwurf von OGC API - Features - Part 3 spezifiziert nicht, wie ein Queryable,
- *     das eine Feature-Referenz ist, die mehr Variablen als die lokale Feature-ID hat, behandelt
- *     werden soll. Wenn eine solche Eigenschaft ein Queryable ist, verwendet die aktuelle
- *     Implementierung die lokale Feature-ID als Wert des Queryables. Das heißt, solche Queryables
- *     sind nur dann sinnvoll, wenn die lokalen Feature-IDs global eindeutig sind. Der derzeitige
- *     Ansatz ist dementsprechend eine Übergangslösung, die sich in Zukunft noch ändern kann, wenn
- *     das Verhalten in einem Standard festgelegt wird.
+ *     ("Queryables") von [OGC API - Features - Part 3:
+ *     Filtering](https://docs.ogc.org/is/19-079r2/19-079r2.html#queryables).
+ * @limitationsEn OGC API - Features - Part 3 does not specify how a queryable that is a feature
+ *     reference which has more variables than the local feature id should be handled. If such a
+ *     property is a queryable, the current implementation uses the local feature id as the value of
+ *     the queryable. That is, such queryables are only useful, if the local feature ids are
+ *     globally unique. As such, the current approach is a temporary solution that may still change
+ *     in the future, if the behavior is specified in a standard.
+ * @limitationsDe OGC API - Features - Part 3 spezifiziert nicht, wie ein Queryable, das eine
+ *     Feature-Referenz ist, die mehr Variablen als die lokale Feature-ID hat, behandelt werden
+ *     soll. Wenn eine solche Eigenschaft ein Queryable ist, verwendet die aktuelle Implementierung
+ *     die lokale Feature-ID als Wert des Queryables. Das heißt, solche Queryables sind nur dann
+ *     sinnvoll, wenn die lokalen Feature-IDs global eindeutig sind. Der derzeitige Ansatz ist
+ *     dementsprechend eine Übergangslösung, die sich in Zukunft noch ändern kann, wenn das
+ *     Verhalten in einem Standard festgelegt wird.
  * @ref:cfg {@link de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration}
  * @ref:cfgProperties {@link
  *     de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfiguration}
@@ -97,12 +97,12 @@ import javax.inject.Singleton;
 public class QueryablesBuildingBlock implements ApiBuildingBlock {
 
   public static final Optional<SpecificationMaturity> MATURITY =
-      Optional.of(SpecificationMaturity.DRAFT_OGC);
+      Optional.of(SpecificationMaturity.STABLE_OGC);
   public static final Optional<ExternalDocumentation> SPEC =
       Optional.of(
           ExternalDocumentation.of(
-              "https://docs.ogc.org/DRAFTS/19-079r2.html",
-              "OGC API - Features - Part 3: Filtering (DRAFT)"));
+              "https://docs.ogc.org/is/19-079r2/19-079r2.html",
+              "OGC API - Features - Part 3: Filtering"));
 
   private final SchemaInfo schemaInfo;
   private final FeaturesCoreProviders providers;

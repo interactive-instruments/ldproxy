@@ -157,6 +157,6 @@ public class QueryParametersQueryables
   @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     return ImmutableList.of(
-        "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/queryables-query-parameters");
+        "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/queryables-query-parameters");
   }
 }
