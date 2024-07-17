@@ -28,10 +28,11 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.styles.app.StylesBuildingBlock;
 import de.ii.ogcapi.styles.domain.ImmutableQueryInputStyle;
 import de.ii.ogcapi.styles.domain.QueriesHandlerStyles;
-import de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension;
+import de.ii.ogcapi.styles.domain.StyleLegendFormatExtension;
 import de.ii.ogcapi.styles.domain.StylesConfiguration;
 import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.inject.Inject;
@@ -41,37 +42,32 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @title Style Metadata
- * @path styles/{styleId}/metadata
- * @langEn Style metadata is essential information about a style in order to support users to
- *     discover and select styles for rendering their data and for visual style editors to create
- *     user interfaces for editing a style. This operation returns the metadata for the requested
- *     style as a single document. The style metadata is derived from the style and the stylesheet.
- * @langDe Style-Metadaten sind wichtige Informationen über einen Style, damit Benutzer Styles für
- *     die Darstellung ihrer Daten erkennen und auswählen können und visuelle Style-Editoren
- *     Benutzeroberflächen für die Bearbeitung eines Styles bereitstellen können. Diese Operation
- *     gibt die Metadaten für den angeforderten Style als ein einziges Dokument zurück. Die
- *     Metadaten werden aus dem Style und dem Stylesheet abgeleitet.
- * @ref:formats {@link de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension}
+ * @title Style Legend
+ * @path styles/{styleId}/legend
+ * @langEn This endpoint retrieves the legend for a map style. The legend is provided as a PNG file,
+ *     which can be used to understand the symbols and colors used in the map style.
+ * @langDe Dieser Endpunkt ruft die Legende für einen Map Style ab. Die Legende wird als PNG-Datei
+ *     bereitgestellt, die zum Verständnis der im Map Style verwendeten Symbole und Farben verwendet
+ *     werden kann.
+ * @ref:formats {@link de.ii.ogcapi.styles.domain.StyleLegendFormatExtension}
  */
 @Singleton
 @AutoBind
-public class EndpointStyleMetadata extends Endpoint implements ApiExtensionHealth {
+public class EndpointStyleLegend extends Endpoint implements ApiExtensionHealth {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyleMetadata.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EndpointStyleLegend.class);
 
   protected static final List<String> TAGS = ImmutableList.of("Discover and fetch styles");
 
   private final QueriesHandlerStyles queryHandler;
 
   @Inject
-  public EndpointStyleMetadata(
+  public EndpointStyleLegend(
       ExtensionRegistry extensionRegistry, QueriesHandlerStyles queryHandler) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
@@ -85,8 +81,16 @@ public class EndpointStyleMetadata extends Endpoint implements ApiExtensionHealt
   @Override
   public List<? extends FormatExtension> getResourceFormats() {
     if (formats == null)
-      formats = extensionRegistry.getExtensionsForType(StyleMetadataFormatExtension.class);
+      formats = extensionRegistry.getExtensionsForType(StyleLegendFormatExtension.class);
     return formats;
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return apiData
+        .getExtension(StylesConfiguration.class)
+        .map(c -> c.isEnabled() && Objects.equals(c.getLegendEnabled(), Boolean.TRUE))
+        .orElse(false);
   }
 
   @Override
@@ -94,8 +98,8 @@ public class EndpointStyleMetadata extends Endpoint implements ApiExtensionHealt
     ImmutableApiEndpointDefinition.Builder definitionBuilder =
         new ImmutableApiEndpointDefinition.Builder()
             .apiEntrypoint("styles")
-            .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLE_METADATA);
-    String path = "/styles/{styleId}/metadata";
+            .sortPriority(ApiEndpointDefinition.SORT_PRIORITY_STYLE_LEGEND);
+    String path = "/styles/{styleId}/legend";
     List<OgcApiQueryParameter> queryParameters =
         getQueryParameters(extensionRegistry, apiData, path);
     List<OgcApiPathParameter> pathParameters = getPathParameters(extensionRegistry, apiData, path);
@@ -105,14 +109,13 @@ public class EndpointStyleMetadata extends Endpoint implements ApiExtensionHealt
               + path
               + "'. The GET method will not be available.");
     } else {
-      String operationSummary = "fetch metadata about the style `{styleId}`";
+      String operationSummary = "fetch the legend of the style `{styleId}`";
       Optional<String> operationDescription =
           Optional.of(
-              "Style metadata is essential information about a style in order to "
-                  + "support users to discover and select styles for rendering their data and for visual style editors "
-                  + "to create user interfaces for editing a style. This operations returns the metadata for the "
-                  + "requested style as a single document. The style metadata is derived from the style and the "
-                  + "stylesheet.");
+              "This endpoint retrieves the legend for a map style. "
+                  + "The legend is provided as a PNG file, "
+                  + "which can be used to understand the "
+                  + "symbols and colors used in the map style.");
       ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
           new ImmutableOgcApiResourceAuxiliary.Builder().path(path).pathParameters(pathParameters);
       ApiOperation.getResource(
@@ -125,7 +128,7 @@ public class EndpointStyleMetadata extends Endpoint implements ApiExtensionHealt
               operationSummary,
               operationDescription,
               Optional.empty(),
-              getOperationId("getStyleMetadata"),
+              getOperationId("getStyleLegend"),
               GROUP_STYLES_READ,
               TAGS,
               StylesBuildingBlock.MATURITY,
@@ -138,22 +141,21 @@ public class EndpointStyleMetadata extends Endpoint implements ApiExtensionHealt
   }
 
   /**
-   * Fetch metadata for a style
+   * Fetch the legend of a style
    *
    * @param styleId the local identifier of a specific style
    * @return the style in a json file
    */
-  @Path("/{styleId}/metadata")
+  @Path("/{styleId}/legend")
   @GET
-  @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
-  public Response getStyleMetadata(
+  @Produces("image/png")
+  public Response getStyleLegend(
       @PathParam("styleId") String styleId,
       @Context OgcApi api,
       @Context ApiRequestContext requestContext) {
 
     OgcApiDataV2 apiData = api.getData();
-    checkPathParameter(
-        extensionRegistry, apiData, "/styles/{styleId}/metadata", "styleId", styleId);
+    checkPathParameter(extensionRegistry, apiData, "/styles/{styleId}/legend", "styleId", styleId);
 
     QueriesHandlerStyles.QueryInputStyle queryInput =
         new ImmutableQueryInputStyle.Builder()
@@ -161,8 +163,7 @@ public class EndpointStyleMetadata extends Endpoint implements ApiExtensionHealt
             .styleId(styleId)
             .build();
 
-    return queryHandler.handle(
-        QueriesHandlerStyles.Query.STYLE_METADATA, queryInput, requestContext);
+    return queryHandler.handle(QueriesHandlerStyles.Query.STYLE_LEGEND, queryInput, requestContext);
   }
 
   @Override

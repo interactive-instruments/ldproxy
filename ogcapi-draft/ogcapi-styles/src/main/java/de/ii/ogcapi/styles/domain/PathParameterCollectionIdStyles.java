@@ -24,7 +24,8 @@ import javax.inject.Singleton;
 
 /**
  * @title collectionId
- * @endpoints Styles, Style, Style Metadata
+ * @endpoints Collection Styles, Collection Style, Collection Style Metadata, Collection Style
+ *     Legend
  * @langEn The identifier of the feature collection.
  * @langDe Der Identifikator der Feature Collection.
  */
