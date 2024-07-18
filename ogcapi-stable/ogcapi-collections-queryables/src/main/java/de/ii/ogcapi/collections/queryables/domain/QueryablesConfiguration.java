@@ -68,6 +68,13 @@ public interface QueryablesConfiguration extends ExtensionConfiguration, Caching
   }
 
   /**
+   * @default true
+   */
+  @Nullable
+  @Override
+  Boolean getEnabled();
+
+  /**
    * @langEn The list of properties that can be used in CQL2 filter expressions and/or for which
    *     filtering query parameters are provided for a collection. Properties that are not of type
    *     `OBJECT` or `OBJECT_ARRAY` are eligible as queryables unless `isQueryable` is set to
