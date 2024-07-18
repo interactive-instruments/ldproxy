@@ -27,9 +27,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @title styleId
- * @endpoints Style, Style Metadata, Collection Style, Collection Style Metadata
- * @langEn The local identifier of the resource.
- * @langDe Der lokale Identifikator der Dateiressource.
+ * @endpoints Style, Style Metadata, Style Legend, Collection Style, Collection Style Metadata,
+ *     Collection Style Legend
+ * @langEn The local identifier of the style.
+ * @langDe Der lokale Identifikator des Styles.
  */
 @Singleton
 @AutoBind
@@ -80,7 +81,8 @@ public class PathParameterStyleId implements OgcApiPathParameter {
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
     return isEnabledForApi(apiData)
         && (definitionPath.endsWith("/styles/{styleId}")
-            || definitionPath.endsWith("/styles/{styleId}/metadata"));
+            || definitionPath.endsWith("/styles/{styleId}/metadata")
+            || definitionPath.endsWith("/styles/{styleId}/legend"));
   }
 
   @Override

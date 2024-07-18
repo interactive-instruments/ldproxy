@@ -106,9 +106,11 @@ import javax.inject.Singleton;
  * @ref:endpoints {@link de.ii.ogcapi.styles.infra.EndpointStyles}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyle}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyleMetadata}, {@link
+ *     de.ii.ogcapi.styles.infra.EndpointStyleLegend}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStylesCollection}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyleCollection}, {@link
  *     de.ii.ogcapi.styles.infra.EndpointStyleMetadataCollection}, {@link
+ *     de.ii.ogcapi.styles.infra.EndpointStyleLegendCollection}, {@link
  *     de.ii.ogcapi.styles.infra.manager.EndpointStylesManager}, {@link
  *     de.ii.ogcapi.styles.infra.manager.EndpointStylesManagerCollection}
  * @ref:pathParameters {@link de.ii.ogcapi.styles.domain.PathParameterCollectionIdStyles}, {@link
@@ -128,6 +130,7 @@ public class StylesBuildingBlock implements ApiBuildingBlock {
           ExternalDocumentation.of(
               "https://docs.ogc.org/DRAFTS/20-009.html", "OGC API - Styles (DRAFT)"));
   public static final String STORE_RESOURCE_TYPE = "other-styles";
+  public static final String STORE_RESOURCE_TYPE_LEGENDS = "legends";
 
   private final ExtensionRegistry extensionRegistry;
 
@@ -153,6 +156,8 @@ public class StylesBuildingBlock implements ApiBuildingBlock {
         .webmapWithPopup(true)
         .webmapWithLayerControl(false)
         .layerControlAllLayers(false)
+        .addBoundsToVectorSource(true)
+        .legendEnabled(false)
         .build();
   }
 }

@@ -117,8 +117,8 @@ public class QueryParameterFilter extends ApiExtensionCache
   @Override
   public String getDescription() {
     return "Filter features in the collection using the query expression in the parameter value. Filter expressions "
-        + "are written in the [Common Query Language (CQL2)](https://docs.ogc.org/DRAFTS/21-065r1.html), "
-        + "which is a candidate OGC standard. This API implements the draft version from May 2022.\n\n"
+        + "are written in the [Common Query Language (CQL2)](https://docs.ogc.org/is/21-065r1/21-065r1.html), "
+        + "which is an OGC Standard.\n\n"
         + "The recommended language for this query parameter is CQL2 Text (`filter-lang=cql2-text`).\n\n"
         + "CQL2 Text expressions are similar to SQL expressions and also support spatial, temporal and array predicates. "
         + "All property references must be queryables of the collection and must be declared in the Queryables sub-resource "
@@ -221,29 +221,30 @@ public class QueryParameterFilter extends ApiExtensionCache
             provider -> {
               if (provider.queries().isSupported() && provider.queries().get().supportsCql2()) {
                 builder.add(
-                    "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/filter",
-                    "http://www.opengis.net/spec/cql2/0.0/conf/basic-cql2",
-                    "http://www.opengis.net/spec/cql2/0.0/conf/advanced-comparison-operators",
-                    "http://www.opengis.net/spec/cql2/0.0/conf/case-insensitive-comparison",
-                    "http://www.opengis.net/spec/cql2/0.0/conf/basic-spatial-operators",
-                    "http://www.opengis.net/spec/cql2/0.0/conf/spatial-operators",
-                    "http://www.opengis.net/spec/cql2/0.0/conf/temporal-operators",
-                    "http://www.opengis.net/spec/cql2/0.0/conf/array-operators",
-                    "http://www.opengis.net/spec/cql2/0.0/conf/property-property",
-                    "http://www.opengis.net/spec/cql2/0.0/conf/cql2-text",
-                    "http://www.opengis.net/spec/cql2/0.0/conf/cql2-json");
+                    "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter",
+                    "http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2",
+                    "http://www.opengis.net/spec/cql2/1.0/conf/advanced-comparison-operators",
+                    "http://www.opengis.net/spec/cql2/1.0/conf/case-insensitive-comparison",
+                    "http://www.opengis.net/spec/cql2/1.0/conf/basic-spatial-functions",
+                    "http://www.opengis.net/spec/cql2/1.0/conf/basic-spatial-functions-plus",
+                    "http://www.opengis.net/spec/cql2/1.0/conf/spatial-functions",
+                    "http://www.opengis.net/spec/cql2/1.0/conf/temporal-functions",
+                    "http://www.opengis.net/spec/cql2/1.0/conf/array-functions",
+                    "http://www.opengis.net/spec/cql2/1.0/conf/property-property",
+                    "http://www.opengis.net/spec/cql2/1.0/conf/cql2-text",
+                    "http://www.opengis.net/spec/cql2/1.0/conf/cql2-json");
                 if (provider.queries().get().supportsAccenti())
                   builder.add(
-                      "http://www.opengis.net/spec/cql2/0.0/conf/accent-insensitive-comparison");
+                      "http://www.opengis.net/spec/cql2/1.0/conf/accent-insensitive-comparison");
               }
             });
 
     if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.feature))
-      builder.add("http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/features-filter");
+      builder.add("http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter");
 
     if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record))
       builder.add(
-          "http://www.opengis.net/spec/ogcapi-features-3/0.0/conf/features-filter",
+          "http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter",
           "http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/cql-filter");
 
     return builder.build();

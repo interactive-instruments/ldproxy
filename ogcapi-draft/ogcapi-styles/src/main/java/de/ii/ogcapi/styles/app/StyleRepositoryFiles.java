@@ -44,6 +44,7 @@ import de.ii.xtraplatform.base.domain.AppLifeCycle;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatile;
 import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
+import de.ii.xtraplatform.blobs.domain.Blob;
 import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
@@ -85,6 +86,7 @@ public class StyleRepositoryFiles extends AbstractVolatile
 
   private final ExtensionRegistry extensionRegistry;
   private final ResourceStore stylesStore;
+  private final ResourceStore legendsStore;
   private final KeyValueStore<MbStyleStylesheet> mbStylesStore;
   private final KeyValueStore<Tiles3dStylesheet> tiles3dStylesStore;
   private final I18n i18n;
@@ -107,6 +109,7 @@ public class StyleRepositoryFiles extends AbstractVolatile
       TilesProviders tilesProviders) {
     super(volatileRegistry, "app/styles");
     this.stylesStore = blobStore.with(StylesBuildingBlock.STORE_RESOURCE_TYPE);
+    this.legendsStore = blobStore.with(StylesBuildingBlock.STORE_RESOURCE_TYPE_LEGENDS);
     this.mbStylesStore = valueStore.forTypeWritable(MbStyleStylesheet.class);
     this.tiles3dStylesStore = valueStore.forTypeWritable(Tiles3dStylesheet.class);
     this.i18n = i18n;
@@ -300,6 +303,21 @@ public class StyleRepositoryFiles extends AbstractVolatile
                             styleId,
                             i18n,
                             requestContext.getLanguage()));
+                  }
+
+                  final java.nio.file.Path resourcePath =
+                      Path.of(apiData.getId()).resolve(String.format("%s.png", styleId));
+                  try {
+                    if (legendsStore.has(resourcePath)) {
+                      builder.addLinks(
+                          stylesLinkGenerator.generateStyleLegendLink(
+                              requestContext.getUriCustomizer(),
+                              styleId,
+                              i18n,
+                              requestContext.getLanguage()));
+                    }
+                  } catch (IOException ignore) {
+                    // ignore, skip link
                   }
                   return builder.build();
                 })
@@ -578,6 +596,41 @@ public class StyleRepositoryFiles extends AbstractVolatile
   }
 
   @Override
+  public Optional<Blob> getStyleLegend(
+      OgcApiDataV2 apiData, Optional<String> collectionId, String styleId) {
+    if (getStylesheetMediaTypes(apiData, collectionId, styleId, true, false).isEmpty()) {
+      if (collectionId.isEmpty())
+        throw new NotFoundException(
+            MessageFormat.format("The style ''{0}'' does not exist in this API.", styleId));
+      throw new NotFoundException(
+          MessageFormat.format(
+              "The style ''{0}'' does not exist in this API for collection ''{1}''.",
+              styleId, collectionId.get()));
+    }
+
+    try {
+      return legendsStore.get(getStyleLegendPath(apiData, styleId));
+    } catch (IOException e) {
+      if (LOGGER.isWarnEnabled()) {
+        if (collectionId.isPresent()) {
+          LOGGER.warn(
+              "Could not retrieve legend for style '{}' in collection '{}'.",
+              styleId,
+              collectionId.get(),
+              e);
+        } else {
+          LOGGER.warn("Could not retrieve legend for style '{}'.", styleId, e);
+        }
+      }
+      return Optional.empty();
+    }
+  }
+
+  private java.nio.file.Path getStyleLegendPath(OgcApiDataV2 apiData, String styleId) {
+    return Path.of(apiData.getId()).resolve(String.format("%s.png", styleId));
+  }
+
+  @Override
   public ImmutableValidationResult.Builder validate(
       ImmutableValidationResult.Builder builder,
       OgcApiDataV2 apiData,
@@ -816,6 +869,15 @@ public class StyleRepositoryFiles extends AbstractVolatile
       builder.addLinks(
           stylesLinkGenerator.generateMapTilesLink(
               requestContext.getUriCustomizer(), styleId, i18n, requestContext.getLanguage()));
+    }
+    try {
+      if (legendsStore.has(getStyleLegendPath(apiData, styleId))) {
+        builder.addLinks(
+            stylesLinkGenerator.generateStyleLegendLink(
+                requestContext.getUriCustomizer(), styleId, i18n, requestContext.getLanguage()));
+      }
+    } catch (IOException ignore) {
+      // ignore, skip link
     }
 
     StyleEntry styleEntry =

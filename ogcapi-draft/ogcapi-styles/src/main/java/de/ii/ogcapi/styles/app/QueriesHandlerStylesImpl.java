@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
 import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
@@ -23,6 +24,7 @@ import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.styles.domain.QueriesHandlerStyles;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
+import de.ii.ogcapi.styles.domain.StyleLegendFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleMetadata;
 import de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleRepository;
@@ -32,6 +34,9 @@ import de.ii.ogcapi.styles.domain.StylesheetContent;
 import de.ii.xtraplatform.base.domain.ETag;
 import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatileComposed;
 import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
+import de.ii.xtraplatform.blobs.domain.Blob;
+import de.ii.xtraplatform.blobs.domain.ResourceStore;
+import de.ii.xtraplatform.web.domain.LastModified;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -42,6 +47,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -52,21 +58,32 @@ public class QueriesHandlerStylesImpl extends AbstractVolatileComposed
     implements QueriesHandlerStyles {
 
   private final I18n i18n;
+  private final ExtensionRegistry extensionRegistry;
   private final StyleRepository styleRepository;
+  private final ResourceStore legendsStore;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
 
   @Inject
   public QueriesHandlerStylesImpl(
-      I18n i18n, StyleRepository styleRepository, VolatileRegistry volatileRegistry) {
+      I18n i18n,
+      StyleRepository styleRepository,
+      VolatileRegistry volatileRegistry,
+      ExtensionRegistry extensionRegistry,
+      ResourceStore blobStore) {
     super(QueriesHandlerStyles.class.getSimpleName(), volatileRegistry, true);
     this.i18n = i18n;
     this.styleRepository = styleRepository;
+    this.extensionRegistry = extensionRegistry;
+    this.legendsStore = blobStore.with(StylesBuildingBlock.STORE_RESOURCE_TYPE_LEGENDS);
+    ;
     this.queryHandlers =
         ImmutableMap.of(
             Query.STYLES, QueryHandler.with(QueryInputStyles.class, this::getStylesResponse),
             Query.STYLE, QueryHandler.with(QueryInputStyle.class, this::getStyleResponse),
             Query.STYLE_METADATA,
-                QueryHandler.with(QueryInputStyle.class, this::getStyleMetadataResponse));
+                QueryHandler.with(QueryInputStyle.class, this::getStyleMetadataResponse),
+            Query.STYLE_LEGEND,
+                QueryHandler.with(QueryInputStyle.class, this::getStyleLegendResponse));
 
     onVolatileStart();
 
@@ -252,6 +269,52 @@ public class QueriesHandlerStylesImpl extends AbstractVolatileComposed
                     "%s.metadata.%s",
                     queryInput.getStyleId(), format.getMediaType().fileExtension())))
         .entity(format.getStyleMetadataEntity(metadata, apiData, collectionId, requestContext))
+        .build();
+  }
+
+  private Response getStyleLegendResponse(
+      QueryInputStyle queryInput, ApiRequestContext requestContext) {
+    OgcApi api = requestContext.getApi();
+    OgcApiDataV2 apiData = api.getData();
+    Optional<String> collectionId = queryInput.getCollectionId();
+    String styleId = queryInput.getStyleId();
+
+    final StyleLegendFormatExtension format =
+        extensionRegistry.getExtensionsForType(StyleLegendFormatExtension.class).stream()
+            .filter(f -> requestContext.getMediaType().matches(f.getMediaType().type()))
+            .findAny()
+            .map(StyleLegendFormatExtension.class::cast)
+            .orElseThrow(
+                () ->
+                    new NotAcceptableException(
+                        MessageFormat.format(
+                            "The requested media type {0} cannot be generated.",
+                            requestContext.getMediaType().type())));
+
+    Blob blob =
+        styleRepository
+            .getStyleLegend(apiData, collectionId, styleId)
+            .orElseThrow(
+                () ->
+                    new NotFoundException(
+                        MessageFormat.format("Style ''{0}'' has no legend.", styleId)));
+
+    Date lastModified = LastModified.from(blob.lastModified());
+    EntityTag eTag = blob.eTag();
+    Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, eTag);
+    if (Objects.nonNull(response)) return response.build();
+
+    return prepareSuccessResponse(
+            requestContext,
+            null,
+            HeaderCaching.of(lastModified, eTag, queryInput),
+            null,
+            HeaderContentDisposition.of(
+                String.format(
+                    "%s.legend.%s",
+                    queryInput.getStyleId(), format.getMediaType().fileExtension())))
+        .entity(format.getStyleLegendImage(blob, apiData, collectionId, requestContext))
+        .type(blob.contentType())
         .build();
   }
 }
