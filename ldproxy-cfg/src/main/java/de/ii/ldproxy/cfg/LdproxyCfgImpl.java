@@ -43,7 +43,7 @@ import de.ii.xtraplatform.entities.domain.EventStoreSubscriber;
 import de.ii.xtraplatform.entities.domain.ReplayEvent;
 import de.ii.xtraplatform.entities.infra.EventStoreDriverFs;
 import de.ii.xtraplatform.features.domain.ProviderData;
-import de.ii.xtraplatform.features.sql.app.FeatureProviderSql;
+import de.ii.xtraplatform.features.sql.domain.FeatureProviderSql;
 import de.ii.xtraplatform.features.sql.domain.FeatureProviderSqlData;
 import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
