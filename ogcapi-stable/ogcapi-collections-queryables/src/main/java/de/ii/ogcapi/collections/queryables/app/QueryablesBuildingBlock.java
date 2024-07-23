@@ -116,7 +116,7 @@ public class QueryablesBuildingBlock implements ApiBuildingBlock {
   @Override
   public ExtensionConfiguration getDefaultConfiguration() {
     return new ImmutableQueryablesConfiguration.Builder()
-        .enabled(false)
+        .enabled(true)
         .pathSeparator(PathSeparator.DOT)
         .enableEndpoint(true)
         .asQueryParameters(true)
