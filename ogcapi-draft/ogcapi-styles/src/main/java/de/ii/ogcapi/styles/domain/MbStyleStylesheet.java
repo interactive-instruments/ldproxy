@@ -23,6 +23,7 @@ import de.ii.ogcapi.styles.domain.MbStyleLayer.LayerType;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.values.domain.AutoValue;
 import de.ii.xtraplatform.values.domain.StoredValue;
 import de.ii.xtraplatform.values.domain.ValueBuilder;
 import de.ii.xtraplatform.values.domain.ValueEncoding.FORMAT;
@@ -45,7 +46,7 @@ import org.immutables.value.Value;
     type = "maplibre-styles",
     formatAliases = {@FormatAlias(extension = "mbs", format = FORMAT.JSON)})
 @JsonDeserialize(builder = ImmutableMbStyleStylesheet.Builder.class)
-public abstract class MbStyleStylesheet implements StoredValue {
+public abstract class MbStyleStylesheet implements StoredValue, AutoValue {
 
   public static final String SCHEMA_REF = "#/components/schemas/MbStyleStylesheet";
 
