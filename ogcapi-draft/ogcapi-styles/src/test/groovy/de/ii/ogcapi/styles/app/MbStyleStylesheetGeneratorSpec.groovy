@@ -31,7 +31,6 @@ class MbStyleStylesheetGeneratorSpec extends Specification {
     @Shared
     MbStyleStylesheetGenerator generator = new MbStyleStylesheetGenerator(entityDataStore)
 
-    @PendingFeature
     def 'analyze: should return collections for api name'() {
 
         given:
@@ -46,7 +45,6 @@ class MbStyleStylesheetGeneratorSpec extends Specification {
 
     }
 
-    @PendingFeature
     def 'generate: should return style with layers for each collection'() {
 
         given:

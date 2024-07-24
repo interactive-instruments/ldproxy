@@ -8,11 +8,14 @@
 package de.ii.ogcapi.styles.app;
 
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.ogcapi.styles.domain.ImmutableMbStyleLayer;
 import de.ii.ogcapi.styles.domain.ImmutableMbStyleStylesheet.Builder;
+import de.ii.ogcapi.styles.domain.MbStyleLayer.LayerType;
 import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.xtraplatform.entities.domain.EntityData;
 import de.ii.xtraplatform.entities.domain.EntityDataStore;
 import de.ii.xtraplatform.values.domain.AutoValueFactory;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +37,16 @@ public class MbStyleStylesheetGenerator
   public List<String> analyze(String apiId) {
     // TODO: get api from entityDataStore and extract collections
 
-    return List.of();
+    // get api from entityDataStore
+    OgcApiDataV2 apiData = entityDataStore.get(apiId);
+
+    // extract collections
+    Map<String, ?> collections = apiData.getCollections();
+
+    // convert the keys of the collections map to a list
+    List<String> collectionNames = new ArrayList<>(collections.keySet());
+
+    return collectionNames;
   }
 
   @Override
@@ -42,6 +54,23 @@ public class MbStyleStylesheetGenerator
     Builder style = new Builder().version(8);
 
     // TODO: get api from entityDataStore and extract collections, then add layers to style
+
+    // get api from entityDataStore
+    OgcApiDataV2 apiData = entityDataStore.get(apiId);
+
+    // extract collections
+    Map<String, ?> collections = apiData.getCollections();
+
+    // add a layer for each collection to the style
+    for (String collectionName : collections.keySet()) {
+      style.addLayers(
+          ImmutableMbStyleLayer.builder()
+              .id(collectionName)
+              .type(LayerType.fill)
+              .source(apiId)
+              .sourceLayer(collectionName)
+              .build());
+    }
 
     return style.build();
   }
