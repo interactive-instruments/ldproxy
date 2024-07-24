@@ -121,12 +121,19 @@ public interface PropertyHtml extends PropertyBase<PropertyHtml, FeatureSchema> 
 
   @Value.Lazy
   default boolean isImageUrl() {
-    return Objects.nonNull(getValue())
-        && isUrl()
-        && (getValue().toLowerCase().endsWith(".png")
-            || getValue().toLowerCase().endsWith(".jpg")
-            || getValue().toLowerCase().endsWith(".jpeg")
-            || getValue().toLowerCase().endsWith(".gif"));
+    if (Objects.isNull(getValue()) || !isUrl()) {
+      return false;
+    }
+    String url = getValue().toLowerCase();
+    if (url.indexOf('?') > 0) {
+      url = url.substring(0, url.indexOf('?'));
+    } else if (url.indexOf('#') > 0) {
+      url = url.substring(0, url.indexOf('#'));
+    }
+    return url.endsWith(".png")
+        || url.endsWith(".jpg")
+        || url.endsWith(".jpeg")
+        || url.endsWith(".gif");
   }
 
   @Value.Lazy
