@@ -31,6 +31,7 @@ class MbStyleStylesheetGeneratorSpec extends Specification {
     @Shared
     MbStyleStylesheetGenerator generator = new MbStyleStylesheetGenerator(entityDataStore)
 
+
     def 'analyze: should return collections for api name'() {
 
         given:
@@ -55,9 +56,68 @@ class MbStyleStylesheetGeneratorSpec extends Specification {
 
         then:
 
-        result.layers.any { it.id == "collection1" }
-        result.layers.any { it.id == "collection2" }
+        result.layers.any { it.id.startsWith("collection1") }
+        result.layers.any { it.id.startsWith("collection2") }
 
+    }
+
+    def 'generate: should return style with sources for each collection'() {
+
+        given:
+
+        when:
+
+        def result = generator.generate("api", ["collection1", "collection2"])
+
+        then:
+
+        result.sources.containsKey("collection1")
+        result.sources.containsKey("collection2")
+
+    }
+
+    def 'analyze: should throw IllegalArgumentException if apiId does not exist'() {
+
+        given:
+
+        EntityDataStore<OgcApiDataV2> entityDataStoreV2 = Stub(EntityDataStore<OgcApiDataV2>) {
+            has("api") >> false
+        }
+        EntityDataStore<EntityData> entityDataStore = Stub(EntityDataStore<EntityData>) {
+            forType(OgcApiDataV2.class) >> entityDataStoreV2
+        }
+
+        MbStyleStylesheetGenerator generator = new MbStyleStylesheetGenerator(entityDataStore)
+
+        when:
+
+        generator.analyze("api")
+
+        then:
+
+        thrown(IllegalArgumentException)
+    }
+
+    def 'generate: should throw IllegalArgumentException if apiId does not exist'() {
+
+        given:
+
+        EntityDataStore<OgcApiDataV2> entityDataStoreV2 = Stub(EntityDataStore<OgcApiDataV2>) {
+            has("api") >> false
+        }
+        EntityDataStore<EntityData> entityDataStore = Stub(EntityDataStore<EntityData>) {
+            forType(OgcApiDataV2.class) >> entityDataStoreV2
+        }
+
+        MbStyleStylesheetGenerator generator = new MbStyleStylesheetGenerator(entityDataStore)
+
+        when:
+
+        generator.generate("api", ["collection1", "collection2"])
+
+        then:
+
+        thrown(IllegalArgumentException)
     }
 
 }
