@@ -42,17 +42,19 @@ class MbStyleStylesheetGeneratorSpec extends Specification {
 
         then:
 
-        result == ["collection1", "collection2"]
-
+        result.keySet().sort() == ["collection1", "collection2"].sort()
+        result.values().every { it.matches("#[0-9a-fA-F]{6}") }
     }
 
     def 'generate: should return style with layers for each collection'() {
 
         given:
 
+        Map<String, String> collectionColors = generator.analyze("api")
+
         when:
 
-        def result = generator.generate("api", ["collection1", "collection2"])
+        def result = generator.generate("api", collectionColors)
 
         then:
 
@@ -65,9 +67,11 @@ class MbStyleStylesheetGeneratorSpec extends Specification {
 
         given:
 
+        Map<String, String> collectionColors = generator.analyze("api")
+
         when:
 
-        def result = generator.generate("api", ["collection1", "collection2"])
+        def result = generator.generate("api", collectionColors)
 
         then:
 
@@ -113,7 +117,8 @@ class MbStyleStylesheetGeneratorSpec extends Specification {
 
         when:
 
-        generator.generate("api", ["collection1", "collection2"])
+        Map<String, String> collections = ["collection1": "#000000", "collection2": "#000000"]
+        generator.generate("api", collections)
 
         then:
 

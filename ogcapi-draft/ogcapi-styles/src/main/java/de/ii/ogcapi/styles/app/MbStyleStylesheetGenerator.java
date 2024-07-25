@@ -15,14 +15,14 @@ import de.ii.ogcapi.styles.domain.MbStyleLayer.LayerType;
 import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.xtraplatform.entities.domain.EntityData;
 import de.ii.xtraplatform.entities.domain.EntityDataStore;
-import de.ii.xtraplatform.values.domain.AutoValueFactory;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
-public class MbStyleStylesheetGenerator
-    implements AutoValueFactory<MbStyleStylesheet, String, List<String>> {
+public class MbStyleStylesheetGenerator {
 
   private final EntityDataStore<OgcApiDataV2> entityDataStore;
 
@@ -30,13 +30,43 @@ public class MbStyleStylesheetGenerator
     this.entityDataStore = entityDataStore.forType(OgcApiDataV2.class);
   }
 
-  @Override
   public Map<String, String> check(String apiId) {
     return Map.of();
   }
 
-  @Override
-  public List<String> analyze(String apiId) {
+  private Map<String, String> usedColors = new HashMap<>();
+
+  private String generateColorForCollection(String collectionName) {
+    List<String> mapboxColors =
+        Arrays.asList(
+            "#3bb2d0", // Mapbox Maximum Blue
+            "#3887be", // Mapbox Cyan-Blue Azure
+            "#8a8acb", // Ube
+            "#56b881", // Mapbox Emerald
+            "#50667f", // Dark Electric Blue
+            "#41afa5", // Mapbox Keppel
+            "#f9886c", // Mapbox Salmon
+            "#e55e5e", // Fire Opal
+            "#ed6498", // Light Crimson
+            "#fbb03b", // Mapbox Yellow Orange
+            "#142736", // Mapbox Yankees Blue
+            "#28353d", // Mapbox Gunmetal
+            "#222b30" // Mapbox Charleston Green
+            );
+
+    Random random = new Random();
+    String color;
+
+    do {
+      color = mapboxColors.get(random.nextInt(mapboxColors.size()));
+    } while (usedColors.containsValue(color) && usedColors.size() < mapboxColors.size());
+
+    usedColors.put(collectionName, color);
+
+    return color;
+  }
+
+  public Map<String, String> analyze(String apiId) {
 
     if (!entityDataStore.has(apiId)) {
       throw new IllegalArgumentException("No API found with the id: " + apiId);
@@ -48,14 +78,18 @@ public class MbStyleStylesheetGenerator
     // extract collections
     Map<String, ?> collections = apiData.getCollections();
 
-    // convert the keys of the collections map to a list
-    List<String> collectionNames = new ArrayList<>(collections.keySet());
+    // create a map of collection names to colors
+    Map<String, String> collectionColors = new HashMap<>();
+    for (String collectionName : collections.keySet()) {
+      // generate a color for each collection
+      String color = generateColorForCollection(collectionName);
+      collectionColors.put(collectionName, color);
+    }
 
-    return collectionNames;
+    return collectionColors;
   }
 
-  @Override
-  public MbStyleStylesheet generate(String apiId, List<String> analyzeResult) {
+  public MbStyleStylesheet generate(String apiId, Map<String, String> collectionColors) {
 
     if (!entityDataStore.has(apiId)) {
       throw new IllegalArgumentException("No API found with the id: " + apiId);
@@ -71,6 +105,8 @@ public class MbStyleStylesheetGenerator
 
     // iterate over each collection
     for (String collectionName : collections.keySet()) {
+
+      String color = collectionColors.get(collectionName);
 
       // add source for each collection
       style.putSources(
@@ -88,14 +124,14 @@ public class MbStyleStylesheetGenerator
               .type(LayerType.fill)
               .source(collectionName)
               .sourceLayer(collectionName)
-              .putPaint("fill-color", "#7ac5a5")
+              .putPaint("fill-color", color)
               .build(),
           ImmutableMbStyleLayer.builder()
               .id(collectionName + ".line")
               .type(LayerType.line)
               .source(collectionName)
               .sourceLayer(collectionName)
-              .putPaint("line-color", "#000000")
+              .putPaint("line-color", color)
               .putPaint("line-width", 2)
               .build(),
           ImmutableMbStyleLayer.builder()
@@ -105,9 +141,9 @@ public class MbStyleStylesheetGenerator
               .sourceLayer(collectionName)
               .putPaint("circle-radius", 3)
               .putPaint("circle-opacity", 0.5)
-              .putPaint("circle-stroke-color", "#000000")
+              .putPaint("circle-stroke-color", color)
               .putPaint("circle-stroke-width", 1)
-              .putPaint("circle-color", "#ffffff")
+              .putPaint("circle-color", color)
               .build());
     }
 
