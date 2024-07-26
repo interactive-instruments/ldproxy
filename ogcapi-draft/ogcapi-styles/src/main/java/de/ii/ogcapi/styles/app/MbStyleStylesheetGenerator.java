@@ -15,6 +15,7 @@ import de.ii.ogcapi.styles.domain.MbStyleLayer.LayerType;
 import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.xtraplatform.entities.domain.EntityData;
 import de.ii.xtraplatform.entities.domain.EntityDataStore;
+import de.ii.xtraplatform.values.domain.AutoValueFactory;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,7 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class MbStyleStylesheetGenerator {
+public class MbStyleStylesheetGenerator
+    implements AutoValueFactory<MbStyleStylesheet, String, Map<String, String>> {
 
   private final EntityDataStore<OgcApiDataV2> entityDataStore;
 
@@ -66,6 +68,7 @@ public class MbStyleStylesheetGenerator {
     return color;
   }
 
+  @Override
   public Map<String, String> analyze(String apiId) {
 
     if (!entityDataStore.has(apiId)) {
@@ -89,6 +92,7 @@ public class MbStyleStylesheetGenerator {
     return collectionColors;
   }
 
+  @Override
   public MbStyleStylesheet generate(String apiId, Map<String, String> collectionColors) {
 
     if (!entityDataStore.has(apiId)) {
