@@ -11,7 +11,6 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.styles.app.MbStyleStylesheetFactory;
 import de.ii.xtraplatform.entities.domain.EntityData;
 import de.ii.xtraplatform.entities.domain.EntityDataStore;
-import de.ii.xtraplatform.entities.domain.EntityFactory;
 import de.ii.xtraplatform.values.domain.ValueFactory;
 import java.util.Set;
 
@@ -19,7 +18,7 @@ public interface ValueFactories {
 
   static Set<ValueFactory> factories(EntityDataStore<EntityData> entityDataStore) {
 
-    return ImmutableSet.<EntityFactory>builder()
+    return ImmutableSet.<ValueFactory>builder()
         .add(new MbStyleStylesheetFactory(entityDataStore))
         .build();
   }

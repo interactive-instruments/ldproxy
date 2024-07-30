@@ -25,9 +25,9 @@ public class MbStyleStylesheetFactory extends ValueFactoryAuto {
   private final EntityDataStore<EntityData> entityDataStore;
 
   @Inject
-  public MbStyleStylesheetFactory(EntityDataStore<EntityData> entityDataStore) {
+  public MbStyleStylesheetFactory(EntityDataStore<?> entityDataStore) {
     super(MbStyleStylesheet.class);
-    this.entityDataStore = entityDataStore;
+    this.entityDataStore = (EntityDataStore<EntityData>) entityDataStore;
   }
 
   @Override
