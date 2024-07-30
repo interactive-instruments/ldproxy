@@ -49,9 +49,11 @@ import de.ii.xtraplatform.services.domain.Service;
 import de.ii.xtraplatform.services.domain.ServiceData;
 import de.ii.xtraplatform.streams.domain.Event;
 import de.ii.xtraplatform.values.api.ValueEncodingJackson;
+import de.ii.xtraplatform.values.app.ValueFactoriesImpl;
 import de.ii.xtraplatform.values.domain.Identifier;
 import de.ii.xtraplatform.values.domain.StoredValue;
 import de.ii.xtraplatform.values.domain.ValueEncoding.FORMAT;
+import de.ii.xtraplatform.values.domain.ValueFactory;
 import de.ii.xtraplatform.values.domain.annotations.FromValueStore;
 import java.io.File;
 import java.io.FileInputStream;
@@ -87,6 +89,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
   private final ObjectMapper objectMapper;
   private final RequiredIncludes requiredIncludes;
   private final de.ii.xtraplatform.entities.domain.EntityFactories entityFactories;
+  private final de.ii.xtraplatform.values.domain.ValueFactories valueFactories;
   private final Map<String, JsonSchema> entitySchemas;
   private final Map<String, String> rawSchemas;
   private final List<Identifier> entityIdentifiers;
@@ -168,6 +171,8 @@ class LdproxyCfgImpl implements LdproxyCfg {
     this.entitySchemas = new HashMap<>();
     this.rawSchemas = new HashMap<>();
     this.migrations = Migrations.create(entityDataStore);
+    Set<ValueFactory> vFactories = ValueFactories.factories(entityDataStore);
+    this.valueFactories = new ValueFactoriesImpl(() -> vFactories);
   }
 
   private static StoreConfiguration detectStore(Path dataDirectory) {
@@ -226,6 +231,11 @@ class LdproxyCfgImpl implements LdproxyCfg {
   @Override
   public de.ii.xtraplatform.entities.domain.EntityFactories getEntityFactories() {
     return entityFactories;
+  }
+
+  @Override
+  public de.ii.xtraplatform.values.domain.ValueFactories getValueFactories() {
+    return valueFactories;
   }
 
   @Override
