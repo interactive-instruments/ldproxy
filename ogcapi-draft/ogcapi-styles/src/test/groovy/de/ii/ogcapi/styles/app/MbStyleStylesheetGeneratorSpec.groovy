@@ -12,6 +12,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableOgcApiDataV2
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2
 import de.ii.xtraplatform.entities.domain.EntityData
 import de.ii.xtraplatform.entities.domain.EntityDataStore
+import de.ii.xtraplatform.values.domain.Identifier
 import spock.lang.PendingFeature
 import spock.lang.Shared
 import spock.lang.Specification
@@ -21,8 +22,9 @@ class MbStyleStylesheetGeneratorSpec extends Specification {
     @Shared
     EntityDataStore<EntityData> entityDataStore = Stub(EntityDataStore<EntityData>) {
         forType(OgcApiDataV2.class) >> Stub(EntityDataStore<OgcApiDataV2>) {
-            has("api") >> true
-            get("api") >> new ImmutableOgcApiDataV2.Builder().id("api")
+            hasAny(_) >> true
+            fullIdentifier(_) >> Identifier.from("api")
+            get(_) >> new ImmutableOgcApiDataV2.Builder().id("api")
                     .putCollections("collection1", new ImmutableFeatureTypeConfigurationOgcApi.Builder().id("collection1").label("collection1"))
                     .putCollections("collection2", new ImmutableFeatureTypeConfigurationOgcApi.Builder().id("collection2").label("collection2"))
                     .build()

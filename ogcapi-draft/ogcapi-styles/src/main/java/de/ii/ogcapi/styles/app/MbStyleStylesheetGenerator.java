@@ -71,12 +71,12 @@ public class MbStyleStylesheetGenerator
   @Override
   public Map<String, String> analyze(String apiId) {
 
-    if (!entityDataStore.has(apiId)) {
+    if (!entityDataStore.hasAny(apiId)) {
       throw new IllegalArgumentException("No API found with the id: " + apiId);
     }
 
     // get api from entityDataStore
-    OgcApiDataV2 apiData = entityDataStore.get(apiId);
+    OgcApiDataV2 apiData = entityDataStore.get(entityDataStore.fullIdentifier(apiId));
 
     // extract collections
     Map<String, ?> collections = apiData.getCollections();
@@ -95,14 +95,14 @@ public class MbStyleStylesheetGenerator
   @Override
   public MbStyleStylesheet generate(String apiId, Map<String, String> collectionColors) {
 
-    if (!entityDataStore.has(apiId)) {
+    if (!entityDataStore.hasAny(apiId)) {
       throw new IllegalArgumentException("No API found with the id: " + apiId);
     }
 
     Builder style = new Builder().version(8);
 
     // get api from entityDataStore
-    OgcApiDataV2 apiData = entityDataStore.get(apiId);
+    OgcApiDataV2 apiData = entityDataStore.get(entityDataStore.fullIdentifier(apiId));
 
     // extract collections
     Map<String, ?> collections = apiData.getCollections();
