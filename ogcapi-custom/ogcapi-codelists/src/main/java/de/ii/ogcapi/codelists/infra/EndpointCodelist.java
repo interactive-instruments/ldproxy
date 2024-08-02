@@ -51,9 +51,9 @@ import org.slf4j.LoggerFactory;
  * @title Codelist
  * @path codelists/{codelistId}
  * @langEn Fetches the codeliste with identifier `codelistId`. The set of available codelists can be
- *     retrieved at `/codelists`.
+ *     retrieved at `codelists`.
  * @langDe Holt die Codelist mit dem Bezeichner `codelistId`. Die Menge der verfügbaren Codelisten
- *     kann unter `/codelists` abgerufen werden.
+ *     kann unter `codelists` abgerufen werden.
  * @ref:formats {@link de.ii.ogcapi.codelists.domain.CodelistFormatExtension}
  */
 @Singleton
