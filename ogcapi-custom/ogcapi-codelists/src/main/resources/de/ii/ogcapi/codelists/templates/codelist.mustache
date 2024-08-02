@@ -1,0 +1,20 @@
+{{> header}}
+
+<div>
+  <h1>{{title}}</h1>
+  <br/>
+  <br/>
+  <div class="row my-3">
+    {{#codelistEntries}}
+      <div class="col-md-2 font-weight-bold">{{key}}</div>
+      <div class="col-md-10">{{value}}</div>
+    {{/codelistEntries}}
+    {{^codelistEntries}}
+      <div class="col-md-2">{{none}}</div>
+      <div class="col-md-10"></div>
+    {{/codelistEntries}}
+  </div>
+</div>
+
+{{> footer}}
+

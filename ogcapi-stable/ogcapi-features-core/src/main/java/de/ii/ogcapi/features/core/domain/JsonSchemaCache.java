@@ -11,6 +11,7 @@ import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -29,8 +30,10 @@ public abstract class JsonSchemaCache {
       FeatureSchema featureSchema,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
-      Optional<String> schemaUri) {
-    return getSchema(featureSchema, apiData, collectionData, schemaUri, VERSION.current());
+      Optional<String> schemaUri,
+      List<JsonSchemaExtension> jsonSchemaExtensions) {
+    return getSchema(
+        featureSchema, apiData, collectionData, schemaUri, jsonSchemaExtensions, VERSION.current());
   }
 
   public final JsonSchemaDocument getSchema(
@@ -38,6 +41,7 @@ public abstract class JsonSchemaCache {
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
       Optional<String> schemaUri,
+      List<JsonSchemaExtension> jsonSchemaExtensions,
       VERSION version) {
     int apiHashCode = apiData.hashCode();
     if (!cache.containsKey(apiHashCode)) {
@@ -47,10 +51,16 @@ public abstract class JsonSchemaCache {
       cache.get(apiHashCode).put(collectionData.getId(), new ConcurrentHashMap<>());
     }
     if (!cache.get(apiHashCode).get(collectionData.getId()).containsKey(version)) {
-      cache
-          .get(apiHashCode)
-          .get(collectionData.getId())
-          .put(version, deriveSchema(featureSchema, apiData, collectionData, schemaUri, version));
+      JsonSchemaDocument schema =
+          deriveSchema(featureSchema, apiData, collectionData, schemaUri, version);
+
+      for (JsonSchemaExtension extension : jsonSchemaExtensions) {
+        schema =
+            (JsonSchemaDocument)
+                extension.process(schema, featureSchema, apiData, collectionData.getId());
+      }
+
+      cache.get(apiHashCode).get(collectionData.getId()).put(version, schema);
     }
 
     return cache.get(apiHashCode).get(collectionData.getId()).get(version);

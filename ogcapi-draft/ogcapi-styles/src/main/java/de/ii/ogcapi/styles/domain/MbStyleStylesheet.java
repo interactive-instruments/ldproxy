@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
+import de.ii.ogcapi.features.core.domain.JsonSchemaExtension;
 import de.ii.ogcapi.features.core.domain.JsonSchemaObject;
 import de.ii.ogcapi.foundation.domain.ImmutableLink;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -91,7 +92,10 @@ public abstract class MbStyleStylesheet implements StoredValue {
   // TODO: replace with SchemaDeriverStyleLayer
   @JsonIgnore
   public List<StyleLayer> getLayerMetadata(
-      OgcApiDataV2 apiData, FeaturesCoreProviders providers, Values<Codelist> codelistStore) {
+      OgcApiDataV2 apiData,
+      FeaturesCoreProviders providers,
+      Values<Codelist> codelistStore,
+      List<JsonSchemaExtension> jsonSchemaExtensions) {
     // prepare a map with the JSON schemas of the feature collections used in the style
     JsonSchemaCache schemas = new SchemaCacheStyleLayer(codelistStore::asMap);
 
@@ -118,7 +122,8 @@ public abstract class MbStyleStylesheet implements StoredValue {
                           schema.get(),
                           apiData,
                           apiData.getCollections().get(collectionId),
-                          Optional.empty()));
+                          Optional.empty(),
+                          jsonSchemaExtensions));
                 })
             .filter(Objects::nonNull)
             .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));

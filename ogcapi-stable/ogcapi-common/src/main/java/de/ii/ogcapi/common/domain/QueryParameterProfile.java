@@ -12,12 +12,14 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.ProfileExtension;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 public abstract class QueryParameterProfile extends ApiExtensionCache
     implements OgcApiQueryParameter {
@@ -39,7 +41,7 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
 
   @Override
   public String getDescription() {
-    return "Select the profile to be used in the response. If no value is provided, the default profile will be used.";
+    return "Select the profiles to be used in the response. If no value is provided, the default profiles will be used.";
   }
 
   @Override
@@ -55,19 +57,17 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
 
   protected abstract boolean isApplicable(OgcApiDataV2 apiData, String definitionPath);
 
-  protected abstract List<String> getProfiles(OgcApiDataV2 apiData);
+  protected abstract List<ProfileExtension> getProfiles(OgcApiDataV2 apiData);
 
-  protected List<String> getProfiles(OgcApiDataV2 apiData, String collectionId) {
+  protected List<ProfileExtension> getProfiles(OgcApiDataV2 apiData, String collectionId) {
     return getProfiles(apiData);
   }
-  ;
 
-  protected abstract String getDefault(OgcApiDataV2 apiData);
+  protected abstract List<ProfileExtension> getDefault(OgcApiDataV2 apiData);
 
-  protected String getDefault(OgcApiDataV2 apiData, String collectionId) {
+  protected List<ProfileExtension> getDefault(OgcApiDataV2 apiData, String collectionId) {
     return getDefault(apiData);
   }
-  ;
 
   protected ConcurrentMap<Integer, ConcurrentMap<String, Schema>> schemaMap =
       new ConcurrentHashMap<>();
@@ -79,7 +79,11 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
     if (!schemaMap.get(apiHashCode).containsKey("*")) {
       schemaMap
           .get(apiHashCode)
-          .put("*", new StringSchema()._enum(getProfiles(apiData))._default(getDefault(apiData)));
+          .put(
+              "*",
+              new StringSchema()
+                  ._enum(convertToStringList(getProfiles(apiData)))
+                  ._default(convertToString(getDefault(apiData))));
     }
     return schemaMap.get(apiHashCode).get("*");
   }
@@ -94,8 +98,8 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
           .put(
               collectionId,
               new StringSchema()
-                  ._enum(getProfiles(apiData, collectionId))
-                  ._default(getDefault(apiData, collectionId)));
+                  ._enum(convertToStringList(getProfiles(apiData, collectionId)))
+                  ._default(convertToString(getDefault(apiData, collectionId))));
     }
     return schemaMap.get(apiHashCode).get(collectionId);
   }
@@ -103,5 +107,13 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
   @Override
   public SchemaValidator getSchemaValidator() {
     return schemaValidator;
+  }
+
+  private List<String> convertToStringList(List<ProfileExtension> profiles) {
+    return profiles.stream().map(ProfileExtension::getName).collect(Collectors.toList());
+  }
+
+  private String convertToString(List<ProfileExtension> profiles) {
+    return profiles.stream().map(ProfileExtension::getName).collect(Collectors.joining(","));
   }
 }

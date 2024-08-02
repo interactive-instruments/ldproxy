@@ -17,10 +17,7 @@ import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
-import de.ii.ogcapi.features.core.domain.ImmutableProfileTransformations;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
-import de.ii.ogcapi.features.core.domain.Profile;
-import de.ii.ogcapi.features.core.domain.ProfileTransformations;
 import de.ii.ogcapi.features.html.domain.FeatureEncoderHtml;
 import de.ii.ogcapi.features.html.domain.FeatureTransformationContextHtml;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
@@ -52,9 +49,6 @@ import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
-import de.ii.xtraplatform.features.domain.SchemaBase;
-import de.ii.xtraplatform.features.domain.transform.FeatureRefResolver;
-import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -99,10 +93,6 @@ public class FeaturesFormatHtml
           ImmutableMap.of(
               PropertyTransformations.WILDCARD,
               new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
-  private static final String LINK_TEMPLATE =
-      String.format(
-          "<a href=\"%s\">%s</a>",
-          FeatureFormatExtension.URI_TEMPLATE, FeatureRefResolver.SUB_TITLE);
 
   private final ExtensionRegistry extensionRegistry;
   private final Values<Codelist> codelistStore;
@@ -167,63 +157,6 @@ public class FeaturesFormatHtml
   @Override
   public boolean canEncodeFeatures() {
     return true;
-  }
-
-  @Override
-  public boolean supportsProfile(Profile profile) {
-    return profile == Profile.AS_KEY || profile == Profile.AS_URI || profile == Profile.AS_LINK;
-  }
-
-  @Override
-  public Optional<PropertyTransformations> getPropertyTransformations(
-      FeatureTypeConfigurationOgcApi collectionData,
-      Optional<FeatureSchema> schema,
-      Optional<Profile> profile) {
-    if (profile.isEmpty() || schema.isEmpty()) {
-      return getPropertyTransformations(collectionData);
-    }
-
-    ImmutableProfileTransformations.Builder builder = new ImmutableProfileTransformations.Builder();
-
-    schema
-        .map(SchemaBase::getAllNestedProperties)
-        .ifPresent(
-            properties ->
-                properties.stream()
-                    .filter(SchemaBase::isFeatureRef)
-                    .forEach(
-                        property -> {
-                          switch (profile.get()) {
-                            default:
-                            case AS_KEY:
-                              FeatureFormatExtension.reduceToKey(property, builder);
-                              break;
-                            case AS_URI:
-                              FeatureFormatExtension.reduceToUri(property, builder);
-                              break;
-                            case AS_LINK:
-                              reduceToLink(property, builder);
-                              break;
-                          }
-                        }));
-
-    ProfileTransformations profileTransformations = builder.build();
-
-    return Optional.of(
-        getPropertyTransformations(collectionData)
-            .map(pts -> pts.mergeInto(profileTransformations))
-            .orElse(profileTransformations));
-  }
-
-  private static void reduceToLink(
-      FeatureSchema schema, ImmutableProfileTransformations.Builder builder) {
-    builder.putTransformations(
-        schema.getFullPathAsString(),
-        ImmutableList.of(
-            new ImmutablePropertyTransformation.Builder()
-                .objectRemoveSelect(FeatureRefResolver.ID)
-                .objectReduceFormat(LINK_TEMPLATE)
-                .build()));
   }
 
   @Override

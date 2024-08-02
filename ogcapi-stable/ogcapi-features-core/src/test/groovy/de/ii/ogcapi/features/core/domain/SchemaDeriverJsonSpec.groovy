@@ -180,6 +180,7 @@ class SchemaDeriverJsonSpec extends Specification {
                                     .pattern("'^_\\\\w+\$'")
                                     .build())
                             .putProperties("codelist", new ImmutableJsonSchemaString.Builder()
+                                    .codelistId("mycodelist")
                                     .build())
                             .putProperties("enum", new ImmutableJsonSchemaString.Builder()
                                     .addEnums("foo", "bar")
