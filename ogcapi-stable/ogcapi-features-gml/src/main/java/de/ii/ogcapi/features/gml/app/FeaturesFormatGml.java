@@ -17,7 +17,6 @@ import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
-import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.features.gml.domain.GmlConfiguration;
 import de.ii.ogcapi.features.gml.domain.GmlConfiguration.Conformance;
 import de.ii.ogcapi.features.gml.domain.GmlWriter;
@@ -244,11 +243,6 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return GmlConfiguration.class;
-  }
-
-  @Override
-  public boolean supportsProfile(Profile profile) {
-    return profile == Profile.AS_LINK;
   }
 
   @Override

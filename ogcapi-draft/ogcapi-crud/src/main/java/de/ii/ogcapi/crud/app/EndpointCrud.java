@@ -22,7 +22,7 @@ import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ogcapi.features.core.domain.Profile;
+import de.ii.ogcapi.features.core.domain.ProfileFeatures;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
@@ -47,6 +47,8 @@ import de.ii.xtraplatform.base.domain.resiliency.OptionalCapability;
 import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.entities.domain.ValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
@@ -96,6 +98,7 @@ public class EndpointCrud extends EndpointSubCollection
   private final CommandHandlerCrud commandHandler;
   private final CrsInfo crsInfo;
   private final FeaturesQuery queryParser;
+  private List<ProfileFeatures> crudProfiles;
 
   @Inject
   public EndpointCrud(
@@ -109,6 +112,7 @@ public class EndpointCrud extends EndpointSubCollection
     this.commandHandler = commandHandler;
     this.crsInfo = crsInfo;
     this.queryParser = queryParser;
+    this.crudProfiles = ImmutableList.of();
   }
 
   @Override
@@ -176,6 +180,19 @@ public class EndpointCrud extends EndpointSubCollection
               .filter(FeatureFormatExtension::canSupportTransactions)
               .collect(Collectors.toList());
     return formats;
+  }
+
+  @Override
+  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+    this.crudProfiles =
+        extensionRegistry.getExtensionsForType(ProfileFeatures.class).stream()
+            .filter(
+                profile ->
+                    "rel-as-key".equals(profile.getName())
+                        || "val-as-code".equals(profile.getName()))
+            .collect(Collectors.toList());
+
+    return super.onStartup(api, apiValidation);
   }
 
   @Override
@@ -441,7 +458,7 @@ public class EndpointCrud extends EndpointSubCollection
             .featureProvider(featureProvider)
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .requestBody(requestBody)
-            .profile(Profile.AS_KEY)
+            .profiles(crudProfiles)
             .build();
 
     return commandHandler.putItemResponse(queryInput, apiRequestContext);
@@ -507,7 +524,7 @@ public class EndpointCrud extends EndpointSubCollection
             .featureProvider(featureProvider)
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .requestBody(requestBody)
-            .profile(Profile.AS_KEY)
+            .profiles(crudProfiles)
             .build();
 
     return commandHandler.patchItemResponse(queryInput, apiRequestContext);
@@ -566,7 +583,7 @@ public class EndpointCrud extends EndpointSubCollection
             .queryParameterSet(queryParameterSet)
             .featureProvider(featureProvider)
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
-            .profile(Profile.AS_KEY)
+            .profiles(crudProfiles)
             .build();
 
     return commandHandler.deleteItemResponse(queryInput, apiRequestContext);

@@ -155,7 +155,8 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
       Optional<String> unit,
       Optional<String> role,
       Optional<String> refCollectionId,
-      Optional<String> refUriTemplate) {
+      Optional<String> refUriTemplate,
+      Optional<String> codelistId) {
     switch (type) {
       case INTEGER:
         return new ImmutableJsonSchemaInteger.Builder()
@@ -165,6 +166,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
             .role(role)
             .refCollectionId(refCollectionId)
             .refUriTemplate(refUriTemplate)
+            .codelistId(codelistId)
             .build();
       case FLOAT:
         return new ImmutableJsonSchemaNumber.Builder()
@@ -204,6 +206,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
             .role(role)
             .refCollectionId(refCollectionId)
             .refUriTemplate(refUriTemplate)
+            .codelistId(codelistId)
             .build();
     }
   }

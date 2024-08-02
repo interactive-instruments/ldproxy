@@ -18,7 +18,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesLinksGenerator;
 import de.ii.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
-import de.ii.ogcapi.features.core.domain.Profile;
+import de.ii.ogcapi.features.core.domain.ProfileFeatures;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
@@ -68,6 +68,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
@@ -158,7 +159,7 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
         null,
         queryInput,
         query,
-        queryInput.getProfile(),
+        queryInput.getProfiles(),
         queryInput.getFeatureProvider(),
         null,
         outputFormat,
@@ -217,7 +218,7 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
         featureId,
         queryInput,
         query,
-        queryInput.getProfile(),
+        queryInput.getProfiles(),
         queryInput.getFeatureProvider(),
         persistentUri,
         outputFormat,
@@ -235,7 +236,7 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
       String featureId,
       QueryInput queryInput,
       FeatureQuery query,
-      Optional<Profile> requestedProfile,
+      List<ProfileFeatures> requestedProfiles,
       FeatureProvider featureProvider,
       String canonicalUri,
       FeatureFormatExtension outputFormat,
@@ -248,8 +249,13 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
     QueriesHandler.ensureCollectionIdExists(api.getData(), collectionId);
     QueriesHandler.ensureFeatureProviderSupportsQueries(featureProvider);
 
-    // negotiate profile, if the format does not support the selected profile
-    Optional<Profile> profile = requestedProfile.map(outputFormat::negotiateProfile);
+    // negotiate profiles, in case the format does not support the selected profile
+    List<ProfileFeatures> profiles =
+        requestedProfiles.stream()
+            .map(profile -> profile.negotiateProfile(outputFormat.getMediaType().type().toString()))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
 
     Optional<CrsTransformer> crsTransformer = Optional.empty();
 
@@ -270,7 +276,7 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
                     query.getOffset(),
                     query.getLimit(),
                     defaultPageSize.orElse(0),
-                    profile,
+                    profiles,
                     requestContext.getMediaType(),
                     alternateMediaTypes,
                     i18n,
@@ -278,7 +284,7 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
             : new FeatureLinksGenerator()
                 .generateLinks(
                     requestContext.getUriCustomizer(),
-                    profile,
+                    profiles,
                     requestContext.getMediaType(),
                     alternateMediaTypes,
                     outputFormat.getCollectionMediaType(),
@@ -313,8 +319,7 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
             .offset(query.getOffset())
             .maxAllowableOffset(query.getMaxAllowableOffset())
             .geometryPrecision(query.getGeometryPrecision())
-            .isHitsOnlyIfMore(onlyHitsIfMore)
-            .profile(profile);
+            .isHitsOnlyIfMore(onlyHitsIfMore);
 
     QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
     for (OgcApiQueryParameter parameter : queryParameterSet.getDefinitions()) {
@@ -358,7 +363,7 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
       propertyTransformations =
           outputFormat
               .getPropertyTransformations(
-                  api.getData().getCollections().get(collectionId), schema, profile)
+                  api.getData().getCollections().get(collectionId), schema, profiles)
               .map(
                   pt ->
                       ImmutableMap.of(

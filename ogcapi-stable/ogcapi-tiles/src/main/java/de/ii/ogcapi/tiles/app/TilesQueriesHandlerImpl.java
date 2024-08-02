@@ -17,6 +17,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaExtension;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -578,8 +579,14 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                                         .description(vectorSchema.getDescription())
                                         .build()));
 
+            List<JsonSchemaExtension> jsonSchemaExtensions =
+                extensionRegistry.getExtensionsForType(JsonSchemaExtension.class).stream()
+                    .filter(e -> e.isEnabledForApi(apiData, collectionData.getId()))
+                    .collect(Collectors.toList());
+
             JsonSchemaDocument jsonSchema =
-                schemaCache.getSchema(vectorSchema, apiData, collectionData, Optional.empty());
+                schemaCache.getSchema(
+                    vectorSchema, apiData, collectionData, Optional.empty(), jsonSchemaExtensions);
 
             ImmutableTileLayer.Builder builder2 =
                 ImmutableTileLayer.builder()

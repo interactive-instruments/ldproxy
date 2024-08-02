@@ -25,7 +25,7 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
       int offset,
       int limit,
       int defaultLimit,
-      Optional<Profile> profile,
+      List<ProfileFeatures> profiles,
       ApiMediaType mediaType,
       List<ApiMediaType> alternateMediaTypes,
       I18n i18n,
@@ -62,7 +62,7 @@ public class FeaturesLinksGenerator extends DefaultLinksGenerator {
               .title(i18n.get("firstLink", language))
               .build());
     }
-    profile.ifPresent(
+    profiles.forEach(
         p ->
             builder.add(
                 new ImmutableLink.Builder()
