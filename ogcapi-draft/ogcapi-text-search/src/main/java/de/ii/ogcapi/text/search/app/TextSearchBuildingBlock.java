@@ -22,11 +22,10 @@ import javax.inject.Singleton;
  * @langEn General text search in multiple text properties of the data.
  * @langDe Generelle Textsuche über mehrere Properties der Daten.
  * @conformanceEn *Text Search* implements requirements of the section "Parameter q" of the [draft
- *     OGC API - Records - Part 1:
- *     Core](https://docs.ogc.org/DRAFTS/20-004.html#core-query-parameters-q).
+ *     OGC API - Features - Part 1: Text Search](https://docs.ogc.org/DRAFTS/24-031.html).
  * @conformanceDe Der Baustein implementiert die Anforderungen des Abschnitts "Parameter q" des
- *     [Entwurfs von OGC API - Records - Part 1:
- *     Core](https://docs.ogc.org/DRAFTS/20-004.html#core-query-parameters-q).
+ *     [Entwurfs von OGC API - Features - Part 9: Text
+ *     Search](https://docs.ogc.org/DRAFTS/24-031.html).
  * @ref:cfg {@link de.ii.ogcapi.text.search.domain.TextSearchConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.text.search.domain.ImmutableTextSearchConfiguration}
  * @ref:queryParameters {@link de.ii.ogcapi.text.search.app.QueryParameterQ}
