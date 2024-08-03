@@ -21,16 +21,14 @@ import javax.inject.Singleton;
  * @title Projections
  * @langEn Select the feature properties included in the feature response.
  * @langDe Auswahl der Feature-Eigenschaften in Rückgaben.
- * @conformanceEn *Projections* is based on the [OGC API Features proposal for a new part 'Property
- *     Selection'](https://github.com/opengeospatial/ogcapi-features/tree/master/proposals/property-selection)
- *     and [ongoing discussions](https://github.com/opengeospatial/ogcapi-features/projects/12).
- * @conformanceDe Der Baustein basiert auf dem [Vorschlag für einen neuen Teil 'Property Selection'
- *     von OGC API
- *     Features](https://github.com/opengeospatial/ogcapi-features/tree/master/proposals/property-selection)
- *     und [laufenden Diskussionen](https://github.com/opengeospatial/ogcapi-features/projects/12).
+ * @conformanceEn *Projections* is based on the [draft of OGC API Features Part 6: Property
+ *     Selection](https://docs.ogc.org/DRAFTS/24-019.html).
+ * @conformanceDe Der Baustein basiert auf dem [Entwurf für OGC API Features Part 6: Property
+ *     Selection](https://docs.ogc.org/DRAFTS/24-019.html).
  * @ref:cfg {@link de.ii.ogcapi.projections.app.ProjectionsConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.projections.app.ImmutableProjectionsConfiguration}
  * @ref:queryParameters {@link de.ii.ogcapi.projections.app.QueryParameterProperties}, {@link
+ *     de.ii.ogcapi.projections.app.QueryParameterExcludeProperties}, {@link
  *     de.ii.ogcapi.projections.app.QueryParameterSkipGeometry}
  */
 @Singleton
@@ -42,8 +40,8 @@ public class ProjectionsBuildingBlock implements ApiBuildingBlock {
   public static final Optional<ExternalDocumentation> SPEC =
       Optional.of(
           ExternalDocumentation.of(
-              "https://github.com/opengeospatial/ogcapi-features/tree/master/proposals/property-selection#readme",
-              "OGC API - Features - Part n: Property Selection (PREDRAFT)"));
+              "https://docs.ogc.org/DRAFTS/24-019.html",
+              "OGC API - Features - Part 6: Property Selection"));
 
   @Inject
   public ProjectionsBuildingBlock() {}

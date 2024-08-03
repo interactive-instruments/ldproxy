@@ -12,7 +12,6 @@ import com.google.common.base.Splitter;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
-import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -25,7 +24,7 @@ import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
 import de.ii.ogcapi.tiles.domain.TileGenerationUserParameter;
-import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
+import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
 import de.ii.xtraplatform.tiles.domain.TileGenerationSchema;
 import io.swagger.v3.oas.models.media.ArraySchema;
@@ -37,50 +36,51 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * @title properties
+ * @title exclude-properties
  * @endpoints Features, Feature, Vector Tile
- * @langEn The properties that should be included for each feature. The parameter value is a
+ * @langEn The properties that should be excluded for each feature. The parameter value is a
  *     comma-separated list of property names. By default, all feature properties with a value are
- *     returned.
- * @langDe Die Eigenschaften, die für jedes Feature enthalten sein sollen. Der Parameterwert ist
- *     eine kommagetrennte Liste von Eigenschaftsnamen. Standardmäßig werden alle
- *     Feature-Eigenschaften mit einem Wert zurückgegeben.
+ *     returned. The parameter must not be used together with the "properties" parameter.
+ * @langDe Die Eigenschaften, die für jedes Feature ausgeschlossen werden sollen. Der Parameterwert
+ *     ist eine kommagetrennte Liste von Eigenschaftsnamen. Standardmäßig werden alle
+ *     Feature-Eigenschaften mit einem Wert zurückgegeben. Der Parameter darf nicht zusammen mit dem
+ *     Parameter "properties" verwendet werden.
  */
 @Singleton
 @AutoBind
-public class QueryParameterProperties extends ApiExtensionCache
+public class QueryParameterExcludeProperties extends ApiExtensionCache
     implements OgcApiQueryParameter,
         TypedQueryParameter<List<String>>,
         FeatureQueryParameter,
-        TileGenerationUserParameter,
-        ConformanceClass {
+        TileGenerationUserParameter {
 
   private final SchemaInfo schemaInfo;
   private final SchemaValidator schemaValidator;
 
   @Inject
-  public QueryParameterProperties(SchemaInfo schemaInfo, SchemaValidator schemaValidator) {
+  public QueryParameterExcludeProperties(SchemaInfo schemaInfo, SchemaValidator schemaValidator) {
     this.schemaInfo = schemaInfo;
     this.schemaValidator = schemaValidator;
   }
 
   @Override
   public String getId(String collectionId) {
-    return "properties_" + collectionId;
+    return "exclude-properties_" + collectionId;
   }
 
   @Override
   public String getName() {
-    return "properties";
+    return "exclude-properties";
   }
 
   @Override
   public String getDescription() {
-    return "The properties that should be included for each feature. The parameter value is a comma-separated list of property names. By default, all feature properties with a value are returned.";
+    return "The properties that should be excluded for each feature. The parameter value is a comma-separated list of property names. By default, all feature properties with a value are returned. The parameter must not be used together with the 'properties' parameter.";
   }
 
   @Override
@@ -159,11 +159,27 @@ public class QueryParameterProperties extends ApiExtensionCache
 
   @Override
   public void applyTo(
-      Builder queryBuilder,
+      ImmutableFeatureQuery.Builder queryBuilder,
       QueryParameterSet parameters,
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData) {
-    parameters.getValue(this).ifPresent(queryBuilder::fields);
+    parameters
+        .getValue(this)
+        .ifPresent(
+            excludeProperties -> {
+              schemaInfo.getPropertyNames(apiData, collectionData.getId()).stream()
+                  .filter(propertyName -> !excludeProperties.contains(propertyName))
+                  .forEach(queryBuilder::addFields);
+
+              if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace(
+                    "Excluded properties: {}; selected properties: {}",
+                    String.join(", ", parameters.getValue(this).orElse(List.of())),
+                    schemaInfo.getPropertyNames(apiData, collectionData.getId()).stream()
+                        .filter(propertyName -> !excludeProperties.contains(propertyName))
+                        .collect(Collectors.joining(", ")));
+              }
+            });
   }
 
   @Override
@@ -171,7 +187,16 @@ public class QueryParameterProperties extends ApiExtensionCache
       ImmutableTileGenerationParametersTransient.Builder userParametersBuilder,
       QueryParameterSet parameters,
       Optional<TileGenerationSchema> generationSchema) {
-    parameters.getValue(this).ifPresent(userParametersBuilder::fields);
+    generationSchema
+        .map(TileGenerationSchema::getProperties)
+        .map(Map::keySet)
+        .ifPresent(
+            keys ->
+                keys.stream()
+                    .filter(
+                        propertyName ->
+                            !parameters.getValue(this).orElse(List.of()).contains(propertyName))
+                    .forEach(userParametersBuilder::addFields));
   }
 
   @Override
@@ -182,12 +207,5 @@ public class QueryParameterProperties extends ApiExtensionCache
   @Override
   public Optional<ExternalDocumentation> getSpecificationRef() {
     return ProjectionsBuildingBlock.SPEC;
-  }
-
-  @Override
-  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
-    return List.of(
-        "http://www.opengis.net/spec/ogcapi-features-6/0.0/conf/properties",
-        "http://www.opengis.net/spec/ogcapi-features-6/0.0/conf/properties-features");
   }
 }
