@@ -21,6 +21,10 @@ import javax.inject.Singleton;
  * @title Geometry Simplification
  * @langEn Simplification of geometries with Douglas Peucker.
  * @langDe Vereinfachung von Geometrien mit Douglas-Peucker.
+ * @conformanceEn *Geometry Simplification* is based on the [draft of OGC API Features Part 7:
+ *     Geometry Simplification](https://docs.ogc.org/DRAFTS/24-020.html).
+ * @conformanceDe Der Baustein basiert auf dem [Entwurf für OGC API Features Part 7: Geometry
+ *     Simplification](https://docs.ogc.org/DRAFTS/24-020.html).
  * @ref:cfg {@link de.ii.ogcapi.geometry.simplification.app.GeometrySimplificationConfiguration}
  * @ref:cfgProperties {@link
  *     de.ii.ogcapi.geometry.simplification.app.ImmutableGeometrySimplificationConfiguration}
