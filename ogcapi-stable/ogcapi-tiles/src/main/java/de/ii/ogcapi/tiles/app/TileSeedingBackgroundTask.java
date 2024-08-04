@@ -8,6 +8,7 @@
 package de.ii.ogcapi.tiles.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.WithChangeListeners;
@@ -325,7 +326,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
                                         .get()
                                         .getMapStyleTileset(entry.getKey(), style))
                             .collect(Collectors.toList())))
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
 
     Map<String, List<String>> rasterForVectorCombinedTilesets =
         combinedTilesets.entrySet().stream()
@@ -341,7 +342,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
                                         .get()
                                         .getMapStyleTileset(entry.getKey(), style))
                             .collect(Collectors.toList())))
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
 
     JobSet jobSet = TileSeedingJobSet.of(tileProvider.getId(), tilesets, reseed);
 
@@ -351,7 +352,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
                 ts ->
                     rasterForVectorTilesets.get(ts.getKey()).stream()
                         .map(rts -> Map.entry(rts, ts.getValue())))
-            .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
     if (!rasterTilesets.isEmpty()) {
       jobSet = jobSet.with(TileSeedingJobSet.of(tileProvider.getId(), rasterTilesets, reseed));
     }
@@ -365,7 +366,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
                   ts ->
                       rasterForVectorCombinedTilesets.get(ts.getKey()).stream()
                           .map(rts -> Map.entry(rts, ts.getValue())))
-              .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+              .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
       if (!rasterCombinedTilesets.isEmpty()) {
         combinedJobSet =
             combinedJobSet.with(
