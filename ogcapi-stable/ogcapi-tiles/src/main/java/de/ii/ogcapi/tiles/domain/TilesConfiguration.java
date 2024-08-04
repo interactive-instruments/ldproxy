@@ -174,6 +174,87 @@ import org.immutables.value.Value;
  *     source: earthatnight/dnb_land_ocean_ice.2012.54000x27000_geo.mbtiles
  * ```
  *     </code>
+ *     <p>The tile provider defines two raster tilesets (style: "default", tile matrix set:
+ *     "WebMercatorQuad" and "AdV_25832):
+ *     <p><code>
+ * ```yaml
+ * ---
+ * id: vineyards-tiles
+ * providerType: TILE
+ * providerSubType: FEATURES
+ * seeding:
+ *   runOnStartup: true
+ *   maxThreads: 8
+ * caches:
+ * - type: IMMUTABLE
+ *   storage: PER_JOB
+ *   levels:
+ *     WebMercatorQuad:
+ *       min: 5
+ *       max: 16
+ *     AdV_25832:
+ *       min: 0
+ *       max: 11
+ * rasterTilesets:
+ *   vineyards:
+ *     styles:
+ *       - vineyards/default.json
+ * tilesets:
+ *   vineyards:
+ *     id: vineyards
+ *     center:
+ *       lon: 7.35
+ *       lat: 49.8
+ *     levels:
+ *       WebMercatorQuad:
+ *         min: 5
+ *         max: 16
+ *         default: 8
+ *       AdV_25832:
+ *         min: 0
+ *         max: 11
+ *         default: 3
+ *     transformations:
+ *       WebMercatorQuad:
+ *       - min: 5
+ *         max: 7
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *       - min: 8
+ *         max: 8
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *       - min: 9
+ *         max: 9
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *         - cluster
+ *       AdV_25832:
+ *       - min: 0
+ *         max: 2
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *       - min: 3
+ *         max: 3
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *       - min: 4
+ *         max: 4
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *         - cluster
+ * ```
+ *     </code>
  * @examplesDe Beispiel für die Angaben in der Konfigurationsdatei aus der API für [Weinlagen in
  *     Rheinland-Pfalz](https://demo.ldproxy.net/vineyards).
  *     <p>Auf API-Ebene (da es nur eine einzige Objektart gibt, ist das Tileset des Datensatzes
@@ -308,6 +389,87 @@ import org.immutables.value.Value;
  *   earthatnight:
  *     id: earthatnight
  *     source: earthatnight/dnb_land_ocean_ice.2012.54000x27000_geo.mbtiles
+ * ```
+ *     </code>
+ *     <p>Der Tile-Provider definiert zwei Raster-Tilesets (Style: "default", Tile-Matrix-Sets:
+ *     "WebMercatorQuad" und "AdV_25832):
+ *     <p><code>
+ * ```yaml
+ * ---
+ * id: vineyards-tiles
+ * providerType: TILE
+ * providerSubType: FEATURES
+ * seeding:
+ *   runOnStartup: true
+ *   maxThreads: 8
+ * caches:
+ * - type: IMMUTABLE
+ *   storage: PER_JOB
+ *   levels:
+ *     WebMercatorQuad:
+ *       min: 5
+ *       max: 16
+ *     AdV_25832:
+ *       min: 0
+ *       max: 11
+ * rasterTilesets:
+ *   vineyards:
+ *     styles:
+ *       - vineyards/default.json
+ * tilesets:
+ *   vineyards:
+ *     id: vineyards
+ *     center:
+ *       lon: 7.35
+ *       lat: 49.8
+ *     levels:
+ *       WebMercatorQuad:
+ *         min: 5
+ *         max: 16
+ *         default: 8
+ *       AdV_25832:
+ *         min: 0
+ *         max: 11
+ *         default: 3
+ *     transformations:
+ *       WebMercatorQuad:
+ *       - min: 5
+ *         max: 7
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *       - min: 8
+ *         max: 8
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *       - min: 9
+ *         max: 9
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *         - cluster
+ *       AdV_25832:
+ *       - min: 0
+ *         max: 2
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *       - min: 3
+ *         max: 3
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *       - min: 4
+ *         max: 4
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *         - cluster
  * ```
  *     </code>
  */
