@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -58,7 +59,10 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterQ extends ApiExtensionCache
-    implements OgcApiQueryParameter, FeatureQueryParameter, TypedQueryParameter<Cql2Expression> {
+    implements OgcApiQueryParameter,
+        FeatureQueryParameter,
+        TypedQueryParameter<Cql2Expression>,
+        ConformanceClass {
 
   private static final String PARAMETER_Q = "q";
 
@@ -197,5 +201,12 @@ public class QueryParameterQ extends ApiExtensionCache
     return Like.ofFunction(
         Function.of("lower", ImmutableList.of(Property.of(qField))),
         ScalarLiteral.of("%" + qValue.toLowerCase(Locale.ROOT) + "%"));
+  }
+
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return List.of(
+        "http://www.opengis.net/spec/ogcapi-features-9/0.0/conf/text-search",
+        "http://www.opengis.net/spec/ogcapi-features-9/0.0/conf/features-text-search");
   }
 }
