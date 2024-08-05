@@ -24,6 +24,7 @@ import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiOperation;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
@@ -62,7 +63,8 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class EndpointSchema extends EndpointSubCollection implements ApiExtensionHealth {
+public class EndpointSchema extends EndpointSubCollection
+    implements ApiExtensionHealth, ConformanceClass {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EndpointSchema.class);
 
@@ -74,6 +76,15 @@ public class EndpointSchema extends EndpointSubCollection implements ApiExtensio
   public EndpointSchema(ExtensionRegistry extensionRegistry, QueriesHandlerSchema queryHandler) {
     super(extensionRegistry);
     this.queryHandler = queryHandler;
+  }
+
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return List.of(
+        "http://www.opengis.net/spec/ogcapi-features-5/0.0/conf/schema",
+        "http://www.opengis.net/spec/ogcapi-features-5/0.0/conf/core-roles-features",
+        "http://www.opengis.net/spec/ogcapi-features-5/0.0/conf/feature-references",
+        "http://www.opengis.net/spec/ogcapi-features-5/0.0/conf/returnables-and-receivables");
   }
 
   @Override
