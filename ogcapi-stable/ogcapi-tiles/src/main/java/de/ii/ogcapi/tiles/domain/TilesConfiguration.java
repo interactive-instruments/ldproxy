@@ -64,7 +64,6 @@ import org.immutables.value.Value;
  *     adjacent features are aggregated up to zoom level 9:
  *     <p><code>
  * ```yaml
- * ---
  * id: vineyards-tiles
  * providerType: TILE
  * providerSubType: FEATURES
@@ -164,7 +163,6 @@ import org.immutables.value.Value;
  *     <p>The tile provider defines a single tileset and references the MBTiles file:
  *     <p><code>
  * ```yaml
- * ---
  * id: earthatnight-tiles
  * providerType: TILE
  * providerSubType: MBTILES
@@ -175,10 +173,9 @@ import org.immutables.value.Value;
  * ```
  *     </code>
  *     <p>The tile provider defines two raster tilesets (style: "default", tile matrix set:
- *     "WebMercatorQuad" and "AdV_25832):
+ *     "WebMercatorQuad" and "AdV_25832"):
  *     <p><code>
  * ```yaml
- * ---
  * id: vineyards-tiles
  * providerType: TILE
  * providerSubType: FEATURES
@@ -271,7 +268,6 @@ import org.immutables.value.Value;
  *     Angrenzende Features werden bis zur Zoomstufe 9 zusammengefasst:
  *     <p><code>
  * ```yaml
- * ---
  * id: vineyards-tiles
  * providerType: TILE
  * providerSubType: FEATURES
@@ -381,7 +377,6 @@ import org.immutables.value.Value;
  *     <p>Der Tile-Provider definiert ein einziges Tileset und referenziert die MBTiles-Datei:
  *     <p><code>
  * ```yaml
- * ---
  * id: earthatnight-tiles
  * providerType: TILE
  * providerSubType: MBTILES
@@ -392,10 +387,9 @@ import org.immutables.value.Value;
  * ```
  *     </code>
  *     <p>Der Tile-Provider definiert zwei Raster-Tilesets (Style: "default", Tile-Matrix-Sets:
- *     "WebMercatorQuad" und "AdV_25832):
+ *     "WebMercatorQuad" und "AdV_25832"):
  *     <p><code>
  * ```yaml
- * ---
  * id: vineyards-tiles
  * providerType: TILE
  * providerSubType: FEATURES
