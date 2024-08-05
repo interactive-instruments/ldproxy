@@ -24,6 +24,7 @@ import de.ii.ogcapi.tiles.domain.ImmutableTileJson;
 import de.ii.ogcapi.tiles.domain.TileJson;
 import de.ii.ogcapi.tiles.domain.TilePoint;
 import de.ii.ogcapi.tiles.domain.TileSet;
+import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
@@ -92,22 +93,25 @@ public class TileSetFormatTileJson implements TileSetFormatExtension {
       OgcApiDataV2 apiData,
       Optional<String> collectionId,
       ApiRequestContext requestContext) {
-    Optional<TilesetMetadata> tilesetMetadata =
-        tilesProviders.getTilesetMetadata(
-            apiData, collectionId.flatMap(apiData::getCollectionData));
-    List<FeatureSchema> vectorSchemas =
-        tilesetMetadata.map(TilesetMetadata::getVectorSchemas).orElse(List.of());
-    List<VectorLayer> vectorLayers =
-        vectorSchemas.stream()
-            .map(
-                schema ->
-                    VectorLayer.of(
-                        schema,
-                        tilesetMetadata.flatMap(
-                            metadata ->
-                                Optional.ofNullable(
-                                    metadata.getLevels().get(tileset.getTileMatrixSetId())))))
-            .collect(Collectors.toList());
+    List<VectorLayer> vectorLayers = ImmutableList.of();
+    if (tileset.getDataType() == DataType.vector) {
+      Optional<TilesetMetadata> tilesetMetadata =
+          tilesProviders.getTilesetMetadata(
+              apiData, collectionId.flatMap(apiData::getCollectionData));
+      List<FeatureSchema> vectorSchemas =
+          tilesetMetadata.map(TilesetMetadata::getVectorSchemas).orElse(List.of());
+      vectorLayers =
+          vectorSchemas.stream()
+              .map(
+                  schema ->
+                      VectorLayer.of(
+                          schema,
+                          tilesetMetadata.flatMap(
+                              metadata ->
+                                  Optional.ofNullable(
+                                      metadata.getLevels().get(tileset.getTileMatrixSetId())))))
+              .collect(Collectors.toList());
+    }
 
     // TODO: add support for version (manage revisions to the data)
     return ImmutableTileJson.builder()

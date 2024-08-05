@@ -64,6 +64,7 @@ public abstract class ApiEndpointDefinition {
   public static final int SORT_PRIORITY_RESOURCES = 2100;
   public static final int SORT_PRIORITY_RESOURCE = 2110;
   public static final int SORT_PRIORITY_RESOURCES_MANAGER = 2120;
+  public static final int SORT_PRIORITY_WMTS = 2200;
   public static final int SORT_PRIORITY_ROUTES_POST = 2500;
   public static final int SORT_PRIORITY_ROUTES_GET = 2510;
   public static final int SORT_PRIORITY_ROUTE_GET = 2520;

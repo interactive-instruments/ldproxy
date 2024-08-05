@@ -50,8 +50,7 @@ public abstract class TileSet extends OgcResourceMetadata {
 
   public abstract List<TileLayer> getLayers();
 
-  // this is for map tiles, so we do not support this for now
-  // public abstract Optional<StyleEntry> getStyle();
+  public abstract Optional<StyleEntry> getStyle();
 
   // this is for offline tilesets, so we do not support this for now
   // public abstract Optional<MediaType> getMediaType();
