@@ -53,7 +53,6 @@ public abstract class Link {
   public static final Comparator<Link> COMPARATOR_LINKS =
       Comparator.comparing(Link::getRel).thenComparing(Link::getHref);
 
-  @Nullable
   @XmlAttribute
   public abstract String getRel();
 

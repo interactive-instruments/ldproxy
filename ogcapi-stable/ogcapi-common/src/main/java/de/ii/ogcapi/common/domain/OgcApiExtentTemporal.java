@@ -36,28 +36,24 @@ public interface OgcApiExtentTemporal {
                         .forEachOrdered(
                             val ->
                                 into.putString(
-                                    Objects.requireNonNullElse(val, ".."),
+                                    Objects.requireNonNullElse(val, "..").toString(),
                                     StandardCharsets.UTF_8)));
       };
 
-  String[][] getInterval();
+  Instant[][] getInterval();
 
   String getTrs();
 
   static OgcApiExtentTemporal of(TemporalExtent interval) {
     return ImmutableOgcApiExtentTemporal.builder()
         .interval(
-            new String[][] {
+            new Instant[][] {
               {
                 (interval.getStart() != null)
-                    ? Instant.ofEpochMilli(interval.getStart())
-                        .truncatedTo(ChronoUnit.SECONDS)
-                        .toString()
+                    ? Instant.ofEpochMilli(interval.getStart()).truncatedTo(ChronoUnit.SECONDS)
                     : null,
                 (interval.getEnd() != null)
-                    ? Instant.ofEpochMilli(interval.getEnd())
-                        .truncatedTo(ChronoUnit.SECONDS)
-                        .toString()
+                    ? Instant.ofEpochMilli(interval.getEnd()).truncatedTo(ChronoUnit.SECONDS)
                     : null
               }
             })

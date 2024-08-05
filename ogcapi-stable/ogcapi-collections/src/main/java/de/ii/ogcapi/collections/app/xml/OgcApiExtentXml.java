@@ -48,7 +48,8 @@ public class OgcApiExtentXml {
   @XmlElement(name = "Temporal", namespace = "http://www.opengis.net/ogcapi-features-1/1.0")
   public OgcApiExtentTemporalXml getTemporal() {
     return Objects.nonNull(temporal)
-        ? new OgcApiExtentTemporalXml(temporal.getInterval()[0][0], temporal.getInterval()[0][1])
+        ? new OgcApiExtentTemporalXml(
+            temporal.getInterval()[0][0].toString(), temporal.getInterval()[0][1].toString())
         : null;
   }
 }

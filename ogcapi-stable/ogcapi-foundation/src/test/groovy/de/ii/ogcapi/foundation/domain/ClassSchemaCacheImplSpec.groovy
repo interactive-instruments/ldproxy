@@ -27,7 +27,7 @@ class ClassSchemaCacheImplSpec extends Specification {
         then:
         Objects.nonNull(schema)
         schema.getType() == "object"
-        schema.getRequired()  == ["href"]
+        schema.getRequired()  == ["href", "rel"]
         schema.getProperties().get("title").getType() == "string"
         schema.getProperties().get("href").getType() == "string"
         schema.getProperties().get("href").getFormat() == "uri-reference"

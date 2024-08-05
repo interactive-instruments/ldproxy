@@ -144,7 +144,9 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
       List<String> requiredProperties,
       ImmutableJsonSchemaObject.Builder objectBuilder) {
     objectBuilder.properties(properties);
-    objectBuilder.required(requiredProperties);
+    if (!requiredProperties.isEmpty()) {
+      objectBuilder.required(requiredProperties);
+    }
   }
 
   @Override

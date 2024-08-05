@@ -37,7 +37,9 @@ public class SchemaDeriverFeatures extends SchemaDeriverJsonSchema {
       ImmutableJsonSchemaObject.Builder builder) {
 
     builder.properties(properties);
-    builder.required(required);
+    if (!required.isEmpty()) {
+      builder.required(required);
+    }
   }
 
   @Override
@@ -57,8 +59,11 @@ public class SchemaDeriverFeatures extends SchemaDeriverJsonSchema {
           }
         });
 
-    builder.required(
-        required.stream().map(this::getNameWithoutRole).collect(Collectors.toUnmodifiableList()));
+    List<String> requiredProperties =
+        required.stream().map(this::getNameWithoutRole).collect(Collectors.toUnmodifiableList());
+    if (!requiredProperties.isEmpty()) {
+      builder.required(requiredProperties);
+    }
     withoutFlattenedArrays(properties).forEach(builder::putProperties);
     builder.patternProperties(onlyFlattenedArraysAsPatterns(properties));
   }

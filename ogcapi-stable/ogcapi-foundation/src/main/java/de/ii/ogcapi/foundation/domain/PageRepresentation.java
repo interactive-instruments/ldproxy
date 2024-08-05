@@ -45,7 +45,7 @@ public abstract class PageRepresentation {
   @JsonIgnore
   public abstract List<Link> getLinks();
 
-  @JsonProperty("links")
+  @JsonProperty(value = "links", required = true)
   @Value.Derived
   public List<Link> getOrderedLinks() {
     return getLinks().stream()

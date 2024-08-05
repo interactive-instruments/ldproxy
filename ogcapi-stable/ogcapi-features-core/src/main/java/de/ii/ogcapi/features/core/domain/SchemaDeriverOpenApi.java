@@ -91,7 +91,9 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
 
     objectSchema.properties(new LinkedHashMap<>());
     objectSchema.getProperties().putAll(properties);
-    objectSchema.required(requiredProperties);
+    if (!requiredProperties.isEmpty()) {
+      objectSchema.required(requiredProperties);
+    }
 
     return objectSchema;
   }

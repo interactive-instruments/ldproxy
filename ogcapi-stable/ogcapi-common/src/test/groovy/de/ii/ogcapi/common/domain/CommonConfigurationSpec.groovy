@@ -24,6 +24,7 @@ class CommonConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                 .addAdditionalLinks(new ImmutableLink.Builder()
                         .title("foo")
                         .href("bar")
+                        .rel("baz")
                         .build())
                 .build()
     }
@@ -60,6 +61,7 @@ class CommonConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                 .addAdditionalLinks(new ImmutableLink.Builder()
                         .title("bar")
                         .href("foo")
+                        .rel("baz")
                         .build())
                 .build()
     }
@@ -72,10 +74,12 @@ class CommonConfigurationSpec extends AbstractExtensionConfigurationSpec impleme
                         new ImmutableLink.Builder()
                                 .title("foo")
                                 .href("bar")
+                                .rel("baz")
                                 .build(),
                         new ImmutableLink.Builder()
                                 .title("bar")
                                 .href("foo")
+                                .rel("baz")
                                 .build()
                 ))
                 .build()

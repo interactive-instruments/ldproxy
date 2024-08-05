@@ -8,6 +8,7 @@
 package de.ii.ogcapi.collections.domain;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.collections.domain.ImmutableCollections.Builder;
@@ -28,6 +29,7 @@ public abstract class Collections extends PageRepresentation {
 
   public abstract List<String> getCrs();
 
+  @JsonProperty(required = true)
   public abstract List<OgcApiCollection> getCollections();
 
   @JsonAnyGetter

@@ -12,7 +12,7 @@
     "schemas": {
       "Link": {
         "type" : "object",
-        "required" : [ "href" ],
+        "required" : [ "href", "rel" ],
         "properties" : {
           "href" : {
             "type" : "string",

@@ -69,7 +69,7 @@ public class ClassSchemaCacheImpl implements ClassSchemaCache {
           .addProperties("rel", new StringSchema())
           .addProperties("type", new StringSchema())
           .addProperties("title", new StringSchema())
-          .addRequiredItem("href");
+          .required(List.of("href", "rel"));
 
   private final ConcurrentMap<Class<?>, Schema<?>> namedSchemaMap;
   private final ConcurrentMap<Class<?>, Schema<?>> embeddedSchemaMap;

@@ -127,7 +127,8 @@
     "Link": {
       "type": "object",
       "required": [
-        "href"
+        "href",
+        "rel"
       ],
       "properties": {
         "href": {
