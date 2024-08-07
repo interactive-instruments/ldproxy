@@ -12,8 +12,10 @@ import de.ii.ogcapi.foundation.domain.QueryHandler;
 import de.ii.ogcapi.foundation.domain.QueryIdentifier;
 import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
+import de.ii.ogcapi.tiles.domain.TilesConfiguration.WmtsScope;
 import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.tiles.domain.TileCoordinates;
+import de.ii.xtraplatform.tiles.domain.TilesFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,12 +30,15 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
     TILE_SETS,
     TILE_SET,
     TILE,
+    WMTS
   }
 
   @Value.Immutable
   interface QueryInputTile extends QueryInput, TileCoordinates {
 
     Optional<String> getCollectionId();
+
+    Optional<String> getStyleId();
 
     TileFormatExtension getOutputFormat();
 
@@ -45,13 +50,15 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
 
     Optional<String> getCollectionId();
 
+    Optional<String> getStyleId();
+
     List<String> getTileMatrixSetIds();
 
     String getPath();
 
     boolean getOnlyWebMercatorQuad();
 
-    List<String> getTileEncodings();
+    List<TilesFormat> getTileEncodings();
   }
 
   @Value.Immutable
@@ -59,8 +66,16 @@ public interface TilesQueriesHandler extends QueriesHandler<TilesQueriesHandler.
 
     Optional<String> getCollectionId();
 
+    Optional<String> getStyleId();
+
     String getTileMatrixSetId();
 
     String getPath();
+  }
+
+  @Value.Immutable
+  interface QueryInputWmts extends QueryInput {
+
+    WmtsScope getScope();
   }
 }

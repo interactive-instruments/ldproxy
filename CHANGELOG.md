@@ -1,5 +1,23 @@
 # Changelog
 
+## v4.1.0 (05/08/2024)
+#### Implemented enhancements
+
+-  Tiles: support raster tile generation with xtratiler [#1251](https://github.com/interactive-instruments/ldproxy/issues/1251)
+-  add Oracle Feature Provider [#1232](https://github.com/interactive-instruments/ldproxy/issues/1232)
+-  Styles: add endpoint for a legend [#1226](https://github.com/interactive-instruments/ldproxy/issues/1226)
+-  MapLibre styles: add bounds property from the data [#1223](https://github.com/interactive-instruments/ldproxy/issues/1223)
+
+#### Improvements
+
+-  enable queryables by default [#1236](https://github.com/interactive-instruments/ldproxy/issues/1236)
+
+#### Fixed bugs
+
+-  Features: always return 404 for features that do not exist [#1234](https://github.com/interactive-instruments/ldproxy/issues/1234)
+
+---
+
 ## v4.0.0 (14/05/2024)
 
 #### Breaking changes

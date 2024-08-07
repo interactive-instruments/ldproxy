@@ -8,6 +8,7 @@
 package de.ii.ldproxy.cfg;
 
 import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry.ChangeHandler;
+import de.ii.xtraplatform.blobs.domain.BlobStore;
 import de.ii.xtraplatform.values.domain.KeyValueStore;
 import de.ii.xtraplatform.values.domain.StoredValue;
 import de.ii.xtraplatform.values.domain.ValueStore;
@@ -30,6 +31,11 @@ public class MockValueStore implements ValueStore {
   @Override
   public CompletableFuture<Void> onReady() {
     return CompletableFuture.completedFuture(null);
+  }
+
+  @Override
+  public BlobStore asBlobStore() {
+    return null;
   }
 
   @Override

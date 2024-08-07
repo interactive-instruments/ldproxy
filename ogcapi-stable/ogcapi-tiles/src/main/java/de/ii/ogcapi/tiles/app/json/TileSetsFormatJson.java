@@ -15,6 +15,7 @@ import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
+import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TileSets;
 import de.ii.ogcapi.tiles.domain.TileSetsFormatExtension;
 import io.swagger.v3.oas.models.media.Schema;
@@ -64,7 +65,12 @@ public class TileSetsFormatJson implements TileSetsFormatExtension {
 
   @Override
   public Object getTileSetsEntity(
-      TileSets tiles, Optional<String> collectionId, OgcApi api, ApiRequestContext requestContext) {
+      TileSets tiles,
+      DataType dataType,
+      Optional<String> styleId,
+      Optional<String> collectionId,
+      OgcApi api,
+      ApiRequestContext requestContext) {
     return tiles;
   }
 }
