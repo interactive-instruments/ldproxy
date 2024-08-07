@@ -130,7 +130,6 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
     FeatureQuery query = queryInput.getQuery();
 
     Optional<Integer> defaultPageSize = queryInput.getDefaultPageSize();
-    boolean onlyHitsIfMore = false; // TODO check
 
     FeatureFormatExtension outputFormat =
         api.getOutputFormat(
@@ -162,7 +161,6 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
         queryInput.getFeatureProvider(),
         null,
         outputFormat,
-        onlyHitsIfMore,
         defaultPageSize,
         queryInput.getIncludeLinkHeader(),
         queryInput.getDefaultCrs(),
@@ -221,7 +219,6 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
         queryInput.getFeatureProvider(),
         persistentUri,
         outputFormat,
-        false,
         Optional.empty(),
         queryInput.getIncludeLinkHeader(),
         queryInput.getDefaultCrs(),
@@ -239,7 +236,6 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
       FeatureProvider featureProvider,
       String canonicalUri,
       FeatureFormatExtension outputFormat,
-      boolean onlyHitsIfMore,
       Optional<Integer> defaultPageSize,
       boolean includeLinkHeader,
       EpsgCrs defaultCrs,
@@ -313,7 +309,6 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
             .offset(query.getOffset())
             .maxAllowableOffset(query.getMaxAllowableOffset())
             .geometryPrecision(query.getGeometryPrecision())
-            .isHitsOnlyIfMore(onlyHitsIfMore)
             .profile(profile);
 
     QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
