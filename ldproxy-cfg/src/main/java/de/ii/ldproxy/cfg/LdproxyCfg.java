@@ -43,6 +43,8 @@ public interface LdproxyCfg extends LdproxyCfgWriter {
 
   Path getEntitiesPath();
 
+  Path getValuesPath();
+
   ObjectMapper getObjectMapper();
 
   EntityDataDefaultsStore getEntityDataDefaultsStore();

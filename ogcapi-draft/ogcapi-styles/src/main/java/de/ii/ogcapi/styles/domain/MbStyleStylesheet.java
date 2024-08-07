@@ -41,9 +41,14 @@ import java.util.stream.Collectors;
 import org.immutables.value.Value;
 
 @Value.Immutable
-@Value.Style(jdkOnly = true, builder = "new", deepImmutablesDetection = true)
+@Value.Style(
+    jdkOnly = true,
+    builder = "new",
+    deepImmutablesDetection = true,
+    passAnnotations = {FromValueStore.class})
 @FromValueStore(
     type = "maplibre-styles",
+    defaultFormat = FORMAT.JSON,
     formatAliases = {@FormatAlias(extension = "mbs", format = FORMAT.JSON)})
 @JsonDeserialize(builder = ImmutableMbStyleStylesheet.Builder.class)
 public abstract class MbStyleStylesheet implements StoredValue, AutoValue {

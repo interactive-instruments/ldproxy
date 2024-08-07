@@ -86,6 +86,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
   private final StoreConfiguration storeConfiguration;
   private final Builders builders;
   private final Migrations migrations;
+  private final ValueEncodingJackson<EntityData> valueEncoding;
   private final ObjectMapper objectMapper;
   private final RequiredIncludes requiredIncludes;
   private final de.ii.xtraplatform.entities.domain.EntityFactories entityFactories;
@@ -111,7 +112,8 @@ class LdproxyCfgImpl implements LdproxyCfg {
     this.requiredIncludes = new RequiredIncludes();
     this.builders = new Builders() {};
     Jackson jackson = new JacksonProvider(JacksonSubTypes::ids, false);
-    this.objectMapper = new ValueEncodingJackson<EntityData>(jackson, false).getMapper(FORMAT.YML);
+    this.valueEncoding = new ValueEncodingJackson<EntityData>(jackson, false);
+    this.objectMapper = valueEncoding.getMapper(FORMAT.YML);
     this.eventSubscriptions = new EventSubscriptionsSync();
     EventStoreDriver storeDriver = new EventStoreDriverFs(dataDirectory);
     EventStore eventStore =
@@ -194,6 +196,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
         .resolve(Content.INSTANCES.getPrefix());
   }
 
+  @Override
   public Path getValuesPath() {
     return dataDirectory.resolve(Content.VALUES.getPrefix());
   }
@@ -355,8 +358,15 @@ class LdproxyCfgImpl implements LdproxyCfg {
     FORMAT format = getFormat(data);
     Path valuePath = getValuePath(data, format, name, path);
     valuePath.getParent().toFile().mkdirs();
-    // TODO: other formats
-    objectMapper.writeValue(valuePath.toFile(), data);
+    valueEncoding.getMapper(format).writeValue(valuePath.toFile(), data);
+  }
+
+  @Override
+  public boolean hasValue(String type, String name, String... path) {
+    FORMAT format = getFormat(getValueClass(type));
+    Path valuePath = getValuePath(type, format, name, path);
+
+    return Files.exists(valuePath);
   }
 
   @Override
@@ -412,7 +422,11 @@ class LdproxyCfgImpl implements LdproxyCfg {
 
   public <T extends StoredValue> Path getValuePath(
       T data, FORMAT format, String name, String... path) {
-    return getValuesPath().resolve(Path.of(getType(data), path)).resolve(format.apply(name));
+    return getValuePath(getType(data), format, name, path);
+  }
+
+  public Path getValuePath(String type, FORMAT format, String name, String... path) {
+    return getValuesPath().resolve(Path.of(type, path)).resolve(format.apply(name));
   }
 
   @Override
@@ -447,8 +461,25 @@ class LdproxyCfgImpl implements LdproxyCfg {
     return null;
   }
 
+  private static Class<? extends StoredValue> getValueClass(String type) {
+    if (Objects.equals(type, "codelists")) {
+      return Codelist.class;
+    }
+    if (Objects.equals(type, "queries")) {
+      return QueryExpression.class;
+    }
+    if (Objects.equals(type, "maplibre-styles")) {
+      return MbStyleStylesheet.class;
+    }
+    return null;
+  }
+
   private static <T extends StoredValue> FORMAT getFormat(T data) {
-    return Optional.ofNullable(data.getClass().getAnnotation(FromValueStore.class))
+    return getFormat(data.getClass());
+  }
+
+  private static FORMAT getFormat(Class<? extends StoredValue> valueClass) {
+    return Optional.ofNullable(valueClass.getAnnotation(FromValueStore.class))
         .map(FromValueStore::defaultFormat)
         .orElse(FORMAT.YML);
   }
