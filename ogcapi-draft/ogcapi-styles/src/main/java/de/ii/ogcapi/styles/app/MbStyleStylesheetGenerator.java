@@ -101,6 +101,14 @@ public class MbStyleStylesheetGenerator
 
     Builder style = new Builder().version(8);
 
+    // add source for api
+    style.putSources(
+        apiId,
+        ImmutableMbStyleVectorSource.builder()
+            .tiles(
+                Collections.singletonList("{serviceUrl}/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt"))
+            .build());
+
     // get api from entityDataStore
     OgcApiDataV2 apiData = entityDataStore.get(entityDataStore.fullIdentifier(apiId));
 
@@ -109,17 +117,7 @@ public class MbStyleStylesheetGenerator
 
     // iterate over each collection
     for (String collectionName : collections.keySet()) {
-
       String color = collectionColors.get(collectionName);
-
-      // add source for each collection
-      style.putSources(
-          collectionName,
-          ImmutableMbStyleVectorSource.builder()
-              .maxzoom(16)
-              .tiles(
-                  Collections.singletonList("{serviceUrl}/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt"))
-              .build());
 
       // add layers for each collection
       style.addLayers(
@@ -127,14 +125,14 @@ public class MbStyleStylesheetGenerator
               .id(collectionName + ".fill")
               .type(LayerType.fill)
               .source(collectionName)
-              .sourceLayer(collectionName)
+              .sourceLayer(apiId)
               .putPaint("fill-color", color)
               .build(),
           ImmutableMbStyleLayer.builder()
               .id(collectionName + ".line")
               .type(LayerType.line)
               .source(collectionName)
-              .sourceLayer(collectionName)
+              .sourceLayer(apiId)
               .putPaint("line-color", color)
               .putPaint("line-width", 2)
               .build(),
@@ -142,7 +140,7 @@ public class MbStyleStylesheetGenerator
               .id(collectionName + ".circle")
               .type(LayerType.circle)
               .source(collectionName)
-              .sourceLayer(collectionName)
+              .sourceLayer(apiId)
               .putPaint("circle-radius", 3)
               .putPaint("circle-opacity", 0.5)
               .putPaint("circle-stroke-color", color)

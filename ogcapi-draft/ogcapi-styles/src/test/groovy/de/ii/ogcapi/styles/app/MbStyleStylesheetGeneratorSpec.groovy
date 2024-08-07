@@ -65,7 +65,7 @@ class MbStyleStylesheetGeneratorSpec extends Specification {
 
     }
 
-    def 'generate: should return style with sources for each collection'() {
+    def 'generate: should return style with a source for the api'() {
 
         given:
 
@@ -77,8 +77,7 @@ class MbStyleStylesheetGeneratorSpec extends Specification {
 
         then:
 
-        result.sources.containsKey("collection1")
-        result.sources.containsKey("collection2")
+        result.sources.containsKey("api")
 
     }
 
