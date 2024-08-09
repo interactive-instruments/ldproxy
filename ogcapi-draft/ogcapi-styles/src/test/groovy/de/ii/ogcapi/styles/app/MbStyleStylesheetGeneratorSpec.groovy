@@ -103,27 +103,4 @@ class MbStyleStylesheetGeneratorSpec extends Specification {
         thrown(IllegalArgumentException)
     }
 
-    def 'generate: should throw IllegalArgumentException if apiId does not exist'() {
-
-        given:
-
-        EntityDataStore<OgcApiDataV2> entityDataStoreV2 = Stub(EntityDataStore<OgcApiDataV2>) {
-            has("api") >> false
-        }
-        EntityDataStore<EntityData> entityDataStore = Stub(EntityDataStore<EntityData>) {
-            forType(OgcApiDataV2.class) >> entityDataStoreV2
-        }
-
-        MbStyleStylesheetGenerator generator = new MbStyleStylesheetGenerator(entityDataStore)
-
-        when:
-
-        Map<String, String> collections = ["collection1": "#000000", "collection2": "#000000"]
-        generator.generate("api", collections)
-
-        then:
-
-        thrown(IllegalArgumentException)
-    }
-
 }

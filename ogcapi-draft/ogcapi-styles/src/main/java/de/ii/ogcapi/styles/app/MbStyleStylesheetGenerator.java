@@ -19,6 +19,7 @@ import de.ii.xtraplatform.values.domain.AutoValueFactory;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -82,7 +83,7 @@ public class MbStyleStylesheetGenerator
     Map<String, ?> collections = apiData.getCollections();
 
     // create a map of collection names to colors
-    Map<String, String> collectionColors = new HashMap<>();
+    Map<String, String> collectionColors = new LinkedHashMap<>();
     for (String collectionName : collections.keySet()) {
       // generate a color for each collection
       String color = generateColorForCollection(collectionName);
@@ -94,11 +95,6 @@ public class MbStyleStylesheetGenerator
 
   @Override
   public MbStyleStylesheet generate(String apiId, Map<String, String> collectionColors) {
-
-    if (!entityDataStore.hasAny(apiId)) {
-      throw new IllegalArgumentException("No API found with the id: " + apiId);
-    }
-
     Builder style = new Builder().version(8);
 
     // add source for api
@@ -109,14 +105,8 @@ public class MbStyleStylesheetGenerator
                 Collections.singletonList("{serviceUrl}/tiles/WebMercatorQuad/{z}/{y}/{x}?f=mvt"))
             .build());
 
-    // get api from entityDataStore
-    OgcApiDataV2 apiData = entityDataStore.get(entityDataStore.fullIdentifier(apiId));
-
-    // extract collections
-    Map<String, ?> collections = apiData.getCollections();
-
     // iterate over each collection
-    for (String collectionName : collections.keySet()) {
+    for (String collectionName : collectionColors.keySet()) {
       String color = collectionColors.get(collectionName);
 
       // add layers for each collection
