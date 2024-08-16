@@ -275,7 +275,9 @@ public class EndpointFeatures extends EndpointFeaturesDefinition
     QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
     List<ProfileFeatures> profiles =
         (List<ProfileFeatures>)
-            queryParameterSet.getTypedValues().get(QueryParameterProfileFeatures.PROFILE);
+            Objects.requireNonNullElse(
+                queryParameterSet.getTypedValues().get(QueryParameterProfileFeatures.PROFILE),
+                List.of());
 
     FeatureQuery query =
         ogcApiFeaturesQuery.requestToFeatureQuery(
