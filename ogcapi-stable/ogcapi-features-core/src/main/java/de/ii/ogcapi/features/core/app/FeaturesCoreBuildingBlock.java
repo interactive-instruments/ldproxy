@@ -160,7 +160,6 @@ import org.slf4j.LoggerFactory;
  *     de.ii.ogcapi.features.core.app.QueryParameterDatetime}, {@link
  *     de.ii.ogcapi.features.core.app.QueryParameterLimitFeatures}, {@link
  *     de.ii.ogcapi.features.core.app.QueryParameterOffsetFeatures}, {@link
- *     de.ii.ogcapi.features.core.app.QueryParameterResultTypeFeatures}, {@link
  *     de.ii.ogcapi.features.core.app.QueryParameterFFeatures}
  */
 @Singleton
