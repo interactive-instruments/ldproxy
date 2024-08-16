@@ -35,9 +35,12 @@ import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.codelists.domain.ImmutableCodelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
+import de.ii.xtraplatform.values.domain.Identifier;
 import de.ii.xtraplatform.values.domain.ValueStore;
 import de.ii.xtraplatform.values.domain.Values;
 import de.ii.xtraplatform.web.domain.LastModified;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Date;
 import java.util.List;
@@ -53,6 +56,7 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.apache.hc.core5.net.PercentCodec;
 
 @Singleton
 @AutoBind
@@ -131,20 +135,21 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
             .orElse(ImmutableSet.of());
 
     List<CodelistEntry> codelistEntries =
-        codelistStore.ids().stream()
-            // remove "codelists/" prefix
-            .map(id -> id.substring(10))
-            .filter(codelistIds::contains)
+        codelistStore.identifiers().stream()
+            .filter(identifier -> codelistIds.contains(identifier.asPath()))
             .map(
-                id -> {
-                  Codelist codelist = codelistStore.get(id);
+                identifier -> {
+                  Codelist codelist = codelistStore.get(identifier);
+                  String encodedId =
+                      PercentCodec.encode(identifier.asPath(), StandardCharsets.UTF_8);
+
                   return ImmutableCodelistEntry.builder()
-                      .id(id)
+                      .id(encodedId)
                       .title(codelist.getLabel())
-                      .lastModified(LastModified.from(codelistStore.lastModified(id)))
+                      .lastModified(LastModified.from(codelistStore.lastModified(identifier)))
                       .addLinks(
                           codelistsLinkGenerator.generateCodelistLink(
-                              requestContext.getUriCustomizer(), id, codelist.getLabel()))
+                              requestContext.getUriCustomizer(), encodedId, codelist.getLabel()))
                       .build();
                 })
             .collect(Collectors.toList());
@@ -192,7 +197,10 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
       QueryInputCodelist queryInput, ApiRequestContext requestContext) {
     OgcApi api = requestContext.getApi();
     OgcApiDataV2 apiData = api.getData();
-    String codelistId = queryInput.getCodelistId();
+    String encodedId = queryInput.getCodelistId();
+    Identifier identifier =
+        Identifier.from(Path.of(PercentCodec.decode(encodedId, StandardCharsets.UTF_8)));
+    String decodedId = identifier.asPath();
 
     final CodelistFormatExtension format =
         extensionRegistry.getExtensionsForType(CodelistFormatExtension.class).stream()
@@ -219,21 +227,21 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
                                 .map(SchemaConstraints::getCodelist)
                                 .filter(Optional::isPresent)
                                 .map(Optional::get))
-                    .anyMatch(codelistId::equals))
+                    .anyMatch(decodedId::equals))
         .orElseThrow(
             () ->
                 new NotFoundException(
-                    MessageFormat.format("The codelist ''{0}'' does not exist.", codelistId)));
+                    MessageFormat.format("The codelist ''{0}'' does not exist.", encodedId)));
 
-    Codelist codelist = codelistStore.get(codelistId);
+    Codelist codelist = codelistStore.get(identifier);
     if (codelist == null) {
       throw new NotFoundException(
-          MessageFormat.format("The codelist ''{0}'' does not exist.", codelistId));
+          MessageFormat.format("The codelist ''{0}'' does not exist.", encodedId));
     }
 
     codelist = new ImmutableCodelist.Builder().from(codelist).sourceType(Optional.empty()).build();
 
-    Date lastModified = LastModified.from(codelistStore.lastModified(codelistId));
+    Date lastModified = LastModified.from(codelistStore.lastModified(identifier));
 
     String hash = codelist.getStableHash();
     EntityTag eTag = hash != null ? EntityTag.valueOf(hash) : null;
@@ -245,8 +253,8 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
             null,
             HeaderCaching.of(lastModified, eTag, queryInput),
             null,
-            HeaderContentDisposition.of(codelistId))
-        .entity(format.getCodelist(codelist, codelistId, apiData, requestContext))
+            HeaderContentDisposition.of(encodedId))
+        .entity(format.getCodelist(codelist, encodedId, apiData, requestContext))
         .type(format.getMediaType().type())
         .build();
   }
