@@ -5,12 +5,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-package de.ii.ogcapi.features.core.app;
+package de.ii.ogcapi.features.resulttype.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.features.core.app.QueryParameterResultTypeFeatures.ResultType;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.EnumSchema;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -23,6 +23,7 @@ import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
+import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery.Builder;
 import io.swagger.v3.oas.models.media.Schema;
 import java.util.Map;
@@ -34,27 +35,42 @@ import javax.inject.Singleton;
 /**
  * @title result-type
  * @endpoints Features
- * @langEn One of `hitsOnly`. TODO
- * @langDe `hitsOnly`. TODO
- * @default null
+ * @langEn This parameter is only enabled for SQL feature providers with `computeNumberMatched`
+ *     enabled. One of `hits` and `items`. `items` returns the features, `hits` returns no features,
+ *     but only the information about the number features matched by the request. For feature
+ *     formats that do not support returning the number of matched features, `hits` will be
+ *     rejected. `hitsOnly` is a deprecated alias for `hits`.
+ * @langDe Dieser Parameter ist nur für SQL-Feature-Provider aktiviert, bei denen
+ *     `computeNumberMatched` aktiviert ist. Werte sind `hits` und `items`. `items` gibt die
+ *     Features zurück, `hits` gibt keine Features zurück, sondern nur die Information über die
+ *     Anzahl der Features, die mit der Anfrage übereinstimmen. Bei Feature-Formaten, die die
+ *     Rückgabe der Anzahl der übereinstimmenden Features nicht unterstützen, wird `hits`
+ *     zurückgewiesen. `hitsOnly` ist eine veralteter Alias für `hits`.
+ * @default `items`
  */
 @Singleton
 @AutoBind
 public class QueryParameterResultTypeFeatures extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<ResultType>, FeatureQueryParameter {
+    implements OgcApiQueryParameter,
+        TypedQueryParameter<QueryParameterResultTypeFeatures.ResultType>,
+        FeatureQueryParameter {
 
-  enum ResultType {
+  public enum ResultType {
     ITEMS,
-    HITS_ONLY
+    HITS
   }
 
-  private static final Schema<?> SCHEMA = new EnumSchema("hitsOnly");
+  private static final Schema<?> SCHEMA =
+      new EnumSchema("hitsOnly", "hits", "items")._default("items");
 
   private final SchemaValidator schemaValidator;
+  private final FeaturesCoreProviders providers;
 
   @Inject
-  QueryParameterResultTypeFeatures(SchemaValidator schemaValidator) {
+  QueryParameterResultTypeFeatures(
+      SchemaValidator schemaValidator, FeaturesCoreProviders providers) {
     this.schemaValidator = schemaValidator;
+    this.providers = providers;
   }
 
   @Override
@@ -68,21 +84,47 @@ public class QueryParameterResultTypeFeatures extends ApiExtensionCache
   }
 
   @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return super.isEnabledForApi(apiData)
+        && providers
+            .getFeatureProvider(apiData)
+            .map(FeatureProvider::supportsHitsOnly)
+            .orElse(false);
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return super.isEnabledForApi(apiData)
+        && apiData
+            .getCollectionData(collectionId)
+            .flatMap(
+                cd ->
+                    providers
+                        .getFeatureProvider(apiData, cd)
+                        .map(FeatureProvider::supportsHitsOnly))
+            .orElse(
+                providers
+                    .getFeatureProvider(apiData)
+                    .map(FeatureProvider::supportsHitsOnly)
+                    .orElse(false));
+  }
+
+  @Override
   public ResultType parse(
       String value,
       Map<String, Object> typedValues,
       OgcApi api,
       Optional<FeatureTypeConfigurationOgcApi> optionalCollectionData) {
-    if ("hitsOnly".equals(value)) {
-      return ResultType.HITS_ONLY;
+    if ("hits".equals(value) || "hitsOnly".equals(value)) {
+      return ResultType.HITS;
     }
     return null;
   }
 
   @Override
   public String getDescription() {
-    return "'hitsOnly'.";
-  } // TODO
+    return "One of `hits` and `items`. `items` returns the features, `hits` returns no features, but only the information about the number features matched by the request. For feature formats that do not support returning the number of matched features, `hits` will be rejected. `hitsOnly` is a deprecated alias for `hits`.";
+  }
 
   @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
@@ -117,7 +159,7 @@ public class QueryParameterResultTypeFeatures extends ApiExtensionCache
       FeatureTypeConfigurationOgcApi collectionData) {
     parameters
         .getValue(this)
-        .ifPresent(value -> queryBuilder.hitsOnly(Objects.equals(ResultType.HITS_ONLY, value)));
+        .ifPresent(value -> queryBuilder.hitsOnly(Objects.equals(ResultType.HITS, value)));
   }
 
   @Override
