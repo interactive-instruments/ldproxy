@@ -15,6 +15,7 @@ import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
@@ -64,7 +65,8 @@ public class CodelistFormatHtml implements CodelistFormatExtension {
       Codelist codelist,
       String codelistId,
       OgcApiDataV2 apiData,
-      ApiRequestContext requestContext) {
+      ApiRequestContext requestContext,
+      List<Link> links) {
     String rootTitle = i18n.get("root", requestContext.getLanguage());
     String codelistsTitle = i18n.get("codelistsTitle", requestContext.getLanguage());
     String label = codelist.getLabel().orElse(codelistId);
@@ -117,7 +119,7 @@ public class CodelistFormatHtml implements CodelistFormatExtension {
         .htmlConfig(htmlConfig)
         .noIndex(isNoIndexEnabledForApi(apiData))
         .urlPrefix(requestContext.getStaticUrlPrefix())
-        .rawLinks(ImmutableList.of())
+        .rawLinks(links)
         .title(
             i18n.get("codelistTitle", requestContext.getLanguage()).replace("{{codelist}}", label))
         .none(i18n.get("none", requestContext.getLanguage()))

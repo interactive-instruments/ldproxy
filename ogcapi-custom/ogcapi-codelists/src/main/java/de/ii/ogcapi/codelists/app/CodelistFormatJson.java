@@ -15,9 +15,11 @@ import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.List;
 import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -58,7 +60,8 @@ public class CodelistFormatJson implements CodelistFormatExtension {
       Codelist codelist,
       String codelistId,
       OgcApiDataV2 apiData,
-      ApiRequestContext requestContext) {
+      ApiRequestContext requestContext,
+      List<Link> links) {
     return codelist;
   }
 }

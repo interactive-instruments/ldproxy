@@ -11,14 +11,20 @@ import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
+import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.codelists.domain.Codelist;
+import java.util.List;
 
 @AutoMultiBind
 public interface CodelistFormatExtension extends FormatExtension {
 
   Object getCodelist(
-      Codelist codelist, String codelistId, OgcApiDataV2 apiData, ApiRequestContext requestContext);
+      Codelist codelist,
+      String codelistId,
+      OgcApiDataV2 apiData,
+      ApiRequestContext requestContext,
+      List<Link> links);
 
   @Override
   default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {

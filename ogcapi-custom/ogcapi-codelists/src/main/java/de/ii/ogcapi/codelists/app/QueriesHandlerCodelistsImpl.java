@@ -23,6 +23,7 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
 import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.I18n;
+import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.QueryHandler;
@@ -248,13 +249,15 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
     Response.ResponseBuilder response = evaluatePreconditions(requestContext, lastModified, eTag);
     if (Objects.nonNull(response)) return response.build();
 
+    List<Link> links = getLinks(requestContext, i18n);
+
     return prepareSuccessResponse(
             requestContext,
-            null,
+            links,
             HeaderCaching.of(lastModified, eTag, queryInput),
             null,
             HeaderContentDisposition.of(encodedId))
-        .entity(format.getCodelist(codelist, encodedId, apiData, requestContext))
+        .entity(format.getCodelist(codelist, encodedId, apiData, requestContext, links))
         .type(format.getMediaType().type())
         .build();
   }
