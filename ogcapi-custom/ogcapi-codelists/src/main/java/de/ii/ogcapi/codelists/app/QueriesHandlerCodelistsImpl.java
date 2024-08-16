@@ -120,27 +120,7 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
                             "The requested media type {0} cannot be generated.",
                             requestContext.getMediaType().type())));
 
-    Set<String> codelistIds =
-        providers
-            .getFeatureProvider(apiData)
-            .map(
-                prov ->
-                    prov.info().getSchemas().stream()
-                        .map(FeatureSchema::getAllNestedProperties)
-                        .flatMap(List::stream)
-                        .flatMap(
-                            prop ->
-                                Stream.concat(
-                                    prop.getConstraints().stream()
-                                        .map(SchemaConstraints::getCodelist)
-                                        .filter(Optional::isPresent)
-                                        .map(Optional::get),
-                                    prop.getTransformations().stream()
-                                        .map(PropertyTransformation::getCodelist)
-                                        .filter(Optional::isPresent)
-                                        .map(Optional::get)))
-                        .collect(Collectors.toSet()))
-            .orElse(ImmutableSet.of());
+    Set<String> codelistIds = getCodelistIds(apiData);
 
     List<CodelistEntry> codelistEntries =
         codelistStore.identifiers().stream()
@@ -222,24 +202,10 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
                             "The requested media type {0} cannot be generated.",
                             requestContext.getMediaType().type())));
 
-    providers
-        .getFeatureProvider(apiData)
-        .filter(
-            prov ->
-                prov.info().getSchemas().stream()
-                    .map(FeatureSchema::getAllNestedProperties)
-                    .flatMap(List::stream)
-                    .flatMap(
-                        prop ->
-                            prop.getConstraints().stream()
-                                .map(SchemaConstraints::getCodelist)
-                                .filter(Optional::isPresent)
-                                .map(Optional::get))
-                    .anyMatch(decodedId::equals))
-        .orElseThrow(
-            () ->
-                new NotFoundException(
-                    MessageFormat.format("The codelist ''{0}'' does not exist.", encodedId)));
+    if (!getCodelistIds(apiData).contains(decodedId)) {
+      throw new NotFoundException(
+          MessageFormat.format("The codelist ''{0}'' does not exist.", encodedId));
+    }
 
     Codelist codelist = codelistStore.get(identifier);
     if (codelist == null) {
@@ -267,5 +233,28 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
         .entity(format.getCodelist(codelist, encodedId, apiData, requestContext, links))
         .type(format.getMediaType().type())
         .build();
+  }
+
+  private Set<String> getCodelistIds(OgcApiDataV2 apiData) {
+    return providers
+        .getFeatureProvider(apiData)
+        .map(
+            prov ->
+                prov.info().getSchemas().stream()
+                    .map(FeatureSchema::getAllNestedProperties)
+                    .flatMap(List::stream)
+                    .flatMap(
+                        prop ->
+                            Stream.concat(
+                                prop.getConstraints().stream()
+                                    .map(SchemaConstraints::getCodelist)
+                                    .filter(Optional::isPresent)
+                                    .map(Optional::get),
+                                prop.getTransformations().stream()
+                                    .map(PropertyTransformation::getCodelist)
+                                    .filter(Optional::isPresent)
+                                    .map(Optional::get)))
+                    .collect(Collectors.toSet()))
+        .orElse(ImmutableSet.of());
   }
 }
