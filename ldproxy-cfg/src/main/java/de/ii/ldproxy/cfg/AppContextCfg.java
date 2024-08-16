@@ -49,4 +49,9 @@ class AppContextCfg implements AppContext {
   public URI getUri() {
     return null;
   }
+
+  @Override
+  public String getInstanceName() {
+    return "";
+  }
 }

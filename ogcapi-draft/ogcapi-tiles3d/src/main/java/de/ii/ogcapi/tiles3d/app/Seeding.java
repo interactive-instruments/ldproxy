@@ -615,6 +615,7 @@ public class Seeding implements OgcApiBackgroundTask {
             apiData
                 .getExtension(Tiles3dConfiguration.class, content.getCollectionId())
                 .orElseThrow();
+
         Response response =
             Tiles3dContentUtil.getContent(
                 extensionRegistry,
@@ -627,14 +628,15 @@ public class Seeding implements OgcApiBackgroundTask {
                 cfg,
                 content,
                 content.getQuery(providers),
-                new URICustomizer(
-                    String.format(
-                        "%s/collections/%s/3dtiles/content_%d_%d_%d",
-                        servicesUri.toString(),
+                new URICustomizer(servicesUri)
+                    .ensureLastPathSegments(
+                        content.getApi().getId(),
+                        "collections",
                         content.getCollectionId(),
-                        content.getLevel(),
-                        content.getX(),
-                        content.getY())),
+                        "3dtiles",
+                        String.format(
+                            "content_%d_%d_%d",
+                            content.getLevel(), content.getX(), content.getY())),
                 Optional.empty());
 
         if (Objects.nonNull(response.getEntity())) {

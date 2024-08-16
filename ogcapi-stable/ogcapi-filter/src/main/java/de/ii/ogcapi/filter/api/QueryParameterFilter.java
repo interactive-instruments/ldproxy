@@ -60,8 +60,8 @@ import javax.inject.Singleton;
 
 // TODO
 // @endpoints {@link de.ii.ogcapi.features.core.app.EndpointFeatures},{@link
-// de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection},{@link
-// de.ii.ogcapi.tiles.infra.EndpointTileSingleCollection}
+// de.ii.ogcapi.tiles.infra.EndpointVectorTileDataset},{@link
+// de.ii.ogcapi.tiles.infra.EndpointVectorTileCollection}
 
 /**
  * @title filter

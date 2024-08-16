@@ -271,5 +271,10 @@ class StoreMigrator implements Migrator<StoreMigrationContext, StoreSourceFs, St
     public URI getUri() {
       return null;
     }
+
+    @Override
+    public String getInstanceName() {
+      return "";
+    }
   }
 }

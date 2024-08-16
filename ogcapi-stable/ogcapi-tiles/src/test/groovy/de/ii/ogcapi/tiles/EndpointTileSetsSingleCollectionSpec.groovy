@@ -8,7 +8,7 @@
 package de.ii.ogcapi.tiles
 
 
-import de.ii.ogcapi.tiles.infra.EndpointTileSetsSingleCollection
+import de.ii.ogcapi.tiles.infra.EndpointVectorTileSetsCollection
 import spock.lang.Ignore
 import spock.lang.Specification
 
@@ -26,7 +26,7 @@ class EndpointTileSetsSingleCollectionSpec extends Specification{
 
         when: "checkTilesParameterCollection is called"
 
-        EndpointTileSetsSingleCollection.checkTilesParameterCollection(enabledMap,collectionId)
+        EndpointVectorTileSetsCollection.checkTilesParameterCollection(enabledMap,collectionId)
 
         then: thrown NotFoundException
     }
@@ -42,7 +42,7 @@ class EndpointTileSetsSingleCollectionSpec extends Specification{
 
         when: "checkTilesParameterCollection is called"
 
-        EndpointTileSetsSingleCollection.checkTilesParameterCollection(enabledMap,collectionId)
+        EndpointVectorTileSetsCollection.checkTilesParameterCollection(enabledMap,collectionId)
 
         then: thrown NotFoundException
     }
@@ -58,7 +58,7 @@ class EndpointTileSetsSingleCollectionSpec extends Specification{
 
         when: "checkTilesParameterCollection is called"
 
-        def result = EndpointTileSetsSingleCollection.checkTilesParameterCollection(enabledMap,collectionId)
+        def result = EndpointVectorTileSetsCollection.checkTilesParameterCollection(enabledMap,collectionId)
 
         then: "it should return true"
 
@@ -76,7 +76,7 @@ class EndpointTileSetsSingleCollectionSpec extends Specification{
 
         when: "checkTilesParameterCollection is called"
 
-        EndpointTileSetsSingleCollection.checkTilesParameterCollection(enabledMap,collectionId)
+        EndpointVectorTileSetsCollection.checkTilesParameterCollection(enabledMap,collectionId)
 
         then: thrown NotFoundException
     }
