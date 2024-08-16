@@ -36,6 +36,7 @@ import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.codelists.domain.ImmutableCodelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.values.domain.Identifier;
 import de.ii.xtraplatform.values.domain.ValueStore;
 import de.ii.xtraplatform.values.domain.Values;
@@ -50,6 +51,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
@@ -128,10 +130,15 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
                         .flatMap(List::stream)
                         .flatMap(
                             prop ->
-                                prop.getConstraints().stream()
-                                    .map(SchemaConstraints::getCodelist)
-                                    .filter(Optional::isPresent)
-                                    .map(Optional::get))
+                                Stream.concat(
+                                    prop.getConstraints().stream()
+                                        .map(SchemaConstraints::getCodelist)
+                                        .filter(Optional::isPresent)
+                                        .map(Optional::get),
+                                    prop.getTransformations().stream()
+                                        .map(PropertyTransformation::getCodelist)
+                                        .filter(Optional::isPresent)
+                                        .map(Optional::get)))
                         .collect(Collectors.toSet()))
             .orElse(ImmutableSet.of());
 
