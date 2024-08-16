@@ -102,8 +102,10 @@ public class TileMatrixSetLimitsGeneratorImpl implements TileMatrixSetLimitsGene
     }
 
     // fallback to bbox of the tile matrix set
-    LOGGER.debug(
-        "No bounding box found or bounding box cannot be transformed to the CRS of the tile matrix set. Using the tile matrix set bounding box.");
+    if (LOGGER.isTraceEnabled()) {
+      LOGGER.trace(
+          "No bounding box found or bounding box cannot be transformed to the CRS of the tile matrix set. Using the tile matrix set bounding box.");
+    }
 
     return tileMatrixSet.getBoundingBox();
   }

@@ -15,9 +15,7 @@ import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ogcapi.tiles.domain.TileSet;
-import de.ii.ogcapi.tiles.domain.TileSet.DataType;
+import de.ii.ogcapi.tiles.domain.MapTileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import java.util.List;
 import javax.inject.Inject;
@@ -29,7 +27,7 @@ import javax.ws.rs.core.MediaType;
  */
 @Singleton
 @AutoBind
-public class TileFormatJPEG extends TileFormatExtension implements ConformanceClass {
+public class TileFormatJPEG extends MapTileFormatExtension implements ConformanceClass {
 
   public static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
@@ -60,11 +58,6 @@ public class TileFormatJPEG extends TileFormatExtension implements ConformanceCl
   @Override
   public String getExtension() {
     return "jpeg";
-  }
-
-  @Override
-  public DataType getDataType() {
-    return TileSet.DataType.map;
   }
 
   @Override
