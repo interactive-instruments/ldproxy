@@ -81,7 +81,7 @@ public class Endpoint3dTilesSubtree extends EndpointSubCollection implements Api
 
   private final FeaturesCoreProviders providers;
   private final QueriesHandler3dTiles queryHandler;
-  private final URI serviceUri;
+  private final URI servicesUri;
   private final Cql cql;
 
   @Inject
@@ -94,7 +94,7 @@ public class Endpoint3dTilesSubtree extends EndpointSubCollection implements Api
     super(extensionRegistry);
     this.providers = providers;
     this.queryHandler = queryHandler;
-    this.serviceUri = servicesContext.getUri();
+    this.servicesUri = servicesContext.getUri();
     this.cql = cql;
   }
 
@@ -231,7 +231,7 @@ public class Endpoint3dTilesSubtree extends EndpointSubCollection implements Api
                     .flatMap(SchemaBase::getPrimaryGeometry)
                     .map(SchemaBase::getFullPathAsString)
                     .orElseThrow())
-            .servicesUri(serviceUri)
+            .servicesUri(servicesUri)
             .collectionId(collectionId)
             .level(sl)
             .x(sx)

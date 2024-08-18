@@ -47,6 +47,8 @@ steps:
       platforms:
         - linux/amd64
         - linux/arm64
+## TODO: latest not updated
+## workaround: docker buildx imagetools create --tag "iide/ldproxy:latest" "iide/ldproxy:4.1.0"
 
   github:
     image: node:18

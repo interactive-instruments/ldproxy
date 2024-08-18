@@ -21,9 +21,12 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import de.ii.xtraplatform.tiles.domain.TileAccess;
+import de.ii.xtraplatform.tiles.domain.TileProvider;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
@@ -61,7 +64,6 @@ import org.immutables.value.Value;
  *     adjacent features are aggregated up to zoom level 9:
  *     <p><code>
  * ```yaml
- * ---
  * id: vineyards-tiles
  * providerType: TILE
  * providerSubType: FEATURES
@@ -161,7 +163,6 @@ import org.immutables.value.Value;
  *     <p>The tile provider defines a single tileset and references the MBTiles file:
  *     <p><code>
  * ```yaml
- * ---
  * id: earthatnight-tiles
  * providerType: TILE
  * providerSubType: MBTILES
@@ -169,6 +170,86 @@ import org.immutables.value.Value;
  *   earthatnight:
  *     id: earthatnight
  *     source: earthatnight/dnb_land_ocean_ice.2012.54000x27000_geo.mbtiles
+ * ```
+ *     </code>
+ *     <p>The tile provider defines two raster tilesets (style: "default", tile matrix set:
+ *     "WebMercatorQuad" and "AdV_25832"):
+ *     <p><code>
+ * ```yaml
+ * id: vineyards-tiles
+ * providerType: TILE
+ * providerSubType: FEATURES
+ * seeding:
+ *   runOnStartup: true
+ *   maxThreads: 8
+ * caches:
+ * - type: IMMUTABLE
+ *   storage: PER_JOB
+ *   levels:
+ *     WebMercatorQuad:
+ *       min: 5
+ *       max: 16
+ *     AdV_25832:
+ *       min: 0
+ *       max: 11
+ * rasterTilesets:
+ *   vineyards:
+ *     styles:
+ *       - vineyards/default.json
+ * tilesets:
+ *   vineyards:
+ *     id: vineyards
+ *     center:
+ *       lon: 7.35
+ *       lat: 49.8
+ *     levels:
+ *       WebMercatorQuad:
+ *         min: 5
+ *         max: 16
+ *         default: 8
+ *       AdV_25832:
+ *         min: 0
+ *         max: 11
+ *         default: 3
+ *     transformations:
+ *       WebMercatorQuad:
+ *       - min: 5
+ *         max: 7
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *       - min: 8
+ *         max: 8
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *       - min: 9
+ *         max: 9
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *         - cluster
+ *       AdV_25832:
+ *       - min: 0
+ *         max: 2
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *       - min: 3
+ *         max: 3
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *       - min: 4
+ *         max: 4
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *         - cluster
  * ```
  *     </code>
  * @examplesDe Beispiel für die Angaben in der Konfigurationsdatei aus der API für [Weinlagen in
@@ -187,7 +268,6 @@ import org.immutables.value.Value;
  *     Angrenzende Features werden bis zur Zoomstufe 9 zusammengefasst:
  *     <p><code>
  * ```yaml
- * ---
  * id: vineyards-tiles
  * providerType: TILE
  * providerSubType: FEATURES
@@ -297,7 +377,6 @@ import org.immutables.value.Value;
  *     <p>Der Tile-Provider definiert ein einziges Tileset und referenziert die MBTiles-Datei:
  *     <p><code>
  * ```yaml
- * ---
  * id: earthatnight-tiles
  * providerType: TILE
  * providerSubType: MBTILES
@@ -307,12 +386,99 @@ import org.immutables.value.Value;
  *     source: earthatnight/dnb_land_ocean_ice.2012.54000x27000_geo.mbtiles
  * ```
  *     </code>
+ *     <p>Der Tile-Provider definiert zwei Raster-Tilesets (Style: "default", Tile-Matrix-Sets:
+ *     "WebMercatorQuad" und "AdV_25832"):
+ *     <p><code>
+ * ```yaml
+ * id: vineyards-tiles
+ * providerType: TILE
+ * providerSubType: FEATURES
+ * seeding:
+ *   runOnStartup: true
+ *   maxThreads: 8
+ * caches:
+ * - type: IMMUTABLE
+ *   storage: PER_JOB
+ *   levels:
+ *     WebMercatorQuad:
+ *       min: 5
+ *       max: 16
+ *     AdV_25832:
+ *       min: 0
+ *       max: 11
+ * rasterTilesets:
+ *   vineyards:
+ *     styles:
+ *       - vineyards/default.json
+ * tilesets:
+ *   vineyards:
+ *     id: vineyards
+ *     center:
+ *       lon: 7.35
+ *       lat: 49.8
+ *     levels:
+ *       WebMercatorQuad:
+ *         min: 5
+ *         max: 16
+ *         default: 8
+ *       AdV_25832:
+ *         min: 0
+ *         max: 11
+ *         default: 3
+ *     transformations:
+ *       WebMercatorQuad:
+ *       - min: 5
+ *         max: 7
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *       - min: 8
+ *         max: 8
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *       - min: 9
+ *         max: 9
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *         - cluster
+ *       AdV_25832:
+ *       - min: 0
+ *         max: 2
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *       - min: 3
+ *         max: 3
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *       - min: 4
+ *         max: 4
+ *         merge: true
+ *         groupBy:
+ *         - region
+ *         - subregion
+ *         - cluster
+ * ```
+ *     </code>
  */
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true, builder = "new")
 @JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "TILES")
 @JsonDeserialize(builder = ImmutableTilesConfiguration.Builder.class)
 public interface TilesConfiguration extends SfFlatConfiguration, CachingConfiguration {
+
+  enum WmtsScope {
+    NONE,
+    DATASET,
+    COLLECTIONS,
+    ALL
+  }
 
   /**
    * @langEn Specifies the data source for the tiles, see [Tile
@@ -398,41 +564,113 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
   @Nullable
   Boolean getRemoveZoomLevelConstraints();
 
+  /**
+   * @langEn Adds support for OGC WMTS 1.0.0 (HTTP RESTful binding) for tilesets. `NONE` disables
+   *     support, `ALL` adds all dataset and collection raster tilesets. `DATASET` publishes all
+   *     dataset raster tilesets, `COLLECTION` all collection raster tilesets.
+   * @langDe Ergänzt Unterstützung für OGC WMTS 1.0.0 (HTTP RESTful) für Kachelsätze. Bei `NONE`
+   *     wird WMTS nicht unterstützt, bei `ALL` werden alle Rasterkachelsätze veröffentlicht.
+   *     `DATASET` veröffentlicht alle Rasterkachelsätze zum Datensatz (d.h., keine Kachelsätze von
+   *     einzelnen Feature-Collections) und `COLLECTIONS` alle Rasterkachelsätze zu
+   *     Feature-Collections.
+   * @default NONE
+   */
+  @Nullable
+  WmtsScope getWmts();
+
+  // TODO cache values so these are only computed once
   default boolean hasCollectionTiles(
       TilesProviders providers, OgcApiDataV2 apiData, String collectionId) {
-    if (Objects.nonNull(providers)
-        && providers.hasTileProvider(apiData, apiData.getCollectionData(collectionId))) {
-      return providers
-          .getTileProvider(apiData, apiData.getCollectionData(collectionId))
-          .map(
-              tileProvider ->
-                  tileProvider
-                      .getData()
-                      .getTilesets()
-                      .containsKey(
-                          Objects.requireNonNullElse(getTileProviderTileset(), collectionId)))
-          .orElse(false);
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData, apiData.getCollectionData(collectionId)),
+            getCollectionTileset(collectionId),
+            (tileset, tileAccess) -> true);
+  }
+
+  default boolean hasCollectionVectorTiles(
+      TilesProviders providers, OgcApiDataV2 apiData, String collectionId) {
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData, apiData.getCollectionData(collectionId)),
+            getCollectionTileset(collectionId),
+            (tileset, tileAccess) -> tileAccess.tilesetHasVectorTiles(tileset));
+  }
+
+  default boolean hasCollectionMapTiles(
+      TilesProviders providers, OgcApiDataV2 apiData, String collectionId) {
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData, apiData.getCollectionData(collectionId)),
+            getCollectionTileset(collectionId),
+            (tileset, tileAccess) -> tileAccess.tilesetHasMapTiles(tileset));
+  }
+
+  default boolean hasCollectionStyledMapTiles(
+      TilesProviders providers, OgcApiDataV2 apiData, String collectionId) {
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData, apiData.getCollectionData(collectionId)),
+            getCollectionTileset(collectionId),
+            (tileset, tileAccess) -> tileAccess.tilesetHasStyledMapTiles(tileset));
+  }
+
+  default boolean hasDatasetTiles(TilesProviders providers, OgcApiDataV2 apiData) {
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData), getDatasetTileset(), (tileset, tileAccess) -> true);
+  }
+
+  default boolean hasDatasetVectorTiles(TilesProviders providers, OgcApiDataV2 apiData) {
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData),
+            getDatasetTileset(),
+            (tileset, tileAccess) -> tileAccess.tilesetHasVectorTiles(tileset));
+  }
+
+  default boolean hasDatasetMapTiles(TilesProviders providers, OgcApiDataV2 apiData) {
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData),
+            getDatasetTileset(),
+            (tileset, tileAccess) -> tileAccess.tilesetHasMapTiles(tileset));
+  }
+
+  default boolean hasDatasetStyledMapTiles(TilesProviders providers, OgcApiDataV2 apiData) {
+    return Objects.nonNull(providers)
+        && hasTiles(
+            providers.getTileProvider(apiData),
+            getDatasetTileset(),
+            (tileset, tileAccess) -> tileAccess.tilesetHasStyledMapTiles(tileset));
+  }
+
+  default boolean hasTiles(
+      Optional<TileProvider> provider,
+      String tileset,
+      BiFunction<String, TileAccess, Boolean> testForTileType) {
+    return provider
+        .filter(tileProvider -> tileProvider.getData().getTilesets().containsKey(tileset))
+        .filter(
+            tileProvider ->
+                tileProvider.access().isAvailable()
+                    && testForTileType.apply(tileset, tileProvider.access().get()))
+        .isPresent();
+  }
+
+  default String getCollectionTileset(String collectionId) {
+    if (Objects.isNull(getTileProviderTileset())
+        || DATASET_TILES.equals(getTileProviderTileset())) {
+      return collectionId;
     }
-    return false;
+    return getTileProviderTileset();
   }
 
   @Value.Auxiliary
   @Value.Derived
   @JsonIgnore
-  default boolean hasDatasetTiles(TilesProviders providers, OgcApiDataV2 apiData) {
-    if (Objects.nonNull(providers) && providers.hasTileProvider(apiData)) {
-      return providers
-          .getTileProvider(apiData)
-          .map(
-              tileProvider ->
-                  tileProvider
-                      .getData()
-                      .getTilesets()
-                      .containsKey(
-                          Objects.requireNonNullElse(getTileProviderTileset(), DATASET_TILES)))
-          .orElse(false);
-    }
-    return false;
+  default String getDatasetTileset() {
+    return Objects.requireNonNullElse(getTileProviderTileset(), DATASET_TILES);
   }
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
@@ -479,7 +717,7 @@ public interface TilesConfiguration extends SfFlatConfiguration, CachingConfigur
                 collection ->
                     collection
                         .getExtension(TilesConfiguration.class)
-                        .map(TilesConfiguration::getTileProviderTileset)
+                        .map(tc -> tc.getCollectionTileset(collection.getId()))
                         .filter(tileset::equals)
                         .isPresent())
             .findFirst();

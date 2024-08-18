@@ -23,7 +23,14 @@ import de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration.Builder;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSetFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesConfiguration.WmtsScope;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
+import de.ii.ogcapi.tiles.infra.EndpointVectorTileCollection;
+import de.ii.ogcapi.tiles.infra.EndpointVectorTileDataset;
+import de.ii.ogcapi.tiles.infra.EndpointVectorTileSetCollection;
+import de.ii.ogcapi.tiles.infra.EndpointVectorTileSetDataset;
+import de.ii.ogcapi.tiles.infra.EndpointVectorTileSetsCollection;
+import de.ii.ogcapi.tiles.infra.EndpointVectorTileSetsDataset;
 import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.entities.domain.EntityFactories;
 import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
@@ -31,6 +38,7 @@ import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.tiles.domain.TileProviderData;
+import de.ii.xtraplatform.tiles.domain.TilesFormat;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
 import java.util.List;
@@ -59,7 +67,8 @@ import org.slf4j.LoggerFactory;
  * - TIFF
  *     </code>
  *     <p>For tiles that are derived from feature data, only Mapbox Vector Tiles are supported as a
- *     file format.
+ *     file format plus PNG map tiles derived from these vector tiles using one or more MapLibre
+ *     styles.
  *     <p>All tiles of an API are sourced from a single tile provider.
  * @scopeDe Dieser Baustein unterstützt Kacheln, die aus Features abgeleitet sind, oder Kacheln, die
  *     von einer externen Quelle bereitgestellt werden.
@@ -72,7 +81,8 @@ import org.slf4j.LoggerFactory;
  * - TIFF
  *     </code>
  *     <p>Für Kacheln, die aus Features abgeleitet werden, wird nur Mapbox Vector Tiles als
- *     Kachelformat unterstützt.
+ *     Kachelformat unterstützt sowie PNG-Kartenkacheln, die aus diesen Vektorkacheln unter
+ *     Verwendung eines oder mehrerer MapLibre Styles abgeleitet wurden.
  *     <p>Alle Kacheln einer API kommen vom selben Tile-Provider.
  * @conformanceEn The building block implements the conformance classes "Core", "TileSet", "TileSets
  *     List", "Dataset TileSets", "GeoData TileSets", "Collections Selection", "DateTime", "OpenAPI
@@ -82,33 +92,22 @@ import org.slf4j.LoggerFactory;
  *     "JSONTileMatrixSetLimits" of the [OGC Two Dimensional Tile Matrix Set and Tile Set Metadata
  *     2.0 Standard](https://docs.ogc.org/is/17-083r4/17-083r4.html).
  * @conformanceDe Der Baustein implementiert die Konformitätsklassen "Core", "TileSet", "TileSets
- *     List", * "Dataset TileSets", "GeoData TileSets", "Collections Selection", "DateTime",
- *     "OpenAPI * Specification 3.0 API definition", "Mapbox Vector Tiles", "PNG", "JPEG" und "TIFF"
- *     des Standards [OGC API - Tiles - Part 1: Core
- *     1.0](https://docs.ogc.org/is/20-057/20-057.html) und die Konformitätsklassen
- *     "TileSetMetadata", "TileMatrixSetLimits" und "JSONTileMatrixSetLimits" des Standards [OGC Two
- *     * Dimensional Tile Matrix Set and Tile Set Metadata
- *     2.0](https://docs.ogc.org/is/17-083r4/17-083r4.html).
+ *     List", "Dataset TileSets", "GeoData TileSets", "Collections Selection", "DateTime", "OpenAPI
+ *     Specification 3.0 API definition", "Mapbox Vector Tiles", "PNG", "JPEG" und "TIFF" des
+ *     Standards [OGC API - Tiles - Part 1: Core 1.0](https://docs.ogc.org/is/20-057/20-057.html)
+ *     und die Konformitätsklassen "TileSetMetadata", "TileMatrixSetLimits" und
+ *     "JSONTileMatrixSetLimits" des Standards [OGC Two Dimensional Tile Matrix Set and Tile Set
+ *     Metadata 2.0](https://docs.ogc.org/is/17-083r4/17-083r4.html).
  * @ref:cfg {@link de.ii.ogcapi.tiles.domain.TilesConfiguration}
  * @ref:cfgProperties {@link de.ii.ogcapi.tiles.domain.ImmutableTilesConfiguration}
- * @ref:endpoints {@link de.ii.ogcapi.tiles.infra.EndpointTileSetsMultiCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileSetMultiCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileMultiCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileSetsSingleCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileSetSingleCollection}, {@link
- *     de.ii.ogcapi.tiles.infra.EndpointTileSingleCollection}
- * @ref:queryParameters {@link de.ii.ogcapi.tiles.domain.QueryParameterCollections}, {@link
- *     de.ii.ogcapi.tiles.domain.QueryParameterDatetimeTile}, {@link
- *     de.ii.ogcapi.tiles.domain.QueryParameterFTile}, {@link
- *     de.ii.ogcapi.tiles.domain.QueryParameterFTileCollection}, {@link
- *     de.ii.ogcapi.tiles.domain.QueryParameterFTileSet}, {@link
- *     de.ii.ogcapi.tiles.domain.QueryParameterFTileSets}, {@link
- *     de.ii.ogcapi.tiles.domain.QueryParameterLimitTile}
- * @ref:pathParameters {@link de.ii.ogcapi.tiles.domain.PathParameterCollectionIdTiles}, {@link
- *     de.ii.ogcapi.tiles.domain.PathParameterTileMatrixSetId}, {@link
- *     de.ii.ogcapi.tiles.domain.PathParameterTileMatrix}, {@link
- *     de.ii.ogcapi.tiles.domain.PathParameterTileRow}, {@link
- *     de.ii.ogcapi.tiles.domain.PathParameterTileCol}
+ * @ref:endpoints {@link EndpointVectorTileSetsDataset}, {@link EndpointVectorTileSetDataset},
+ *     {@link EndpointVectorTileDataset}, {@link EndpointVectorTileSetsCollection}, {@link
+ *     EndpointVectorTileSetCollection}, {@link EndpointVectorTileCollection}
+ * @ref:queryParameters {@link QueryParameterCollections}, {@link QueryParameterDatetimeTile},
+ *     {@link QueryParameterFTile}, {@link QueryParameterFTileCollection}, {@link
+ *     QueryParameterFTileSet}, {@link QueryParameterFTileSets}, {@link QueryParameterLimitTile}
+ * @ref:pathParameters {@link PathParameterCollectionIdTiles}, {@link PathParameterTileMatrixSetId},
+ *     {@link PathParameterTileMatrix}, {@link PathParameterTileRow}, {@link PathParameterTileCol}
  */
 @Singleton
 @AutoBind
@@ -149,6 +148,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock, ApiExtensionHealth 
                 .sorted()
                 .collect(ImmutableList.toImmutableList()))
         .style("DEFAULT")
+        .wmts(WmtsScope.NONE)
         .build();
   }
 
@@ -254,7 +254,7 @@ public class TilesBuildingBlock implements ApiBuildingBlock, ApiExtensionHealth 
               .filter(formatExtension -> formatExtension.isEnabledForApi(apiData))
               .map(format -> format.getMediaType().label())
               .collect(Collectors.toUnmodifiableList());
-      Set<String> tileEncodings =
+      Set<TilesFormat> tileEncodings =
           tilesProviders
               .getTilesetMetadataOrThrow(apiData, apiData.getCollectionData(collectionId))
               .getEncodings();
@@ -264,8 +264,8 @@ public class TilesBuildingBlock implements ApiBuildingBlock, ApiExtensionHealth 
                 "No tile encoding has been specified in the TILES module configuration of collection ''{0}''.",
                 collectionId));
       } else {
-        for (String encoding : tileEncodings) {
-          if (!formatLabels.contains(encoding)) {
+        for (TilesFormat encoding : tileEncodings) {
+          if (!formatLabels.contains(encoding.name())) {
             builder.addStrictErrors(
                 MessageFormat.format(
                     "The tile encoding ''{0}'' is specified in the TILES module configuration of collection ''{1}'', but the format does not exist.",
