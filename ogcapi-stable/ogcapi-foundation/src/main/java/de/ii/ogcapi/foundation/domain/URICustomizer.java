@@ -114,7 +114,11 @@ public class URICustomizer extends URIBuilder {
   }
 
   public URICustomizer ensureLastPathSegments(final String... segments) {
-    final List<String> pathSegments = getPathSegments();
+    List<String> pathSegments = getPathSegments();
+
+    if (pathSegments.size() == 1 && pathSegments.get(0).isEmpty()) {
+      pathSegments = List.of();
+    }
 
     int pathSegmentsIndex =
         pathSegments.size() >= segments.length ? pathSegments.size() - segments.length : 0;

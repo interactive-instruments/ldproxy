@@ -15,10 +15,8 @@ import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ogcapi.tiles.domain.TileSet;
-import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
+import de.ii.ogcapi.tiles.domain.VectorTileFormatExtension;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -29,7 +27,7 @@ import javax.ws.rs.core.MediaType;
  */
 @Singleton
 @AutoBind
-public class TileFormatMVT extends TileFormatExtension implements ConformanceClass {
+public class TileFormatMVT extends VectorTileFormatExtension implements ConformanceClass {
 
   public static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
@@ -60,11 +58,6 @@ public class TileFormatMVT extends TileFormatExtension implements ConformanceCla
   @Override
   public String getExtension() {
     return "pbf";
-  }
-
-  @Override
-  public DataType getDataType() {
-    return TileSet.DataType.vector;
   }
 
   @Override

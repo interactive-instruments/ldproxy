@@ -7,9 +7,8 @@
  */
 package de.ii.ogcapi.tiles.app;
 
-import static de.ii.ogcapi.tiles.app.TilesBuildingBlock.DATASET_TILES;
-
 import com.github.azahnen.dagger.annotations.AutoBind;
+import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.WithChangeListeners;
@@ -18,25 +17,30 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiBackgroundTask;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.ogcapi.tiles.domain.TilesProvidersCache;
+import de.ii.xtraplatform.base.domain.LogContext.MARKER;
 import de.ii.xtraplatform.base.domain.resiliency.VolatileRegistry;
 import de.ii.xtraplatform.crs.domain.BoundingBox;
 import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.DatasetChangeListener;
 import de.ii.xtraplatform.features.domain.FeatureChangeListener;
+import de.ii.xtraplatform.jobs.domain.JobQueue;
+import de.ii.xtraplatform.jobs.domain.JobSet;
 import de.ii.xtraplatform.services.domain.TaskContext;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParameters;
 import de.ii.xtraplatform.tiles.domain.SeedingOptions;
 import de.ii.xtraplatform.tiles.domain.TileGenerationParameters;
 import de.ii.xtraplatform.tiles.domain.TileProvider;
+import de.ii.xtraplatform.tiles.domain.TileProviderFeaturesData;
+import de.ii.xtraplatform.tiles.domain.TileSeedingJobSet;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -44,7 +48,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +66,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
   private final TilesProviders tilesProviders;
   private final TilesProvidersCache tilesProvidersCache;
   private final VolatileRegistry volatileRegistry;
+  private final JobQueue jobQueue;
   private Consumer<OgcApi> trigger;
 
   @Inject
@@ -71,12 +75,14 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
       FeaturesCoreProviders providers,
       TilesProviders tilesProviders,
       TilesProvidersCache tilesProvidersCache,
-      VolatileRegistry volatileRegistry) {
+      VolatileRegistry volatileRegistry,
+      JobQueue jobQueue) {
     this.extensionRegistry = extensionRegistry;
     this.providers = providers;
     this.tilesProviders = tilesProviders;
     this.tilesProvidersCache = tilesProvidersCache;
     this.volatileRegistry = volatileRegistry;
+    this.jobQueue = jobQueue;
   }
 
   @Override
@@ -151,17 +157,17 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
 
   @Override
   public int getMaxPartials(OgcApi api) {
-    return tilesProviders
-        .getTileProvider(api.getData())
-        .filter(provider -> provider.seeding().isSupported())
-        .map(provider -> provider.seeding().get().getOptions())
-        .map(SeedingOptions::getEffectiveMaxThreads)
-        .orElse(1);
+    return 1;
   }
 
   @Override
   public void setTrigger(Consumer<OgcApi> trigger) {
     this.trigger = trigger;
+  }
+
+  @Override
+  public boolean isSilent() {
+    return true;
   }
 
   private boolean shouldPurge(OgcApi api) {
@@ -193,16 +199,10 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
     }
 
     boolean reseed = shouldPurge(api);
-    List<TileFormatExtension> outputFormats =
-        extensionRegistry.getExtensionsForType(TileFormatExtension.class);
-
-    if (outputFormats.isEmpty()) {
-      return;
-    }
 
     try {
       if (!taskContext.isStopped()) {
-        seedTilesets(api, outputFormats, reseed, taskContext);
+        seedTilesets(api, reseed);
       }
 
     } catch (IOException e) {
@@ -214,6 +214,14 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
       // exceptions during seeding on shutdown are currently inevitable), but for other situations
       // we still add the error to the log
       if (!taskContext.isStopped()) {
+        if (LOGGER.isErrorEnabled()) {
+          LOGGER.error(
+              "An error occurred during seeding. Note that this may be a side-effect of a server shutdown.",
+              e);
+        }
+        if (LOGGER.isDebugEnabled(MARKER.STACKTRACE)) {
+          LOGGER.debug("Stacktrace", e);
+        }
         throw new RuntimeException(
             "An error occurred during seeding. Note that this may be a side-effect of a server shutdown.",
             e);
@@ -221,9 +229,7 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
     }
   }
 
-  private void seedTilesets(
-      OgcApi api, List<TileFormatExtension> outputFormats, boolean reseed, TaskContext taskContext)
-      throws IOException {
+  private void seedTilesets(OgcApi api, boolean reseed) throws IOException {
     OgcApiDataV2 apiData = api.getData();
 
     TileProvider tileProvider = tilesProviders.getTileProviderOrThrow(apiData);
@@ -233,63 +239,144 @@ public class TileSeedingBackgroundTask implements OgcApiBackgroundTask, WithChan
       return;
     }
 
-    List<MediaType> formats =
-        outputFormats.stream()
-            .filter(format -> tileProvider.generator().get().supports(format.getMediaType().type()))
-            .map(format -> format.getMediaType().type())
-            .collect(Collectors.toList());
+    boolean inProgress =
+        jobQueue.getSets().stream()
+            .anyMatch(
+                jobSet ->
+                    Objects.equals(jobSet.getType(), TileSeedingJobSet.TYPE)
+                        && !jobSet.isDone()
+                        && jobSet
+                            .getEntity()
+                            .filter(e -> Objects.equals(e, tileProvider.getId()))
+                            .isPresent());
+
+    if (inProgress) {
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.debug("{} is already in progress, skipping new task", TileSeedingJobSet.LABEL);
+      }
+
+      return;
+    }
 
     Map<String, TileGenerationParameters> tilesets = new LinkedHashMap<>();
+    Map<String, TileGenerationParameters> combinedTilesets = new LinkedHashMap<>();
 
     for (String collectionId : apiData.getCollections().keySet()) {
       getTilesConfiguration(apiData, collectionId)
           .filter(cfg -> cfg.hasCollectionTiles(tilesProviders, apiData, collectionId))
-          .map(cfg -> Objects.requireNonNullElse(cfg.getTileProviderTileset(), collectionId))
+          .map(cfg -> cfg.getCollectionTileset(collectionId))
           .filter(tileset -> !tilesets.containsKey(tileset))
           .ifPresent(
               tileset -> {
                 TileGenerationParameters generationParameters =
                     new ImmutableTileGenerationParameters.Builder()
                         .clipBoundingBox(api.getSpatialExtent(collectionId))
-                        .propertyTransformations(
-                            api.getData()
-                                .getCollectionData(collectionId)
-                                .flatMap(cd -> cd.getExtension(FeaturesCoreConfiguration.class))
-                                .map(
-                                    pt ->
-                                        pt.withSubstitutions(
-                                            FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
-                                                api.getUri().toString()))))
+                        .substitutions(
+                            FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
+                                api.getUri().toString()))
                         .build();
 
-                tilesets.put(tileset, generationParameters);
+                if (((TileProviderFeaturesData) tileProvider.getData())
+                    .getTilesets()
+                    .get(tileset)
+                    .isCombined()) {
+                  combinedTilesets.put(tileset, generationParameters);
+                } else {
+                  tilesets.put(tileset, generationParameters);
+                }
               });
     }
 
     apiData
         .getExtension(TilesConfiguration.class)
-        .filter(cfg -> cfg.hasDatasetTiles(tilesProviders, apiData))
-        .map(cfg -> Objects.requireNonNullElse(cfg.getTileProviderTileset(), DATASET_TILES))
+        .filter(cfg -> cfg.hasDatasetVectorTiles(tilesProviders, apiData))
+        .map(TilesConfiguration::getDatasetTileset)
         .filter(tileset -> !tilesets.containsKey(tileset))
         .ifPresent(
             tileset -> {
               TileGenerationParameters generationParameters =
                   new ImmutableTileGenerationParameters.Builder()
                       .clipBoundingBox(api.getSpatialExtent())
-                      .propertyTransformations(
-                          api.getData()
-                              .getExtension(FeaturesCoreConfiguration.class)
-                              .map(
-                                  pt ->
-                                      pt.withSubstitutions(
-                                          FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
-                                              api.getUri().toString()))))
+                      .substitutions(
+                          FeaturesCoreProviders.DEFAULT_SUBSTITUTIONS.apply(
+                              api.getUri().toString()))
                       .build();
 
-              tilesets.put(tileset, generationParameters);
+              if (((TileProviderFeaturesData) tileProvider.getData())
+                  .getTilesets()
+                  .get(tileset)
+                  .isCombined()) {
+                combinedTilesets.put(tileset, generationParameters);
+              } else {
+                tilesets.put(tileset, generationParameters);
+              }
             });
 
-    tileProvider.seeding().get().seed(tilesets, formats, reseed, taskContext);
+    Map<String, List<String>> rasterForVectorTilesets =
+        tilesets.entrySet().stream()
+            .map(
+                entry ->
+                    Map.entry(
+                        entry.getKey(),
+                        tileProvider.access().get().getMapStyles(entry.getKey()).stream()
+                            .map(
+                                style ->
+                                    tileProvider
+                                        .access()
+                                        .get()
+                                        .getMapStyleTileset(entry.getKey(), style))
+                            .collect(Collectors.toList())))
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+
+    Map<String, List<String>> rasterForVectorCombinedTilesets =
+        combinedTilesets.entrySet().stream()
+            .map(
+                entry ->
+                    Map.entry(
+                        entry.getKey(),
+                        tileProvider.access().get().getMapStyles(entry.getKey()).stream()
+                            .map(
+                                style ->
+                                    tileProvider
+                                        .access()
+                                        .get()
+                                        .getMapStyleTileset(entry.getKey(), style))
+                            .collect(Collectors.toList())))
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+
+    JobSet jobSet = TileSeedingJobSet.of(tileProvider.getId(), tilesets, reseed);
+
+    Map<String, TileGenerationParameters> rasterTilesets =
+        tilesets.entrySet().stream()
+            .flatMap(
+                ts ->
+                    rasterForVectorTilesets.get(ts.getKey()).stream()
+                        .map(rts -> Map.entry(rts, ts.getValue())))
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+    if (!rasterTilesets.isEmpty()) {
+      jobSet = jobSet.with(TileSeedingJobSet.of(tileProvider.getId(), rasterTilesets, reseed));
+    }
+
+    if (!combinedTilesets.isEmpty()) {
+      JobSet combinedJobSet = TileSeedingJobSet.of(tileProvider.getId(), combinedTilesets, reseed);
+
+      Map<String, TileGenerationParameters> rasterCombinedTilesets =
+          combinedTilesets.entrySet().stream()
+              .flatMap(
+                  ts ->
+                      rasterForVectorCombinedTilesets.get(ts.getKey()).stream()
+                          .map(rts -> Map.entry(rts, ts.getValue())))
+              .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue));
+      if (!rasterCombinedTilesets.isEmpty()) {
+        combinedJobSet =
+            combinedJobSet.with(
+                TileSeedingJobSet.of(tileProvider.getId(), rasterCombinedTilesets, reseed));
+      }
+
+      jobSet = jobSet.with(combinedJobSet);
+    }
+
+    jobQueue.push(jobSet);
   }
 
   @Override

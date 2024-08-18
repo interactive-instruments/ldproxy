@@ -27,7 +27,7 @@ public interface TileGenerationUserParameter {
         apiData
             .getExtension(TilesConfiguration.class)
             .filter(TilesConfiguration::isEnabled)
-            .filter(cfg -> cfg.hasDatasetTiles(tilesProviders, apiData));
+            .filter(cfg -> cfg.hasDatasetVectorTiles(tilesProviders, apiData));
     Optional<de.ii.xtraplatform.tiles.domain.TileProvider> tileProvider =
         tilesProviders
             .getTileProvider(apiData)
@@ -43,7 +43,7 @@ public interface TileGenerationUserParameter {
             .getCollectionData(collectionId)
             .flatMap(cd -> cd.getExtension(TilesConfiguration.class))
             .filter(TilesConfiguration::isEnabled)
-            .filter(cfg -> cfg.hasCollectionTiles(tilesProviders, apiData, collectionId));
+            .filter(cfg -> cfg.hasCollectionVectorTiles(tilesProviders, apiData, collectionId));
     Optional<de.ii.xtraplatform.tiles.domain.TileProvider> tileProvider =
         tilesProviders
             .getTileProvider(apiData, apiData.getCollectionData(collectionId))
