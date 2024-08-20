@@ -34,12 +34,13 @@ import javax.inject.Singleton;
 /**
  * @title maxAllowableOffset
  * @endpoints Features, Feature
- * @langEn All geometries are simplified using the [Douglas Peucker
+ * @langEn *Deprecated* (replaced by `zoom-level`). All geometries are simplified using the [Douglas
+ *     Peucker
  *     algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm).
  *     The value defines the maximum distance between original and simplified geometry ([Hausdorff
  *     distance](https://en.wikipedia.org/wiki/Hausdorff_distance)). The value has to use the unit
  *     of the given coordinate reference system (`CRS84` or the value of parameter `crs`).
- * @langDe Alle Geometrien werden mit dem
+ * @langDe *Deprecated* (ersetzt durch `zoom-level`). Alle Geometrien werden mit dem
  *     [Douglas-Peucker-Algorithmus](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm)
  *     vereinfacht. Der Wert von `maxAllowableOffset` legt den maximalen Abstand zwischen der
  *     Originalgeometrie und der vereinfachten Geometrie fest
@@ -49,6 +50,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
+@Deprecated(since = "4.2.0", forRemoval = true)
 public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache
     implements OgcApiQueryParameter, FeatureQueryParameter, TypedQueryParameter<Double> {
 

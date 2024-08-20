@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.immutables.value.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,9 +68,13 @@ public interface OgcApiResource {
     }
     if (path.contains("{")) {
       LOGGER.error(
-          "Could not resolve a path parameter to a pattern. This should not occur and will lead to errors (requires a fix in the code). Using '.*' as a fallback. Resource path: {}",
-          path);
-      path = path.replaceAll("\\{\\w+\\}", ".*");
+          "Could not resolve a path parameter to a pattern. This should not occur and will lead to errors (requires a fix in the code). Using '.*' as a fallback. Class: {}, Resource path: {}. Path parameters: {}",
+          this.getClass().getSimpleName(),
+          path,
+          getPathParameters().stream()
+              .map(OgcApiPathParameter::getName)
+              .collect(Collectors.joining(", ")));
+      path = path.replaceAll("\\{\\w+}", ".*");
     }
     return "^(?:" + path + ")/?$";
   }

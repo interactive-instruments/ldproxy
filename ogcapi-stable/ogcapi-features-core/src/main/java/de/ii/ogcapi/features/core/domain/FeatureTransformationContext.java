@@ -92,11 +92,6 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
     return false;
   }
 
-  @Value.Default
-  default boolean isHitsOnlyIfMore() {
-    return false;
-  }
-
   ApiRequestContext getOgcApiRequest();
 
   int getLimit();

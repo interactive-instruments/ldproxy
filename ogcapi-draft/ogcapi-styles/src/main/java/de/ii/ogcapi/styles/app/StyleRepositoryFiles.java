@@ -21,13 +21,10 @@ import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
-import de.ii.ogcapi.styles.domain.ImmutableStyleEntry;
-import de.ii.ogcapi.styles.domain.ImmutableStyleEntry.Builder;
 import de.ii.ogcapi.styles.domain.ImmutableStyleMetadata;
 import de.ii.ogcapi.styles.domain.ImmutableStyles;
 import de.ii.ogcapi.styles.domain.ImmutableStylesheetMetadata;
 import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
-import de.ii.ogcapi.styles.domain.StyleEntry;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import de.ii.ogcapi.styles.domain.StyleMetadata;
 import de.ii.ogcapi.styles.domain.StyleMetadataFormatExtension;
@@ -39,7 +36,10 @@ import de.ii.ogcapi.styles.domain.StylesLinkGenerator;
 import de.ii.ogcapi.styles.domain.StylesheetContent;
 import de.ii.ogcapi.styles.domain.StylesheetMetadata;
 import de.ii.ogcapi.styles.domain.Tiles3dStylesheet;
+import de.ii.ogcapi.tiles.domain.ImmutableStyleEntry;
+import de.ii.ogcapi.tiles.domain.StyleEntry;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesProviders;
 import de.ii.xtraplatform.base.domain.AppLifeCycle;
 import de.ii.xtraplatform.base.domain.LogContext;
 import de.ii.xtraplatform.base.domain.resiliency.AbstractVolatile;
@@ -95,6 +95,7 @@ public class StyleRepositoryFiles extends AbstractVolatile
   private final FeaturesCoreProviders providers;
   private final Values<Codelist> codelistStore;
   private final VolatileRegistry volatileRegistry;
+  private final TilesProviders tilesProviders;
 
   @Inject
   public StyleRepositoryFiles(
@@ -104,7 +105,8 @@ public class StyleRepositoryFiles extends AbstractVolatile
       I18n i18n,
       FeaturesCoreProviders providers,
       ValueStore valueStore,
-      VolatileRegistry volatileRegistry) {
+      VolatileRegistry volatileRegistry,
+      TilesProviders tilesProviders) {
     super(volatileRegistry, "app/styles");
     this.stylesStore = blobStore.with(StylesBuildingBlock.STORE_RESOURCE_TYPE);
     this.legendsStore = blobStore.with(StylesBuildingBlock.STORE_RESOURCE_TYPE_LEGENDS);
@@ -116,6 +118,7 @@ public class StyleRepositoryFiles extends AbstractVolatile
     this.providers = providers;
     this.codelistStore = valueStore.forType(Codelist.class);
     this.volatileRegistry = volatileRegistry;
+    this.tilesProviders = tilesProviders;
     this.defaultLinkGenerator = new DefaultLinksGenerator();
   }
 
@@ -244,7 +247,7 @@ public class StyleRepositoryFiles extends AbstractVolatile
         getStyleIds(apiData, collectionId).stream()
             .map(
                 styleId -> {
-                  Builder builder =
+                  ImmutableStyleEntry.Builder builder =
                       ImmutableStyleEntry.builder()
                           .id(styleId)
                           .title(
@@ -290,6 +293,17 @@ public class StyleRepositoryFiles extends AbstractVolatile
                           styleId,
                           i18n,
                           requestContext.getLanguage()));
+                  if (tilesProviders
+                      .getRasterTilesetMetadata(
+                          apiData, collectionId.flatMap(apiData::getCollectionData))
+                      .containsKey(styleId)) {
+                    builder.addLinks(
+                        stylesLinkGenerator.generateMapTilesLink(
+                            requestContext.getUriCustomizer(),
+                            styleId,
+                            i18n,
+                            requestContext.getLanguage()));
+                  }
 
                   final java.nio.file.Path resourcePath =
                       Path.of(apiData.getId()).resolve(String.format("%s.png", styleId));
@@ -849,6 +863,13 @@ public class StyleRepositoryFiles extends AbstractVolatile
                       requestContext.getLanguage()));
             });
 
+    if (tilesProviders
+        .getRasterTilesetMetadata(apiData, apiData.getCollectionData(collectionId).get())
+        .containsKey(styleId)) {
+      builder.addLinks(
+          stylesLinkGenerator.generateMapTilesLink(
+              requestContext.getUriCustomizer(), styleId, i18n, requestContext.getLanguage()));
+    }
     try {
       if (legendsStore.has(getStyleLegendPath(apiData, styleId))) {
         builder.addLinks(

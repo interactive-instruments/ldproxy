@@ -205,7 +205,7 @@ public class OgcApiFactory extends AbstractEntityFactory<OgcApiDataV2, OgcApiEnt
           extensionRegistry.getExtensionsForType(OgcApiDataHydratorExtension.class);
       extensions.sort(Comparator.comparing(OgcApiDataHydratorExtension::getSortPriority));
       for (OgcApiDataHydratorExtension hydrator : extensions) {
-        if (hydrator.isEnabledForApi(hydrated)) {
+        if (hydrated.getEnabled() && hydrator.isEnabledForApi(hydrated)) {
           hydrated = hydrator.getHydratedData(hydrated);
         }
       }
