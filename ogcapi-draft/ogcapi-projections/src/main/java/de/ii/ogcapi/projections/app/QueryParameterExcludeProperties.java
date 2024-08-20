@@ -123,7 +123,7 @@ public class QueryParameterExcludeProperties extends ApiExtensionCache
               new ArraySchema()
                   .items(
                       new StringSchema()
-                          ._enum(schemaInfo.getPropertyNames(apiData, collectionId))));
+                          ._enum(schemaInfo.getPropertyNames(apiData, collectionId, true, false))));
     }
     return schemaMap.get(apiHashCode).get(collectionId);
   }
@@ -167,7 +167,7 @@ public class QueryParameterExcludeProperties extends ApiExtensionCache
         .getValue(this)
         .ifPresent(
             excludeProperties -> {
-              schemaInfo.getPropertyNames(apiData, collectionData.getId()).stream()
+              schemaInfo.getPropertyNames(apiData, collectionData.getId(), true, false).stream()
                   .filter(propertyName -> !excludeProperties.contains(propertyName))
                   .forEach(queryBuilder::addFields);
 
@@ -175,7 +175,9 @@ public class QueryParameterExcludeProperties extends ApiExtensionCache
                 LOGGER.trace(
                     "Excluded properties: {}; selected properties: {}",
                     String.join(", ", parameters.getValue(this).orElse(List.of())),
-                    schemaInfo.getPropertyNames(apiData, collectionData.getId()).stream()
+                    schemaInfo
+                        .getPropertyNames(apiData, collectionData.getId(), true, false)
+                        .stream()
                         .filter(propertyName -> !excludeProperties.contains(propertyName))
                         .collect(Collectors.joining(", ")));
               }

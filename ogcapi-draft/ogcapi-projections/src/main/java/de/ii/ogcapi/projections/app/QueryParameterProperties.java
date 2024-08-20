@@ -123,7 +123,7 @@ public class QueryParameterProperties extends ApiExtensionCache
               new ArraySchema()
                   .items(
                       new StringSchema()
-                          ._enum(schemaInfo.getPropertyNames(apiData, collectionId))));
+                          ._enum(schemaInfo.getPropertyNames(apiData, collectionId, true, false))));
     }
     return schemaMap.get(apiHashCode).get(collectionId);
   }
