@@ -22,6 +22,7 @@ import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.tiles.domain.TileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TileSet.DataType;
 import de.ii.ogcapi.tiles.domain.TilesConfiguration;
+import de.ii.ogcapi.tiles.domain.TilesConfiguration.WmtsScope;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import java.util.List;
 import java.util.Locale;
@@ -71,24 +72,41 @@ public class TilesOnLandingPage implements LandingPageExtension {
       Optional<Locale> language) {
 
     if (isEnabledForApi(api.getData())) {
-      Optional<DataType> dataType =
+      boolean hasVectorTiles =
           extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
-              .filter(
+              .anyMatch(
                   format ->
-                      format.isApplicable(
-                          api.getData(),
-                          "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"))
-              .filter(format -> format.isEnabledForApi(api.getData()))
-              .map(TileFormatExtension::getDataType)
-              .findAny();
-      if (dataType.isEmpty())
+                      format.getDataType() == DataType.vector
+                          && format.isEnabledForApi(api.getData())
+                          && format.isApplicable(
+                              api.getData(),
+                              "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
+      boolean hasMapTiles =
+          extensionRegistry.getExtensionsForType(TileFormatExtension.class).stream()
+              .anyMatch(
+                  format ->
+                      format.getDataType() == DataType.map
+                          && format.isEnabledForApi(api.getData())
+                          && format.isApplicable(
+                              api.getData(),
+                              "/map/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
+
+      if (!hasVectorTiles && !hasMapTiles) {
         // no tile format is enabled
         return landingPageBuilder;
+      }
+
+      boolean hasWmts =
+          api.getData()
+                  .getExtension(TilesConfiguration.class)
+                  .map(TilesConfiguration::getWmts)
+                  .orElse(WmtsScope.NONE)
+              != WmtsScope.NONE;
 
       final TilesLinkGenerator tilesLinkGenerator = new TilesLinkGenerator();
       List<Link> links =
           tilesLinkGenerator.generateLandingPageLinks(
-              uriCustomizer, dataType.get(), i18n, language);
+              uriCustomizer, hasVectorTiles, hasMapTiles, hasWmts, i18n, language);
       landingPageBuilder.addAllLinks(links);
     }
     return landingPageBuilder;

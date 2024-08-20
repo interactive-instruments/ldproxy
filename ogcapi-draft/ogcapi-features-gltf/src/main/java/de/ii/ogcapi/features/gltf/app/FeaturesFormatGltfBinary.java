@@ -88,7 +88,7 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
   private final FeaturesCoreValidation featuresCoreValidator;
   private final CrsTransformerFactory crsTransformerFactory;
   private CrsTransformer toEcef;
-  private final URI serviceUri;
+  private final URI servicesUri;
   private final Metadata3dSchemaCache schemaCache;
 
   @Inject
@@ -104,7 +104,7 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
     this.featuresCoreValidator = featuresCoreValidator;
     this.crsTransformerFactory = crsTransformerFactory;
     this.toEcef = null;
-    this.serviceUri = servicesContext.getUri();
+    this.servicesUri = servicesContext.getUri();
     this.schemaCache = schemaCache;
   }
 
@@ -349,10 +349,8 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
     String collectionId = transformationContext.getCollectionId();
 
     URI schemaUri =
-        URI.create(
-            String.format(
-                "%s/%s/collections/%s/gltf/schema?f=json",
-                serviceUri.toString(), apiData.getId(), collectionId));
+        servicesUri.resolve(
+            String.format("%s/collections/%s/gltf/schema?f=json", apiData.getId(), collectionId));
 
     GltfSchema gltfSchema =
         schemaCache.getSchema(

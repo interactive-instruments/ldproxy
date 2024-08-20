@@ -7,6 +7,7 @@ descriptionDe = 'Die Kernfunktionen zur Bereitstellung von Features (Vektordaten
 dependencies {
     provided 'de.interactive_instruments:xtraplatform-auth'
     provided 'de.interactive_instruments:xtraplatform-streams'
+    provided 'de.interactive_instruments:xtraplatform-values'
     provided 'de.interactive_instruments:xtraplatform-codelists'
     provided 'de.interactive_instruments:xtraplatform-cql'
     provided 'de.interactive_instruments:xtraplatform-crs'
@@ -25,6 +26,7 @@ dependencies {
     testImplementation project(":ogcapi-html")
     testImplementation project(":ogcapi-json")
     testImplementation project(":ogcapi-xml")
+    testImplementation 'de.interactive_instruments:xtraplatform-blobs'
     testImplementation 'org.codehaus.groovy.modules.http-builder:http-builder:0.7'
 }
 

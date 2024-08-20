@@ -12,9 +12,7 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
-import de.ii.ogcapi.tiles.domain.TileFormatExtension;
-import de.ii.ogcapi.tiles.domain.TileSet;
-import de.ii.ogcapi.tiles.domain.TileSet.DataType;
+import de.ii.ogcapi.tiles.domain.MapTileFormatExtension;
 import de.ii.ogcapi.tiles.domain.TilesProviders;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -25,7 +23,7 @@ import javax.ws.rs.core.MediaType;
  */
 @Singleton
 @AutoBind
-public class TileFormatWEBP extends TileFormatExtension {
+public class TileFormatWEBP extends MapTileFormatExtension {
 
   public static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
@@ -56,10 +54,5 @@ public class TileFormatWEBP extends TileFormatExtension {
   @Override
   public String getExtension() {
     return "webp";
-  }
-
-  @Override
-  public DataType getDataType() {
-    return TileSet.DataType.map;
   }
 }
