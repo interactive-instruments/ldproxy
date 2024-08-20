@@ -27,6 +27,7 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
@@ -64,7 +65,7 @@ import javax.ws.rs.core.MediaType;
  */
 @Singleton
 @AutoBind
-public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtension {
+public class FeaturesFormatGml extends FeatureFormatExtension implements ConformanceClass {
 
   private static final String XML = "xml";
   private static final String GML21 = "gml21";
@@ -160,7 +161,9 @@ public class FeaturesFormatGml implements ConformanceClass, FeatureFormatExtensi
       FeaturesCoreProviders providers,
       ValueStore valueStore,
       FeaturesCoreValidation featuresCoreValidator,
-      GmlWriterRegistry gmlWriterRegistry) {
+      GmlWriterRegistry gmlWriterRegistry,
+      ExtensionRegistry extensionRegistry) {
+    super(extensionRegistry);
     this.providers = providers;
     this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;

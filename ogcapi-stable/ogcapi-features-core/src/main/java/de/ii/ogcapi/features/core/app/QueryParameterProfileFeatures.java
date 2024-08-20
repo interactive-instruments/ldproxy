@@ -13,7 +13,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import de.ii.ogcapi.common.domain.QueryParameterProfile;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
-import de.ii.ogcapi.features.core.domain.ProfileFeatures;
+import de.ii.ogcapi.features.core.domain.ProfileExtensionFeatures;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -42,14 +42,17 @@ import javax.inject.Singleton;
  *     negotiated profiles are returned in links with `rel` set to `profile`. If the feature schema
  *     includes at least one property of type `FEATURE_REF` or `FEATURE_REF_ARRAY`, three profiles
  *     can be used to select the encoding of object references in the response. Supported are
- *     "rel-as-link" (default, a link with URI and a title), "rel-as-key" (the `featureId` of the
- *     referenced feature) and "rel-as-uri" (the URI of the referenced feature). Formats that only
- *     support simple values will typically not support "rel-as-link". GML only supports
+ *     "rel-as-link" (a link with URI and a title), "rel-as-key" (the `featureId` of the referenced
+ *     feature) and "rel-as-uri" (the URI of the referenced feature). Formats that only support
+ *     simple values will typically not support "rel-as-link" and use "rel-as-key" as the default.
+ *     HTML, GeoJSON, JSON-FG and GML use "rel-as-link" as the default. GML only supports
  *     "rel-as-link". If the building block Codelists is enabled and the feature schema includes at
  *     least one property with a "codelist" constraint, two profiles can be used to select the
- *     representation of coded values in the response. Supported are "val-as-code" (default, the
- *     code) and "val-as-title" (the label associated with the code). HTML only supports
- *     "val-as-title", GML only supports "val-as-code".
+ *     representation of coded values in the response. Supported are "val-as-code" (the code) and
+ *     "val-as-title" (the label associated with the code). HTML uses "val-as-title" as the default,
+ *     all other feature encodings use "val-as-code" as the default. Note: Explicit codelist
+ *     transformations in the provider or in the service configuration are always executed, the
+ *     "profile" parameter with a value "val-as-code" does not disable these transformations.
  * @langDe Dieser Abfrageparameter unterstützt die Abfrage von Variationen in der Darstellung von
  *     Daten im gleichen Format, je nach der beabsichtigten Verwendung der Daten. Die unterstützten
  *     Profile hängen vom Provider-Schema der Feature Collection ab. Wenn ein Format das
@@ -58,21 +61,24 @@ import javax.inject.Singleton;
  *     wobei `rel` auf `profile` gesetzt ist. Enthält das Feature-Schema mindestens eine Eigenschaft
  *     vom Typ `FEATURE_REF` oder `FEATURE_REF_ARRAY`, können drei Profile verwendet werden, um die
  *     Kodierung der Objektreferenzen in der Antwort auszuwählen. Unterstützt werden "rel-as-link"
- *     (Standard, ein Link mit URI und einem Titel), "rel-as-key" (die `featureId` des
- *     referenzierten Features) und "rel-as-uri" (die URI des referenzierten Features). Formate, die
- *     nur einfache Werte unterstützen, unterstützen typischerweise "rel-as-link" nicht. GML
- *     unterstützt nur "rel-as-link". Wenn der Baustein Codelists aktiviert ist und das
+ *     (ein Link mit URI und einem Titel), "rel-as-key" (die `featureId` des referenzierten
+ *     Features) und "rel-as-uri" (die URI des referenzierten Features). Formate, die nur einfache
+ *     Werte unterstützen, unterstützen typischerweise "rel-as-link" nicht und verwenden
+ *     "rel-as-key" als Default. HTML, GeoJSON, JSON-FG und GML verwenden "rel-as-link" als der
+ *     Default. GML unterstützt nur "rel-as-link". Wenn der Baustein Codelists aktiviert ist und das
  *     Feature-Schema mindestens eine Eigenschaft mit einer "Codelist"-Einschränkung enthält, können
  *     zwei Profile verwendet werden, um die Darstellung von codierten Werten in der Antwort
- *     auszuwählen. Unterstützt werden "val-as-code" (Standard, der Code) und "val-as-title" (die
- *     mit dem Code verbundene Bezeichnung). HTML unterstützt nur "val-as-title", GML unterstützt
- *     nur "val-as-code".
- * @default [rel-as-link,val-as-code]
+ *     auszuwählen. Unterstützt werden "val-as-code" (der Code) und "val-as-title" (die mit dem Code
+ *     verbundene Bezeichnung). HTML verwendet "val-as-title" als Default, alle anderen Formate
+ *     "val-as-code". Hinweis: Explizite Codelisten-Transformationen im Provider oder in der
+ *     Service-Konfiguration werden immer ausgeführt, der "profile"-Parameter mit dem Wert
+ *     "val-as-code" deaktiviert nicht diese Transformationen.
+ * @default []
  */
 @Singleton
 @AutoBind
 public class QueryParameterProfileFeatures extends QueryParameterProfile
-    implements TypedQueryParameter<List<ProfileExtension>>, ConformanceClass {
+    implements TypedQueryParameter<List<String>>, ConformanceClass {
 
   @Inject
   public QueryParameterProfileFeatures(
@@ -102,32 +108,40 @@ public class QueryParameterProfileFeatures extends QueryParameterProfile
   }
 
   @Override
-  protected List<ProfileExtension> getProfiles(OgcApiDataV2 apiData) {
-    return extensionRegistry.getExtensionsForType(ProfileFeatures.class).stream()
+  protected List<String> getProfiles(OgcApiDataV2 apiData) {
+    return extensionRegistry.getExtensionsForType(ProfileExtensionFeatures.class).stream()
         .filter(profile -> profile.isEnabledForApi(apiData))
+        .map(ProfileExtension::getValues)
+        .flatMap(List::stream)
         .collect(Collectors.toList());
   }
 
   @Override
-  protected List<ProfileExtension> getProfiles(OgcApiDataV2 apiData, String collectionId) {
-    return extensionRegistry.getExtensionsForType(ProfileFeatures.class).stream()
+  protected List<String> getProfiles(OgcApiDataV2 apiData, String collectionId) {
+    return extensionRegistry.getExtensionsForType(ProfileExtensionFeatures.class).stream()
         .filter(profile -> profile.isEnabledForApi(apiData, collectionId))
+        .map(ProfileExtension::getValues)
+        .flatMap(List::stream)
         .collect(Collectors.toList());
   }
 
   @Override
-  protected List<ProfileExtension> getDefault(OgcApiDataV2 apiData) {
-    return extensionRegistry.getExtensionsForType(ProfileFeatures.class).stream()
+  protected List<String> getDefault(OgcApiDataV2 apiData) {
+    return extensionRegistry.getExtensionsForType(ProfileExtensionFeatures.class).stream()
         .filter(profile -> profile.isEnabledForApi(apiData))
-        .filter(ProfileFeatures::isEnabledByDefault)
+        .map(ProfileExtension::getDefault)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
         .collect(Collectors.toList());
   }
 
   @Override
-  protected List<ProfileExtension> getDefault(OgcApiDataV2 apiData, String collectionId) {
-    return extensionRegistry.getExtensionsForType(ProfileFeatures.class).stream()
+  protected List<String> getDefault(OgcApiDataV2 apiData, String collectionId) {
+    return extensionRegistry.getExtensionsForType(ProfileExtensionFeatures.class).stream()
         .filter(profile -> profile.isEnabledForApi(apiData, collectionId))
-        .filter(ProfileFeatures::isEnabledByDefault)
+        .map(ProfileExtension::getDefault)
+        .filter(Optional::isPresent)
+        .map(Optional::get)
         .collect(Collectors.toList());
   }
 
@@ -144,7 +158,7 @@ public class QueryParameterProfileFeatures extends QueryParameterProfile
   }
 
   @Override
-  public List<ProfileExtension> parse(
+  public List<String> parse(
       String value,
       Map<String, Object> typedValues,
       OgcApi api,
@@ -155,9 +169,9 @@ public class QueryParameterProfileFeatures extends QueryParameterProfile
           .orElseGet(() -> getDefault(api.getData()));
     }
 
-    Builder<ProfileExtension> builder = ImmutableList.builder();
+    Builder<String> builder = ImmutableList.builder();
 
-    List<ProfileExtension> profiles =
+    List<String> profiles =
         optionalCollectionData
             .map(cd -> getProfiles(api.getData(), cd.getId()))
             .orElseGet(() -> getProfiles(api.getData()));
@@ -169,18 +183,14 @@ public class QueryParameterProfileFeatures extends QueryParameterProfile
             name ->
                 builder.add(
                     profiles.stream()
-                        .filter(p -> p.getName().equals(name))
+                        .filter(p -> p.equals(name))
                         .findFirst()
                         .orElseThrow(
                             () ->
                                 new IllegalArgumentException(
                                     String.format(
                                         "Unknown value for parameter '%s': '%s'. Known values are: [ %s ]",
-                                        PROFILE,
-                                        name,
-                                        profiles.stream()
-                                            .map(ProfileExtension::getName)
-                                            .collect(Collectors.joining(", ")))))));
+                                        PROFILE, name, String.join(",", profiles))))));
 
     return builder.build();
   }

@@ -9,7 +9,6 @@ package de.ii.ogcapi.codelists.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.ii.ogcapi.codelists.domain.CodelistEntry;
 import de.ii.ogcapi.codelists.domain.CodelistFormatExtension;
 import de.ii.ogcapi.codelists.domain.Codelists;
@@ -37,6 +36,7 @@ import de.ii.xtraplatform.codelists.domain.ImmutableCodelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
+import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.values.domain.Identifier;
 import de.ii.xtraplatform.values.domain.ValueStore;
 import de.ii.xtraplatform.values.domain.Values;
@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.inject.Inject;
@@ -186,8 +187,9 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
     OgcApi api = requestContext.getApi();
     OgcApiDataV2 apiData = api.getData();
     String encodedId = queryInput.getCodelistId();
-    Identifier identifier =
-        Identifier.from(Path.of(PercentCodec.decode(encodedId, StandardCharsets.UTF_8)));
+
+    Path path = Path.of(PercentCodec.decode(encodedId, StandardCharsets.UTF_8));
+    Identifier identifier = Identifier.from(path);
     String decodedId = identifier.asPath();
 
     final CodelistFormatExtension format =
@@ -236,25 +238,41 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
   }
 
   private Set<String> getCodelistIds(OgcApiDataV2 apiData) {
-    return providers
-        .getFeatureProvider(apiData)
-        .map(
-            prov ->
-                prov.info().getSchemas().stream()
-                    .map(FeatureSchema::getAllNestedProperties)
-                    .flatMap(List::stream)
-                    .flatMap(
-                        prop ->
-                            Stream.concat(
-                                prop.getConstraints().stream()
-                                    .map(SchemaConstraints::getCodelist)
-                                    .filter(Optional::isPresent)
-                                    .map(Optional::get),
-                                prop.getTransformations().stream()
-                                    .map(PropertyTransformation::getCodelist)
-                                    .filter(Optional::isPresent)
-                                    .map(Optional::get)))
-                    .collect(Collectors.toSet()))
-        .orElse(ImmutableSet.of());
+    return Stream.of(
+            apiData.getCollections().entrySet().stream()
+                .filter(entry -> apiData.isCollectionEnabled(entry.getKey()))
+                .flatMap(
+                    entry ->
+                        entry.getValue().getExtensions().stream()
+                            .filter(ext -> ext instanceof PropertyTransformations)
+                            .flatMap(
+                                ext ->
+                                    ((PropertyTransformations) ext)
+                                        .getTransformations().values().stream()
+                                            .flatMap(List::stream)
+                                            .map(PropertyTransformation::getCodelist)
+                                            .filter(Optional::isPresent)
+                                            .map(Optional::get))),
+            providers
+                .getFeatureProvider(apiData)
+                .map(
+                    prov ->
+                        prov.info().getSchemas().stream()
+                            .map(FeatureSchema::getAllNestedProperties)
+                            .flatMap(List::stream)
+                            .flatMap(
+                                prop ->
+                                    Stream.concat(
+                                        prop.getConstraints().stream()
+                                            .map(SchemaConstraints::getCodelist)
+                                            .filter(Optional::isPresent)
+                                            .map(Optional::get),
+                                        prop.getTransformations().stream()
+                                            .map(PropertyTransformation::getCodelist)
+                                            .filter(Optional::isPresent)
+                                            .map(Optional::get))))
+                .orElse(Stream.of()))
+        .flatMap(Function.identity())
+        .collect(Collectors.toSet());
   }
 }

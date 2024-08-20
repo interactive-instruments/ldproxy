@@ -17,7 +17,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeatures.Builder;
-import de.ii.ogcapi.features.core.domain.ProfileFeatures;
+import de.ii.ogcapi.features.core.domain.ProfileExtensionFeatures;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -273,11 +274,22 @@ public class EndpointFeatures extends EndpointFeaturesDefinition
     int defaultPageSize = coreConfiguration.getDefaultPageSize();
 
     QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
-    List<ProfileFeatures> profiles =
-        (List<ProfileFeatures>)
+
+    List<String> requestedProfiles =
+        (List<String>)
             Objects.requireNonNullElse(
                 queryParameterSet.getTypedValues().get(QueryParameterProfileFeatures.PROFILE),
                 List.of());
+
+    List<String> profiles =
+        extensionRegistry.getExtensionsForType(ProfileExtensionFeatures.class).stream()
+            .map(
+                profileExtension ->
+                    profileExtension.negotiateProfile(
+                        requestedProfiles, requestContext.getMediaType().type().toString()))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
 
     FeatureQuery query =
         ogcApiFeaturesQuery.requestToFeatureQuery(

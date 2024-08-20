@@ -46,7 +46,7 @@ public interface FeaturesCoreQueriesHandler
 
     FeatureQuery getQuery();
 
-    List<ProfileFeatures> getProfiles();
+    List<String> getProfiles();
 
     FeatureProvider getFeatureProvider();
 
@@ -73,7 +73,7 @@ public interface FeaturesCoreQueriesHandler
 
     FeatureQuery getQuery();
 
-    List<ProfileFeatures> getProfiles();
+    List<String> getProfiles();
 
     FeatureProvider getFeatureProvider();
 

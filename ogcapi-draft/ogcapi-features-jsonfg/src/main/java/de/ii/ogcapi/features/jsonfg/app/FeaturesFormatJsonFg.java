@@ -15,6 +15,7 @@ import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ogcapi.features.jsonfg.domain.FeaturesFormatJsonFgBase;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.SchemaBase;
@@ -29,7 +30,7 @@ import javax.ws.rs.core.MediaType;
  */
 @Singleton
 @AutoBind
-public class FeaturesFormatJsonFg implements FeaturesFormatJsonFgBase {
+public class FeaturesFormatJsonFg extends FeaturesFormatJsonFgBase {
 
   public static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
@@ -47,7 +48,9 @@ public class FeaturesFormatJsonFg implements FeaturesFormatJsonFgBase {
   public FeaturesFormatJsonFg(
       SchemaGeneratorOpenApi schemaGeneratorFeature,
       SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
-      GeoJsonWriterRegistry geoJsonWriterRegistry) {
+      GeoJsonWriterRegistry geoJsonWriterRegistry,
+      ExtensionRegistry extensionRegistry) {
+    super(extensionRegistry);
     this.schemaGeneratorFeature = schemaGeneratorFeature;
     this.schemaGeneratorFeatureCollection = schemaGeneratorFeatureCollection;
     this.geoJsonWriterRegistry = geoJsonWriterRegistry;

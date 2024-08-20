@@ -11,21 +11,27 @@ import de.ii.ogcapi.features.core.domain.ImmutableProfileTransformations.Builder
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ProfileExtension;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import java.util.List;
 import java.util.Optional;
 import javax.validation.constraints.NotNull;
 
-public abstract class ProfileFeatures implements ProfileExtension {
+public abstract class ProfileExtensionFeatures implements ProfileExtension {
 
   protected final ExtensionRegistry extensionRegistry;
   protected final FeaturesCoreProviders providers;
 
-  protected ProfileFeatures(ExtensionRegistry extensionRegistry, FeaturesCoreProviders providers) {
+  protected ProfileExtensionFeatures(
+      ExtensionRegistry extensionRegistry, FeaturesCoreProviders providers) {
     this.extensionRegistry = extensionRegistry;
     this.providers = providers;
   }
 
-  public abstract Optional<ProfileFeatures> negotiateProfile(@NotNull String mediaType);
+  public abstract Optional<String> negotiateProfile(
+      @NotNull List<String> requestedProfiles, @NotNull String mediaType);
 
   public abstract void addPropertyTransformations(
-      @NotNull FeatureSchema schema, @NotNull String mediaType, @NotNull Builder builder);
+      @NotNull String value,
+      @NotNull FeatureSchema schema,
+      @NotNull String mediaType,
+      @NotNull Builder builder);
 }

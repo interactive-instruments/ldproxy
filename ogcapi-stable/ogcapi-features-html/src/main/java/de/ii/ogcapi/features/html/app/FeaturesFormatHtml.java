@@ -85,8 +85,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class FeaturesFormatHtml
-    implements FeatureFormatExtension, ItemTypeSpecificConformanceClass {
+public class FeaturesFormatHtml extends FeatureFormatExtension
+    implements ItemTypeSpecificConformanceClass {
 
   private static final WithTransformationsApplied SCHEMA_FLATTENER =
       new WithTransformationsApplied(
@@ -94,7 +94,6 @@ public class FeaturesFormatHtml
               PropertyTransformations.WILDCARD,
               new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
 
-  private final ExtensionRegistry extensionRegistry;
   private final Values<Codelist> codelistStore;
   private final I18n i18n;
   private final FeaturesCoreProviders providers;
@@ -113,7 +112,7 @@ public class FeaturesFormatHtml
       FeaturesCoreValidation featuresCoreValidator,
       ServicesContext servicesContext,
       Http http) {
-    this.extensionRegistry = extensionRegistry;
+    super(extensionRegistry);
     this.codelistStore = valueStore.forType(Codelist.class);
     this.i18n = i18n;
     this.providers = providers;

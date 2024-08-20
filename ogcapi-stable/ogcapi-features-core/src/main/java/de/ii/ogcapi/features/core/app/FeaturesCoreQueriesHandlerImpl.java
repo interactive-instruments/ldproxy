@@ -18,9 +18,9 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesLinksGenerator;
 import de.ii.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
-import de.ii.ogcapi.features.core.domain.ProfileFeatures;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
 import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
 import de.ii.ogcapi.foundation.domain.HeaderItems;
@@ -68,7 +68,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
@@ -94,17 +93,20 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
   private final CrsTransformerFactory crsTransformerFactory;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
   private final Values<Codelist> codelistStore;
+  private final ExtensionRegistry extensionRegistry;
 
   @Inject
   public FeaturesCoreQueriesHandlerImpl(
       I18n i18n,
       CrsTransformerFactory crsTransformerFactory,
       ValueStore valueStore,
-      VolatileRegistry volatileRegistry) {
+      VolatileRegistry volatileRegistry,
+      ExtensionRegistry extensionRegistry) {
     super(FeaturesCoreQueriesHandler.class.getSimpleName(), volatileRegistry, true);
     this.i18n = i18n;
     this.crsTransformerFactory = crsTransformerFactory;
     this.codelistStore = valueStore.forType(Codelist.class);
+    this.extensionRegistry = extensionRegistry;
 
     this.queryHandlers =
         ImmutableMap.of(
@@ -233,7 +235,7 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
       String featureId,
       QueryInput queryInput,
       FeatureQuery query,
-      List<ProfileFeatures> requestedProfiles,
+      List<String> profiles,
       FeatureProvider featureProvider,
       String canonicalUri,
       FeatureFormatExtension outputFormat,
@@ -244,14 +246,6 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
 
     QueriesHandler.ensureCollectionIdExists(api.getData(), collectionId);
     QueriesHandler.ensureFeatureProviderSupportsQueries(featureProvider);
-
-    // negotiate profiles, in case the format does not support the selected profile
-    List<ProfileFeatures> profiles =
-        requestedProfiles.stream()
-            .map(profile -> profile.negotiateProfile(outputFormat.getMediaType().type().toString()))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toList());
 
     Optional<CrsTransformer> crsTransformer = Optional.empty();
 
@@ -315,7 +309,6 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
             .offset(query.getOffset())
             .maxAllowableOffset(query.getMaxAllowableOffset())
             .geometryPrecision(query.getGeometryPrecision());
-            // FIXME .profile(profile);
 
     QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
     for (OgcApiQueryParameter parameter : queryParameterSet.getDefinitions()) {
@@ -359,7 +352,7 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
       propertyTransformations =
           outputFormat
               .getPropertyTransformations(
-                  api.getData().getCollections().get(collectionId), schema, profiles)
+                  api.getData(), api.getData().getCollections().get(collectionId), schema, profiles)
               .map(
                   pt ->
                       ImmutableMap.of(

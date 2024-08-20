@@ -12,14 +12,13 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.ProfileExtension;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 public abstract class QueryParameterProfile extends ApiExtensionCache
     implements OgcApiQueryParameter {
@@ -57,19 +56,19 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
 
   protected abstract boolean isApplicable(OgcApiDataV2 apiData, String definitionPath);
 
-  protected abstract List<ProfileExtension> getProfiles(OgcApiDataV2 apiData);
+  protected abstract List<String> getProfiles(OgcApiDataV2 apiData);
 
-  protected List<ProfileExtension> getProfiles(OgcApiDataV2 apiData, String collectionId) {
+  protected List<String> getProfiles(OgcApiDataV2 apiData, String collectionId) {
     return getProfiles(apiData);
   }
 
-  protected abstract List<ProfileExtension> getDefault(OgcApiDataV2 apiData);
+  protected abstract List<String> getDefault(OgcApiDataV2 apiData);
 
-  protected List<ProfileExtension> getDefault(OgcApiDataV2 apiData, String collectionId) {
+  protected List<String> getDefault(OgcApiDataV2 apiData, String collectionId) {
     return getDefault(apiData);
   }
 
-  protected ConcurrentMap<Integer, ConcurrentMap<String, Schema>> schemaMap =
+  protected ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =
       new ConcurrentHashMap<>();
 
   @Override
@@ -77,13 +76,12 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
     int apiHashCode = apiData.hashCode();
     if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
     if (!schemaMap.get(apiHashCode).containsKey("*")) {
-      schemaMap
-          .get(apiHashCode)
-          .put(
-              "*",
-              new StringSchema()
-                  ._enum(convertToStringList(getProfiles(apiData)))
-                  ._default(convertToString(getDefault(apiData))));
+      StringSchema schema = new StringSchema()._enum(getProfiles(apiData));
+      List<String> defaults = getDefault(apiData);
+      if (!defaults.isEmpty()) {
+        schema._default(String.join(",", defaults));
+      }
+      schemaMap.get(apiHashCode).put("*", schema);
     }
     return schemaMap.get(apiHashCode).get("*");
   }
@@ -93,13 +91,13 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
     int apiHashCode = apiData.hashCode();
     if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
     if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
-      schemaMap
-          .get(apiHashCode)
-          .put(
-              collectionId,
-              new StringSchema()
-                  ._enum(convertToStringList(getProfiles(apiData, collectionId)))
-                  ._default(convertToString(getDefault(apiData, collectionId))));
+      ArraySchema schema =
+          new ArraySchema().items(new StringSchema()._enum(getProfiles(apiData, collectionId)));
+      List<String> defaults = getDefault(apiData, collectionId);
+      if (!defaults.isEmpty()) {
+        schema._default(defaults);
+      }
+      schemaMap.get(apiHashCode).put(collectionId, schema);
     }
     return schemaMap.get(apiHashCode).get(collectionId);
   }
@@ -107,13 +105,5 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
   @Override
   public SchemaValidator getSchemaValidator() {
     return schemaValidator;
-  }
-
-  private List<String> convertToStringList(List<ProfileExtension> profiles) {
-    return profiles.stream().map(ProfileExtension::getName).collect(Collectors.toList());
-  }
-
-  private String convertToString(List<ProfileExtension> profiles) {
-    return profiles.stream().map(ProfileExtension::getName).collect(Collectors.joining(","));
   }
 }

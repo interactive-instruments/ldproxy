@@ -7,20 +7,34 @@
  */
 package de.ii.ogcapi.features.core.app;
 
+import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ImmutableProfileTransformations.Builder;
-import de.ii.ogcapi.features.core.domain.ProfileFeatures;
+import de.ii.ogcapi.features.core.domain.ProfileExtensionFeatures;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.FeatureRefResolver;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.core.MediaType;
 
-public abstract class ProfileFeaturesRel extends ProfileFeatures {
+@Singleton
+@AutoBind
+public class ProfileExtensionFeaturesRel extends ProfileExtensionFeatures {
+
+  public static final String REL = "rel";
+  public static final String AS_KEY = "rel-as-key";
+  public static final String AS_URI = "rel-as-uri";
+  public static final String AS_LINK = "rel-as-link";
 
   private static final String URI_TEMPLATE =
       String.format(
@@ -35,7 +49,8 @@ public abstract class ProfileFeaturesRel extends ProfileFeatures {
   private static final String HTML_LINK_TEMPLATE =
       String.format("<a href=\"%s\">%s</a>", URI_TEMPLATE, FeatureRefResolver.SUB_TITLE);
 
-  protected ProfileFeaturesRel(
+  @Inject
+  public ProfileExtensionFeaturesRel(
       ExtensionRegistry extensionRegistry, FeaturesCoreProviders providers) {
     super(extensionRegistry, providers);
   }
@@ -51,14 +66,63 @@ public abstract class ProfileFeaturesRel extends ProfileFeatures {
   }
 
   @Override
-  public void addPropertyTransformations(FeatureSchema schema, String mediaType, Builder builder) {
-    schema.getAllNestedProperties().stream()
-        .filter(SchemaBase::isFeatureRef)
-        .forEach(property -> addRefTransformations(property, mediaType, builder));
+  public String getPrefix() {
+    return REL;
   }
 
-  protected abstract void addRefTransformations(
-      FeatureSchema property, String mediaType, Builder builder);
+  @Override
+  public List<String> getValues() {
+    return List.of(AS_KEY, AS_URI, AS_LINK);
+  }
+
+  @Override
+  public void addPropertyTransformations(
+      String value, FeatureSchema schema, String mediaType, Builder builder) {
+    if (!getValues().contains(value)) {
+      return;
+    }
+
+    schema.getAllNestedProperties().stream()
+        .filter(SchemaBase::isFeatureRef)
+        .forEach(
+            property -> {
+              switch (value) {
+                case AS_KEY:
+                  reduceToKey(property, builder);
+                  break;
+                case AS_URI:
+                  reduceToUri(property, builder);
+                  break;
+                case AS_LINK:
+                  if (mediaType.equals(MediaType.TEXT_HTML)) {
+                    reduceToLink(property, builder);
+                  } else {
+                    mapToLink(property, builder);
+                  }
+                  break;
+              }
+            });
+  }
+
+  @Override
+  public Optional<String> negotiateProfile(
+      @NotNull List<String> requestedProfiles, @NotNull String mediaType) {
+    if ((requestedProfiles.contains(AS_LINK)
+            || requestedProfiles.stream().noneMatch(p -> p.startsWith(REL)))
+        && (mediaType.startsWith(MediaType.TEXT_HTML)
+            || mediaType.startsWith("application/geo+json")
+            || mediaType.startsWith("application/fg+json")
+            || mediaType.startsWith("application/vnd.ogc.fg+json")
+            || mediaType.startsWith("application/gml+xml"))) {
+      return Optional.of(AS_LINK);
+    }
+
+    if (requestedProfiles.contains(AS_URI)) {
+      return Optional.of(AS_URI);
+    }
+
+    return Optional.of(AS_KEY);
+  }
 
   private boolean usesFeatureRef(OgcApiDataV2 apiData) {
     return apiData.getCollections().values().stream()

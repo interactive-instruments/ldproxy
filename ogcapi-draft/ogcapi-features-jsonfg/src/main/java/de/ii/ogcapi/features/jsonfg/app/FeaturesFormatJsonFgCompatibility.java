@@ -17,6 +17,7 @@ import de.ii.ogcapi.features.geojson.domain.GeoJsonWriterRegistry;
 import de.ii.ogcapi.features.jsonfg.domain.FeaturesFormatJsonFgBase;
 import de.ii.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import io.swagger.v3.oas.models.media.Schema;
@@ -27,7 +28,7 @@ import javax.ws.rs.core.MediaType;
 
 @Singleton
 @AutoBind
-public class FeaturesFormatJsonFgCompatibility implements FeaturesFormatJsonFgBase {
+public class FeaturesFormatJsonFgCompatibility extends FeaturesFormatJsonFgBase {
 
   public static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
@@ -47,7 +48,9 @@ public class FeaturesFormatJsonFgCompatibility implements FeaturesFormatJsonFgBa
   public FeaturesFormatJsonFgCompatibility(
       SchemaGeneratorOpenApi schemaGeneratorFeature,
       SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
-      GeoJsonWriterRegistry geoJsonWriterRegistry) {
+      GeoJsonWriterRegistry geoJsonWriterRegistry,
+      ExtensionRegistry extensionRegistry) {
+    super(extensionRegistry);
     this.schemaGeneratorFeature = schemaGeneratorFeature;
     this.schemaGeneratorFeatureCollection = schemaGeneratorFeatureCollection;
     this.geoJsonWriterRegistry = geoJsonWriterRegistry;
@@ -55,7 +58,7 @@ public class FeaturesFormatJsonFgCompatibility implements FeaturesFormatJsonFgBa
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return FeaturesFormatJsonFgBase.super.isEnabledForApi(apiData)
+    return super.isEnabledForApi(apiData)
         && apiData
             .getExtension(JsonFgConfiguration.class)
             .map(JsonFgConfiguration::getGeojsonCompatibility)
@@ -64,7 +67,7 @@ public class FeaturesFormatJsonFgCompatibility implements FeaturesFormatJsonFgBa
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-    return FeaturesFormatJsonFgBase.super.isEnabledForApi(apiData, collectionId)
+    return super.isEnabledForApi(apiData, collectionId)
         && apiData
             .getExtension(JsonFgConfiguration.class, collectionId)
             .map(JsonFgConfiguration::getGeojsonCompatibility)

@@ -8,8 +8,10 @@
 package de.ii.ogcapi.features.core.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import de.ii.ogcapi.features.core.domain.ImmutableProfileTransformations.Builder;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -22,38 +24,44 @@ import java.util.Locale;
 import java.util.Optional;
 
 @AutoMultiBind
-public interface FeatureFormatExtension extends FormatExtension {
+public abstract class FeatureFormatExtension implements FormatExtension {
 
-  ApiMediaType getCollectionMediaType();
+  protected final ExtensionRegistry extensionRegistry;
 
-  default EpsgCrs getContentCrs(EpsgCrs targetCrs) {
+  protected FeatureFormatExtension(ExtensionRegistry extensionRegistry) {
+    this.extensionRegistry = extensionRegistry;
+  }
+
+  public abstract ApiMediaType getCollectionMediaType();
+
+  public EpsgCrs getContentCrs(EpsgCrs targetCrs) {
     return targetCrs;
   }
 
-  default ApiMediaTypeContent getFeatureContent(
+  public ApiMediaTypeContent getFeatureContent(
       OgcApiDataV2 apiData, Optional<String> collectionId, boolean featureCollection) {
     return getContent();
   }
 
-  default boolean canPassThroughFeatures() {
+  public boolean canPassThroughFeatures() {
     return false;
   }
 
-  default boolean canEncodeFeatures() {
+  public boolean canEncodeFeatures() {
     return false;
   }
 
-  default Optional<FeatureTokenEncoder<?>> getFeatureEncoderPassThrough(
+  public Optional<FeatureTokenEncoder<?>> getFeatureEncoderPassThrough(
       FeatureTransformationContext transformationContext, Optional<Locale> language) {
     return Optional.empty();
   }
 
-  default Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
+  public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
       FeatureTransformationContext transformationContext, Optional<Locale> language) {
     return Optional.empty();
   }
 
-  default Optional<PropertyTransformations> getPropertyTransformations(
+  public Optional<PropertyTransformations> getPropertyTransformations(
       FeatureTypeConfigurationOgcApi collectionData) {
 
     Optional<PropertyTransformations> coreTransformations =
@@ -76,22 +84,30 @@ public interface FeatureFormatExtension extends FormatExtension {
         .or(() -> coreTransformations);
   }
 
-  default Optional<PropertyTransformations> getPropertyTransformations(
+  public Optional<PropertyTransformations> getPropertyTransformations(
+      OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
       Optional<FeatureSchema> schema,
-      List<ProfileFeatures> profiles) {
+      List<String> profiles) {
     if (profiles.isEmpty() || schema.isEmpty()) {
       return getPropertyTransformations(collectionData);
     }
 
-    ImmutableProfileTransformations.Builder builder = new ImmutableProfileTransformations.Builder();
+    Builder builder = new Builder();
+
+    List<ProfileExtensionFeatures> profileExtensions =
+        extensionRegistry.getExtensionsForType(ProfileExtensionFeatures.class);
 
     schema.ifPresent(
         s ->
             profiles.forEach(
                 profile ->
-                    profile.addPropertyTransformations(
-                        s, getMediaType().type().toString(), builder)));
+                    profileExtensions.stream()
+                        .filter(pe -> pe.isEnabledForApi(apiData, collectionData.getId()))
+                        .forEach(
+                            pe ->
+                                pe.addPropertyTransformations(
+                                    profile, s, getMediaType().type().toString(), builder))));
 
     ProfileTransformations profileTransformations = builder.build();
 
@@ -101,15 +117,15 @@ public interface FeatureFormatExtension extends FormatExtension {
             .orElse(profileTransformations));
   }
 
-  default boolean supportsHitsOnly() {
+  public boolean supportsHitsOnly() {
     return false;
   }
 
-  default Optional<Long> getNumberMatched(Object content) {
+  public Optional<Long> getNumberMatched(Object content) {
     return Optional.empty();
   }
 
-  default Optional<Long> getNumberReturned(Object content) {
+  public Optional<Long> getNumberReturned(Object content) {
     return Optional.empty();
   }
 }

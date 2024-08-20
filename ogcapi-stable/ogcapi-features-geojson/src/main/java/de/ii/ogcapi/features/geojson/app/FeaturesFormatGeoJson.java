@@ -30,6 +30,7 @@ import de.ii.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContex
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
@@ -66,8 +67,8 @@ import javax.ws.rs.core.MediaType;
  */
 @Singleton
 @AutoBind
-public class FeaturesFormatGeoJson
-    implements ItemTypeSpecificConformanceClass, FeatureFormatExtension {
+public class FeaturesFormatGeoJson extends FeatureFormatExtension
+    implements ItemTypeSpecificConformanceClass {
 
   private static final String CONFORMANCE_CLASS_FEATURES =
       "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson";
@@ -94,7 +95,9 @@ public class FeaturesFormatGeoJson
       FeaturesCoreValidation featuresCoreValidator,
       SchemaGeneratorOpenApi schemaGeneratorFeature,
       SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
-      GeoJsonWriterRegistry geoJsonWriterRegistry) {
+      GeoJsonWriterRegistry geoJsonWriterRegistry,
+      ExtensionRegistry extensionRegistry) {
+    super(extensionRegistry);
     this.providers = providers;
     this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;

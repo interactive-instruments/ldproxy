@@ -16,7 +16,7 @@ import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
-import de.ii.ogcapi.features.core.domain.ProfileFeatures;
+import de.ii.ogcapi.features.core.domain.ProfileExtensionFeatures;
 import de.ii.ogcapi.features.search.domain.ImmutableParameter;
 import de.ii.ogcapi.features.search.domain.ImmutableParameters;
 import de.ii.ogcapi.features.search.domain.ImmutableStoredQueries;
@@ -565,12 +565,15 @@ public class SearchQueriesHandlerImpl extends AbstractVolatileComposed
 
     // negotiate profiles, if profiles are applicable and the format does not support the selected
     // profiles
-    List<ProfileFeatures> profiles =
+    List<String> profiles =
         queryInput.getProfileIsApplicable()
-            ? queryExpression.getProfiles().stream()
+            ? extensionRegistry.getExtensionsForType(ProfileExtensionFeatures.class).stream()
+                .filter(p -> p.isEnabledForApi(requestContext.getApi().getData()))
                 .map(
-                    profile ->
-                        profile.negotiateProfile(outputFormat.getMediaType().type().toString()))
+                    p ->
+                        p.negotiateProfile(
+                            queryExpression.getProfiles(),
+                            outputFormat.getMediaType().type().toString()))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList())
@@ -761,7 +764,7 @@ public class SearchQueriesHandlerImpl extends AbstractVolatileComposed
       List<String> collectionIds,
       FeatureProvider featureProvider,
       FeatureFormatExtension outputFormat,
-      List<ProfileFeatures> profiles,
+      List<String> profiles,
       EpsgCrs defaultCrs,
       EpsgCrs targetCrs,
       List<Link> links) {
@@ -845,7 +848,7 @@ public class SearchQueriesHandlerImpl extends AbstractVolatileComposed
       List<String> collectionIds,
       FeatureProvider featureProvider,
       FeatureFormatExtension outputFormat,
-      List<ProfileFeatures> profiles,
+      List<String> profiles,
       String serviceUrl) {
     return IntStream.range(0, collectionIds.size())
         .boxed()
@@ -859,6 +862,7 @@ public class SearchQueriesHandlerImpl extends AbstractVolatileComposed
                   PropertyTransformations pt =
                       outputFormat
                           .getPropertyTransformations(
+                              apiData,
                               Objects.requireNonNull(apiData.getCollections().get(collectionId)),
                               schema,
                               profiles)

@@ -20,6 +20,7 @@ import de.ii.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContex
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -40,15 +41,19 @@ import java.util.Objects;
 import java.util.Optional;
 
 @AutoMultiBind
-public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
+public abstract class FeaturesFormatJsonFgBase extends FeatureFormatExtension {
+
+  protected FeaturesFormatJsonFgBase(ExtensionRegistry extensionRegistry) {
+    super(extensionRegistry);
+  }
 
   @Override
-  default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
+  public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return JsonFgConfiguration.class;
   }
 
   @Override
-  default ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
 
     // no additional operational checks for now, only validation; we can stop, if no validation is
     // requested
@@ -62,16 +67,16 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
     return builder.build();
   }
 
-  Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId);
+  public abstract Schema<?> getSchema(OgcApiDataV2 apiData, String collectionId);
 
-  Schema<?> getSchemaCollection(OgcApiDataV2 apiData, String collectionId);
+  public abstract Schema<?> getSchemaCollection(OgcApiDataV2 apiData, String collectionId);
 
-  String getSchemaReference(String collectionId);
+  public abstract String getSchemaReference(String collectionId);
 
-  String getSchemaReferenceCollection(String collectionId);
+  public abstract String getSchemaReferenceCollection(String collectionId);
 
   @Override
-  default ApiMediaTypeContent getContent() {
+  public ApiMediaTypeContent getContent() {
     Schema<?> schema = new ObjectSchema();
     String schemaRef = "https://geojson.org/schema/FeatureCollection.json";
     return new ImmutableApiMediaTypeContent.Builder()
@@ -82,7 +87,7 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
   }
 
   @Override
-  default ApiMediaTypeContent getFeatureContent(
+  public ApiMediaTypeContent getFeatureContent(
       OgcApiDataV2 apiData, Optional<String> collectionId, boolean featureCollection) {
     if (collectionId.isEmpty()) {
       return getContent();
@@ -103,19 +108,19 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
   }
 
   @Override
-  default ApiMediaType getCollectionMediaType() {
+  public ApiMediaType getCollectionMediaType() {
     return ApiMediaType.JSON_MEDIA_TYPE;
   }
 
   @Override
-  default boolean canEncodeFeatures() {
+  public boolean canEncodeFeatures() {
     return true;
   }
 
-  List<GeoJsonWriter> getWriters();
+  public abstract List<GeoJsonWriter> getWriters();
 
   @Override
-  default Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
+  public Optional<FeatureTokenEncoder<?>> getFeatureEncoder(
       FeatureTransformationContext transformationContext, Optional<Locale> language) {
 
     // TODO support language
@@ -144,9 +149,10 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
         new FeatureEncoderGeoJson(transformationContextJsonFgBuilder.build(), writers));
   }
 
-  boolean includePrimaryGeometry(FeatureTransformationContext transformationContext);
+  public abstract boolean includePrimaryGeometry(
+      FeatureTransformationContext transformationContext);
 
-  static Optional<Integer> getGeometryDimension(FeatureSchema schema) {
+  public static Optional<Integer> getGeometryDimension(FeatureSchema schema) {
     return schema.getProperties().stream()
         .filter(p -> p.isPrimaryGeometry() || p.isSecondaryGeometry())
         .map(
@@ -160,17 +166,17 @@ public interface FeaturesFormatJsonFgBase extends FeatureFormatExtension {
   }
 
   @Override
-  default boolean supportsHitsOnly() {
+  public boolean supportsHitsOnly() {
     return true;
   }
 
   @Override
-  default Optional<Long> getNumberMatched(Object content) {
+  public Optional<Long> getNumberMatched(Object content) {
     return getMetadata(content, "numberMatched");
   }
 
   @Override
-  default Optional<Long> getNumberReturned(Object content) {
+  public Optional<Long> getNumberReturned(Object content) {
     return getMetadata(content, "numberReturned");
   }
 

@@ -8,26 +8,36 @@
 package de.ii.ogcapi.foundation.domain;
 
 import com.github.azahnen.dagger.annotations.AutoMultiBind;
+import java.util.List;
+import java.util.Optional;
 
 @AutoMultiBind
 public interface ProfileExtension extends ApiExtension {
 
   /**
-   * @return the name of the profile used in the query parameter "profile"
-   */
-  String getName();
-
-  /**
    * @return the URI of the profile
    */
-  default String getUri() {
-    return String.format("http://www.opengis.net/def/profile/ogc/0/%s", getName());
+  static String getUri(String value) {
+    if (value.startsWith("val")) {
+      return String.format("https://def.ldproxy.net/profile/%s", value);
+    }
+    return String.format("http://www.opengis.net/def/profile/ogc/0/%s", value);
   }
 
   /**
-   * @return {@code true}, if the profile should be enabled by default
+   * @return the prefix of the profile extension
    */
-  default boolean isEnabledByDefault() {
-    return false;
+  String getPrefix();
+
+  /**
+   * @return the profile values of the profile extension
+   */
+  List<String> getValues();
+
+  /**
+   * @return a default value, if applicable for all formats
+   */
+  default Optional<String> getDefault() {
+    return Optional.empty();
   }
 }
