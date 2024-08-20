@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import de.ii.ogcapi.common.domain.QueryParameterProfile;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.ProfileFeatures;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
@@ -71,7 +72,7 @@ import javax.inject.Singleton;
 @Singleton
 @AutoBind
 public class QueryParameterProfileFeatures extends QueryParameterProfile
-    implements TypedQueryParameter<List<ProfileExtension>> {
+    implements TypedQueryParameter<List<ProfileExtension>>, ConformanceClass {
 
   @Inject
   public QueryParameterProfileFeatures(
@@ -128,6 +129,13 @@ public class QueryParameterProfileFeatures extends QueryParameterProfile
         .filter(profile -> profile.isEnabledForApi(apiData, collectionId))
         .filter(ProfileFeatures::isEnabledByDefault)
         .collect(Collectors.toList());
+  }
+
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return List.of(
+        "http://www.opengis.net/spec/ogcapi-features-5/0.0/conf/profile-parameter",
+        "http://www.opengis.net/spec/ogcapi-features-5/0.0/conf/profile-references");
   }
 
   @Override

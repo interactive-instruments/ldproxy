@@ -799,7 +799,6 @@ public class SearchQueriesHandlerImpl extends AbstractVolatileComposed
             .offset(query.getOffset())
             .maxAllowableOffset(query.getMaxAllowableOffset())
             .geometryPrecision(query.getGeometryPrecision())
-            .isHitsOnlyIfMore(false)
             .fields(fields)
             .allLinksAreLocal(allLinksAreLocal)
             .idsIncludeCollectionId(collectionIds.size() > 1)
