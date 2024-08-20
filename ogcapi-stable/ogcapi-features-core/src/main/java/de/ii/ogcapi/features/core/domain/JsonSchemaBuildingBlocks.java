@@ -7,6 +7,8 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
+import com.google.common.collect.ImmutableList;
+
 public interface JsonSchemaBuildingBlocks {
 
   JsonSchemaNull NULL = new ImmutableJsonSchemaNull.Builder().build();
@@ -39,7 +41,7 @@ public interface JsonSchemaBuildingBlocks {
           .putProperties("rel", new ImmutableJsonSchemaString.Builder().build())
           .putProperties("type", new ImmutableJsonSchemaString.Builder().build())
           .putProperties("title", new ImmutableJsonSchemaString.Builder().build())
-          .addRequired("href")
+          .required(ImmutableList.of("href", "rel"))
           .build();
 
   static JsonSchemaString getEnum(String value) {

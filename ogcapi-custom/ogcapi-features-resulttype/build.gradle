@@ -1,0 +1,12 @@
+
+maturity = 'PROPOSAL'
+maintenance = 'NONE'
+description = 'Only return the number of features matched by a request.'
+descriptionDe = 'Rückgabe ohne Features, nur mit der Anzahl der Features, die von der Anfrage selektiert werden.'
+
+dependencies {
+    provided 'de.interactive_instruments:xtraplatform-features'
+    provided 'de.interactive_instruments:xtraplatform-openapi'
+    provided 'de.interactive_instruments:ogcapi-features-core'
+    provided 'de.interactive_instruments:ogcapi-foundation'
+}

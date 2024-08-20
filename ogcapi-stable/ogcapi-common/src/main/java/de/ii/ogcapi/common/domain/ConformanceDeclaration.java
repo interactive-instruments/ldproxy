@@ -8,6 +8,7 @@
 package de.ii.ogcapi.common.domain;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.hash.Funnel;
 import de.ii.ogcapi.foundation.domain.PageRepresentation;
@@ -22,6 +23,7 @@ public abstract class ConformanceDeclaration extends PageRepresentation {
 
   public static final String SCHEMA_REF = "#/components/schemas/ConformanceDeclaration";
 
+  @JsonProperty(required = true)
   public abstract List<String> getConformsTo();
 
   @JsonAnyGetter
