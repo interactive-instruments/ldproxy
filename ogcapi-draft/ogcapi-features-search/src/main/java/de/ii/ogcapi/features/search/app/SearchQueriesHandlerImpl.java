@@ -569,7 +569,13 @@ public class SearchQueriesHandlerImpl extends AbstractVolatileComposed
         queryInput.getProfileIsApplicable()
             ? extensionRegistry.getExtensionsForType(ProfileExtensionFeatures.class).stream()
                 .filter(p -> p.isEnabledForApi(requestContext.getApi().getData()))
-                .map(p -> p.negotiateProfile(queryExpression.getProfiles(), outputFormat))
+                .map(
+                    p ->
+                        p.negotiateProfile(
+                            queryExpression.getProfiles(),
+                            outputFormat,
+                            requestContext.getApi().getData(),
+                            null))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList())

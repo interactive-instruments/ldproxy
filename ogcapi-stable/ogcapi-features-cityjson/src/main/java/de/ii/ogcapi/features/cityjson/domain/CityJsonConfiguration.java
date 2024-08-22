@@ -8,6 +8,7 @@
 package de.ii.ogcapi.features.cityjson.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.ogcapi.features.core.domain.FeatureFormatConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -468,7 +469,7 @@ import org.immutables.value.Value;
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
 @JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "CITY_JSON")
 @JsonDeserialize(builder = ImmutableCityJsonConfiguration.Builder.class)
-public interface CityJsonConfiguration extends ExtensionConfiguration, PropertyTransformations {
+public interface CityJsonConfiguration extends ExtensionConfiguration, FeatureFormatConfiguration {
 
   enum Version {
     V10("1.0"),
@@ -519,7 +520,7 @@ public interface CityJsonConfiguration extends ExtensionConfiguration, PropertyT
         .from(source)
         .from(this)
         .transformations(
-            PropertyTransformations.super
+            FeatureFormatConfiguration.super
                 .mergeInto((PropertyTransformations) source)
                 .getTransformations())
         .build();

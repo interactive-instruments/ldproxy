@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.core.domain;
 
 import de.ii.ogcapi.features.core.domain.ImmutableProfileTransformations.Builder;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
+import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.ProfileExtension;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import java.util.List;
@@ -27,7 +28,10 @@ public abstract class ProfileExtensionFeatures implements ProfileExtension {
   }
 
   public Optional<String> negotiateProfile(
-      @NotNull List<String> requestedProfiles, FeatureFormatExtension featureFormat) {
+      @NotNull List<String> requestedProfiles,
+      FeatureFormatExtension featureFormat,
+      OgcApiDataV2 apiData,
+      String collectionId) {
     List<String> supportedProfiles =
         getSupportedValues(featureFormat.isComplex(), featureFormat.isForHumans());
 
@@ -38,7 +42,13 @@ public abstract class ProfileExtensionFeatures implements ProfileExtension {
       }
     }
 
-    return Optional.of(getDefaultValue(featureFormat.isComplex(), featureFormat.isForHumans()));
+    return featureFormat
+        .getDefaultProfile(getPrefix(), apiData, collectionId)
+        .filter(supportedProfiles::contains)
+        .or(
+            () ->
+                Optional.of(
+                    getDefaultValue(featureFormat.isComplex(), featureFormat.isForHumans())));
   }
 
   public abstract List<String> getSupportedValues(boolean complex, boolean humanReadable);

@@ -21,6 +21,7 @@ import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 
 @AutoMultiBind
@@ -135,5 +136,22 @@ public abstract class FeatureFormatExtension implements FormatExtension {
 
   public boolean isForHumans() {
     return false;
+  }
+
+  public Map<String, String> getDefaultProfiles(OgcApiDataV2 apiData, String collectionId) {
+    return apiData
+        .getExtension(getBuildingBlockConfigurationType(), collectionId)
+        .filter(
+            buildingBlockConfiguration ->
+                buildingBlockConfiguration instanceof FeatureFormatConfiguration)
+        .map(
+            buildingBlockConfiguration ->
+                ((FeatureFormatConfiguration) buildingBlockConfiguration).getDefaultProfiles())
+        .orElse(Map.of());
+  }
+
+  public final Optional<String> getDefaultProfile(
+      String prefix, OgcApiDataV2 apiData, String collectionId) {
+    return Optional.ofNullable(getDefaultProfiles(apiData, collectionId).get(prefix));
   }
 }

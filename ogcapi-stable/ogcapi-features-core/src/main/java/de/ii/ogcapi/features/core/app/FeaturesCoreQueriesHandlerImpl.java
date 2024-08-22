@@ -159,7 +159,8 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
         extensionRegistry.getExtensionsForType(ProfileExtensionFeatures.class).stream()
             .map(
                 profileExtension ->
-                    profileExtension.negotiateProfile(queryInput.getProfiles(), outputFormat))
+                    profileExtension.negotiateProfile(
+                        queryInput.getProfiles(), outputFormat, api.getData(), collectionId))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(Collectors.toList());
@@ -212,7 +213,8 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
         extensionRegistry.getExtensionsForType(ProfileExtensionFeatures.class).stream()
             .map(
                 profileExtension ->
-                    profileExtension.negotiateProfile(queryInput.getProfiles(), outputFormat))
+                    profileExtension.negotiateProfile(
+                        queryInput.getProfiles(), outputFormat, api.getData(), collectionId))
             .filter(Optional::isPresent)
             .map(Optional::get)
             .collect(Collectors.toList());
