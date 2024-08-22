@@ -17,7 +17,6 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeatures.Builder;
-import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -273,10 +272,12 @@ public class EndpointFeatures extends EndpointFeaturesDefinition
     int defaultPageSize = coreConfiguration.getDefaultPageSize();
 
     QueryParameterSet queryParameterSet = requestContext.getQueryParameterSet();
-    Optional<Profile> profile =
-        Optional.ofNullable(
-            (Profile)
-                queryParameterSet.getTypedValues().get(QueryParameterProfileFeatures.PROFILE));
+
+    List<String> requestedProfiles =
+        (List<String>)
+            Objects.requireNonNullElse(
+                queryParameterSet.getTypedValues().get(QueryParameterProfileFeatures.PROFILE),
+                List.of());
 
     FeatureQuery query =
         ogcApiFeaturesQuery.requestToFeatureQuery(
@@ -291,7 +292,7 @@ public class EndpointFeatures extends EndpointFeaturesDefinition
             .from(getGenericQueryInput(api.getData()))
             .collectionId(collectionId)
             .query(query)
-            .profile(profile)
+            .profiles(requestedProfiles)
             .featureProvider(providers.getFeatureProviderOrThrow(api.getData(), collectionData))
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .defaultPageSize(Optional.of(defaultPageSize))

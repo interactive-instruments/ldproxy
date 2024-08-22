@@ -13,6 +13,7 @@ import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
+import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 import java.util.List;
@@ -39,7 +40,7 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
 
   @Override
   public String getDescription() {
-    return "Select the profile to be used in the response. If no value is provided, the default profile will be used.";
+    return "Select the profiles to be used in the response. If no value is provided, the default profiles will be used.";
   }
 
   @Override
@@ -60,16 +61,14 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
   protected List<String> getProfiles(OgcApiDataV2 apiData, String collectionId) {
     return getProfiles(apiData);
   }
-  ;
 
-  protected abstract String getDefault(OgcApiDataV2 apiData);
+  protected abstract List<String> getDefault(OgcApiDataV2 apiData);
 
-  protected String getDefault(OgcApiDataV2 apiData, String collectionId) {
+  protected List<String> getDefault(OgcApiDataV2 apiData, String collectionId) {
     return getDefault(apiData);
   }
-  ;
 
-  protected ConcurrentMap<Integer, ConcurrentMap<String, Schema>> schemaMap =
+  protected ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =
       new ConcurrentHashMap<>();
 
   @Override
@@ -77,9 +76,12 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
     int apiHashCode = apiData.hashCode();
     if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
     if (!schemaMap.get(apiHashCode).containsKey("*")) {
-      schemaMap
-          .get(apiHashCode)
-          .put("*", new StringSchema()._enum(getProfiles(apiData))._default(getDefault(apiData)));
+      StringSchema schema = new StringSchema()._enum(getProfiles(apiData));
+      List<String> defaults = getDefault(apiData);
+      if (!defaults.isEmpty()) {
+        schema._default(String.join(",", defaults));
+      }
+      schemaMap.get(apiHashCode).put("*", schema);
     }
     return schemaMap.get(apiHashCode).get("*");
   }
@@ -89,13 +91,13 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
     int apiHashCode = apiData.hashCode();
     if (!schemaMap.containsKey(apiHashCode)) schemaMap.put(apiHashCode, new ConcurrentHashMap<>());
     if (!schemaMap.get(apiHashCode).containsKey(collectionId)) {
-      schemaMap
-          .get(apiHashCode)
-          .put(
-              collectionId,
-              new StringSchema()
-                  ._enum(getProfiles(apiData, collectionId))
-                  ._default(getDefault(apiData, collectionId)));
+      ArraySchema schema =
+          new ArraySchema().items(new StringSchema()._enum(getProfiles(apiData, collectionId)));
+      List<String> defaults = getDefault(apiData, collectionId);
+      if (!defaults.isEmpty()) {
+        schema._default(defaults);
+      }
+      schemaMap.get(apiHashCode).put(collectionId, schema);
     }
     return schemaMap.get(apiHashCode).get(collectionId);
   }

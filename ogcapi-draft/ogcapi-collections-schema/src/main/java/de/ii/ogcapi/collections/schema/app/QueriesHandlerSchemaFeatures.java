@@ -14,7 +14,9 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
+import de.ii.ogcapi.features.core.domain.JsonSchemaExtension;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -26,9 +28,11 @@ import de.ii.xtraplatform.base.domain.resiliency.VolatileUnavailableException;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.values.domain.ValueStore;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.core.Response;
@@ -42,14 +46,17 @@ public class QueriesHandlerSchemaFeatures extends AbstractVolatileComposed
   private final I18n i18n;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
   private JsonSchemaCache schemaCache;
+  private final ExtensionRegistry extensionRegistry;
 
   @Inject
   public QueriesHandlerSchemaFeatures(
+      ExtensionRegistry extensionRegistry,
       I18n i18n,
       FeaturesCoreProviders providers,
       ValueStore valueStore,
       VolatileRegistry volatileRegistry) {
     super(QueriesHandlerSchema.class.getSimpleName(), volatileRegistry, true);
+    this.extensionRegistry = extensionRegistry;
     this.i18n = i18n;
     this.providers = providers;
     this.queryHandlers =
@@ -92,6 +99,12 @@ public class QueriesHandlerSchemaFeatures extends AbstractVolatileComposed
       throw new VolatileUnavailableException("JsonSchemaCache not available");
     }
 
-    return schemaCache.getSchema(featureSchema, apiData, collectionData, schemaUri, version);
+    List<JsonSchemaExtension> jsonSchemaExtensions =
+        extensionRegistry.getExtensionsForType(JsonSchemaExtension.class).stream()
+            .filter(e -> e.isEnabledForApi(apiData, collectionData.getId()))
+            .collect(Collectors.toList());
+
+    return schemaCache.getSchema(
+        featureSchema, apiData, collectionData, schemaUri, jsonSchemaExtensions, version);
   }
 }

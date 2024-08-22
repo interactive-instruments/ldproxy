@@ -9,12 +9,12 @@ package de.ii.ogcapi.features.jsonfg.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.features.core.domain.FeatureFormatConfiguration;
 import de.ii.ogcapi.features.jsonfg.domain.ImmutableJsonFgConfiguration.Builder;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
-import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -89,7 +89,7 @@ import org.immutables.value.Value;
 @Value.Style(builder = "new", deepImmutablesDetection = true)
 @JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "JSON_FG")
 @JsonDeserialize(builder = Builder.class)
-public interface JsonFgConfiguration extends ExtensionConfiguration, PropertyTransformations {
+public interface JsonFgConfiguration extends ExtensionConfiguration, FeatureFormatConfiguration {
 
   enum OPTION {
     featureType,

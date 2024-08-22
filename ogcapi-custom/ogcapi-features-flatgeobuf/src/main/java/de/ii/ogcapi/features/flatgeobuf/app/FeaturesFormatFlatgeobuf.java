@@ -19,6 +19,7 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
@@ -52,7 +53,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormatExtension {
+public class FeaturesFormatFlatgeobuf extends FeatureFormatExtension implements ConformanceClass {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesFormatFlatgeobuf.class);
 
@@ -68,7 +69,9 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
   private final FeatureSchemaCache schemaCache;
 
   @Inject
-  public FeaturesFormatFlatgeobuf(FeaturesCoreProviders providers, CrsInfo crsInfo) {
+  public FeaturesFormatFlatgeobuf(
+      FeaturesCoreProviders providers, CrsInfo crsInfo, ExtensionRegistry extensionRegistry) {
+    super(extensionRegistry);
     this.providers = providers;
     this.crsInfo = crsInfo;
     this.schemaCache = new SchemaCacheSfFlat();
@@ -156,7 +159,7 @@ public class FeaturesFormatFlatgeobuf implements ConformanceClass, FeatureFormat
 
   @Override
   public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
-    ValidationResult result = FeatureFormatExtension.super.onStartup(api, apiValidation);
+    ValidationResult result = super.onStartup(api, apiValidation);
 
     if (apiValidation == MODE.NONE) {
       return result;

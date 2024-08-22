@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.gml.domain;
 import static de.ii.ogcapi.features.gml.domain.GmlConfiguration.GmlVersion.GML32;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.ogcapi.features.core.domain.FeatureFormatConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -58,7 +59,7 @@ import org.immutables.value.Value;
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
 @JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "GML")
 @JsonDeserialize(builder = ImmutableGmlConfiguration.Builder.class)
-public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransformations {
+public interface GmlConfiguration extends ExtensionConfiguration, FeatureFormatConfiguration {
 
   enum GmlVersion {
     GML21,
@@ -447,9 +448,13 @@ public interface GmlConfiguration extends ExtensionConfiguration, PropertyTransf
         .from(source)
         .from(this)
         .transformations(
-            PropertyTransformations.super
+            FeatureFormatConfiguration.super
                 .mergeInto((PropertyTransformations) source)
                 .getTransformations())
+        .defaultProfiles(
+            this.getDefaultProfiles().isEmpty()
+                ? ((FeatureFormatConfiguration) source).getDefaultProfiles()
+                : this.getDefaultProfiles())
         .build();
   }
 }

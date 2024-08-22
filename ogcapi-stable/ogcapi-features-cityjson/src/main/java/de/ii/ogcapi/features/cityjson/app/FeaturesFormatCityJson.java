@@ -18,6 +18,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.xtraplatform.crs.domain.CrsInfo;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
@@ -53,7 +54,8 @@ public class FeaturesFormatCityJson extends FeaturesFormatCityJsonBase {
       SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
       CityJsonWriterRegistry cityJsonWriterRegistry,
       CrsTransformerFactory crsTransformerFactory,
-      CrsInfo crsInfo) {
+      CrsInfo crsInfo,
+      ExtensionRegistry extensionRegistry) {
     super(
         providers,
         valueStore,
@@ -62,7 +64,8 @@ public class FeaturesFormatCityJson extends FeaturesFormatCityJsonBase {
         schemaGeneratorFeatureCollection,
         cityJsonWriterRegistry,
         crsTransformerFactory,
-        crsInfo);
+        crsInfo,
+        extensionRegistry);
   }
 
   @Override

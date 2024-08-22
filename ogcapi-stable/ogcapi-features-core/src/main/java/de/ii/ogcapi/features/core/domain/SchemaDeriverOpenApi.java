@@ -106,7 +106,8 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
       Optional<String> unit,
       Optional<String> role,
       Optional<String> refCollectionId,
-      Optional<String> refApiLandingPage) {
+      Optional<String> refApiLandingPage,
+      Optional<String> codelistUri) {
     Schema<?> valueSchema;
     switch (type) {
       case INTEGER:

@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.geojson.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.ogcapi.features.core.domain.FeatureFormatConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -170,7 +171,7 @@ import org.immutables.value.Value;
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
 @JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "GEO_JSON")
 @JsonDeserialize(builder = ImmutableGeoJsonConfiguration.Builder.class)
-public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTransformations {
+public interface GeoJsonConfiguration extends ExtensionConfiguration, FeatureFormatConfiguration {
 
   enum NESTED_OBJECTS {
     NEST,
@@ -211,9 +212,13 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, PropertyTr
         .from(source)
         .from(this)
         .transformations(
-            PropertyTransformations.super
+            FeatureFormatConfiguration.super
                 .mergeInto((PropertyTransformations) source)
                 .getTransformations())
+        .defaultProfiles(
+            this.getDefaultProfiles().isEmpty()
+                ? ((FeatureFormatConfiguration) source).getDefaultProfiles()
+                : this.getDefaultProfiles())
         .build();
   }
 }
