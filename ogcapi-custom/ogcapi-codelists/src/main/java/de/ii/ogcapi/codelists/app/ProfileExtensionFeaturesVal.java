@@ -23,14 +23,14 @@ import javax.inject.Singleton;
 
 @Singleton
 @AutoBind
-public class ProfileExtensionExtensionFeaturesVal extends ProfileExtensionFeatures {
+public class ProfileExtensionFeaturesVal extends ProfileExtensionFeatures {
 
   public static final String VAL = "val";
   public static final String AS_CODE = "val-as-code";
   public static final String AS_TITLE = "val-as-title";
 
   @Inject
-  public ProfileExtensionExtensionFeaturesVal(
+  public ProfileExtensionFeaturesVal(
       ExtensionRegistry extensionRegistry, FeaturesCoreProviders providers) {
     super(extensionRegistry, providers);
   }
