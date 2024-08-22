@@ -36,7 +36,7 @@ import org.immutables.value.Value;
  * - buildingBlock: QUERYABLES
  *   enabled: true
  *   included:
- *     - *
+ *     - '*'
  *   excluded:
  *     - foo
  *     - bar

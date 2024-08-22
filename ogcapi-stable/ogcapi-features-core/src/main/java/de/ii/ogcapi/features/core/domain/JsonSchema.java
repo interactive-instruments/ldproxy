@@ -65,6 +65,9 @@ public abstract class JsonSchema {
   @JsonProperty("x-ogc-role")
   public abstract Optional<String> getRole();
 
+  @JsonProperty("x-ldproxy-embedded-role")
+  public abstract Optional<String> getEmbeddedRole();
+
   @JsonProperty("x-ogc-collectionId")
   public abstract Optional<String> getRefCollectionId();
 

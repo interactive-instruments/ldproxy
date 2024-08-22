@@ -77,6 +77,10 @@ public interface FeatureFormatExtension extends FormatExtension {
         String.format("Format '%s' does not support any profile.", getMediaType().label()));
   }
 
+  default boolean supportsEmbedding() {
+    return false;
+  }
+
   default Optional<FeatureTokenEncoder<?>> getFeatureEncoderPassThrough(
       FeatureTransformationContext transformationContext, Optional<Locale> language) {
     return Optional.empty();

@@ -49,6 +49,7 @@ import de.ii.xtraplatform.features.domain.FeatureStream.ResultBase;
 import de.ii.xtraplatform.features.domain.FeatureStream.ResultReduced;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.ImmutableFeatureQuery;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.Tuple;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
 import de.ii.xtraplatform.streams.domain.OutputStreamToByteConsumer;
@@ -291,6 +292,13 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
             .orElse(collectionId);
 
     Optional<FeatureSchema> schema = featureProvider.info().getSchema(featureTypeId);
+
+    if (schema.filter(SchemaBase::hasEmbeddedFeature).isPresent()
+        && !outputFormat.supportsEmbedding()) {
+      throw new NotAcceptableException(
+          "The requested media type does not support embedding. Please contact the server administrator.");
+    }
+
     ImmutableFeatureTransformationContextGeneric.Builder transformationContext =
         new ImmutableFeatureTransformationContextGeneric.Builder()
             .api(api)
