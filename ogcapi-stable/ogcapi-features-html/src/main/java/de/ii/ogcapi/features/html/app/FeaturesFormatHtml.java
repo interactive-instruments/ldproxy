@@ -401,6 +401,16 @@ public class FeaturesFormatHtml extends FeatureFormatExtension
     return Optional.of(new FeatureEncoderHtml(transformationContextHtml));
   }
 
+  @Override
+  public boolean isComplex() {
+    return true;
+  }
+
+  @Override
+  public boolean isForHumans() {
+    return true;
+  }
+
   private ModifiableFeatureCollectionView createFeatureCollectionView(
       OgcApi api,
       FeatureTypeConfigurationOgcApi featureType,

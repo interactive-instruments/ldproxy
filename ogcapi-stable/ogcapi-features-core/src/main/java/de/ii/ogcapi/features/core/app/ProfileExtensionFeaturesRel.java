@@ -21,10 +21,8 @@ import de.ii.xtraplatform.features.domain.transform.FeatureRefResolver;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.core.MediaType;
 
 @Singleton
@@ -76,6 +74,24 @@ public class ProfileExtensionFeaturesRel extends ProfileExtensionFeatures {
   }
 
   @Override
+  public List<String> getSupportedValues(boolean complex, boolean humanReadable) {
+    if (complex) {
+      return getValues();
+    }
+
+    return List.of(AS_KEY, AS_URI);
+  }
+
+  @Override
+  public String getDefaultValue(boolean complex, boolean humanReadable) {
+    if (complex) {
+      return AS_LINK;
+    }
+
+    return AS_KEY;
+  }
+
+  @Override
   public void addPropertyTransformations(
       String value, FeatureSchema schema, String mediaType, Builder builder) {
     if (!getValues().contains(value)) {
@@ -102,26 +118,6 @@ public class ProfileExtensionFeaturesRel extends ProfileExtensionFeatures {
                   break;
               }
             });
-  }
-
-  @Override
-  public Optional<String> negotiateProfile(
-      @NotNull List<String> requestedProfiles, @NotNull String mediaType) {
-    if ((requestedProfiles.contains(AS_LINK)
-            || requestedProfiles.stream().noneMatch(p -> p.startsWith(REL)))
-        && (mediaType.startsWith(MediaType.TEXT_HTML)
-            || mediaType.startsWith("application/geo+json")
-            || mediaType.startsWith("application/fg+json")
-            || mediaType.startsWith("application/vnd.ogc.fg+json")
-            || mediaType.startsWith("application/gml+xml"))) {
-      return Optional.of(AS_LINK);
-    }
-
-    if (requestedProfiles.contains(AS_URI)) {
-      return Optional.of(AS_URI);
-    }
-
-    return Optional.of(AS_KEY);
   }
 
   private boolean usesFeatureRef(OgcApiDataV2 apiData) {

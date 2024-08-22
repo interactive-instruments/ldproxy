@@ -18,6 +18,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesLinksGenerator;
 import de.ii.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric;
+import de.ii.ogcapi.features.core.domain.ProfileExtensionFeatures;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -68,6 +69,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
@@ -153,6 +155,15 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
               requestContext.getMediaType().type()));
     }
 
+    List<String> profiles =
+        extensionRegistry.getExtensionsForType(ProfileExtensionFeatures.class).stream()
+            .map(
+                profileExtension ->
+                    profileExtension.negotiateProfile(queryInput.getProfiles(), outputFormat))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
+
     return getResponse(
         api,
         requestContext,
@@ -160,7 +171,7 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
         null,
         queryInput,
         query,
-        queryInput.getProfiles(),
+        profiles,
         queryInput.getFeatureProvider(),
         null,
         outputFormat,
@@ -197,6 +208,15 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
       query = ImmutableFeatureQuery.builder().from(query).eTag(Optional.empty()).build();
     }
 
+    List<String> profiles =
+        extensionRegistry.getExtensionsForType(ProfileExtensionFeatures.class).stream()
+            .map(
+                profileExtension ->
+                    profileExtension.negotiateProfile(queryInput.getProfiles(), outputFormat))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(Collectors.toList());
+
     String persistentUri = null;
     Optional<String> template =
         api.getData().getCollections().get(collectionId).getPersistentUriTemplate();
@@ -218,7 +238,7 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
         featureId,
         queryInput,
         query,
-        queryInput.getProfiles(),
+        profiles,
         queryInput.getFeatureProvider(),
         persistentUri,
         outputFormat,

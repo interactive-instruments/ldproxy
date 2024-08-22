@@ -26,8 +26,24 @@ public abstract class ProfileExtensionFeatures implements ProfileExtension {
     this.providers = providers;
   }
 
-  public abstract Optional<String> negotiateProfile(
-      @NotNull List<String> requestedProfiles, @NotNull String mediaType);
+  public Optional<String> negotiateProfile(
+      @NotNull List<String> requestedProfiles, FeatureFormatExtension featureFormat) {
+    List<String> supportedProfiles =
+        getSupportedValues(featureFormat.isComplex(), featureFormat.isForHumans());
+
+    for (String requestedProfile : requestedProfiles) {
+      if (requestedProfile.startsWith(getPrefix())
+          && supportedProfiles.contains(requestedProfile)) {
+        return Optional.of(requestedProfile);
+      }
+    }
+
+    return Optional.of(getDefaultValue(featureFormat.isComplex(), featureFormat.isForHumans()));
+  }
+
+  public abstract List<String> getSupportedValues(boolean complex, boolean humanReadable);
+
+  public abstract String getDefaultValue(boolean complex, boolean humanReadable);
 
   public abstract void addPropertyTransformations(
       @NotNull String value,

@@ -14,7 +14,6 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreQueriesHandler;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
 import de.ii.ogcapi.features.core.domain.ImmutableQueryInputFeature.Builder;
-import de.ii.ogcapi.features.core.domain.ProfileExtensionFeatures;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
@@ -38,7 +37,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.GET;
@@ -143,16 +141,6 @@ public class EndpointFeature extends EndpointFeaturesDefinition
                 queryParameterSet.getTypedValues().get(QueryParameterProfileFeatures.PROFILE),
                 List.of());
 
-    List<String> profiles =
-        extensionRegistry.getExtensionsForType(ProfileExtensionFeatures.class).stream()
-            .map(
-                profileExtension ->
-                    profileExtension.negotiateProfile(
-                        requestedProfiles, requestContext.getMediaType().type().toString()))
-            .filter(Optional::isPresent)
-            .map(Optional::get)
-            .collect(Collectors.toList());
-
     FeatureQuery query =
         ogcApiFeaturesQuery.requestToFeatureQuery(
             api.getData(),
@@ -170,7 +158,7 @@ public class EndpointFeature extends EndpointFeaturesDefinition
             .collectionId(collectionId)
             .featureId(featureId)
             .query(query)
-            .profiles(profiles)
+            .profiles(requestedProfiles)
             .featureProvider(providers.getFeatureProviderOrThrow(api.getData(), collectionData))
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs());
 

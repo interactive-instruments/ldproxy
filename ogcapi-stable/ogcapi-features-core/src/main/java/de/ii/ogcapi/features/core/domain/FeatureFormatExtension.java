@@ -128,4 +128,12 @@ public abstract class FeatureFormatExtension implements FormatExtension {
   public Optional<Long> getNumberReturned(Object content) {
     return Optional.empty();
   }
+
+  public boolean isComplex() {
+    return false;
+  }
+
+  public boolean isForHumans() {
+    return false;
+  }
 }

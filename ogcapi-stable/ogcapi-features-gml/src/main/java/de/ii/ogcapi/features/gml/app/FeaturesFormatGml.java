@@ -385,4 +385,9 @@ public class FeaturesFormatGml extends FeatureFormatExtension implements Conform
 
     return Optional.of(new FeatureEncoderGml(transformationContextGml, gmlWriters));
   }
+
+  @Override
+  public boolean isComplex() {
+    return true;
+  }
 }

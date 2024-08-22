@@ -299,6 +299,11 @@ public class FeaturesFormatGeoJson extends FeatureFormatExtension
     return getMetadata(content, "numberReturned");
   }
 
+  @Override
+  public boolean isComplex() {
+    return true;
+  }
+
   private Optional<Long> getMetadata(Object content, String key) {
     if (content instanceof byte[]) {
       JsonNode jsonNode;

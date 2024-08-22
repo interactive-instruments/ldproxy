@@ -18,11 +18,8 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import java.util.List;
-import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.core.MediaType;
 
 @Singleton
 @AutoBind
@@ -59,6 +56,20 @@ public class ProfileExtensionExtensionFeaturesVal extends ProfileExtensionFeatur
   }
 
   @Override
+  public List<String> getSupportedValues(boolean complex, boolean humanReadable) {
+    return getValues();
+  }
+
+  @Override
+  public String getDefaultValue(boolean complex, boolean humanReadable) {
+    if (humanReadable) {
+      return AS_TITLE;
+    }
+
+    return AS_CODE;
+  }
+
+  @Override
   public void addPropertyTransformations(
       String value, FeatureSchema schema, String mediaType, Builder builder) {
     if (!getValues().contains(value)) {
@@ -70,18 +81,6 @@ public class ProfileExtensionExtensionFeaturesVal extends ProfileExtensionFeatur
           .filter(p -> p.getConstraints().map(c -> c.getCodelist().isPresent()).orElse(false))
           .forEach(property -> mapToTitle(property, builder));
     }
-  }
-
-  @Override
-  public Optional<String> negotiateProfile(
-      @NotNull List<String> requestedProfiles, @NotNull String mediaType) {
-    if (requestedProfiles.contains(AS_TITLE)
-        || (requestedProfiles.stream().noneMatch(p -> p.startsWith(VAL))
-            && mediaType.startsWith(MediaType.TEXT_HTML))) {
-      return Optional.of(AS_TITLE);
-    }
-
-    return Optional.of(AS_CODE);
   }
 
   private boolean usesCodedValue(OgcApiDataV2 apiData) {
