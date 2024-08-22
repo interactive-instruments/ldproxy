@@ -41,7 +41,6 @@ import de.ii.xtraplatform.values.domain.Identifier;
 import de.ii.xtraplatform.values.domain.ValueStore;
 import de.ii.xtraplatform.values.domain.Values;
 import de.ii.xtraplatform.web.domain.LastModified;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.Date;
@@ -60,7 +59,6 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.apache.hc.core5.net.PercentCodec;
 
 @Singleton
 @AutoBind
@@ -129,16 +127,15 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
             .map(
                 identifier -> {
                   Codelist codelist = codelistStore.get(identifier);
-                  String encodedId =
-                      PercentCodec.encode(identifier.asPath(), StandardCharsets.UTF_8);
+                  String id = identifier.asPath();
 
                   return ImmutableCodelistEntry.builder()
-                      .id(encodedId)
+                      .id(id)
                       .title(codelist.getLabel())
                       .lastModified(LastModified.from(codelistStore.lastModified(identifier)))
                       .addLinks(
                           codelistsLinkGenerator.generateCodelistLink(
-                              requestContext.getUriCustomizer(), encodedId, codelist.getLabel()))
+                              requestContext.getUriCustomizer(), id, codelist.getLabel()))
                       .build();
                 })
             .collect(Collectors.toList());
@@ -186,11 +183,8 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
       QueryInputCodelist queryInput, ApiRequestContext requestContext) {
     OgcApi api = requestContext.getApi();
     OgcApiDataV2 apiData = api.getData();
-    String encodedId = queryInput.getCodelistId();
-
-    Path path = Path.of(PercentCodec.decode(encodedId, StandardCharsets.UTF_8));
-    Identifier identifier = Identifier.from(path);
-    String decodedId = identifier.asPath();
+    String id = queryInput.getCodelistId();
+    Identifier identifier = Identifier.from(Path.of(id));
 
     final CodelistFormatExtension format =
         extensionRegistry.getExtensionsForType(CodelistFormatExtension.class).stream()
@@ -204,15 +198,13 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
                             "The requested media type {0} cannot be generated.",
                             requestContext.getMediaType().type())));
 
-    if (!getCodelistIds(apiData).contains(decodedId)) {
-      throw new NotFoundException(
-          MessageFormat.format("The codelist ''{0}'' does not exist.", encodedId));
+    if (!getCodelistIds(apiData).contains(id)) {
+      throw new NotFoundException(MessageFormat.format("The codelist ''{0}'' does not exist.", id));
     }
 
     Codelist codelist = codelistStore.get(identifier);
     if (codelist == null) {
-      throw new NotFoundException(
-          MessageFormat.format("The codelist ''{0}'' does not exist.", encodedId));
+      throw new NotFoundException(MessageFormat.format("The codelist ''{0}'' does not exist.", id));
     }
 
     codelist = new ImmutableCodelist.Builder().from(codelist).sourceType(Optional.empty()).build();
@@ -231,8 +223,8 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
             links,
             HeaderCaching.of(lastModified, eTag, queryInput),
             null,
-            HeaderContentDisposition.of(encodedId))
-        .entity(format.getCodelist(codelist, encodedId, apiData, requestContext, links))
+            HeaderContentDisposition.of(id))
+        .entity(format.getCodelist(codelist, id, apiData, requestContext, links))
         .type(format.getMediaType().type())
         .build();
   }
