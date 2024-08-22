@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,38 +99,35 @@ public interface ParameterExtension extends ApiExtension {
       OgcApiDataV2 apiData, Optional<String> collectionId, List<String> values) {
     try {
       Schema<?> schema = getSchema(apiData, collectionId);
+      String type = schema.getType();
       String schemaContent = Json.mapper().writeValueAsString(schema);
-      Optional<String> result1 = Optional.empty();
-      List<String> effectiveValues = values;
-      if (values.size() == 1) {
-        // try non-array variant first
-        result1 =
-            getSchemaValidator().validate(schemaContent, getJsonContent(values.get(0), schema));
-        if (result1.isEmpty()) {
-          return Optional.empty();
-        }
-        if (!getExplode() && values.get(0).contains(",")) {
-          effectiveValues =
-              Splitter.on(",").trimResults().omitEmptyStrings().splitToList(values.get(0));
+      String valueContent = getJsonContent(values.get(0), schema);
+      if (Objects.nonNull(type) && "array".equals(type)) {
+        if (getExplode()) {
+          // each value is an item
+          schemaContent = Json.mapper().writeValueAsString(schema.getItems());
+        } else {
+          if (values.size() == 1) {
+            valueContent =
+                Splitter.on(",")
+                    .trimResults()
+                    .omitEmptyStrings()
+                    .splitToList(values.get(0))
+                    .stream()
+                    .map(v -> getJsonContent(v, schema.getItems()))
+                    .collect(Collectors.joining(",", "[", "]"));
+          }
         }
       }
-      Optional<String> resultn =
-          getSchemaValidator()
-              .validate(schemaContent, "[\"" + String.join("\",\"", effectiveValues) + "\"]");
-      if (resultn.isPresent()) {
-        return result1
-            .map(
-                s ->
-                    String.format(
-                        "Parameter value '%s' is invalid for parameter '%s': %s",
-                        values, getName(), s))
-            .or(
-                () ->
-                    Optional.of(
-                        String.format(
-                            "Parameter value '%s' is invalid for parameter '%s': %s",
-                            values, getName(), resultn.get())));
-      }
+
+      return getSchemaValidator()
+          .validate(schemaContent, valueContent)
+          .map(
+              s ->
+                  String.format(
+                      "Parameter value '%s' is invalid for parameter '%s': %s",
+                      values, getName(), s));
+
     } catch (IOException e) {
       if (LOGGER.isDebugEnabled(LogContext.MARKER.STACKTRACE)) {
         LOGGER.debug(LogContext.MARKER.STACKTRACE, "Stacktrace: ", e);
@@ -139,15 +137,19 @@ public interface ParameterExtension extends ApiExtension {
               "An exception occurred while validating the parameter value '%s' for parameter '%s'",
               values, getName()));
     }
-
-    return Optional.empty();
   }
 
   private String getJsonContent(String value, Schema<?> schema) {
-    return ("object".equals(schema.getType()) && value.trim().startsWith("{"))
-            || ("array".equals(schema.getType()) && value.trim().startsWith("["))
-        ? value
-        : "\"" + value + "\"";
+    if (("object".equals(schema.getType()) && value.trim().startsWith("{"))
+        || ("array".equals(schema.getType()) && value.trim().startsWith("["))
+        || "number".equals(schema.getType())
+        || "integer".equals(schema.getType())
+        || "boolean".equals(schema.getType())
+        || "null".equals(schema.getType())) {
+      return value;
+    }
+
+    return "\"" + value + "\"";
   }
 
   default void setOpenApiDescription(OgcApiDataV2 apiData, Parameter param) {

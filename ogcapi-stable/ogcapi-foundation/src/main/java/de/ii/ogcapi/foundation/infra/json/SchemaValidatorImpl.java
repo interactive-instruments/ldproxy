@@ -7,6 +7,7 @@
  */
 package de.ii.ogcapi.foundation.infra.json;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.azahnen.dagger.annotations.AutoBind;
@@ -35,7 +36,14 @@ public class SchemaValidatorImpl implements SchemaValidator {
   public Optional<String> validate(String schemaContent, String jsonContent) throws IOException {
     ObjectMapper mapper = new ObjectMapper();
     JsonNode schemaNode = mapper.readTree(schemaContent);
-    JsonNode jsonNode = mapper.readTree(jsonContent);
+    JsonNode jsonNode;
+    try {
+      jsonNode = mapper.readTree(jsonContent);
+    } catch (JsonParseException e) {
+      // without the code location of the error
+      return Optional.of(e.getOriginalMessage());
+    }
+
     SpecVersion.VersionFlag version;
     try {
       version = SpecVersionDetector.detect(schemaNode);
@@ -50,7 +58,6 @@ public class SchemaValidatorImpl implements SchemaValidator {
       JsonNode schemaNode, JsonNode jsonNode, SpecVersion.VersionFlag version) {
     JsonSchemaFactory validatorFactory = JsonSchemaFactory.getInstance(version);
     SchemaValidatorsConfig config = new SchemaValidatorsConfig();
-    config.setTypeLoose(true);
     config.setFailFast(true);
     config.setHandleNullableField(true);
     JsonSchema schema = validatorFactory.getSchema(schemaNode, config);
