@@ -204,6 +204,10 @@ public interface GltfConfiguration extends ExtensionConfiguration, FeatureFormat
             FeatureFormatConfiguration.super
                 .mergeInto((PropertyTransformations) source)
                 .getTransformations())
+        .defaultProfiles(
+            this.getDefaultProfiles().isEmpty()
+                ? ((FeatureFormatConfiguration) source).getDefaultProfiles()
+                : this.getDefaultProfiles())
         .build();
   }
 }

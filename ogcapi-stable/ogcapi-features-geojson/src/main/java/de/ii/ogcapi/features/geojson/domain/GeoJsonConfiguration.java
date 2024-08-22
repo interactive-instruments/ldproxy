@@ -215,6 +215,10 @@ public interface GeoJsonConfiguration extends ExtensionConfiguration, FeatureFor
             FeatureFormatConfiguration.super
                 .mergeInto((PropertyTransformations) source)
                 .getTransformations())
+        .defaultProfiles(
+            this.getDefaultProfiles().isEmpty()
+                ? ((FeatureFormatConfiguration) source).getDefaultProfiles()
+                : this.getDefaultProfiles())
         .build();
   }
 }

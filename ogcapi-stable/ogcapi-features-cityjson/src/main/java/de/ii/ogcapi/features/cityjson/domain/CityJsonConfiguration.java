@@ -523,6 +523,10 @@ public interface CityJsonConfiguration extends ExtensionConfiguration, FeatureFo
             FeatureFormatConfiguration.super
                 .mergeInto((PropertyTransformations) source)
                 .getTransformations())
+        .defaultProfiles(
+            this.getDefaultProfiles().isEmpty()
+                ? ((FeatureFormatConfiguration) source).getDefaultProfiles()
+                : this.getDefaultProfiles())
         .build();
   }
 }
