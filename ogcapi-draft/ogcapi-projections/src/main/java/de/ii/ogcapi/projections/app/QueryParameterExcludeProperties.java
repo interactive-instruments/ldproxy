@@ -93,8 +93,6 @@ public class QueryParameterExcludeProperties extends ApiExtensionCache
                 && (definitionPath.equals("/collections/{collectionId}/items")
                     || definitionPath.equals("/collections/{collectionId}/items/{featureId}")
                     || definitionPath.equals(
-                        "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
-                    || definitionPath.equals(
                         "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
   }
 
