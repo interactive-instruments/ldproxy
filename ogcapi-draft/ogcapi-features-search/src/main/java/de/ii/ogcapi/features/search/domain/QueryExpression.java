@@ -22,7 +22,6 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.hash.Funnel;
-import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.xtraplatform.values.domain.StoredValue;
@@ -135,7 +134,7 @@ public interface QueryExpression extends StoredValue {
 
   Optional<Integer> getOffset();
 
-  Optional<Profile> getProfile();
+  List<String> getProfiles();
 
   Map<String, JsonNode> getParameters();
 

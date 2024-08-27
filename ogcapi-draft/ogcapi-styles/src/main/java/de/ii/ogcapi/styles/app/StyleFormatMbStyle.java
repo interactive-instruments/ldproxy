@@ -15,11 +15,13 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
+import de.ii.ogcapi.features.core.domain.JsonSchemaExtension;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ClassSchemaCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -73,9 +75,14 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
   private final URI servicesUri;
   private final Schema<?> schemaStyle;
   private final Map<String, Schema<?>> referencedSchemas;
+  private final ExtensionRegistry extensionRegistry;
 
   @Inject
-  public StyleFormatMbStyle(ServicesContext servicesContext, ClassSchemaCache classSchemaCache) {
+  public StyleFormatMbStyle(
+      ExtensionRegistry extensionRegistry,
+      ServicesContext servicesContext,
+      ClassSchemaCache classSchemaCache) {
+    this.extensionRegistry = extensionRegistry;
     this.servicesUri = servicesContext.getUri();
     this.schemaStyle = classSchemaCache.getSchema(MbStyleStylesheet.class);
     referencedSchemas = classSchemaCache.getReferencedSchemas(MbStyleStylesheet.class);
@@ -228,7 +235,12 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
         stylesheetContent.getMbStyle().map(mbs -> mbs.replaceParameters(serviceUrl));
     if (mbStyle.isEmpty()) return ImmutableList.of();
 
-    return mbStyle.get().getLayerMetadata(apiData, providers, codelistStore);
+    List<JsonSchemaExtension> jsonSchemaExtensions =
+        extensionRegistry.getExtensionsForType(JsonSchemaExtension.class).stream()
+            .filter(e -> e.isEnabledForApi(apiData))
+            .collect(Collectors.toList());
+
+    return mbStyle.get().getLayerMetadata(apiData, providers, codelistStore, jsonSchemaExtensions);
   }
 
   @Override

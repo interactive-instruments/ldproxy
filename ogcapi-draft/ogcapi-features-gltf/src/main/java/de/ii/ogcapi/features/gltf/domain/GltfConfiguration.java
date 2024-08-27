@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.gltf.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.ogcapi.features.core.domain.FeatureFormatConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -57,7 +58,7 @@ import org.immutables.value.Value;
 @Value.Style(builder = "new", deepImmutablesDetection = true, attributeBuilderDetection = true)
 @JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "GLTF")
 @JsonDeserialize(builder = ImmutableGltfConfiguration.Builder.class)
-public interface GltfConfiguration extends ExtensionConfiguration, PropertyTransformations {
+public interface GltfConfiguration extends ExtensionConfiguration, FeatureFormatConfiguration {
 
   /**
    * @langEn Enables support for the glTF 2.0 extension
@@ -200,9 +201,13 @@ public interface GltfConfiguration extends ExtensionConfiguration, PropertyTrans
         .from(source)
         .from(this)
         .transformations(
-            PropertyTransformations.super
+            FeatureFormatConfiguration.super
                 .mergeInto((PropertyTransformations) source)
                 .getTransformations())
+        .defaultProfiles(
+            this.getDefaultProfiles().isEmpty()
+                ? ((FeatureFormatConfiguration) source).getDefaultProfiles()
+                : this.getDefaultProfiles())
         .build();
   }
 }

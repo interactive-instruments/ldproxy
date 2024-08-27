@@ -51,6 +51,7 @@ import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
@@ -85,7 +86,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public abstract class FeaturesFormatCityJsonBase implements FeatureFormatExtension {
+public abstract class FeaturesFormatCityJsonBase extends FeatureFormatExtension {
 
   public static final String IGNORE = "ignore";
   protected final FeaturesCoreProviders providers;
@@ -105,7 +106,9 @@ public abstract class FeaturesFormatCityJsonBase implements FeatureFormatExtensi
       SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
       CityJsonWriterRegistry cityJsonWriterRegistry,
       CrsTransformerFactory crsTransformerFactory,
-      CrsInfo crsInfo) {
+      CrsInfo crsInfo,
+      ExtensionRegistry extensionRegistry) {
+    super(extensionRegistry);
     this.providers = providers;
     this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;

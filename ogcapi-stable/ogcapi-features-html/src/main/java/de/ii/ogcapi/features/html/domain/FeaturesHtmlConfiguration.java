@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.util.StdConverter;
 import com.google.common.collect.ImmutableMap;
+import de.ii.ogcapi.features.core.domain.FeatureFormatConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
@@ -125,7 +126,8 @@ import org.immutables.value.Value;
 @Value.Style(builder = "new", attributeBuilderDetection = true)
 @JsonDynamicSubType(superType = ExtensionConfiguration.class, id = "FEATURES_HTML")
 @JsonDeserialize(builder = ImmutableFeaturesHtmlConfiguration.Builder.class)
-public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, PropertyTransformations {
+public interface FeaturesHtmlConfiguration
+    extends ExtensionConfiguration, FeatureFormatConfiguration {
 
   abstract class Builder extends ExtensionConfiguration.Builder {}
 
@@ -167,13 +169,6 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
    */
   Optional<String> getFeatureTitleTemplate();
 
-  /**
-   * @langEn Optional transformations for feature properties for HTML, see
-   *     [transformations](../../providers/details/transformations.md).
-   * @langDe Steuert, ob und wie die Werte von Objekteigenschaften für die Ausgabe in der
-   *     HTML-Ausgabe [transformiert](../../providers/details/transformations.md) werden.
-   * @default {}
-   */
   @JsonSerialize(converter = IgnoreLinksWildcardSerializer.class)
   @Override
   Map<String, List<PropertyTransformation>> getTransformations();
@@ -271,6 +266,9 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
   @Nullable
   Boolean getPropertyTooltipsOnItems();
 
+  @Override
+  Map<String, String> getDefaultProfiles();
+
   String LINK_WILDCARD = "*{objectType=Link}";
 
   @Value.Check
@@ -293,53 +291,6 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
 
     return this;
   }
-
-  /* TODO: remove once asLink is supported
-  @Value.Check
-  default FeaturesHtmlConfiguration transformRefs() {
-    if (!hasTransformation(
-        REF_WILDCARD, transformation -> transformation.getStringFormat().isPresent())) {
-
-      Map<String, List<PropertyTransformation>> transformations =
-          withTransformation(
-              REF_WILDCARD,
-              new ImmutablePropertyTransformation.Builder()
-                  .stringFormat(
-                      "<a href=\"{{apiUri}}/collections/{{type}}/items/{{value}}\">{{value}}</a>")
-                  .build());
-
-      return new ImmutableFeaturesHtmlConfiguration.Builder()
-          .from(this)
-          .transformations(transformations)
-          .build();
-    }
-
-    return this;
-  }
-
-  // TODO: remove once asLink is supported
-  @Value.Check
-  default FeaturesHtmlConfiguration transformRefArrays() {
-    if (!hasTransformation(
-        REF_ARRAY_WILDCARD, transformation -> transformation.getStringFormat().isPresent())) {
-
-      Map<String, List<PropertyTransformation>> transformations =
-          withTransformation(
-              REF_ARRAY_WILDCARD,
-              new ImmutablePropertyTransformation.Builder()
-                  .stringFormat(
-                      "<a href=\"{{apiUri}}/collections/{{type}}/items/{{value}}\">{{value}}</a>")
-                  .build());
-
-      return new ImmutableFeaturesHtmlConfiguration.Builder()
-          .from(this)
-          .transformations(transformations)
-          .build();
-    }
-
-    return this;
-  }
-   */
 
   class IgnoreLinksWildcardSerializer
       extends StdConverter<
@@ -376,9 +327,13 @@ public interface FeaturesHtmlConfiguration extends ExtensionConfiguration, Prope
         .from(source)
         .from(this)
         .transformations(
-            PropertyTransformations.super
+            FeatureFormatConfiguration.super
                 .mergeInto((PropertyTransformations) source)
                 .getTransformations())
+        .defaultProfiles(
+            this.getDefaultProfiles().isEmpty()
+                ? ((FeatureFormatConfiguration) source).getDefaultProfiles()
+                : this.getDefaultProfiles())
         .build();
   }
 }

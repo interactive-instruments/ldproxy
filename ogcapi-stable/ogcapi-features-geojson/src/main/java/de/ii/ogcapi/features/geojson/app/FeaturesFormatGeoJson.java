@@ -20,7 +20,6 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
-import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.features.geojson.domain.FeatureEncoderGeoJson;
@@ -31,6 +30,7 @@ import de.ii.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContex
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
@@ -67,8 +67,8 @@ import javax.ws.rs.core.MediaType;
  */
 @Singleton
 @AutoBind
-public class FeaturesFormatGeoJson
-    implements ItemTypeSpecificConformanceClass, FeatureFormatExtension {
+public class FeaturesFormatGeoJson extends FeatureFormatExtension
+    implements ItemTypeSpecificConformanceClass {
 
   private static final String CONFORMANCE_CLASS_FEATURES =
       "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson";
@@ -95,7 +95,9 @@ public class FeaturesFormatGeoJson
       FeaturesCoreValidation featuresCoreValidator,
       SchemaGeneratorOpenApi schemaGeneratorFeature,
       SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
-      GeoJsonWriterRegistry geoJsonWriterRegistry) {
+      GeoJsonWriterRegistry geoJsonWriterRegistry,
+      ExtensionRegistry extensionRegistry) {
+    super(extensionRegistry);
     this.providers = providers;
     this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;
@@ -130,11 +132,6 @@ public class FeaturesFormatGeoJson
   @Override
   public boolean canSupportTransactions() {
     return true;
-  }
-
-  @Override
-  public boolean supportsProfile(Profile profile) {
-    return profile == Profile.AS_KEY || profile == Profile.AS_URI || profile == Profile.AS_LINK;
   }
 
   @Override
@@ -305,6 +302,11 @@ public class FeaturesFormatGeoJson
   @Override
   public Optional<Long> getNumberReturned(Object content) {
     return getMetadata(content, "numberReturned");
+  }
+
+  @Override
+  public boolean isComplex() {
+    return true;
   }
 
   private Optional<Long> getMetadata(Object content, String key) {

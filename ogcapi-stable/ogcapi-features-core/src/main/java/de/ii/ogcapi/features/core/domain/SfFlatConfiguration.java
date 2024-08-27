@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
-public interface SfFlatConfiguration extends ExtensionConfiguration, PropertyTransformations {
+public interface SfFlatConfiguration extends ExtensionConfiguration, FeatureFormatConfiguration {
 
   /**
    * @langEn If the feature schema includes array properties, `maxMultiplicity` properties will be
