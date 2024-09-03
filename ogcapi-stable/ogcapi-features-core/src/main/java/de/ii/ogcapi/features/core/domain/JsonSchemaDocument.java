@@ -80,6 +80,8 @@ public abstract class JsonSchemaDocument extends JsonSchemaObject {
 
     public abstract Builder patternProperties(Map<String, ? extends JsonSchema> entries);
 
+    public abstract Builder putPatternProperties(String key, JsonSchema value);
+
     public abstract Builder additionalProperties(JsonSchema value);
 
     public abstract JsonSchemaDocument build();

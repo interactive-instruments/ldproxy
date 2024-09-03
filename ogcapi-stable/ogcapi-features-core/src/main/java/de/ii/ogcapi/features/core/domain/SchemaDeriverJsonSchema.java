@@ -17,10 +17,13 @@ import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.features.domain.SchemaDeriver;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -83,6 +86,41 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
         .description(description.orElse(schema.getDescription().orElse("")));
 
     adjustRootSchema(schema, properties, definitions, requiredProperties, builder);
+
+    return builder.build();
+  }
+
+  @Override
+  protected JsonSchema mergeRootSchemas(List<JsonSchema> rootSchemas) {
+    JsonSchemaDocument.Builder builder =
+        version == VERSION.V7
+            ? ImmutableJsonSchemaDocumentV7.builder()
+            : ImmutableJsonSchemaDocument.builder().schema(version.url());
+
+    builder.id(schemaUri).title(label).description(description.orElse(""));
+
+    Map<String, JsonSchema> definitions = new LinkedHashMap<>();
+    Map<String, JsonSchema> properties = new LinkedHashMap<>();
+    Map<String, JsonSchema> patternProperties = new LinkedHashMap<>();
+    Set<String> required = new LinkedHashSet<>();
+
+    rootSchemas.stream()
+        .filter(Objects::nonNull)
+        .filter(schema -> schema instanceof JsonSchemaDocument)
+        .map(schema -> (JsonSchemaDocument) schema)
+        .forEach(
+            schema -> {
+              definitions.putAll(schema.getDefinitions());
+              properties.putAll(schema.getProperties());
+              patternProperties.putAll(schema.getPatternProperties());
+              schema.getAdditionalProperties().ifPresent(builder::additionalProperties);
+              required.addAll(schema.getRequired());
+            });
+
+    builder.definitions(definitions);
+    builder.properties(properties);
+    builder.patternProperties(patternProperties);
+    builder.required(required);
 
     return builder.build();
   }
