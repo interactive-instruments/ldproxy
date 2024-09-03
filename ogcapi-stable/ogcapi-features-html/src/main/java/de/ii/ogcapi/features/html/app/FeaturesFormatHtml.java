@@ -35,8 +35,6 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.RuntimeQueryParametersExtension;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
@@ -67,13 +65,11 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -319,49 +315,16 @@ public class FeaturesFormatHtml extends FeatureFormatExtension
                   "The HTML output has a maximum page size (parameter 'limit') of %d. Found: %d",
                   htmlMaxLimit, transformationContext.getLimit()));
 
-        Optional<FeaturesCoreConfiguration> featuresCoreConfiguration =
-            collectionData.getExtension(FeaturesCoreConfiguration.class);
-
-        List<String> queryables =
-            extensionRegistry.getExtensionsForType(RuntimeQueryParametersExtension.class).stream()
-                .map(
-                    extension ->
-                        extension.getRuntimeParameters(
-                            apiData,
-                            Optional.of(collectionData.getId()),
-                            "/collections/{collectionId}/items"))
-                .flatMap(Collection::stream)
-                .map(OgcApiQueryParameter::getName)
-                .collect(Collectors.toUnmodifiableList());
-
-        Map<String, String> filterableFields =
-            transformationContext
-                .getFeatureSchema()
-                .map(schema -> schema.accept(SCHEMA_FLATTENER))
-                .map(
-                    schema ->
-                        schema.getProperties().stream()
-                            .filter(property -> queryables.contains(property.getName()))
-                            .map(
-                                property ->
-                                    new SimpleImmutableEntry<>(
-                                        property.getName(),
-                                        property.getLabel().orElse(property.getName())))
-                            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)))
-                .orElse(ImmutableMap.of());
-
         featureTypeDataset =
             createFeatureCollectionView(
                 api,
                 apiData.getCollections().get(collectionName),
                 uriCustomizer.copy(),
-                filterableFields,
                 staticUrlPrefix,
                 language,
                 isNoIndexEnabledForApi(apiData),
                 getMapPosition(apiData, collectionName),
                 hideMap,
-                getGeometryProperties(apiData, collectionName),
                 getPropertyTooltips(apiData, collectionName, true),
                 apiData.getLabel(),
                 transformationContext.getLinks(),
@@ -382,7 +345,6 @@ public class FeaturesFormatHtml extends FeatureFormatExtension
                 apiData.getSubPath(),
                 getMapPosition(apiData, collectionName),
                 hideMap,
-                getGeometryProperties(apiData, collectionName),
                 getPropertyTooltips(apiData, collectionName, true),
                 user);
       }
@@ -415,13 +377,11 @@ public class FeaturesFormatHtml extends FeatureFormatExtension
       OgcApi api,
       FeatureTypeConfigurationOgcApi featureType,
       URICustomizer uriCustomizer,
-      Map<String, String> filterableFields,
       String staticUrlPrefix,
       Optional<Locale> language,
       boolean noIndex,
       POSITION mapPosition,
       boolean hideMap,
-      List<String> geometryProperties,
       boolean propertyTooltips,
       String apiLabel,
       List<Link> links,
@@ -499,8 +459,6 @@ public class FeaturesFormatHtml extends FeatureFormatExtension
         .setStyle(style)
         .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
         .setHideMap(hideMap)
-        .setQueryables(filterableFields)
-        .setGeometryProperties(geometryProperties)
         .setPropertyTooltips(propertyTooltips)
         .setUriCustomizer(uriCustomizer)
         .setBreadCrumbs(
@@ -547,7 +505,6 @@ public class FeaturesFormatHtml extends FeatureFormatExtension
       List<String> subPathToLandingPage,
       POSITION mapPosition,
       boolean hideMap,
-      List<String> geometryProperties,
       boolean propertyTooltips,
       Optional<User> user) {
     OgcApiDataV2 apiData = api.getData();
@@ -634,7 +591,6 @@ public class FeaturesFormatHtml extends FeatureFormatExtension
         .setStyle(style)
         .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
         .setHideMap(hideMap)
-        .setGeometryProperties(geometryProperties)
         .setPropertyTooltips(propertyTooltips)
         .setRawTemporalExtent(api.getTemporalExtent(featureType.getId()))
         .setRawFormats(formats)
@@ -797,12 +753,5 @@ public class FeaturesFormatHtml extends FeatureFormatExtension
         .getExtension(FeaturesHtmlConfiguration.class, collectionId)
         .map(FeaturesHtmlConfiguration::getMapPosition)
         .orElse(POSITION.AUTO);
-  }
-
-  private List<String> getGeometryProperties(OgcApiDataV2 apiData, String collectionId) {
-    return apiData
-        .getExtension(FeaturesHtmlConfiguration.class, collectionId)
-        .map(FeaturesHtmlConfiguration::getGeometryProperties)
-        .orElse(ImmutableList.of());
   }
 }
