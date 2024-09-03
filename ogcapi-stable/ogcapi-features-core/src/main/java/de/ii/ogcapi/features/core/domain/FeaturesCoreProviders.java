@@ -14,6 +14,7 @@ import de.ii.xtraplatform.base.domain.resiliency.OptionalVolatileCapability;
 import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import java.util.AbstractMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -39,6 +40,18 @@ public interface FeaturesCoreProviders {
 
   <T> Optional<T> getFeatureProvider(
       OgcApiDataV2 apiData, Function<FeatureProvider, OptionalVolatileCapability<T>> capability);
+
+  default <T> Optional<T> getFeatureProvider(
+      FeatureProvider featureProvider,
+      Function<FeatureProvider, OptionalVolatileCapability<T>> capability) {
+    OptionalVolatileCapability<T> volatileCapability = capability.apply(featureProvider);
+
+    if (volatileCapability.isAvailable()) {
+      return Optional.of(volatileCapability.get());
+    }
+
+    return Optional.empty();
+  }
 
   FeatureProvider getFeatureProviderOrThrow(OgcApiDataV2 apiData);
 
@@ -85,6 +98,25 @@ public interface FeaturesCoreProviders {
             })
         .filter(Objects::nonNull)
         .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+  }
+
+  default Optional<FeatureSchema> getQueryablesSchema(
+      OgcApiDataV2 apiData, FeatureTypeConfigurationOgcApi featureType) {
+    String featureTypeId =
+        featureType
+            .getExtension(FeaturesCoreConfiguration.class)
+            .flatMap(FeaturesCoreConfiguration::getFeatureType)
+            .orElse(featureType.getId());
+    Optional<FeatureProvider> featureProvider = getFeatureProvider(apiData, featureType);
+    return featureProvider
+        .flatMap(provider -> provider.info().getSchema(featureTypeId))
+        .flatMap(
+            schema ->
+                getFeatureProvider(featureProvider.get(), FeatureProvider::queries)
+                    .map(
+                        queries ->
+                            queries.getQueryablesSchema(
+                                schema, List.of("*"), List.of(), ".", true)));
   }
 
   <T> T getFeatureProviderOrThrow(

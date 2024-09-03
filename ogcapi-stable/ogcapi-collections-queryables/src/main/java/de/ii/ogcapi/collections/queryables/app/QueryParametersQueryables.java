@@ -104,7 +104,7 @@ public class QueryParametersQueryables
     }
 
     return configuration
-        .map(c -> c.getQueryables(apiData, collectionData, featureSchema, providers))
+        .map(c -> c.getQueryables(apiData, collectionData, featureSchema, providers, true))
         .orElse(ImmutableMap.of())
         .entrySet()
         .stream()
