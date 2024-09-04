@@ -16,17 +16,15 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @Value.Style(deepImmutablesDetection = true)
-@JsonPropertyOrder({"individualName"})
-public interface OwsServiceContact {
+@JsonPropertyOrder({"voice"})
+public interface OwsTelephone {
 
-  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "IndividualName")
-  Optional<String> getIndividualName();
-
-  // TODO add more from OWS Common?
+  @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "Voice")
+  Optional<String> getVoice();
 
   @SuppressWarnings("UnstableApiUsage")
-  Funnel<OwsServiceContact> FUNNEL =
+  Funnel<OwsTelephone> FUNNEL =
       (from, into) -> {
-        from.getIndividualName().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
+        from.getVoice().ifPresent(val -> into.putString(val, StandardCharsets.UTF_8));
       };
 }
