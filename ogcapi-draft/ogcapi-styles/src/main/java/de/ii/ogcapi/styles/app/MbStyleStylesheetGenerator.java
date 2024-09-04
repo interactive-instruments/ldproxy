@@ -108,7 +108,6 @@ public class MbStyleStylesheetGenerator
     // iterate over each collection
     for (String collectionName : collectionColors.keySet()) {
       String color = collectionColors.get(collectionName);
-
       // add layers for each collection
       style.addLayers(
           ImmutableMbStyleLayer.builder()
