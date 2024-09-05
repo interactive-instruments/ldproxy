@@ -20,7 +20,9 @@ import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.NavigationDTO;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -89,7 +91,10 @@ public class CodelistsFormatHtml implements CodelistsFormatExtension {
         .title(i18n.get("codelistsTitle", requestContext.getLanguage()))
         .description(i18n.get("codelistsDescription", requestContext.getLanguage()))
         .none(i18n.get("none", requestContext.getLanguage()))
-        .codelistEntries(codelists.getCodelistEntries())
+        .codelistEntries(
+            codelists.getCodelistEntries().stream()
+                .sorted(Comparator.comparing(e -> e.getTitle().orElse(e.getId())))
+                .collect(Collectors.toList()))
         .uriCustomizer(requestContext.getUriCustomizer().copy())
         .user(requestContext.getUser())
         .build();

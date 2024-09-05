@@ -43,6 +43,7 @@ import de.ii.xtraplatform.values.domain.Values;
 import de.ii.xtraplatform.web.domain.LastModified;
 import java.nio.file.Path;
 import java.text.MessageFormat;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -124,6 +125,7 @@ public class QueriesHandlerCodelistsImpl extends AbstractVolatileComposed
     List<CodelistEntry> codelistEntries =
         codelistStore.identifiers().stream()
             .filter(identifier -> codelistIds.contains(identifier.asPath()))
+            .sorted(Comparator.comparing(Identifier::id))
             .map(
                 identifier -> {
                   Codelist codelist = codelistStore.get(identifier);

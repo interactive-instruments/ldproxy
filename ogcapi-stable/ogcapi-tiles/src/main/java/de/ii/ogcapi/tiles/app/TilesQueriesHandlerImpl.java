@@ -32,10 +32,13 @@ import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetOgcApi;
+import de.ii.ogcapi.tiles.domain.ImmutableOwsAddress;
+import de.ii.ogcapi.tiles.domain.ImmutableOwsContact;
 import de.ii.ogcapi.tiles.domain.ImmutableOwsOnlineResource;
-import de.ii.ogcapi.tiles.domain.ImmutableOwsServiceContact;
+import de.ii.ogcapi.tiles.domain.ImmutableOwsResponsibleParty;
 import de.ii.ogcapi.tiles.domain.ImmutableOwsServiceIdentification;
 import de.ii.ogcapi.tiles.domain.ImmutableOwsServiceProvider;
+import de.ii.ogcapi.tiles.domain.ImmutableOwsTelephone;
 import de.ii.ogcapi.tiles.domain.ImmutableStyleEntry;
 import de.ii.ogcapi.tiles.domain.ImmutableTileLayer;
 import de.ii.ogcapi.tiles.domain.ImmutableTilePoint;
@@ -486,19 +489,33 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                         md.flatMap(ApiMetadata::getLicenseName)
                             .map(s -> String.format("License: %s", s)))
                     .build());
-    md.flatMap(ApiMetadata::getPublisherName)
+
+    ImmutableOwsServiceProvider.Builder providerBuilder = ImmutableOwsServiceProvider.builder();
+    md.flatMap(ApiMetadata::getPublisherName).ifPresent(providerBuilder::providerName);
+    md.flatMap(ApiMetadata::getPublisherUrl)
         .ifPresent(
-            publisher -> {
-              ImmutableOwsServiceProvider.Builder providerBuilder =
-                  ImmutableOwsServiceProvider.builder().providerName(publisher);
-              md.flatMap(ApiMetadata::getPublisherUrl)
-                  .ifPresent(
-                      url ->
-                          providerBuilder.providerSite(
-                              ImmutableOwsOnlineResource.builder().href(url).build()));
-              providerBuilder.serviceContact(ImmutableOwsServiceContact.builder().build());
-              builder.serviceProvider(providerBuilder.build());
-            });
+            url ->
+                providerBuilder.providerSite(
+                    ImmutableOwsOnlineResource.builder().href(url).build()));
+    ImmutableOwsResponsibleParty.Builder partyBuilder = ImmutableOwsResponsibleParty.builder();
+    md.flatMap(ApiMetadata::getContactName).ifPresent(partyBuilder::individualName);
+    ImmutableOwsContact.Builder contactBuilder = ImmutableOwsContact.builder();
+    md.flatMap(ApiMetadata::getContactEmail)
+        .ifPresent(
+            email ->
+                contactBuilder.address(
+                    ImmutableOwsAddress.builder().electronicMailAddress(email).build()));
+    md.flatMap(ApiMetadata::getContactPhone)
+        .ifPresent(
+            voice -> contactBuilder.phone(ImmutableOwsTelephone.builder().voice(voice).build()));
+    md.flatMap(ApiMetadata::getContactUrl)
+        .ifPresent(
+            url ->
+                contactBuilder.onlineResource(
+                    ImmutableOwsOnlineResource.builder().href(url).build()));
+    partyBuilder.contactInfo(contactBuilder.build());
+    providerBuilder.serviceContact(partyBuilder.build());
+    builder.serviceProvider(providerBuilder.build());
 
     ImmutableWmtsContents.Builder contentsBuilder = ImmutableWmtsContents.builder();
 
