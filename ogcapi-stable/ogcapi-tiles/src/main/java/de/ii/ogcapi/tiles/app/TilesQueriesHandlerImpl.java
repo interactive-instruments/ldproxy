@@ -490,32 +490,35 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                             .map(s -> String.format("License: %s", s)))
                     .build());
 
-    ImmutableOwsServiceProvider.Builder providerBuilder = ImmutableOwsServiceProvider.builder();
-    md.flatMap(ApiMetadata::getPublisherName).ifPresent(providerBuilder::providerName);
-    md.flatMap(ApiMetadata::getPublisherUrl)
-        .ifPresent(
-            url ->
-                providerBuilder.providerSite(
-                    ImmutableOwsOnlineResource.builder().href(url).build()));
-    ImmutableOwsResponsibleParty.Builder partyBuilder = ImmutableOwsResponsibleParty.builder();
-    md.flatMap(ApiMetadata::getContactName).ifPresent(partyBuilder::individualName);
-    ImmutableOwsContact.Builder contactBuilder = ImmutableOwsContact.builder();
-    md.flatMap(ApiMetadata::getContactEmail)
-        .ifPresent(
-            email ->
-                contactBuilder.address(
-                    ImmutableOwsAddress.builder().electronicMailAddress(email).build()));
-    md.flatMap(ApiMetadata::getContactPhone)
-        .ifPresent(
-            voice -> contactBuilder.phone(ImmutableOwsTelephone.builder().voice(voice).build()));
-    md.flatMap(ApiMetadata::getContactUrl)
-        .ifPresent(
-            url ->
-                contactBuilder.onlineResource(
-                    ImmutableOwsOnlineResource.builder().href(url).build()));
-    partyBuilder.contactInfo(contactBuilder.build());
-    providerBuilder.serviceContact(partyBuilder.build());
-    builder.serviceProvider(providerBuilder.build());
+    if (md.flatMap(ApiMetadata::getPublisherName).isPresent()) {
+      ImmutableOwsServiceProvider.Builder providerBuilder =
+          ImmutableOwsServiceProvider.builder()
+              .providerName(md.flatMap(ApiMetadata::getPublisherName).get());
+      md.flatMap(ApiMetadata::getPublisherUrl)
+          .ifPresent(
+              url ->
+                  providerBuilder.providerSite(
+                      ImmutableOwsOnlineResource.builder().href(url).build()));
+      ImmutableOwsResponsibleParty.Builder partyBuilder = ImmutableOwsResponsibleParty.builder();
+      md.flatMap(ApiMetadata::getContactName).ifPresent(partyBuilder::individualName);
+      ImmutableOwsContact.Builder contactBuilder = ImmutableOwsContact.builder();
+      md.flatMap(ApiMetadata::getContactEmail)
+          .ifPresent(
+              email ->
+                  contactBuilder.address(
+                      ImmutableOwsAddress.builder().electronicMailAddress(email).build()));
+      md.flatMap(ApiMetadata::getContactPhone)
+          .ifPresent(
+              voice -> contactBuilder.phone(ImmutableOwsTelephone.builder().voice(voice).build()));
+      md.flatMap(ApiMetadata::getContactUrl)
+          .ifPresent(
+              url ->
+                  contactBuilder.onlineResource(
+                      ImmutableOwsOnlineResource.builder().href(url).build()));
+      partyBuilder.contactInfo(contactBuilder.build());
+      providerBuilder.serviceContact(partyBuilder.build());
+      builder.serviceProvider(providerBuilder.build());
+    }
 
     ImmutableWmtsContents.Builder contentsBuilder = ImmutableWmtsContents.builder();
 
