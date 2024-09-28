@@ -119,13 +119,14 @@ import javax.inject.Singleton;
  * - Im Falle einer parametrisierten gespeicherten Abfrage kann der Abfrageausdruck JSON-Objekte mit einem Member "$parameter" enthalten. Der Wert von "$parameter" ist ein Objekt mit einem Key-Value-Paar, bei dem der Schlüssel der Parametername und der Wert ein JSON-Schema ist, das den Parameter beschreibt. Bei der Ausführung der gespeicherten Abfrage werden alle Objekte mit einem "$parameter"-Member durch den Wert des Parameters für diese Abfrageausführung ersetzt. Kommagetrennte Parameterwerte werden in ein Array umgewandelt, wenn der Parameter vom Typ "array" ist.
  * - Parameter können auch in einem Member "parameters" im Abfrageausdruck angegeben werden und mit "$ref" referenziert werden.
  *     </code>
- * @conformanceEn This building block implements the OGC API Features extensions specified in the
- *     OGC Testbed-18 Filtering Service and Rule Set Engineering Report (to be published). The
- *     implementation will change as the draft will evolve during the standardization process.
- * @conformanceDe Dieser Baustein implementiert die OGC-API-Features-Erweiterungen, die in dem OGC
- *     Testbed-18 Filtering Service and Rule Set Engineering Report spezifiziert sind (wird noch
- *     veröffentlicht). Die Implementierung wird sich im Zuge der weiteren Standardisierung der
- *     Spezifikation noch ändern.
+ * @conformanceEn This building block implements the OGC API Features extensions specified in
+ *     chapters 5 and 6 of the [OGC Testbed-18 Filtering Service and Rule Set Engineering
+ *     Report](https://docs.ogc.org/per/22-024r2.html). The implementation will change as the draft
+ *     will evolve during the standardization process.
+ * @conformanceDe Dieser Baustein implementiert die OGC-API-Features-Erweiterungen, die in den
+ *     Kapiteln 5 und 6 des [OGC Testbed-18 Filtering Service and Rule Set Engineering
+ *     Report](https://docs.ogc.org/per/22-024r2.html) spezifiziert sind. Die Implementierung wird
+ *     sich im Zuge der weiteren Standardisierung der Spezifikation noch ändern.
  * @limitationsEn Parameterized stored queries have the following constraints:
  *     <p><code>
  * - Parameters can only occur in filter expressions.
