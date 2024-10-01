@@ -12,11 +12,14 @@ import de.ii.xtraplatform.features.domain.FeatureSchema;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 public class SchemaDeriverOpenApiCollectionProperties extends SchemaDeriverOpenApi {
 
@@ -50,6 +53,38 @@ public class SchemaDeriverOpenApiCollectionProperties extends SchemaDeriverOpenA
             rootSchema.addProperties(cleanName, propertySchema);
           }
         });
+
+    return rootSchema;
+  }
+
+  @Override
+  protected Schema<?> mergeRootSchemas(List<Schema<?>> rootSchemas) {
+    Schema<?> rootSchema = rootSchemas.get(0);
+
+    Map<String, Schema> properties = new LinkedHashMap<>();
+    Map<String, Schema> patternProperties = new LinkedHashMap<>();
+    Set<String> required = new LinkedHashSet<>();
+
+    rootSchemas.stream()
+        .filter(Objects::nonNull)
+        .filter(schema -> schema instanceof ObjectSchema)
+        .map(schema -> (ObjectSchema) schema)
+        .forEach(
+            schema -> {
+              if (Objects.nonNull(schema.getProperties())) {
+                properties.putAll(schema.getProperties());
+              }
+              if (Objects.nonNull(schema.getPatternProperties())) {
+                patternProperties.putAll(schema.getPatternProperties());
+              }
+              if (Objects.nonNull(schema.getRequired())) {
+                required.addAll(schema.getRequired());
+              }
+            });
+
+    rootSchema.properties(properties);
+    rootSchema.patternProperties(patternProperties);
+    rootSchema.required(new ArrayList<>(required));
 
     return rootSchema;
   }

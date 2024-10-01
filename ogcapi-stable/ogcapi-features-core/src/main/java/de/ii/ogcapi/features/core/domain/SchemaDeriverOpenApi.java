@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -78,9 +77,7 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
   protected Schema<?> mergeRootSchemas(List<Schema<?>> rootSchemas) {
     Schema<?> rootSchema = rootSchemas.get(0);
 
-    Map<String, Schema> properties = new LinkedHashMap<>();
-    Map<String, Schema> patternProperties = new LinkedHashMap<>();
-    Set<String> required = new LinkedHashSet<>();
+    List<Schema> schemas = new ArrayList<>();
 
     rootSchemas.stream()
         .filter(Objects::nonNull)
@@ -88,20 +85,13 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
         .map(schema -> (ObjectSchema) schema)
         .forEach(
             schema -> {
-              if (Objects.nonNull(schema.getProperties())) {
-                properties.putAll(schema.getProperties());
-              }
-              if (Objects.nonNull(schema.getPatternProperties())) {
-                patternProperties.putAll(schema.getPatternProperties());
-              }
-              if (Objects.nonNull(schema.getRequired())) {
-                required.addAll(schema.getRequired());
+              if (Objects.nonNull(schema.getProperties())
+                  && schema.getProperties().containsKey("properties")) {
+                schemas.add(schema.getProperties().get("properties"));
               }
             });
 
-    rootSchema.properties(properties);
-    rootSchema.patternProperties(patternProperties);
-    rootSchema.required(new ArrayList<>(required));
+    rootSchema.getProperties().put("properties", new ObjectSchema().anyOf(schemas));
 
     return rootSchema;
   }

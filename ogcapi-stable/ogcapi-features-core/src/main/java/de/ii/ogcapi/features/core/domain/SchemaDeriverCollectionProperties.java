@@ -10,10 +10,13 @@ package de.ii.ogcapi.features.core.domain;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
 
@@ -47,6 +50,41 @@ public class SchemaDeriverCollectionProperties extends SchemaDeriverJsonSchema {
           }
         });
     builder.additionalProperties(ImmutableJsonSchemaFalse.builder().build());
+  }
+
+  @Override
+  protected JsonSchema mergeRootSchemas(List<JsonSchema> rootSchemas) {
+    JsonSchemaDocument.Builder builder =
+        version == VERSION.V7
+            ? ImmutableJsonSchemaDocumentV7.builder()
+            : ImmutableJsonSchemaDocument.builder().schema(version.url());
+
+    builder.id(schemaUri).title(label).description(description.orElse(""));
+
+    Map<String, JsonSchema> definitions = new LinkedHashMap<>();
+    Map<String, JsonSchema> properties = new LinkedHashMap<>();
+    Map<String, JsonSchema> patternProperties = new LinkedHashMap<>();
+    Set<String> required = new LinkedHashSet<>();
+
+    rootSchemas.stream()
+        .filter(Objects::nonNull)
+        .filter(schema -> schema instanceof JsonSchemaDocument)
+        .map(schema -> (JsonSchemaDocument) schema)
+        .forEach(
+            schema -> {
+              definitions.putAll(schema.getDefinitions());
+              properties.putAll(schema.getProperties());
+              patternProperties.putAll(schema.getPatternProperties());
+              schema.getAdditionalProperties().ifPresent(builder::additionalProperties);
+              required.addAll(schema.getRequired());
+            });
+
+    builder.definitions(definitions);
+    builder.properties(properties);
+    builder.patternProperties(patternProperties);
+    builder.required(required);
+
+    return builder.build();
   }
 
   @Override

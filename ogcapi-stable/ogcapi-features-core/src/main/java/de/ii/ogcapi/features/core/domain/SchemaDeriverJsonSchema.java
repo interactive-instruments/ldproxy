@@ -16,14 +16,13 @@ import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.features.domain.SchemaDeriver;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -31,9 +30,9 @@ import java.util.stream.Stream;
 public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> {
 
   protected final VERSION version;
-  private final Optional<String> schemaUri;
-  private final String label;
-  private final Optional<String> description;
+  protected final Optional<String> schemaUri;
+  protected final String label;
+  protected final Optional<String> description;
   private final boolean useCodelistKeys;
 
   public SchemaDeriverJsonSchema(
@@ -100,9 +99,7 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
     builder.id(schemaUri).title(label).description(description.orElse(""));
 
     Map<String, JsonSchema> definitions = new LinkedHashMap<>();
-    Map<String, JsonSchema> properties = new LinkedHashMap<>();
-    Map<String, JsonSchema> patternProperties = new LinkedHashMap<>();
-    Set<String> required = new LinkedHashSet<>();
+    List<JsonSchema> schemas = new ArrayList<>();
 
     rootSchemas.stream()
         .filter(Objects::nonNull)
@@ -111,16 +108,16 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
         .forEach(
             schema -> {
               definitions.putAll(schema.getDefinitions());
-              properties.putAll(schema.getProperties());
-              patternProperties.putAll(schema.getPatternProperties());
-              schema.getAdditionalProperties().ifPresent(builder::additionalProperties);
-              required.addAll(schema.getRequired());
+              schemas.add(
+                  new ImmutableJsonSchemaObject.Builder()
+                      .from(schema)
+                      .title(Optional.empty())
+                      .description(Optional.empty())
+                      .build());
             });
 
     builder.definitions(definitions);
-    builder.properties(properties);
-    builder.patternProperties(patternProperties);
-    builder.required(required);
+    builder.anyOf(schemas);
 
     return builder.build();
   }
