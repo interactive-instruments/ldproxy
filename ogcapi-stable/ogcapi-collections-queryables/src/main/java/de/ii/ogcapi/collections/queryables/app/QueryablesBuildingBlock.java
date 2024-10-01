@@ -65,12 +65,12 @@ import javax.inject.Singleton;
  *     </code>
  *     <p>Wenn die abfragbare Eigenschaft ein Wert ist, z.B. ein String oder ein Integer, die in
  *     einem Array verschachtelt ist, ist der Typ der abfragbaren Eigenschaft ein Array der Werte.
- * @conformanceEn *Feature Collections - Queryables* implements all requirements and recommendations
- *     of chapter 6 ("Queryables") of [OGC API - Features - Part 3:
- *     Filtering](https://docs.ogc.org/is/19-079r2/19-079r2.html#queryables).
- * @conformanceDe Der Baustein implementiert die Vorgaben und Empfehlungen aus Kapitel 6
- *     ("Queryables") von [OGC API - Features - Part 3:
- *     Filtering](https://docs.ogc.org/is/19-079r2/19-079r2.html#queryables).
+ * @conformanceEn *Feature Collections - Queryables* implements the conformance classes "Queryables"
+ *     and "Queryables as Query Parameters" of [OGC API - Features - Part 3:
+ *     Filtering](https://docs.ogc.org/is/19-079r2/19-079r2.html).
+ * @conformanceDe Der Baustein implementiert die Konformitätsklassen "Queryables" und "Queryables as
+ *     Query Parameters" von [OGC API - Features - Part 3:
+ *     Filtering](https://docs.ogc.org/is/19-079r2/19-079r2.html).
  * @limitationsEn OGC API - Features - Part 3 does not specify how a queryable that is a feature
  *     reference which has more variables than the local feature id should be handled. If such a
  *     property is a queryable, the current implementation uses the local feature id as the value of

@@ -19,6 +19,7 @@ import de.ii.ogcapi.features.search.domain.QueryExpression;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
 import de.ii.xtraplatform.base.app.StoreImpl;
+import de.ii.xtraplatform.base.app.SubstitutionsImpl;
 import de.ii.xtraplatform.base.domain.AppContext;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration;
 import de.ii.xtraplatform.base.domain.ImmutableStoreConfiguration.Builder;
@@ -26,6 +27,7 @@ import de.ii.xtraplatform.base.domain.Jackson;
 import de.ii.xtraplatform.base.domain.JacksonProvider;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
 import de.ii.xtraplatform.base.domain.StoreSource.Content;
+import de.ii.xtraplatform.base.domain.Substitutions;
 import de.ii.xtraplatform.blobs.domain.ResourceStore;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.entities.app.EntityDataDefaultsStoreImpl;
@@ -152,14 +154,17 @@ class LdproxyCfgImpl implements LdproxyCfg {
     OgcApiExtensionRegistry extensionRegistry = new OgcApiExtensionRegistry(appContext);
     Set<EntityFactory> factories =
         EntityFactories.factories(appContext, extensionRegistry, mockResourceStore);
+    Substitutions substitutions = new SubstitutionsImpl(appContext);
     this.entityFactories = new EntityFactoriesImpl(() -> factories);
     this.entityDataDefaultsStore =
-        new EntityDataDefaultsStoreImpl(appContext, eventStore, jackson, () -> factories);
+        new EntityDataDefaultsStoreImpl(
+            appContext, eventStore, jackson, substitutions, () -> factories);
     this.entityDataStore =
         new EntityDataStoreImpl(
             appContext,
             eventStore,
             jackson,
+            substitutions,
             () -> factories,
             entityDataDefaultsStore,
             mockResourceStore,

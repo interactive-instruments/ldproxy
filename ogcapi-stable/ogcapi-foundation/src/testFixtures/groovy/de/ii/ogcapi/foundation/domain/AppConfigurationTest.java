@@ -20,12 +20,18 @@ import de.ii.xtraplatform.base.domain.ModulesConfiguration.Startup;
 import de.ii.xtraplatform.base.domain.ServerConfiguration;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
 import io.dropwizard.client.HttpClientConfiguration;
+import java.util.Map;
 
 public class AppConfigurationTest extends AppConfiguration {
 
   @Override
   public ServerConfiguration getServerFactory() {
     return null;
+  }
+
+  @Override
+  public Map<String, Object> getSubstitutions() {
+    return Map.of();
   }
 
   @Override
