@@ -117,7 +117,7 @@ public class QueryParameterFilter extends ApiExtensionCache
   @Override
   public String getDescription() {
     return "Filter features in the collection using the query expression in the parameter value. Filter expressions "
-        + "are written in the [Common Query Language (CQL2)](https://docs.ogc.org/is/21-065r1/21-065r1.html), "
+        + "are written in the [Common Query Language (CQL2)](https://docs.ogc.org/is/21-065r2/21-065r2.html), "
         + "which is an OGC Standard.\n\n"
         + "The recommended language for this query parameter is CQL2 Text (`filter-lang=cql2-text`).\n\n"
         + "CQL2 Text expressions are similar to SQL expressions and also support spatial, temporal and array predicates. "
