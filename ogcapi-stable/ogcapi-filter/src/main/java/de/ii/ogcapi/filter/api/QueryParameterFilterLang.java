@@ -85,7 +85,7 @@ public class QueryParameterFilterLang extends ApiExtensionCache
   @Override
   public String getDescription() {
     return "Language of the query expression in the 'filter' parameter. Supported are 'cql2-text' (default) and 'cql2-json', "
-        + "specified in the [OGC Standard 'Common Query Language (CQL2)'](https://docs.ogc.org/is/21-065r1/21-065r1.html). "
+        + "specified in the [OGC Standard 'Common Query Language (CQL2)'](https://docs.ogc.org/is/21-065r2/21-065r2.html). "
         + "'cql2-text' is an SQL-like text encoding for "
         + "filter expressions that also supports spatial, temporal and array predicates. 'cql2-json' is a JSON encoding of "
         + "that grammar, suitable for use as part of a JSON object that represents a query. The use of 'cql2-text' is recommended "
