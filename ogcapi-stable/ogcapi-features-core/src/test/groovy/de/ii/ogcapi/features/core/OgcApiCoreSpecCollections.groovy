@@ -230,7 +230,7 @@ class OgcApiCoreSpecCollections extends Specification {
                 }
 
                 if (extensionType == FeatureFormatExtension.class) {
-                    return ImmutableList.of((T) new FeatureFormatExtension(self) {
+                    return ImmutableList.of((T) new FeatureFormatExtension(self, null) {
 
                         @Override
                         ApiMediaType getMediaType() {

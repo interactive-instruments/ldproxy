@@ -19,18 +19,67 @@ import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @AutoMultiBind
 public abstract class FeatureFormatExtension implements FormatExtension {
 
-  protected final ExtensionRegistry extensionRegistry;
+  private static final Logger LOGGER = LoggerFactory.getLogger(FeatureFormatExtension.class);
 
-  protected FeatureFormatExtension(ExtensionRegistry extensionRegistry) {
+  protected final ExtensionRegistry extensionRegistry;
+  protected final FeaturesCoreProviders providers;
+  private final Set<String> warned;
+
+  protected FeatureFormatExtension(
+      ExtensionRegistry extensionRegistry, FeaturesCoreProviders providers) {
     this.extensionRegistry = extensionRegistry;
+    this.providers = providers;
+    this.warned = new HashSet<>();
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    boolean enabled = FormatExtension.super.isEnabledForApi(apiData, collectionId);
+
+    if (!enabled) {
+      return false;
+    }
+
+    return checkRootConcat(apiData);
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    boolean enabled = FormatExtension.super.isEnabledForApi(apiData);
+
+    if (!enabled) {
+      return false;
+    }
+
+    return checkRootConcat(apiData);
+  }
+
+  private boolean checkRootConcat(OgcApiDataV2 apiData) {
+    if (supportsRootConcat()) {
+      return true;
+    }
+
+    if (providers.hasAnyRootConcat(apiData)) {
+      if (warned.add(this.getClass() + apiData.getId())) {
+        LOGGER.warn(
+            "{} does not support root concatenation in the feature schema, the format will be disabled.",
+            getMediaType().label());
+      }
+      return false;
+    }
+    return true;
   }
 
   public abstract ApiMediaType getCollectionMediaType();
@@ -135,6 +184,10 @@ public abstract class FeatureFormatExtension implements FormatExtension {
   }
 
   public boolean isForHumans() {
+    return false;
+  }
+
+  public boolean supportsRootConcat() {
     return false;
   }
 

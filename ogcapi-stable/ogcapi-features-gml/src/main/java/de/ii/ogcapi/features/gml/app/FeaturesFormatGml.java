@@ -151,7 +151,6 @@ public class FeaturesFormatGml extends FeatureFormatExtension implements Conform
   private static final String GMLSF2_CC =
       "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/gmlsf2";
 
-  private final FeaturesCoreProviders providers;
   private final Values<Codelist> codelistStore;
   private final FeaturesCoreValidation featuresCoreValidator;
   private final GmlWriterRegistry gmlWriterRegistry;
@@ -163,8 +162,7 @@ public class FeaturesFormatGml extends FeatureFormatExtension implements Conform
       FeaturesCoreValidation featuresCoreValidator,
       GmlWriterRegistry gmlWriterRegistry,
       ExtensionRegistry extensionRegistry) {
-    super(extensionRegistry);
-    this.providers = providers;
+    super(extensionRegistry, providers);
     this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;
     this.gmlWriterRegistry = gmlWriterRegistry;

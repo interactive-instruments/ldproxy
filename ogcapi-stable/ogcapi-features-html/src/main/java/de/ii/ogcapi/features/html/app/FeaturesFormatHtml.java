@@ -92,7 +92,6 @@ public class FeaturesFormatHtml extends FeatureFormatExtension
 
   private final Values<Codelist> codelistStore;
   private final I18n i18n;
-  private final FeaturesCoreProviders providers;
   private final FeaturesCoreValidation featuresCoreValidator;
   private final URI servicesUri;
   private final MustacheRenderer mustacheRenderer;
@@ -108,10 +107,9 @@ public class FeaturesFormatHtml extends FeatureFormatExtension
       FeaturesCoreValidation featuresCoreValidator,
       ServicesContext servicesContext,
       Http http) {
-    super(extensionRegistry);
+    super(extensionRegistry, providers);
     this.codelistStore = valueStore.forType(Codelist.class);
     this.i18n = i18n;
-    this.providers = providers;
     this.featuresCoreValidator = featuresCoreValidator;
     this.servicesUri = servicesContext.getUri();
     this.mustacheRenderer = mustacheRenderer;
@@ -219,10 +217,7 @@ public class FeaturesFormatHtml extends FeatureFormatExtension
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return apiData
-            .getExtension(getBuildingBlockConfigurationType())
-            .map(ExtensionConfiguration::isEnabled)
-            .orElse(false)
+    return super.isEnabledForApi(apiData)
         && apiData
             .getExtension(HtmlConfiguration.class)
             .map(ExtensionConfiguration::isEnabled)
@@ -370,6 +365,11 @@ public class FeaturesFormatHtml extends FeatureFormatExtension
 
   @Override
   public boolean isForHumans() {
+    return true;
+  }
+
+  @Override
+  public boolean supportsRootConcat() {
     return true;
   }
 

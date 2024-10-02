@@ -119,6 +119,19 @@ public interface FeaturesCoreProviders {
                                 schema, List.of("*"), List.of(), ".", true)));
   }
 
+  default boolean hasAnyRootConcat(OgcApiDataV2 apiData) {
+    return getFeatureSchemas(apiData).values().stream()
+        .anyMatch(schema -> !schema.getConcat().isEmpty());
+  }
+
+  default boolean hasRootConcat(OgcApiDataV2 apiData, String collectionId) {
+    return getFeatureSchemas(apiData).entrySet().stream()
+        .anyMatch(
+            schema ->
+                Objects.equals(schema.getKey(), collectionId)
+                    && !schema.getValue().getConcat().isEmpty());
+  }
+
   <T> T getFeatureProviderOrThrow(
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi featureType,

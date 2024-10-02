@@ -84,7 +84,6 @@ public class FeaturesFormatGltfBinary extends FeatureFormatExtension {
   public static final Schema<?> SCHEMA = new BinarySchema();
   public static final String SCHEMA_REF = "#/components/schemas/glTF";
 
-  private final FeaturesCoreProviders providers;
   private final Values<Codelist> codelistStore;
   private final FeaturesCoreValidation featuresCoreValidator;
   private final CrsTransformerFactory crsTransformerFactory;
@@ -101,8 +100,7 @@ public class FeaturesFormatGltfBinary extends FeatureFormatExtension {
       ServicesContext servicesContext,
       Metadata3dSchemaCache schemaCache,
       ExtensionRegistry extensionRegistry) {
-    super(extensionRegistry);
-    this.providers = providers;
+    super(extensionRegistry, providers);
     this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;
     this.crsTransformerFactory = crsTransformerFactory;

@@ -81,7 +81,6 @@ public class FeaturesFormatGeoJson extends FeatureFormatExtension
           .parameter("json")
           .build();
 
-  private final FeaturesCoreProviders providers;
   private final Values<Codelist> codelistStore;
   private final FeaturesCoreValidation featuresCoreValidator;
   private final SchemaGeneratorOpenApi schemaGeneratorFeature;
@@ -97,8 +96,7 @@ public class FeaturesFormatGeoJson extends FeatureFormatExtension
       SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
       GeoJsonWriterRegistry geoJsonWriterRegistry,
       ExtensionRegistry extensionRegistry) {
-    super(extensionRegistry);
-    this.providers = providers;
+    super(extensionRegistry, providers);
     this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;
     this.schemaGeneratorFeature = schemaGeneratorFeature;
@@ -301,6 +299,11 @@ public class FeaturesFormatGeoJson extends FeatureFormatExtension
 
   @Override
   public boolean isComplex() {
+    return true;
+  }
+
+  @Override
+  public boolean supportsRootConcat() {
     return true;
   }
 
