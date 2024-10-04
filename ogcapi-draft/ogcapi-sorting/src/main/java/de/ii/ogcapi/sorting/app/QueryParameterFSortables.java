@@ -8,7 +8,7 @@
 package de.ii.ogcapi.sorting.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.collections.domain.QueryParameterFSubCollection;
+import de.ii.ogcapi.common.domain.QueryParameterF;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -30,7 +30,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterFSortables extends QueryParameterFSubCollection {
+public class QueryParameterFSortables extends QueryParameterF {
 
   @Inject
   public QueryParameterFSortables(
@@ -44,7 +44,7 @@ public class QueryParameterFSortables extends QueryParameterFSubCollection {
   }
 
   @Override
-  protected boolean matchesPath(String definitionPath) {
+  public boolean matchesPath(String definitionPath) {
     return "/collections/{collectionId}/sortables".equals(definitionPath);
   }
 

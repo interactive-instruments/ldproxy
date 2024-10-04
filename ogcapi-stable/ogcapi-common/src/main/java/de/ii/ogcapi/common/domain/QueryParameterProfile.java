@@ -7,11 +7,9 @@
  */
 package de.ii.ogcapi.common.domain;
 
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -20,8 +18,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public abstract class QueryParameterProfile extends ApiExtensionCache
-    implements OgcApiQueryParameter {
+public abstract class QueryParameterProfile extends OgcApiQueryParameterBase {
 
   public static final String PROFILE = "profile";
   protected final ExtensionRegistry extensionRegistry;
@@ -42,19 +39,6 @@ public abstract class QueryParameterProfile extends ApiExtensionCache
   public String getDescription() {
     return "Select the profiles to be used in the response. If no value is provided, the default profiles will be used.";
   }
-
-  @Override
-  public final boolean isApplicable(
-      OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && method == HttpMethods.GET
-                && isApplicable(apiData, definitionPath));
-  }
-
-  protected abstract boolean isApplicable(OgcApiDataV2 apiData, String definitionPath);
 
   protected abstract List<String> getProfiles(OgcApiDataV2 apiData);
 

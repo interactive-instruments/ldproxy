@@ -18,7 +18,6 @@ import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.ProfileExtension;
@@ -92,18 +91,19 @@ public class QueryParameterProfileFeatures extends QueryParameterProfile
   }
 
   @Override
-  protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-    return (definitionPath.equals("/collections/{collectionId}/items")
-            || definitionPath.equals("/collections/{collectionId}/items/{featureId}"))
-        && !getProfiles(apiData).isEmpty();
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.equals("/collections/{collectionId}/items")
+        || definitionPath.equals("/collections/{collectionId}/items/{featureId}");
   }
 
   @Override
-  public boolean isApplicable(
-      OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
-    return (definitionPath.equals("/collections/{collectionId}/items")
-            || definitionPath.equals("/collections/{collectionId}/items/{featureId}"))
-        && method == HttpMethods.GET
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return super.isEnabledForApi(apiData) && !getProfiles(apiData).isEmpty();
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return super.isEnabledForApi(apiData, collectionId)
         && !getProfiles(apiData, collectionId).isEmpty();
   }
 

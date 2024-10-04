@@ -8,16 +8,14 @@
 package de.ii.ogcapi.common.domain;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ApiSecurity;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FoundationConfiguration;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.HttpRequestOverrideQueryParameter;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
@@ -42,10 +40,8 @@ import javax.ws.rs.container.ContainerRequestContext;
  */
 @Singleton
 @AutoBind
-public class QueryParameterToken extends ApiExtensionCache
-    implements OgcApiQueryParameter,
-        TypedQueryParameter<String>,
-        HttpRequestOverrideQueryParameter {
+public class QueryParameterToken extends OgcApiQueryParameterBase
+    implements TypedQueryParameter<String>, HttpRequestOverrideQueryParameter {
 
   private Schema<?> schema = null;
   private final SchemaValidator schemaValidator;
@@ -84,10 +80,8 @@ public class QueryParameterToken extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () -> isEnabledForApi(apiData) && method == HttpMethods.GET);
+  public boolean matchesPath(String definitionPath) {
+    return true;
   }
 
   @Override
@@ -105,7 +99,14 @@ public class QueryParameterToken extends ApiExtensionCache
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return apiData.getAccessControl().filter(ApiSecurity::isEnabled).isPresent();
+    return super.isEnabledForApi(apiData)
+        && apiData.getAccessControl().filter(ApiSecurity::isEnabled).isPresent();
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return super.isEnabledForApi(apiData, collectionId)
+        && apiData.getAccessControl().filter(ApiSecurity::isEnabled).isPresent();
   }
 
   @Override

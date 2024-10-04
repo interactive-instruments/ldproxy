@@ -11,14 +11,12 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.EnumSchema;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
@@ -50,9 +48,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterResultTypeFeatures extends ApiExtensionCache
-    implements OgcApiQueryParameter,
-        TypedQueryParameter<QueryParameterResultTypeFeatures.ResultType>,
+public class QueryParameterResultTypeFeatures extends OgcApiQueryParameterBase
+    implements TypedQueryParameter<QueryParameterResultTypeFeatures.ResultType>,
         FeatureQueryParameter {
 
   public enum ResultType {
@@ -94,7 +91,7 @@ public class QueryParameterResultTypeFeatures extends ApiExtensionCache
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-    return super.isEnabledForApi(apiData)
+    return super.isEnabledForApi(apiData, collectionId)
         && apiData
             .getCollectionData(collectionId)
             .flatMap(
@@ -127,13 +124,8 @@ public class QueryParameterResultTypeFeatures extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && method == HttpMethods.GET
-                && definitionPath.equals("/collections/{collectionId}/items"));
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.equals("/collections/{collectionId}/items");
   }
 
   @Override

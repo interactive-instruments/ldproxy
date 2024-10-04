@@ -61,17 +61,18 @@ public class QueryParametersQueryables
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return apiData.getCollections().keySet().stream()
-        .anyMatch(collectionId -> isEnabledForApi(apiData, collectionId));
+    return RuntimeQueryParametersExtension.super.isEnabledForApi(apiData)
+        && apiData.getCollections().keySet().stream()
+            .anyMatch(collectionId -> isEnabledForApi(apiData, collectionId));
   }
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-    return apiData
-        .getExtension(QueryablesConfiguration.class, collectionId)
-        .filter(QueryablesConfiguration::isEnabled)
-        .filter(QueryablesConfiguration::provideAsQueryParameters)
-        .isPresent();
+    return RuntimeQueryParametersExtension.super.isEnabledForApi(apiData, collectionId)
+        && apiData
+            .getExtension(QueryablesConfiguration.class, collectionId)
+            .filter(QueryablesConfiguration::provideAsQueryParameters)
+            .isPresent();
   }
 
   @Override

@@ -115,7 +115,7 @@ public interface QueryablesConfiguration extends ExtensionConfiguration, Caching
   /**
    * @langEn If `true`, the Queryables endpoint will be enabled.
    * @langDe Bei `true` wird die Queryables-Ressource aktiviert.
-   * @default false
+   * @default true
    * @since v3.4
    */
   @Nullable

@@ -11,14 +11,12 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.search.domain.ImmutableQueryExpression;
 import de.ii.ogcapi.features.search.domain.QueryExpressionQueryParameter;
 import de.ii.ogcapi.features.search.domain.SearchConfiguration;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
@@ -42,8 +40,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterOffsetStoredQuery extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<Integer>, QueryExpressionQueryParameter {
+public class QueryParameterOffsetStoredQuery extends OgcApiQueryParameterBase
+    implements TypedQueryParameter<Integer>, QueryExpressionQueryParameter {
 
   private Schema<?> schema;
 
@@ -89,13 +87,8 @@ public class QueryParameterOffsetStoredQuery extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && method == HttpMethods.GET
-                && "/search/{queryId}".equals(definitionPath));
+  public boolean matchesPath(String definitionPath) {
+    return "/search/{queryId}".equals(definitionPath);
   }
 
   @Override

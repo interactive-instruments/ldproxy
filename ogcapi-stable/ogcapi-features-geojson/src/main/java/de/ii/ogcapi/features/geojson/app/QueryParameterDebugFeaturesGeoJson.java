@@ -11,13 +11,11 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationQueryParameter;
 import de.ii.ogcapi.features.core.domain.ImmutableFeatureTransformationContextGeneric.Builder;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
@@ -40,10 +38,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterDebugFeaturesGeoJson extends ApiExtensionCache
-    implements OgcApiQueryParameter,
-        TypedQueryParameter<Boolean>,
-        FeatureTransformationQueryParameter {
+public class QueryParameterDebugFeaturesGeoJson extends OgcApiQueryParameterBase
+    implements TypedQueryParameter<Boolean>, FeatureTransformationQueryParameter {
 
   private final Schema<?> schema = new BooleanSchema()._default(false);
   private final boolean allowDebug;
@@ -76,14 +72,9 @@ public class QueryParameterDebugFeaturesGeoJson extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && method == HttpMethods.GET
-                && (definitionPath.equals("/collections/{collectionId}/items")
-                    || definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.equals("/collections/{collectionId}/items")
+        || definitionPath.equals("/collections/{collectionId}/items/{featureId}");
   }
 
   @Override
@@ -103,12 +94,12 @@ public class QueryParameterDebugFeaturesGeoJson extends ApiExtensionCache
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return OgcApiQueryParameter.super.isEnabledForApi(apiData) && allowDebug;
+    return super.isEnabledForApi(apiData) && allowDebug;
   }
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-    return OgcApiQueryParameter.super.isEnabledForApi(apiData, collectionId) && allowDebug;
+    return super.isEnabledForApi(apiData, collectionId) && allowDebug;
   }
 
   @Override

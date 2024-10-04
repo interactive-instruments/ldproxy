@@ -15,6 +15,8 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
+import de.ii.ogcapi.styles.app.manager.QueryParameterDryRunStylePut;
+import de.ii.ogcapi.styles.app.manager.QueryParameterDryRunStylesPost;
 import de.ii.ogcapi.styles.domain.ImmutableStylesConfiguration.Builder;
 import de.ii.ogcapi.styles.domain.StyleFormatExtension;
 import java.util.Optional;
@@ -116,8 +118,8 @@ import javax.inject.Singleton;
  * @ref:pathParameters {@link de.ii.ogcapi.styles.domain.PathParameterCollectionIdStyles}, {@link
  *     de.ii.ogcapi.styles.domain.PathParameterStyleId}
  * @ref:queryParameters {@link de.ii.ogcapi.styles.domain.QueryParameterFStyles}, {@link
- *     de.ii.ogcapi.styles.domain.QueryParameterFStyle}, {@link
- *     de.ii.ogcapi.styles.app.manager.QueryParameterDryRunStylesManager}
+ *     de.ii.ogcapi.styles.domain.QueryParameterFStyle}, {@link QueryParameterDryRunStylesPost},
+ *     {@link QueryParameterDryRunStylePut}
  */
 @Singleton
 @AutoBind

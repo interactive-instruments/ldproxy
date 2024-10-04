@@ -7,11 +7,10 @@
  */
 package de.ii.ogcapi.common.domain;
 
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
@@ -23,8 +22,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-public abstract class QueryParameterDryRun extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<Boolean> {
+public abstract class QueryParameterDryRun extends OgcApiQueryParameterBase
+    implements TypedQueryParameter<Boolean> {
 
   protected final Schema<?> schema = new BooleanSchema()._default(false);
   protected final SchemaValidator schemaValidator;

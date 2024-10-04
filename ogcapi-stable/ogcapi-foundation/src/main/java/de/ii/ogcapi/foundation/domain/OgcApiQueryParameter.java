@@ -23,12 +23,12 @@ public interface OgcApiQueryParameter extends ParameterExtension {
     return "form";
   }
 
+  boolean matchesPath(String definitionPath);
+
   boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method);
 
-  default boolean isApplicable(
-      OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
-    return isApplicable(apiData, definitionPath, method);
-  }
+  boolean isApplicable(
+      OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method);
 
   default void updateOpenApiDefinition(
       OgcApiDataV2 apiData, Optional<String> collectionId, OpenAPI openAPI, Operation op) {

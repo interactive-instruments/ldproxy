@@ -14,8 +14,6 @@ import de.ii.ogcapi.features.search.domain.StoredQueriesFormat;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import java.util.Optional;
@@ -46,17 +44,7 @@ public class QueryParameterFStoredQueries extends QueryParameterF {
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && (method == HttpMethods.GET || method == HttpMethods.HEAD)
-                && isApplicable(apiData, definitionPath));
-  }
-
-  @Override
-  protected boolean matchesPath(String definitionPath) {
+  public boolean matchesPath(String definitionPath) {
     return "/search".equals(definitionPath);
   }
 

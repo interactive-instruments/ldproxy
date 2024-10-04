@@ -9,15 +9,13 @@ package de.ii.ogcapi.geometry.simplification.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
@@ -50,11 +48,8 @@ import org.kortforsyningen.proj.Units;
  */
 @Singleton
 @AutoBind
-public class QueryParameterZoomLevelFeatures extends ApiExtensionCache
-    implements OgcApiQueryParameter,
-        FeatureQueryParameter,
-        TypedQueryParameter<Double>,
-        ConformanceClass {
+public class QueryParameterZoomLevelFeatures extends OgcApiQueryParameterBase
+    implements FeatureQueryParameter, TypedQueryParameter<Double>, ConformanceClass {
 
   private final SchemaValidator schemaValidator;
   private final CrsInfo crsInfo;
@@ -130,14 +125,9 @@ public class QueryParameterZoomLevelFeatures extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && method == HttpMethods.GET
-                && (definitionPath.equals("/collections/{collectionId}/items")
-                    || definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.equals("/collections/{collectionId}/items")
+        || definitionPath.equals("/collections/{collectionId}/items/{featureId}");
   }
 
   private final Schema<?> schema =
