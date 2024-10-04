@@ -9,6 +9,7 @@ package de.ii.ldproxy.cfg;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.ii.ogcapi.codelists.app.CodelistsBuildingBlock;
 import de.ii.ogcapi.collections.app.CollectionsBuildingBlock;
 import de.ii.ogcapi.collections.queryables.app.QueryablesBuildingBlock;
 import de.ii.ogcapi.collections.schema.app.SchemaBuildingBlock;
@@ -58,10 +59,11 @@ class OgcApiExtensionRegistry implements ExtensionRegistry {
     this.apiExtensions =
         ImmutableSet.<ApiExtension>builder()
             .add(new CityJsonBuildingBlock())
-            .add(new CrudBuildingBlock())
+            .add(new CodelistsBuildingBlock())
             .add(new CollectionsBuildingBlock())
             .add(new CommonBuildingBlock())
             .add(new CrsBuildingBlock(null, null))
+            .add(new CrudBuildingBlock())
             .add(new FeaturesCsvBuildingBlock())
             .add(new FeaturesCoreBuildingBlock(null, null, null))
             .add(new FeaturesExtensionsBuildingBlock())
