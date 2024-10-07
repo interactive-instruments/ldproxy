@@ -104,7 +104,7 @@ public class QueryParameterDatetime extends AbstractQueryParameterDatetime
 
     FeatureSchema featureSchema =
         providers
-            .getFeatureSchema(api.getData(), collectionData)
+            .getQueryablesSchema(api.getData(), collectionData)
             .orElseThrow(
                 () ->
                     new IllegalStateException(

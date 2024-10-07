@@ -61,13 +61,11 @@ public class FeaturesFormatCsv extends FeatureFormatExtension implements Conform
           .parameter("json")
           .build();
 
-  private final FeaturesCoreProviders providers;
   private final FeatureSchemaCache schemaCache;
 
   @Inject
   public FeaturesFormatCsv(FeaturesCoreProviders providers, ExtensionRegistry extensionRegistry) {
-    super(extensionRegistry);
-    this.providers = providers;
+    super(extensionRegistry, providers);
     this.schemaCache = new SchemaCacheSfFlat();
   }
 

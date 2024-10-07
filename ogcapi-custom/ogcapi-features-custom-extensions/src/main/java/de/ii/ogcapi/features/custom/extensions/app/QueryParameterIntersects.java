@@ -137,7 +137,7 @@ public class QueryParameterIntersects extends OgcApiQueryParameterBase
 
     Optional<FeatureSchema> primaryGeometry =
         providers
-            .getFeatureSchema(api.getData(), collectionData)
+            .getQueryablesSchema(api.getData(), collectionData)
             .orElseThrow(
                 () ->
                     new IllegalStateException(

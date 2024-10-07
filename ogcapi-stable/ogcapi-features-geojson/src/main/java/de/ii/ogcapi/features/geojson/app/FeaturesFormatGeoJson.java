@@ -42,7 +42,6 @@ import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
-import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.values.domain.ValueStore;
 import de.ii.xtraplatform.values.domain.Values;
@@ -81,7 +80,6 @@ public class FeaturesFormatGeoJson extends FeatureFormatExtension
           .parameter("json")
           .build();
 
-  private final FeaturesCoreProviders providers;
   private final Values<Codelist> codelistStore;
   private final FeaturesCoreValidation featuresCoreValidator;
   private final SchemaGeneratorOpenApi schemaGeneratorFeature;
@@ -97,8 +95,7 @@ public class FeaturesFormatGeoJson extends FeatureFormatExtension
       SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
       GeoJsonWriterRegistry geoJsonWriterRegistry,
       ExtensionRegistry extensionRegistry) {
-    super(extensionRegistry);
-    this.providers = providers;
+    super(extensionRegistry, providers);
     this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;
     this.schemaGeneratorFeature = schemaGeneratorFeature;
@@ -147,14 +144,11 @@ public class FeaturesFormatGeoJson extends FeatureFormatExtension
     Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(api.getData());
 
     for (Map.Entry<String, FeatureSchema> entry : featureSchemas.entrySet()) {
-      if (entry
-          .getValue()
-          .getPrimaryGeometry()
-          .filter(SchemaBase::isSimpleFeatureGeometry)
-          .isEmpty()) {
+      if (entry.getValue().getPrimaryGeometries().stream()
+          .anyMatch(s -> !s.isSimpleFeatureGeometry())) {
         builder.addStrictErrors(
             String.format(
-                "Feature type '%s' does not have a primary geometry that is a Simple Feature geometry. GeoJSON only supports Simple Feature geometry types.",
+                "Feature type '%s' has a primary geometry that is not a Simple Feature geometry. GeoJSON only supports Simple Feature geometry types.",
                 entry.getKey()));
       }
     }
@@ -301,6 +295,11 @@ public class FeaturesFormatGeoJson extends FeatureFormatExtension
 
   @Override
   public boolean isComplex() {
+    return true;
+  }
+
+  @Override
+  public boolean supportsRootConcat() {
     return true;
   }
 

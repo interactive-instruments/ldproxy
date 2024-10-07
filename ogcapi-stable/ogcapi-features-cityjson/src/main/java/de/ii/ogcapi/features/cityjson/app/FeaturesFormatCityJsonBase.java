@@ -89,7 +89,6 @@ import java.util.stream.Collectors;
 public abstract class FeaturesFormatCityJsonBase extends FeatureFormatExtension {
 
   public static final String IGNORE = "ignore";
-  protected final FeaturesCoreProviders providers;
   private final Values<Codelist> codelistStore;
   protected final FeaturesCoreValidation featuresCoreValidator;
   protected final SchemaGeneratorOpenApi schemaGeneratorFeature;
@@ -108,8 +107,7 @@ public abstract class FeaturesFormatCityJsonBase extends FeatureFormatExtension 
       CrsTransformerFactory crsTransformerFactory,
       CrsInfo crsInfo,
       ExtensionRegistry extensionRegistry) {
-    super(extensionRegistry);
-    this.providers = providers;
+    super(extensionRegistry, providers);
     this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;
     this.schemaGeneratorFeature = schemaGeneratorFeature;
@@ -205,6 +203,11 @@ public abstract class FeaturesFormatCityJsonBase extends FeatureFormatExtension 
 
   @Override
   public boolean canEncodeFeatures() {
+    return true;
+  }
+
+  @Override
+  public boolean supportsRootConcat() {
     return true;
   }
 

@@ -17,6 +17,7 @@ import de.ii.ogcapi.features.jsonfg.domain.JsonFgConfiguration;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -121,9 +122,8 @@ public class JsonFgWriterConformsTo implements GeoJsonWriter {
     return transformationContext.getFeatureSchemas().values().stream()
         .filter(Optional::isPresent)
         .map(Optional::get)
-        .map(FeatureSchema::getPrimaryGeometry)
-        .filter(Optional::isPresent)
-        .map(Optional::get)
+        .map(FeatureSchema::getPrimaryGeometries)
+        .flatMap(Collection::stream)
         .filter(
             s ->
                 s.getGeometryType()

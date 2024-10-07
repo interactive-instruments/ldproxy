@@ -230,6 +230,7 @@ public interface FeaturesHtmlConfiguration
    *     verwendet.
    * @default []
    */
+  @Deprecated(forRemoval = true, since = "4.2")
   @Nullable
   List<String> getGeometryProperties();
 

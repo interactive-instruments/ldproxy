@@ -9,6 +9,7 @@ package de.ii.ogcapi.features.jsonfg.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
@@ -49,8 +50,9 @@ public class FeaturesFormatJsonFg extends FeaturesFormatJsonFgBase {
       SchemaGeneratorOpenApi schemaGeneratorFeature,
       SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
       GeoJsonWriterRegistry geoJsonWriterRegistry,
-      ExtensionRegistry extensionRegistry) {
-    super(extensionRegistry);
+      ExtensionRegistry extensionRegistry,
+      FeaturesCoreProviders providers) {
+    super(extensionRegistry, providers);
     this.schemaGeneratorFeature = schemaGeneratorFeature;
     this.schemaGeneratorFeatureCollection = schemaGeneratorFeatureCollection;
     this.geoJsonWriterRegistry = geoJsonWriterRegistry;
