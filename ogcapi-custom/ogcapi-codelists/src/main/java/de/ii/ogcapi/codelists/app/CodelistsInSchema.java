@@ -46,6 +46,6 @@ public class CodelistsInSchema implements JsonSchemaExtension {
       FeatureSchema featureSchema,
       OgcApiDataV2 apiData,
       String collectionId) {
-    return jsonSchema.accept(new WithCodelistUri(serviceUri.toString(), apiData));
+    return jsonSchema.accept(new WithCodelistUri(serviceUri, apiData));
   }
 }
