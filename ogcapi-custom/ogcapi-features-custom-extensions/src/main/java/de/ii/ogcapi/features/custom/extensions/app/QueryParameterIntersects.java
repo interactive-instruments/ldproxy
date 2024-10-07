@@ -144,7 +144,7 @@ public class QueryParameterIntersects extends ApiExtensionCache
 
     Optional<FeatureSchema> primaryGeometry =
         providers
-            .getFeatureSchema(api.getData(), collectionData)
+            .getQueryablesSchema(api.getData(), collectionData)
             .orElseThrow(
                 () ->
                     new IllegalStateException(

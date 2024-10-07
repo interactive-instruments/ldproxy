@@ -52,7 +52,7 @@ class SchemaDeriverJsonSpec extends Specification {
         FeatureRefResolver featureRefResolver = new FeatureRefResolver(Set.of("JSON"))
         List<String> queryables = ["geometry", "datetime", "featureRef" /*, "objects.date" */]
         Predicate<String> excludeConnectors = path -> path.matches(".+?\\[[^=\\]]+].+");
-        OnlyQueryables queryablesSelector = new OnlyQueryables(queryables, List.of(), ".", excludeConnectors);
+        OnlyQueryables queryablesSelector = new OnlyQueryables(queryables, List.of(), ".", excludeConnectors, false);
         WithTransformationsApplied schemaFlattener = new WithTransformationsApplied(ImmutableMap.of("*", new ImmutablePropertyTransformation.Builder().flatten(".").build()))
         SchemaDeriverJsonSchema schemaDeriver = new SchemaDeriverCollectionProperties(version, Optional.empty(), "test-label", Optional.empty(), ImmutableMap.of(), queryables)
 

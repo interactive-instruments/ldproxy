@@ -79,10 +79,6 @@ public abstract class FeaturesView extends OgcApiDatasetView {
 
   public abstract boolean removeZoomLevelConstraints();
 
-  public abstract Map<String, String> queryables();
-
-  public abstract List<String> geometryProperties();
-
   public abstract boolean propertyTooltips();
 
   @Nullable
@@ -212,18 +208,10 @@ public abstract class FeaturesView extends OgcApiDatasetView {
   @Value.Default
   @Nullable
   public FilterEditor filterEditor() {
-    if (Objects.nonNull(queryables())) {
-      return new Builder()
-          .backgroundUrl(Optional.ofNullable(htmlConfig().getBasemapUrl()))
-          .attribution(Optional.ofNullable(htmlConfig().getBasemapAttribution()))
-          .fields(
-              queryables().entrySet().stream()
-                  .sorted(Map.Entry.comparingByValue())
-                  .collect(Collectors.toList()))
-          .build();
-    } else {
-      return null;
-    }
+    return new Builder()
+        .backgroundUrl(Optional.ofNullable(htmlConfig().getBasemapUrl()))
+        .attribution(Optional.ofNullable(htmlConfig().getBasemapAttribution()))
+        .build();
   }
 
   @Value.Derived

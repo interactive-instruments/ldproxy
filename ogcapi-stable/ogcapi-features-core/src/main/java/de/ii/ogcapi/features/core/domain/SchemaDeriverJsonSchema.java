@@ -16,7 +16,9 @@ import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import de.ii.xtraplatform.features.domain.SchemaConstraints;
 import de.ii.xtraplatform.features.domain.SchemaDeriver;
 import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -28,9 +30,9 @@ import java.util.stream.Stream;
 public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> {
 
   protected final VERSION version;
-  private final Optional<String> schemaUri;
-  private final String label;
-  private final Optional<String> description;
+  protected final Optional<String> schemaUri;
+  protected final String label;
+  protected final Optional<String> description;
   private final boolean useCodelistKeys;
 
   public SchemaDeriverJsonSchema(
@@ -83,6 +85,39 @@ public abstract class SchemaDeriverJsonSchema extends SchemaDeriver<JsonSchema> 
         .description(description.orElse(schema.getDescription().orElse("")));
 
     adjustRootSchema(schema, properties, definitions, requiredProperties, builder);
+
+    return builder.build();
+  }
+
+  @Override
+  protected JsonSchema mergeRootSchemas(List<JsonSchema> rootSchemas) {
+    JsonSchemaDocument.Builder builder =
+        version == VERSION.V7
+            ? ImmutableJsonSchemaDocumentV7.builder()
+            : ImmutableJsonSchemaDocument.builder().schema(version.url());
+
+    builder.id(schemaUri).title(label).description(description.orElse(""));
+
+    Map<String, JsonSchema> definitions = new LinkedHashMap<>();
+    List<JsonSchema> schemas = new ArrayList<>();
+
+    rootSchemas.stream()
+        .filter(Objects::nonNull)
+        .filter(schema -> schema instanceof JsonSchemaDocument)
+        .map(schema -> (JsonSchemaDocument) schema)
+        .forEach(
+            schema -> {
+              definitions.putAll(schema.getDefinitions());
+              schemas.add(
+                  new ImmutableJsonSchemaObject.Builder()
+                      .from(schema)
+                      .title(Optional.empty())
+                      .description(Optional.empty())
+                      .build());
+            });
+
+    builder.definitions(definitions);
+    builder.anyOf(schemas);
 
     return builder.build();
   }

@@ -11,6 +11,7 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
@@ -46,8 +47,9 @@ public class PolicyAttributeFeaturesFormat extends FeatureFormatExtension {
           .build();
 
   @Inject
-  public PolicyAttributeFeaturesFormat(ExtensionRegistry extensionRegistry) {
-    super(extensionRegistry);
+  public PolicyAttributeFeaturesFormat(
+      ExtensionRegistry extensionRegistry, FeaturesCoreProviders providers) {
+    super(extensionRegistry, providers);
   }
 
   @Override
@@ -72,6 +74,11 @@ public class PolicyAttributeFeaturesFormat extends FeatureFormatExtension {
 
   @Override
   public boolean canEncodeFeatures() {
+    return true;
+  }
+
+  @Override
+  public boolean supportsRootConcat() {
     return true;
   }
 

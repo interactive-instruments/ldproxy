@@ -64,15 +64,13 @@ public class FeaturesFormatFlatgeobuf extends FeatureFormatExtension implements 
           .parameter("fgb")
           .build();
 
-  private final FeaturesCoreProviders providers;
   private final CrsInfo crsInfo;
   private final FeatureSchemaCache schemaCache;
 
   @Inject
   public FeaturesFormatFlatgeobuf(
       FeaturesCoreProviders providers, CrsInfo crsInfo, ExtensionRegistry extensionRegistry) {
-    super(extensionRegistry);
-    this.providers = providers;
+    super(extensionRegistry, providers);
     this.crsInfo = crsInfo;
     this.schemaCache = new SchemaCacheSfFlat();
   }
