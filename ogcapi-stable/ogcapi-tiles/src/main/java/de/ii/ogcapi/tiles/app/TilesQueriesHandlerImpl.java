@@ -78,7 +78,6 @@ import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
-import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileQuery;
 import de.ii.xtraplatform.tiles.domain.ImmutableTilesBoundingBox;
@@ -997,29 +996,13 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                     .description(collectionData.getDescription())
                     .dataType(dataType);
 
-            if (levels.isPresent()) {
-              builder2
-                  .minTileMatrix(String.valueOf(levels.get().getMin()))
-                  .maxTileMatrix(String.valueOf(levels.get().getMax()));
-            }
+            levels.ifPresent(
+                minMax ->
+                    builder2
+                        .minTileMatrix(String.valueOf(minMax.getMin()))
+                        .maxTileMatrix(String.valueOf(minMax.getMax())));
 
-            switch (vectorSchema
-                .getPrimaryGeometry()
-                .flatMap(FeatureSchema::getGeometryType)
-                .orElse(SimpleFeatureGeometry.ANY)) {
-              case POINT:
-              case MULTI_POINT:
-                builder2.geometryDimension(0);
-                break;
-              case LINE_STRING:
-              case MULTI_LINE_STRING:
-                builder2.geometryDimension(1);
-                break;
-              case POLYGON:
-              case MULTI_POLYGON:
-                builder2.geometryDimension(2);
-                break;
-            }
+            vectorSchema.getEffectiveGeometryDimension().ifPresent(builder2::geometryDimension);
 
             builder2.propertiesSchema(
                 new ImmutableJsonSchemaObject.Builder()
