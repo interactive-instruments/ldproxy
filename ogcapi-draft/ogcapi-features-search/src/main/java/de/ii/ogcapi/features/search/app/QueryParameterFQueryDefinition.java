@@ -14,7 +14,6 @@ import de.ii.ogcapi.features.search.domain.StoredQueryFormat;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
@@ -42,28 +41,19 @@ public class QueryParameterFQueryDefinition extends QueryParameterF {
 
   @Override
   public String getId() {
-    return "fQueryDefintion";
+    return "fQueryDefinition";
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && (method == HttpMethods.GET || method == HttpMethods.HEAD)
-                && isApplicable(apiData, definitionPath));
-  }
-
-  @Override
-  protected boolean matchesPath(String definitionPath) {
+  public boolean matchesPath(String definitionPath) {
     return "/search/{queryId}/definition".equals(definitionPath);
   }
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return isExtensionEnabled(
-        apiData, SearchConfiguration.class, SearchConfiguration::isManagerEnabled);
+    return super.isEnabledForApi(apiData)
+        && isExtensionEnabled(
+            apiData, SearchConfiguration.class, SearchConfiguration::isManagerEnabled);
   }
 
   @Override

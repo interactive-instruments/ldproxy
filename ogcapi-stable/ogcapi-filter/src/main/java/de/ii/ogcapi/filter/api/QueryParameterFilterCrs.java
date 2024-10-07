@@ -14,14 +14,12 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.filter.app.FilterBuildingBlock;
 import de.ii.ogcapi.filter.domain.FilterConfiguration;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
@@ -52,8 +50,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterFilterCrs extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<EpsgCrs> {
+public class QueryParameterFilterCrs extends OgcApiQueryParameterBase
+    implements TypedQueryParameter<EpsgCrs> {
 
   public static final String FILTER_CRS = "filter-crs";
   public static final String CRS84 = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";
@@ -70,27 +68,29 @@ public class QueryParameterFilterCrs extends ApiExtensionCache
     this.schemaValidator = schemaValidator;
   }
 
-  @Override
-  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return super.isEnabledForApi(apiData)
-        && providers
-            .getFeatureProvider(apiData, FeatureProvider::queries)
-            .map(FeatureQueries::supportsCql2)
-            .orElse(false);
+  private boolean supportsCql2(OgcApiDataV2 apiData) {
+    return providers
+        .getFeatureProvider(apiData, FeatureProvider::queries)
+        .map(FeatureQueries::supportsCql2)
+        .orElse(false);
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && method == HttpMethods.GET
-                && (definitionPath.equals("/collections/{collectionId}/items")
-                    || definitionPath.equals(
-                        "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
-                    || definitionPath.equals(
-                        "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
+  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
+    return super.isEnabledForApi(apiData) && supportsCql2(apiData);
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return super.isEnabledForApi(apiData, collectionId) && supportsCql2(apiData);
+  }
+
+  @Override
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.equals("/collections/{collectionId}/items")
+        || definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
+        || definitionPath.equals(
+            "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
   }
 
   @Override

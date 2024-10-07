@@ -14,13 +14,11 @@ import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.custom.extensions.domain.FeaturesExtensionsConfiguration;
 import de.ii.ogcapi.features.custom.extensions.domain.GeometryHelperWKT;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
@@ -57,8 +55,8 @@ import org.locationtech.jts.io.WKTReader;
  */
 @Singleton
 @AutoBind
-public class QueryParameterIntersects extends ApiExtensionCache
-    implements OgcApiQueryParameter, FeatureQueryParameter, TypedQueryParameter<Cql2Expression> {
+public class QueryParameterIntersects extends OgcApiQueryParameterBase
+    implements FeatureQueryParameter, TypedQueryParameter<Cql2Expression> {
 
   private final FeaturesCoreProviders providers;
   private final GeometryHelperWKT geometryHelper;
@@ -86,18 +84,13 @@ public class QueryParameterIntersects extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && definitionPath.equals("/collections/{collectionId}/items")
-                && method == HttpMethods.GET);
+  public String getName() {
+    return "intersects";
   }
 
   @Override
-  public String getName() {
-    return "intersects";
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.equals("/collections/{collectionId}/items");
   }
 
   @Override
@@ -213,7 +206,6 @@ public class QueryParameterIntersects extends ApiExtensionCache
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
     return super.isEnabledForApi(apiData, collectionId)
-        && apiData.getCollections().get(collectionId).getEnabled()
         && apiData
             .getExtension(FeaturesExtensionsConfiguration.class, collectionId)
             .map(FeaturesExtensionsConfiguration::getIntersectsParameter)

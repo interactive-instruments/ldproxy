@@ -42,7 +42,7 @@ public class QueryParameterFRoute extends QueryParameterF {
   }
 
   @Override
-  protected boolean matchesPath(String definitionPath) {
+  public boolean matchesPath(String definitionPath) {
     return definitionPath.equals("/routes/{routeId}");
   }
 

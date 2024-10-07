@@ -15,14 +15,12 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.base.Splitter;
 import de.ii.ogcapi.features.search.domain.SearchConfiguration;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
@@ -37,8 +35,8 @@ import java.util.stream.Collectors;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public abstract class QueryParameterTemplateParameter extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<JsonNode> {
+public abstract class QueryParameterTemplateParameter extends OgcApiQueryParameterBase
+    implements TypedQueryParameter<JsonNode> {
 
   ObjectMapper MAPPER =
       new ObjectMapper()
@@ -75,25 +73,8 @@ public abstract class QueryParameterTemplateParameter extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(
-      OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName()
-            + apiData.hashCode()
-            + definitionPath
-            + collectionId
-            + method.name(),
-        () ->
-            apiData.getId().equals(getApiId())
-                && method == HttpMethods.GET
-                && "/search/{queryId}".equals(definitionPath));
-  }
-
-  @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () -> false);
+  public boolean matchesPath(String definitionPath) {
+    return "/search/{queryId}".equals(definitionPath);
   }
 
   @Override

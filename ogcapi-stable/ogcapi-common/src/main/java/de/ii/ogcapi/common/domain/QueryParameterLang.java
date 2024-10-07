@@ -8,16 +8,14 @@
 package de.ii.ogcapi.common.domain;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FoundationConfiguration;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.HttpRequestOverrideQueryParameter;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
@@ -42,10 +40,8 @@ import javax.ws.rs.container.ContainerRequestContext;
  */
 @Singleton
 @AutoBind
-public class QueryParameterLang extends ApiExtensionCache
-    implements OgcApiQueryParameter,
-        TypedQueryParameter<Locale>,
-        HttpRequestOverrideQueryParameter {
+public class QueryParameterLang extends OgcApiQueryParameterBase
+    implements TypedQueryParameter<Locale>, HttpRequestOverrideQueryParameter {
 
   private Schema<?> schema = null;
   private final SchemaValidator schemaValidator;
@@ -92,10 +88,8 @@ public class QueryParameterLang extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () -> isEnabledForApi(apiData) && method == HttpMethods.GET);
+  public boolean matchesPath(String definitionPath) {
+    return true;
   }
 
   @Override
@@ -120,6 +114,15 @@ public class QueryParameterLang extends ApiExtensionCache
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
     return isExtensionEnabled(
         apiData, FoundationConfiguration.class, FoundationConfiguration::getUseLangParameter);
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return super.isEnabledForApi(apiData, collectionId)
+        && apiData
+            .getExtension(FoundationConfiguration.class, collectionId)
+            .map(FoundationConfiguration::getUseLangParameter)
+            .orElse(false);
   }
 
   @Override
