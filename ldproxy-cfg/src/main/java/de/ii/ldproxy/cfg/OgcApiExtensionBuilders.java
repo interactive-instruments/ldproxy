@@ -7,6 +7,7 @@
  */
 package de.ii.ldproxy.cfg;
 
+import de.ii.ogcapi.codelists.domain.ImmutableCodelistsConfiguration;
 import de.ii.ogcapi.collections.domain.ImmutableCollectionsConfiguration;
 import de.ii.ogcapi.collections.queryables.domain.ImmutableQueryablesConfiguration;
 import de.ii.ogcapi.collections.schema.domain.ImmutableSchemaConfiguration;
@@ -138,5 +139,9 @@ public interface OgcApiExtensionBuilders {
 
   default ImmutableXmlConfiguration.Builder xml() {
     return new ImmutableXmlConfiguration.Builder();
+  }
+
+  default ImmutableCodelistsConfiguration.Builder codelists() {
+    return new ImmutableCodelistsConfiguration.Builder();
   }
 }
