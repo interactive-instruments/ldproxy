@@ -26,16 +26,19 @@ import de.ii.ogcapi.features.core.domain.JsonSchemaOneOf;
 import de.ii.ogcapi.features.core.domain.JsonSchemaString;
 import de.ii.ogcapi.features.core.domain.JsonSchemaVisitor;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
+import de.ii.xtraplatform.web.domain.URICustomizer;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class WithCodelistUri implements JsonSchemaVisitor {
 
-  private final String serviceUri;
+  private final URI serviceUri;
   private final OgcApiDataV2 apiData;
 
-  public WithCodelistUri(String serviceUri, OgcApiDataV2 apiData) {
+  public WithCodelistUri(URI serviceUri, OgcApiDataV2 apiData) {
     this.serviceUri = serviceUri;
     this.apiData = apiData;
   }
@@ -146,20 +149,27 @@ public class WithCodelistUri implements JsonSchemaVisitor {
     }
 
     if (schema.getCodelistId().isPresent()) {
-      String codelistUri =
-          String.format(
-              "%s/%s/codelists/%s",
-              serviceUri, String.join("/", apiData.getSubPath()), schema.getCodelistId().get());
-      if (schema instanceof JsonSchemaString) {
-        return new ImmutableJsonSchemaString.Builder()
-            .from((JsonSchemaString) schema)
-            .codelistUri(codelistUri)
-            .build();
-      } else if (schema instanceof JsonSchemaInteger) {
-        return new ImmutableJsonSchemaInteger.Builder()
-            .from((JsonSchemaInteger) schema)
-            .codelistUri(codelistUri)
-            .build();
+      try {
+        String codelistUri =
+            new URICustomizer(serviceUri)
+                .ensureNoTrailingSlash()
+                .ensureLastPathSegments(apiData.getSubPath().toArray(new String[0]))
+                .ensureLastPathSegments("codelists", schema.getCodelistId().get())
+                .build()
+                .toString();
+        if (schema instanceof JsonSchemaString) {
+          return new ImmutableJsonSchemaString.Builder()
+              .from((JsonSchemaString) schema)
+              .codelistUri(codelistUri)
+              .build();
+        } else if (schema instanceof JsonSchemaInteger) {
+          return new ImmutableJsonSchemaInteger.Builder()
+              .from((JsonSchemaInteger) schema)
+              .codelistUri(codelistUri)
+              .build();
+        }
+      } catch (URISyntaxException e) {
+        // ignore
       }
     }
 

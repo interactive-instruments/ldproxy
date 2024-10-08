@@ -20,6 +20,7 @@ import de.ii.xtraplatform.base.domain.ModulesConfiguration.Startup;
 import de.ii.xtraplatform.base.domain.ServerConfiguration;
 import de.ii.xtraplatform.base.domain.StoreConfiguration;
 import io.dropwizard.client.HttpClientConfiguration;
+import java.util.Map;
 
 class AppConfigurationCfg extends AppConfiguration {
 
@@ -61,5 +62,10 @@ class AppConfigurationCfg extends AppConfiguration {
   @Override
   public BackgroundTasksConfiguration getBackgroundTasks() {
     return null;
+  }
+
+  @Override
+  public Map<String, Object> getSubstitutions() {
+    return Map.of();
   }
 }

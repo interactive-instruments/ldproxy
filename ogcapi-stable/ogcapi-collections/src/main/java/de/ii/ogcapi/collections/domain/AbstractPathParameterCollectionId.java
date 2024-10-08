@@ -8,6 +8,7 @@
 package de.ii.ogcapi.collections.domain;
 
 import com.google.common.collect.ImmutableList;
+import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
@@ -23,7 +24,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class AbstractPathParameterCollectionId implements OgcApiPathParameter {
+public abstract class AbstractPathParameterCollectionId extends ApiExtensionCache
+    implements OgcApiPathParameter {
 
   private static final Logger LOGGER =
       LoggerFactory.getLogger(AbstractPathParameterCollectionId.class);
@@ -102,12 +104,16 @@ public abstract class AbstractPathParameterCollectionId implements OgcApiPathPar
 
   @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-    return matchesPath(definitionPath) && isEnabledForApi(apiData);
+    return computeIfAbsent(
+        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath,
+        () -> matchesPath(definitionPath) && isEnabledForApi(apiData));
   }
 
   @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, String collectionId) {
-    return matchesPath(definitionPath) && isEnabledForApi(apiData, collectionId);
+    return computeIfAbsent(
+        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + collectionId,
+        () -> matchesPath(definitionPath) && isEnabledForApi(apiData, collectionId));
   }
 
   @Override

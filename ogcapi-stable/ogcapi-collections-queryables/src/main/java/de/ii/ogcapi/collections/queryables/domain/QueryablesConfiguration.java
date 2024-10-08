@@ -115,7 +115,7 @@ public interface QueryablesConfiguration extends ExtensionConfiguration, Caching
   /**
    * @langEn If `true`, the Queryables endpoint will be enabled.
    * @langDe Bei `true` wird die Queryables-Ressource aktiviert.
-   * @default false
+   * @default true
    * @since v3.4
    */
   @Nullable
@@ -152,7 +152,7 @@ public interface QueryablesConfiguration extends ExtensionConfiguration, Caching
       FeaturesCoreProviders providers) {
     return providers
         .getFeatureSchema(apiData, collectionData)
-        .map(schema -> getQueryables(apiData, collectionData, schema, providers))
+        .map(schema -> getQueryables(apiData, collectionData, schema, providers, true))
         .orElse(ImmutableMap.of());
   }
 
@@ -160,8 +160,9 @@ public interface QueryablesConfiguration extends ExtensionConfiguration, Caching
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
       FeatureSchema schema,
-      FeaturesCoreProviders providers) {
-    return getQueryablesSchema(apiData, collectionData, schema, providers)
+      FeaturesCoreProviders providers,
+      boolean cleanupKeys) {
+    return getQueryablesSchema(apiData, collectionData, schema, providers, cleanupKeys)
         .getAllNestedProperties()
         .stream()
         .filter(FeatureSchema::queryable)
@@ -173,16 +174,33 @@ public interface QueryablesConfiguration extends ExtensionConfiguration, Caching
             ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue, (first, second) -> second));
   }
 
+  default Map<String, FeatureSchema> getQueryables(
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData,
+      FeatureSchema schema,
+      FeaturesCoreProviders providers) {
+    return getQueryables(apiData, collectionData, schema, providers, false);
+  }
+
+  default FeatureSchema getQueryablesSchema(
+      OgcApiDataV2 apiData,
+      FeatureTypeConfigurationOgcApi collectionData,
+      FeatureSchema schema,
+      FeaturesCoreProviders providers,
+      boolean cleanupKeys) {
+    FeatureQueries featureQueries =
+        providers.getFeatureProviderOrThrow(apiData, collectionData, FeatureProvider::queries);
+
+    return featureQueries.getQueryablesSchema(
+        schema, getIncluded(), getExcluded(), getPathSeparator().toString(), cleanupKeys);
+  }
+
   default FeatureSchema getQueryablesSchema(
       OgcApiDataV2 apiData,
       FeatureTypeConfigurationOgcApi collectionData,
       FeatureSchema schema,
       FeaturesCoreProviders providers) {
-    FeatureQueries featureQueries =
-        providers.getFeatureProviderOrThrow(apiData, collectionData, FeatureProvider::queries);
-
-    return featureQueries.getQueryablesSchema(
-        schema, getIncluded(), getExcluded(), getPathSeparator().toString());
+    return getQueryablesSchema(apiData, collectionData, schema, providers, false);
   }
 
   abstract class Builder extends ExtensionConfiguration.Builder {}

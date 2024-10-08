@@ -69,6 +69,7 @@ public class LandingPageExtensionOpenApi implements LandingPageExtension {
                         .href(
                             uriCustomizer
                                 .copy()
+                                .ensureNoTrailingSlash()
                                 .ensureLastPathSegment("api")
                                 .setParameter("f", f.getMediaType().parameter())
                                 .toString())

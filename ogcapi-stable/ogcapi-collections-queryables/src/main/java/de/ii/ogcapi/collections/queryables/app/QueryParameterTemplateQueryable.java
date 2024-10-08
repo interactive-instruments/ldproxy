@@ -10,14 +10,12 @@ package de.ii.ogcapi.collections.queryables.app;
 import com.google.common.base.Splitter;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
@@ -39,8 +37,8 @@ import java.util.stream.Collectors;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache
-    implements OgcApiQueryParameter, FeatureQueryParameter, TypedQueryParameter<Cql2Expression> {
+public abstract class QueryParameterTemplateQueryable extends OgcApiQueryParameterBase
+    implements FeatureQueryParameter, TypedQueryParameter<Cql2Expression> {
 
   private static final Splitter ARRAY_SPLITTER = Splitter.on(',').trimResults();
 
@@ -76,26 +74,8 @@ public abstract class QueryParameterTemplateQueryable extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(
-      OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName()
-            + apiData.hashCode()
-            + definitionPath
-            + collectionId
-            + method.name(),
-        () ->
-            apiData.getId().equals(getApiId())
-                && method == HttpMethods.GET
-                && "/collections/{collectionId}".equals(definitionPath)
-                && collectionId.equals(getCollectionId()));
-  }
-
-  @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () -> false);
+  public boolean matchesPath(String definitionPath) {
+    return "/collections/{collectionId}/items".equals(definitionPath);
   }
 
   @Override

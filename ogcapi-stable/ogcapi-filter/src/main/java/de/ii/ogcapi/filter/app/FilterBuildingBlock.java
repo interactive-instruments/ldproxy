@@ -48,7 +48,7 @@ import javax.inject.Singleton;
  *     *Accent-insensitive Comparisons*, *Basic Spatial Functions*, *Basic Spatial Functions with
  *     additional Spatial Literals*, *Spatial Functions*, *Temporal Functions*, *Array Functions*,
  *     *Property-Property Comparisons*, *CQL2 Text encoding*, and *CQL2 JSON encoding* from the
- *     standard [Common Query Language (CQL2)](https://docs.ogc.org/is/21-065r1/21-065r1.html).
+ *     standard [Common Query Language (CQL2)](https://docs.ogc.org/is/21-065r2/21-065r2.html).
  *     <p>The publication of queryables is controlled via [Feature Collections -
  *     Queryables](feature_collections_-_queryables.md) and is a prerequisite for clients to be able
  *     to determine the queryable feature properties.
@@ -59,7 +59,7 @@ import javax.inject.Singleton;
  *     *Accent-insensitive Comparisons*, *Basic Spatial Functions*, *Basic Spatial Functions with
  *     additional Spatial Literals*, *Spatial Functions*, *Temporal Functions*, *Array Functions*,
  *     *Property-Property Comparisons*, *CQL2 Text encoding*, und *CQL2 JSON encoding* aus dem
- *     Standard [Common Query Language (CQL2)](https://docs.ogc.org/is/21-065r1/21-065r1.html).
+ *     Standard [Common Query Language (CQL2)](https://docs.ogc.org/is/21-065r2/21-065r2.html).
  *     <p>Die Veröffentlichung der Queryables wird über [Feature Collections -
  *     Queryables](feature_collections_-_queryables.md) gesteuert und ist Voraussetzung, damit
  *     Clients die abfragbaren Objekteigenschaften bestimmen können.

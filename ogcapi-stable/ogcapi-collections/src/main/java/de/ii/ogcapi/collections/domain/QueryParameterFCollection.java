@@ -9,6 +9,7 @@ package de.ii.ogcapi.collections.domain;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.common.domain.GenericFormatExtension;
+import de.ii.ogcapi.common.domain.QueryParameterF;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
@@ -25,7 +26,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterFCollection extends QueryParameterFSubCollection {
+public class QueryParameterFCollection extends QueryParameterF {
 
   @Inject
   public QueryParameterFCollection(

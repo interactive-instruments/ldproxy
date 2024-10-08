@@ -7,16 +7,14 @@
  */
 package de.ii.ogcapi.features.core.domain;
 
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
 
-public abstract class AbstractQueryParameterDatetime extends ApiExtensionCache
-    implements OgcApiQueryParameter {
+public abstract class AbstractQueryParameterDatetime extends OgcApiQueryParameterBase {
 
   private static final String NOW_REGEX = "(?:[nN][oO][wW])";
   private static final String OPEN_REGEX = "(?:\\.\\.)?";

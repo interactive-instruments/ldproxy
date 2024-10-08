@@ -10,15 +10,13 @@ package de.ii.ogcapi.tiles.app;
 import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
@@ -52,11 +50,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterCollections extends ApiExtensionCache
-    implements OgcApiQueryParameter,
-        ConformanceClass,
-        TypedQueryParameter<List<String>>,
-        TileGenerationUserParameter {
+public class QueryParameterCollections extends OgcApiQueryParameterBase
+    implements ConformanceClass, TypedQueryParameter<List<String>>, TileGenerationUserParameter {
 
   private final SchemaValidator schemaValidator;
   private final TilesProviders tilesProviders;
@@ -84,14 +79,8 @@ public class QueryParameterCollections extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && method == HttpMethods.GET
-                && definitionPath.equals(
-                    "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
   }
 
   private final Map<Integer, Schema<?>> schemaMap = new ConcurrentHashMap<>();

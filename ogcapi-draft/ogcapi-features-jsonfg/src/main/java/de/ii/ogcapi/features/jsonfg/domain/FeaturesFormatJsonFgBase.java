@@ -13,6 +13,7 @@ import com.github.azahnen.dagger.annotations.AutoMultiBind;
 import com.google.common.collect.ImmutableSortedSet;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.geojson.domain.FeatureEncoderGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonConfiguration;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
@@ -43,8 +44,9 @@ import java.util.Optional;
 @AutoMultiBind
 public abstract class FeaturesFormatJsonFgBase extends FeatureFormatExtension {
 
-  protected FeaturesFormatJsonFgBase(ExtensionRegistry extensionRegistry) {
-    super(extensionRegistry);
+  protected FeaturesFormatJsonFgBase(
+      ExtensionRegistry extensionRegistry, FeaturesCoreProviders providers) {
+    super(extensionRegistry, providers);
   }
 
   @Override
@@ -182,6 +184,11 @@ public abstract class FeaturesFormatJsonFgBase extends FeatureFormatExtension {
 
   @Override
   public boolean isComplex() {
+    return true;
+  }
+
+  @Override
+  public boolean supportsRootConcat() {
     return true;
   }
 

@@ -8,13 +8,12 @@
 package de.ii.ogcapi.collections.queryables.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.collections.domain.QueryParameterFSubCollection;
 import de.ii.ogcapi.collections.queryables.domain.QueryablesConfiguration;
+import de.ii.ogcapi.common.domain.QueryParameterF;
 import de.ii.ogcapi.features.core.domain.CollectionPropertiesFormat;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import java.util.Optional;
@@ -31,7 +30,7 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterFQueryables extends QueryParameterFSubCollection {
+public class QueryParameterFQueryables extends QueryParameterF {
 
   @Inject
   public QueryParameterFQueryables(
@@ -45,7 +44,7 @@ public class QueryParameterFQueryables extends QueryParameterFSubCollection {
   }
 
   @Override
-  protected boolean matchesPath(String definitionPath) {
+  public boolean matchesPath(String definitionPath) {
     return "/collections/{collectionId}/queryables".equals(definitionPath);
   }
 
@@ -57,21 +56,6 @@ public class QueryParameterFQueryables extends QueryParameterFSubCollection {
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return QueryablesConfiguration.class;
-  }
-
-  @Override
-  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return apiData.getCollections().keySet().stream()
-        .anyMatch(collectionId -> isEnabledForApi(apiData, collectionId));
-  }
-
-  @Override
-  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-    return apiData
-        .getExtension(QueryablesConfiguration.class, collectionId)
-        .filter(QueryablesConfiguration::isEnabled)
-        .filter(QueryablesConfiguration::endpointIsEnabled)
-        .isPresent();
   }
 
   @Override

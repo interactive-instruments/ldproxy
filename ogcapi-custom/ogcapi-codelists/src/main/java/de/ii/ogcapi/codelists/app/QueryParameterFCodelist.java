@@ -14,7 +14,6 @@ import de.ii.ogcapi.common.domain.QueryParameterF;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import java.util.Optional;
@@ -45,18 +44,13 @@ public class QueryParameterFCodelist extends QueryParameterF {
   }
 
   @Override
-  protected boolean matchesPath(String definitionPath) {
+  public boolean matchesPath(String definitionPath) {
     return definitionPath.equals("/codelists/{codelistId}");
   }
 
   @Override
   protected Class<? extends FormatExtension> getFormatClass() {
     return CodelistFormatExtension.class;
-  }
-
-  @Override
-  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return super.isEnabledForApi(apiData);
   }
 
   @Override

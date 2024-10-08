@@ -8,13 +8,11 @@
 package de.ii.ogcapi.tiles.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
@@ -46,8 +44,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterLimitTile extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<Integer>, TileGenerationUserParameter {
+public class QueryParameterLimitTile extends OgcApiQueryParameterBase
+    implements TypedQueryParameter<Integer>, TileGenerationUserParameter {
 
   private final SchemaValidator schemaValidator;
   private final TilesProviders tilesProviders;
@@ -74,14 +72,9 @@ public class QueryParameterLimitTile extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && method == HttpMethods.GET
-                && definitionPath.equals(
-                    "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}"));
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.equals(
+        "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
   }
 
   private final ConcurrentMap<Integer, Map<String, Schema<?>>> schemaMap =

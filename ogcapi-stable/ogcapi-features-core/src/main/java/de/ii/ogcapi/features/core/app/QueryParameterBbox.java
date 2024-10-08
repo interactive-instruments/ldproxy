@@ -13,14 +13,12 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
@@ -66,8 +64,8 @@ import org.kortforsyningen.proj.Units;
  */
 @Singleton
 @AutoBind
-public class QueryParameterBbox extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<Cql2Expression>, FeatureQueryParameter {
+public class QueryParameterBbox extends OgcApiQueryParameterBase
+    implements TypedQueryParameter<Cql2Expression>, FeatureQueryParameter {
 
   private static final Splitter ARRAY_SPLITTER = Splitter.on(',').trimResults();
   private static final double BUFFER_DEGREE = 0.00001;
@@ -189,7 +187,7 @@ public class QueryParameterBbox extends ApiExtensionCache
 
     Optional<FeatureSchema> primaryGeometry =
         providers
-            .getFeatureSchema(api.getData(), collectionData)
+            .getQueryablesSchema(api.getData(), collectionData)
             .orElseThrow(
                 () ->
                     new IllegalStateException(
@@ -267,13 +265,8 @@ public class QueryParameterBbox extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && method == HttpMethods.GET
-                && definitionPath.equals("/collections/{collectionId}/items"));
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.equals("/collections/{collectionId}/items");
   }
 
   @Override

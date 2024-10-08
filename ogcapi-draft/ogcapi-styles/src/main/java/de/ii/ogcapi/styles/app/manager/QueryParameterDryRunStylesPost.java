@@ -25,30 +25,33 @@ import javax.inject.Singleton;
 
 /**
  * @title dry-run
- * @endpoints Styles, Style, Collection Styles, Collection Style
- * @langEn If set to 'true', the operation just validates the content without creating a new style
- *     or updating an existing style.
- * @langDe Bei `true` wird der Inhalt lediglich überprüft, ohne dass ein neuer Style erstellt oder
- *     ein bestehender Style aktualisiert wird.
+ * @endpoints Styles, Collection Styles
+ * @langEn If set to 'true', the operation just validates the content without creating a new style.
+ * @langDe Bei `true` wird der Inhalt lediglich überprüft, ohne dass ein neuer Style erstellt wird.
  */
 @Singleton
 @AutoBind
-public class QueryParameterDryRunStylesManager extends QueryParameterDryRun {
+public class QueryParameterDryRunStylesPost extends QueryParameterDryRun {
 
   @Inject
-  QueryParameterDryRunStylesManager(SchemaValidator schemaValidator) {
+  QueryParameterDryRunStylesPost(SchemaValidator schemaValidator) {
     super(schemaValidator);
   }
 
   @Override
   public String getId() {
-    return "dryRunStylesManager";
+    return "dryRunStylesPost";
   }
 
   @Override
   public String getDescription() {
-    return "'true' just validates the style without creating a new style or updating an existing style "
+    return "'true' just validates the style without creating a new style "
         + "and returns 400, if validation fails, otherwise 204.";
+  }
+
+  @Override
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.endsWith("/styles");
   }
 
   @Override
@@ -56,13 +59,7 @@ public class QueryParameterDryRunStylesManager extends QueryParameterDryRun {
     return computeIfAbsent(
         this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
         () ->
-            isEnabledForApi(apiData)
-                && ((method == HttpMethods.PUT
-                        && definitionPath.endsWith("/styles/{styleId}/metadata"))
-                    || (method == HttpMethods.PATCH
-                        && definitionPath.endsWith("/styles/{styleId}/metadata"))
-                    || (method == HttpMethods.PUT && definitionPath.endsWith("/styles/{styleId}"))
-                    || (method == HttpMethods.POST && definitionPath.endsWith("/styles"))));
+            isEnabledForApi(apiData) && method == HttpMethods.POST && matchesPath(definitionPath));
   }
 
   @Override

@@ -8,16 +8,14 @@
 package de.ii.ogcapi.common.domain;
 
 import com.google.common.collect.ImmutableList;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.HttpRequestOverrideQueryParameter;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
@@ -34,10 +32,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.ws.rs.container.ContainerRequestContext;
 
-public abstract class QueryParameterF extends ApiExtensionCache
-    implements OgcApiQueryParameter,
-        TypedQueryParameter<ApiMediaType>,
-        HttpRequestOverrideQueryParameter {
+public abstract class QueryParameterF extends OgcApiQueryParameterBase
+    implements TypedQueryParameter<ApiMediaType>, HttpRequestOverrideQueryParameter {
 
   private static final List<String> USER_AGENT_BOTS =
       ImmutableList.of(
@@ -68,20 +64,6 @@ public abstract class QueryParameterF extends ApiExtensionCache
   public String getDescription() {
     return "Select the output format of the response. If no value is provided, "
         + "the standard HTTP rules apply, i.e., the accept header will be used to determine the format.";
-  }
-
-  @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && (method == HttpMethods.GET || method == HttpMethods.HEAD)
-                && isApplicable(apiData, definitionPath));
-  }
-
-  protected boolean isApplicable(OgcApiDataV2 apiData, String definitionPath) {
-    return matchesPath(definitionPath) && isEnabledForApi(apiData);
   }
 
   @Override
@@ -123,8 +105,6 @@ public abstract class QueryParameterF extends ApiExtensionCache
       }
     }
   }
-
-  protected abstract boolean matchesPath(String definitionPath);
 
   protected abstract Class<? extends FormatExtension> getFormatClass();
 

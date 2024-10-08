@@ -12,14 +12,12 @@ import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.filter.app.FilterBuildingBlock;
 import de.ii.ogcapi.filter.domain.FilterConfiguration;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
 import de.ii.ogcapi.foundation.domain.TypedQueryParameter;
@@ -52,8 +50,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterFilterLang extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<Cql.Format> {
+public class QueryParameterFilterLang extends OgcApiQueryParameterBase
+    implements TypedQueryParameter<Cql.Format> {
 
   static final String FILTER_LANG_CQL2_TEXT = "cql2-text";
   static final String FILTER_LANG_CQL2_JSON = "cql2-json";
@@ -68,13 +66,21 @@ public class QueryParameterFilterLang extends ApiExtensionCache
     this.schemaValidator = schemaValidator;
   }
 
+  private boolean supportsCql2(OgcApiDataV2 apiData) {
+    return providers
+        .getFeatureProvider(apiData, FeatureProvider::queries)
+        .map(FeatureQueries::supportsCql2)
+        .orElse(false);
+  }
+
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return super.isEnabledForApi(apiData)
-        && providers
-            .getFeatureProvider(apiData, FeatureProvider::queries)
-            .map(FeatureQueries::supportsCql2)
-            .orElse(false);
+    return super.isEnabledForApi(apiData) && supportsCql2(apiData);
+  }
+
+  @Override
+  public boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
+    return super.isEnabledForApi(apiData, collectionId) && supportsCql2(apiData);
   }
 
   @Override
@@ -85,7 +91,7 @@ public class QueryParameterFilterLang extends ApiExtensionCache
   @Override
   public String getDescription() {
     return "Language of the query expression in the 'filter' parameter. Supported are 'cql2-text' (default) and 'cql2-json', "
-        + "specified in the [OGC Standard 'Common Query Language (CQL2)'](https://docs.ogc.org/is/21-065r1/21-065r1.html). "
+        + "specified in the [OGC Standard 'Common Query Language (CQL2)'](https://docs.ogc.org/is/21-065r2/21-065r2.html). "
         + "'cql2-text' is an SQL-like text encoding for "
         + "filter expressions that also supports spatial, temporal and array predicates. 'cql2-json' is a JSON encoding of "
         + "that grammar, suitable for use as part of a JSON object that represents a query. The use of 'cql2-text' is recommended "
@@ -93,17 +99,11 @@ public class QueryParameterFilterLang extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && method == HttpMethods.GET
-                && (definitionPath.equals("/collections/{collectionId}/items")
-                    || definitionPath.equals(
-                        "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
-                    || definitionPath.equals(
-                        "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.equals("/collections/{collectionId}/items")
+        || definitionPath.equals("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
+        || definitionPath.equals(
+            "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
   }
 
   @Override

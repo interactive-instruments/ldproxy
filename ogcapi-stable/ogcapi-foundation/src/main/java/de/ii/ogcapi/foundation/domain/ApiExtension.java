@@ -22,8 +22,9 @@ public interface ApiExtension {
   }
 
   default boolean isEnabledForApi(OgcApiDataV2 apiData, String collectionId) {
-    return isExtensionEnabled(
-        apiData.getCollections().get(collectionId), getBuildingBlockConfigurationType());
+    return apiData.isCollectionEnabled(collectionId)
+        && isExtensionEnabled(
+            apiData.getCollections().get(collectionId), getBuildingBlockConfigurationType());
   }
 
   default Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {

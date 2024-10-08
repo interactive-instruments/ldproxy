@@ -26,7 +26,7 @@ public interface OwsServiceProvider {
   Optional<OwsOnlineResource> getProviderSite();
 
   @JacksonXmlProperty(namespace = WmtsServiceMetadata.XMLNS_OWS, localName = "ServiceContact")
-  OwsServiceContact getServiceContact();
+  OwsResponsibleParty getServiceContact();
 
   @SuppressWarnings("UnstableApiUsage")
   Funnel<OwsServiceProvider> FUNNEL =
