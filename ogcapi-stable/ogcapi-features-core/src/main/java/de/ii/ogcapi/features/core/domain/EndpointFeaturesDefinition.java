@@ -21,11 +21,16 @@ import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FormatExtension;
 import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.ImmutableApiEndpointDefinition;
+import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.foundation.domain.OgcApiPathParameter;
 import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
 import de.ii.ogcapi.foundation.domain.ParameterExtension;
 import de.ii.ogcapi.foundation.domain.RuntimeQueryParametersExtension;
+import de.ii.xtraplatform.entities.domain.ImmutableValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult;
+import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
+import de.ii.xtraplatform.features.domain.SchemaBase;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -60,6 +65,41 @@ public abstract class EndpointFeaturesDefinition extends EndpointSubCollection {
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return FeaturesCoreConfiguration.class;
+  }
+
+  @Override
+  public ValidationResult onStartup(OgcApi api, MODE apiValidation) {
+    ImmutableValidationResult.Builder builder =
+        ImmutableValidationResult.builder()
+            .from(super.onStartup(api, apiValidation))
+            .mode(apiValidation);
+
+    OgcApiDataV2 apiData = api.getData();
+    if (apiValidation != MODE.NONE) {
+      apiData
+          .getCollections()
+          .forEach(
+              (collectionId, collectionData) -> {
+                extensionRegistry.getExtensionsForType(FeatureFormatExtension.class).stream()
+                    .filter(f -> f.isEnabledForApi(apiData, collectionData.getId()))
+                    .filter(
+                        f ->
+                            !f.supportsEmbedding()
+                                && providers
+                                    .getFeatureSchema(apiData, collectionData)
+                                    .filter(SchemaBase::hasEmbeddedFeature)
+                                    .isPresent())
+                    .forEach(
+                        f ->
+                            builder.addStrictErrors(
+                                "In API '{}', collection '{}': Feature format '{}' does not support embedding, but the feature type has embedded features. Requesting the format will result in an error.",
+                                api.getId(),
+                                collectionId,
+                                f.getMediaType().label()));
+              });
+    }
+
+    return builder.build();
   }
 
   @Override

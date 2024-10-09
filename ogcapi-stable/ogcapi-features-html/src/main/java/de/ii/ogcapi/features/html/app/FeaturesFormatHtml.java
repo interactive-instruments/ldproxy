@@ -117,6 +117,11 @@ public class FeaturesFormatHtml extends FeatureFormatExtension
   }
 
   @Override
+  public boolean supportsEmbedding() {
+    return true;
+  }
+
+  @Override
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
 

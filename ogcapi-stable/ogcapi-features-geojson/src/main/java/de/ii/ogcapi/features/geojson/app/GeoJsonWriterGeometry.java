@@ -14,7 +14,9 @@ import de.ii.xtraplatform.crs.domain.CoordinateTuple;
 import de.ii.xtraplatform.crs.domain.CrsTransformer;
 import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
+import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
+import de.ii.xtraplatform.features.domain.SchemaBase.Role;
 import de.ii.xtraplatform.features.json.domain.GeoJsonGeometryType;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -22,6 +24,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Stack;
 import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -44,6 +47,7 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
   private boolean geometryOpen;
   private boolean hasPrimaryGeometry;
   private boolean inPrimaryGeometry;
+  private Stack<Boolean> hasEmbeddedPrimaryGeometry;
   private final List<String> pos = new ArrayList<>();
   // TODO: move coordinate conversion to WGS 84 to the transformation pipeline,
   //       see https://github.com/interactive-instruments/ldproxy/issues/521
@@ -83,6 +87,7 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
       throws IOException {
     hasPrimaryGeometry = false;
     inPrimaryGeometry = false;
+    hasEmbeddedPrimaryGeometry = new Stack<>();
 
     next.accept(context);
   }
@@ -93,13 +98,21 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
       throws IOException {
     if (context.schema().filter(SchemaBase::isSpatial).isPresent()
         && context.geometryType().isPresent()) {
-      if (suppressPrimaryGeometry && context.schema().get().isPrimaryGeometry()) {
+      if (suppressPrimaryGeometry
+          && ((!inEmbeddedFeature() && context.schema().get().isPrimaryGeometry())
+              || (inEmbeddedFeature() && context.schema().get().isEmbeddedPrimaryGeometry()))) {
         inPrimaryGeometry = true;
       } else {
-        if (context.schema().get().isPrimaryGeometry()) {
-          hasPrimaryGeometry = true;
+        if ((!inEmbeddedFeature() && context.schema().get().isPrimaryGeometry())
+            || (inEmbeddedFeature() && context.schema().get().isEmbeddedPrimaryGeometry())) {
+          if (inEmbeddedFeature()) {
+            hasEmbeddedPrimaryGeometry.set(hasEmbeddedPrimaryGeometry.size() - 1, true);
+            context.encoding().stopBufferingEmbeddedFeature();
+          } else {
+            hasPrimaryGeometry = true;
+            context.encoding().stopBuffering();
+          }
           inPrimaryGeometry = true;
-          context.encoding().stopBuffering();
 
           context.encoding().getJson().writeFieldName("geometry");
         } else {
@@ -117,9 +130,19 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
 
         this.geometryOpen = true;
       }
+    } else if (context
+        .schema()
+        .flatMap(FeatureSchema::getRole)
+        .filter(r -> r == Role.EMBEDDED_FEATURE)
+        .isPresent()) {
+      this.hasEmbeddedPrimaryGeometry.push(false);
     }
 
     next.accept(context);
+  }
+
+  private boolean inEmbeddedFeature() {
+    return !hasEmbeddedPrimaryGeometry.isEmpty();
   }
 
   @Override
@@ -181,8 +204,12 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
     if (context.schema().filter(SchemaBase::isSpatial).isPresent() && geometryOpen) {
 
       boolean stopBuffering = context.schema().get().isPrimaryGeometry();
+      boolean stopBufferingEmbeddedFeature =
+          inEmbeddedFeature() && context.schema().get().isEmbeddedPrimaryGeometry();
       if (stopBuffering) {
         context.encoding().stopBuffering();
+      } else if (stopBufferingEmbeddedFeature) {
+        context.encoding().stopBufferingEmbeddedFeature();
       }
 
       geometryOpen = false;
@@ -193,6 +220,25 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
 
       if (stopBuffering) {
         context.encoding().flushBuffer();
+      } else if (stopBufferingEmbeddedFeature) {
+        context.encoding().flushBufferEmbeddedFeature();
+      }
+    } else if (inEmbeddedFeature()
+        && context
+            .schema()
+            .flatMap(FeatureSchema::getRole)
+            .filter(r -> r == Role.EMBEDDED_FEATURE)
+            .isPresent()) {
+
+      // write null geometry if none was written for this feature
+      if (!hasEmbeddedPrimaryGeometry.pop()) {
+        context.encoding().stopBufferingEmbeddedFeature();
+
+        // null geometry
+        context.encoding().getJson().writeFieldName("geometry");
+        context.encoding().getJson().writeNull();
+
+        context.encoding().flushBufferEmbeddedFeature();
       }
     }
 
@@ -238,10 +284,20 @@ public class GeoJsonWriterGeometry implements GeoJsonWriter {
   }
 
   private void startBufferingIfNecessary(EncodingAwareContextGeoJson context) {
-    if (!geometryOpen && !hasPrimaryGeometry && !context.encoding().getState().isBuffering()) {
+    if (!geometryOpen
+        && ((!hasPrimaryGeometry
+                && !inEmbeddedFeature()
+                && !context.encoding().getState().isBuffering())
+            || (inEmbeddedFeature()
+                && !hasEmbeddedPrimaryGeometry.peek()
+                && context.encoding().getState().isBufferingEmbeddedFeature() == 0))) {
       // buffer properties until primary geometry arrives
       try {
-        context.encoding().startBuffering();
+        if (inEmbeddedFeature()) {
+          context.encoding().startBufferingEmbeddedFeature();
+        } else {
+          context.encoding().startBuffering();
+        }
       } catch (IOException e) {
         throw new IllegalStateException(e);
       }

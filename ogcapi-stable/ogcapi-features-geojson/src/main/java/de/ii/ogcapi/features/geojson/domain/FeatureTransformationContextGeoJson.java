@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Stack;
 import org.immutables.value.Value;
 
 /**
@@ -82,9 +83,14 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
 
   // TODO: to state
   private TokenBuffer tokenBuffer;
+  private final Stack<TokenBuffer> tokenBufferEmbeddedFeature = new Stack<>();
 
   protected TokenBuffer getJsonBuffer() {
     return tokenBuffer;
+  }
+
+  protected TokenBuffer getJsonBufferEmbeddedFeature() {
+    return tokenBufferEmbeddedFeature.empty() ? null : tokenBufferEmbeddedFeature.peek();
   }
 
   // @Value.Derived
@@ -98,7 +104,9 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
   }
 
   public JsonGenerator getJson() {
-    return getState().isBuffering() ? getJsonBuffer() : getJsonGenerator();
+    return getState().isBufferingEmbeddedFeature() > 0
+        ? getJsonBufferEmbeddedFeature()
+        : (getState().isBuffering() ? getJsonBuffer() : getJsonGenerator());
   }
 
   public final void startBuffering() throws IOException {
@@ -110,7 +118,6 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
   public final void stopBuffering() throws IOException {
     if (getState().isBuffering()) {
       getState().setIsBuffering(false);
-      // getJsonBuffer().serialize(getJsonGenerator());
       getJsonBuffer().close();
     }
   }
@@ -119,6 +126,37 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
     if (!Objects.isNull(getJsonBuffer())) {
       getJsonBuffer().serialize(getJsonGenerator());
       getJsonBuffer().flush();
+    }
+  }
+
+  public final void startBufferingEmbeddedFeature() throws IOException {
+    if (!getState().isBuffering()) {
+      getJsonGenerator().flush();
+    }
+    this.tokenBufferEmbeddedFeature.push(createJsonBuffer());
+    getState().setIsBufferingEmbeddedFeature(getState().isBufferingEmbeddedFeature() + 1);
+  }
+
+  public final void stopBufferingEmbeddedFeature() throws IOException {
+    if (getState().isBufferingEmbeddedFeature() > 0) {
+      getState().setIsBufferingEmbeddedFeature(getState().isBufferingEmbeddedFeature() - 1);
+      getJsonBufferEmbeddedFeature().close();
+    }
+  }
+
+  public final void flushBufferEmbeddedFeature() throws IOException {
+    TokenBuffer buffer = this.tokenBufferEmbeddedFeature.pop();
+    if (!Objects.isNull(buffer)) {
+      if (this.tokenBufferEmbeddedFeature.empty()) {
+        if (getState().isBuffering()) {
+          buffer.serialize(getJsonBuffer());
+        } else {
+          buffer.serialize(getJsonGenerator());
+        }
+      } else {
+        buffer.serialize(getJsonBufferEmbeddedFeature());
+      }
+      buffer.flush();
     }
   }
 
@@ -137,6 +175,11 @@ public abstract class FeatureTransformationContextGeoJson implements FeatureTran
     @Value.Default
     public boolean isBuffering() {
       return false;
+    }
+
+    @Value.Default
+    public int isBufferingEmbeddedFeature() {
+      return 0;
     }
 
     @Value.Default

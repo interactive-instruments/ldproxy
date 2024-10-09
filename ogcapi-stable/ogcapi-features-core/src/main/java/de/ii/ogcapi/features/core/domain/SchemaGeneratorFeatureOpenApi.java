@@ -19,10 +19,12 @@ import de.ii.xtraplatform.features.domain.ImmutableFeatureSchema;
 import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
+import de.ii.xtraplatform.features.domain.transform.WithScope;
 import de.ii.xtraplatform.features.domain.transform.WithTransformationsApplied;
 import de.ii.xtraplatform.values.domain.ValueStore;
 import de.ii.xtraplatform.values.domain.Values;
 import io.swagger.v3.oas.models.media.Schema;
+import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,6 +38,10 @@ import javax.inject.Singleton;
 public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
 
   public static final String DEFAULT_FLATTENING_SEPARATOR = ".";
+  private static final WithTransformationsApplied WITH_TRANSFORMATIONS_APPLIED =
+      new WithTransformationsApplied();
+  private static final WithScope WITH_SCOPE_SCHEMA =
+      new WithScope(EnumSet.of(SchemaBase.Scope.RETURNABLE, SchemaBase.Scope.RECEIVABLE));
 
   private final ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaCache =
       new ConcurrentHashMap<>();
@@ -97,7 +103,10 @@ public class SchemaGeneratorFeatureOpenApi implements SchemaGeneratorOpenApi {
         new SchemaDeriverOpenApiFeatures(
             collectionData.getLabel(), collectionData.getDescription(), codelistStore.asMap());
 
-    return featureSchema.accept(new WithTransformationsApplied()).accept(schemaDeriver);
+    return featureSchema
+        .accept(WITH_SCOPE_SCHEMA)
+        .accept(WITH_TRANSFORMATIONS_APPLIED)
+        .accept(schemaDeriver);
   }
 
   @Override
