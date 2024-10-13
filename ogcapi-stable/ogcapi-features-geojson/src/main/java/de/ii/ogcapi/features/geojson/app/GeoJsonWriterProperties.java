@@ -13,9 +13,11 @@ import de.ii.ogcapi.features.geojson.domain.EncodingAwareContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.FeatureTransformationContextGeoJson;
 import de.ii.ogcapi.features.geojson.domain.GeoJsonWriter;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase.Role;
 import de.ii.xtraplatform.features.domain.SchemaBase.Type;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Stack;
 import java.util.function.Consumer;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -32,6 +34,8 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   private static final Logger LOGGER = LoggerFactory.getLogger(GeoJsonWriterProperties.class);
 
   private boolean currentStarted;
+  private int embeddedFeatureNestingLevel;
+  private Stack<Boolean> currentEmbeddedStarted;
 
   @Inject
   public GeoJsonWriterProperties() {}
@@ -44,6 +48,18 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   @Override
   public int getSortPriority() {
     return 40;
+  }
+
+  @Override
+  public void onFeatureStart(
+      EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
+      throws IOException {
+
+    this.currentStarted = false;
+    this.embeddedFeatureNestingLevel = 0;
+    this.currentEmbeddedStarted = new Stack<>();
+
+    next.accept(context);
   }
 
   @Override
@@ -78,6 +94,12 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         context.encoding().getJson().writeObjectFieldStart(getPropertiesFieldName());
       }
 
+      if (embeddedFeatureNestingLevel > 0 && !currentEmbeddedStarted.peek()) {
+        this.currentEmbeddedStarted.set(currentEmbeddedStarted.size() - 1, true);
+
+        context.encoding().getJson().writeObjectFieldStart(getPropertiesFieldName());
+      }
+
       context.encoding().getJson().writeArrayFieldStart(schema.getName());
     }
 
@@ -97,6 +119,12 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
         context.encoding().getJson().writeObjectFieldStart(getPropertiesFieldName());
       }
 
+      if (embeddedFeatureNestingLevel > 0 && !currentEmbeddedStarted.peek()) {
+        this.currentEmbeddedStarted.set(currentEmbeddedStarted.size() - 1, true);
+
+        context.encoding().getJson().writeObjectFieldStart(getPropertiesFieldName());
+      }
+
       openObject(context.encoding(), schema);
     }
 
@@ -108,7 +136,9 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
     if (context.schema().filter(FeatureSchema::isObject).isPresent()) {
-      closeObject(context.encoding());
+      FeatureSchema schema = context.schema().get();
+
+      closeObject(context.encoding(), schema);
     }
 
     next.accept(context);
@@ -136,6 +166,12 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
 
       if (!currentStarted) {
         this.currentStarted = true;
+
+        context.encoding().getJson().writeObjectFieldStart(getPropertiesFieldName());
+      }
+
+      if (embeddedFeatureNestingLevel > 0 && !currentEmbeddedStarted.peek()) {
+        this.currentEmbeddedStarted.set(currentEmbeddedStarted.size() - 1, true);
 
         context.encoding().getJson().writeObjectFieldStart(getPropertiesFieldName());
       }
@@ -168,7 +204,10 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   }
 
   protected boolean shouldSkipProperty(EncodingAwareContextGeoJson context) {
-    return !hasMapping(context) || (context.schema().get().isId() || context.inGeometry());
+    return !hasMapping(context)
+        || (context.schema().get().isId()
+            || context.schema().get().isEmbeddedId()
+            || context.inGeometry());
   }
 
   protected boolean hasMapping(EncodingAwareContextGeoJson context) {
@@ -214,9 +253,32 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
     } else {
       encoding.getJson().writeObjectFieldStart(schema.getName());
     }
+
+    if (schema.getRole().filter(r -> r == Role.EMBEDDED_FEATURE).isPresent()) {
+      encoding.getJson().writeStringField("type", "Feature");
+      this.embeddedFeatureNestingLevel++;
+      this.currentEmbeddedStarted.push(false);
+    }
   }
 
-  private void closeObject(FeatureTransformationContextGeoJson encoding) throws IOException {
+  private void closeObject(FeatureTransformationContextGeoJson encoding, FeatureSchema schema)
+      throws IOException {
+    if (schema.getRole().filter(r -> r == Role.EMBEDDED_FEATURE).isPresent()) {
+
+      if (currentEmbeddedStarted.peek()) {
+
+        // end of "properties"
+        encoding.getJson().writeEndObject();
+      } else {
+
+        // no properties, write null member
+        encoding.getJson().writeNullField(getPropertiesFieldName());
+      }
+
+      this.embeddedFeatureNestingLevel--;
+      this.currentEmbeddedStarted.pop();
+    }
+
     encoding.getJson().writeEndObject();
   }
 }

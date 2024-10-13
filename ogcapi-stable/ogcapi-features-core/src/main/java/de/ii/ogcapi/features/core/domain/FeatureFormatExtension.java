@@ -101,6 +101,10 @@ public abstract class FeatureFormatExtension implements FormatExtension {
     return false;
   }
 
+  public boolean supportsEmbedding() {
+    return false;
+  }
+
   public Optional<FeatureTokenEncoder<?>> getFeatureEncoderPassThrough(
       FeatureTransformationContext transformationContext, Optional<Locale> language) {
     return Optional.empty();
