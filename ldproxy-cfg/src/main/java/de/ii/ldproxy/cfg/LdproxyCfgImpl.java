@@ -132,7 +132,7 @@ class LdproxyCfgImpl implements LdproxyCfg {
 
           @Override
           public void onEmit(Event event) {
-            if (event instanceof ReplayEvent) {
+            if (event instanceof ReplayEvent && Objects.nonNull(((ReplayEvent) event).format())) {
               // System.out.println("EVENT " + ((ReplayEvent) event).asPath());
               if (Objects.equals(((ReplayEvent) event).format().toLowerCase(), "yml")) {
                 if (Objects.equals(
