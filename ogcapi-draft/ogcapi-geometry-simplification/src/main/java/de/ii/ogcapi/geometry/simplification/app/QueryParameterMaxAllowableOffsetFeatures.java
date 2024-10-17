@@ -9,14 +9,12 @@ package de.ii.ogcapi.geometry.simplification.app;
 
 import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
@@ -34,12 +32,13 @@ import javax.inject.Singleton;
 /**
  * @title maxAllowableOffset
  * @endpoints Features, Feature
- * @langEn All geometries are simplified using the [Douglas Peucker
+ * @langEn *Deprecated* (replaced by `zoom-level`). All geometries are simplified using the [Douglas
+ *     Peucker
  *     algorithm](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm).
  *     The value defines the maximum distance between original and simplified geometry ([Hausdorff
  *     distance](https://en.wikipedia.org/wiki/Hausdorff_distance)). The value has to use the unit
  *     of the given coordinate reference system (`CRS84` or the value of parameter `crs`).
- * @langDe Alle Geometrien werden mit dem
+ * @langDe *Deprecated* (ersetzt durch `zoom-level`). Alle Geometrien werden mit dem
  *     [Douglas-Peucker-Algorithmus](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm)
  *     vereinfacht. Der Wert von `maxAllowableOffset` legt den maximalen Abstand zwischen der
  *     Originalgeometrie und der vereinfachten Geometrie fest
@@ -49,8 +48,9 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache
-    implements OgcApiQueryParameter, FeatureQueryParameter, TypedQueryParameter<Double> {
+@Deprecated(since = "4.2.0", forRemoval = true)
+public class QueryParameterMaxAllowableOffsetFeatures extends OgcApiQueryParameterBase
+    implements FeatureQueryParameter, TypedQueryParameter<Double> {
 
   private final SchemaValidator schemaValidator;
 
@@ -102,14 +102,9 @@ public class QueryParameterMaxAllowableOffsetFeatures extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && method == HttpMethods.GET
-                && (definitionPath.equals("/collections/{collectionId}/items")
-                    || definitionPath.equals("/collections/{collectionId}/items/{featureId}")));
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.equals("/collections/{collectionId}/items")
+        || definitionPath.equals("/collections/{collectionId}/items/{featureId}");
   }
 
   private final Schema<?> schema = new NumberSchema()._default(BigDecimal.valueOf(0)).example(0.05);

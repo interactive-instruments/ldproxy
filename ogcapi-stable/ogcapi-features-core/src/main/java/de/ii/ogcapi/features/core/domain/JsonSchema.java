@@ -62,8 +62,17 @@ public abstract class JsonSchema {
 
   public abstract Optional<Boolean> getReadOnly();
 
+  @JsonIgnore
+  public abstract Optional<String> getCodelistId();
+
+  @JsonProperty("x-ldproxy-codelistUri")
+  public abstract Optional<String> getCodelistUri();
+
   @JsonProperty("x-ogc-role")
   public abstract Optional<String> getRole();
+
+  @JsonProperty("x-ldproxy-embedded-role")
+  public abstract Optional<String> getEmbeddedRole();
 
   @JsonProperty("x-ogc-collectionId")
   public abstract Optional<String> getRefCollectionId();
@@ -80,6 +89,10 @@ public abstract class JsonSchema {
   @Value.Auxiliary
   public boolean isRequired() {
     return false;
+  }
+
+  public JsonSchema accept(JsonSchemaVisitor visitor) {
+    return visitor.visit(this);
   }
 
   public abstract static class Builder {

@@ -13,6 +13,7 @@ import de.ii.ogcapi.foundation.domain.DefaultLinksGenerator;
 import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.ImmutableLink;
 import de.ii.ogcapi.foundation.domain.Link;
+import de.ii.ogcapi.foundation.domain.ProfileExtension;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import java.util.List;
 import java.util.Locale;
@@ -22,7 +23,7 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
 
   public List<Link> generateLinks(
       URICustomizer uriBuilder,
-      Optional<Profile> profile,
+      List<String> profiles,
       ApiMediaType mediaType,
       List<ApiMediaType> alternateMediaTypes,
       ApiMediaType collectionMediaType,
@@ -56,11 +57,11 @@ public class FeatureLinksGenerator extends DefaultLinksGenerator {
             .title(i18n.get("collectionLink", language))
             .build());
 
-    profile.ifPresent(
+    profiles.forEach(
         p ->
             builder.add(
                 new ImmutableLink.Builder()
-                    .href(p.getUri())
+                    .href(ProfileExtension.getUri(p))
                     .rel("profile")
                     .title(i18n.get("profileLink", language))
                     .build()));

@@ -20,7 +20,6 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
-import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorCollectionOpenApi;
 import de.ii.ogcapi.features.core.domain.SchemaGeneratorOpenApi;
 import de.ii.ogcapi.features.geojson.domain.FeatureEncoderGeoJson;
@@ -31,6 +30,7 @@ import de.ii.ogcapi.features.geojson.domain.ImmutableFeatureTransformationContex
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
@@ -42,7 +42,6 @@ import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
-import de.ii.xtraplatform.features.domain.SchemaBase;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.values.domain.ValueStore;
 import de.ii.xtraplatform.values.domain.Values;
@@ -67,8 +66,8 @@ import javax.ws.rs.core.MediaType;
  */
 @Singleton
 @AutoBind
-public class FeaturesFormatGeoJson
-    implements ItemTypeSpecificConformanceClass, FeatureFormatExtension {
+public class FeaturesFormatGeoJson extends FeatureFormatExtension
+    implements ItemTypeSpecificConformanceClass {
 
   private static final String CONFORMANCE_CLASS_FEATURES =
       "http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson";
@@ -81,7 +80,6 @@ public class FeaturesFormatGeoJson
           .parameter("json")
           .build();
 
-  private final FeaturesCoreProviders providers;
   private final Values<Codelist> codelistStore;
   private final FeaturesCoreValidation featuresCoreValidator;
   private final SchemaGeneratorOpenApi schemaGeneratorFeature;
@@ -95,13 +93,19 @@ public class FeaturesFormatGeoJson
       FeaturesCoreValidation featuresCoreValidator,
       SchemaGeneratorOpenApi schemaGeneratorFeature,
       SchemaGeneratorCollectionOpenApi schemaGeneratorFeatureCollection,
-      GeoJsonWriterRegistry geoJsonWriterRegistry) {
-    this.providers = providers;
+      GeoJsonWriterRegistry geoJsonWriterRegistry,
+      ExtensionRegistry extensionRegistry) {
+    super(extensionRegistry, providers);
     this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;
     this.schemaGeneratorFeature = schemaGeneratorFeature;
     this.schemaGeneratorFeatureCollection = schemaGeneratorFeatureCollection;
     this.geoJsonWriterRegistry = geoJsonWriterRegistry;
+  }
+
+  @Override
+  public boolean supportsEmbedding() {
+    return true;
   }
 
   @Override
@@ -128,11 +132,6 @@ public class FeaturesFormatGeoJson
   }
 
   @Override
-  public boolean supportsProfile(Profile profile) {
-    return profile == Profile.AS_KEY || profile == Profile.AS_URI || profile == Profile.AS_LINK;
-  }
-
-  @Override
   public ApiMediaType getMediaType() {
     return MEDIA_TYPE;
   }
@@ -150,14 +149,11 @@ public class FeaturesFormatGeoJson
     Map<String, FeatureSchema> featureSchemas = providers.getFeatureSchemas(api.getData());
 
     for (Map.Entry<String, FeatureSchema> entry : featureSchemas.entrySet()) {
-      if (entry
-          .getValue()
-          .getPrimaryGeometry()
-          .filter(SchemaBase::isSimpleFeatureGeometry)
-          .isEmpty()) {
+      if (entry.getValue().getPrimaryGeometries().stream()
+          .anyMatch(s -> !s.isSimpleFeatureGeometry())) {
         builder.addStrictErrors(
             String.format(
-                "Feature type '%s' does not have a primary geometry that is a Simple Feature geometry. GeoJSON only supports Simple Feature geometry types.",
+                "Feature type '%s' has a primary geometry that is not a Simple Feature geometry. GeoJSON only supports Simple Feature geometry types.",
                 entry.getKey()));
       }
     }
@@ -300,6 +296,16 @@ public class FeaturesFormatGeoJson
   @Override
   public Optional<Long> getNumberReturned(Object content) {
     return getMetadata(content, "numberReturned");
+  }
+
+  @Override
+  public boolean isComplex() {
+    return true;
+  }
+
+  @Override
+  public boolean supportsRootConcat() {
+    return true;
   }
 
   private Optional<Long> getMetadata(Object content, String key) {

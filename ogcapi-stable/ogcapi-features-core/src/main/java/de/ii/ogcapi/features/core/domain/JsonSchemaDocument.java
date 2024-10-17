@@ -10,6 +10,7 @@ package de.ii.ogcapi.features.core.domain;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.hash.Funnel;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
@@ -25,6 +26,9 @@ public abstract class JsonSchemaDocument extends JsonSchemaObject {
 
   @JsonProperty("$id")
   public abstract Optional<String> getId();
+
+  @JsonProperty("anyOf")
+  public abstract List<JsonSchema> getAnyOf();
 
   @JsonProperty("$defs")
   public abstract Map<String, JsonSchema> getDefinitions();
@@ -80,7 +84,11 @@ public abstract class JsonSchemaDocument extends JsonSchemaObject {
 
     public abstract Builder patternProperties(Map<String, ? extends JsonSchema> entries);
 
+    public abstract Builder putPatternProperties(String key, JsonSchema value);
+
     public abstract Builder additionalProperties(JsonSchema value);
+
+    public abstract Builder anyOf(Iterable<? extends JsonSchema> elements);
 
     public abstract JsonSchemaDocument build();
   }
@@ -103,5 +111,6 @@ public abstract class JsonSchemaDocument extends JsonSchemaObject {
         from.getDefinitions().entrySet().stream()
             .sorted(Map.Entry.comparingByKey())
             .forEachOrdered(entry -> JsonSchema.FUNNEL.funnel(entry.getValue(), into));
+        from.getAnyOf().stream().forEachOrdered(val -> JsonSchema.FUNNEL.funnel(val, into));
       };
 }

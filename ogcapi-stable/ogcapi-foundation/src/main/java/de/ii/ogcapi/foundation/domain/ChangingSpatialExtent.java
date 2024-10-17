@@ -41,11 +41,20 @@ public interface ChangingSpatialExtent extends ChangingValue<BoundingBox> {
 
     return Optional.of(
         ChangingSpatialExtent.of(
-            BoundingBox.of(
-                Math.min(getValue().getXmin(), deltaExtent.getXmin()),
-                Math.min(getValue().getYmin(), deltaExtent.getYmin()),
-                Math.max(getValue().getXmax(), deltaExtent.getXmax()),
-                Math.max(getValue().getYmax(), deltaExtent.getYmax()),
-                OgcCrs.CRS84)));
+            deltaExtent.getEpsgCrs().equals(OgcCrs.CRS84)
+                ? BoundingBox.of(
+                    Math.min(getValue().getXmin(), deltaExtent.getXmin()),
+                    Math.min(getValue().getYmin(), deltaExtent.getYmin()),
+                    Math.max(getValue().getXmax(), deltaExtent.getXmax()),
+                    Math.max(getValue().getYmax(), deltaExtent.getYmax()),
+                    OgcCrs.CRS84)
+                : BoundingBox.of(
+                    Math.min(getValue().getXmin(), deltaExtent.getXmin()),
+                    Math.min(getValue().getYmin(), deltaExtent.getYmin()),
+                    Math.min(getValue().getZmin(), deltaExtent.getZmin()),
+                    Math.max(getValue().getXmax(), deltaExtent.getXmax()),
+                    Math.max(getValue().getYmax(), deltaExtent.getYmax()),
+                    Math.max(getValue().getZmax(), deltaExtent.getZmax()),
+                    OgcCrs.CRS84h)));
   }
 }

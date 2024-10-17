@@ -92,11 +92,6 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
     return false;
   }
 
-  @Value.Default
-  default boolean isHitsOnlyIfMore() {
-    return false;
-  }
-
   ApiRequestContext getOgcApiRequest();
 
   int getLimit();
@@ -132,9 +127,6 @@ public interface FeatureTransformationContext extends EncodingContextSfFlat {
   Optional<String> getQueryTitle();
 
   Optional<String> getQueryDescription();
-
-  // TODO: remove once a property transformation that maps to a Link object exists
-  Optional<Profile> getProfile();
 
   @Nullable
   State getState();

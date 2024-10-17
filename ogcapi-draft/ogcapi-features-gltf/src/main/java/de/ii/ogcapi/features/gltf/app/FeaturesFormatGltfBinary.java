@@ -22,6 +22,7 @@ import de.ii.ogcapi.features.gltf.domain.Metadata3dSchemaCache;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
@@ -64,7 +65,7 @@ import javax.ws.rs.core.MediaType;
 
 @AutoBind
 @Singleton
-public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
+public class FeaturesFormatGltfBinary extends FeatureFormatExtension {
 
   public static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
@@ -83,7 +84,6 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
   public static final Schema<?> SCHEMA = new BinarySchema();
   public static final String SCHEMA_REF = "#/components/schemas/glTF";
 
-  private final FeaturesCoreProviders providers;
   private final Values<Codelist> codelistStore;
   private final FeaturesCoreValidation featuresCoreValidator;
   private final CrsTransformerFactory crsTransformerFactory;
@@ -98,8 +98,9 @@ public class FeaturesFormatGltfBinary implements FeatureFormatExtension {
       FeaturesCoreValidation featuresCoreValidator,
       CrsTransformerFactory crsTransformerFactory,
       ServicesContext servicesContext,
-      Metadata3dSchemaCache schemaCache) {
-    this.providers = providers;
+      Metadata3dSchemaCache schemaCache,
+      ExtensionRegistry extensionRegistry) {
+    super(extensionRegistry, providers);
     this.codelistStore = valueStore.forType(Codelist.class);
     this.featuresCoreValidator = featuresCoreValidator;
     this.crsTransformerFactory = crsTransformerFactory;

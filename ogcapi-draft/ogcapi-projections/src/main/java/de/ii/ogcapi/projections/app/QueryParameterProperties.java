@@ -11,14 +11,13 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
 import de.ii.ogcapi.features.core.domain.SchemaInfo;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
+import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
@@ -51,11 +50,11 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterProperties extends ApiExtensionCache
-    implements OgcApiQueryParameter,
-        TypedQueryParameter<List<String>>,
+public class QueryParameterProperties extends OgcApiQueryParameterBase
+    implements TypedQueryParameter<List<String>>,
         FeatureQueryParameter,
-        TileGenerationUserParameter {
+        TileGenerationUserParameter,
+        ConformanceClass {
 
   private final SchemaInfo schemaInfo;
   private final SchemaValidator schemaValidator;
@@ -82,18 +81,11 @@ public class QueryParameterProperties extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && method == HttpMethods.GET
-                && (definitionPath.equals("/collections/{collectionId}/items")
-                    || definitionPath.equals("/collections/{collectionId}/items/{featureId}")
-                    || definitionPath.equals(
-                        "/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")
-                    || definitionPath.equals(
-                        "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}")));
+  public boolean matchesPath(String definitionPath) {
+    return definitionPath.equals("/collections/{collectionId}/items")
+        || definitionPath.equals("/collections/{collectionId}/items/{featureId}")
+        || definitionPath.equals(
+            "/collections/{collectionId}/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
   }
 
   private ConcurrentMap<Integer, ConcurrentMap<String, Schema<?>>> schemaMap =
@@ -121,7 +113,7 @@ public class QueryParameterProperties extends ApiExtensionCache
               new ArraySchema()
                   .items(
                       new StringSchema()
-                          ._enum(schemaInfo.getPropertyNames(apiData, collectionId))));
+                          ._enum(schemaInfo.getPropertyNames(apiData, collectionId, true, false))));
     }
     return schemaMap.get(apiHashCode).get(collectionId);
   }
@@ -180,5 +172,12 @@ public class QueryParameterProperties extends ApiExtensionCache
   @Override
   public Optional<ExternalDocumentation> getSpecificationRef() {
     return ProjectionsBuildingBlock.SPEC;
+  }
+
+  @Override
+  public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
+    return List.of(
+        "http://www.opengis.net/spec/ogcapi-features-6/0.0/conf/properties",
+        "http://www.opengis.net/spec/ogcapi-features-6/0.0/conf/properties-features");
   }
 }

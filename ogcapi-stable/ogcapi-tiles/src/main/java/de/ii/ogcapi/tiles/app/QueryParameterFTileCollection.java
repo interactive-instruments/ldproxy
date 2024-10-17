@@ -60,7 +60,7 @@ public class QueryParameterFTileCollection extends QueryParameterF {
   }
 
   @Override
-  protected boolean matchesPath(String definitionPath) {
+  public boolean matchesPath(String definitionPath) {
     return definitionPath.startsWith("/collections/{collectionId}")
         && definitionPath.endsWith("/tiles/{tileMatrixSetId}/{tileMatrix}/{tileRow}/{tileCol}");
   }
@@ -73,15 +73,6 @@ public class QueryParameterFTileCollection extends QueryParameterF {
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return TilesConfiguration.class;
-  }
-
-  @Override
-  public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return apiData.getCollections().values().stream()
-        .map(cd -> cd.getExtension(TilesConfiguration.class))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .anyMatch(TilesConfiguration::isEnabled);
   }
 
   @Override

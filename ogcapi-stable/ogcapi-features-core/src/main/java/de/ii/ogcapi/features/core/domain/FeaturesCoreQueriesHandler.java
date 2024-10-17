@@ -17,6 +17,7 @@ import de.ii.xtraplatform.base.domain.resiliency.Volatile2;
 import de.ii.xtraplatform.crs.domain.EpsgCrs;
 import de.ii.xtraplatform.features.domain.FeatureProvider;
 import de.ii.xtraplatform.features.domain.FeatureQuery;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
@@ -45,7 +46,7 @@ public interface FeaturesCoreQueriesHandler
 
     FeatureQuery getQuery();
 
-    Optional<Profile> getProfile();
+    List<String> getProfiles();
 
     FeatureProvider getFeatureProvider();
 
@@ -72,7 +73,7 @@ public interface FeaturesCoreQueriesHandler
 
     FeatureQuery getQuery();
 
-    Optional<Profile> getProfile();
+    List<String> getProfiles();
 
     FeatureProvider getFeatureProvider();
 

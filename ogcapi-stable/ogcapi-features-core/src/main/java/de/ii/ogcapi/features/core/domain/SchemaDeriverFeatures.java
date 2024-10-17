@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableMap;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument.VERSION;
 import de.ii.xtraplatform.codelists.domain.Codelist;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
+import de.ii.xtraplatform.features.domain.SchemaBase.Role;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,16 @@ public class SchemaDeriverFeatures extends SchemaDeriverJsonSchema {
       ImmutableJsonSchemaObject.Builder builder) {
 
     builder.properties(properties);
-    builder.required(required);
+    if (!required.isEmpty()) {
+      if (schema.getRole().isPresent() && schema.getRole().get() == Role.EMBEDDED_FEATURE) {
+        builder.required(
+            required.stream()
+                .map(this::getNameWithoutRole)
+                .collect(Collectors.toUnmodifiableList()));
+      } else {
+        builder.required(required);
+      }
+    }
   }
 
   @Override
@@ -57,8 +67,11 @@ public class SchemaDeriverFeatures extends SchemaDeriverJsonSchema {
           }
         });
 
-    builder.required(
-        required.stream().map(this::getNameWithoutRole).collect(Collectors.toUnmodifiableList()));
+    List<String> requiredProperties =
+        required.stream().map(this::getNameWithoutRole).collect(Collectors.toUnmodifiableList());
+    if (!requiredProperties.isEmpty()) {
+      builder.required(requiredProperties);
+    }
     withoutFlattenedArrays(properties).forEach(builder::putProperties);
     builder.patternProperties(onlyFlattenedArraysAsPatterns(properties));
   }

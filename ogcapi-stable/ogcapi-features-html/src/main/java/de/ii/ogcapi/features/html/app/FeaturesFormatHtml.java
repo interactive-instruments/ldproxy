@@ -17,10 +17,7 @@ import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreValidation;
-import de.ii.ogcapi.features.core.domain.ImmutableProfileTransformations;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
-import de.ii.ogcapi.features.core.domain.Profile;
-import de.ii.ogcapi.features.core.domain.ProfileTransformations;
 import de.ii.ogcapi.features.html.domain.FeatureEncoderHtml;
 import de.ii.ogcapi.features.html.domain.FeatureTransformationContextHtml;
 import de.ii.ogcapi.features.html.domain.FeaturesHtmlConfiguration;
@@ -38,8 +35,6 @@ import de.ii.ogcapi.foundation.domain.I18n;
 import de.ii.ogcapi.foundation.domain.Link;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
-import de.ii.ogcapi.foundation.domain.RuntimeQueryParametersExtension;
 import de.ii.ogcapi.foundation.domain.URICustomizer;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.html.domain.MapClient;
@@ -52,9 +47,6 @@ import de.ii.xtraplatform.entities.domain.ValidationResult;
 import de.ii.xtraplatform.entities.domain.ValidationResult.MODE;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
-import de.ii.xtraplatform.features.domain.SchemaBase;
-import de.ii.xtraplatform.features.domain.transform.FeatureRefResolver;
-import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.ImmutablePropertyTransformation.Builder;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformation;
 import de.ii.xtraplatform.features.domain.transform.PropertyTransformations;
@@ -73,13 +65,11 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -91,23 +81,17 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class FeaturesFormatHtml
-    implements FeatureFormatExtension, ItemTypeSpecificConformanceClass {
+public class FeaturesFormatHtml extends FeatureFormatExtension
+    implements ItemTypeSpecificConformanceClass {
 
   private static final WithTransformationsApplied SCHEMA_FLATTENER =
       new WithTransformationsApplied(
           ImmutableMap.of(
               PropertyTransformations.WILDCARD,
               new Builder().flatten(DEFAULT_FLATTENING_SEPARATOR).build()));
-  private static final String LINK_TEMPLATE =
-      String.format(
-          "<a href=\"%s\">%s</a>",
-          FeatureFormatExtension.URI_TEMPLATE, FeatureRefResolver.SUB_TITLE);
 
-  private final ExtensionRegistry extensionRegistry;
   private final Values<Codelist> codelistStore;
   private final I18n i18n;
-  private final FeaturesCoreProviders providers;
   private final FeaturesCoreValidation featuresCoreValidator;
   private final URI servicesUri;
   private final MustacheRenderer mustacheRenderer;
@@ -123,14 +107,18 @@ public class FeaturesFormatHtml
       FeaturesCoreValidation featuresCoreValidator,
       ServicesContext servicesContext,
       Http http) {
-    this.extensionRegistry = extensionRegistry;
+    super(extensionRegistry, providers);
     this.codelistStore = valueStore.forType(Codelist.class);
     this.i18n = i18n;
-    this.providers = providers;
     this.featuresCoreValidator = featuresCoreValidator;
     this.servicesUri = servicesContext.getUri();
     this.mustacheRenderer = mustacheRenderer;
     this.httpClient = http.getDefaultClient();
+  }
+
+  @Override
+  public boolean supportsEmbedding() {
+    return true;
   }
 
   @Override
@@ -167,63 +155,6 @@ public class FeaturesFormatHtml
   @Override
   public boolean canEncodeFeatures() {
     return true;
-  }
-
-  @Override
-  public boolean supportsProfile(Profile profile) {
-    return profile == Profile.AS_KEY || profile == Profile.AS_URI || profile == Profile.AS_LINK;
-  }
-
-  @Override
-  public Optional<PropertyTransformations> getPropertyTransformations(
-      FeatureTypeConfigurationOgcApi collectionData,
-      Optional<FeatureSchema> schema,
-      Optional<Profile> profile) {
-    if (profile.isEmpty() || schema.isEmpty()) {
-      return getPropertyTransformations(collectionData);
-    }
-
-    ImmutableProfileTransformations.Builder builder = new ImmutableProfileTransformations.Builder();
-
-    schema
-        .map(SchemaBase::getAllNestedProperties)
-        .ifPresent(
-            properties ->
-                properties.stream()
-                    .filter(SchemaBase::isFeatureRef)
-                    .forEach(
-                        property -> {
-                          switch (profile.get()) {
-                            default:
-                            case AS_KEY:
-                              FeatureFormatExtension.reduceToKey(property, builder);
-                              break;
-                            case AS_URI:
-                              FeatureFormatExtension.reduceToUri(property, builder);
-                              break;
-                            case AS_LINK:
-                              reduceToLink(property, builder);
-                              break;
-                          }
-                        }));
-
-    ProfileTransformations profileTransformations = builder.build();
-
-    return Optional.of(
-        getPropertyTransformations(collectionData)
-            .map(pts -> pts.mergeInto(profileTransformations))
-            .orElse(profileTransformations));
-  }
-
-  private static void reduceToLink(
-      FeatureSchema schema, ImmutableProfileTransformations.Builder builder) {
-    builder.putTransformations(
-        schema.getFullPathAsString(),
-        ImmutableList.of(
-            new ImmutablePropertyTransformation.Builder()
-                .objectRemoveSelect(FeatureRefResolver.ID)
-                .objectReduceFormat(LINK_TEMPLATE)
-                .build()));
   }
 
   @Override
@@ -291,10 +222,7 @@ public class FeaturesFormatHtml
 
   @Override
   public boolean isEnabledForApi(OgcApiDataV2 apiData) {
-    return apiData
-            .getExtension(getBuildingBlockConfigurationType())
-            .map(ExtensionConfiguration::isEnabled)
-            .orElse(false)
+    return super.isEnabledForApi(apiData)
         && apiData
             .getExtension(HtmlConfiguration.class)
             .map(ExtensionConfiguration::isEnabled)
@@ -387,49 +315,16 @@ public class FeaturesFormatHtml
                   "The HTML output has a maximum page size (parameter 'limit') of %d. Found: %d",
                   htmlMaxLimit, transformationContext.getLimit()));
 
-        Optional<FeaturesCoreConfiguration> featuresCoreConfiguration =
-            collectionData.getExtension(FeaturesCoreConfiguration.class);
-
-        List<String> queryables =
-            extensionRegistry.getExtensionsForType(RuntimeQueryParametersExtension.class).stream()
-                .map(
-                    extension ->
-                        extension.getRuntimeParameters(
-                            apiData,
-                            Optional.of(collectionData.getId()),
-                            "/collections/{collectionId}/items"))
-                .flatMap(Collection::stream)
-                .map(OgcApiQueryParameter::getName)
-                .collect(Collectors.toUnmodifiableList());
-
-        Map<String, String> filterableFields =
-            transformationContext
-                .getFeatureSchema()
-                .map(schema -> schema.accept(SCHEMA_FLATTENER))
-                .map(
-                    schema ->
-                        schema.getProperties().stream()
-                            .filter(property -> queryables.contains(property.getName()))
-                            .map(
-                                property ->
-                                    new SimpleImmutableEntry<>(
-                                        property.getName(),
-                                        property.getLabel().orElse(property.getName())))
-                            .collect(ImmutableMap.toImmutableMap(Entry::getKey, Entry::getValue)))
-                .orElse(ImmutableMap.of());
-
         featureTypeDataset =
             createFeatureCollectionView(
                 api,
                 apiData.getCollections().get(collectionName),
                 uriCustomizer.copy(),
-                filterableFields,
                 staticUrlPrefix,
                 language,
                 isNoIndexEnabledForApi(apiData),
                 getMapPosition(apiData, collectionName),
                 hideMap,
-                getGeometryProperties(apiData, collectionName),
                 getPropertyTooltips(apiData, collectionName, true),
                 apiData.getLabel(),
                 transformationContext.getLinks(),
@@ -450,7 +345,6 @@ public class FeaturesFormatHtml
                 apiData.getSubPath(),
                 getMapPosition(apiData, collectionName),
                 hideMap,
-                getGeometryProperties(apiData, collectionName),
                 getPropertyTooltips(apiData, collectionName, true),
                 user);
       }
@@ -469,17 +363,30 @@ public class FeaturesFormatHtml
     return Optional.of(new FeatureEncoderHtml(transformationContextHtml));
   }
 
+  @Override
+  public boolean isComplex() {
+    return true;
+  }
+
+  @Override
+  public boolean isForHumans() {
+    return true;
+  }
+
+  @Override
+  public boolean supportsRootConcat() {
+    return true;
+  }
+
   private ModifiableFeatureCollectionView createFeatureCollectionView(
       OgcApi api,
       FeatureTypeConfigurationOgcApi featureType,
       URICustomizer uriCustomizer,
-      Map<String, String> filterableFields,
       String staticUrlPrefix,
       Optional<Locale> language,
       boolean noIndex,
       POSITION mapPosition,
       boolean hideMap,
-      List<String> geometryProperties,
       boolean propertyTooltips,
       String apiLabel,
       List<Link> links,
@@ -557,8 +464,6 @@ public class FeaturesFormatHtml
         .setStyle(style)
         .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
         .setHideMap(hideMap)
-        .setQueryables(filterableFields)
-        .setGeometryProperties(geometryProperties)
         .setPropertyTooltips(propertyTooltips)
         .setUriCustomizer(uriCustomizer)
         .setBreadCrumbs(
@@ -605,7 +510,6 @@ public class FeaturesFormatHtml
       List<String> subPathToLandingPage,
       POSITION mapPosition,
       boolean hideMap,
-      List<String> geometryProperties,
       boolean propertyTooltips,
       Optional<User> user) {
     OgcApiDataV2 apiData = api.getData();
@@ -692,7 +596,6 @@ public class FeaturesFormatHtml
         .setStyle(style)
         .setRemoveZoomLevelConstraints(removeZoomLevelConstraints)
         .setHideMap(hideMap)
-        .setGeometryProperties(geometryProperties)
         .setPropertyTooltips(propertyTooltips)
         .setRawTemporalExtent(api.getTemporalExtent(featureType.getId()))
         .setRawFormats(formats)
@@ -855,12 +758,5 @@ public class FeaturesFormatHtml
         .getExtension(FeaturesHtmlConfiguration.class, collectionId)
         .map(FeaturesHtmlConfiguration::getMapPosition)
         .orElse(POSITION.AUTO);
-  }
-
-  private List<String> getGeometryProperties(OgcApiDataV2 apiData, String collectionId) {
-    return apiData
-        .getExtension(FeaturesHtmlConfiguration.class, collectionId)
-        .map(FeaturesHtmlConfiguration::getGeometryProperties)
-        .orElse(ImmutableList.of());
   }
 }

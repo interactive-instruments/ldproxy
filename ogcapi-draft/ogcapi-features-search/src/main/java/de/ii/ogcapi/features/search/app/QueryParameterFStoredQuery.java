@@ -51,14 +51,12 @@ public class QueryParameterFStoredQuery extends QueryParameterF {
         this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
         () ->
             isEnabledForApi(apiData)
-                && (method == HttpMethods.GET
-                    || method == HttpMethods.HEAD
-                    || method == HttpMethods.POST)
-                && isApplicable(apiData, definitionPath));
+                && (method == HttpMethods.GET || method == HttpMethods.POST)
+                && matchesPath(definitionPath));
   }
 
   @Override
-  protected boolean matchesPath(String definitionPath) {
+  public boolean matchesPath(String definitionPath) {
     return "/search/{queryId}".equals(definitionPath);
   }
 

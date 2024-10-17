@@ -15,6 +15,7 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ImmutableJsonSchemaObject;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaExtension;
 import de.ii.ogcapi.foundation.domain.ApiMetadata;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
@@ -31,10 +32,13 @@ import de.ii.ogcapi.foundation.domain.QueryInput;
 import de.ii.ogcapi.html.domain.HtmlConfiguration;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetLimitsGenerator;
 import de.ii.ogcapi.tilematrixsets.domain.TileMatrixSetOgcApi;
+import de.ii.ogcapi.tiles.domain.ImmutableOwsAddress;
+import de.ii.ogcapi.tiles.domain.ImmutableOwsContact;
 import de.ii.ogcapi.tiles.domain.ImmutableOwsOnlineResource;
-import de.ii.ogcapi.tiles.domain.ImmutableOwsServiceContact;
+import de.ii.ogcapi.tiles.domain.ImmutableOwsResponsibleParty;
 import de.ii.ogcapi.tiles.domain.ImmutableOwsServiceIdentification;
 import de.ii.ogcapi.tiles.domain.ImmutableOwsServiceProvider;
+import de.ii.ogcapi.tiles.domain.ImmutableOwsTelephone;
 import de.ii.ogcapi.tiles.domain.ImmutableStyleEntry;
 import de.ii.ogcapi.tiles.domain.ImmutableTileLayer;
 import de.ii.ogcapi.tiles.domain.ImmutableTilePoint;
@@ -74,7 +78,6 @@ import de.ii.xtraplatform.crs.domain.CrsTransformerFactory;
 import de.ii.xtraplatform.crs.domain.OgcCrs;
 import de.ii.xtraplatform.features.domain.FeatureSchema;
 import de.ii.xtraplatform.features.domain.FeatureTypeConfiguration;
-import de.ii.xtraplatform.geometries.domain.SimpleFeatureGeometry;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileGenerationParametersTransient;
 import de.ii.xtraplatform.tiles.domain.ImmutableTileQuery;
 import de.ii.xtraplatform.tiles.domain.ImmutableTilesBoundingBox;
@@ -485,19 +488,36 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                         md.flatMap(ApiMetadata::getLicenseName)
                             .map(s -> String.format("License: %s", s)))
                     .build());
-    md.flatMap(ApiMetadata::getPublisherName)
-        .ifPresent(
-            publisher -> {
-              ImmutableOwsServiceProvider.Builder providerBuilder =
-                  ImmutableOwsServiceProvider.builder().providerName(publisher);
-              md.flatMap(ApiMetadata::getPublisherUrl)
-                  .ifPresent(
-                      url ->
-                          providerBuilder.providerSite(
-                              ImmutableOwsOnlineResource.builder().href(url).build()));
-              providerBuilder.serviceContact(ImmutableOwsServiceContact.builder().build());
-              builder.serviceProvider(providerBuilder.build());
-            });
+
+    if (md.flatMap(ApiMetadata::getPublisherName).isPresent()) {
+      ImmutableOwsServiceProvider.Builder providerBuilder =
+          ImmutableOwsServiceProvider.builder()
+              .providerName(md.flatMap(ApiMetadata::getPublisherName).get());
+      md.flatMap(ApiMetadata::getPublisherUrl)
+          .ifPresent(
+              url ->
+                  providerBuilder.providerSite(
+                      ImmutableOwsOnlineResource.builder().href(url).build()));
+      ImmutableOwsResponsibleParty.Builder partyBuilder = ImmutableOwsResponsibleParty.builder();
+      md.flatMap(ApiMetadata::getContactName).ifPresent(partyBuilder::individualName);
+      ImmutableOwsContact.Builder contactBuilder = ImmutableOwsContact.builder();
+      md.flatMap(ApiMetadata::getContactEmail)
+          .ifPresent(
+              email ->
+                  contactBuilder.address(
+                      ImmutableOwsAddress.builder().electronicMailAddress(email).build()));
+      md.flatMap(ApiMetadata::getContactPhone)
+          .ifPresent(
+              voice -> contactBuilder.phone(ImmutableOwsTelephone.builder().voice(voice).build()));
+      md.flatMap(ApiMetadata::getContactUrl)
+          .ifPresent(
+              url ->
+                  contactBuilder.onlineResource(
+                      ImmutableOwsOnlineResource.builder().href(url).build()));
+      partyBuilder.contactInfo(contactBuilder.build());
+      providerBuilder.serviceContact(partyBuilder.build());
+      builder.serviceProvider(providerBuilder.build());
+    }
 
     ImmutableWmtsContents.Builder contentsBuilder = ImmutableWmtsContents.builder();
 
@@ -960,8 +980,14 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                                         .description(vectorSchema.getDescription())
                                         .build()));
 
+            List<JsonSchemaExtension> jsonSchemaExtensions =
+                extensionRegistry.getExtensionsForType(JsonSchemaExtension.class).stream()
+                    .filter(e -> e.isEnabledForApi(apiData, collectionData.getId()))
+                    .collect(Collectors.toList());
+
             JsonSchemaDocument jsonSchema =
-                schemaCache.getSchema(vectorSchema, apiData, collectionData, Optional.empty());
+                schemaCache.getSchema(
+                    vectorSchema, apiData, collectionData, Optional.empty(), jsonSchemaExtensions);
 
             ImmutableTileLayer.Builder builder2 =
                 ImmutableTileLayer.builder()
@@ -970,29 +996,13 @@ public class TilesQueriesHandlerImpl extends AbstractVolatileComposed
                     .description(collectionData.getDescription())
                     .dataType(dataType);
 
-            if (levels.isPresent()) {
-              builder2
-                  .minTileMatrix(String.valueOf(levels.get().getMin()))
-                  .maxTileMatrix(String.valueOf(levels.get().getMax()));
-            }
+            levels.ifPresent(
+                minMax ->
+                    builder2
+                        .minTileMatrix(String.valueOf(minMax.getMin()))
+                        .maxTileMatrix(String.valueOf(minMax.getMax())));
 
-            switch (vectorSchema
-                .getPrimaryGeometry()
-                .flatMap(FeatureSchema::getGeometryType)
-                .orElse(SimpleFeatureGeometry.ANY)) {
-              case POINT:
-              case MULTI_POINT:
-                builder2.geometryDimension(0);
-                break;
-              case LINE_STRING:
-              case MULTI_LINE_STRING:
-                builder2.geometryDimension(1);
-                break;
-              case POLYGON:
-              case MULTI_POLYGON:
-                builder2.geometryDimension(2);
-                break;
-            }
+            vectorSchema.getEffectiveGeometryDimension().ifPresent(builder2::geometryDimension);
 
             builder2.propertiesSchema(
                 new ImmutableJsonSchemaObject.Builder()

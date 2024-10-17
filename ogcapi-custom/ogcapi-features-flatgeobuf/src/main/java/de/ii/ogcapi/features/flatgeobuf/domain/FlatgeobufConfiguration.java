@@ -8,6 +8,7 @@
 package de.ii.ogcapi.features.flatgeobuf.domain;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.ii.ogcapi.features.core.domain.FeatureFormatConfiguration;
 import de.ii.ogcapi.features.core.domain.SfFlatConfiguration;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.xtraplatform.docs.JsonDynamicSubType;
@@ -45,7 +46,11 @@ public interface FlatgeobufConfiguration extends SfFlatConfiguration {
             .transformations(
                 SfFlatConfiguration.super
                     .mergeInto((PropertyTransformations) source)
-                    .getTransformations());
+                    .getTransformations())
+            .defaultProfiles(
+                this.getDefaultProfiles().isEmpty()
+                    ? ((FeatureFormatConfiguration) source).getDefaultProfiles()
+                    : this.getDefaultProfiles());
 
     return builder.build();
   }

@@ -11,17 +11,15 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.ii.ogcapi.features.core.domain.FeatureQueryParameter;
-import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration.ItemType;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.ItemTypeSpecificConformanceClass;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.ExternalDocumentation;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
@@ -57,9 +55,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterSortbyFeatures extends ApiExtensionCache
-    implements OgcApiQueryParameter,
-        ItemTypeSpecificConformanceClass,
+public class QueryParameterSortbyFeatures extends OgcApiQueryParameterBase
+    implements ItemTypeSpecificConformanceClass,
         FeatureQueryParameter,
         TypedQueryParameter<List<SortKey>> {
 
@@ -80,9 +77,13 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
   public List<String> getConformanceClassUris(OgcApiDataV2 apiData) {
     ImmutableList.Builder<String> builder = new ImmutableList.Builder<>();
 
-    // add feature-specific conformance class once we have a draft spec
+    if (isItemTypeUsed(apiData, ItemType.feature)) {
+      builder.add(
+          "http://www.opengis.net/spec/ogcapi-features-8/0.0/conf/sorting",
+          "http://www.opengis.net/spec/ogcapi-features-8/0.0/conf/features-sorting");
+    }
 
-    if (isItemTypeUsed(apiData, FeaturesCoreConfiguration.ItemType.record)) {
+    if (isItemTypeUsed(apiData, ItemType.record)) {
       builder.add("http://www.opengis.net/spec/ogcapi-records-1/0.0/conf/sorting");
     }
 
@@ -140,29 +141,8 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            apiData.getCollections().entrySet().stream()
-                    .anyMatch(entry -> isEnabledForApi(apiData, entry.getKey()))
-                && method == HttpMethods.GET
-                && "/collections/{collectionId}/items".equals(definitionPath));
-  }
-
-  @Override
-  public boolean isApplicable(
-      OgcApiDataV2 apiData, String definitionPath, String collectionId, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName()
-            + apiData.hashCode()
-            + definitionPath
-            + collectionId
-            + method.name(),
-        () ->
-            isEnabledForApi(apiData, collectionId)
-                && method == HttpMethods.GET
-                && "/collections/{collectionId}/items".equals(definitionPath));
+  public boolean matchesPath(String definitionPath) {
+    return "/collections/{collectionId}/items".equals(definitionPath);
   }
 
   @Override
@@ -199,18 +179,16 @@ public class QueryParameterSortbyFeatures extends ApiExtensionCache
                           .stream()
                           .collect(Collectors.toUnmodifiableList()))
               .orElse(ImmutableList.of());
-      schemaMap
-          .get(apiHashCode)
-          .put(
-              collectionId,
-              new ArraySchema()
-                  .items(
-                      new StringSchema()
-                          ._enum(
-                              sortables.stream()
-                                  .map(p -> ImmutableList.of(p, "+" + p, "-" + p))
-                                  .flatMap(Collection::stream)
-                                  .collect(Collectors.toUnmodifiableList()))));
+      List<String> enums =
+          sortables.stream()
+              .map(p -> ImmutableList.of(p, "+" + p, "-" + p))
+              .flatMap(Collection::stream)
+              .collect(Collectors.toUnmodifiableList());
+      StringSchema sortableSchema = new StringSchema();
+      if (!enums.isEmpty()) {
+        sortableSchema._enum(enums);
+      }
+      schemaMap.get(apiHashCode).put(collectionId, new ArraySchema().items(sortableSchema));
     }
     return schemaMap.get(apiHashCode).get(collectionId);
   }

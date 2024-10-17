@@ -8,6 +8,7 @@
 package de.ii.ldproxy.cfg;
 
 import com.google.common.collect.ImmutableSet;
+import de.ii.ogcapi.codelists.app.JacksonSubTypeIdsCodelists;
 import de.ii.ogcapi.collections.app.JacksonSubTypeIdsOgcApiCollections;
 import de.ii.ogcapi.collections.queryables.app.JacksonSubTypeIdsQueryables;
 import de.ii.ogcapi.collections.schema.app.JacksonSubTypeIdsSchema;
@@ -55,6 +56,7 @@ public interface JacksonSubTypes {
   static Set<JacksonSubTypeIds> ids() {
     return ImmutableSet.<JacksonSubTypeIds>builder()
         .add(new JacksonSubTypeIdsCityJson())
+        .add(new JacksonSubTypeIdsCodelists())
         .add(new JacksonSubTypeIdsCrs())
         .add(new JacksonSubTypeIdsCrud())
         .add(new JacksonSubTypeIdsCsv())

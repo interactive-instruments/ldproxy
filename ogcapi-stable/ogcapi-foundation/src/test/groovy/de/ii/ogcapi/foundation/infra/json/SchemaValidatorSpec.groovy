@@ -21,7 +21,7 @@ class SchemaValidatorSpec extends Specification {
         schemaValidator = new SchemaValidatorImpl()
     }
 
-    def "Validate a feature against its JSON schema (draft 2019-09)"() {
+    def "Validate a feature against its JSON schema"() {
         given:
         String schema = new File('src/test/resources/schema.json').getText()
         String feature = new File('src/test/resources/feature.json').getText()
@@ -41,6 +41,17 @@ class SchemaValidatorSpec extends Specification {
         result.isEmpty()
     }
 
+    def "Validate an invalid feature against its JSON schema"() {
+        given:
+        String schema = new File('src/test/resources/schema.json').getText()
+        String feature = new File('src/test/resources/feature2.json').getText()
+        when:
+        Optional<String> result = schemaValidator.validate(schema, feature)
+        then:
+        result.isPresent()
+    }
+
+
     def "Validate and catch errors"() {
         when:
         schemaValidator.validate(schema, feature)
@@ -48,8 +59,6 @@ class SchemaValidatorSpec extends Specification {
         thrown(exception)
         where:
         schema                                                | feature                                                | exception
-        // proper schema, invalid feature json
-        new File('src/test/resources/schema.json').getText()  | new File('src/test/resources/feature2.json').getText() | JsonParseException
         // invalid schema json, proper feature
         new File('src/test/resources/schema2.json').getText() | new File('src/test/resources/feature.json').getText()  | JsonParseException
         // invalid schema json, invalid feature json

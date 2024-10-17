@@ -117,7 +117,8 @@ import javax.inject.Singleton;
  *     de.ii.ogcapi.styles.domain.PathParameterStyleId}
  * @ref:queryParameters {@link de.ii.ogcapi.styles.domain.QueryParameterFStyles}, {@link
  *     de.ii.ogcapi.styles.domain.QueryParameterFStyle}, {@link
- *     de.ii.ogcapi.styles.app.manager.QueryParameterDryRunStylesManager}
+ *     de.ii.ogcapi.styles.app.manager.QueryParameterDryRunStylesPost}, {@link
+ *     de.ii.ogcapi.styles.app.manager.QueryParameterDryRunStylePut}
  */
 @Singleton
 @AutoBind

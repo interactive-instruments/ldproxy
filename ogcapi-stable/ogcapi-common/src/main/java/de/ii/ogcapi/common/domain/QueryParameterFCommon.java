@@ -38,7 +38,7 @@ public class QueryParameterFCommon extends QueryParameterF {
   }
 
   @Override
-  protected boolean matchesPath(String definitionPath) {
+  public boolean matchesPath(String definitionPath) {
     return definitionPath.matches("^/?(?:conformance)?/?$");
   }
 

@@ -74,6 +74,29 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
       List<String> requiredProperties);
 
   @Override
+  protected Schema<?> mergeRootSchemas(List<Schema<?>> rootSchemas) {
+    Schema<?> rootSchema = rootSchemas.get(0);
+
+    List<Schema> schemas = new ArrayList<>();
+
+    rootSchemas.stream()
+        .filter(Objects::nonNull)
+        .filter(schema -> schema instanceof ObjectSchema)
+        .map(schema -> (ObjectSchema) schema)
+        .forEach(
+            schema -> {
+              if (Objects.nonNull(schema.getProperties())
+                  && schema.getProperties().containsKey("properties")) {
+                schemas.add(schema.getProperties().get("properties"));
+              }
+            });
+
+    rootSchema.getProperties().put("properties", new ObjectSchema().anyOf(schemas));
+
+    return rootSchema;
+  }
+
+  @Override
   protected Schema<?> buildObjectSchema(
       FeatureSchema schema, Map<String, Schema<?>> properties, List<String> requiredProperties) {
     if (schema.getObjectType().filter(ot -> Objects.equals(ot, "Link")).isPresent()) {
@@ -91,7 +114,9 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
 
     objectSchema.properties(new LinkedHashMap<>());
     objectSchema.getProperties().putAll(properties);
-    objectSchema.required(requiredProperties);
+    if (!requiredProperties.isEmpty()) {
+      objectSchema.required(requiredProperties);
+    }
 
     return objectSchema;
   }
@@ -104,7 +129,8 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
       Optional<String> unit,
       Optional<String> role,
       Optional<String> refCollectionId,
-      Optional<String> refApiLandingPage) {
+      Optional<String> refApiLandingPage,
+      Optional<String> codelistUri) {
     Schema<?> valueSchema;
     switch (type) {
       case INTEGER:

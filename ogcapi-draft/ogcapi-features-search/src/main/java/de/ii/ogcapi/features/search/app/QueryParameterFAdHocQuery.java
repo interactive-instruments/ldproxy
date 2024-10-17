@@ -50,13 +50,11 @@ public class QueryParameterFAdHocQuery extends QueryParameterF {
     return computeIfAbsent(
         this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
         () ->
-            isEnabledForApi(apiData)
-                && method == HttpMethods.POST
-                && isApplicable(apiData, definitionPath));
+            isEnabledForApi(apiData) && method == HttpMethods.POST && matchesPath(definitionPath));
   }
 
   @Override
-  protected boolean matchesPath(String definitionPath) {
+  public boolean matchesPath(String definitionPath) {
     return "/search".equals(definitionPath);
   }
 

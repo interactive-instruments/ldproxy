@@ -11,13 +11,11 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.gltf.domain.GltfConfiguration;
 import de.ii.ogcapi.features.gltf.domain.GltfQueryParameter;
 import de.ii.ogcapi.features.gltf.domain.ImmutableFeatureTransformationContextGltf;
-import de.ii.ogcapi.foundation.domain.ApiExtensionCache;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
-import de.ii.ogcapi.foundation.domain.HttpMethods;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
-import de.ii.ogcapi.foundation.domain.OgcApiQueryParameter;
+import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.QueryParameterSet;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import de.ii.ogcapi.foundation.domain.SpecificationMaturity;
@@ -41,8 +39,8 @@ import javax.inject.Singleton;
  */
 @Singleton
 @AutoBind
-public class QueryParameterClampToEllipsoid extends ApiExtensionCache
-    implements OgcApiQueryParameter, TypedQueryParameter<Boolean>, GltfQueryParameter {
+public class QueryParameterClampToEllipsoid extends OgcApiQueryParameterBase
+    implements TypedQueryParameter<Boolean>, GltfQueryParameter {
 
   private final SchemaValidator schemaValidator;
 
@@ -58,14 +56,9 @@ public class QueryParameterClampToEllipsoid extends ApiExtensionCache
   }
 
   @Override
-  public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
-    return computeIfAbsent(
-        this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && ("/collections/{collectionId}/items".equals(definitionPath)
-                    || "/collections/{collectionId}/items/{featureId}".equals(definitionPath))
-                && method == HttpMethods.GET);
+  public boolean matchesPath(String definitionPath) {
+    return "/collections/{collectionId}/items".equals(definitionPath)
+        || "/collections/{collectionId}/items/{featureId}".equals(definitionPath);
   }
 
   @Override

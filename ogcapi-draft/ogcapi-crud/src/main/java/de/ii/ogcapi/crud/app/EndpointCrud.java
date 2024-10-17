@@ -22,7 +22,6 @@ import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.FeaturesQuery;
-import de.ii.ogcapi.features.core.domain.Profile;
 import de.ii.ogcapi.foundation.domain.ApiEndpointDefinition;
 import de.ii.ogcapi.foundation.domain.ApiExtensionHealth;
 import de.ii.ogcapi.foundation.domain.ApiHeader;
@@ -96,6 +95,7 @@ public class EndpointCrud extends EndpointSubCollection
   private final CommandHandlerCrud commandHandler;
   private final CrsInfo crsInfo;
   private final FeaturesQuery queryParser;
+  private final List<String> crudProfiles;
 
   @Inject
   public EndpointCrud(
@@ -109,6 +109,7 @@ public class EndpointCrud extends EndpointSubCollection
     this.commandHandler = commandHandler;
     this.crsInfo = crsInfo;
     this.queryParser = queryParser;
+    this.crudProfiles = ImmutableList.of("rel-as-key", "val-as-code");
   }
 
   @Override
@@ -441,7 +442,7 @@ public class EndpointCrud extends EndpointSubCollection
             .featureProvider(featureProvider)
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .requestBody(requestBody)
-            .profile(Profile.AS_KEY)
+            .profiles(crudProfiles)
             .build();
 
     return commandHandler.putItemResponse(queryInput, apiRequestContext);
@@ -507,7 +508,7 @@ public class EndpointCrud extends EndpointSubCollection
             .featureProvider(featureProvider)
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
             .requestBody(requestBody)
-            .profile(Profile.AS_KEY)
+            .profiles(crudProfiles)
             .build();
 
     return commandHandler.patchItemResponse(queryInput, apiRequestContext);
@@ -566,7 +567,7 @@ public class EndpointCrud extends EndpointSubCollection
             .queryParameterSet(queryParameterSet)
             .featureProvider(featureProvider)
             .defaultCrs(coreConfiguration.getDefaultEpsgCrs())
-            .profile(Profile.AS_KEY)
+            .profiles(crudProfiles)
             .build();
 
     return commandHandler.deleteItemResponse(queryInput, apiRequestContext);

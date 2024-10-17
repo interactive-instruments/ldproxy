@@ -11,9 +11,11 @@ import com.github.azahnen.dagger.annotations.AutoBind;
 import de.ii.ogcapi.features.core.domain.FeatureFormatExtension;
 import de.ii.ogcapi.features.core.domain.FeatureTransformationContext;
 import de.ii.ogcapi.features.core.domain.FeaturesCoreConfiguration;
+import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.xtraplatform.features.domain.FeatureTokenEncoder;
@@ -29,7 +31,7 @@ import javax.ws.rs.core.MediaType;
 
 @Singleton
 @AutoBind
-public class PolicyAttributeFeaturesFormat implements FeatureFormatExtension {
+public class PolicyAttributeFeaturesFormat extends FeatureFormatExtension {
 
   public static final ApiMediaType MEDIA_TYPE =
       new ImmutableApiMediaType.Builder()
@@ -45,7 +47,10 @@ public class PolicyAttributeFeaturesFormat implements FeatureFormatExtension {
           .build();
 
   @Inject
-  public PolicyAttributeFeaturesFormat() {}
+  public PolicyAttributeFeaturesFormat(
+      ExtensionRegistry extensionRegistry, FeaturesCoreProviders providers) {
+    super(extensionRegistry, providers);
+  }
 
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
@@ -73,10 +78,15 @@ public class PolicyAttributeFeaturesFormat implements FeatureFormatExtension {
   }
 
   @Override
+  public boolean supportsRootConcat() {
+    return true;
+  }
+
+  @Override
   public Optional<PropertyTransformations> getPropertyTransformations(
       FeatureTypeConfigurationOgcApi collectionData) {
     Optional<PropertyTransformations> coreTransformations =
-        FeatureFormatExtension.super.getPropertyTransformations(collectionData);
+        super.getPropertyTransformations(collectionData);
     PropertyTransformations formatTransformations =
         () ->
             Map.of(

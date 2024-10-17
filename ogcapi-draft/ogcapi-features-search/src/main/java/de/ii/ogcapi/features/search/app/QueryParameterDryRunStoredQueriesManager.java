@@ -47,13 +47,15 @@ public class QueryParameterDryRunStoredQueriesManager extends QueryParameterDryR
   }
 
   @Override
+  public boolean matchesPath(String definitionPath) {
+    return "/search/{queryId}".equals(definitionPath);
+  }
+
+  @Override
   public boolean isApplicable(OgcApiDataV2 apiData, String definitionPath, HttpMethods method) {
     return computeIfAbsent(
         this.getClass().getCanonicalName() + apiData.hashCode() + definitionPath + method.name(),
-        () ->
-            isEnabledForApi(apiData)
-                && method == HttpMethods.PUT
-                && "/search/{queryId}".equals(definitionPath));
+        () -> isEnabledForApi(apiData) && method == HttpMethods.PUT && matchesPath(definitionPath));
   }
 
   @Override

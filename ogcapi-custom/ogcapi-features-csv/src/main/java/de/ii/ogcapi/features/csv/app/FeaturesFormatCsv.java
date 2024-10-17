@@ -19,6 +19,7 @@ import de.ii.ogcapi.foundation.domain.ApiMediaType;
 import de.ii.ogcapi.foundation.domain.ApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.ConformanceClass;
 import de.ii.ogcapi.foundation.domain.ExtensionConfiguration;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaType;
 import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
@@ -43,7 +44,7 @@ import org.slf4j.LoggerFactory;
  */
 @Singleton
 @AutoBind
-public class FeaturesFormatCsv implements ConformanceClass, FeatureFormatExtension {
+public class FeaturesFormatCsv extends FeatureFormatExtension implements ConformanceClass {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FeaturesFormatCsv.class);
 
@@ -60,12 +61,11 @@ public class FeaturesFormatCsv implements ConformanceClass, FeatureFormatExtensi
           .parameter("json")
           .build();
 
-  private final FeaturesCoreProviders providers;
   private final FeatureSchemaCache schemaCache;
 
   @Inject
-  public FeaturesFormatCsv(FeaturesCoreProviders providers) {
-    this.providers = providers;
+  public FeaturesFormatCsv(FeaturesCoreProviders providers, ExtensionRegistry extensionRegistry) {
+    super(extensionRegistry, providers);
     this.schemaCache = new SchemaCacheSfFlat();
   }
 

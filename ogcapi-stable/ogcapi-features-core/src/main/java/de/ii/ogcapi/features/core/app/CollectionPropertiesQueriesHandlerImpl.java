@@ -16,7 +16,9 @@ import de.ii.ogcapi.features.core.domain.FeaturesCoreProviders;
 import de.ii.ogcapi.features.core.domain.JsonSchema;
 import de.ii.ogcapi.features.core.domain.JsonSchemaCache;
 import de.ii.ogcapi.features.core.domain.JsonSchemaDocument;
+import de.ii.ogcapi.features.core.domain.JsonSchemaExtension;
 import de.ii.ogcapi.foundation.domain.ApiRequestContext;
+import de.ii.ogcapi.foundation.domain.ExtensionRegistry;
 import de.ii.ogcapi.foundation.domain.FeatureTypeConfigurationOgcApi;
 import de.ii.ogcapi.foundation.domain.HeaderCaching;
 import de.ii.ogcapi.foundation.domain.HeaderContentDisposition;
@@ -37,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.ws.rs.NotAcceptableException;
@@ -52,9 +55,12 @@ public class CollectionPropertiesQueriesHandlerImpl implements CollectionPropert
   private final I18n i18n;
   private final FeaturesCoreProviders providers;
   private final Map<Query, QueryHandler<? extends QueryInput>> queryHandlers;
+  private final ExtensionRegistry extensionRegistry;
 
   @Inject
-  public CollectionPropertiesQueriesHandlerImpl(I18n i18n, FeaturesCoreProviders providers) {
+  public CollectionPropertiesQueriesHandlerImpl(
+      ExtensionRegistry extensionRegistry, I18n i18n, FeaturesCoreProviders providers) {
+    this.extensionRegistry = extensionRegistry;
     this.i18n = i18n;
     this.providers = providers;
     this.queryHandlers =
@@ -123,8 +129,14 @@ public class CollectionPropertiesQueriesHandlerImpl implements CollectionPropert
                     .type(SchemaBase.Type.OBJECT)
                     .build());
 
+    List<JsonSchemaExtension> jsonSchemaExtensions =
+        extensionRegistry.getExtensionsForType(JsonSchemaExtension.class).stream()
+            .filter(e -> e.isEnabledForApi(apiData, collectionData.getId()))
+            .collect(Collectors.toList());
+
     JsonSchemaDocument schema =
-        schemaCache.getSchema(featureSchema, apiData, collectionData, schemaUri);
+        schemaCache.getSchema(
+            featureSchema, apiData, collectionData, schemaUri, jsonSchemaExtensions);
 
     Date lastModified = getLastModified(queryInput);
     EntityTag etag =

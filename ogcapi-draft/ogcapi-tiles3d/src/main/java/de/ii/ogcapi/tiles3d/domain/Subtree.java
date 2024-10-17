@@ -506,17 +506,17 @@ public interface Subtree {
             .queryParameterSet(QueryParameterSet.of())
             .build();
 
-    return getNumberReturned(queriesHandler, queryInputHits, requestContext) == 1L;
+    return getNumberMatched(queriesHandler, queryInputHits, requestContext) != 0L;
   }
 
-  private static long getNumberReturned(
+  private static long getNumberMatched(
       FeaturesCoreQueriesHandler queriesHandler,
       FeaturesCoreQueriesHandler.QueryInputFeatures queryInputHits,
       ApiRequestContext requestContext) {
     try (Response response =
         queriesHandler.handle(Query.FEATURES, queryInputHits, requestContext)) {
       return Long.parseLong(
-          Objects.requireNonNullElse(response.getHeaderString("OGC-numberReturned"), "0"));
+          Objects.requireNonNullElse(response.getHeaderString("OGC-numberMatched"), "0"));
     }
   }
 

@@ -1,0 +1,27 @@
+{{> header}}
+
+<div>
+    <h1>{{title}}</h1>
+    <span>{{{description}}}</span>
+    <br/>
+    <br/>
+
+    <div class="row my-3">
+        <div class="col-md-2 font-weight-bold">{{title}}</div>
+        <div class="col-md-10">
+          <ul class="list-unstyled">
+            {{#codelistEntries}}
+              <li>
+                {{#uri}}<a href="{{.}}" target="_blank">{{label}}</a>{{/uri}}{{^uri}}{{label}}{{/uri}}
+              </li>
+            {{/codelistEntries}}
+            {{^codelistEntries}}
+              <li>{{none}}</li>
+            {{/codelistEntries}}
+          </ul>
+        </div>
+    </div>
+</div>
+
+{{> footer}}
+
