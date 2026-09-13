@@ -7,6 +7,11 @@
  */
 package de.ii.ldproxy.cfg;
 
+import de.ii.ldproxy.cfg.migrations.FeatureProviderSqlMigrationV5;
+import de.ii.ldproxy.cfg.migrations.FeaturesExtensionsMigrationV5;
+import de.ii.ldproxy.cfg.migrations.FeaturesHtmlMigrationV5;
+import de.ii.ldproxy.cfg.migrations.JsonFgMigrationV5;
+import de.ii.ldproxy.cfg.migrations.TileProviderFeaturesMigrationV5;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dMigrationV5;
 import de.ii.xtraplatform.entities.domain.EntityDataStore;
 import de.ii.xtraplatform.entities.domain.EntityMigration;
@@ -18,7 +23,14 @@ public interface Migrations {
   static Migrations create(EntityDataStore<?> entityDataStore) {
     EntityMigrationContext context = entityDataStore::has;
 
-    return () -> List.of(new Tiles3dMigrationV5(context));
+    return () ->
+        List.of(
+            new Tiles3dMigrationV5(context),
+            new JsonFgMigrationV5(context),
+            new FeaturesHtmlMigrationV5(context),
+            new FeaturesExtensionsMigrationV5(context),
+            new FeatureProviderSqlMigrationV5(context),
+            new TileProviderFeaturesMigrationV5(context));
   }
 
   List<EntityMigration<?, ?>> entity();
