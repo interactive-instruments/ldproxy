@@ -7,10 +7,12 @@
  */
 package de.ii.ldproxy.cfg;
 
+import de.ii.ldproxy.cfg.ValueMigration.ValueMigrationContext;
 import de.ii.ldproxy.cfg.migrations.FeatureProviderSqlMigrationV5;
 import de.ii.ldproxy.cfg.migrations.FeaturesExtensionsMigrationV5;
 import de.ii.ldproxy.cfg.migrations.FeaturesHtmlMigrationV5;
 import de.ii.ldproxy.cfg.migrations.JsonFgMigrationV5;
+import de.ii.ldproxy.cfg.migrations.StoredQueryMigrationV5;
 import de.ii.ldproxy.cfg.migrations.TileProviderFeaturesMigrationV5;
 import de.ii.ogcapi.tiles3d.domain.Tiles3dMigrationV5;
 import de.ii.xtraplatform.entities.domain.EntityDataStore;
@@ -20,10 +22,11 @@ import java.util.List;
 
 public interface Migrations {
 
-  static Migrations create(EntityDataStore<?> entityDataStore) {
+  static Migrations create(
+      EntityDataStore<?> entityDataStore, ValueMigrationContext valueMigrationContext) {
     EntityMigrationContext context = entityDataStore::has;
 
-    return () ->
+    List<EntityMigration<?, ?>> entityMigrations =
         List.of(
             new Tiles3dMigrationV5(context),
             new JsonFgMigrationV5(context),
@@ -31,7 +34,30 @@ public interface Migrations {
             new FeaturesExtensionsMigrationV5(context),
             new FeatureProviderSqlMigrationV5(context),
             new TileProviderFeaturesMigrationV5(context));
+    List<ValueMigration> valueMigrations =
+        List.of(new StoredQueryMigrationV5(valueMigrationContext));
+
+    return new Migrations() {
+      @Override
+      public List<EntityMigration<?, ?>> entity() {
+        return entityMigrations;
+      }
+
+      @Override
+      public List<ValueMigration> values() {
+        return valueMigrations;
+      }
+    };
   }
 
+  /**
+   * @return the migrations of entities (providers, services)
+   */
   List<EntityMigration<?, ?>> entity();
+
+  /**
+   * @return the migrations of values (e.g. stored queries), see {@link
+   *     ValueMigration#getValueType()} for the value type a migration applies to
+   */
+  List<ValueMigration> values();
 }
