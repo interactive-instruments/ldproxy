@@ -97,3 +97,22 @@ task npmLint(type: NpmTask) {
 check.dependsOn npmLint
 
 processResources.dependsOn npmBuild
+
+task npmSbom(type: NpxTask) {
+    dependsOn npmInstall
+    inputs.file("src/main/javascript/package.json")
+    inputs.file("src/main/javascript/package-lock.json")
+    def output = new File(project.buildDir, 'sbom/ogcapi-html.cdx.json')
+    outputs.file(output)
+    execOverrides {
+        it.workingDir = 'src/main/javascript'
+    }
+    command = '@cyclonedx/cyclonedx-npm@6.0.1'
+    // npm ls reports react 19 as invalid peer of react-popper (via reactstrap)
+    args = ['--omit', 'dev', '--ignore-npm-errors', '--flatten-components', '--spec-version', '1.6', '--output-reproducible',
+            '--output-format', 'JSON', '--output-file', output.absolutePath]
+}
+
+sbom {
+    fragment npmSbom
+}
