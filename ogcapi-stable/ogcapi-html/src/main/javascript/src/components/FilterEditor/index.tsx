@@ -86,7 +86,7 @@ const FilterEditor = ({
     error: errorProperties,
   } = useApiInfo<CollectionLike>(urlProperties);
 
-  const { fields, code, integerKeys, booleanProperty } = useMemo(
+  const { fields, code, integerKeys, booleanProperty, stringKeys } = useMemo(
     () => extractFields(properties ?? undefined),
     [properties],
   );
@@ -215,6 +215,7 @@ const FilterEditor = ({
           end={end ?? 0}
           integerKeys={integerKeys}
           booleanProperty={booleanProperty}
+          stringKeys={stringKeys}
         />
       ) : (
         <>

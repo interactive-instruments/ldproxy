@@ -23,6 +23,7 @@ export interface EditorBodyProps {
   temporal: Record<string, number>;
   integerKeys: string[];
   booleanProperty: string[];
+  stringKeys: string[];
 }
 
 const EditorBody = ({
@@ -41,6 +42,7 @@ const EditorBody = ({
   temporal,
   integerKeys,
   booleanProperty,
+  stringKeys,
 }: EditorBodyProps) => {
   const [showMap, setShowMap] = useState(false);
   const [bounds, setBounds] = useState<BoundsArray | []>(roundBounds(spatial));
@@ -87,6 +89,7 @@ const EditorBody = ({
               titleForFilter={titleForFilter}
               integerKeys={integerKeys}
               booleanProperty={booleanProperty}
+              stringKeys={stringKeys}
               isOpen={isOpen}
             />
           )}
