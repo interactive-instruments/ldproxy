@@ -4,7 +4,7 @@ when:
 steps:
 
   code:
-    image: eclipse-temurin:25@sha256:e787e08ef76f4c16866108cd7f9fcd96a68eef3ac6cc76866897d4d02d5a2262
+    image: eclipse-temurin:25@sha256:8c0a84ea11c8f6ed52600fc19f1040121f2a162998e9f50a5faebbbad9172dcc
     environment:
       - DOCS_VERSION=next
     commands:
@@ -12,7 +12,7 @@ steps:
     secrets: [ snapshot_user, snapshot_pass]
 
   docs:
-    image: woodpeckerci/plugin-surge-preview:1.4.2@sha256:85e52966e92030f4b45841176302909aefd0d8cf41cda90ae3c7209085f0cdc1
+    image: woodpeckerci/plugin-surge-preview:1.5.0@sha256:125c6f6b71d476e6f6e95879a5c6fe069d38bcf427f8afba0ea55441ffc22347
     settings:
       path: build/markdown/docs/.vuepress/dist/
       surge_token: 

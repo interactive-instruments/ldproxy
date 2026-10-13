@@ -2677,6 +2677,22 @@
             }
           ]
         },
+        "ids": {
+          "title": "ids",
+          "description": "Enables the query parameter `ids` for the Features resource, which selects features by    their identifiers, and the conformance class *Query by IDs*. Feature identifiers that    contain a comma cannot be selected with the parameter, so the option should be disabled, if    feature identifiers may contain a comma. The conformance class is only declared, if the    option is enabled for all collections.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "itemType": {
           "title": "itemType",
           "description": "",
@@ -5538,6 +5554,22 @@
         "rejectEmptyValues": {
           "title": "rejectEmptyValues",
           "description": "Option to reject empty values in the request body of a POST or PUT request. A value is    empty, if it is a string without characters or with only whitespace. The check is only    applied to requests with a `Prefer` header with the value \"handling\u003dstrict\"; such a request    is rejected with HTTP 400 (\"Bad Request\") and the response states the first empty value.    Values of other types cannot be empty, so where schema validation is also active an empty    value can only occur in a string. The check is applied while the request body is decoded,    so it needs no schema and is also applied, if no schema is available for validating the    request body. A property that the request body omits, or states as null, is left without a    value and is not affected.",
+          "oneOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "pattern": "y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "returnRepresentation": {
+          "title": "returnRepresentation",
+          "description": "Option to enable support for the `return` preference in POST, PUT and PATCH requests. A    request with a `Prefer` header with the value \"return\u003drepresentation\" is answered with a    representation of the created or changed feature in the response body; the status code is    201 (\"Created\") for a new feature, with the URI of the feature in a `Location` header, and    200 (\"OK\") for a changed feature. The representation is the one that a GET request for the    feature returns, in the coordinate reference system of the `Content-Crs` header of the    request, or in the default coordinate reference system of the collection, if the request    does not include the header. The media type of the representation is negotiated with the    `Accept` header of the request among the feature encodings of the collection; a request    without an `Accept` header, or one that accepts any media type, is answered in the media    type of the request body, if the collection supports it. The response reports the applied    preference in a `Preference-Applied` header. Without the option, or in a request with a    `Prefer` header with the value \"return\u003dminimal\", the response has no body: 201 with a    `Location` header for a new feature, 204 (\"No Content\") for a changed feature.",
           "oneOf": [
             {
               "type": "boolean"
