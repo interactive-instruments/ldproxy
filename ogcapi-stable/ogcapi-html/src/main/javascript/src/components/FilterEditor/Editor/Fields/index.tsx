@@ -15,6 +15,7 @@ export interface FieldFilterProps {
   titleForFilter: Record<string, string>;
   integerKeys: string[];
   booleanProperty: string[];
+  stringKeys: string[];
   isOpen?: boolean;
 }
 
@@ -27,6 +28,7 @@ const FieldFilter = ({
   titleForFilter,
   integerKeys,
   booleanProperty,
+  stringKeys,
   isOpen = false,
 }: FieldFilterProps) => {
   const [field, setField] = useState("");
@@ -114,6 +116,7 @@ const FieldFilter = ({
               integerKeys={integerKeys}
               enumKeys={enumKeys}
               booleanProperty={booleanProperty}
+              stringKeys={stringKeys}
               save={save}
               disabled={field === ""}
             />
