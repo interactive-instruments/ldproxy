@@ -12,7 +12,8 @@
     "test": "mocha",
     "lint": "eslint .",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "sbom": "cyclonedx-npm --omit dev --ignore-npm-errors --no-validate --flatten-components --spec-version 1.6 --output-reproducible --output-format JSON"
   },
   "dependencies": {
     "@cesium/engine": "^26.2.0",
@@ -45,6 +46,7 @@
     "rlayers": "^3.9.0"
   },
   "devDependencies": {
+    "@cyclonedx/cyclonedx-npm": "^6.0.1",
     "@eslint/js": "^10.0.1",
     "@storybook/react-vite": "10.5.7",
     "@types/d3-scale": "^4.0.9",
