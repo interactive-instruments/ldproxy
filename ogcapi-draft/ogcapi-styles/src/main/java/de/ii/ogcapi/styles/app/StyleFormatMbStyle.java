@@ -27,6 +27,7 @@ import de.ii.ogcapi.foundation.domain.ImmutableApiMediaTypeContent;
 import de.ii.ogcapi.foundation.domain.OgcApi;
 import de.ii.ogcapi.foundation.domain.OgcApiDataV2;
 import de.ii.ogcapi.styles.domain.ImmutableMbStyleStylesheet;
+import de.ii.ogcapi.styles.domain.MbStyleExpression;
 import de.ii.ogcapi.styles.domain.MbStyleLayer;
 import de.ii.ogcapi.styles.domain.MbStyleLayer.LayerType;
 import de.ii.ogcapi.styles.domain.MbStyleStylesheet;
@@ -80,6 +81,13 @@ public class StyleFormatMbStyle implements ConformanceClass, StyleFormatExtensio
   public StyleFormatMbStyle(
       ExtensionRegistry extensionRegistry, ClassSchemaCache classSchemaCache) {
     this.extensionRegistry = extensionRegistry;
+    // a property value or expression is any JSON value, the schema cannot be derived from the class
+    classSchemaCache.registerSchema(
+        MbStyleExpression.class,
+        new Schema<>()
+            .nullable(true)
+            .description("A value or expression of a property of a MapLibre style layer."),
+        ImmutableList.of());
     this.schemaStyle = classSchemaCache.getSchema(MbStyleStylesheet.class);
     referencedSchemas = classSchemaCache.getReferencedSchemas(MbStyleStylesheet.class);
   }
