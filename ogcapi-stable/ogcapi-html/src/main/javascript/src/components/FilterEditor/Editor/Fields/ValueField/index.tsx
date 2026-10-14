@@ -11,6 +11,7 @@ export interface ValueFieldProps {
   integerKeys: string[];
   enumKeys: string[];
   booleanProperty: string[];
+  stringKeys: string[];
   save: (event: React.SyntheticEvent) => void;
   disabled: boolean;
 }
@@ -23,6 +24,7 @@ const ValueField = ({
   integerKeys,
   enumKeys,
   booleanProperty,
+  stringKeys,
   save,
   disabled,
 }: ValueFieldProps) => {
@@ -118,7 +120,7 @@ const ValueField = ({
               }
             }}
           />
-          <FormText>{t("wildcard")}</FormText>
+          {stringKeys.includes(valueKey) && <FormText>{t("wildcard")}</FormText>}
         </>
       );
   }

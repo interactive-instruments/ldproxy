@@ -97,3 +97,22 @@ task npmLint(type: NpmTask) {
 check.dependsOn npmLint
 
 processResources.dependsOn npmBuild
+
+// script sbom in package.json:
+// --ignore-npm-errors: npm ls reports react 19 as invalid peer of react-popper (via reactstrap)
+// --no-validate: the validator of cyclonedx-npm needs ajv 8, but resolves ajv 6 from eslint
+task npmSbom(type: NpmTask) {
+    dependsOn npmInstall
+    inputs.file("src/main/javascript/package.json")
+    inputs.file("src/main/javascript/package-lock.json")
+    def output = new File(project.buildDir, 'sbom/ogcapi-html.cdx.json')
+    outputs.file(output)
+    execOverrides {
+        it.workingDir = 'src/main/javascript'
+    }
+    args = ['run', 'sbom', '--', '--output-file', output.absolutePath]
+}
+
+sbom {
+    fragment npmSbom
+}

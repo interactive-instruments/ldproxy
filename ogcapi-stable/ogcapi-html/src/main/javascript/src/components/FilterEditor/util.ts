@@ -6,6 +6,7 @@ interface PropertySchema {
   title?: string;
   enum?: string[];
   type?: string;
+  items?: { type?: string };
 }
 
 export interface CollectionLike {
@@ -32,6 +33,7 @@ export interface ExtractedFields {
   code: Code;
   integerKeys: string[];
   booleanProperty: string[];
+  stringKeys: string[];
 }
 
 export const extractFields = (obj: CollectionLike | undefined): ExtractedFields => {
@@ -39,6 +41,7 @@ export const extractFields = (obj: CollectionLike | undefined): ExtractedFields 
   const code: Code = {};
   const integerKeys: string[] = [];
   const booleanProperty: string[] = [];
+  const stringKeys: string[] = [];
   if (obj && obj.properties) {
     for (const key in obj.properties) {
       if (obj.properties[key]["x-ogc-role"] && obj.properties[key]["x-ogc-role"]!.startsWith("primary-")) {
@@ -56,10 +59,16 @@ export const extractFields = (obj: CollectionLike | undefined): ExtractedFields 
       if (obj.properties[key].type === "boolean") {
         booleanProperty.push(key);
       }
+      if (
+        obj.properties[key].type === "string" ||
+        (obj.properties[key].type === "array" && obj.properties[key].items?.type === "string")
+      ) {
+        stringKeys.push(key);
+      }
     }
   }
 
-  return { fields, code, integerKeys, booleanProperty };
+  return { fields, code, integerKeys, booleanProperty, stringKeys };
 };
 
 export interface ExtractedInterval {
