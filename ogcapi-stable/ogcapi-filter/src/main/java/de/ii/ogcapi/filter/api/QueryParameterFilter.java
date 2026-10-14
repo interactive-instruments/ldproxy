@@ -195,7 +195,7 @@ public class QueryParameterFilter extends OgcApiQueryParameterBase
             .equals(definitionPath);
   }
 
-  private final Schema<String> schema = new StringSchema();
+  private final Schema<String> schema = new StringSchema().minLength(1);
 
   @Override
   public Schema<?> getSchema(OgcApiDataV2 apiData) {
