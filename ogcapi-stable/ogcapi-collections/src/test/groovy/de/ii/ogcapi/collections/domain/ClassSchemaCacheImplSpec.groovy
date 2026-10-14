@@ -74,7 +74,7 @@ class ClassSchemaCacheImplSpec extends Specification {
         Objects.nonNull(refSchemas)
         refSchemas.keySet() == ImmutableSet.of("Collection", "Link", "SpatialExtent", "InstantArray", "Extent", "TemporalExtent", "InstantArrayArray", "doubleArrayArray", "doubleArray")
         Objects.nonNull(collectionSchema)
-        collectionSchema.getRequired() == ["id", "links"]
+        collectionSchema.getRequired().toSet() == ["crs", "id", "links"] as Set
     }
 
     def 'Test OgcApiCollection schema generation'() {
@@ -87,10 +87,11 @@ class ClassSchemaCacheImplSpec extends Specification {
         then:
         Objects.nonNull(schema)
         schema.getType() == "object"
-        schema.getRequired() == ["id", "links"]
+        schema.getRequired().toSet() == ["crs", "id", "links"] as Set
         schema.getProperties().get("extent").get$ref() == "#/components/schemas/Extent"
         schema.getProperties().get("crs").getType() == "array"
         schema.getProperties().get("storageCrs").getType() == "string"
+        schema.getProperties().get("storageCrs").getFormat() == "uri"
         schema.getProperties().get("storageCrsCoordinateEpoch").getType() == "number"
         schema.getProperties().get("itemType").getType() == "string"
         schema.getProperties().get("id").getType() == "string"
