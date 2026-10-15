@@ -50,7 +50,8 @@ public class ClassSchemaCacheImpl implements ClassSchemaCache {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ClassSchemaCacheImpl.class);
 
-  private static final Schema<?> OBJECT_SCHEMA = new io.swagger.v3.oas.models.media.ObjectSchema();
+  // a Java Object or JsonNode may be any JSON value, not only an object
+  private static final Schema<?> ANY_SCHEMA = new Schema<>();
   private static final Schema<?> STRING_SCHEMA = new StringSchema();
   private static final Schema<?> NUMBER_SCHEMA = new NumberSchema();
   private static final Schema<?> INTEGER_SCHEMA = new IntegerSchema();
@@ -97,8 +98,8 @@ public class ClassSchemaCacheImpl implements ClassSchemaCache {
     this.embeddedSchemaMap.put(Number.class, NUMBER_SCHEMA);
     this.embeddedSchemaMap.put(boolean.class, BOOLEAN_SCHEMA);
     this.embeddedSchemaMap.put(Boolean.class, BOOLEAN_SCHEMA);
-    this.embeddedSchemaMap.put(Object.class, OBJECT_SCHEMA);
-    this.embeddedSchemaMap.put(JsonNode.class, OBJECT_SCHEMA);
+    this.embeddedSchemaMap.put(Object.class, ANY_SCHEMA);
+    this.embeddedSchemaMap.put(JsonNode.class, ANY_SCHEMA);
 
     // initialize schema map with basic data types
     this.namedSchemaMap = new ConcurrentHashMap<>();
