@@ -29,6 +29,12 @@ public class SchemaDeriverOpenApiFeatures extends SchemaDeriverOpenApi {
     super(label, description, codelists);
   }
 
+  // a response may represent a code by its title, depending on the profile
+  @Override
+  protected boolean withCodelistTitles() {
+    return true;
+  }
+
   @Override
   protected Schema<?> buildRootSchema(
       FeatureSchema schema,
