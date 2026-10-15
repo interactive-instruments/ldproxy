@@ -10,6 +10,7 @@ package de.ii.ogcapi.styles.app
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry
 import de.ii.ogcapi.foundation.infra.json.ClassSchemaCacheImpl
 import de.ii.ogcapi.styles.domain.MbStyleStylesheet
+import de.ii.ogcapi.styles.domain.Tiles3dStylesheet
 import io.swagger.v3.oas.models.media.ComposedSchema
 import io.swagger.v3.oas.models.media.Schema
 import spock.lang.Specification
@@ -54,5 +55,22 @@ class StyleFormatMbStyleSchemaSpec extends Specification {
 
         then:
         metadataValues.getType() == null
+    }
+
+    def 'show and color of a 3D Tiles style have their alternatives'() {
+        given:
+        ClassSchemaCacheImpl classSchemaCache = new ClassSchemaCacheImpl()
+        StyleFormat3dTiles format = new StyleFormat3dTiles(classSchemaCache)
+
+        when:
+        Schema<?> style = classSchemaCache.getSchema(Tiles3dStylesheet)
+        ComposedSchema show = style.getProperties().get("show") as ComposedSchema
+        ComposedSchema color = style.getProperties().get("color") as ComposedSchema
+
+        then:
+        show.getOneOf().size() == 3
+        show.getOneOf()*.getType().containsAll(["string", "boolean"])
+        color.getOneOf().size() == 2
+        classSchemaCache.getReferencedSchemas(Tiles3dStylesheet).containsKey("Tiles3dConditions")
     }
 }
