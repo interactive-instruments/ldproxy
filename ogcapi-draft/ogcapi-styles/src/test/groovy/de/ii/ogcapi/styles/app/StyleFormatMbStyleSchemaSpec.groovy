@@ -10,6 +10,7 @@ package de.ii.ogcapi.styles.app
 import de.ii.ogcapi.foundation.domain.ExtensionRegistry
 import de.ii.ogcapi.foundation.infra.json.ClassSchemaCacheImpl
 import de.ii.ogcapi.styles.domain.MbStyleStylesheet
+import io.swagger.v3.oas.models.media.ComposedSchema
 import io.swagger.v3.oas.models.media.Schema
 import spock.lang.Specification
 
@@ -28,5 +29,30 @@ class StyleFormatMbStyleSchemaSpec extends Specification {
         expression.getType() == null
         expression.getProperties() == null
         expression.getNullable()
+    }
+
+    def 'the sprite is a URL or an array of sprite objects'() {
+        given:
+        ClassSchemaCacheImpl classSchemaCache = new ClassSchemaCacheImpl()
+        new StyleFormatMbStyle(Stub(ExtensionRegistry), classSchemaCache)
+
+        when:
+        ComposedSchema sprites = classSchemaCache.getReferencedSchemas(MbStyleStylesheet).get("MbStyleSprites") as ComposedSchema
+
+        then:
+        sprites.getOneOf()*.getType() == ["string", "array"]
+    }
+
+    def 'metadata values may be any JSON value'() {
+        given:
+        ClassSchemaCacheImpl classSchemaCache = new ClassSchemaCacheImpl()
+        new StyleFormatMbStyle(Stub(ExtensionRegistry), classSchemaCache)
+
+        when:
+        Schema<?> layer = classSchemaCache.getReferencedSchemas(MbStyleStylesheet).get("MbStyleLayer")
+        Schema<?> metadataValues = layer.getProperties().get("metadata").getAdditionalProperties() as Schema<?>
+
+        then:
+        metadataValues.getType() == null
     }
 }
