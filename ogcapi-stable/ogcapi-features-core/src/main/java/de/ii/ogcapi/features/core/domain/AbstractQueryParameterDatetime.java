@@ -13,6 +13,8 @@ import de.ii.ogcapi.foundation.domain.OgcApiQueryParameterBase;
 import de.ii.ogcapi.foundation.domain.SchemaValidator;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.media.StringSchema;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 
 public abstract class AbstractQueryParameterDatetime extends OgcApiQueryParameterBase {
 
@@ -29,11 +31,11 @@ public abstract class AbstractQueryParameterDatetime extends OgcApiQueryParamete
       LOCAL_DATE_OR_OPEN_REGEX + "/" + LOCAL_DATE_OR_OPEN_REGEX;
   private static final String LOCAL_DATE_CLOSED_INTERVAL_REGEX =
       LOCAL_DATE_REGEX + "/" + LOCAL_DATE_REGEX;
-  // leap seconds are not supported, the second is in the range 00 to 59; the offset is at most
-  // 18 hours
+  // leap seconds are not supported, the second is in the range 00 to 59 with at most nanoseconds;
+  // the offset is at most 18 hours
   private static final String OFFSET_DATE_TIME_REGEX =
       LOCAL_DATE_REGEX
-          + "T(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]):(?:[0-5][0-9])(?:\\.[0-9]+)?(Z|(\\+|-)(?:(?:0[0-9]|1[0-7]):[0-5][0-9]|18:00))";
+          + "T(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]):(?:[0-5][0-9])(?:\\.[0-9]{1,9})?(Z|(\\+|-)(?:(?:0[0-9]|1[0-7]):[0-5][0-9]|18:00))";
   private static final String OFFSET_DATE_TIME_OR_OPEN_REGEX =
       "(?:" + OFFSET_DATE_TIME_REGEX + "|" + OPEN_REGEX + "|" + NOW_REGEX + ")";
   private static final String OFFSET_DATE_TIME_OPEN_INTERVAL_REGEX =
@@ -119,5 +121,18 @@ public abstract class AbstractQueryParameterDatetime extends OgcApiQueryParamete
   @Override
   public Class<? extends ExtensionConfiguration> getBuildingBlockConfigurationType() {
     return FeaturesCoreConfiguration.class;
+  }
+
+  /**
+   * @param instant a value of the parameter: a timestamp, a date, ".." or "now"
+   * @return a timestamp with an offset in UTC, as a timestamp in CQL2 is in UTC, otherwise the
+   *     value
+   */
+  protected static String inUtc(String instant) {
+    try {
+      return OffsetDateTime.parse(instant).toInstant().toString();
+    } catch (DateTimeParseException e) {
+      return instant;
+    }
   }
 }

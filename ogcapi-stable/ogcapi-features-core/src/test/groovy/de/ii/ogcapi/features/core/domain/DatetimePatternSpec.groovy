@@ -38,5 +38,21 @@ class DatetimePatternSpec extends Specification {
         "2000-02-29T00:00:00Z"             || true
         "1900-02-29T00:00:00Z"             || false
         "2020-12-31/2021-01-01"            || true
+        "2020-01-01T10:20:00.123456789Z"   || true
+        "2020-01-01T10:20:00.1234567891Z"  || false
+    }
+
+    def 'a timestamp with an offset is converted to UTC, other values are not changed'() {
+        expect:
+        AbstractQueryParameterDatetime.inUtc(value) == expected
+
+        where:
+        value                          || expected
+        "2020-01-01T10:00:00+01:00"    || "2020-01-01T09:00:00Z"
+        "2020-01-01T10:00:00.5-08:20"  || "2020-01-01T18:20:00.500Z"
+        "2020-01-01T10:00:00Z"         || "2020-01-01T10:00:00Z"
+        "2020-01-01"                   || "2020-01-01"
+        ".."                           || ".."
+        "now"                          || "now"
     }
 }
