@@ -157,7 +157,8 @@ public interface ApiOperation {
       // convert the query parameters to a request body
       Optional<String> collectionId =
           path.startsWith("/collections/") ? Optional.of(path.split("/", 4)[2]) : Optional.empty();
-      Schema<Object> formSchema = new ObjectSchema();
+      // like a query parameter, an unknown member of the request body is rejected
+      Schema<Object> formSchema = new ObjectSchema().additionalProperties(false);
       queryParameters.forEach(
           param -> {
             Schema<?> paramSchema =
