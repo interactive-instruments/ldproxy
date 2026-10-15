@@ -400,6 +400,12 @@ public interface ApiOperation {
         .forEach(response -> response.updateOpenApiDefinition(apiData, openAPI, op));
 
     errorCodes.addAll(getErrorStatusCodes());
+    // a request without the required permissions is rejected
+    if (apiData.getAccessControl().isPresent()
+        && apiData.getAccessControl().get().isRestricted(getPermissionGroup().setOf())) {
+      errorCodes.add(401);
+      errorCodes.add(403);
+    }
     addErrorResponses(op, errorCodes);
 
     if (apiData.getAccessControl().isPresent()) {
@@ -550,9 +556,12 @@ public interface ApiOperation {
     Map<Integer, String> reasonPhrases =
         ImmutableMap.<Integer, String>builder()
             .put(400, "Bad Request")
+            .put(401, "Unauthorized")
+            .put(403, "Forbidden")
             .put(404, "Not Found")
             .put(405, "Method Not Allowed")
             .put(406, "Not Acceptable")
+            .put(410, "Gone")
             .put(412, "Precondition Failed")
             .put(415, "Unsupported Media Type")
             .put(422, "Unprocessable Entity")
