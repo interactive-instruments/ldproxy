@@ -101,7 +101,9 @@ public class GeoJsonWriterProperties implements GeoJsonWriter {
   public void onGeometry(
       EncodingAwareContextGeoJson context, Consumer<EncodingAwareContextGeoJson> next)
       throws IOException {
-    if (!context
+    // a geometry without a schema, e.g. if the mapping is skipped, cannot be written as a property
+    if (context.schema().isPresent()
+        && !context
             .schema()
             .map(
                 p ->
