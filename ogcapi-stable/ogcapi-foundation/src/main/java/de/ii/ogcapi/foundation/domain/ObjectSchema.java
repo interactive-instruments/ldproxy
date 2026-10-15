@@ -40,8 +40,10 @@ public class ObjectSchema extends io.swagger.v3.oas.models.media.ObjectSchema {
   private void processMethods(
       Class<?> baseClazz, Class<?> clazz, ClassSchemaCache classSchemaCache) {
     for (Method m : clazz.getDeclaredMethods()) {
+      // methods without a value, e.g. Immutables checks, are not properties
       if (m.getParameterCount() == 0
           && Modifier.isPublic(m.getModifiers())
+          && m.getReturnType() != void.class
           && !hasIgnoreAnnotation(m)) {
         processMethod(baseClazz, m, classSchemaCache);
       }
