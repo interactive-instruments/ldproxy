@@ -9089,6 +9089,10 @@
       },
       {
         "parameterTypes": [],
+        "name": "getIds"
+      },
+      {
+        "parameterTypes": [],
         "name": "getItemType"
       },
       {
@@ -9210,6 +9214,12 @@
           "java.lang.Boolean"
         ],
         "name": "validateCoordinatesInQueries"
+      },
+      {
+        "parameterTypes": [
+          "java.lang.Boolean"
+        ],
+        "name": "ids"
       },
       {
         "parameterTypes": [
@@ -12119,6 +12129,14 @@
       {
         "parameterTypes": [],
         "name": "getOptimisticLockingLastModified"
+      },
+      {
+        "parameterTypes": [],
+        "name": "getRejectEmptyValues"
+      },
+      {
+        "parameterTypes": [],
+        "name": "getReturnRepresentation"
       }
     ]
   },
@@ -12147,6 +12165,18 @@
           "java.lang.Boolean"
         ],
         "name": "optimisticLockingLastModified"
+      },
+      {
+        "parameterTypes": [
+          "java.lang.Boolean"
+        ],
+        "name": "rejectEmptyValues"
+      },
+      {
+        "parameterTypes": [
+          "java.lang.Boolean"
+        ],
+        "name": "returnRepresentation"
       },
       {
         "parameterTypes": [],
