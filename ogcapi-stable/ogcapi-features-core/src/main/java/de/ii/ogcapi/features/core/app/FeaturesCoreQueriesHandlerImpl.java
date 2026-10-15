@@ -744,7 +744,8 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
             .toCompletableFuture();
 
     // wait for collection metadata
-    CollectionMetadata collectionMetadata = onCollectionMetadata.join();
+    CollectionMetadata collectionMetadata =
+        awaitMetadata(onCollectionMetadata, stream, failIfNoFeatures);
 
     StreamingOutput streamingOutput =
         new JoinableStreamingOutput(
@@ -775,9 +776,24 @@ public class FeaturesCoreQueriesHandlerImpl extends AbstractVolatileComposed
             .toCompletableFuture();
 
     // wait for collection metadata
-    CollectionMetadata collectionMetadata = onCollectionMetadata.join();
+    CollectionMetadata collectionMetadata =
+        awaitMetadata(onCollectionMetadata, stream, failIfNoFeatures);
 
     return Tuple.of(run(stream::join, failIfNoFeatures), collectionMetadata);
+  }
+
+  // A stream that ends before it started completes the metadata with its error, which is then
+  // processed like any other stream error.
+  private <U extends ResultBase> CollectionMetadata awaitMetadata(
+      CompletableFuture<CollectionMetadata> onCollectionMetadata,
+      CompletableFuture<U> stream,
+      boolean failIfNoFeatures) {
+    try {
+      return onCollectionMetadata.join();
+    } catch (CompletionException e) {
+      run(stream::join, failIfNoFeatures);
+      throw new IllegalStateException("Feature stream error.", e.getCause());
+    }
   }
 
   private <U extends ResultBase> U run(Supplier<U> stream, boolean failIfNoFeatures) {
