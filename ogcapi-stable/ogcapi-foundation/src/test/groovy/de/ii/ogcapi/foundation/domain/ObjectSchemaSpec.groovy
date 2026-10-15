@@ -48,6 +48,25 @@ class ObjectSchemaSpec extends Specification {
         schema.getProperties().get('plain').getFormat() == null
     }
 
+    def 'methods without a value are not properties'() {
+        when:
+        ObjectSchema schema = new ObjectSchema(WithCheck, classSchemaCache)
+
+        then:
+        schema.getProperties().containsKey('name')
+        !schema.getProperties().containsKey('check')
+        !schema.getRequired().contains('check')
+    }
+
+    static class WithCheck {
+        String getName() {
+            return 'name'
+        }
+
+        void check() {
+        }
+    }
+
     static class WithFormat {
         @SchemaFormat('uri')
         String getUri() {
