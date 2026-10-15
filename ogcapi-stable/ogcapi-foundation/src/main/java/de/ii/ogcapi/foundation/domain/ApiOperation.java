@@ -16,6 +16,7 @@ import de.ii.ogcapi.foundation.domain.ApiSecurity.ScopeGranularity;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
+import io.swagger.v3.oas.models.links.Link;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.responses.ApiResponses;
@@ -90,6 +91,12 @@ public interface ApiOperation {
    * parameters, request body and headers, such as the {@code 412} of a conditional request.
    */
   Set<Integer> getErrorStatusCodes();
+
+  /**
+   * Links in the OpenAPI definition from responses of other operations to this operation, e.g. from
+   * a list of resources to a single resource.
+   */
+  List<ApiOperationLink> getLinkedFrom();
 
   @Value.Default
   default boolean ignoreUnknownQueryParameters() {
@@ -343,6 +350,31 @@ public interface ApiOperation {
                 header.getResponseStatusCodes().isEmpty()
                     || header.getResponseStatusCodes().contains(statusCode))
         .collect(Collectors.toUnmodifiableList());
+  }
+
+  /**
+   * Adds the links of {@link #getLinkedFrom()} to the responses of the source operations. Requires
+   * that all operations have been added to the OpenAPI definition.
+   *
+   * @param operations the operations of the OpenAPI definition by id
+   */
+  default void updateOpenApiLinks(Map<String, Operation> operations) {
+    if (!operations.containsKey(getOperationId())) {
+      return;
+    }
+    getLinkedFrom()
+        .forEach(
+            link ->
+                Optional.ofNullable(operations.get(link.getOperationId()))
+                    .map(Operation::getResponses)
+                    .map(responses -> responses.get(link.getStatusCode()))
+                    .ifPresent(
+                        response -> {
+                          Link openApiLink = new Link().operationId(getOperationId());
+                          link.getParameters().forEach(openApiLink::addParameter);
+                          link.getDescription().ifPresent(openApiLink::description);
+                          response.link(link.getName(), openApiLink);
+                        }));
   }
 
   default void updateOpenApiDefinition(
