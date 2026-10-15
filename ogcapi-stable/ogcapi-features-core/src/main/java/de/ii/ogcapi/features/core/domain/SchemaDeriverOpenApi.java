@@ -250,6 +250,12 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
       result = withRequired(result);
     }
 
+    // the constraints of an array apply to its values, not to the array
+    Schema<?> valueSchema =
+        result instanceof ArraySchema && Objects.nonNull(result.getItems())
+            ? result.getItems()
+            : result;
+
     boolean isString =
         property.isArray()
             ? property.getValueType().orElse(Type.UNKNOWN) != Type.INTEGER
@@ -279,20 +285,20 @@ public abstract class SchemaDeriverOpenApi extends SchemaDeriver<Schema<?>> {
         values.addAll(titles);
         if (!isString) {
           // a title is a string, so the value is either an integer code or a string title
-          result.setType(null);
-          result.setFormat(null);
+          valueSchema.setType(null);
+          valueSchema.setFormat(null);
         }
       }
-      ((Schema<Object>) result).setEnum(values);
+      ((Schema<Object>) valueSchema).setEnum(values);
     }
     if (constraints.getRegex().isPresent()) {
-      result.setPattern(constraints.getRegex().get());
+      valueSchema.setPattern(constraints.getRegex().get());
     }
     if (constraints.getMin().isPresent()) {
-      result.setMinimum(BigDecimal.valueOf(constraints.getMin().get()));
+      valueSchema.setMinimum(BigDecimal.valueOf(constraints.getMin().get()));
     }
     if (constraints.getMax().isPresent()) {
-      result.setMaximum(BigDecimal.valueOf(constraints.getMax().get()));
+      valueSchema.setMaximum(BigDecimal.valueOf(constraints.getMax().get()));
     }
 
     return oapiSchema;

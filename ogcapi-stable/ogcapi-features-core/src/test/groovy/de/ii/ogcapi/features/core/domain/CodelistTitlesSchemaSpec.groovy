@@ -33,6 +33,12 @@ class CodelistTitlesSchemaSpec extends Specification {
                 .putPropertyMap("number", new ImmutableFeatureSchema.Builder()
                         .name("number").type(SchemaBase.Type.INTEGER).sourcePath("number")
                         .constraints(new ImmutableSchemaConstraints.Builder().codelist("numbers").build()).build())
+                .putPropertyMap("letters", new ImmutableFeatureSchema.Builder()
+                        .name("letters").type(SchemaBase.Type.VALUE_ARRAY).valueType(SchemaBase.Type.STRING).sourcePath("letters")
+                        .constraints(new ImmutableSchemaConstraints.Builder().codelist("letters").maxOccurrence(2).build()).build())
+                .putPropertyMap("numbers", new ImmutableFeatureSchema.Builder()
+                        .name("numbers").type(SchemaBase.Type.VALUE_ARRAY).valueType(SchemaBase.Type.INTEGER).sourcePath("numbers")
+                        .constraints(new ImmutableSchemaConstraints.Builder().enumValues(["1", "2"]).min(1d).build()).build())
                 .build()
     }
 
@@ -56,5 +62,23 @@ class CodelistTitlesSchemaSpec extends Specification {
         schema.getProperties().get("letter").getEnum() == ["A", "B"]
         schema.getProperties().get("number").getEnum() == [1, 2]
         schema.getProperties().get("number").getType() == "integer"
+    }
+
+    def 'the values of an array are constrained, not the array'() {
+        when:
+        Schema<?> schema = feature().accept(new SchemaDeriverOpenApiFeatures("test", Optional.empty(), CODELISTS))
+        Map<String, Schema> properties = schema.getProperties().get("properties").getProperties()
+
+        then:
+        properties.get("letters").getType() == "array"
+        properties.get("letters").getEnum() == null
+        properties.get("letters").getMaxItems() == 2
+        properties.get("letters").getItems().getEnum() == ["A", "B", "Alpha", "Bravo"]
+        properties.get("letters").getItems().getType() == "string"
+        properties.get("numbers").getType() == "array"
+        properties.get("numbers").getEnum() == null
+        properties.get("numbers").getMinimum() == null
+        properties.get("numbers").getItems().getEnum() == [1, 2]
+        properties.get("numbers").getItems().getMinimum() == 1
     }
 }
