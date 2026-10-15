@@ -111,4 +111,17 @@ class ClassSchemaCacheImplSpec extends Specification {
         temporalExtentSchema.getType() == "object"
         temporalExtentSchema.getRequired()  == ["interval", "trs"]
     }
+
+    def 'an interval of the temporal extent may have an unbounded start or end'() {
+        when:
+        schemaGenerator.getSchema(OgcApiExtentTemporal.class)
+        Schema interval = schemaGenerator.getReferencedSchemas(OgcApiExtentTemporal.class).get("InstantArray")
+
+        then:
+        interval.getType() == "array"
+        interval.getMinItems() == 2
+        interval.getMaxItems() == 2
+        interval.getItems().getFormat() == "date-time"
+        interval.getItems().getNullable()
+    }
 }
