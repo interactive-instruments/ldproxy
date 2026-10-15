@@ -26,9 +26,10 @@ public abstract class AbstractQueryParameterDatetime extends OgcApiQueryParamete
       LOCAL_DATE_OR_OPEN_REGEX + "/" + LOCAL_DATE_OR_OPEN_REGEX;
   private static final String LOCAL_DATE_CLOSED_INTERVAL_REGEX =
       LOCAL_DATE_REGEX + "/" + LOCAL_DATE_REGEX;
+  // leap seconds are not supported, the second is in the range 00 to 59
   private static final String OFFSET_DATE_TIME_REGEX =
       LOCAL_DATE_REGEX
-          + "T(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]):(?:[0-5][0-9]|60)(?:\\.[0-9]+)?(Z|(\\+|-)(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]))";
+          + "T(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]):(?:[0-5][0-9])(?:\\.[0-9]+)?(Z|(\\+|-)(?:[01][0-9]|2[0-3]):(?:[0-5][0-9]))";
   private static final String OFFSET_DATE_TIME_OR_OPEN_REGEX =
       "(?:" + OFFSET_DATE_TIME_REGEX + "|" + OPEN_REGEX + "|" + NOW_REGEX + ")";
   private static final String OFFSET_DATE_TIME_OPEN_INTERVAL_REGEX =
