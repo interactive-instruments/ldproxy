@@ -210,7 +210,16 @@ public class EndpointStoredQuery extends EndpointRequiresFeatures implements Api
                       .toList();
 
               String operationSummary = "execute stored query " + query.getTitle().orElse(queryId);
-              Optional<String> operationDescription = query.getDescription();
+              Optional<String> operationDescription =
+                  query
+                      .getDescription()
+                      .or(
+                          () ->
+                              Optional.of(
+                                  String.format(
+                                      "Executes the stored query '%s' and returns the features "
+                                          + "in the result.",
+                                      queryId)));
               ImmutableOgcApiResourceAuxiliary.Builder resourceBuilder =
                   new ImmutableOgcApiResourceAuxiliary.Builder().path(path);
               ApiOperation.getResource(

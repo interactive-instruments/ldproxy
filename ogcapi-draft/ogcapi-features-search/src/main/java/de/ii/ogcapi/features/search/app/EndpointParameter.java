@@ -113,8 +113,9 @@ public class EndpointParameter extends EndpointRequiresFeatures implements ApiEx
     List<OgcApiQueryParameter> params =
         getQueryParameters(extensionRegistry, apiData, definitionPath);
 
-    repository
-        .getAll(apiData)
+    // a query without parameters has no parameter resource
+    repository.getAll(apiData).stream()
+        .filter(query -> !query.getAllParameters().isEmpty())
         .forEach(
             query -> {
               String queryId = query.getId();
@@ -139,7 +140,11 @@ public class EndpointParameter extends EndpointRequiresFeatures implements ApiEx
                       ImmutableList.of(),
                       getResponseContent(apiData),
                       operationSummary,
-                      Optional.empty(),
+                      Optional.of(
+                          String.format(
+                              "Retrieves the JSON Schema of the parameter `name` of the stored "
+                                  + "query '%s'.",
+                              queryId)),
                       Optional.empty(),
                       getOperationId("getStoredQueryParameter", queryId),
                       GROUP_SEARCH_READ,

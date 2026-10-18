@@ -111,7 +111,9 @@ public class EndpointParameters extends EndpointRequiresFeatures implements ApiE
               ImmutableList.of(),
               getResponseContent(apiData),
               operationSummary,
-              Optional.empty(),
+              Optional.of(
+                  "Retrieves the parameters of the stored query with the id `queryId` as a JSON "
+                      + "Schema object, where each property is a parameter."),
               Optional.empty(),
               getOperationId("getStoredQueryParameters"),
               GROUP_SEARCH_READ,
