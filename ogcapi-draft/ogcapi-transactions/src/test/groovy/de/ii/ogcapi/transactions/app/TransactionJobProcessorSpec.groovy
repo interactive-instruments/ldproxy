@@ -308,5 +308,7 @@ class TransactionJobProcessorSpec extends Specification {
         def <T extends JobInputs> T getInputs(Job job, Class<T> contextClass) { null }
 
         def <T extends JobContext> T getContext(BaseJob job, Class<T> contextClass) { null }
+
+        boolean isCancelled(String s) { false }
     }
 }
