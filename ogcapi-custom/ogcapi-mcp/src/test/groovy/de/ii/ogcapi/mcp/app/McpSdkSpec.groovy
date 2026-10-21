@@ -160,6 +160,7 @@ class McpSdkSpec extends Specification {
         request.getMethod() >> "POST"
         request.getContentLengthLong() >> (long) bytes.length
         request.getCharacterEncoding() >> "UTF-8"
+        request.getContentType() >> headers."Content-Type"
         request.getHeader("Accept") >> headers.Accept
         request.getHeaderNames() >> Collections.enumeration(headers.keySet())
         request.getHeaders(_ as String) >> { String name -> Collections.enumeration([headers[name]]) }
