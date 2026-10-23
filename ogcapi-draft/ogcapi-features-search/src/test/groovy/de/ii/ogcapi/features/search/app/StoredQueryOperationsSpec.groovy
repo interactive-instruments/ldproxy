@@ -69,8 +69,24 @@ class StoredQueryOperationsSpec extends Specification {
         then:
         post.hasFormRequestBody()
         post.getSuccess().orElseThrow().getContent().keySet() == [GEO_JSON] as Set
-        get.getSuccess().orElseThrow().getContent().keySet() == [GEO_JSON, MediaType.TEXT_HTML_TYPE] as Set
+        get.getSuccess().orElseThrow().getContent().keySet() == [GEO_JSON] as Set
         post.getOperationId() != get.getOperationId()
+    }
+
+    def 'HTML is only offered for a stored query that supports it'() {
+        given: 'a stored query with paging and one without'
+        StoredQueryRepository repository = Stub()
+        repository.getAll(_) >> [query('paged', true), query('single-shot', false)]
+        ResourceStore resourceStore = Stub()
+        EndpointStoredQuery endpoint = new EndpointStoredQuery(
+                registry(), null, repository, null, null, null, null, resourceStore)
+
+        when:
+        ApiEndpointDefinition definition = endpoint.computeDefinition(Stub(OgcApiDataV2))
+
+        then:
+        operations(definition, 'paged').get('GET').getSuccess().orElseThrow().getContent().keySet() == [GEO_JSON, MediaType.TEXT_HTML_TYPE] as Set
+        operations(definition, 'single-shot').get('GET').getSuccess().orElseThrow().getContent().keySet() == [GEO_JSON] as Set
     }
 
     def 'offset is a parameter of stored queries with paging only'() {
