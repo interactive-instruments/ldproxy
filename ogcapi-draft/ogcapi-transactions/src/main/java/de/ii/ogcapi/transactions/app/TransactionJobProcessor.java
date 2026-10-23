@@ -59,7 +59,6 @@ public class TransactionJobProcessor extends JobProcessorSimple<TransactionJob> 
 
   private final AppContext appContext;
   private final EntityRegistry entityRegistry;
-  private final ResourceStore documentStore;
   private final TransactionInputs transactionInputs;
   private final CommandHandlerTransactions commandHandler;
 
@@ -70,16 +69,12 @@ public class TransactionJobProcessor extends JobProcessorSimple<TransactionJob> 
       ResourceStore resourceStore,
       TransactionInputs transactionInputs,
       CommandHandlerTransactions commandHandler) {
+    super(TransactionJob.KIND, resourceStore);
+
     this.appContext = appContext;
     this.entityRegistry = entityRegistry;
-    this.documentStore = resourceStore.with(Jobs.RESOURCE_TYPE, TransactionJob.KIND);
     this.transactionInputs = transactionInputs;
     this.commandHandler = commandHandler;
-  }
-
-  @Override
-  public String getKind() {
-    return TransactionJob.KIND;
   }
 
   @Override
@@ -110,7 +105,7 @@ public class TransactionJobProcessor extends JobProcessorSimple<TransactionJob> 
       OgcApi api = getOgcApi(inputs.getApiId()).get();
       Path documentPath = Path.of(inputs.getDocumentPath());
 
-      if (documentStore.size(documentPath) >= 0) {
+      if (getStore().size(documentPath) >= 0) {
         return executeDocument(partialJob, job, inputs, jobs, api, documentPath);
       }
 
@@ -149,7 +144,7 @@ public class TransactionJobProcessor extends JobProcessorSimple<TransactionJob> 
     if (inputs.getResultAsFile()) {
       if (applied.body() != null) {
         resultPath = String.format("%s/result_%s.json", api.getId(), job.id());
-        put(Path.of(resultPath), applied.body());
+        saveResultFile(Path.of(resultPath), applied.body());
         jobs.outputs(job.id(), Map.of("resultPath", resultPath));
       }
     } else if (!applied.rejected() && applied.body() != null) {
@@ -192,7 +187,7 @@ public class TransactionJobProcessor extends JobProcessorSimple<TransactionJob> 
 
       Path resultPath = resultPath(api, job, document);
       if (applied.body() != null) {
-        put(resultPath, applied.body());
+        saveResultFile(resultPath, applied.body());
         resultPaths.add(resultPath.toString());
       }
 
@@ -218,7 +213,7 @@ public class TransactionJobProcessor extends JobProcessorSimple<TransactionJob> 
   }
 
   private Applied apply(OgcApi api, TransactionJob inputs, Path documentPath) throws IOException {
-    Optional<InputStream> content = documentStore.content(documentPath);
+    Optional<InputStream> content = getStore().content(documentPath);
 
     if (content.isEmpty()) {
       throw new IOException("Transaction document not found: " + documentPath);
@@ -274,7 +269,7 @@ public class TransactionJobProcessor extends JobProcessorSimple<TransactionJob> 
 
     List<Path> files;
     try (Stream<Path> entries =
-        documentStore.walk(folder, 1, (path, attributes) -> attributes.isValue())) {
+        getStore().walk(folder, 1, (path, attributes) -> attributes.isValue())) {
       files =
           entries
               .filter(path -> path.getNameCount() == 1 && !path.toString().isEmpty())
@@ -282,7 +277,7 @@ public class TransactionJobProcessor extends JobProcessorSimple<TransactionJob> 
               .toList();
     }
 
-    if (files.isEmpty() && !documentStore.has(folder)) {
+    if (files.isEmpty() && !getStore().has(folder)) {
       return Optional.empty();
     }
 
@@ -313,8 +308,8 @@ public class TransactionJobProcessor extends JobProcessorSimple<TransactionJob> 
     return Path.of(api.getId(), String.format("result_%s", job.id()), name + RESULT_SUFFIX);
   }
 
-  private void put(Path path, String content) throws IOException {
-    documentStore.put(path, new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+  private void saveResultFile(Path path, String content) throws IOException {
+    saveOutputFile(path, new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
   }
 
   @Override
