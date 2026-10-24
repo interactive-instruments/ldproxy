@@ -144,7 +144,7 @@ public class TransactionJobProcessor extends JobProcessorSimple<TransactionJob> 
     if (inputs.getResultAsFile()) {
       if (applied.body() != null) {
         resultPath = String.format("%s/result_%s.json", api.getId(), job.id());
-        saveResultFile(Path.of(resultPath), applied.body());
+        saveResultFile(job, Path.of(resultPath), applied.body());
         jobs.outputs(job.id(), Map.of("resultPath", resultPath));
       }
     } else if (!applied.rejected() && applied.body() != null) {
@@ -187,7 +187,7 @@ public class TransactionJobProcessor extends JobProcessorSimple<TransactionJob> 
 
       Path resultPath = resultPath(api, job, document);
       if (applied.body() != null) {
-        saveResultFile(resultPath, applied.body());
+        saveResultFile(job, resultPath, applied.body());
         resultPaths.add(resultPath.toString());
       }
 
@@ -308,8 +308,8 @@ public class TransactionJobProcessor extends JobProcessorSimple<TransactionJob> 
     return Path.of(api.getId(), String.format("result_%s", job.id()), name + RESULT_SUFFIX);
   }
 
-  private void saveResultFile(Path path, String content) throws IOException {
-    saveOutputFile(path, new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
+  private void saveResultFile(Job job, Path path, String content) throws IOException {
+    saveOutputFile(job, path, new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)));
   }
 
   @Override
